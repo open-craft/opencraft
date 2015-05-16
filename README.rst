@@ -2,3 +2,32 @@ OpenCraft
 =========
 
 Dependencies: Python 3.x
+
+Install
+-------
+
+Run the following commands::
+
+    $ sudo apt-get install `cat debian_packages.lst`
+    $ mkvirtualenv -p /usr/bin/python3 opencraft
+    $ pip install -r requirements.txt
+
+Configure
+---------
+
+To configure::
+
+    $ cp opencraft/local_settings.sample opencraft/local_settings.py
+    $ gvim opencraft/local_settings.py
+
+Run
+---
+
+In the development environment::
+
+    $ ./manage.py migrate
+    $ ./manage.py runserver
+
+For the production environment, use the `prod` settings::
+
+    $ ./manage.py runserver --settings=prod
