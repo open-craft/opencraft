@@ -1,1 +1,11 @@
-<h1>{{ task.title }}</h1>
+{% extends "base_body.html" %}
+{
+{% block title %}Tasks{% endblock %}
+
+{% block side_panel %}{% include "task/_list.html" %}{% endblock side_panel %}
+
+{% block content %}
+
+<h4>{{ task.title }}</h4>
+
+{% endblock content %}
