@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     'foundation',
+    'compressor',
 ) + LOCAL_APPS
 
 MIDDLEWARE_CLASSES = (
@@ -82,6 +83,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
+)
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'build/static')
 STATIC_URL = '/static/'
 
 # Always use IPython for shell_plus
@@ -93,3 +106,8 @@ RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:2000'
 # Grappelli
 GRAPPELLI_ADMIN_TITLE = 'OpenCraft'
 GRAPPELLI_SWITCH_USER = True
+
+# SASS
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)

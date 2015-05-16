@@ -1,11 +1,15 @@
 Django==1.8.1
 Werkzeug==0.10.4
+django-appconf==1.0.1
+django-compressor==1.5
 django-extensions==1.5.5
 django-grappelli==2.6.4
+django-libsass==0.3
 django-zurb-foundation==5.5.0
 ipdb==0.8
 ipython==3.1.0
 jira==0.47
+libsass==0.8.1
 oauthlib==0.7.2
 ordereddict==1.1
 psycopg2==2.6
