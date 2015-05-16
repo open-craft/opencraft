@@ -1,3 +1,10 @@
-from django.db import models
+"""
+Tasks app models
+"""
 
-# Create your models here.
+#pylint: disable=no-init
+
+from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
+
+class Task(TimeStampedModel, TitleSlugDescriptionModel):
+    pass
