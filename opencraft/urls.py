@@ -19,4 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^task/', include('task.urls', namespace="task")),
+    url(r'^', 'task.views.index'),
 ]
