@@ -16,6 +16,10 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+LOCAL_APPS = (
+    'task',
+)
+
 INSTALLED_APPS = (
     'grappelli',
     'django.contrib.admin',
@@ -25,8 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'task',
-)
+) + LOCAL_APPS
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -44,7 +47,7 @@ ROOT_URLCONF = 'opencraft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, p, 'templates') for p in [''] + list(LOCAL_APPS)],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
