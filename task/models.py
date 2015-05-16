@@ -7,4 +7,9 @@ Tasks app models
 from django_extensions.db.models import TimeStampedModel, TitleSlugDescriptionModel
 
 class Task(TimeStampedModel, TitleSlugDescriptionModel):
-    pass
+    '''
+    A task requested by a client
+    '''
+
+    def __str__(self):
+        return self.title
