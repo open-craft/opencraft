@@ -17,6 +17,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +52,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.request',
             ],
         },
     },
@@ -83,3 +85,7 @@ SHELL_PLUS = "ipython"
 
 # runserver_plus
 RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:2000'
+
+# Grappelli
+GRAPPELLI_ADMIN_TITLE = 'OpenCraft'
+GRAPPELLI_SWITCH_USER = True
