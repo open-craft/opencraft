@@ -31,3 +31,7 @@ In the development environment::
 For the production environment, use the `prod` settings::
 
     $ ./manage.py runserver --settings=prod
+
+To access the console, you can use `shell_plus`::
+
+    $ ./manage.py shell_plus
