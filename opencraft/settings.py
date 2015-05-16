@@ -79,3 +79,6 @@ STATIC_URL = '/static/'
 
 # Always use IPython for shell_plus
 SHELL_PLUS = "ipython"
+
+# runserver_plus
+RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:2000'

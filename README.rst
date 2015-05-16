@@ -26,11 +26,11 @@ Run
 In the development environment::
 
     $ ./manage.py migrate
-    $ ./manage.py runserver
+    $ ./manage.py runserver_plus
 
 For the production environment, use the `prod` settings::
 
-    $ ./manage.py runserver --settings=prod
+    $ ./manage.py runserver_plus --settings=prod
 
 To access the console, you can use `shell_plus`::
 
