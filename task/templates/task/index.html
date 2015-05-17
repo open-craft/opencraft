@@ -1,9 +1,14 @@
-{% extends "base_body.html" %}
-{
+{% extends "base.html" %}
+{% load staticfiles %}
+
 {% block title %}Tasks{% endblock %}
 
-{% block side_panel %}{% include "task/_list.html" %}{% endblock side_panel %}
-
 {% block content %}
-
+<div class="container content" ng-app="TaskApp">
+    <div ui-view >Loading...</div>
+</div>
 {% endblock content %}
+
+{% block body_js %}
+<script src="{% static "js/task.js" %}"></script>
+{% endblock body_js %}

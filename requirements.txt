@@ -1,5 +1,6 @@
 Django==1.8.1
 Werkzeug==0.10.4
+django-angular==0.7.14
 django-appconf==1.0.1
 django-compressor==1.5
 django-extensions==1.5.5

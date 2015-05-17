@@ -26,7 +26,7 @@ Run
 In the development environment::
 
     $ ./manage.py migrate
-    $ ./manage.py collectstatic
+    $ ./manage.py collectstatic --noinput
     $ ./manage.py runserver_plus
 
 For the production environment, use the `prod` settings::

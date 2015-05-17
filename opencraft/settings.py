@@ -31,6 +31,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'foundation',
     'compressor',
+    'djangular',
 ) + LOCAL_APPS
 
 MIDDLEWARE_CLASSES = (
