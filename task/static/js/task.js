@@ -1,3 +1,6 @@
+
+// App configuration //////////////////////////////////////////////////////////
+
 var app = angular.module('TaskApp', [
     'ngRoute',
     'ui.router',
@@ -10,21 +13,32 @@ app.config(function($httpProvider) {
 
 app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
     // For any unmatched url, send to /
-    $urlRouterProvider.otherwise("/task");
+    $urlRouterProvider.otherwise("/");
 
     $stateProvider
         .state('index', {
-            url: "",
-            templateUrl: "/static/html/task_list.html",
-            controller: "TaskList"
+            url: "/",
+            templateUrl: "/static/html/task/index.html",
+            controller: "Index"
         })
 });
+
+
+// Services ///////////////////////////////////////////////////////////////////
 
 app.factory('OpenCraftAPI', function(Restangular) {
     return Restangular.withConfig(function(RestangularConfigurer) {
         RestangularConfigurer.setBaseUrl('/api/v1');
     });
 });
+
+
+// Controllers ////////////////////////////////////////////////////////////////
+
+app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
+    function ($scope, Restangular, OpenCraftAPI, $q) {
+    }
+]);
 
 app.controller("TaskList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
