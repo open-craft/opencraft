@@ -4,8 +4,8 @@
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
 
-from .models import Task
-from .serializers import TaskSerializer
+from .models import Project, Task
+from .serializers import ProjectSerializer, TaskSerializer
 
 
 # Functions - Helpers #########################################################
@@ -33,6 +33,10 @@ def detail(request, task_id):
 
 
 # Views - API #################################################################
+
+class ProjectViewSet(viewsets.ModelViewSet): #pylint: disable=no-init
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
 
 class TaskViewSet(viewsets.ModelViewSet): #pylint: disable=no-init
     queryset = Task.objects.all()
