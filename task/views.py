@@ -2,8 +2,10 @@
 # Imports #####################################################################
 
 from django.shortcuts import get_object_or_404, render
+from rest_framework import viewsets
 
 from .models import Task
+from .serializers import TaskSerializer
 
 
 # Functions - Helpers #########################################################
@@ -28,3 +30,10 @@ def detail(request, task_id):
     context['task'] = get_object_or_404(Task, pk=task_id)
 
     return render(request, 'task/detail.html', context)
+
+
+# Views - API #################################################################
+
+class TaskViewSet(viewsets.ModelViewSet): #pylint: disable=no-init
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer

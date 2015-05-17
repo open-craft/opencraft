@@ -32,6 +32,7 @@ INSTALLED_APPS = (
     'foundation',
     'compressor',
     'djangular',
+    'rest_framework',
 ) + LOCAL_APPS
 
 MIDDLEWARE_CLASSES = (
@@ -112,3 +113,10 @@ GRAPPELLI_SWITCH_USER = True
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
+
+# REST framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissions',
+    ]
+}
