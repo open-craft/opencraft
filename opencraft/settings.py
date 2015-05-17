@@ -35,6 +35,7 @@ INSTALLED_APPS = (
     'compressor',
     'djangular',
     'rest_framework',
+    'debug_toolbar',
 ) + LOCAL_APPS
 
 MIDDLEWARE_CLASSES = (
