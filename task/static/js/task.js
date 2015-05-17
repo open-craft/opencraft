@@ -40,9 +40,14 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
         $scope.selected = Array();
 
-        $scope.select = function(selectedType, selectedObject) {
-            $scope.selected[selectedType] = selectedObject;
-            console.log('Selected:', selectedType, selectedObject);
+        $scope.select = function(organization, project, task) {
+            $scope.selected.organization = organization;
+            $scope.selected.project = project;
+            $scope.selected.task = task;
+
+            console.log('Selected organization:', organization);
+            console.log('Selected project:', project);
+            console.log('Selected task:', task);
         };
     }
 ]);
@@ -55,5 +60,10 @@ app.controller("OrganizationList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q
         }, function(response) {
             console.log('Error from server: ', response);
         });
+    }
+]);
+
+app.controller("ProjectTaskList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
+    function ($scope, Restangular, OpenCraftAPI, $q) {
     }
 ]);

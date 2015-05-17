@@ -9,54 +9,51 @@
 <div class="row">
   <!-- Organization List -->
   <div ng-controller="OrganizationList" class="large-2 medium-2 columns">
-    <div class="row" ng-repeat="organization in organizationList">
-      <div class="small-12 columns">
-        <a ng-click="select('organization', organization)">{{ organization.name }}</a>
-      </div>
-    </div>
+    <ul class="side-nav" ng-if="organizationList">
+      <li ng-repeat="organization in organizationList"
+          ng-class="{active: organization == selected.organization}">
+        <a ng-click="select(organization)">{{ organization.name }}</a>
+      </li>
+      <li class="divider"></li>
+    </ul>
 
-    <div ng-if="!organizationList">
+    <div class="row" ng-if="!organizationList">
       <p>No organizations are available.</p>
     </div>
   </div>
 
-  <!-- Project List -->
-  <div class="large-2 medium-2 columns">
-    <div class="row" ng-repeat="project in selected['organization'].project_set">
-      <div class="small-12 columns">
-        <a ng-click="select('project', project)">{{ project.title }}</a>
-      </div>
-    </div>
+  <!-- Project & Task List -->
+  <div ng-controller="ProjectTaskList" class="large-3 medium-3 columns">
+    <ul class="side-nav" ng-repeat="project in selected.organization.project_set">
+      <li ng-click="select(selected.organization, project)"
+          ng-class="{heading: true, active: project == selected.project}">
+        {{ project.title }}
+      </li>
 
-    <div ng-if="!selected['organization'].project_set">
-      <p>No projects are available.</p>
-    </div>
-  </div>
+      <li ng-repeat="task in project.task_set"
+          ng-class="{active: task == selected.task}">
+        <a ng-click="select(selected.organization, project, task)">{{ task.title }}</a>
+      </li>
 
-  <!-- Task List -->
-  <div class="large-2 medium-2 columns">
-    <div class="row" ng-repeat="task in selected['project'].task_set">
-      <div class="small-12 columns">
-        <a ng-click="select('task', task)">{{ task.title }}</a>
-      </div>
-    </div>
+      <li class="divider"></li>
+    </ul>
 
-    <div ng-if="!selected['project'].task_set">
-      <p>No tasks are available.</p>
-    </div>
+    <ul class="side-nav" ng-if="!selected.organization.project_set">
+      <li>No projects are available.</li>
+    </ul>
   </div>
 
   <!-- Selected task details -->
-  <div class="large-6 medium-6 columns">
-    <div class="row">
-      <h4>
-        <span ng-if="selected.organization">[{{ selected.organization.name }}]</span>
-        <span ng-if="selected.project">{{ selected.project.title }}:</span>
-        <span ng-if="selected.task">{{ selected.task.title }}</span>
-      </h4>
+  <div class="large-7 medium-7 columns">
+    <div class="row" ng-if="selected.task">
+      <h3>{{ selected.task.title }}</h3>
     </div>
-    <div class="row">
-      <div ng-if="selected.task">{{ selected.task.description }}</div>
+    <div class="row" ng-if="selected.project">
+      <ul class="breadcrumbs">
+        <li ng-if="selected.organization">{{ selected.organization.name }}</li>
+        <li ng-if="selected.project">{{ selected.project.title }}</li>
+      </ul>
     </div>
+    <div class="row" ng-if="selected.task">{{ selected.task.description }}</div>
   </div>
 </div>
