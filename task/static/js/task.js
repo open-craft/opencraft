@@ -38,20 +38,20 @@ app.factory('OpenCraftAPI', function(Restangular) {
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
-        $scope.selectedTask = null;
+        $scope.selected = Array();
 
-        $scope.selectTask = function(task) {
-            $scope.selectedTask = task;
-            console.log('Selected task:', task);
+        $scope.select = function(selectedType, selectedObject) {
+            $scope.selected[selectedType] = selectedObject;
+            console.log('Selected:', selectedType, selectedObject);
         };
     }
 ]);
 
-app.controller("TaskList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
+app.controller("OrganizationList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
         
-        OpenCraftAPI.all("task/").getList().then(function(taskList) {
-            $scope.taskList = taskList;
+        OpenCraftAPI.all("organization/").getList().then(function(organizationList) {
+            $scope.organizationList = organizationList;
         }, function(response) {
             console.log('Error from server: ', response);
         });

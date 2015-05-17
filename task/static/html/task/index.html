@@ -7,24 +7,56 @@
 </top-bar>
 
 <div class="row">
-  <!-- Task List -->
-  <div ng-controller="TaskList" class="large-4 medium-4 columns">
-    <div class="row" ng-repeat="task in taskList">
+  <!-- Organization List -->
+  <div ng-controller="OrganizationList" class="large-2 medium-2 columns">
+    <div class="row" ng-repeat="organization in organizationList">
       <div class="small-12 columns">
-        <a ng-click="selectTask(task)">{{ task.title }}</a>
+        <a ng-click="select('organization', organization)">{{ organization.name }}</a>
       </div>
     </div>
 
-    <div ng-if="!taskList">
+    <div ng-if="!organizationList">
+      <p>No organizations are available.</p>
+    </div>
+  </div>
+
+  <!-- Project List -->
+  <div class="large-2 medium-2 columns">
+    <div class="row" ng-repeat="project in selected['organization'].project_set">
+      <div class="small-12 columns">
+        <a ng-click="select('project', project)">{{ project.title }}</a>
+      </div>
+    </div>
+
+    <div ng-if="!selected['organization'].project_set">
+      <p>No projects are available.</p>
+    </div>
+  </div>
+
+  <!-- Task List -->
+  <div class="large-2 medium-2 columns">
+    <div class="row" ng-repeat="task in selected['project'].task_set">
+      <div class="small-12 columns">
+        <a ng-click="select('task', task)">{{ task.title }}</a>
+      </div>
+    </div>
+
+    <div ng-if="!selected['project'].task_set">
       <p>No tasks are available.</p>
     </div>
   </div>
 
   <!-- Selected task details -->
-  <div class="large-8 medium-8 columns">
+  <div class="large-6 medium-6 columns">
     <div class="row">
-      <h4>{{ selectedTask.title }}</h4>
-      <p>{{ selectedTask.description }}</p>
+      <h4>
+        <span ng-if="selected.organization">[{{ selected.organization.name }}]</span>
+        <span ng-if="selected.project">{{ selected.project.title }}:</span>
+        <span ng-if="selected.task">{{ selected.task.title }}</span>
+      </h4>
+    </div>
+    <div class="row">
+      <div ng-if="selected.task">{{ selected.task.description }}</div>
     </div>
   </div>
 </div>
