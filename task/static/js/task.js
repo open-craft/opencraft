@@ -4,7 +4,8 @@
 var app = angular.module('TaskApp', [
     'ngRoute',
     'ui.router',
-    'restangular'
+    'restangular',
+    'mm.foundation'
 ]);
 
 app.config(function($httpProvider) {
@@ -37,6 +38,12 @@ app.factory('OpenCraftAPI', function(Restangular) {
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
+        $scope.selectedTask = null;
+
+        $scope.selectTask = function(task) {
+            $scope.selectedTask = task;
+            console.log('Selected task:', task);
+        };
     }
 ]);
 

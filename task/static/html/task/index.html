@@ -1,15 +1,19 @@
-<div class="row">
-  <div class="large-12 columns">
-    <h3>OpenCraft</h3>
-  </div>
-</div>
+<top-bar>
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="#">OpenCraft</a></h1>
+    </li>
+  </ul>
+</top-bar>
 
 <div class="row">
   <!-- Task List -->
   <div ng-controller="TaskList" class="large-4 medium-4 columns">
-    <ul ng-repeat="task in taskList" class="side-nav">
-      <li><a ng-click="">{{ task.title }}</a></li>
-    </ul>
+    <div class="row" ng-repeat="task in taskList">
+      <div class="small-12 columns">
+        <a ng-click="selectTask(task)">{{ task.title }}</a>
+      </div>
+    </div>
 
     <div ng-if="!taskList">
       <p>No tasks are available.</p>
@@ -18,5 +22,9 @@
 
   <!-- Selected task details -->
   <div class="large-8 medium-8 columns">
+    <div class="row">
+      <h4>{{ selectedTask.title }}</h4>
+      <p>{{ selectedTask.description }}</p>
+    </div>
   </div>
 </div>
