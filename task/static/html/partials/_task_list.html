@@ -1,9 +1,0 @@
-{% if task_list %}
-    <ul class="side-nav">
-    {% for task in task_list %}
-        <li><a href="{% url 'task:detail' task.id %}">{{ task.title }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No tasks are available.</p>
-{% endif %}

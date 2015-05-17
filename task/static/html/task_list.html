@@ -1,0 +1,7 @@
+<ul class="side-nav" ng-repeat="task in taskList">
+  <li><a ng-click="alert('TODO: Load task')">{{ task.title }}</a></li>
+</ul>
+
+<div ng-if="!taskList">
+  <p>No tasks are available.</p>
+</div>
