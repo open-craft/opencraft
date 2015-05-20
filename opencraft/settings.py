@@ -18,6 +18,7 @@ ALLOWED_HOSTS = []
 
 LOCAL_APPS = (
     'api',
+    'instance',
     'task',
     'user',
 )
@@ -35,6 +36,7 @@ INSTALLED_APPS = (
     'compressor',
     'djangular',
     'rest_framework',
+    'huey.djhuey',
     'debug_toolbar',
 ) + LOCAL_APPS
 
@@ -122,4 +124,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions',
     ],
+}
+
+# Huey (redis task queue)
+HUEY = {
+    'backend': 'huey.backends.redis_backend',
+    'name': 'opencraft',
+    'connection': {'host': 'localhost', 'port': 6379},
+    'always_eager': False, # Defaults to False when running via manage.py run_huey
+
+    # Options to pass into the consumer when running ``manage.py run_huey``
+    'consumer_options': {'workers': 4},
 }

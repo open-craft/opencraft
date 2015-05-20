@@ -37,6 +37,13 @@ Then go to:
 
 Default configuration specific to the development environment is stored in `opencraft/dev.py`.
 
+Worker queue
+------------
+
+To run the worker jobs queue:
+
+   $ ./manage.py run_huey
+
 
 Production
 ----------
