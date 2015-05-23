@@ -126,6 +126,8 @@ REST_FRAMEWORK = {
     ],
 }
 
+# [Optional] Ansible worker queue #############
+
 # Huey (redis task queue)
 HUEY = {
     'backend': 'huey.backends.redis_backend',
@@ -136,3 +138,17 @@ HUEY = {
     # Options to pass into the consumer when running ``manage.py run_huey``
     'consumer_options': {'workers': 4},
 }
+
+# OpenStack
+OPENSTACK_USER = None
+OPENSTACK_PASSWORD = None
+OPENSTACK_TENANT = None
+OPENSTACK_AUTH_URL = None
+OPENSTACK_REGION = None
+
+OPENSTACK_SANDBOX_FLAVOR = {'ram': 4096, 'disk': 40}
+OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
+
+# DNS (Gandi)
+GANDI_API_KEY = None
+GANDI_ZONE_ID = None
