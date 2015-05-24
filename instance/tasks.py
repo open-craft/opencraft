@@ -31,6 +31,7 @@ def create_sandbox_instance(subdomain, instance_name):
 
     # Run ansible sandbox playbook
     sleep_until_port_open(server_ip, 22)
+    log_lines = []
     with run_ansible_playbook(
         get_inventory_str(server_ip),
         get_vars_str(
@@ -40,4 +41,8 @@ def create_sandbox_instance(subdomain, instance_name):
         username='admin',
     ) as processus:
         for line in processus.stdout:
-            pprint(line.rstrip())
+            line = line.rstrip()
+            log_lines.append(line)
+            pprint(line)
+
+    return log_lines
