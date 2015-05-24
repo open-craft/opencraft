@@ -3,22 +3,17 @@
 # Copyright (c) 2015, OpenCraft
 #
 
-# Load django environment #####################################################
-
-import os
-import sys
-import django
-sys.path.append('/home/antoviaque/prog/opencraft')
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opencraft.dev")
-django.setup()
-
-
 # Imports #####################################################################
 
-from pprint import pprint
 import xmlrpc.client
 
 from django.conf import settings
+
+
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 # Classes #####################################################################
@@ -65,24 +60,9 @@ class GandiAPI():
         if 'ttl' not in record.keys():
             record['ttl'] = 1200
 
+        logger.info('Setting DNS record: %s', record)
         new_zone_version = self.create_new_zone_version()
         self.delete_dns_record(new_zone_version, record['name'])
         returned_record = self.add_dns_record(new_zone_version, record)
         self.set_zone_version(new_zone_version)
         return returned_record
-
-
-
-# Main ########################################################################
-
-if __name__ == "__main__":
-    gandi = GandiAPI()
-
-    print('\n== DNS Records =====')
-    pprint(gandi.get_dns_records())
-
-    print('\n== Setting record =====')
-    pprint(gandi.set_dns_record(type='A', name='sandbox4', value='92.222.80.210'))
-
-    print('\n== DNS Records =====')
-    pprint(gandi.get_dns_records())

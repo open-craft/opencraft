@@ -5,44 +5,33 @@
 
 # Imports #####################################################################
 
-from pprint import pprint
+from huey.djhuey import crontab, db_periodic_task, task
 
-from django.conf import settings
-from huey.djhuey import task
+from .models import OpenEdXInstance
 
-from .ansible import run_ansible_playbook, get_inventory_str, get_vars_str
-from .gandi import GandiAPI
-from .openstack import create_sandbox_server, get_nova_client, get_server_public_ip, sleep_until_port_open
+
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 # Tasks #######################################################################
 
 @task()
-def create_sandbox_instance(subdomain, instance_name):
-    nova = get_nova_client()
-    gandi = GandiAPI()
+def provision_sandbox_instance(sub_domain, instance_name):
+    logger.info('Create local instance object')
+    instance, _ = OpenEdXInstance.objects.get_or_create(
+        sub_domain=sub_domain,
+        name=instance_name,
+        ansible_playbook='edx_sandbox',
+    )
 
-    # Create server
-    server = create_sandbox_server(nova, subdomain)
+    logger.info('Running provisioning on %s', instance)
+    _, log = instance.run_provisioning()
+    return log
 
-    # Update DNS
-    server_ip = get_server_public_ip(server)
-    gandi.set_dns_record(type='A', name=subdomain, value=server_ip)
-
-    # Run ansible sandbox playbook
-    sleep_until_port_open(server_ip, 22)
-    log_lines = []
-    with run_ansible_playbook(
-        get_inventory_str(server_ip),
-        get_vars_str(
-            instance_name,
-            '{}.{}'.format(subdomain, settings.INSTANCES_BASE_DOMAIN)),
-        'edx_sandbox.yml',
-        username='admin',
-    ) as processus:
-        for line in processus.stdout:
-            line = line.rstrip()
-            log_lines.append(line)
-            pprint(line)
-
-    return log_lines
+@db_periodic_task(crontab(day='*'))
+def update_instance_on_new_commit():
+    #for instance in Instance.objects.all():
+    pass
