@@ -15,6 +15,7 @@ django.setup()
 
 # Imports #####################################################################
 
+import socket
 import time
 
 from pprint import pprint
@@ -23,6 +24,7 @@ from novaclient.v2.client import Client as NovaClient
 from django.conf import settings
 
 from instance.gandi import GandiAPI
+from ansible import run_ansible_playbook, get_inventory_str, get_vars_str
 
 
 # Functions ###################################################################
@@ -40,12 +42,12 @@ def get_nova_client():
         )
 
 
-def create_server(nova, server_name, flavor_selector, image_selector):
-    flavor = nova.flavors.find(**flavor_selector) #pylint: disable=star-args
-    image = nova.images.find(**image_selector) #pylint: disable=star-args
+def create_server(nova, server_name, flavor_selector, image_selector, key_name=None):
+    flavor = nova.flavors.find(**flavor_selector)
+    image = nova.images.find(**image_selector)
 
     pprint('Creating server "{}":\n\t- Image: {}\n\t- Flavor: {}'.format(server_name, image, flavor))
-    return nova.servers.create(server_name, image, flavor)
+    return nova.servers.create(server_name, image, flavor, key_name=key_name)
 
 
 def delete_servers_by_name(nova, server_name):
@@ -56,7 +58,7 @@ def delete_servers_by_name(nova, server_name):
 
 
 def sleep_until_loaded(nova, server):
-    pprint('Waiting for server to start... {}'.format(server))
+    pprint('Waiting for server {server} to start...'.format(server=server))
     while True:
         # TODO: Add timeout & error handling instance startup
         if server._loaded and server.status == 'ACTIVE': #pylint: disable=protected-access
@@ -68,6 +70,13 @@ def sleep_until_loaded(nova, server):
         server = nova.servers.get(server)
 
     return server
+
+
+def sleep_until_port_open(ip, port):
+    pprint('Waiting for port {port} to open on {ip}...'.format(port=port, ip=ip))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while sock.connect_ex((ip, port)) != 0:
+        time.sleep(1)
 
 
 def get_server_public_address(server):
@@ -90,6 +99,7 @@ def create_sandbox_server(nova, server_name):
         server_name,
         settings.OPENSTACK_SANDBOX_FLAVOR,
         settings.OPENSTACK_SANDBOX_BASE_IMAGE,
+        key_name='antoviaque', # TODO Create the key dynamically
     )
     server = sleep_until_loaded(nova, server)
 
@@ -102,9 +112,26 @@ def main():
     nova = get_nova_client()
     gandi = GandiAPI()
 
-    server = create_sandbox_server(nova, 'sandbox4')
+    # Create server
+    server_name = 'sandbox4'
+    server = create_sandbox_server(nova, server_name)
+
+    # Update DNS
     server_ip = get_server_public_ip(server)
-    gandi.set_dns_record(type='A', name='sandbox4', value=server_ip)
+    gandi.set_dns_record(type='A', name=server_name, value=server_ip)
+
+    # Run ansible
+    sleep_until_port_open(server_ip, 22)
+    with run_ansible_playbook(
+        get_inventory_str(server_ip),
+        get_vars_str(
+            'OpenCraft {}'.format(server_name),
+            '{}.openedxhosting.com'.format(server_name)),
+        'edx_sandbox.yml',
+        username='admin',
+    ) as processus:
+        for line in processus.stdout:
+            pprint(line.rstrip())
 
 if __name__ == "__main__":
     main()

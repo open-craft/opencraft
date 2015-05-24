@@ -47,3 +47,9 @@ GANDI_API_KEY = 'api_key'
 # 3) Get id from URL, eg. 00000000 for https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
 # Needs to be an integer, not a string.
 GANDI_ZONE_ID = 1234324
+
+# Ansible
+# This is the path to the edx-configuration virtual envirement (setup in README)
+ANSIBLE_ENV_BIN_PATH = '/home/ansible/.virtualenvs/edx-configuration/bin'
+
+CONFIGURATION_REPO_PATH = '/home/ansible/edx/configuration'
