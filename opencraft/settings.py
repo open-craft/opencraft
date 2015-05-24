@@ -5,9 +5,10 @@ To configure your instance, use local_settings.py
 See local_settings.sample
 """
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import logging
 import os
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -136,7 +137,7 @@ HUEY = {
     'always_eager': False, # Defaults to False when running via manage.py run_huey
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 4},
+    'consumer_options': {'workers': 4, 'loglevel': logging.INFO,},
 }
 
 # OpenStack

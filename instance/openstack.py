@@ -23,9 +23,6 @@ from novaclient.v2.client import Client as NovaClient
 
 from django.conf import settings
 
-from instance.gandi import GandiAPI
-from ansible import run_ansible_playbook, get_inventory_str, get_vars_str
-
 
 # Functions ###################################################################
 
@@ -110,28 +107,10 @@ def create_sandbox_server(nova, server_name):
 
 def main():
     nova = get_nova_client()
-    gandi = GandiAPI()
+    server = create_sandbox_server(nova, 'sandbox4')
 
-    # Create server
-    server_name = 'sandbox4'
-    server = create_sandbox_server(nova, server_name)
-
-    # Update DNS
     server_ip = get_server_public_ip(server)
-    gandi.set_dns_record(type='A', name=server_name, value=server_ip)
-
-    # Run ansible
     sleep_until_port_open(server_ip, 22)
-    with run_ansible_playbook(
-        get_inventory_str(server_ip),
-        get_vars_str(
-            'OpenCraft {}'.format(server_name),
-            '{}.openedxhosting.com'.format(server_name)),
-        'edx_sandbox.yml',
-        username='admin',
-    ) as processus:
-        for line in processus.stdout:
-            pprint(line.rstrip())
 
 if __name__ == "__main__":
     main()

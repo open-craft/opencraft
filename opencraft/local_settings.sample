@@ -24,6 +24,20 @@ DATABASES = {
 
 # [Optional] Ansible worker queue #############
 
+# Instances will be created as subdomains of this domain
+INSTANCES_BASE_DOMAIN = 'example.com'
+
+# The zone attached to the `INSTANCES_BASE_DOMAIN` in Gandi
+# Get it from the URL when editing the domain zone
+# 1) Login on your domain at Gandi
+# 2) Go to -> Services > Domains > [yourdomain].com > Zone files > Edit the zone
+# 3) Get id from URL, eg. 00000000 for https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
+# Needs to be an integer, not a string.
+GANDI_ZONE_ID = 1234324
+
+# See https://www.gandi.net/admin/api_key
+GANDI_API_KEY = 'api_key'
+
 # Redis connection for task queue
 HUEY['connection'] = {'host': 'localhost', 'port': 6379}
 
@@ -36,20 +50,8 @@ OPENSTACK_REGION = 'region_name'
 #OPENSTACK_SANDBOX_FLAVOR = {'ram': 4096, 'disk': 40}
 #OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
 
-# DNS (Gandi)
-
-# See https://www.gandi.net/admin/api_key
-GANDI_API_KEY = 'api_key'
-
-# Get it from the URL when editing the domain zone
-# 1) Login on your domain at Gandi
-# 2) Go to -> Services > Domains > [yourdomain].com > Zone files > Edit the zone
-# 3) Get id from URL, eg. 00000000 for https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
-# Needs to be an integer, not a string.
-GANDI_ZONE_ID = 1234324
-
 # Ansible
 # This is the path to the edx-configuration virtual envirement (setup in README)
-ANSIBLE_ENV_BIN_PATH = '/home/ansible/.virtualenvs/edx-configuration/bin'
+ANSIBLE_ENV_BIN_PATH = '/home/opencraft/.virtualenvs/edx-configuration/bin'
 
-CONFIGURATION_REPO_PATH = '/home/ansible/edx/configuration'
+CONFIGURATION_REPO_PATH = '/home/opencraft/edx/configuration'
