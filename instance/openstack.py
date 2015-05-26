@@ -48,6 +48,8 @@ def delete_servers_by_name(nova, server_name):
 
 def get_server_public_address(server):
     addresses = server.addresses
+    if not addresses:
+        return None
 
     # TODO: Ensure it is public
     first_address_key = list(addresses.keys())[0]

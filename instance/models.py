@@ -124,7 +124,14 @@ class OpenStackServer(Server):
         '''
         Return one of the public address(es)
         '''
-        return openstack.get_server_public_address(self.os_server)['addr']
+        if not self.openstack_id:
+            return None
+
+        public_addr = openstack.get_server_public_address(self.os_server)
+        if not public_addr:
+            return None
+
+        return public_addr['addr']
 
     def update_status(self):
         '''
