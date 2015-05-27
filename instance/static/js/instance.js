@@ -40,9 +40,9 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
         $scope.selected = Array();
 
-        $scope.select = function(instance) {
-            $scope.selected.instance = instance;
-            console.log('Selected instance:', instance);
+        $scope.select = function(selection_type, value) {
+            $scope.selected[selection_type] = value;
+            console.log('Selected ' + selection_type + ':', value);
         };
     }
 ]);
