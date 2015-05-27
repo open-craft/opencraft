@@ -1,7 +1,7 @@
 
 # Imports #####################################################################
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from rest_framework import viewsets
 
 from .models import Project, Task
@@ -24,12 +24,6 @@ def get_context():
 
 def index(request):
     return render(request, 'task/index.html', get_context())
-
-def detail(request, task_id):
-    context = get_context()
-    context['task'] = get_object_or_404(Task, pk=task_id)
-
-    return render(request, 'task/detail.html', context)
 
 
 # Views - API #################################################################
