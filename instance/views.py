@@ -1,10 +1,29 @@
 
 # Imports #####################################################################
 
+from django.shortcuts import render
 from rest_framework import viewsets
 
 from .models import OpenStackServer, OpenEdXInstance
 from .serializers import OpenStackServerSerializer, OpenEdXInstanceSerializer
+
+
+# Functions - Helpers #########################################################
+
+def get_context():
+    instance_list = OpenEdXInstance.objects.order_by('-created')
+
+    context = {
+        'instance_list': instance_list,
+    }
+
+    return context
+
+
+# Views #######################################################################
+
+def index(request):
+    return render(request, 'instance/index.html', get_context())
 
 
 # Views - API #################################################################
