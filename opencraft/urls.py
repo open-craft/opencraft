@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('api.urls', namespace="api")),
-    url(r'^task/', include('task.urls', namespace="task")),
     url(r'^instance/', include('instance.urls', namespace="instance")),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', 'instance.views.index'),

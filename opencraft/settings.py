@@ -20,8 +20,6 @@ ALLOWED_HOSTS = []
 LOCAL_APPS = (
     'api',
     'instance',
-    'task',
-    'user',
 )
 
 INSTALLED_APPS = (
