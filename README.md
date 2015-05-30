@@ -59,18 +59,22 @@ Ansible worker queue
 
 Install ansible and the configuration repository:
 
+```
    $ cd .. # Go outside of the current repository
    $ git clone https://github.com/edx/configuration.git
    $ cd configuration
    $ mkvirtualenv edx-configuration
    $ pip install -r requirements.txt
+```
 
-Then configure the _Ansible worker queue` section in `local_settings.py`. You will need access to
+Then configure the _Ansible worker queue_ section in `local_settings.py`. You will need access to
 an OpenStack API and a domain hosted on Gandi.
 
 To run the jobs queue:
 
+```
    $ ./manage.py run_huey
+```
 
 
 Debug
