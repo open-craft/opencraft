@@ -15,7 +15,7 @@
 
 <div class="row">
   <!-- Instances List -->
-  <div class="large-4 medium-4 columns">
+  <div class="large-3 medium-3 columns">
     <ul class="side-nav" ng-if="instanceList">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
@@ -30,7 +30,7 @@
   </div>
 
   <!-- Selected instance details -->
-  <div class="large-8 medium-8 columns" ng-if="selected.instance">
+  <div class="large-9 medium-9 columns" ng-if="selected.instance">
     <div class="row">
       <h3>{{ selected.instance.name }}</h3>
       <ul class="breadcrumbs" ng-repeat="server in selected.instance.server_set" ng-if="server.status != 'terminated'">
@@ -48,10 +48,10 @@
     <div class="row">
       <tabset>
         <tab heading="Log">
-          <pre>{{ selected.instance.log }}</pre>
+          <pre class="instance-log">{{ selected.instance.log }}</pre>
         </tab>
         <tab heading="Configuration">
-          <pre>{{ selected.instance.vars_str }}</pre>
+          <pre class="configuration">{{ selected.instance.vars_str }}</pre>
         </tab>
       </tabset>
     </div>

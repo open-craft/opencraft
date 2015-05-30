@@ -2,6 +2,11 @@
     .row {
         max-width: none;
     }
+
+    .configuration,
+    .instance-log {
+        font-size: 0.8em;
+    }
 }
 
 // TODO: Move to application scope
