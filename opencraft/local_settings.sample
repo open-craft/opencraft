@@ -55,3 +55,6 @@ OPENSTACK_REGION = 'region_name'
 ANSIBLE_ENV_BIN_PATH = '/home/opencraft/.virtualenvs/edx-configuration/bin'
 
 CONFIGURATION_REPO_PATH = '/home/opencraft/edx/configuration'
+
+# Websocket server URL
+DRAGON_URL = 'http://localhost:2001/'

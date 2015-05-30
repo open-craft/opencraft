@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load compress %}
+{% load swampdragon_tags %}
 
 {% block title %}Instances{% endblock %}
 
@@ -17,5 +18,7 @@
 {% endblock content %}
 
 {% block body_js %}
+{% swampdragon_settings %}
+<script src="{% static 'swampdragon/js/dist/swampdragon.min.js' %}"></script>
 <script src="{% static "js/instance.js" %}"></script>
 {% endblock body_js %}

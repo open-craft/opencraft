@@ -10,8 +10,10 @@ import novaclient
 import time
 
 from pprint import pformat
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.conf import settings
+from django.db.models.signals import post_save
 from django.db import models
 from django.db.models import Q, query
 from django.template import loader
@@ -191,6 +193,15 @@ class OpenStackServer(Server):
             logger.exception('Error while attempting to terminate server %s: could not find OS server', self)
 
         self._set_status('terminated')
+
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        publish_data('notification', {
+            'type': 'server_update',
+            'server_pk': instance.pk,
+        })
+
+post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)
 
 
 ###############################################################################

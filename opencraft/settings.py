@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'djangular',
     'rest_framework',
     'huey.djhuey',
+    'swampdragon',
     'debug_toolbar',
 ) + LOCAL_APPS
 
@@ -124,6 +125,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissions',
     ],
 }
+
+# SwampDragon settings
+SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
+DRAGON_URL = 'http://localhost:2001/'
 
 # [Optional] Ansible worker queue #############
 

@@ -34,6 +34,28 @@ app.factory('OpenCraftAPI', function(Restangular) {
 });
 
 
+// Function ///////////////////////////////////////////////////////////////////
+
+function updateInstanceList($scope, OpenCraftAPI) {
+    OpenCraftAPI.all("openedxinstance/").getList().then(function(instanceList) {
+        console.log('Updating instance list', instanceList);
+        $scope.instanceList = instanceList;
+
+        if($scope.selected.instance){
+            var updated_instance = null;
+            _.each(instanceList, function(instance) {
+                if(instance.pk === $scope.selected.instance.pk) {
+                    updated_instance = instance;
+                }
+            });
+            $scope.selected.instance = updated_instance;
+        }
+    }, function(response) {
+        console.log('Error from server: ', response);
+    });
+}
+
+
 // Controllers ////////////////////////////////////////////////////////////////
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
@@ -49,11 +71,18 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
 
 app.controller("InstanceList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
+        updateInstanceList($scope, OpenCraftAPI);
 
-        OpenCraftAPI.all("openedxinstance/").getList().then(function(instanceList) {
-            $scope.instanceList = instanceList;
-        }, function(response) {
-            console.log('Error from server: ', response);
+        swampdragon.onChannelMessage(function(channels, message) {
+            console.log('Received websocket message', channels, message.data);
+
+            if(message.data.type === 'server_update') {
+                updateInstanceList($scope, OpenCraftAPI);
+            }
+        });
+
+        swampdragon.ready(function() {
+            swampdragon.subscribe('notifier', 'notification', null);
         });
     }
 ]);

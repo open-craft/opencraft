@@ -23,11 +23,19 @@ Customize the sample settings file:
 Run
 ---
 
-To start the development environment server:
+To start the development environment server, first ensure that your migrations and static files
+are up to date:
 
     $ ./manage.py migrate
     $ ./manage.py collectstatic --noinput
+
+Then run the main web server (Django):
+
     $ ./manage.py runserver_plus
+
+And, in a separate window, the server used to serve websockets (Tornado):
+
+    $ ./server.py
 
 Then go to:
 
