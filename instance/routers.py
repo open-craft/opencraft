@@ -6,7 +6,7 @@ class NotificationRouter(BaseRouter): #pylint: disable=abstract-method
     route_name = 'notifier'
 
     def get_subscription_channels(self, **kwargs):
-        return ['notification']
+        return ['notification', 'log']
 
 
 route_handler.register(NotificationRouter)

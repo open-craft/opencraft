@@ -317,9 +317,15 @@ class AnsibleInstanceMixin(models.Model):
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
         ) as processus:
             for line in processus.stdout:
-                line = line.rstrip()
-                logger.info(line)
-                log_lines.append([line])
+                line = line.decode('utf-8')
+                logger.info(line.rstrip())
+                log_lines.append([line.rstrip()])
+
+                publish_data('log', {
+                    'type': 'instance_ansible_log',
+                    'instance_pk': self.pk,
+                    'log_entry': line,
+                })
 
         return log_lines
 

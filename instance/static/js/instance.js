@@ -60,29 +60,33 @@ function updateInstanceList($scope, OpenCraftAPI) {
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
+        // Selection
         $scope.selected = Array();
-
         $scope.select = function(selection_type, value) {
             $scope.selected[selection_type] = value;
             console.log('Selected ' + selection_type + ':', value);
         };
-    }
-]);
 
-app.controller("InstanceList", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
-    function ($scope, Restangular, OpenCraftAPI, $q) {
+        // Retreive instance list
         updateInstanceList($scope, OpenCraftAPI);
 
+        // Intialize websockets
         swampdragon.onChannelMessage(function(channels, message) {
             console.log('Received websocket message', channels, message.data);
 
             if(message.data.type === 'server_update') {
                 updateInstanceList($scope, OpenCraftAPI);
+            } else if(message.data.type === 'instance_ansible_log') {
+                if($scope.selected.instance && $scope.selected.instance.pk === message.data.instance_pk) {
+                    $scope.$apply(function(){
+                        $scope.selected.instance.log += message.data.log_entry;
+                    });
+                }
             }
         });
-
         swampdragon.ready(function() {
             swampdragon.subscribe('notifier', 'notification', null);
+            swampdragon.subscribe('notifier', 'log', null);
         });
     }
 ]);

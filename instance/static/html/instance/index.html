@@ -15,7 +15,7 @@
 
 <div class="row">
   <!-- Instances List -->
-  <div ng-controller="InstanceList" class="large-4 medium-4 columns">
+  <div class="large-4 medium-4 columns">
     <ul class="side-nav" ng-if="instanceList">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
@@ -48,6 +48,7 @@
     <div class="row">
       <tabset>
         <tab heading="Log">
+          <pre>{{ selected.instance.log }}</pre>
         </tab>
         <tab heading="Configuration">
           <pre>{{ selected.instance.vars_str }}</pre>
