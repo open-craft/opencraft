@@ -79,10 +79,7 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
             } else if(message.data.type === 'instance_log') {
                 if($scope.selected.instance && $scope.selected.instance.pk === message.data.instance_pk) {
                     $scope.$apply(function(){
-                        if(!$scope.selected.instance.log){
-                            $scope.selected.instance.log = '';
-                        }
-                        $scope.selected.instance.log += message.data.log_entry + '\n';
+                        $scope.selected.instance.log_text += message.data.log_entry + '\n';
                     });
                 }
             }

@@ -13,7 +13,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from .. import ansible
 from ..gandi import GandiAPI
-from .logging import LoggerMixin
+from .logging import LoggerInstanceMixin
 
 
 # Constants ###################################################################
@@ -28,7 +28,7 @@ gandi = GandiAPI()
 
 # Models ######################################################################
 
-class Instance(TimeStampedModel, LoggerMixin):
+class Instance(TimeStampedModel):
     '''
     Instance - Group of servers running an application made of multiple services
     '''
@@ -147,7 +147,7 @@ class AnsibleInstanceMixin(models.Model):
 
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
     '''
     A single instance running a set of Open edX services
     '''
