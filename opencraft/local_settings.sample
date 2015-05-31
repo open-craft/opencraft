@@ -50,6 +50,10 @@ OPENSTACK_REGION = 'region_name'
 #OPENSTACK_SANDBOX_FLAVOR = {'ram': 4096, 'disk': 40}
 #OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
 
+# GitHub
+# Get it from https://github.com/settings/tokens
+GITHUB_ACCESS_TOKEN = 'api_key'
+
 # Ansible
 # This is the path to the edx-configuration virtual envirement (setup in README)
 ANSIBLE_ENV_BIN_PATH = '/home/opencraft/.virtualenvs/edx-configuration/bin'
