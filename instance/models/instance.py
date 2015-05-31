@@ -6,8 +6,6 @@ Instance app models - Instance
 
 # Imports #####################################################################
 
-from swampdragon.pubsub_providers.data_publisher import publish_data
-
 from django.conf import settings
 from django.db import models
 from django.template import loader
@@ -15,6 +13,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from .. import ansible
 from ..gandi import GandiAPI
+from .logging import LoggerMixin
 
 
 # Constants ###################################################################
@@ -27,15 +26,9 @@ PROTOCOL_CHOICES = (
 gandi = GandiAPI()
 
 
-# Logging #####################################################################
-
-import logging
-logger = logging.getLogger(__name__)
-
-
 # Models ######################################################################
 
-class Instance(TimeStampedModel):
+class Instance(TimeStampedModel, LoggerMixin):
     '''
     Instance - Group of servers running an application made of multiple services
     '''
@@ -122,7 +115,7 @@ class AnsibleInstanceMixin(models.Model):
         for server in self.server_set.filter(status='booted'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
-        logger.debug('Inventory for instance %s:\n%s', self, inventory_str)
+        self.log('debug', 'Inventory for instance {}:\n{}'.format(self, inventory_str))
         return inventory_str
 
     @property
@@ -132,11 +125,11 @@ class AnsibleInstanceMixin(models.Model):
         '''
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
-        logger.debug('Vars.yml for instance %s:\n%s', self, vars_str)
+        self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
     def run_playbook(self):
-        logger.info('Running playbook "%s" for instance %s...', self.ansible_playbook, self)
+        self.log('info', 'Running playbook "{}" for instance {}...'.format(self.ansible_playbook, self))
         log_lines = []
         with ansible.run_playbook(
             self.inventory_str,
@@ -145,15 +138,9 @@ class AnsibleInstanceMixin(models.Model):
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
         ) as processus:
             for line in processus.stdout:
-                line = line.decode('utf-8')
-                logger.info(line.rstrip())
+                line = line.decode('utf-8').rstrip()
+                self.log('info', line)
                 log_lines.append([line.rstrip()])
-
-                publish_data('log', {
-                    'type': 'instance_ansible_log',
-                    'instance_pk': self.pk,
-                    'log_entry': line,
-                })
 
         return log_lines
 
@@ -169,20 +156,20 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
 
     def run_provisioning(self):
         # Server
-        logger.info('Terminate servers for instance %s...', self)
+        self.log('info', 'Terminate servers for instance {}...'.format(self))
         self.server_set.terminate()
-        logger.info('Start new server for instance %s...', self)
+        self.log('info', 'Start new server for instance {}...'.format(self))
         server = self.server_set.create()
         server.start()
 
         # DNS
-        logger.info('Waiting for IP assignment on server %s...', server)
+        self.log('info', 'Waiting for IP assignment on server {}...'.format(server))
         server.sleep_until_status('active')
-        logger.info('Updating DNS for instance %s...', self)
+        self.log('info', 'Updating DNS for instance {}...'.format(self))
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
 
         # Ansible
-        logger.info('Waiting for SSH to become available on server %s...', server)
+        self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
         server.sleep_until_status('booted')
         ansible_log = self.run_playbook()
 

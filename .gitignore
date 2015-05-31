@@ -55,5 +55,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Vim
+*.swo
+*.swn
+
 # Local configuration
 /opencraft/local_settings.py

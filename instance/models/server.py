@@ -20,6 +20,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from .. import openstack
 from ..utils import is_port_open
+from .logging import LoggerMixin
 
 
 # Constants ###################################################################
@@ -38,12 +39,6 @@ SERVER_STATUS_CHOICES = (
 )
 
 
-# Logging #####################################################################
-
-import logging
-logger = logging.getLogger(__name__)
-
-
 # Models ######################################################################
 
 class ServerQuerySet(query.QuerySet):
@@ -58,7 +53,7 @@ class ServerQuerySet(query.QuerySet):
         return qs
 
 
-class Server(TimeStampedModel):
+class Server(TimeStampedModel, LoggerMixin):
     '''
     A single server VM
     '''
@@ -71,18 +66,25 @@ class Server(TimeStampedModel):
 
     def _set_status(self, status):
         self.status = status
-        logger.info('Changed status for %s: %s', self, self.status)
+        self.log('info', 'Changed status for {}: {}'.format(self, self.status))
         self.save()
         return self.status
 
     def sleep_until_status(self, target_status):
-        logger.info('Waiting for server %s to reach the %s status...', self, target_status)
+        self.log('info', 'Waiting for server {} to reach the {} status...'.format(self, target_status))
         while True:
             self.update_status()
             if self.status == target_status:
                 break
             time.sleep(1)
         return self.status
+
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        publish_data('notification', {
+            'type': 'server_update',
+            'server_pk': instance.pk,
+        })
 
 
 class OpenStackServer(Server):
@@ -131,12 +133,13 @@ class OpenStackServer(Server):
         '''
         # Ensure the 'started' mode by getting the server instance from openstack
         os_server = self.os_server
-        logger.debug('Updating status for %s from nova (currently %s):\n%s',
-                     self, self.status, pformat(os_server.__dict__))
+        self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'\
+                          .format(self, self.status, pformat(os_server.__dict__)))
 
         if self.status == 'started':
             #pylint: disable=protected-access
-            logger.debug('Server %s: loaded="%s" status="%s"', self, os_server._loaded, os_server.status)
+            self.log('debug', 'Server {}: loaded="{}" status="{}"'\
+                              .format(self, os_server._loaded, os_server.status))
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._set_status('active')
 
@@ -153,7 +156,7 @@ class OpenStackServer(Server):
         TODO: Add handling of quota limitations & waiting list
         TODO: Create the key dynamically
         '''
-        logger.info('Starting server %s (status=%s)...', self, self.status)
+        self.log('info', 'Starting server {} (status={})...'.format(self, self.status))
         if self.status == 'new':
             os_server = openstack.create_server(self.nova,
                 self.instance.sub_domain,
@@ -162,13 +165,13 @@ class OpenStackServer(Server):
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
             )
             self.openstack_id = os_server.id
-            logger.info('Server %s got assigned OpenStack id %s', self, self.openstack_id)
+            self.log('info', 'Server {} got assigned OpenStack id {}'.format(self, self.openstack_id))
             self._set_status('started')
         else:
             raise NotImplementedError
 
     def terminate(self):
-        logger.info('Terminating server %s (status=%s)...', self, self.status)
+        self.log('info', 'Terminating server {} (status={})...'.format(self, self.status))
         if self.status == 'terminated':
             return
         elif self.status == 'new':
@@ -178,15 +181,9 @@ class OpenStackServer(Server):
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
-            logger.exception('Error while attempting to terminate server %s: could not find OS server', self)
+            self.log('exception', 'Error while attempting to terminate server {}: could not find OS server'\
+                                  .format(self))
 
         self._set_status('terminated')
 
-    @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
-        publish_data('notification', {
-            'type': 'server_update',
-            'server_pk': instance.pk,
-        })
-
-post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)
+post_save.connect(Server.on_post_save, sender=OpenStackServer)
