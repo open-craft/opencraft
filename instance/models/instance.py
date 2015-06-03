@@ -11,7 +11,7 @@ from django.db import models
 from django.template import loader
 from django_extensions.db.models import TimeStampedModel
 
-from .. import ansible
+from .. import ansible, github
 from ..gandi import GandiAPI
 from .logging import LoggerInstanceMixin
 
@@ -34,7 +34,7 @@ class Instance(TimeStampedModel):
     '''
     sub_domain = models.CharField(max_length=50, blank=False)
     email = models.EmailField(default='contact@example.com')
-    name = models.CharField(max_length=50, blank=False)
+    name = models.CharField(max_length=250, blank=False)
 
     base_domain = models.CharField(max_length=50, default=settings.INSTANCES_BASE_DOMAIN)
     protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
@@ -66,7 +66,7 @@ class VersionControlInstanceMixin(models.Model):
         abstract = True
 
     branch_name = models.CharField(max_length=50, default='master')
-    commit_id = models.CharField(max_length=40, default='master')
+    commit_id = models.CharField(max_length=40, blank=False)
 
 
 class GitHubInstanceMixin(VersionControlInstanceMixin):
@@ -94,6 +94,12 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     def updates_feed(self):
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
+    def set_fork_name(self, fork_name):
+        fork_tuple = github.fork_name2tuple(fork_name)
+        self.github_organization_name = fork_tuple[0]
+        self.github_repository_name = fork_tuple[1]
+        self.save()
+
 
 # Ansible #####################################################################
 
@@ -101,7 +107,7 @@ class AnsibleInstanceMixin(models.Model):
     '''
     An instance that relies on Ansible to deploy its services
     '''
-    ansible_playbook = models.CharField(max_length=50, blank=False)
+    ansible_playbook = models.CharField(max_length=50, default='edx_sandbox')
 
     class Meta:
         abstract = True

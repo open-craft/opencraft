@@ -54,6 +54,14 @@ OPENSTACK_REGION = 'region_name'
 # Get it from https://github.com/settings/tokens
 GITHUB_ACCESS_TOKEN = 'api_key'
 
+# The worker queue will watch for PRs from members of a given organization
+# and automatically spinup new instances when new commits are pushed to the PRs
+#
+# Github fork to watch
+WATCH_FORK = 'edx/edx-platform'
+# Github organization to watch
+WATCH_ORGANIZATION = 'open-craft'
+
 # Ansible
 # This is the path to the edx-configuration virtual envirement (setup in README)
 ANSIBLE_ENV_BIN_PATH = '/home/opencraft/.virtualenvs/edx-configuration/bin'

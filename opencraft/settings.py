@@ -157,6 +157,9 @@ OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
 GANDI_API_KEY = None
 GANDI_ZONE_ID = None
 
+# Watch
+WATCH_FORK = None
+WATCH_ORGANIZATION = None
 
 # Logging #####################################################################
 
@@ -194,7 +197,7 @@ LOGGING = {
         'django': {
             'handlers': ['file', 'console'],
             'propagate': False,
-            'level':'DEBUG',
+            'level':'INFO',
         },
         'opencraft': {
             'handlers': ['file', 'console'],
