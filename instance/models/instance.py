@@ -73,11 +73,8 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     '''
     Instance linked to a GitHub repository
     '''
-    GITHUB_DEFAULT_ORG = 'open-craft'
-    GITHUB_DEFAULT_REPO = 'opencraft'
-
-    github_organization_name = models.CharField(max_length=50, db_index=True, default=GITHUB_DEFAULT_ORG)
-    github_repository_name = models.CharField(max_length=50, db_index=True, default=GITHUB_DEFAULT_REPO)
+    github_organization_name = models.CharField(max_length=50, db_index=True, blank=False)
+    github_repository_name = models.CharField(max_length=50, db_index=True, blank=False)
 
     class Meta:
         abstract = True
@@ -157,9 +154,6 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     '''
     A single instance running a set of Open edX services
     '''
-    GITHUB_DEFAULT_ORG = 'edx'
-    GITHUB_DEFAULT_REPO = 'edx-platform'
-
     def run_provisioning(self):
         # Server
         self.log('info', 'Terminate servers for instance {}...'.format(self))

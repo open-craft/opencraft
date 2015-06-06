@@ -7,6 +7,8 @@
 
 from huey.djhuey import crontab, db_periodic_task, task
 
+from django.conf import settings
+
 from instance.github import get_watched_pr_list
 from .models import OpenEdXInstance
 
@@ -23,8 +25,9 @@ logger = logging.getLogger(__name__)
 def provision_sandbox_instance(fork_name=None, **instance_field_dict):
     logger.info('Create local instance object')
     instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
-    if fork_name:
-        instance.set_fork_name(fork_name)
+    if not fork_name:
+        fork_name = settings.DEFAULT_FORK
+    instance.set_fork_name(fork_name)
 
     logger.info('Running provisioning on %s', instance)
     _, log = instance.run_provisioning()

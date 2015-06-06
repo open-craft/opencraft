@@ -157,8 +157,10 @@ OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
 GANDI_API_KEY = None
 GANDI_ZONE_ID = None
 
-# Watch
-WATCH_FORK = None
+# GitHub - Forks & organizations
+GITHUB_ACCESS_TOKEN = None
+DEFAULT_FORK = 'edx/edx-platform'
+WATCH_FORK = DEFAULT_FORK
 WATCH_ORGANIZATION = None
 
 # Logging #####################################################################
