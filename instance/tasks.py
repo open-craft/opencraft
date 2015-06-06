@@ -37,7 +37,7 @@ def watch_pr():
     # TODO: Update all PRs
     pr=pr_list[0]
     return provision_sandbox_instance(
-        sub_domain='sandbox', # TODO: set to 'pr<number>'
+        sub_domain='pr.sandbox', # TODO: set to 'pr<number>'
         name=pr.name,
         fork_name=pr.fork_name,
         branch_name=pr.branch_name,
