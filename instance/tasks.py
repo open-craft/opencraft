@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def provision_sandbox_instance(fork_name=None, **instance_field_dict):
     logger.info('Create local instance object')
     instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
-    if not fork_name:
+    if fork_name is None:
         fork_name = settings.DEFAULT_FORK
     instance.set_fork_name(fork_name)
 

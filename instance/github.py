@@ -1,17 +1,37 @@
+
+# Imports #####################################################################
+
 import github3
+import requests
 
 from collections import namedtuple
 from django.conf import settings
 
 
+# Constants ###################################################################
+
+GH_PAYLOAD = {
+    'token': settings.GITHUB_ACCESS_TOKEN,
+}
 gh = github3.login(token=settings.GITHUB_ACCESS_TOKEN)
 
+
+# Functions ###################################################################
 
 def get_branch_name_for_pr(pr_number):
     return 'pull/{}/head'.format(pr_number)
 
 def fork_name2tuple(fork_name):
     return fork_name.split('/')
+
+def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
+    url = 'https://api.github.com/repos/{fork_name}/git/refs/{ref_type}/{ref_name}'.format(
+            fork_name=fork_name,
+            ref_type=ref_type,
+            ref_name=ref_name,
+        )
+    r = requests.get(url, params=GH_PAYLOAD)
+    return r.json()['object']['sha']
 
 def get_pr_by_number(fork_name, pr_number):
     '''

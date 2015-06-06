@@ -80,8 +80,12 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         abstract = True
 
     @property
+    def fork_name(self):
+        return '{0.github_organization_name}/{0.github_repository_name}'.format(self)
+
+    @property
     def github_base_url(self):
-        return 'https://github.com/{0.github_organization_name}/{0.github_repository_name}'.format(self)
+        return 'https://github.com/{0.fork_name}'.format(self)
 
     @property
     def repository_url(self):
@@ -91,11 +95,25 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     def updates_feed(self):
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def set_fork_name(self, fork_name):
-        fork_tuple = github.fork_name2tuple(fork_name)
-        self.github_organization_name = fork_tuple[0]
-        self.github_repository_name = fork_tuple[1]
-        self.save()
+    def set_to_branch_tip(self, branch_name=None, commit=True):
+        if branch_name is not None:
+            self.branch_name = branch_name
+        self.log('info', 'Setting instance {} to tip of branch {}'.format(self, self.branch_name))
+        self.commit_id = github.get_commit_id_from_ref(self.fork_name, self.branch_name)
+        if commit:
+            self.save()
+
+    def set_fork_name(self, fork_name, branch_name='master', commit=True):
+        self.log('info', 'Setting fork name for instance {}: {}/{}'.format(self, fork_name, branch_name))
+        fork_org, fork_repo = github.fork_name2tuple(fork_name)
+        if self.github_organization_name != fork_org \
+                or self.github_repository_name != fork_repo \
+                or self.branch_name != branch_name:
+            self.github_organization_name = fork_org
+            self.github_repository_name = fork_repo
+            self.set_to_branch_tip(branch_name=branch_name, commit=False)
+            if commit:
+                self.save()
 
 
 # Ansible #####################################################################
