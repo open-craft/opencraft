@@ -125,6 +125,9 @@ class AnsibleInstanceMixin(models.Model):
     ansible_playbook = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
 
+    # List of attributes to include in the settings output
+    ANSIBLE_SETTINGS = ['ansible_extra_settings']
+
     class Meta:
         abstract = True
 
@@ -147,7 +150,11 @@ class AnsibleInstanceMixin(models.Model):
         '''
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
-        vars_str += '\n\n# Extra settings\n' + self.ansible_extra_settings
+        for attr_name in self.ANSIBLE_SETTINGS:
+            vars_str += '\n\n# Settings: {attr_name}\n{settings_str}'.format(
+                    attr_name=attr_name,
+                    settings_str=getattr(self, attr_name, '')
+                )
         self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
@@ -174,6 +181,20 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     '''
     A single instance running a set of Open edX services
     '''
+    s3_access_key = models.CharField(max_length=50, blank=True)
+    s3_secret_access_key = models.CharField(max_length=50, blank=True)
+    s3_bucket_name = models.CharField(max_length=50, blank=True)
+
+    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+
+    @property
+    def ansible_s3_settings(self):
+        if not self.s3_access_key or not self.s3_secret_access_key or not self.s3_bucket_name:
+            return ''
+
+        template = loader.get_template('instance/ansible/s3.yml')
+        return template.render({'instance': self})
+
     def run_provisioning(self):
         # Server
         self.log('info', 'Terminate servers for instance {}...'.format(self))

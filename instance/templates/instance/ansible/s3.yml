@@ -1,0 +1,12 @@
+AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
+AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
+
+EDXAPP_AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
+EDXAPP_AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
+EDXAPP_AUTH_EXTRA:
+  AWS_STORAGE_BUCKET_NAME: '{{ instance.s3_bucket_name }}'
+
+XQUEUE_AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
+XQUEUE_AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
+XQUEUE_S3_BUCKET: '{{ instance.s3_bucket_name }}'
+XQUEUE_S3_PATH_PREFIX: 'xqueue'
