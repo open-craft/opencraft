@@ -6,6 +6,8 @@ Instance app models - Instance
 
 # Imports #####################################################################
 
+import os
+
 from django.conf import settings
 from django.db import models
 from django.template import loader
@@ -128,7 +130,7 @@ class AnsibleInstanceMixin(models.Model):
     '''
     An instance that relies on Ansible to deploy its services
     '''
-    ansible_playbook = models.CharField(max_length=50, default='edx_sandbox')
+    ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
 
     # List of attributes to include in the settings output
@@ -136,6 +138,10 @@ class AnsibleInstanceMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    @property
+    def ansible_playbook_filename(self):
+        return '{}.yml'.format(self.ansible_playbook_name)
 
     @property
     def inventory_str(self):
@@ -164,13 +170,22 @@ class AnsibleInstanceMixin(models.Model):
         self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
-    def run_playbook(self):
-        self.log('info', 'Running playbook "{}" for instance {}...'.format(self.ansible_playbook, self))
+    def run_playbook(self, playbook_path=None):
+        if playbook_path is None:
+            playbook_path = os.path.join(settings.CONFIGURATION_REPO_PATH, 'playbooks')
+
+        self.log('info', 'Running playbook "{playbook_path}/{playbook_name}" for instance {instance}...'.format(
+            playbook_path=playbook_path,
+            playbook_name=self.ansible_playbook_name,
+            instance=self,
+        ))
+
         log_lines = []
         with ansible.run_playbook(
             self.inventory_str,
             self.vars_str,
-            '{}.yml'.format(self.ansible_playbook),
+            playbook_path,
+            self.ansible_playbook_filename,
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
         ) as processus:
             for line in processus.stdout:

@@ -27,7 +27,7 @@ def string_to_file_path(string):
     return file_path
 
 
-def run_playbook(inventory_str, vars_str, inventory, username='root'):
+def run_playbook(inventory_str, vars_str, playbook_path, playbook_name, username='root'):
     # Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
     return subprocess.Popen(
         [
@@ -37,9 +37,9 @@ def run_playbook(inventory_str, vars_str, inventory, username='root'):
             '-i', string_to_file_path(inventory_str),
             '-e', '@' + string_to_file_path(vars_str),
             '-u', username,
-            inventory,
+            playbook_name,
         ],
         stdout=subprocess.PIPE,
         bufsize=1, # Bufferize one line at a time
-        cwd=os.path.join(settings.CONFIGURATION_REPO_PATH, 'playbooks'),
+        cwd=playbook_path,
     )
