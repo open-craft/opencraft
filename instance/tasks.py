@@ -23,11 +23,16 @@ logger = logging.getLogger(__name__)
 
 @task()
 def provision_sandbox_instance(fork_name=None, **instance_field_dict):
-    logger.info('Create local instance object')
+    logger.info('Creating instance object for %s fork_name=%s', instance_field_dict, fork_name)
     instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
+
+    # Set fork
     if fork_name is None:
         fork_name = settings.DEFAULT_FORK
     instance.set_fork_name(fork_name)
+
+    # Include commit hash in name
+    fork_name = '{instance.fork_name} Sandbox (commit {instance.commit_id})'.format(instance=instance)
 
     logger.info('Running provisioning on %s', instance)
     _, log = instance.run_provisioning()
