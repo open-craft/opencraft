@@ -68,6 +68,12 @@ class VersionControlInstanceMixin(models.Model):
     branch_name = models.CharField(max_length=50, default='master')
     commit_id = models.CharField(max_length=40, blank=False)
 
+    @property
+    def commit_short_id(self):
+        if not self.commit_id:
+            return ''
+        return self.commit_id[:7]
+
 
 class GitHubInstanceMixin(VersionControlInstanceMixin):
     '''

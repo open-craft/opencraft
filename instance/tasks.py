@@ -32,7 +32,8 @@ def provision_sandbox_instance(fork_name=None, **instance_field_dict):
     instance.set_fork_name(fork_name)
 
     # Include commit hash in name
-    fork_name = '{instance.fork_name} Sandbox (commit {instance.commit_id})'.format(instance=instance)
+    instance.name = '{instance.name} Sandbox ({instance.fork_name}/{instance.commit_short_id})'\
+                    .format(instance=instance)
 
     logger.info('Running provisioning on %s', instance)
     _, log = instance.run_provisioning()
