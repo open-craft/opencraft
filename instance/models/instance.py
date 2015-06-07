@@ -123,6 +123,7 @@ class AnsibleInstanceMixin(models.Model):
     An instance that relies on Ansible to deploy its services
     '''
     ansible_playbook = models.CharField(max_length=50, default='edx_sandbox')
+    ansible_extra_settings = models.TextField(blank=True)
 
     class Meta:
         abstract = True
@@ -146,6 +147,7 @@ class AnsibleInstanceMixin(models.Model):
         '''
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
+        vars_str += '\n\n# Extra settings\n' + self.ansible_extra_settings
         self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
