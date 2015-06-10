@@ -111,7 +111,9 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         if commit:
             self.save()
 
-    def set_fork_name(self, fork_name, branch_name='master', commit=True):
+    def set_fork_name(self, fork_name, branch_name=None, commit=True):
+        if branch_name is not None:
+            self.branch_name = branch_name
         self.log('info', 'Setting fork name for instance {}: {}/{}'.format(self, fork_name, branch_name))
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
         if self.github_organization_name != fork_org \
