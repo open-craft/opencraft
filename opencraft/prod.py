@@ -8,4 +8,7 @@ from opencraft.settings import * #pylint: disable=wildcard-import,unused-wildcar
 
 DEBUG = False
 
-from opencraft.local_settings import * #pylint: disable=wildcard-import,unused-wildcard-import
+try:
+    from opencraft.local_settings import * #pylint: disable=wildcard-import,unused-wildcard-import
+except ImportError:
+    pass
