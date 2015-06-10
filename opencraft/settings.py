@@ -1,21 +1,44 @@
 """
 Django settings for opencraft project.
 
-To configure your instance, use local_settings.py
-See local_settings.sample
+To configure your instance, set the configuration variables,
+using the variable name passed to `env()` below
 """
 
+# Imports #####################################################################
+
+import environ
 import logging
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from urllib.parse import urlparse
 
 
-ALLOWED_HOSTS = []
+# Functions ###################################################################
+
+env = environ.Env()
+root = environ.Path(os.path.dirname(__file__), os.pardir)
 
 
-# Application definition
+# Security ####################################################################
+
+# Keep the secret key used in production secret
+SECRET_KEY = env('SECRET_KEY')
+
+ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default='[]')
+
+DEBUG = env.bool('DEBUG', default=False)
+
+
+# Database ####################################################################
+
+# Set via the environment variable `DATABASE_URL`
+DATABASES = {
+    'default': env.db(),
+}
+
+
+# Application definition ######################################################
 
 LOCAL_APPS = (
     'api',
@@ -56,7 +79,7 @@ ROOT_URLCONF = 'opencraft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, p, 'templates') for p in [''] + list(LOCAL_APPS)],
+        'DIRS': [root(p, 'templates') for p in [''] + list(LOCAL_APPS)],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,21 +96,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'opencraft.wsgi.application'
 
 
-# Internationalization
+# Internationalization ########################################################
+
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images) ######################################
+
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATICFILES_FINDERS = (
@@ -98,73 +119,128 @@ STATICFILES_FINDERS = (
 )
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
+    root('static'),
 )
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'build/static')
+STATIC_ROOT = root('build/static')
 STATIC_URL = '/static/'
 
-# Always use IPython for shell_plus
-SHELL_PLUS = "ipython"
-
-# runserver_plus
-RUNSERVERPLUS_SERVER_ADDRESS_PORT = '0.0.0.0:2000'
-
-# Grappelli
-GRAPPELLI_ADMIN_TITLE = 'OpenCraft'
-GRAPPELLI_SWITCH_USER = True
-
-# SASS
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
-# REST framework
+
+# Django-extensions ###########################################################
+
+SHELL_PLUS = "ipython"
+RUNSERVERPLUS_SERVER_ADDRESS_PORT = '127.0.0.1:5000'
+
+
+# Grappelli ###################################################################
+
+GRAPPELLI_ADMIN_TITLE = 'OpenCraft'
+GRAPPELLI_SWITCH_USER = True
+
+
+# REST framework ##############################################################
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions',
     ],
 }
 
-# SwampDragon settings
-SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
-DRAGON_URL = 'http://localhost:2001/'
+# Huey (redis task queue) #####################################################
 
-# [Optional] Ansible worker queue #############
+REDISTOGO_URL = env('REDISTOGO_URL', default='redis://localhost:6379/')
+REDIS_URL = env('REDIS_URL', default=REDISTOGO_URL)
+REDIS_URL_OBJ = urlparse(REDIS_URL)
 
-# Huey (redis task queue)
 HUEY = {
     'backend': 'huey.backends.redis_backend',
     'name': 'opencraft',
-    'connection': {'host': 'localhost', 'port': 6379},
-    'always_eager': False, # Defaults to False when running via manage.py run_huey
+    'connection': {
+        'host': REDIS_URL_OBJ.hostname,
+        'port': REDIS_URL_OBJ.port,
+        'password': REDIS_URL_OBJ.password,
+    },
+    'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 4, 'loglevel': logging.INFO,},
+    'consumer_options': {'workers': 4, 'loglevel': logging.DEBUG,},
 }
 
-# OpenStack
-OPENSTACK_USER = None
-OPENSTACK_PASSWORD = None
-OPENSTACK_TENANT = None
-OPENSTACK_AUTH_URL = None
-OPENSTACK_REGION = None
 
-OPENSTACK_SANDBOX_FLAVOR = {'ram': 4096, 'disk': 40}
-OPENSTACK_SANDBOX_BASE_IMAGE = {'name': 'Ubuntu 12.04'}
+# SwampDragon (websocket) #####################################################
 
-# DNS (Gandi)
-GANDI_API_KEY = None
-GANDI_ZONE_ID = None
+SWAMP_DRAGON_REDIS_HOST = REDIS_URL_OBJ.hostname
+SWAMP_DRAGON_REDIS_PORT = REDIS_URL_OBJ.port
+SWAMP_DRAGON_REDIS_PASS = REDIS_URL_OBJ.password
+SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
+DRAGON_URL = env('DRAGON_URL', default='http://localhost:2001/')
 
-# GitHub - Forks & organizations
-GITHUB_ACCESS_TOKEN = None
-DEFAULT_FORK = 'edx/edx-platform'
-WATCH_FORK = DEFAULT_FORK
-WATCH_ORGANIZATION = None
+
+# OpenStack ###################################################################
+
+OPENSTACK_USER = env('OPENSTACK_USER')
+OPENSTACK_PASSWORD = env('OPENSTACK_PASSWORD')
+OPENSTACK_TENANT = env('OPENSTACK_TENANT')
+OPENSTACK_AUTH_URL = env('OPENSTACK_AUTH_URL')
+OPENSTACK_REGION = env('OPENSTACK_REGION')
+
+OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default='{"ram": 4096, "disk": 40}')
+OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default='{"name": "Ubuntu 12.04"}')
+OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
+OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
+
+
+# DNS (Gandi) #################################################################
+
+# Instances will be created as subdomains of this domain
+INSTANCES_BASE_DOMAIN = env('INSTANCES_BASE_DOMAIN')
+
+# The zone attached to the `INSTANCES_BASE_DOMAIN` in Gandi
+# Get it from the URL when editing the domain zone
+# 1) Login on your domain at Gandi
+# 2) Go to -> Services > Domains > [yourdomain].com > Zone files > Edit the zone
+# 3) Get id from URL, eg. 00000000 for https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
+# Needs to be an integer, not a string.
+GANDI_ZONE_ID = env.int('GANDI_ZONE_ID')
+
+# See https://www.gandi.net/admin/api_key
+GANDI_API_KEY = env('GANDI_API_KEY')
+
+
+# GitHub - Forks & organizations ##############################################
+
+# The worker queue will watch for PRs from members of a given organization
+# and automatically spinup new instances when new commits are pushed to the PRs
+
+# Get it from https://github.com/settings/tokens
+GITHUB_ACCESS_TOKEN = 'api_key'
+
+# Default github repository to pull code from
+DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
+CONFIGURATION_REPO_PATH = env('CONFIGURATION_REPO_PATH')
+
+# Github fork to watch
+WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
+
+# Github organization to watch
+WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
+
+
+# Ansible #####################################################################
+
+# This is the path to the edx-configuration virtual envirement (setup in README)
+ANSIBLE_ENV_BIN_PATH = env('ANSIBLE_ENV_BIN_PATH')
+
 
 # Logging #####################################################################
 
+ADMINS = env.json('ADMINS', default=set())
+
+BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console"])
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -178,12 +254,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'log/main.log',
-            'formatter': 'verbose'
-        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -192,24 +262,32 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['file', 'console'],
+            'handlers': BASE_HANDLERS,
             'propagate': True,
             'level':'DEBUG',
         },
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': BASE_HANDLERS,
             'propagate': False,
             'level':'INFO',
         },
         'opencraft': {
-            'handlers': ['file', 'console'],
+            'handlers': BASE_HANDLERS,
             'propagate': False,
             'level': 'DEBUG',
         },
         'requests': {
-            'handlers': ['file', 'console'],
+            'handlers': BASE_HANDLERS,
             'propagate': False,
             'level': 'WARNING',
         }
     }
 }
+
+if 'file' in BASE_HANDLERS:
+    LOGGING['handlers']['file'] = {
+        'level': 'DEBUG',
+        'class': 'logging.FileHandler',
+        'filename': 'log/main.log',
+        'formatter': 'verbose'
+    }

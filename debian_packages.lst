@@ -1,2 +1,6 @@
+git
+python3-pip
+libffi-dev
 libpq-dev
+python-dev
 redis-server

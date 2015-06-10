@@ -1,7 +1,6 @@
 Babel==1.3
 Django==1.8.2
 Markdown==2.6.2
-SwampDragon==0.4.2.2
 Werkzeug==0.10.4
 argparse==1.3.0
 astroid==1.3.6
@@ -9,10 +8,12 @@ cffi==1.1.0
 cliff==1.12.0
 cmd2==0.6.8
 cryptography==0.9
+dj-static==0.0.6
 django-angular==0.7.14
 django-appconf==1.0.1
 django-compressor==1.5
 django-debug-toolbar==1.3.0
+django-environ==0.3.0
 django-extensions==1.5.5
 django-filter==0.10.0
 django-grappelli==2.6.4
@@ -20,6 +21,8 @@ django-libsass==0.3
 django-zurb-foundation==5.5.0
 djangorestframework==3.1.2
 github3.py==1.0.0a1
+gunicorn==19.3.0
+honcho==0.6.6
 huey==0.4.8
 idna==2.0
 ipdb==0.8
@@ -58,8 +61,12 @@ requests-toolbelt==0.4.0
 six==1.9.0
 sockjs-tornado==1.0.1
 sqlparse==0.1.15
+static3==0.6.1
 stevedore==1.4.0
 tlslite==0.4.8
 tornado==4.2
 tornado-redis==2.4.18
 uritemplate.py==0.3.0
+
+# SwampDragon - Allow to set a password for Redis
+git+https://github.com/antoviaque/swampdragon.git@b9fd8d973daf358954a2c8285910a3ad0b8182ec#egg=SwampDragon

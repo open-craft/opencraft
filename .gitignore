@@ -60,4 +60,4 @@ target/
 *.swn
 
 # Local configuration
-/opencraft/local_settings.py
+.env
