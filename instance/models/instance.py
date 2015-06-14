@@ -220,6 +220,14 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         template = loader.get_template('instance/ansible/s3.yml')
         return template.render({'instance': self})
 
+    @property
+    def studio_sub_domain(self):
+        return 'studio.{}'.format(self.sub_domain)
+
+    @property
+    def studio_domain(self):
+        return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
+
     def run_provisioning(self):
         # Server
         self.log('info', 'Terminate servers for instance {}...'.format(self))
@@ -231,8 +239,10 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         # DNS
         self.log('info', 'Waiting for IP assignment on server {}...'.format(server))
         server.sleep_until_status('active')
-        self.log('info', 'Updating DNS for instance {}...'.format(self))
+        self.log('info', 'Updating DNS for instance {}: LMS at {}...'.format(self, self.domain))
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
+        self.log('info', 'Updating DNS for instance {}: Studio at {}...'.format(self, self.studio_domain))
+        gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
         # Ansible
         self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
