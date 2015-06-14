@@ -167,10 +167,8 @@ class AnsibleInstanceMixin(models.Model):
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
         for attr_name in self.ANSIBLE_SETTINGS:
-            vars_str += '\n\n# Settings: {attr_name}\n{settings_str}'.format(
-                    attr_name=attr_name,
-                    settings_str=getattr(self, attr_name, '')
-                )
+            additional_vars = getattr(self, attr_name)
+            vars_str = ansible.yaml_merge(vars_str, additional_vars)
         self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
