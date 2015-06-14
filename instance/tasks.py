@@ -29,7 +29,8 @@ def provision_sandbox_instance(fork_name=None, **instance_field_dict):
     # Set fork
     if fork_name is None:
         fork_name = settings.DEFAULT_FORK
-    instance.set_fork_name(fork_name)
+    instance.set_fork_name(fork_name, commit=False)
+    instance.set_to_branch_tip()
 
     # Include commit hash in name
     instance.name = '{instance.name} Sandbox ({instance.fork_name}/{instance.commit_short_id})'\
@@ -41,17 +42,14 @@ def provision_sandbox_instance(fork_name=None, **instance_field_dict):
 
 @task()
 def watch_pr():
-    pr_list = get_watched_pr_list()
-
-    # TODO: Update all PRs
-    pr=pr_list[0]
-    return provision_sandbox_instance(
-        sub_domain='pr.sandbox', # TODO: set to 'pr<number>'
-        name=pr.name,
-        fork_name=pr.fork_name,
-        branch_name=pr.branch_name,
-        commit_id=pr.branch_name, # TODO: check if it needs to be updated for existing instances
-    )
+    for pr in get_watched_pr_list():
+        provision_sandbox_instance(
+            sub_domain='pr{number}.sandbox'.format(number=pr.number),
+            name=pr.name,
+            fork_name=pr.fork_name,
+            branch_name=pr.branch_name,
+        )
+    return None
 
 @db_periodic_task(crontab(day='*'))
 def update_instance_on_new_commit():

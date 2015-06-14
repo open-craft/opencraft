@@ -16,8 +16,10 @@ GH_HEADERS = {
 
 # Functions ###################################################################
 
-def get_branch_name_for_pr(pr_number):
-    return 'pull/{}/head'.format(pr_number)
+def get_fork_branch_name_for_pr(pr_from_json):
+    fork_name = pr_from_json['head']['repo']['full_name']
+    branch_name = pr_from_json['head']['ref']
+    return [fork_name, branch_name]
 
 def fork_name2tuple(fork_name):
     return fork_name.split('/')
@@ -33,7 +35,7 @@ def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
 
 def get_pr_by_number(fork_name, pr_number):
     '''
-    Returns a PR() namedtuple based on the github3 PullRequest object obtained from the API
+    Returns a PR() namedtuple based on the reponse from the API
     '''
     url = 'https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
             fork_name=fork_name,
@@ -41,12 +43,14 @@ def get_pr_by_number(fork_name, pr_number):
         )
     r = requests.get(url, headers=GH_HEADERS)
 
+    pr_fork_name, pr_branch_name = get_fork_branch_name_for_pr(r.json())
+
     PR = namedtuple('PR', 'name number fork_name branch_name')
     return PR(
         name = '{pr[title]} ({pr[user][login]})'.format(pr=r.json()),
         number = pr_number,
-        fork_name = fork_name,
-        branch_name = get_branch_name_for_pr(pr_number),
+        fork_name = pr_fork_name,
+        branch_name = pr_branch_name,
     )
 
 def get_pr_list_for_user(user_name, fork_name):

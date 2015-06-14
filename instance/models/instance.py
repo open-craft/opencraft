@@ -68,6 +68,7 @@ class VersionControlInstanceMixin(models.Model):
         abstract = True
 
     branch_name = models.CharField(max_length=50, default='master')
+    ref_type = models.CharField(max_length=50, default='heads')
     commit_id = models.CharField(max_length=40, blank=False)
 
     @property
@@ -103,25 +104,26 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     def updates_feed(self):
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def set_to_branch_tip(self, branch_name=None, commit=True):
+    def set_to_branch_tip(self, branch_name=None, ref_type=None, commit=True):
         if branch_name is not None:
             self.branch_name = branch_name
+        if ref_type is not None:
+            self.ref_type = ref_type
         self.log('info', 'Setting instance {} to tip of branch {}'.format(self, self.branch_name))
-        self.commit_id = github.get_commit_id_from_ref(self.fork_name, self.branch_name)
+        self.commit_id = github.get_commit_id_from_ref(
+                self.fork_name,
+                self.branch_name,
+                ref_type=self.ref_type)
         if commit:
             self.save()
 
-    def set_fork_name(self, fork_name, branch_name=None, commit=True):
-        if branch_name is not None:
-            self.branch_name = branch_name
-        self.log('info', 'Setting fork name for instance {}: {}/{}'.format(self, fork_name, branch_name))
+    def set_fork_name(self, fork_name, commit=True):
+        self.log('info', 'Setting fork name for instance {}: {}'.format(self, fork_name))
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
         if self.github_organization_name != fork_org \
-                or self.github_repository_name != fork_repo \
-                or self.branch_name != branch_name:
+                or self.github_repository_name != fork_repo:
             self.github_organization_name = fork_org
             self.github_repository_name = fork_repo
-            self.set_to_branch_tip(branch_name=branch_name, commit=False)
             if commit:
                 self.save()
 
