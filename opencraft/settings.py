@@ -217,7 +217,7 @@ GANDI_API_KEY = env('GANDI_API_KEY')
 # and automatically spinup new instances when new commits are pushed to the PRs
 
 # Get it from https://github.com/settings/tokens
-GITHUB_ACCESS_TOKEN = 'api_key'
+GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 
 # Default github repository to pull code from
 DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
