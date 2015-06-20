@@ -9,25 +9,18 @@ import os
 import subprocess
 import yaml
 
-from tempfile import mkstemp
+from tempfile import mkdtemp, mkstemp
 
 from django.conf import settings
 
 
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 # Functions ###################################################################
-
-def string_to_file_path(string):
-    """
-    Store a string in a temporary file, to pass on to a third-party shell command as a file parameter
-    Returns the file path string
-    """
-    fd, file_path = mkstemp(text=True)
-    fp = os.fdopen(fd, 'w')
-    fp.write(string)
-    fp.close()
-    # TODO: Delete the temporary file after use
-    return file_path
-
 
 def yaml_merge(yaml_str1, yaml_str2):
     """
@@ -45,19 +38,49 @@ def yaml_merge(yaml_str1, yaml_str2):
     return yaml.dump(result_dict)
 
 
-def run_playbook(inventory_str, vars_str, playbook_path, playbook_name, username='root'):
+def string_to_file_path(string):
+    """
+    Store a string in a temporary file, to pass on to a third-party shell command as a file parameter
+    Returns the file path string
+    """
+    fd, file_path = mkstemp(text=True)
+    fp = os.fdopen(fd, 'w')
+    fp.write(string)
+    fp.close()
+    # TODO: Delete the temporary file after use
+    return file_path
+
+
+def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, playbook_name, username='root'):
     # Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
+    venv_path = mkdtemp()
+    create_venv_cmd = 'virtualenv -p {python_path} {venv_path}'.format(
+        python_path=settings.ANSIBLE_PYTHON_PATH,
+        venv_path=venv_path,
+    )
+
+    venv_python_path = os.path.join(venv_path, 'bin/python')
+    install_requirements_cmd = '{python} -u {pip} install -r {requirements_path}'.format(
+        python=venv_python_path,
+        pip=os.path.join(venv_path, 'bin/pip'),
+        requirements_path=requirements_path,
+    )
+
+    run_playbook_cmd = '{python} -u {ansible} -i {inventory_path} -e @{vars_path} -u {user} {playbook}'.format(
+        python=venv_python_path,
+        ansible=os.path.join(venv_path, 'bin/ansible-playbook'),
+        inventory_path=string_to_file_path(inventory_str),
+        vars_path=string_to_file_path(vars_str),
+        user=username,
+        playbook=playbook_name,
+    )
+
+    cmd = ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
+    logger.info('Running: %s', cmd)
     return subprocess.Popen(
-        [
-            os.path.join(settings.ANSIBLE_ENV_BIN_PATH, 'python'),
-            '-u',
-            os.path.join(settings.ANSIBLE_ENV_BIN_PATH, 'ansible-playbook'),
-            '-i', string_to_file_path(inventory_str),
-            '-e', '@' + string_to_file_path(vars_str),
-            '-u', username,
-            playbook_name,
-        ],
+        cmd,
         stdout=subprocess.PIPE,
         bufsize=1, # Bufferize one line at a time
         cwd=playbook_path,
+        shell=True,
     )

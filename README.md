@@ -32,23 +32,8 @@ $ pip install -r requirements.txt
 Configure
 ---------
 
-### Configuration via environment
-
 Create an `.env` file at the root of the repository or set environment variables, customizing the
 settings from `opencraft/settings.py` which are loaded via `env()`.
-
-### Ansible worker queue
-
-Install ansible and the configuration repository:
-
-```
-$ deactivate && mkvirtualenv -p /usr/bin/python edx-platform # It needs to be Python2 for ansible
-$ cd .. # Go outside of the current repository
-$ git clone https://github.com/edx/configuration.git
-$ cd configuration
-$ mkvirtualenv edx-configuration
-$ pip install -r requirements.txt
-```
 
 
 Run

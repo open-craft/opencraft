@@ -221,7 +221,6 @@ GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 
 # Default github repository to pull code from
 DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
-CONFIGURATION_REPO_PATH = env('CONFIGURATION_REPO_PATH')
 
 # Github fork to watch
 WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
@@ -232,8 +231,8 @@ WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
 
 # Ansible #####################################################################
 
-# This is the path to the edx-configuration virtual envirement (setup in README)
-ANSIBLE_ENV_BIN_PATH = env('ANSIBLE_ENV_BIN_PATH')
+# Ansible requires a Python 2 interpreter
+ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
 
 
 # Logging #####################################################################

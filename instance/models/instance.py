@@ -15,6 +15,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from .. import ansible, github
 from ..gandi import GandiAPI
+from ..repo import clone_configuration_repo
 from .logging import LoggerInstanceMixin
 
 
@@ -172,18 +173,23 @@ class AnsibleInstanceMixin(models.Model):
         self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
         return vars_str
 
-    def run_playbook(self, playbook_path=None):
-        if playbook_path is None:
-            playbook_path = os.path.join(settings.CONFIGURATION_REPO_PATH, 'playbooks')
+    def run_playbook(self, playbook_name=None):
+        if playbook_name is None:
+            playbook_name = self.ansible_playbook_name
+
+        configuration_repo_path = clone_configuration_repo()
+        playbook_path = os.path.join(configuration_repo_path, 'playbooks')
+        requirements_path = os.path.join(configuration_repo_path, 'requirements.txt')
 
         self.log('info', 'Running playbook "{playbook_path}/{playbook_name}" for instance {instance}...'.format(
             playbook_path=playbook_path,
-            playbook_name=self.ansible_playbook_name,
+            playbook_name=playbook_name,
             instance=self,
         ))
 
         log_lines = []
         with ansible.run_playbook(
+            requirements_path,
             self.inventory_str,
             self.vars_str,
             playbook_path,
