@@ -35,7 +35,7 @@ def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
     return r.json()['object']['sha']
 
 def get_settings_from_pr_body(pr_body):
-    m = re.search("**Settings**\n+```.+\n((?:\n.+)*)```", pr_body)
+    m = re.search("..Settings..\n+```.+\n((?:\n.+)*)```", pr_body)
     if m:
         return m.groups()[0]
     else:
@@ -54,7 +54,7 @@ def get_pr_by_number(fork_name, pr_number):
 
     pr_fork_name, pr_branch_name = get_fork_branch_name_for_pr(r_pr)
 
-    PR = namedtuple('PR', 'name body number fork_name branch_name')
+    PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings')
     pr = PR(
         name = '{pr[title]} ({pr[user][login]})'.format(pr=r_pr),
         number = pr_number,
@@ -63,7 +63,6 @@ def get_pr_by_number(fork_name, pr_number):
         body = r_pr['body'],
         extra_settings = get_settings_from_pr_body(r_pr['body']),
     )
-    import ipdb;ipdb.set_trace()
     return pr
 
 def get_pr_list_for_user(user_name, fork_name):

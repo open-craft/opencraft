@@ -48,7 +48,7 @@ def watch_pr():
             name=pr.name,
             fork_name=pr.fork_name,
             branch_name=pr.branch_name,
-            extra_ansible_settings=pr.extra_settings,
+            ansible_extra_settings=pr.extra_settings,
         )
     return None
 
