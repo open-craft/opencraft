@@ -39,17 +39,27 @@ settings from `opencraft/settings.py` which are loaded via `env()`.
 Run
 ---
 
+To run the development server:
+
+```
+$ make rundev
+```
+
+Then go to:
+
+* User interface: [http://localhost:5000/](http://localhost:2000/)
+* API: [http://localhost:5000/api/](http://localhost:2000/api/)
+* Admin: [http://localhost:5000/admin/](http://localhost:2000/admin/)
+
 To run the production server:
 
 ```
 $ make run
 ```
 
-Or for the development server:
 
-```
-$ make rundev
-```
+Processus description
+---------------------
 
 This runs three processus via honcho, which reads `Procfile` or `Procfile.dev` and loads the
 environment from the `.env` file:
@@ -59,14 +69,32 @@ environment from the `.env` file:
 * *worker*: runs asynchronous jobs (Huey)
 
 Important: the Werkzeug debugger started by the development server allows remote execution
-of Python commands. It should *not* be run in production. Also, the Web server started in the
-development environment also doesn't require to run collectstatic.
+of Python commands. It should *not* be run in production.
 
-Then go to:
 
-* User interface: [http://localhost:5000/](http://localhost:2000/)
-* API: [http://localhost:5000/api/](http://localhost:2000/api/)
-* Admin: [http://localhost:5000/admin/](http://localhost:2000/admin/)
+Static assets collection
+------------------------
+
+The Web server started in the development environment also doesn't require to run collectstatic
+after each change.
+
+The production environment automatically runs collectstatic on startup, but you can also run it
+manually:
+
+```
+$ make collectstastic
+```
+
+
+Migrations
+----------
+
+Similarly, migrations are run automatically on startup - for both the development and production
+environments. To run it manually:
+
+```
+$ make migrate
+```
 
 
 Running the tests
@@ -105,4 +133,14 @@ In [2]: result = provision_sandbox_instance(
     s3_secret_access_key='XXX',
     s3_bucket_name='sandbox-edxapp-storage',
 )
+```
+
+
+Manage.py
+---------
+
+You can also access the Django `manage.py` command directly, using honcho to load the environment:
+
+```
+$ honcho run ./manage.py config
 ```
