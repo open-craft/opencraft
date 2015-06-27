@@ -1,15 +1,9 @@
-Babel==1.3
-Django==1.8.2
-GitPython==1.0.1
-Markdown==2.6.2
-PyYAML==3.11
-SwampDragon==0.4.2.2
-Werkzeug==0.10.4
-argparse==1.3.0
 astroid==1.3.6
+Babel==1.3
 cliff==1.12.0
 cmd2==0.6.8
 dj-static==0.0.6
+Django==1.8.2
 django-angular==0.7.14
 django-appconf==1.0.1
 django-compressor==1.5
@@ -23,6 +17,7 @@ django-zurb-foundation==5.5.0
 djangorestframework==3.1.2
 dodgy==0.1.7
 gitdb==0.6.4
+GitPython==1.0.1
 gunicorn==19.3.0
 honcho==0.6.6
 huey==0.4.8
@@ -32,6 +27,7 @@ iso8601==0.1.10
 jira==0.47
 libsass==0.8.1
 logilab-common==0.63.2
+Markdown==2.6.2
 mccabe==0.3.1
 msgpack-python==0.4.6
 netaddr==0.7.14
@@ -61,6 +57,7 @@ python-keystoneclient==1.4.0
 python-neutronclient==2.5.0
 python-novaclient==2.25.0
 pytz==2015.4
+PyYAML==3.11
 redis==2.10.3
 requests==2.7.0
 requests-oauthlib==0.5.0
@@ -73,7 +70,9 @@ sockjs-tornado==1.0.1
 sqlparse==0.1.15
 static3==0.6.1
 stevedore==1.4.0
+SwampDragon==0.4.2.2
 tlslite==0.4.8
 tornado==4.2
 tornado-redis==2.4.18
 virtualenv==13.0.3
+Werkzeug==0.10.4
