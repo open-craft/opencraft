@@ -75,6 +75,16 @@ Then go to:
 * Admin: [http://localhost:5000/admin/](http://localhost:2000/admin/)
 
 
+Running the tests
+-----------------
+
+Run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
+
+```
+$ make test
+```
+
+
 Debug
 -----
 

@@ -21,6 +21,7 @@ django-grappelli==2.6.4
 django-libsass==0.3
 django-zurb-foundation==5.5.0
 djangorestframework==3.1.2
+dodgy==0.1.7
 gitdb==0.6.4
 gunicorn==19.3.0
 honcho==0.6.6
@@ -31,6 +32,7 @@ iso8601==0.1.10
 jira==0.47
 libsass==0.8.1
 logilab-common==0.63.2
+mccabe==0.3.1
 msgpack-python==0.4.6
 netaddr==0.7.14
 netifaces==0.10.4
@@ -41,9 +43,18 @@ oslo.i18n==1.6.0
 oslo.serialization==1.5.0
 oslo.utils==1.5.0
 pbr==1.0.1
+pep257==0.5.0
+pep8==1.6.2
+pep8-naming==0.3.2
 prettytable==0.7.2
+prospector==0.10.2
 psycopg2==2.6
+pyflakes==0.9.2
 pylint==1.4.3
+pylint-celery==0.3
+pylint-common==0.2.1
+pylint-django==0.6.1
+pylint-plugin-utils==0.2.3
 pyparsing==2.0.3
 python-dateutil==2.4.2
 python-keystoneclient==1.4.0
@@ -54,6 +65,8 @@ redis==2.10.3
 requests==2.7.0
 requests-oauthlib==0.5.0
 requests-toolbelt==0.4.0
+requirements-detector==0.4
+setoptconf==0.2.0
 six==1.9.0
 smmap==0.9.0
 sockjs-tornado==1.0.1
