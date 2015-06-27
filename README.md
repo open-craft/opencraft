@@ -39,33 +39,27 @@ settings from `opencraft/settings.py` which are loaded via `env()`.
 Run
 ---
 
-First ensure that your migrations and static files are up to date:
+To run the production server:
 
 ```
-$ honcho run ./manage.py migrate
-$ honcho run ./manage.py collectstatic --noinput
-```
-
-Then to run the production server:
-
-```
-$ honcho start
+$ make run
 ```
 
 Or for the development server:
 
 ```
-$ honcho start -f Procfile.dev
+$ make rundev
 ```
 
-This runs three processus (via honcho which reads `Procfile`):
+This runs three processus via honcho, which reads `Procfile` or `Procfile.dev` and loads the
+environment from the `.env` file:
 
 * *web*: the main HTTP server (Django - Werkzeug debugger in dev, gunicorn in prod)
 * *websocket*: the websocket server (Tornado)
 * *worker*: runs asynchronous jobs (Huey)
 
-Important: the Werkzeug debugger started by `Procfile.dev` allows remote execution of Python 
-commands. It should *not* be run in production. Also, the Web server started in the
+Important: the Werkzeug debugger started by the development server allows remote execution
+of Python commands. It should *not* be run in production. Also, the Web server started in the
 development environment also doesn't require to run collectstatic.
 
 Then go to:
@@ -91,7 +85,7 @@ Debug
 To access the console, you can use `shell_plus`:
 
 ```
-$ honcho run ./manage.py shell_plus
+$ make shell
 
 Python 3.4.3 (default, Mar 26 2015, 22:03:40)
 Type "copyright", "credits" or "license" for more information.
