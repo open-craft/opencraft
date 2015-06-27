@@ -175,7 +175,6 @@ HUEY = {
 
 SWAMP_DRAGON_REDIS_HOST = REDIS_URL_OBJ.hostname
 SWAMP_DRAGON_REDIS_PORT = REDIS_URL_OBJ.port
-SWAMP_DRAGON_REDIS_PASS = REDIS_URL_OBJ.password
 SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
 DRAGON_URL = env('DRAGON_URL', default='http://localhost:2001/')
 
