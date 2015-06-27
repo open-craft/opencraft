@@ -19,5 +19,4 @@ shell:
 	honcho run ./manage.py shell_plus
 
 test:
-	prospector --uses django
-	honcho run ./manage.py test
+	prospector -i migrations --profile opencraft

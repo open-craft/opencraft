@@ -28,5 +28,8 @@ import socket
 # Functions ###################################################################
 
 def is_port_open(ip, port):
+    """
+    Check if the port is open on the provided ip
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     return sock.connect_ex((ip, port)) == 0

@@ -28,7 +28,7 @@ from swampdragon.route_handler import BaseRouter
 
 # Routers #####################################################################
 
-class NotificationRouter(BaseRouter): #pylint: disable=abstract-method
+class NotificationRouter(BaseRouter): #pylint: disable=abstract-method,missing-docstring
     route_name = 'notifier'
 
     def get_subscription_channels(self, **kwargs):

@@ -28,16 +28,19 @@ from .models import InstanceLogEntry, OpenStackServer, OpenEdXInstance, ServerLo
 
 # ModelAdmins #################################################################
 
-class InstanceLogEntryAdmin(admin.ModelAdmin):
+class InstanceLogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('instance', 'created', 'level', 'text', 'modified')
 
-class OpenStackServerAdmin(admin.ModelAdmin):
+
+class OpenStackServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('openstack_id', 'status', 'instance', 'created', 'modified')
 
-class OpenEdXInstanceAdmin(admin.ModelAdmin):
+
+class OpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('sub_domain', 'base_domain', 'name', 'created', 'modified')
 
-class ServerLogEntryAdmin(admin.ModelAdmin):
+
+class ServerLogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('instance', 'server', 'created', 'level', 'text', 'modified')
 
 admin.site.register(InstanceLogEntry, InstanceLogEntryAdmin)

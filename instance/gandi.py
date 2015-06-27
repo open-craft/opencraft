@@ -43,36 +43,64 @@ class GandiAPI():
         self.client = xmlrpc.client.ServerProxy('https://rpc.gandi.net/xmlrpc/')
 
     @property
-    def api_key(self):
+    def api_key(self): #pylint: disable=no-self-use
+        """
+        Gandi API key
+        """
         return settings.GANDI_API_KEY
 
     @property
-    def zone_id(self):
+    def zone_id(self): #pylint: disable=no-self-use
+        """
+        Gandi Zone ID of the domain
+        """
         return settings.GANDI_ZONE_ID
 
     @property
     def client_zone(self):
+        """
+        Client domain zone API endpoint
+        """
         return self.client.domain.zone
 
     def get_dns_records(self):
+        """
+        Returns the current DNS records of the domain
+        """
         return self.client_zone.record.list(self.api_key, self.zone_id, 0)
 
     def delete_dns_record(self, zone_version_id, record_name):
+        """
+        Delete a record from a version of the domain
+        """
         self.client_zone.record.delete(self.api_key, self.zone_id, zone_version_id, {
-            'type' : ['A', 'CNAME'],
+            'type': ['A', 'CNAME'],
             'name': record_name,
         })
 
     def add_dns_record(self, zone_version_id, record):
+        """
+        Add a DNS record to a version of the domain
+        """
         return self.client_zone.record.add(self.api_key, self.zone_id, zone_version_id, record)
 
     def create_new_zone_version(self):
+        """
+        Create a new version of the domain, based on the current version
+        Returns the `version_id` of the version
+        """
         return self.client_zone.version.new(self.api_key, self.zone_id)
 
     def set_zone_version(self, zone_version_id):
+        """
+        Get a version of the domain per id
+        """
         return self.client_zone.version.set(self.api_key, self.zone_id, zone_version_id)
 
     def set_dns_record(self, **record):
+        """
+        Set a DNS record - Automatically create a new version, update with the change & activate
+        """
         if 'ttl' not in record.keys():
             record['ttl'] = 1200
 

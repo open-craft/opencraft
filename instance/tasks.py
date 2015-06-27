@@ -22,7 +22,7 @@ Worker tasks for instance hosting & management
 
 # Imports #####################################################################
 
-from huey.djhuey import crontab, db_periodic_task, task
+from huey.djhuey import task
 
 from django.conf import settings
 
@@ -40,6 +40,9 @@ logger = logging.getLogger(__name__)
 
 @task()
 def provision_sandbox_instance(fork_name=None, **instance_field_dict):
+    """
+    (Re-)create sandbox instance & run provisioning on it
+    """
     logger.info('Creating instance object for %s fork_name=%s', instance_field_dict, fork_name)
     instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
 
@@ -57,8 +60,13 @@ def provision_sandbox_instance(fork_name=None, **instance_field_dict):
     _, log = instance.run_provisioning()
     return log
 
+
 @task()
 def watch_pr():
+    """
+    Automatically create or recreate sandboxes for each of the open PRs from the watched
+    organization on the watched repository
+    """
     for pr in get_watched_pr_list():
         provision_sandbox_instance(
             sub_domain='pr{number}.sandbox'.format(number=pr.number),
@@ -68,8 +76,3 @@ def watch_pr():
             ansible_extra_settings=pr.extra_settings,
         )
     return None
-
-@db_periodic_task(crontab(day='*'))
-def update_instance_on_new_commit():
-    #for instance in Instance.objects.all():
-    pass

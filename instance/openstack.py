@@ -40,15 +40,18 @@ def get_nova_client():
     Instanciate a python novaclient.Client() object with proper credentials
     """
     return NovaClient(
-            settings.OPENSTACK_USER,
-            settings.OPENSTACK_PASSWORD,
-            settings.OPENSTACK_TENANT,
-            settings.OPENSTACK_AUTH_URL,
-            region_name=settings.OPENSTACK_REGION,
-        )
+        settings.OPENSTACK_USER,
+        settings.OPENSTACK_PASSWORD,
+        settings.OPENSTACK_TENANT,
+        settings.OPENSTACK_AUTH_URL,
+        region_name=settings.OPENSTACK_REGION,
+    )
 
 
 def create_server(nova, server_name, flavor_selector, image_selector, key_name=None):
+    """
+    Create a VM via nova
+    """
     flavor = nova.flavors.find(**flavor_selector)
     image = nova.images.find(**image_selector)
 
@@ -57,6 +60,9 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
 
 
 def delete_servers_by_name(nova, server_name):
+    """
+    Delete all servers with `server_name`
+    """
     for server in nova.servers.list():
         if server.name == server_name:
             logger.info('deleting server %s', server)
@@ -64,6 +70,9 @@ def delete_servers_by_name(nova, server_name):
 
 
 def get_server_public_address(server):
+    """
+    Retreive the public IP of `server`
+    """
     addresses = server.addresses
     if not addresses:
         return None

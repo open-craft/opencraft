@@ -185,7 +185,7 @@ HUEY = {
     'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 4, 'loglevel': logging.DEBUG,},
+    'consumer_options': {'workers': 4, 'loglevel': logging.DEBUG},
 }
 
 
@@ -262,8 +262,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -280,12 +280,12 @@ LOGGING = {
         '': {
             'handlers': BASE_HANDLERS,
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
         'django': {
             'handlers': BASE_HANDLERS,
             'propagate': False,
-            'level':'INFO',
+            'level': 'INFO',
         },
         'opencraft': {
             'handlers': BASE_HANDLERS,

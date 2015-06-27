@@ -69,7 +69,11 @@ def string_to_file_path(string):
 
 
 def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, playbook_name, username='root'):
-    # Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
+    """
+    Runs ansible-playbook in a dedicated venv
+
+    Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
+    """
     venv_path = mkdtemp()
     create_venv_cmd = 'virtualenv -p {python_path} {venv_path}'.format(
         python_path=settings.ANSIBLE_PYTHON_PATH,

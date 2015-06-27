@@ -22,11 +22,15 @@ Instance app models - Logging
 
 # Imports #####################################################################
 
+import logging
+
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.db import models
 from django.db.models import Q, query
 from django_extensions.db.models import TimeStampedModel
+
+import instance #pylint: disable=unused-import
 
 
 # Constants ###################################################################
@@ -41,20 +45,21 @@ LOG_LEVEL_CHOICES = (
 
 PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error')
 
+__all__ = ['InstanceLogEntry', 'ServerLogEntry']
+
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 
 # Models ######################################################################
 
 class LogEntryQuerySet(query.QuerySet):
-    '''
+    """
     Additional methods for LogEntry querysets
     Also used as the standard manager for the model (`LogEntry.objects`)
-    '''
+    """
     def create(self, publish=True, *args, **kwargs):
         log_entry = super().create(*args, **kwargs)
         if publish:
@@ -62,9 +67,9 @@ class LogEntryQuerySet(query.QuerySet):
 
 
 class LogEntry(TimeStampedModel):
-    '''
+    """
     Single log entry
-    '''
+    """
     text = models.TextField()
     level = models.CharField(max_length=5, db_index=True, default='info', choices=LOG_LEVEL_CHOICES)
 
@@ -78,9 +83,22 @@ class LogEntry(TimeStampedModel):
 
     @property
     def level_integer(self):
+        """
+        Integer code for the log entry level
+        """
         return logging.__dict__[self.level.upper()]
 
+
+class InstanceLogEntry(LogEntry):
+    """
+    Single log entry for instances
+    """
+    instance = models.ForeignKey(instance.models.instance.OpenEdXInstance, related_name='logentry_set')
+
     def publish(self):
+        """
+        Publish the log entry to the messaging system, broadcasting it to subscribers
+        """
         logger.log(self.level_integer, self.text)
 
         if self.level in PUBLISHED_LOG_LEVEL_SET:
@@ -91,64 +109,65 @@ class LogEntry(TimeStampedModel):
             })
 
 
-class InstanceLogEntry(LogEntry):
-    '''
-    Single log entry for instances
-    '''
-    instance = models.ForeignKey('OpenEdXInstance', related_name='logentry_set')
-
-
 class ServerLogEntry(LogEntry):
-    '''
+    """
     Single log entry for servers
-    '''
-    server = models.ForeignKey('OpenStackServer', related_name='logentry_set')
+    """
+    server = models.ForeignKey(instance.models.server.OpenStackServer, related_name='logentry_set')
 
     @property
     def instance(self):
+        """
+        Instance of the server
+        """
         return self.server.instance
 
 
 class LoggerMixin(models.Model):
-    '''
+    """
     Logging facilities - Logs stored on the model & shared with the client via websocket
-    '''
+    """
     class Meta:
         abstract = True
 
     def log(self, level, text, **kwargs):
+        """
+        Log an entry text at a specified level
+        """
         self.logentry_set.create(level=level, text=text.rstrip(), **kwargs)
 
 
 class LoggerInstanceMixin(LoggerMixin):
-    '''
+    """
     Logging facilities - Instances
-    '''
+    """
     class Meta:
         abstract = True
 
     @property
     def log_text(self):
-        '''
+        """
         Combines the instance and server log outputs in chronological order
         Currently only supports one non-terminated server at a time
         Returned as a text string
-        '''
+        """
         current_server = self.server_set.get(~Q(status='terminated'))
         server_logentry_set = current_server.logentry_set.filter(level__in=PUBLISHED_LOG_LEVEL_SET)\
                                                          .order_by('pk')\
                                                          .iterator()
         instance_logentry_set = self.logentry_set.filter(level__in=PUBLISHED_LOG_LEVEL_SET)\
-                                                         .order_by('pk')\
-                                                         .iterator()
+                                                 .order_by('pk')\
+                                                 .iterator()
 
         def next_instance_logentry():
+            """ Get the next log entry from the instance logs iterator """
             try:
                 return next(instance_logentry_set)
             except StopIteration:
                 return None
 
         def next_server_logentry():
+            """ Get the next log entry from the server logs iterator """
             try:
                 return next(server_logentry_set)
             except StopIteration:

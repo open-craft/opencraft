@@ -38,6 +38,8 @@ from .. import openstack
 from ..utils import is_port_open
 from .logging import LoggerMixin
 
+from instance.models import instance #pylint: disable=unused-import
+
 
 # Constants ###################################################################
 
@@ -54,15 +56,20 @@ SERVER_STATUS_CHOICES = (
     ('terminated', 'Terminated - Stopped forever'),
 )
 
+__all__ = ['OpenStackServer']
+
 
 # Models ######################################################################
 
 class ServerQuerySet(query.QuerySet):
-    '''
+    """
     Additional methods for server querysets
     Also used as the standard manager for the Server model (`Server.objects`)
-    '''
+    """
     def terminate(self, *args, **kwargs):
+        """
+        Terminate the servers from the queryset
+        """
         qs = self.filter(~Q(status='terminated'), *args, **kwargs)
         for server in qs:
             server.terminate()
@@ -70,9 +77,9 @@ class ServerQuerySet(query.QuerySet):
 
 
 class Server(TimeStampedModel, LoggerMixin):
-    '''
+    """
     A single server VM
-    '''
+    """
     status = models.CharField(max_length=10, default='new', choices=SERVER_STATUS_CHOICES, db_index=True)
 
     objects = ServerQuerySet().as_manager()
@@ -81,12 +88,18 @@ class Server(TimeStampedModel, LoggerMixin):
         abstract = True
 
     def _set_status(self, status):
+        """
+        Update the current status variable, to be called when a status change is detected
+        """
         self.status = status
         self.log('info', 'Changed status for {}: {}'.format(self, self.status))
         self.save()
         return self.status
 
     def sleep_until_status(self, target_status):
+        """
+        Sleep in a loop until the server reaches the specified status
+        """
         self.log('info', 'Waiting for server {} to reach the {} status...'.format(self, target_status))
         while True:
             self.update_status()
@@ -96,18 +109,27 @@ class Server(TimeStampedModel, LoggerMixin):
         return self.status
 
     @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
+    def on_post_save(sender, instance_obj, created, **kwargs):
+        """
+        Called when an instance is saved
+        """
         publish_data('notification', {
             'type': 'server_update',
-            'server_pk': instance.pk,
+            'server_pk': instance_obj.pk,
         })
+
+    def update_status(self):
+        """
+        Check the current status and update it if it has changed
+        """
+        raise NotImplementedError
 
 
 class OpenStackServer(Server):
-    '''
+    """
     A Server VM hosted on an OpenStack cloud
-    '''
-    instance = models.ForeignKey('OpenEdXInstance', related_name='server_set')
+    """
+    instance = models.ForeignKey(instance.OpenEdXInstance, related_name='server_set')
     openstack_id = models.CharField(max_length=250, db_index=True)
 
     def __init__(self, *args, **kwargs):
@@ -122,6 +144,9 @@ class OpenStackServer(Server):
 
     @property
     def os_server(self):
+        """
+        OpenStack nova server API endpoint
+        """
         if not self.openstack_id:
             assert self.status == 'new'
             self.start()
@@ -129,9 +154,9 @@ class OpenStackServer(Server):
 
     @property
     def public_ip(self):
-        '''
+        """
         Return one of the public address(es)
-        '''
+        """
         if not self.openstack_id:
             return None
 
@@ -142,19 +167,19 @@ class OpenStackServer(Server):
         return public_addr['addr']
 
     def update_status(self):
-        '''
+        """
         Refresh the status by querying the openstack server via nova
-        '''
+        """
         # TODO: Check when server is stopped or terminated
         # Ensure the 'started' mode by getting the server instance from openstack
         os_server = self.os_server
-        self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'\
-                          .format(self, self.status, pformat(os_server.__dict__)))
+        self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'.format(
+            self, self.status, pformat(os_server.__dict__)))
 
         if self.status == 'started':
             #pylint: disable=protected-access
-            self.log('debug', 'Server {}: loaded="{}" status="{}"'\
-                              .format(self, os_server._loaded, os_server.status))
+            self.log('debug', 'Server {}: loaded="{}" status="{}"'.format(
+                self, os_server._loaded, os_server.status))
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._set_status('active')
 
@@ -165,15 +190,16 @@ class OpenStackServer(Server):
         return self.status
 
     def start(self):
-        '''
+        """
         Get a server instance started and an openstack_id assigned
 
         TODO: Add handling of quota limitations & waiting list
         TODO: Create the key dynamically
-        '''
+        """
         self.log('info', 'Starting server {} (status={})...'.format(self, self.status))
         if self.status == 'new':
-            os_server = openstack.create_server(self.nova,
+            os_server = openstack.create_server(
+                self.nova,
                 self.instance.sub_domain,
                 settings.OPENSTACK_SANDBOX_FLAVOR,
                 settings.OPENSTACK_SANDBOX_BASE_IMAGE,
@@ -186,6 +212,9 @@ class OpenStackServer(Server):
             raise NotImplementedError
 
     def terminate(self):
+        """
+        Terminate the server
+        """
         self.log('info', 'Terminating server {} (status={})...'.format(self, self.status))
         if self.status == 'terminated':
             return
@@ -196,8 +225,8 @@ class OpenStackServer(Server):
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
-            self.log('exception', 'Error while attempting to terminate server {}: could not find OS server'\
-                                  .format(self))
+            self.log('exception', 'Error while attempting to terminate server {}: '
+                                  'could not find OS server'.format(self))
 
         self._set_status('terminated')
 

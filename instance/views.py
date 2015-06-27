@@ -32,6 +32,9 @@ from .serializers import OpenStackServerSerializer, OpenEdXInstanceSerializer
 # Functions - Helpers #########################################################
 
 def get_context():
+    """
+    Commond context
+    """
     instance_list = OpenEdXInstance.objects.order_by('-created')
 
     context = {
@@ -44,15 +47,25 @@ def get_context():
 # Views #######################################################################
 
 def index(request):
+    """
+    Index view
+    """
     return render(request, 'instance/index.html', get_context())
 
 
 # Views - API #################################################################
 
-class OpenStackServerViewSet(viewsets.ModelViewSet): #pylint: disable=no-init
+class OpenStackServerViewSet(viewsets.ModelViewSet):
+    """
+    OpenStackServer API ViewSet
+    """
     queryset = OpenStackServer.objects.all()
     serializer_class = OpenStackServerSerializer
 
-class OpenEdXInstanceViewSet(viewsets.ModelViewSet): #pylint: disable=no-init
+
+class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
+    """
+    OpenEdXInstance API ViewSet
+    """
     queryset = OpenEdXInstance.objects.all()
     serializer_class = OpenEdXInstanceSerializer

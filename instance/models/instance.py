@@ -32,7 +32,8 @@ from django_extensions.db.models import TimeStampedModel
 from .. import ansible, github
 from ..gandi import GandiAPI
 from ..repo import clone_configuration_repo
-from .logging import LoggerInstanceMixin
+
+import instance
 
 
 # Constants ###################################################################
@@ -43,6 +44,8 @@ PROTOCOL_CHOICES = (
 )
 
 gandi = GandiAPI()
+
+__all__ = ['OpenEdXInstance']
 
 
 # Models ######################################################################
@@ -67,10 +70,16 @@ class Instance(TimeStampedModel):
 
     @property
     def domain(self):
+        """
+        Instance domain name
+        """
         return '{0.sub_domain}.{0.base_domain}'.format(self)
 
     @property
     def url(self):
+        """
+        Instance URL
+        """
         return u'{0.protocol}://{0.domain}/'.format(self)
 
 
@@ -90,6 +99,9 @@ class VersionControlInstanceMixin(models.Model):
 
     @property
     def commit_short_id(self):
+        """
+        Short `commit_id`, limited to 7 characters like on GitHub
+        """
         if not self.commit_id:
             return ''
         return self.commit_id[:7]
@@ -107,34 +119,52 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 
     @property
     def fork_name(self):
+        """
+        Fork name (eg. 'open-craft/edx-platform')
+        """
         return '{0.github_organization_name}/{0.github_repository_name}'.format(self)
 
     @property
     def github_base_url(self):
+        """
+        Base GitHub URL of the fork (eg. 'https://github.com/open-craft/edx-platform')
+        """
         return 'https://github.com/{0.fork_name}'.format(self)
 
     @property
     def repository_url(self):
+        """
+        URL of the git repository (eg. 'https://github.com/open-craft/edx-platform.git')
+        """
         return '{0.github_base_url}.git'.format(self)
 
     @property
     def updates_feed(self):
+        """
+        RSS/Atom feed of commits made on the repository/branch
+        """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
     def set_to_branch_tip(self, branch_name=None, ref_type=None, commit=True):
+        """
+        Set the `commit_id` to the current tip of the branch
+        """
         if branch_name is not None:
             self.branch_name = branch_name
         if ref_type is not None:
             self.ref_type = ref_type
         self.log('info', 'Setting instance {} to tip of branch {}'.format(self, self.branch_name))
         self.commit_id = github.get_commit_id_from_ref(
-                self.fork_name,
-                self.branch_name,
-                ref_type=self.ref_type)
+            self.fork_name,
+            self.branch_name,
+            ref_type=self.ref_type)
         if commit:
             self.save()
 
     def set_fork_name(self, fork_name, commit=True):
+        """
+        Set the organization and repository based on the GitHub fork name
+        """
         self.log('info', 'Setting fork name for instance {}: {}'.format(self, fork_name))
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
         if self.github_organization_name != fork_org \
@@ -162,13 +192,16 @@ class AnsibleInstanceMixin(models.Model):
 
     @property
     def ansible_playbook_filename(self):
+        """
+        File name of the ansible playbook
+        """
         return '{}.yml'.format(self.ansible_playbook_name)
 
     @property
     def inventory_str(self):
-        '''
+        """
         The ansible inventory (list of servers) as a string
-        '''
+        """
         inventory = ['[app]']
         for server in self.server_set.filter(status='booted'):
             inventory.append(server.public_ip)
@@ -178,9 +211,9 @@ class AnsibleInstanceMixin(models.Model):
 
     @property
     def vars_str(self):
-        '''
+        """
         The ansible vars (private configuration) as a string
-        '''
+        """
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
         for attr_name in self.ANSIBLE_SETTINGS:
@@ -190,6 +223,9 @@ class AnsibleInstanceMixin(models.Model):
         return vars_str
 
     def run_playbook(self, playbook_name=None):
+        """
+        Run a playbook against the instance active servers
+        """
         if playbook_name is None:
             playbook_name = self.ansible_playbook_name
 
@@ -222,10 +258,11 @@ class AnsibleInstanceMixin(models.Model):
 
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
-    '''
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, instance.models.logging.LoggerInstanceMixin,
+                      Instance):
+    """
     A single instance running a set of Open edX services
-    '''
+    """
     s3_access_key = models.CharField(max_length=50, blank=True)
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
@@ -234,6 +271,9 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
     @property
     def ansible_s3_settings(self):
+        """
+        Ansible settings for the S3 bucket
+        """
         if not self.s3_access_key or not self.s3_secret_access_key or not self.s3_bucket_name:
             return ''
 
@@ -242,13 +282,22 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
     @property
     def studio_sub_domain(self):
+        """
+        Studio sub-domain name (eg. 'studio.master')
+        """
         return 'studio.{}'.format(self.sub_domain)
 
     @property
     def studio_domain(self):
+        """
+        Studio full domain name (eg. 'studio.master.sandbox.opencraft.com')
+        """
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 
     def run_provisioning(self):
+        """
+        Run the provisioning sequence of the instance, recreating the servers from scratch
+        """
         # Server
         self.log('info', 'Terminate servers for instance {}...'.format(self))
         self.server_set.terminate()

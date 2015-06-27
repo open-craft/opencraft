@@ -39,54 +39,75 @@ GH_HEADERS = {
 # Functions ###################################################################
 
 def get_fork_branch_name_for_pr(pr_from_json):
+    """
+    Get the branch name of a PR, from its JSON description returned by the API
+    """
     fork_name = pr_from_json['head']['repo']['full_name']
     branch_name = pr_from_json['head']['ref']
     return [fork_name, branch_name]
 
+
 def fork_name2tuple(fork_name):
+    """
+    Converts a `fork_name` (eg. `'open-craft/edx-platform'`)
+    to a `fork_tuple` (eg. `['open-craft', 'edx-platform']`)
+    """
     return fork_name.split('/')
 
+
 def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
+    """
+    Get the `commit_id` currently attached to a git reference
+    """
     url = 'https://api.github.com/repos/{fork_name}/git/refs/{ref_type}/{ref_name}'.format(
-            fork_name=fork_name,
-            ref_type=ref_type,
-            ref_name=ref_name,
-        )
+        fork_name=fork_name,
+        ref_type=ref_type,
+        ref_name=ref_name,
+    )
     r = requests.get(url, headers=GH_HEADERS)
     return r.json()['object']['sha']
 
+
 def get_settings_from_pr_body(pr_body):
+    """
+    Extract a settings string from a PR description body
+    """
     m = re.search("..Settings..\n+```.+\n((?:\n.+)*)```", pr_body)
     if m:
         return m.groups()[0]
     else:
         return ''
 
+
 def get_pr_by_number(fork_name, pr_number):
     '''
-    Returns a PR() namedtuple based on the reponse from the API
+    Returns a PR() namedtuple based on the reponse
     '''
     url = 'https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
-            fork_name=fork_name,
-            pr_number=pr_number,
-        )
+        fork_name=fork_name,
+        pr_number=pr_number,
+    )
     r = requests.get(url, headers=GH_HEADERS)
     r_pr = r.json()
 
     pr_fork_name, pr_branch_name = get_fork_branch_name_for_pr(r_pr)
 
-    PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings')
+    PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings') #pylint: disable=invalid-name
     pr = PR(
-        name = '{pr[title]} ({pr[user][login]})'.format(pr=r_pr),
-        number = pr_number,
-        fork_name = pr_fork_name,
-        branch_name = pr_branch_name,
-        body = r_pr['body'],
-        extra_settings = get_settings_from_pr_body(r_pr['body']),
+        name='{pr[title]} ({pr[user][login]})'.format(pr=r_pr),
+        number=pr_number,
+        fork_name=pr_fork_name,
+        branch_name=pr_branch_name,
+        body=r_pr['body'],
+        extra_settings=get_settings_from_pr_body(r_pr['body']),
     )
     return pr
 
+
 def get_pr_list_for_user(user_name, fork_name):
+    """
+    Retreive the current active PRs for a given user
+    """
     q = 'is:open is:pr author:{author} repo:{repo}'.format(author=user_name, repo=fork_name)
     url = 'https://api.github.com/search/issues?sort=created&q={}'.format(q)
     r = requests.get(url, headers=GH_HEADERS)
@@ -97,7 +118,11 @@ def get_pr_list_for_user(user_name, fork_name):
         pr_list.append(pr)
     return pr_list
 
+
 def get_team_for_organization_team_name(organization_name, team_name='Owners'):
+    """
+    Retreive a team by organization & team name
+    """
     url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
     r = requests.get(url, headers=GH_HEADERS)
 
@@ -106,19 +131,31 @@ def get_team_for_organization_team_name(organization_name, team_name='Owners'):
             return team_dict
     raise KeyError(team_name)
 
+
 def get_user_name_list_for_organization_team(organization_name, team_name='Owners'):
+    """
+    Retreive the usernames of a given team's members
+    """
     team = get_team_for_organization_team_name(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
     r = requests.get(url, headers=GH_HEADERS)
     return [user_dict['login'] for user_dict in r.json()]
 
+
 def get_pr_list_for_organization_team(organization_name, fork_name, team_name='Owners'):
+    """
+    Retreive the active PRs of a given team in a fork
+    """
     pr_list = []
     for user_name in get_user_name_list_for_organization_team(organization_name, team_name):
         pr_list += get_pr_list_for_user(user_name, fork_name)
     return pr_list
 
+
 def get_watched_pr_list():
+    """
+    Retreive the active PRs of the teams & forks to be watched, from the settings
+    """
     if not settings.WATCH_FORK or not settings.WATCH_ORGANIZATION:
         return []
 

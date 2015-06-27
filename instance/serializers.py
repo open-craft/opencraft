@@ -30,6 +30,9 @@ from .models import OpenStackServer, OpenEdXInstance
 # Serializers #################################################################
 
 class OpenStackServerSerializer(serializers.ModelSerializer):
+    """
+    OpenStackServer API Serializer
+    """
     pk_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
     instance = serializers.HyperlinkedRelatedField(view_name='api:openedxinstance-detail', read_only=True)
 
@@ -37,7 +40,11 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
         model = OpenStackServer
         fields = ('pk', 'pk_url', 'status', 'instance', 'openstack_id', 'created', 'modified')
 
+
 class OpenEdXInstanceSerializer(serializers.ModelSerializer):
+    """
+    OpenEdXInstance API Serializer
+    """
     pk_url = serializers.HyperlinkedIdentityField(view_name='api:openedxinstance-detail')
     server_set = OpenStackServerSerializer(many=True, read_only=True)
 
