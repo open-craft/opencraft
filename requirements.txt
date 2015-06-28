@@ -10,9 +10,9 @@ django-appconf==1.0.1
 django-compressor==1.5
 django-debug-toolbar==1.3.2
 django-environ==0.3.0
-django-extensions==1.5.5
+-e git+https://github.com/django-extensions/django-extensions.git@45393942002ca04c4dc00b8915fa4e75fb48c64e#egg=django_extensions-master
 django-filter==0.10.0
-django-grappelli==2.6.5
+-e git+https://github.com/sehmaschine/django-grappelli.git@55c0eb1568d67492769e593a112936b598e79351#egg=django_grappelli-origin_stable_2.7.x
 django-libsass==0.3
 django-zurb-foundation==5.5.0
 djangorestframework==3.1.3
@@ -21,7 +21,7 @@ gitdb==0.6.4
 GitPython==1.0.1
 gunicorn==19.3.0
 honcho==0.6.6
-huey==0.4.8
+-e git+https://github.com/antoviaque/huey.git@6a2e47485e2780ec190eef7d2ebe179b63a7c779#egg=huey-origin_django1.8-import-warning
 ipdb==0.8.1
 ipython==3.2.0
 iso8601==0.1.10
@@ -72,7 +72,7 @@ sockjs-tornado==1.0.1
 sqlparse==0.1.15
 static3==0.6.1
 stevedore==1.5.0
-SwampDragon==0.4.2.2
+-e git+https://github.com/antoviaque/swampdragon.git@008d9d93f9d274c8a6b606b2c5b1c9b9a09c6996#egg=SwampDragon-origin_django1.8-import-warning
 tlslite==0.4.8
 tornado==4.2
 tornado-redis==2.4.18
