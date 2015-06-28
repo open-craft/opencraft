@@ -27,7 +27,7 @@ from huey.djhuey import task
 from django.conf import settings
 
 from instance.github import get_watched_pr_list
-from .models import OpenEdXInstance
+from instance.models.instance import OpenEdXInstance
 
 
 # Logging #####################################################################

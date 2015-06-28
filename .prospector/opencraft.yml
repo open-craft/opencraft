@@ -5,7 +5,7 @@ dodgy:
   enable: []
   options: {}
   run: null
-ignore-paths: []
+ignore-paths: ['migrations']
 ignore-patterns: [^setup.py$, (^|/)\..+, '^docs?/', '^tests?/?', '/tests?(/|$)', '(^|/)test_[_a-zA-Z0-9]+.py$',
   '(^|/)[_a-zA-Z0-9]+_tests?.py$', '(^|/)tests?.py']
 max-line-length: null
@@ -32,7 +32,7 @@ profile-validator:
   options: {}
   run: null
 pyflakes:
-  disable: [F403]
+  disable: [F401, F403]
   enable: []
   options: {}
   run: null

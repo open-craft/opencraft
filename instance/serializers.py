@@ -24,7 +24,8 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
-from .models import OpenStackServer, OpenEdXInstance
+from instance.models.instance import OpenEdXInstance
+from instance.models.server import OpenStackServer
 
 
 # Serializers #################################################################

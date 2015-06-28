@@ -19,4 +19,4 @@ shell:
 	honcho run ./manage.py shell_plus
 
 test:
-	prospector -i migrations --profile opencraft
+	prospector --profile opencraft

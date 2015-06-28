@@ -29,11 +29,10 @@ from django.db import models
 from django.template import loader
 from django_extensions.db.models import TimeStampedModel
 
-from .. import ansible, github
-from ..gandi import GandiAPI
-from ..repo import clone_configuration_repo
-
-import instance
+from instance import ansible, github
+from instance.gandi import GandiAPI
+from instance.repo import clone_configuration_repo
+from instance.models.logging_mixin import LoggerInstanceMixin
 
 
 # Constants ###################################################################
@@ -44,8 +43,6 @@ PROTOCOL_CHOICES = (
 )
 
 gandi = GandiAPI()
-
-__all__ = ['OpenEdXInstance']
 
 
 # Models ######################################################################
@@ -258,8 +255,7 @@ class AnsibleInstanceMixin(models.Model):
 
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, instance.models.logging.LoggerInstanceMixin,
-                      Instance):
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """

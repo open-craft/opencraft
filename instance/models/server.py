@@ -34,11 +34,10 @@ from django.db import models
 from django.db.models import Q, query
 from django_extensions.db.models import TimeStampedModel
 
-from .. import openstack
-from ..utils import is_port_open
-from .logging import LoggerMixin
-
-from instance.models import instance #pylint: disable=unused-import
+from instance import openstack
+from instance.utils import is_port_open
+from instance.models.instance import OpenEdXInstance
+from instance.models.logging_mixin import LoggerMixin
 
 
 # Constants ###################################################################
@@ -55,8 +54,6 @@ SERVER_STATUS_CHOICES = (
     ('terminating', 'Terminating - Stopping forever'),
     ('terminated', 'Terminated - Stopped forever'),
 )
-
-__all__ = ['OpenStackServer']
 
 
 # Models ######################################################################
@@ -109,13 +106,13 @@ class Server(TimeStampedModel, LoggerMixin):
         return self.status
 
     @staticmethod
-    def on_post_save(sender, instance_obj, created, **kwargs):
+    def on_post_save(sender, instance, created, **kwargs):
         """
         Called when an instance is saved
         """
         publish_data('notification', {
             'type': 'server_update',
-            'server_pk': instance_obj.pk,
+            'server_pk': instance.pk,
         })
 
     def update_status(self):
@@ -129,7 +126,7 @@ class OpenStackServer(Server):
     """
     A Server VM hosted on an OpenStack cloud
     """
-    instance = models.ForeignKey(instance.OpenEdXInstance, related_name='server_set')
+    instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
     openstack_id = models.CharField(max_length=250, db_index=True)
 
     def __init__(self, *args, **kwargs):

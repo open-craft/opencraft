@@ -25,7 +25,7 @@ URL Patterns for api app
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView
 
-from .router import router
+from api.router import router
 
 
 # URL Patterns ################################################################

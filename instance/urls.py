@@ -24,7 +24,7 @@ URL Patterns for the `instance` app
 
 from django.conf.urls import url
 
-from . import views
+from instance import views
 
 
 # URL Patterns ################################################################

@@ -23,7 +23,9 @@ Admin for the instance app
 # Imports #####################################################################
 
 from django.contrib import admin
-from .models import InstanceLogEntry, OpenStackServer, OpenEdXInstance, ServerLogEntry
+from instance.models.instance import OpenEdXInstance
+from instance.models.logging import InstanceLogEntry, ServerLogEntry
+from instance.models.server import OpenStackServer
 
 
 # ModelAdmins #################################################################

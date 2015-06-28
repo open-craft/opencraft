@@ -25,8 +25,9 @@ Instance views
 from django.shortcuts import render
 from rest_framework import viewsets
 
-from .models import OpenStackServer, OpenEdXInstance
-from .serializers import OpenStackServerSerializer, OpenEdXInstanceSerializer
+from instance.models.instance import OpenEdXInstance
+from instance.models.server import OpenStackServer
+from instance.serializers import OpenStackServerSerializer, OpenEdXInstanceSerializer
 
 
 # Functions - Helpers #########################################################
