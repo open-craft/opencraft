@@ -80,9 +80,9 @@ def get_settings_from_pr_body(pr_body):
 
 
 def get_pr_by_number(fork_name, pr_number):
-    '''
+    """
     Returns a PR() namedtuple based on the reponse
-    '''
+    """
     url = 'https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
         fork_name=fork_name,
         pr_number=pr_number,

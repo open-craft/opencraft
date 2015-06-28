@@ -48,9 +48,9 @@ gandi = GandiAPI()
 # Models ######################################################################
 
 class Instance(TimeStampedModel):
-    '''
+    """
     Instance - Group of servers running an application made of multiple services
-    '''
+    """
     sub_domain = models.CharField(max_length=50, blank=False)
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250, blank=False)
@@ -83,9 +83,9 @@ class Instance(TimeStampedModel):
 # Git #########################################################################
 
 class VersionControlInstanceMixin(models.Model):
-    '''
+    """
     Instances linked to a VCS, such as git
-    '''
+    """
 
     class Meta:
         abstract = True
@@ -105,9 +105,9 @@ class VersionControlInstanceMixin(models.Model):
 
 
 class GitHubInstanceMixin(VersionControlInstanceMixin):
-    '''
+    """
     Instance linked to a GitHub repository
-    '''
+    """
     github_organization_name = models.CharField(max_length=50, db_index=True, blank=False)
     github_repository_name = models.CharField(max_length=50, db_index=True, blank=False)
 
@@ -175,9 +175,9 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 # Ansible #####################################################################
 
 class AnsibleInstanceMixin(models.Model):
-    '''
+    """
     An instance that relies on Ansible to deploy its services
-    '''
+    """
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
 
