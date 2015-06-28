@@ -2,11 +2,12 @@ clean:
 	find -name '*.pyc' -delete
 	find -name '*~' -delete
 	find -name '__pycache__' -type d -delete
+	rm -rf .coverage build
 
-collectstatic:
+collectstatic: clean
 	honcho run ./manage.py collectstatic --noinput
 
-migrate:
+migrate: clean
 	honcho run ./manage.py migrate
 
 run: clean migrate collectstatic
@@ -15,8 +16,11 @@ run: clean migrate collectstatic
 rundev: clean migrate
 	honcho start -f Procfile.dev
 
-shell:
+shell: clean
 	honcho run ./manage.py shell_plus
 
-test:
+test: clean
 	prospector --profile opencraft
+	honcho -e .env.test run coverage run --source='.' ./manage.py test
+	coverage report && coverage html
+	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html"

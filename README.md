@@ -82,7 +82,7 @@ The production environment automatically runs collectstatic on startup, but you 
 manually:
 
 ```
-$ make collectstastic
+$ make collectstatic
 ```
 
 
@@ -100,7 +100,8 @@ $ make migrate
 Running the tests
 -----------------
 
-Run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
+First, ensure that the postgresql user can create databases, to be able to create the test database. 
+Then run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
 
 ```
 $ make test
