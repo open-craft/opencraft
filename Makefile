@@ -22,5 +22,6 @@ shell: clean
 test: clean
 	prospector --profile opencraft
 	honcho -e .env.test run coverage run --source='.' ./manage.py test
-	coverage report && coverage html
-	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html"
+	coverage html
+	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
+	@coverage report --fail-under 90 || (echo "\nERROR: Coverage is below 90%\n" && exit 2)
