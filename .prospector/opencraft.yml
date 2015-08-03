@@ -6,8 +6,7 @@ dodgy:
   options: {}
   run: null
 ignore-paths: ['migrations']
-ignore-patterns: [^setup.py$, (^|/)\..+, '^docs?/', '^tests?/?', '/tests?(/|$)', '(^|/)test_[_a-zA-Z0-9]+.py$',
-  '(^|/)[_a-zA-Z0-9]+_tests?.py$', '(^|/)tests?.py']
+ignore-patterns: [^setup.py$, (^|/)\..+, '^docs?/']
 max-line-length: null
 mccabe:
   disable: []
@@ -38,5 +37,5 @@ pyflakes:
   run: null
 requirements: []
 strictness: 'veryhigh'
-test-warnings: false
+test-warnings: true
 uses: []

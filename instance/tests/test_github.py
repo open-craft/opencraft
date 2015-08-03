@@ -35,9 +35,6 @@ class GitHubTestCase(TestCase):
     """
     Test cases for GitHub helper functions & API calls
     """
-    def setUp(self):
-        pass
-
     def test_fork_name2tupe(self):
         """
         Conversion of `fork_name` to `fork_tuple`
