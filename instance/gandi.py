@@ -63,12 +63,6 @@ class GandiAPI():
         """
         return self.client.domain.zone
 
-    def get_dns_records(self):
-        """
-        Returns the current DNS records of the domain
-        """
-        return self.client_zone.record.list(self.api_key, self.zone_id, 0)
-
     def delete_dns_record(self, zone_version_id, record_name):
         """
         Delete a record from a version of the domain
