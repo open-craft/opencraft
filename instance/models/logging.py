@@ -86,12 +86,12 @@ class LogEntry(TimeStampedModel):
         """
         return logging.__dict__[self.level.upper()]
 
-
-class InstanceLogEntry(LogEntry):
-    """
-    Single log entry for instances
-    """
-    instance = models.ForeignKey(OpenEdXInstance, related_name='logentry_set')
+    @property
+    def instance(self):
+        """
+        Instance of the log entry - To subclass
+        """
+        raise NotImplementedError
 
     def publish(self):
         """
@@ -105,6 +105,13 @@ class InstanceLogEntry(LogEntry):
                 'instance_pk': self.instance.pk,
                 'log_entry': str(self),
             })
+
+
+class InstanceLogEntry(LogEntry):
+    """
+    Single log entry for instances
+    """
+    instance = models.ForeignKey(OpenEdXInstance, related_name='logentry_set')
 
 
 class ServerLogEntry(LogEntry):
