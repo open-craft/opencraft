@@ -31,6 +31,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from instance import ansible, github
 from instance.gandi import GandiAPI
+from instance.log_exception import log_exception
 from instance.repo import clone_configuration_repo
 from instance.models.logging_mixin import LoggerInstanceMixin
 
@@ -290,6 +291,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         """
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 
+    @log_exception
     def run_provisioning(self):
         """
         Run the provisioning sequence of the instance, recreating the servers from scratch

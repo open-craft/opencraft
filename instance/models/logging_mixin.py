@@ -28,7 +28,8 @@ from django.db.models import Q
 
 # Constants ###################################################################
 
-PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error')
+# TODO: Don't propagate exceptions & debug data to end users
+PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error', 'exception')
 
 
 # Models ######################################################################

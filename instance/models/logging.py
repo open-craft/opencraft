@@ -69,7 +69,7 @@ class LogEntry(TimeStampedModel):
     Single log entry
     """
     text = models.TextField()
-    level = models.CharField(max_length=5, db_index=True, default='info', choices=LOG_LEVEL_CHOICES)
+    level = models.CharField(max_length=9, db_index=True, default='info', choices=LOG_LEVEL_CHOICES)
 
     objects = LogEntryQuerySet().as_manager()
 
@@ -84,7 +84,10 @@ class LogEntry(TimeStampedModel):
         """
         Integer code for the log entry level
         """
-        return logging.__dict__[self.level.upper()]
+        if self.level == 'exception':
+            return logging.__dict__['CRITICAL']
+        else:
+            return logging.__dict__[self.level.upper()]
 
     @property
     def instance(self):
