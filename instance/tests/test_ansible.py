@@ -25,8 +25,8 @@ Ansible - Tests
 import yaml
 from unittest.mock import call, patch
 
-from django.test import TestCase
 from instance import ansible
+from instance.tests.base import TestCase
 
 
 # Tests #######################################################################

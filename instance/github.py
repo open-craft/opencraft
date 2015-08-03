@@ -34,6 +34,7 @@ from django.conf import settings
 GH_HEADERS = {
     'Authorization': 'token {}'.format(settings.GITHUB_ACCESS_TOKEN),
 }
+PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings')
 
 
 # Functions ###################################################################
@@ -65,6 +66,7 @@ def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
         ref_name=ref_name,
     )
     r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
     return r.json()['object']['sha']
 
 
@@ -72,11 +74,11 @@ def get_settings_from_pr_body(pr_body):
     """
     Extract a settings string from a PR description body
     """
-    m = re.search("..Settings..\n+```.+\n((?:\n.+)*)```", pr_body)
+    m = re.search("..Settings..\r?\n+```[a-z]*\r?\n((?:.+\r?\n)*)```", pr_body)
     if m:
         return m.groups()[0]
     else:
-        return ''
+        return None
 
 
 def get_pr_by_number(fork_name, pr_number):
@@ -88,11 +90,10 @@ def get_pr_by_number(fork_name, pr_number):
         pr_number=pr_number,
     )
     r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
+
     r_pr = r.json()
-
     pr_fork_name, pr_branch_name = get_fork_branch_name_for_pr(r_pr)
-
-    PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings') #pylint: disable=invalid-name
     pr = PR(
         name='{pr[title]} ({pr[user][login]})'.format(pr=r_pr),
         number=pr_number,
@@ -125,6 +126,7 @@ def get_team_for_organization_team_name(organization_name, team_name='Owners'):
     """
     url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
     r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
 
     for team_dict in r.json():
         if team_dict['name'] == team_name:
@@ -139,6 +141,7 @@ def get_user_name_list_for_organization_team(organization_name, team_name='Owner
     team = get_team_for_organization_team_name(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
     r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
     return [user_dict['login'] for user_dict in r.json()]
 
 
@@ -148,7 +151,7 @@ def get_pr_list_for_organization_team(organization_name, fork_name, team_name='O
     """
     pr_list = []
     for user_name in get_user_name_list_for_organization_team(organization_name, team_name):
-        pr_list += get_pr_list_for_user(user_name, fork_name)
+        pr_list.append(get_pr_list_for_user(user_name, fork_name))
     return pr_list
 
 
