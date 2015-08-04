@@ -39,7 +39,6 @@ class GandiTestCase(TestCase):
             self.api = gandi.GandiAPI()
             self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
 
-    @patch.multiple('instance.gandi.settings', GANDI_API_KEY='TEST_GANDI_API_KEY', GANDI_ZONE_ID=9900)
     def test_set_dns_record(self):
         """
         Set a DNS record value
