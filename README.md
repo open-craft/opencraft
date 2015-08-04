@@ -107,6 +107,12 @@ Then run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
 $ make test
 ```
 
+To run a single test, use `make testone`:
+
+```
+$ make testone instance.tests.models.test_server
+```
+
 
 Debug
 -----

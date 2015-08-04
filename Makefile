@@ -1,3 +1,9 @@
+# For `testone` use the rest as arguments and turn them into do-nothing targets
+ifeq (testone,$(firstword $(MAKECMDGOALS)))
+  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(RUN_ARGS):;@:)
+endif
+
 clean:
 	find -name '*.pyc' -delete
 	find -name '*~' -delete
@@ -25,3 +31,6 @@ test: clean
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 90 || (echo "\nERROR: Coverage is below 90%\n" && exit 2)
+
+testone: clean
+	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
