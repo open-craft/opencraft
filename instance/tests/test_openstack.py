@@ -68,14 +68,6 @@ class OpenStackTestCase(TestCase):
             call.servers.delete(server_class(name='server-a', pk=2)),
         ])
 
-    def test_get_server_public_address(self):
-        """
-        Get public IP of a server
-        """
-        server_class = namedtuple('Server', 'addresses')
-        server = server_class(addresses={'a': ['192.168.99.88']})
-        self.assertEqual(openstack.get_server_public_address(server), '192.168.99.88')
-
     def test_get_server_public_address_none(self):
         """
         No public IP when none has been assigned yet

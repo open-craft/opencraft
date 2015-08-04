@@ -25,17 +25,16 @@ Instance app models - Server
 import novaclient
 import time
 
-from pprint import pformat
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.conf import settings
-from django.db.models.signals import post_save
 from django.db import models
 from django.db.models import Q, query
+from django.db.models.signals import post_save
 from django_extensions.db.models import TimeStampedModel
 
 from instance import openstack
-from instance.utils import is_port_open
+from instance.utils import is_port_open, to_json
 from instance.models.instance import OpenEdXInstance
 from instance.models.logging_mixin import LoggerMixin
 
@@ -171,7 +170,7 @@ class OpenStackServer(Server):
         # Ensure the 'started' mode by getting the server instance from openstack
         os_server = self.os_server
         self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'.format(
-            self, self.status, pformat(os_server.__dict__)))
+            self, self.status, to_json(os_server)))
 
         if self.status == 'started':
             #pylint: disable=protected-access
@@ -224,7 +223,7 @@ class OpenStackServer(Server):
         except novaclient.exceptions.NotFound:
             self.log('exception', 'Error while attempting to terminate server {}: '
                                   'could not find OS server'.format(self))
-
-        self._set_status('terminated')
+        finally:
+            self._set_status('terminated')
 
 post_save.connect(Server.on_post_save, sender=OpenStackServer)

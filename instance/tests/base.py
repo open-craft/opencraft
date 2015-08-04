@@ -22,6 +22,7 @@ Tests - Base Class & Utils
 
 # Imports #####################################################################
 
+import json
 import os.path
 
 from django.test import TestCase as DjangoTestCase
@@ -44,6 +45,36 @@ def get_raw_fixture(fixture_filename):
     fixture_filepath = get_fixture_filepath(fixture_filename)
     with open(fixture_filepath) as f:
         return f.read()
+
+
+def get_fixture(fixture_filename):
+    """
+    Returns the fixture object, by filename
+    """
+    fixture_filepath = get_fixture_filepath(fixture_filename)
+    with open(fixture_filepath) as f:
+        return json.load(f)
+
+
+def add_fixture_to_object(obj, fixture_filename):
+    """
+    Load a fixture on an existing object
+    """
+    fixture = get_fixture(fixture_filename)
+    obj.__dict__.update(fixture)
+    return obj
+
+
+# Classes #####################################################################
+
+class AnyStringWith(str):
+    """
+    String that matches any other string containing it
+
+    Can be used to do partial argument matching in mock calls
+    """
+    def __eq__(self, other):
+        return self in other
 
 
 # Tests #######################################################################

@@ -17,42 +17,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance app - Util functions
+OpenEdXInstance model - Factories
 """
 
 # Imports #####################################################################
 
-from mock import Mock
+from factory.django import DjangoModelFactory
 
-import json
-import socket
+from instance.models.instance import OpenEdXInstance
 
 
-# Functions ###################################################################
+# Classes #####################################################################
 
-def is_port_open(ip, port):
+class OpenEdXInstanceFactory(DjangoModelFactory):
     """
-    Check if the port is open on the provided ip
+    Factory for OpenEdXInstance
     """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    return sock.connect_ex((ip, port)) == 0
-
-
-def to_json(obj):
-    """
-    Convert an object to a JSON string
-    """
-    def dumper(obj2):
-        """
-        Serializer that avoids throwing exceptions on objects it can't serialize
-        """
-        if isinstance(obj2, Mock):
-            return repr(obj2)
-        try:
-            return obj2.toJSON()
-        except: #pylint: disable=bare-except
-            return repr(obj2)
-
-    if not hasattr(obj, 'toJSON'):
-        obj = obj.__dict__
-    return json.dumps(obj, sort_keys=True, indent=4, default=dumper)
+    class Meta: #pylint: disable=missing-docstring
+        model = OpenEdXInstance
