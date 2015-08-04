@@ -17,28 +17,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+Models Utils
 """
-
-# Imports #####################################################################
-
-import factory
-from factory.django import DjangoModelFactory
-
-from instance.models.instance import OpenEdXInstance
 
 
 # Classes #####################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class ValidateModelMixin(object):
     """
-    Factory for OpenEdXInstance
-    """
-    class Meta: #pylint: disable=missing-docstring
-        model = OpenEdXInstance
+    Make :meth:`save` call :meth:`full_clean`.
 
-    sub_domain = factory.Sequence('instance{}.test'.format)
-    name = factory.Sequence('Test Instance {}'.format)
-    commit_id = factory.Sequence('{:>040}'.format)
-    github_organization_name = factory.Sequence('test-org{}'.format)
-    github_repository_name = factory.Sequence('test-repo{}'.format)
+    .. warning:
+        This should be the left-most mixin/super-class of a model.
+
+    More info:
+
+    * "Why doesn't django's model.save() call full clean?"
+        http://stackoverflow.com/questions/4441539/
+    * "Model docs imply that ModelForm will call Model.full_clean(),
+        but it won't."
+        https://code.djangoproject.com/ticket/13100
+
+    https://gist.github.com/glarrain/5448253
+    """
+    def save(self, *args, **kwargs):
+        """Call :meth:`full_clean` before saving."""
+        self.full_clean()
+        super(ValidateModelMixin, self).save(*args, **kwargs)

@@ -33,6 +33,7 @@ from django_extensions.db.models import TimeStampedModel
 from instance.models.logging_mixin import PUBLISHED_LOG_LEVEL_SET
 from instance.models.instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
+from instance.models.utils import ValidateModelMixin
 
 
 # Constants ###################################################################
@@ -64,7 +65,7 @@ class LogEntryQuerySet(query.QuerySet):
             log_entry.publish()
 
 
-class LogEntry(TimeStampedModel):
+class LogEntry(ValidateModelMixin, TimeStampedModel):
     """
     Single log entry
     """

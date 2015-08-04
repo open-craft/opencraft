@@ -25,6 +25,7 @@ Instance app models - Instance
 import os
 
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.template import loader
 from django_extensions.db.models import TimeStampedModel
@@ -34,6 +35,7 @@ from instance.gandi import GandiAPI
 from instance.log_exception import log_exception
 from instance.repo import clone_configuration_repo
 from instance.models.logging_mixin import LoggerInstanceMixin
+from instance.models.utils import ValidateModelMixin
 
 
 # Constants ###################################################################
@@ -46,9 +48,14 @@ PROTOCOL_CHOICES = (
 gandi = GandiAPI()
 
 
+# Validators ##################################################################
+
+sha1_validator = RegexValidator(regex='^[0-9a-f]{40}$', message='Full SHA1 hash required')
+
+
 # Models ######################################################################
 
-class Instance(TimeStampedModel):
+class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
@@ -93,7 +100,7 @@ class VersionControlInstanceMixin(models.Model):
 
     branch_name = models.CharField(max_length=50, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
-    commit_id = models.CharField(max_length=40, blank=False)
+    commit_id = models.CharField(max_length=40, blank=False, validators=[sha1_validator])
 
     @property
     def commit_short_id(self):

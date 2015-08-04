@@ -24,6 +24,7 @@ Tests - Base Class & Utils
 
 import json
 import os.path
+import re
 
 from django.test import TestCase as DjangoTestCase
 
@@ -67,14 +68,14 @@ def add_fixture_to_object(obj, fixture_filename):
 
 # Classes #####################################################################
 
-class AnyStringWith(str):
+class AnyStringMatching(str):
     """
     String that matches any other string containing it
 
     Can be used to do partial argument matching in mock calls
     """
     def __eq__(self, other):
-        return self in other
+        return re.search(str(self), other)
 
 
 # Tests #######################################################################

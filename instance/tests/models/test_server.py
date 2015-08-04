@@ -26,7 +26,7 @@ import novaclient
 from mock import Mock, call, patch
 
 from instance.models.server import OpenStackServer
-from instance.tests.base import AnyStringWith, TestCase
+from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
 
 
@@ -59,9 +59,13 @@ class OpenStackServerTestCase(TestCase):
 
         self.assertEqual(server.status, 'new')
         server.start()
-        self.assertEqual(mock_create_server.mock_calls, [
-            call(server.nova, '', '{"ram": 4096, "disk": 40}', '{"name": "Ubuntu 12.04"}', key_name='opencraft'),
-        ])
+        self.assertEqual(mock_create_server.mock_calls, [call(
+            server.nova,
+            AnyStringMatching(r'instance\d+\.test'),
+            '{"ram": 4096, "disk": 40}',
+            '{"name": "Ubuntu 12.04"}',
+            key_name='opencraft',
+        )])
 
         server = OpenStackServer.objects.get(pk=server.pk)
         self.assertEqual(server.status, 'started')
@@ -173,7 +177,7 @@ class OpenStackServerTestCase(TestCase):
         server.log = Mock()
 
         server.terminate()
-        server.log.assert_any_call('exception', AnyStringWith('Error while attempting to terminate server'))
+        server.log.assert_any_call('exception', AnyStringMatching('Error while attempting to terminate server'))
         self.assertEqual(server.status, 'terminated')
 
     def test_public_ip_new_server(self):

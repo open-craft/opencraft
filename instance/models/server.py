@@ -37,6 +37,7 @@ from instance import openstack
 from instance.utils import is_port_open, to_json
 from instance.models.instance import OpenEdXInstance
 from instance.models.logging_mixin import LoggerMixin
+from instance.models.utils import ValidateModelMixin
 
 
 # Constants ###################################################################
@@ -72,7 +73,7 @@ class ServerQuerySet(query.QuerySet):
         return qs
 
 
-class Server(TimeStampedModel, LoggerMixin):
+class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
     """
     A single server VM
     """
@@ -126,7 +127,7 @@ class OpenStackServer(Server):
     A Server VM hosted on an OpenStack cloud
     """
     instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
-    openstack_id = models.CharField(max_length=250, db_index=True)
+    openstack_id = models.CharField(max_length=250, db_index=True, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

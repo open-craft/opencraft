@@ -17,28 +17,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+OpenEdXInstance model - Tests
 """
 
 # Imports #####################################################################
 
-import factory
-from factory.django import DjangoModelFactory
+import re
 
 from instance.models.instance import OpenEdXInstance
+from instance.tests.base import TestCase
+from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 
 
-# Classes #####################################################################
+# Tests #######################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class OpenEdXInstanceTestCase(TestCase):
     """
-    Factory for OpenEdXInstance
+    Test cases for OpenEdXInstance models
     """
-    class Meta: #pylint: disable=missing-docstring
-        model = OpenEdXInstance
+    # Factory boy doesn't properly support pylint+django
+    #pylint: disable=no-member
 
-    sub_domain = factory.Sequence('instance{}.test'.format)
-    name = factory.Sequence('Test Instance {}'.format)
-    commit_id = factory.Sequence('{:>040}'.format)
-    github_organization_name = factory.Sequence('test-org{}'.format)
-    github_repository_name = factory.Sequence('test-repo{}'.format)
+    def test_new_instance(self):
+        """
+        New OpenEdXInstance object
+        """
+        self.assertFalse(OpenEdXInstance.objects.all())
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(OpenEdXInstance.objects.get().pk, instance.pk)
+        self.assertTrue(re.search(r'Test Instance \d+ \(http://instance\d+.test.example.com/\)', str(instance)))
