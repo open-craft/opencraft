@@ -108,7 +108,7 @@ class VersionControlInstanceMixin(models.Model):
         Short `commit_id`, limited to 7 characters like on GitHub
         """
         if not self.commit_id:
-            return ''
+            return None
         return self.commit_id[:7]
 
 
@@ -208,7 +208,7 @@ class AnsibleInstanceMixin(models.Model):
         The ansible inventory (list of servers) as a string
         """
         inventory = ['[app]']
-        for server in self.server_set.filter(status='booted'):
+        for server in self.server_set.filter(status='booted').order_by('created'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
         self.log('debug', 'Inventory for instance {}:\n{}'.format(self, inventory_str))
@@ -231,9 +231,6 @@ class AnsibleInstanceMixin(models.Model):
         """
         Run a playbook against the instance active servers
         """
-        if playbook_name is None:
-            playbook_name = self.ansible_playbook_name
-
         configuration_repo_path = clone_configuration_repo()
         playbook_path = os.path.join(configuration_repo_path, 'playbooks')
         requirements_path = os.path.join(configuration_repo_path, 'requirements.txt')

@@ -62,8 +62,8 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(mock_create_server.mock_calls, [call(
             server.nova,
             AnyStringMatching(r'instance\d+\.test'),
-            '{"ram": 4096, "disk": 40}',
-            '{"name": "Ubuntu 12.04"}',
+            {"ram": 4096, "disk": 40},
+            {"name": "Ubuntu 12.04"},
             key_name='opencraft',
         )])
 

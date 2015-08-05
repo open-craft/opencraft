@@ -24,14 +24,72 @@ OpenStackServer model - Factories
 
 import factory
 from factory.django import DjangoModelFactory
-from mock import Mock
+from functools import wraps
+from mock import MagicMock, Mock, patch
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import add_fixture_to_object
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 
 
+# Functions ###################################################################
+
+def patch_os_server(func):
+    """
+    To patch `Server.os_server` (OpenStack API Server answer) in unit tests
+
+    Adds a `os_server_manager` to the decorated function (see `OSServerMockManager`)
+    which can be used to set attributes or fixtures on the mock object returned by
+    `Server.nova.servers.get()` for a given `openstack_id`
+    """
+    os_server_manager = OSServerMockManager()
+
+    def server_get(openstack_id): #pylint: disable=missing-docstring
+        return os_server_manager.get_os_server(openstack_id)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs): #pylint: disable=missing-docstring
+        with patch('instance.models.server.openstack.get_nova_client') as mock_get_nova_client:
+            mock_get_nova_client.return_value.servers.get.side_effect = server_get
+            args += (os_server_manager,)
+            func(*args, **kwargs)
+    return wrapper
+
+
 # Classes #####################################################################
+
+class OSServerMockManager:
+    """
+    Manager of Mock objects used by `patch_os_server`
+
+    Contains a dictionary of mock `os_server`, identified by `openstack_id`
+    Allows to set custom attributes on individual `os_server` mocks (or entire fixtures)
+
+    Defaults to standard MagicMock if no attribute of fixture has been loaded for a given `openstack_id`
+    """
+    def __init__(self):
+        self._os_server_dict = {}
+
+    def get_os_server(self, openstack_id):
+        """
+        Returns the mock `os_server` for this `openstack_id`
+        """
+        if openstack_id not in self._os_server_dict.keys():
+            self._os_server_dict[openstack_id] = MagicMock()
+        return self._os_server_dict[openstack_id]
+
+    def set_os_server_attributes(self, openstack_id, **attributes):
+        """
+        Set the attributes on the mock `os_server` returned for this `openstack_id`
+        """
+        self.get_os_server(openstack_id).__dict__.update(attributes)
+
+    def add_fixture(self, openstack_id, fixture_filename):
+        """
+        Add the contents of a fixture to the mock `os_server` attributes for this `openstack_id`
+        """
+        add_fixture_to_object(self.get_os_server(openstack_id), fixture_filename)
+
 
 class OpenStackServerFactory(DjangoModelFactory):
     """
@@ -63,3 +121,11 @@ class StartedOpenStackServerFactory(OpenStackServerFactory):
     """
     status = 'started'
     openstack_id = factory.Sequence('started-server-id{}'.format)
+
+
+class BootedOpenStackServerFactory(OpenStackServerFactory):
+    """
+    Factory for a server with a 'booted' status
+    """
+    status = 'booted'
+    openstack_id = factory.Sequence('booted-server-id{}'.format)
