@@ -199,4 +199,4 @@ class OpenStackServerTestCase(TestCase):
         Get the public IP of an active server
         """
         server = StartedOpenStackServerFactory(os_server_fixture='openstack/api_server_2_active.json')
-        self.assertEqual(server.public_ip, '92.222.88.20')
+        self.assertEqual(server.public_ip, '192.168.100.200')
