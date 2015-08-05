@@ -24,8 +24,6 @@ Worker tasks for instance hosting & management
 
 from huey.djhuey import task
 
-from django.conf import settings
-
 from instance.github import get_watched_pr_list
 from instance.models.instance import OpenEdXInstance
 
@@ -39,22 +37,15 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @task()
-def provision_sandbox_instance(fork_name=None, **instance_field_dict):
+def provision_sandbox_instance(**instance_field_dict):
     """
     (Re-)create sandbox instance & run provisioning on it
     """
-    logger.info('Creating instance object for %s fork_name=%s', instance_field_dict, fork_name)
+    logger.info('Creating instance object for %s', instance_field_dict)
     instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
 
-    # Set fork
-    if fork_name is None:
-        fork_name = settings.DEFAULT_FORK
-    instance.set_fork_name(fork_name, commit=False)
-    instance.set_to_branch_tip()
-
-    # Include commit hash in name
-    instance.name = '{instance.name} Sandbox ({instance.fork_name}/{instance.commit_short_id})'\
-                    .format(instance=instance)
+    # Extend default name
+    instance.name = 'Sandbox - {}'.format(instance.name)
 
     logger.info('Running provisioning on %s', instance)
     _, log = instance.run_provisioning()

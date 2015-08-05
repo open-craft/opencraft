@@ -31,6 +31,7 @@ from django.db.models import query
 from django_extensions.db.models import TimeStampedModel
 
 from instance.models.logging_mixin import PUBLISHED_LOG_LEVEL_SET
+from instance.models.logging_utils import level_to_integer
 from instance.models.instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.models.utils import ValidateModelMixin
@@ -85,10 +86,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
         """
         Integer code for the log entry level
         """
-        if self.level == 'exception':
-            return logging.__dict__['CRITICAL']
-        else:
-            return logging.__dict__[self.level.upper()]
+        return level_to_integer(self.level)
 
     @property
     def instance(self):

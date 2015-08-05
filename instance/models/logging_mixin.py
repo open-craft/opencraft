@@ -22,14 +22,23 @@ Instance app models - Logging - Mixins
 
 # Imports #####################################################################
 
+import logging
+
 from django.db import models
 from django.db.models import Q
+
+from instance.models.logging_utils import level_to_integer
 
 
 # Constants ###################################################################
 
 # TODO: Don't propagate exceptions & debug data to end users
 PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error', 'exception')
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Models ######################################################################
@@ -45,7 +54,12 @@ class LoggerMixin(models.Model):
         """
         Log an entry text at a specified level
         """
-        self.logentry_set.create(level=level, text=text.rstrip(), **kwargs)
+        if self.pk is not None:
+            self.logentry_set.create(level=level, text=text.rstrip(), **kwargs)
+        else:
+            level_integer = level_to_integer(level)
+            text = '{} [Log not attached to instance, not saved yet]'.format(text)
+            logger.log(level_integer, text)
 
 
 class LoggerInstanceMixin(LoggerMixin):

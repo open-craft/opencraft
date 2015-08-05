@@ -258,6 +258,19 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models
     """
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    def test_create_defaults(self, mock_get_commit_id_from_ref):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+        mock_get_commit_id_from_ref.return_value = '9' * 40
+        instance = OpenEdXInstance.objects.create(sub_domain='create.defaults')
+        self.assertEqual(instance.github_organization_name, 'edx')
+        self.assertEqual(instance.github_repository_name, 'edx-platform')
+        self.assertEqual(instance.commit_id, '9' * 40)
+        self.assertEqual(instance.name, 'create.defaults - edx/edx-platform/master (9999999)')
+
     def test_vars_str_s3_settings(self):
         """
         Add extra settings in ansible vars, which can override existing settings

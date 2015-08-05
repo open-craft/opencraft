@@ -29,7 +29,7 @@ from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q, query
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django_extensions.db.models import TimeStampedModel
 
@@ -58,7 +58,7 @@ SERVER_STATUS_CHOICES = (
 
 # Models ######################################################################
 
-class ServerQuerySet(query.QuerySet):
+class ServerQuerySet(models.QuerySet):
     """
     Additional methods for server querysets
     Also used as the standard manager for the Server model (`Server.objects`)

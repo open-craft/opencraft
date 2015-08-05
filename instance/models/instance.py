@@ -260,6 +260,35 @@ class AnsibleInstanceMixin(models.Model):
 
 # Open edX ####################################################################
 
+class OpenEdXInstanceQuerySet(models.QuerySet):
+    """
+    Additional methods for instance querysets
+    Also used as the standard manager for the OpenEdXInstance model
+    """
+    def create(self, *args, **kwargs):
+        """
+        Augmented `create()` method:
+        - Adds support for `fork_name` to allow to set both the github org & repo
+        - Sets the github org & repo to `settings.DEFAULT_FORK` if any is missing
+        - Sets the `commit_id` to the branch tip if it isn't explicitly passed as an argument
+        """
+        fork_name = kwargs.pop('fork_name', None)
+        instance = self.model(**kwargs)
+        if fork_name is None and (not instance.github_organization_name or not instance.github_repository_name):
+            fork_name = settings.DEFAULT_FORK
+        if fork_name is not None:
+            instance.set_fork_name(fork_name, commit=False)
+        if not instance.commit_id:
+            instance.set_to_branch_tip(commit=False)
+        if not instance.name:
+            instance.name = '{i.sub_domain} - {i.fork_name}/{i.branch_name} ({i.commit_short_id})'\
+                            .format(i=instance)
+
+        self._for_write = True
+        instance.save(force_insert=True, using=self.db)
+        return instance
+
+
 class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
@@ -269,6 +298,8 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
     ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+
+    objects = OpenEdXInstanceQuerySet.as_manager()
 
     @property
     def ansible_s3_settings(self):
