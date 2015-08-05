@@ -61,7 +61,6 @@ def watch_pr():
     for pr in get_watched_pr_list():
         provision_sandbox_instance(
             sub_domain='pr{number}.sandbox'.format(number=pr.number),
-            name=pr.name,
             fork_name=pr.fork_name,
             branch_name=pr.branch_name,
             ansible_extra_settings=pr.extra_settings,
