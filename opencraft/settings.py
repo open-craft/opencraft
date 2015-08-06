@@ -252,6 +252,20 @@ WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
 ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
 
 
+# Emails ######################################################################
+
+# From & subject configuration for sent emails
+SERVER_EMAIL = env('SERVER_EMAIL', default='opencraft@locahost')
+EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
+
+# SMTP configuration
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env('EMAIL_PORT', default=25)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=False)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+
+
 # Logging #####################################################################
 
 ADMINS = env.json('ADMINS', default=set())
