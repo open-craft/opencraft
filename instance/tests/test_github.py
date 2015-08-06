@@ -71,7 +71,7 @@ class GitHubTestCase(TestCase):
         Extract settings from a string which doesn't contain settings
         """
         pr_body = "Description\r\nover\r\nlines\r\n- - -\r\n**Settings**\r\nMALFORMED"
-        self.assertEqual(github.get_settings_from_pr_body(pr_body), None)
+        self.assertEqual(github.get_settings_from_pr_body(pr_body), '')
 
     @responses.activate
     def test_get_pr_by_number(self):

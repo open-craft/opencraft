@@ -78,7 +78,7 @@ def get_settings_from_pr_body(pr_body):
     if m:
         return m.groups()[0]
     else:
-        return None
+        return ''
 
 
 def get_pr_by_number(fork_name, pr_number):
