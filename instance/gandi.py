@@ -25,6 +25,7 @@ Gandi DNS - Helper dunctions
 import xmlrpc.client
 
 from django.conf import settings
+from django.core.cache import cache
 
 
 # Logging #####################################################################
@@ -98,9 +99,10 @@ class GandiAPI():
         if 'ttl' not in record.keys():
             record['ttl'] = 1200
 
-        logger.info('Setting DNS record: %s', record)
-        new_zone_version = self.create_new_zone_version()
-        self.delete_dns_record(new_zone_version, record['name'])
-        returned_record = self.add_dns_record(new_zone_version, record)
-        self.set_zone_version(new_zone_version)
+        with cache.lock('gandi_set_dns_record'): # Only do one DNS update at a time
+            logger.info('Setting DNS record: %s', record)
+            new_zone_version = self.create_new_zone_version()
+            self.delete_dns_record(new_zone_version, record['name'])
+            returned_record = self.add_dns_record(new_zone_version, record)
+            self.set_zone_version(new_zone_version)
         return returned_record

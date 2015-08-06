@@ -168,11 +168,24 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Huey (redis task queue) #####################################################
 
-REDISTOGO_URL = env('REDISTOGO_URL', default='redis://localhost:6379/')
-REDIS_URL = env('REDIS_URL', default=REDISTOGO_URL)
+# Redis cache & locking #######################################################
+
+REDIS_URL = env('REDIS_URL', default='redis://localhost:6379/')
 REDIS_URL_OBJ = urlparse(REDIS_URL)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+
+# Huey (redis task queue) #####################################################
 
 HUEY = {
     'backend': 'huey.backends.redis_backend',
