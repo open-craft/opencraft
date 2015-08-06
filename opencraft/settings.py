@@ -185,7 +185,7 @@ HUEY = {
     'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 4, 'loglevel': logging.DEBUG},
+    'consumer_options': {'workers': 1, 'loglevel': logging.DEBUG},
 }
 
 

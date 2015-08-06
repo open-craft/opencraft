@@ -1,3 +1,6 @@
+# Defaults
+WORKERS = 4
+
 # For `testone` use the rest as arguments and turn them into do-nothing targets
 ifeq (testone,$(firstword $(MAKECMDGOALS)))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -17,7 +20,7 @@ migrate: clean
 	honcho run ./manage.py migrate
 
 run: clean migrate collectstatic
-	honcho start
+	honcho start --concurrency "worker=$(WORKERS)"
 
 rundev: clean migrate
 	honcho start -f Procfile.dev

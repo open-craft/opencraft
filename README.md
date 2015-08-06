@@ -57,6 +57,12 @@ To run the production server:
 $ make run
 ```
 
+To change the number of concurrent workers ran by the production server:
+
+```
+$ make run WORKERS=2
+```
+
 
 Processus description
 ---------------------
