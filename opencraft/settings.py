@@ -309,7 +309,7 @@ LOGGING = {
         'requests': {
             'handlers': BASE_HANDLERS,
             'propagate': False,
-            'level': 'WARNING',
+            'level': 'DEBUG',
         }
     }
 }
