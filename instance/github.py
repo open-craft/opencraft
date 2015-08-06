@@ -151,7 +151,7 @@ def get_pr_list_for_organization_team(organization_name, fork_name, team_name='O
     """
     pr_list = []
     for user_name in get_user_name_list_for_organization_team(organization_name, team_name):
-        pr_list.append(get_pr_list_for_user(user_name, fork_name))
+        pr_list += get_pr_list_for_user(user_name, fork_name)
     return pr_list
 
 

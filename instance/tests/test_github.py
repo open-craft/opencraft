@@ -154,15 +154,9 @@ class GitHubTestCase(TestCase):
 
         self.assertEqual(
             github.get_pr_list_for_organization_team('open-craft', 'edx/edx-platform'),
-            [
-                ['antoviaque', 'edx/edx-platform'],
-                ['bradenmacdonald', 'edx/edx-platform'],
-                ['e-kolpakov', 'edx/edx-platform'],
-                ['itsjeyd', 'edx/edx-platform'],
-                ['Kelketek', 'edx/edx-platform'],
-                ['mtyaka', 'edx/edx-platform'],
-                ['smarnach', 'edx/edx-platform'],
-            ]
+            ['antoviaque', 'edx/edx-platform', 'bradenmacdonald', 'edx/edx-platform', 'e-kolpakov', 'edx/edx-platform',
+             'itsjeyd', 'edx/edx-platform', 'Kelketek', 'edx/edx-platform', 'mtyaka', 'edx/edx-platform',
+             'smarnach', 'edx/edx-platform']
         )
 
     @responses.activate
