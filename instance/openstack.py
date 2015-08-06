@@ -22,9 +22,13 @@ OpenStack - Helper functions
 
 # Imports #####################################################################
 
+import requests
+
 from novaclient.v2.client import Client as NovaClient
 
 from django.conf import settings
+
+from instance.utils import get_requests_retry
 
 
 # Logging #####################################################################
@@ -39,13 +43,23 @@ def get_nova_client():
     """
     Instanciate a python novaclient.Client() object with proper credentials
     """
-    return NovaClient(
+    nova = NovaClient(
         settings.OPENSTACK_USER,
         settings.OPENSTACK_PASSWORD,
         settings.OPENSTACK_TENANT,
         settings.OPENSTACK_AUTH_URL,
         region_name=settings.OPENSTACK_REGION,
     )
+
+    # API queries via the nova client occasionally get connection errors from the OpenStack provider.
+    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
+    # urllib3's definition) are retried before giving up.
+    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
+    nova.client.open_session()
+    nova.client._session.mount('http://', adapter)
+    nova.client._session.mount('https://', adapter)
+
+    return nova
 
 
 def create_server(nova, server_name, flavor_selector, image_selector, key_name=None):

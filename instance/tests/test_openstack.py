@@ -22,8 +22,10 @@ OpenStack - Tests
 
 # Imports #####################################################################
 
+import requests
+
 from collections import namedtuple
-from unittest.mock import call, Mock
+from unittest.mock import Mock, call, patch
 
 from instance import openstack
 from instance.tests.base import TestCase
@@ -75,3 +77,21 @@ class OpenStackTestCase(TestCase):
         server_class = namedtuple('Server', 'addresses')
         server = server_class(addresses=[])
         self.assertEqual(openstack.get_server_public_address(server), None)
+
+    @patch('requests.packages.urllib3.util.retry.Retry.sleep')
+    @patch('http.client.HTTPConnection.getresponse')
+    @patch('http.client.HTTPConnection.request')
+    def test_nova_client_connection_error(self, mock_request, mock_getresponse, mock_retry_sleep):
+        """
+        Connection error during a request from the nova client
+        Ensure requests are retried before giving up, with a backoff sleep between attempts
+        """
+        def getresponse_call(*args, **kwargs):
+            """ Invoked by the nova client when making a HTTP request (via requests/urllib3) """
+            raise ConnectionResetError('[Errno 104] Connection reset by peer')
+        mock_getresponse.side_effect = getresponse_call
+        nova = openstack.get_nova_client()
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            nova.servers.get('test-id')
+        self.assertEqual(mock_getresponse.call_count, 11)
+        self.assertEqual(mock_retry_sleep.call_count, 10)

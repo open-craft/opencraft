@@ -99,7 +99,8 @@ disable=
     locally-disabled,
     too-few-public-methods,
     too-many-ancestors,
-    unused-argument
+    unused-argument,
+    protected-access
 
 [SPELLING]
 

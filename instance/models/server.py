@@ -174,7 +174,6 @@ class OpenStackServer(Server):
             self, self.status, to_json(os_server)))
 
         if self.status == 'started':
-            #pylint: disable=protected-access
             self.log('debug', 'Server {}: loaded="{}" status="{}"'.format(
                 self, os_server._loaded, os_server.status))
             if os_server._loaded and os_server.status == 'ACTIVE':

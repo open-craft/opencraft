@@ -22,10 +22,11 @@ Instance app - Util functions
 
 # Imports #####################################################################
 
-from mock import Mock
-
 import json
+import requests
 import socket
+
+from mock import Mock
 
 
 # Functions ###################################################################
@@ -56,3 +57,16 @@ def to_json(obj):
     if not hasattr(obj, 'toJSON'):
         obj = obj.__dict__
     return json.dumps(obj, sort_keys=True, indent=4, default=dumper)
+
+
+def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_factor=0.5):
+    """
+    Returns a urllib3 `Retry` object, with the default requests retry policy
+    """
+    return requests.packages.urllib3.util.retry.Retry(
+        total=total,
+        connect=connect,
+        read=read,
+        redirect=redirect,
+        backoff_factor=backoff_factor
+    )
