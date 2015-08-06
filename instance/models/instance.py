@@ -32,6 +32,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from instance import ansible, github
 from instance.gandi import GandiAPI
+from instance.github import fork_name2tuple
 from instance.log_exception import log_exception
 from instance.repo import clone_configuration_repo
 from instance.models.logging_mixin import LoggerInstanceMixin
@@ -287,6 +288,17 @@ class OpenEdXInstanceQuerySet(models.QuerySet):
         self._for_write = True
         instance.save(force_insert=True, using=self.db)
         return instance
+
+    def get(self, *args, **kwargs):
+        """
+        Augmented `get()` method:
+        - Adds support for `fork_name` to allow to query the github org & repo using a single argument
+        """
+        fork_name = kwargs.pop('fork_name', None)
+        if fork_name is not None:
+            kwargs['github_organization_name'], kwargs['github_repository_name'] = fork_name2tuple(fork_name)
+
+        return super().get(*args, **kwargs)
 
 
 class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):

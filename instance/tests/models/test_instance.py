@@ -271,6 +271,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.commit_id, '9' * 40)
         self.assertEqual(instance.name, 'create.defaults - edx/edx-platform/master (9999999)')
 
+    def test_get_by_fork_name(self):
+        """
+        Use `fork_name` to get an instance object from the ORM
+        """
+        OpenEdXInstanceFactory(
+            github_organization_name='get-by',
+            github_repository_name='fork-name',
+        )
+        instance = OpenEdXInstance.objects.get(fork_name='get-by/fork-name')
+        self.assertEqual(instance.fork_name, 'get-by/fork-name')
+
     def test_vars_str_s3_settings(self):
         """
         Add extra settings in ansible vars, which can override existing settings
