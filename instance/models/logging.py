@@ -70,7 +70,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
     """
     Single log entry
     """
-    text = models.TextField()
+    text = models.TextField(blank=True)
     level = models.CharField(max_length=9, db_index=True, default='info', choices=LOG_LEVEL_CHOICES)
 
     objects = LogEntryQuerySet().as_manager()
