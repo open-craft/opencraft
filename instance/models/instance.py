@@ -352,7 +352,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
         # DNS
         self.log('info', 'Waiting for IP assignment on server {}...'.format(server))
-        server.sleep_until_status('active')
+        server.sleep_until_status(['active', 'booted'])
         self.log('info', 'Updating DNS for instance {}: LMS at {}...'.format(self, self.domain))
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
         self.log('info', 'Updating DNS for instance {}: Studio at {}...'.format(self, self.studio_domain))

@@ -129,7 +129,7 @@ class OpenStackServerTestCase(TestCase):
     @patch('instance.models.server.time.sleep')
     def test_sleep_until_status(self, mock_sleep, mock_update_status):
         """
-        Sleep until the server gets to 'booted' status
+        Sleep until the server gets to 'booted' status (single status string argument)
         """
         server = OpenStackServerFactory()
         status_queue = ['started', 'started', 'active', 'booted', 'terminated']
@@ -144,6 +144,24 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, 'booted')
         self.assertEqual(mock_sleep.call_count, 3)
         self.assertEqual(status_queue, ['terminated'])
+
+    @patch('instance.models.server.OpenStackServer.update_status')
+    @patch('instance.models.server.time.sleep')
+    def test_sleep_until_status_list(self, mock_sleep, mock_update_status):
+        """
+        Sleep until the server gets to one of the status in a list
+        """
+        server = OpenStackServerFactory()
+        status_queue = ['started', 'booted']
+        status_queue.reverse() # To be able to use pop()
+
+        def update_status():
+            """ Simulate status progression successive runs """
+            server.status = status_queue.pop()
+        mock_update_status.side_effect = update_status
+
+        self.assertEqual(server.sleep_until_status(['terminated', 'booted']), 'booted')
+        self.assertEqual(server.status, 'booted')
 
     def test_terminate_new_server(self):
         """

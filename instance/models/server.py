@@ -95,13 +95,17 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
 
     def sleep_until_status(self, target_status):
         """
-        Sleep in a loop until the server reaches the specified status
+        Sleep in a loop until the server reaches one of the specified status
         """
-        self.log('info', 'Waiting for server {} to reach the {} status...'.format(self, target_status))
+        self.log('info', 'Waiting for server {} to reach status {}...'.format(self, target_status))
         while True:
             self.update_status()
-            if self.status == target_status:
-                break
+            if isinstance(target_status, str):
+                if self.status == target_status:
+                    break
+            else: # Status list
+                if self.status in target_status:
+                    break
             time.sleep(1)
         return self.status
 

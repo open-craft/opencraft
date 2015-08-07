@@ -320,3 +320,26 @@ class OpenEdXInstanceTestCase(TestCase):
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
         ])
         self.assertEqual(mock_run_playbook.call_count, 1)
+
+    @patch_os_server
+    @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
+    @patch('instance.models.server.time.sleep')
+    @patch('instance.models.instance.gandi.set_dns_record')
+    @patch('instance.models.instance.OpenEdXInstance.run_playbook')
+    def test_run_provisioning_no_active(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
+                                        mock_sleep, mock_update_status):
+        """
+        Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
+        status_queue = ['started', 'booted', 'booted']
+        status_queue.reverse() # To be able to use pop()
+
+        def update_status(self):
+            """ Simulate status progression successive runs """
+            self.status = status_queue.pop()
+        mock_update_status.side_effect = update_status
+
+        with patch('instance.models.server.OpenStackServer.start'):
+            instance.run_provisioning()
+        self.assertEqual(mock_run_playbook.call_count, 1)
