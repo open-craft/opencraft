@@ -28,6 +28,12 @@ import requests
 from django.conf import settings
 
 
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 # Constants ###################################################################
 
 GH_HEADERS = {
@@ -103,9 +109,13 @@ def get_pr_list_from_username(user_name, fork_name):
     q = 'is:open is:pr author:{author} repo:{repo}'.format(author=user_name, repo=fork_name)
     url = 'https://api.github.com/search/issues?sort=created&q={}'.format(q)
     r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
+
+    r_pr_list = r.json()
+    logger.debug('List of PRs received for user %s: %s', user_name, r_pr_list)
 
     pr_list = []
-    for pr_dict in r.json()['items']:
+    for pr_dict in r_pr_list['items']:
         pr = get_pr_by_number(fork_name, pr_dict['number'])
         pr_list.append(pr)
     return pr_list
