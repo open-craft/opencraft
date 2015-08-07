@@ -22,8 +22,10 @@ Instance views
 
 # Imports #####################################################################
 
-from django.shortcuts import render
 from rest_framework import viewsets
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 from instance.models.instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
@@ -47,6 +49,7 @@ def get_context():
 
 # Views #######################################################################
 
+@login_required
 def index(request):
     """
     Index view

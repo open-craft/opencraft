@@ -47,6 +47,7 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default='[]')
 
 DEBUG = env.bool('DEBUG', default=False)
 
+LOGIN_URL = '/admin/login/'
 
 # Database ####################################################################
 
