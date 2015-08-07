@@ -113,10 +113,17 @@ Then run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
 $ make test
 ```
 
-To run a single test, use `make testone`:
+To run a single test, use `make test_one`:
 
 ```
 $ make testone instance.tests.models.test_server
+```
+
+You can also run prospector and the unit tests independently:
+
+```
+$ make test_prospector
+$ make test_unit
 ```
 
 
@@ -127,25 +134,6 @@ To access the console, you can use `shell_plus`:
 
 ```
 $ make shell
-
-Python 3.4.3 (default, Mar 26 2015, 22:03:40)
-Type "copyright", "credits" or "license" for more information.
-
-IPython 3.1.0 -- An enhanced Interactive Python.
-?         -> Introduction and overview of IPython's features.
-%quickref -> Quick reference.
-help      -> Python's own help system.
-object?   -> Details about 'object', use 'object??' for extra details.
-
-In [1]: from instance.tasks import provision_sandbox_instance
-
-In [2]: result = provision_sandbox_instance(
-    sub_domain='badges.sandbox',
-    name='Badges',
-    s3_access_key='XXX',
-    s3_secret_access_key='XXX',
-    s3_bucket_name='sandbox-edxapp-storage',
-)
 ```
 
 

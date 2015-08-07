@@ -1,8 +1,8 @@
 # Defaults
 WORKERS = 4
 
-# For `testone` use the rest as arguments and turn them into do-nothing targets
-ifeq (testone,$(firstword $(MAKECMDGOALS)))
+# For `test_one` use the rest as arguments and turn them into do-nothing targets
+ifeq (test_one,$(firstword $(MAKECMDGOALS)))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
@@ -28,12 +28,16 @@ rundev: clean migrate
 shell: clean
 	honcho run ./manage.py shell_plus
 
-test: clean
+test_prospector: clean
 	prospector --profile opencraft
+
+test_unit: clean
 	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 90 || (echo "\nERROR: Coverage is below 90%\n" && exit 2)
 
-testone: clean
+test: clean test_prospector test_unit
+
+test_one: clean
 	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
