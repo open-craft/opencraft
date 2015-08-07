@@ -84,18 +84,19 @@ class GitHubTestCase(TestCase):
             content_type='application/json; charset=utf8',
             status=200)
 
+        pr = github.get_pr_by_number('edx/edx-platform', 8474)
         self.assertEqual(
-            github.get_pr_by_number('edx/edx-platform', 8474),
-            github.PR(
-                name='Add feature flag to allow hiding the discussion tab for individual courses. (smarnach)',
-                body='**Description**\r\n\r\nHello!\nDesc with unicode «ταБЬℓσ»\r\n'
-                     '- - -\r\n**Settings**\r\n```yaml\r\nEDXAPP_FEATURES:\r\n  ALLOW: true\r\n```',
-                number=8474,
-                fork_name='open-craft/edx-platform',
-                branch_name='smarnach/hide-discussion-tab',
-                extra_settings='EDXAPP_FEATURES:\r\n  ALLOW: true\r\n',
-            )
-        )
+            pr.title,
+            'Add feature flag to allow hiding the discussion tab for individual courses.')
+        self.assertEqual(
+            pr.body,
+            '**Description**\r\n\r\nHello!\nDesc with unicode «ταБЬℓσ»\r\n'
+            '- - -\r\n**Settings**\r\n```yaml\r\nEDXAPP_FEATURES:\r\n  ALLOW: true\r\n```')
+        self.assertEqual(pr.number, 8474)
+        self.assertEqual(pr.fork_name, 'open-craft/edx-platform')
+        self.assertEqual(pr.branch_name, 'smarnach/hide-discussion-tab')
+        self.assertEqual(pr.extra_settings, 'EDXAPP_FEATURES:\r\n  ALLOW: true\r\n')
+        self.assertEqual(pr.username, 'smarnach')
 
     @responses.activate
     def test_get_pr_by_number_404(self):
@@ -114,7 +115,7 @@ class GitHubTestCase(TestCase):
 
     @responses.activate
     @patch('instance.github.get_pr_by_number')
-    def test_get_pr_list_for_user(self, mock_get_pr_by_number):
+    def test_get_pr_list_from_username(self, mock_get_pr_by_number):
         """
         Get list of open PR for user
         """
@@ -129,15 +130,14 @@ class GitHubTestCase(TestCase):
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
         self.assertEqual(
-            github.get_pr_list_for_user('itsjeyd', 'edx/edx-platform'),
+            github.get_pr_list_from_username('itsjeyd', 'edx/edx-platform'),
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146]]
         )
 
     @responses.activate
-    @patch('instance.github.get_pr_list_for_user')
-    def test_get_pr_list_for_organization_team(self, mock_get_pr_list_for_user):
+    def test_get_username_list_from_team(self):
         """
-        Get list of open PR for team
+        Get list of members in a team
         """
         responses.add(
             responses.GET, 'https://api.github.com/orgs/open-craft/teams',
@@ -150,17 +150,13 @@ class GitHubTestCase(TestCase):
             content_type='application/json; charset=utf8',
             status=200)
 
-        mock_get_pr_list_for_user.side_effect = lambda user_name, fork_name: [user_name, fork_name]
-
         self.assertEqual(
-            github.get_pr_list_for_organization_team('open-craft', 'edx/edx-platform'),
-            ['antoviaque', 'edx/edx-platform', 'bradenmacdonald', 'edx/edx-platform', 'e-kolpakov', 'edx/edx-platform',
-             'itsjeyd', 'edx/edx-platform', 'Kelketek', 'edx/edx-platform', 'mtyaka', 'edx/edx-platform',
-             'smarnach', 'edx/edx-platform']
+            github.get_username_list_from_team('open-craft'),
+            ['antoviaque', 'bradenmacdonald', 'e-kolpakov', 'itsjeyd', 'Kelketek', 'mtyaka', 'smarnach']
         )
 
     @responses.activate
-    def test_get_pr_list_for_organization_team_404(self):
+    def test_get_username_list_from_team_404(self):
         """
         Get list of open PR for non-existent team
         """
@@ -171,4 +167,4 @@ class GitHubTestCase(TestCase):
             status=200)
 
         with self.assertRaises(KeyError, msg='non-existent'):
-            github.get_pr_list_for_organization_team('open-craft', 'edx/edx-platform', team_name='non-existent')
+            github.get_username_list_from_team('open-craft', team_name='non-existent')

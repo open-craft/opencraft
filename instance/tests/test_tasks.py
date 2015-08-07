@@ -22,27 +22,61 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
-from mock import Mock, patch
+from mock import patch
 
-from instance import tasks
+from instance import github, tasks
+from instance.models.instance import OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 
 
 # Tests #######################################################################
 
+# Factory boy doesn't properly support pylint+django
+#pylint: disable=no-member
+
 class TasksTestCase(TestCase):
     """
     Test cases for worker tasks
     """
-    @patch('instance.tasks.OpenEdXInstance.objects.get_or_create')
-    def test_provision_sandbox_instance(self, mock_instance_get_or_create):
+    @patch('instance.models.instance.OpenEdXInstance.provision', autospec=True)
+    def test_provision_sandbox_instance(self, mock_instance_provision):
         """
         Create sandbox instance
         """
         instance = OpenEdXInstanceFactory()
-        mock_instance_get_or_create.return_value = (instance, True)
-        instance.run_provisioning = Mock()
-        instance.run_provisioning.return_value = ('server', 'log')
-        tasks.provision_sandbox_instance(sub_domain='test-provision.sandbox')
-        self.assertEqual(instance.run_provisioning.call_count, 1)
+        tasks.provision_instance(instance.pk)
+        self.assertEqual(mock_instance_provision.call_count, 1)
+        self.assertEqual(mock_instance_provision.mock_calls[0][1][0].pk, instance.pk)
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    @patch('instance.tasks.get_pr_list_from_username')
+    @patch('instance.tasks.get_username_list_from_team')
+    def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
+                          mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        New PR created on the watched repo
+        """
+        mock_get_username_list.return_value = ['itsjeyd']
+        pr = github.PR(
+            number=234,
+            fork_name='watched/fork',
+            branch_name='watch-branch',
+            title='Watched PR title',
+            username='bradenmacdonald',
+            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\nWATCH: true\r\n```\r\nMore...',
+        )
+        mock_get_pr_list_from_username.return_value = [pr]
+        mock_get_commit_id_from_ref.return_value = '7' * 40
+
+        tasks.watch_pr()
+        self.assertEqual(mock_provision_instance.call_count, 1)
+        instance = OpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
+        self.assertEqual(instance.sub_domain, 'pr234.sandbox')
+        self.assertEqual(instance.fork_name, 'watched/fork')
+        self.assertEqual(instance.branch_name, 'watch-branch')
+        self.assertEqual(instance.ansible_extra_settings, 'WATCH: true\r\n')
+        self.assertEqual(
+            instance.name,
+            'PR#234: Watched PR title (bradenmacdonald) - watched/fork/watch-branch (7777777)')

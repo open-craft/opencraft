@@ -125,6 +125,17 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.update_status(), 'booted')
         self.assertEqual(server.status, 'booted')
 
+    def test_update_status_booted_to_provisioned(self):
+        """
+        Update status while the server is booted, when the VM is provisioned
+        """
+        server = StartedOpenStackServerFactory(
+            os_server_fixture='openstack/api_server_2_active.json',
+            status='booted')
+        self.assertEqual(server.update_status(), 'booted')
+        self.assertEqual(server.update_status(provisioned=True), 'provisioned')
+        self.assertEqual(server.status, 'provisioned')
+
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
     def test_sleep_until_status(self, mock_sleep, mock_update_status):

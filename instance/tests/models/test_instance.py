@@ -302,11 +302,12 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_os_server
     @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.OpenStackServer.sleep_until_status')
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.run_playbook')
-    def test_run_provisioning(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
-                              mock_sleep_until_status, mock_openstack_create_server):
+    def test_provision(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
+                       mock_sleep_until_status, mock_update_status, mock_openstack_create_server):
         """
         Run provisioning sequence
         """
@@ -314,7 +315,7 @@ class OpenEdXInstanceTestCase(TestCase):
         os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
-        instance.run_provisioning()
+        instance.provision()
         self.assertEqual(mock_set_dns_record.mock_calls, [
             call(name='run.provisioning', type='A', value='192.168.100.200'),
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
@@ -326,20 +327,20 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.server.time.sleep')
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.run_playbook')
-    def test_run_provisioning_no_active(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
-                                        mock_sleep, mock_update_status):
+    def test_provision_no_active(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
+                                 mock_sleep, mock_update_status):
         """
         Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
         """
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
-        status_queue = ['started', 'booted', 'booted']
+        status_queue = ['started', 'booted', 'booted', 'provisioned']
         status_queue.reverse() # To be able to use pop()
 
-        def update_status(self):
+        def update_status(self, provisioned=False):
             """ Simulate status progression successive runs """
             self.status = status_queue.pop()
         mock_update_status.side_effect = update_status
 
         with patch('instance.models.server.OpenStackServer.start'):
-            instance.run_provisioning()
+            instance.provision()
         self.assertEqual(mock_run_playbook.call_count, 1)

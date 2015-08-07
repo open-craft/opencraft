@@ -25,7 +25,6 @@ GitHub Service API - Helper functions
 import re
 import requests
 
-from collections import namedtuple
 from django.conf import settings
 
 
@@ -33,20 +32,11 @@ from django.conf import settings
 
 GH_HEADERS = {
     'Authorization': 'token {}'.format(settings.GITHUB_ACCESS_TOKEN),
+    'Time-Zone': 'UTC',
 }
-PR = namedtuple('PR', 'name body number fork_name branch_name extra_settings')
 
 
 # Functions ###################################################################
-
-def get_fork_branch_name_for_pr(pr_from_json):
-    """
-    Get the branch name of a PR, from its JSON description returned by the API
-    """
-    fork_name = pr_from_json['head']['repo']['full_name']
-    branch_name = pr_from_json['head']['ref']
-    return [fork_name, branch_name]
-
 
 def fork_name2tuple(fork_name):
     """
@@ -93,19 +83,20 @@ def get_pr_by_number(fork_name, pr_number):
     r.raise_for_status()
 
     r_pr = r.json()
-    pr_fork_name, pr_branch_name = get_fork_branch_name_for_pr(r_pr)
+    pr_fork_name = r_pr['head']['repo']['full_name']
+    pr_branch_name = r_pr['head']['ref']
     pr = PR(
-        name='{pr[title]} ({pr[user][login]})'.format(pr=r_pr),
-        number=pr_number,
-        fork_name=pr_fork_name,
-        branch_name=pr_branch_name,
+        pr_number,
+        pr_fork_name,
+        pr_branch_name,
+        r_pr['title'],
+        r_pr['user']['login'],
         body=r_pr['body'],
-        extra_settings=get_settings_from_pr_body(r_pr['body']),
     )
     return pr
 
 
-def get_pr_list_for_user(user_name, fork_name):
+def get_pr_list_from_username(user_name, fork_name):
     """
     Retreive the current active PRs for a given user
     """
@@ -120,7 +111,7 @@ def get_pr_list_for_user(user_name, fork_name):
     return pr_list
 
 
-def get_team_for_organization_team_name(organization_name, team_name='Owners'):
+def get_team_from_organization(organization_name, team_name='Owners'):
     """
     Retreive a team by organization & team name
     """
@@ -134,34 +125,34 @@ def get_team_for_organization_team_name(organization_name, team_name='Owners'):
     raise KeyError(team_name)
 
 
-def get_user_name_list_for_organization_team(organization_name, team_name='Owners'):
+def get_username_list_from_team(organization_name, team_name='Owners'):
     """
     Retreive the usernames of a given team's members
     """
-    team = get_team_for_organization_team_name(organization_name, team_name)
+    team = get_team_from_organization(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
     r = requests.get(url, headers=GH_HEADERS)
     r.raise_for_status()
     return [user_dict['login'] for user_dict in r.json()]
 
 
-def get_pr_list_for_organization_team(organization_name, fork_name, team_name='Owners'):
-    """
-    Retreive the active PRs of a given team in a fork
-    """
-    pr_list = []
-    for user_name in get_user_name_list_for_organization_team(organization_name, team_name):
-        pr_list += get_pr_list_for_user(user_name, fork_name)
-    return pr_list
+# Classes #####################################################################
 
-
-def get_watched_pr_list():
+class PR:
     """
-    Retreive the active PRs of the teams & forks to be watched, from the settings
+    Representation of a GitHub Pull Request
     """
-    if not settings.WATCH_FORK or not settings.WATCH_ORGANIZATION:
-        return []
+    def __init__(self, number, fork_name, branch_name, title, username, body=''):
+        self.number = number
+        self.fork_name = fork_name
+        self.branch_name = branch_name
+        self.title = title
+        self.username = username
+        self.body = body
 
-    return get_pr_list_for_organization_team(
-        settings.WATCH_ORGANIZATION,
-        settings.WATCH_FORK)
+    @property
+    def extra_settings(self):
+        """
+        Extra settings contained in the PR body
+        """
+        return get_settings_from_pr_body(self.body)

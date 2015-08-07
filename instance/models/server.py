@@ -47,7 +47,7 @@ SERVER_STATUS_CHOICES = (
     ('started', 'Started - Running but not active yet'),
     ('active', 'Active - Running but not booted yet'),
     ('booted', 'Booted - Booted but not ready to be added to the application'),
-    ('ready', 'Ready - Ready to be added to the application'),
+    ('provisioned', 'Provisioned - Provisioning is completed, ready to add to the application'),
     ('live', 'Live - Is actively used in the application and/or accessed by users'),
     ('stopping', 'Stopping - Stopping temporarily'),
     ('stopped', 'Stopped - Stopped temporarily'),
@@ -77,7 +77,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
     """
     A single server VM
     """
-    status = models.CharField(max_length=10, default='new', choices=SERVER_STATUS_CHOICES, db_index=True)
+    status = models.CharField(max_length=11, default='new', choices=SERVER_STATUS_CHOICES, db_index=True)
 
     objects = ServerQuerySet().as_manager()
 
@@ -119,7 +119,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
             'server_pk': instance.pk,
         })
 
-    def update_status(self):
+    def update_status(self, provisioned=False):
         """
         Check the current status and update it if it has changed
         """
@@ -167,7 +167,7 @@ class OpenStackServer(Server):
 
         return public_addr['addr']
 
-    def update_status(self):
+    def update_status(self, provisioned=False):
         """
         Refresh the status by querying the openstack server via nova
         """
@@ -186,6 +186,10 @@ class OpenStackServer(Server):
         if self.status == 'active':
             if is_port_open(self.public_ip, 22):
                 self._set_status('booted')
+
+        if self.status == 'booted':
+            if provisioned:
+                self._set_status('provisioned')
 
         return self.status
 

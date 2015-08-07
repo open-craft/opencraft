@@ -28,6 +28,7 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.template import loader
+from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from instance import ansible, github
@@ -66,6 +67,8 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
     base_domain = models.CharField(max_length=50, default=settings.INSTANCES_BASE_DOMAIN)
     protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
+
+    last_provisioning_started = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -282,8 +285,7 @@ class OpenEdXInstanceQuerySet(models.QuerySet):
         if not instance.commit_id:
             instance.set_to_branch_tip(commit=False)
         if not instance.name:
-            instance.name = '{i.sub_domain} - {i.fork_name}/{i.branch_name} ({i.commit_short_id})'\
-                            .format(i=instance)
+            instance.name = '{i.sub_domain} - {i.reference_name}'.format(i=instance)
 
         self._for_write = True
         instance.save(force_insert=True, using=self.db)
@@ -314,6 +316,13 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     objects = OpenEdXInstanceQuerySet.as_manager()
 
     @property
+    def reference_name(self):
+        """
+        A descriptive name for the instance, which includes meaningful attributes
+        """
+        return '{s.fork_name}/{s.branch_name} ({s.commit_short_id})'.format(s=self)
+
+    @property
     def ansible_s3_settings(self):
         """
         Ansible settings for the S3 bucket
@@ -339,10 +348,13 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 
     @log_exception
-    def run_provisioning(self):
+    def provision(self):
         """
         Run the provisioning sequence of the instance, recreating the servers from scratch
         """
+        self.last_provisioning_started = timezone.now()
+        self.save()
+
         # Server
         self.log('info', 'Terminate servers for instance {}...'.format(self))
         self.server_set.terminate()
@@ -362,5 +374,6 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
         server.sleep_until_status('booted')
         ansible_log = self.run_playbook()
+        server.update_status(provisioned=True)
 
         return (server, ansible_log)

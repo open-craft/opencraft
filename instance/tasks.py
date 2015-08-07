@@ -22,9 +22,11 @@ Worker tasks for instance hosting & management
 
 # Imports #####################################################################
 
-from huey.djhuey import task
+from huey.djhuey import crontab, periodic_task, task
 
-from instance.github import get_watched_pr_list
+from django.conf import settings
+
+from instance.github import get_username_list_from_team, get_pr_list_from_username
 from instance.models.instance import OpenEdXInstance
 
 
@@ -37,32 +39,39 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @task()
-def provision_sandbox_instance(**instance_field_dict):
+def provision_instance(instance_pk):
     """
-    (Re-)create sandbox instance & run provisioning on it
+    Run provisioning on an existing instance
     """
-    logger.info('Creating instance object for %s', instance_field_dict)
-    instance, _ = OpenEdXInstance.objects.get_or_create(**instance_field_dict)
-
-    # Extend default name
-    instance.name = 'Sandbox - {}'.format(instance.name)
+    logger.info('Retreiving instance: pk=%s', instance_pk)
+    instance = OpenEdXInstance.objects.get(pk=instance_pk)
 
     logger.info('Running provisioning on %s', instance)
-    _, log = instance.run_provisioning()
-    return log
+    instance.provision()
 
 
-@task()
+@periodic_task(crontab(minute='*/1'))
 def watch_pr():
     """
-    Automatically create or recreate sandboxes for each of the open PRs from the watched
+    Automatically create/update sandboxes for PRs opened by members of the watched
     organization on the watched repository
     """
-    for pr in get_watched_pr_list():
-        provision_sandbox_instance(
-            sub_domain='pr{number}.sandbox'.format(number=pr.number),
-            fork_name=pr.fork_name,
-            branch_name=pr.branch_name,
-            ansible_extra_settings=pr.extra_settings,
-        )
-    return None
+    team_username_list = get_username_list_from_team(settings.WATCH_ORGANIZATION)
+
+    for username in team_username_list:
+        for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
+            pr_sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
+
+            instance, created = OpenEdXInstance.objects.get_or_create(
+                sub_domain=pr_sub_domain,
+                fork_name=pr.fork_name,
+                branch_name=pr.branch_name,
+            )
+            instance.name = 'PR#{pr.number}: {pr.title} ({pr.username}) - {i.reference_name}'\
+                            .format(pr=pr, i=instance)
+            instance.ansible_extra_settings = pr.extra_settings
+            instance.save()
+
+            if created:
+                logger.info('New PR found, creating sandbox: %s', pr)
+                provision_instance(instance.pk)
