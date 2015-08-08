@@ -324,9 +324,10 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.server.openstack.create_server')
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.OpenStackServer.sleep_until_status')
+    @patch('instance.models.server.OpenStackServer.reboot')
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.run_playbook')
-    def test_provision(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
+    def test_provision(self, os_server_manager, mock_run_playbook, mock_set_dns_record, mock_server_reboot,
                        mock_sleep_until_status, mock_update_status, mock_openstack_create_server):
         """
         Run provisioning sequence
@@ -341,22 +342,24 @@ class OpenEdXInstanceTestCase(TestCase):
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
         ])
         self.assertEqual(mock_run_playbook.call_count, 1)
+        self.assertEqual(mock_server_reboot.call_count, 1)
 
     @patch_os_server
     @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
     @patch('instance.models.server.time.sleep')
+    @patch('instance.models.server.OpenStackServer.reboot')
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.run_playbook')
     def test_provision_no_active(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
-                                 mock_sleep, mock_update_status):
+                                 mock_server_reboot, mock_sleep, mock_update_status):
         """
         Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
         """
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
-        status_queue = ['started', 'booted', 'booted', 'provisioned']
+        status_queue = ['started', 'booted', 'booted', 'provisioned', 'rebooting', 'ready']
         status_queue.reverse() # To be able to use pop()
 
-        def update_status(self, provisioned=False):
+        def update_status(self, provisioned=False, rebooting=False):
             """ Simulate status progression successive runs """
             self.status = status_queue.pop()
         mock_update_status.side_effect = update_status

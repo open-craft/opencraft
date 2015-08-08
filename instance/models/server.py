@@ -47,13 +47,24 @@ SERVER_STATUS_CHOICES = (
     ('started', 'Started - Running but not active yet'),
     ('active', 'Active - Running but not booted yet'),
     ('booted', 'Booted - Booted but not ready to be added to the application'),
-    ('provisioned', 'Provisioned - Provisioning is completed, ready to add to the application'),
+    ('provisioned', 'Provisioned - Provisioning is completed'),
+    ('rebooting', 'Rebooting - Reboot in progress, to apply changes from provisioning'),
+    ('ready', 'Ready - Rebooted and ready to add to the application'),
     ('live', 'Live - Is actively used in the application and/or accessed by users'),
     ('stopping', 'Stopping - Stopping temporarily'),
     ('stopped', 'Stopped - Stopped temporarily'),
     ('terminating', 'Terminating - Stopping forever'),
     ('terminated', 'Terminated - Stopped forever'),
 )
+
+
+# Exceptions ##################################################################
+
+class ServerNotReady(Exception):
+    """
+    Raised when an action is attempted in a status that doesn't allow it
+    """
+    pass
 
 
 # Models ######################################################################
@@ -119,7 +130,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
             'server_pk': instance.pk,
         })
 
-    def update_status(self, provisioned=False):
+    def update_status(self, provisioned=False, rebooting=False):
         """
         Check the current status and update it if it has changed
         """
@@ -167,12 +178,11 @@ class OpenStackServer(Server):
 
         return public_addr['addr']
 
-    def update_status(self, provisioned=False):
+    def update_status(self, provisioned=False, rebooting=False):
         """
         Refresh the status by querying the openstack server via nova
         """
         # TODO: Check when server is stopped or terminated
-        # Ensure the 'started' mode by getting the server instance from openstack
         os_server = self.os_server
         self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'.format(
             self, self.status, to_json(os_server)))
@@ -183,13 +193,17 @@ class OpenStackServer(Server):
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._set_status('active')
 
-        if self.status == 'active':
-            if is_port_open(self.public_ip, 22):
-                self._set_status('booted')
+        elif self.status == 'active' and is_port_open(self.public_ip, 22):
+            self._set_status('booted')
 
-        if self.status == 'booted':
-            if provisioned:
-                self._set_status('provisioned')
+        elif self.status == 'booted' and provisioned:
+            self._set_status('provisioned')
+
+        elif self.status in ('provisioned', 'ready') and rebooting:
+            self._set_status('rebooting')
+
+        elif self.status == 'rebooting' and not rebooting and is_port_open(self.public_ip, 22):
+            self._set_status('ready')
 
         return self.status
 
@@ -214,6 +228,23 @@ class OpenStackServer(Server):
             self._set_status('started')
         else:
             raise NotImplementedError
+
+    def reboot(self, reboot_type='SOFT'):
+        """
+        Reboot the server
+
+        This requires to switch the status to 'rebooting', which is first attempted via the
+        `update_status` method. If the current state doesn't allow to switch to this status,
+        a ServerNotReady exception is thrown.
+        """
+        if self.update_status(rebooting=True) != 'rebooting':
+            raise ServerNotReady("Can't change status to 'rebooting' (current: '{}')".format(self.status))
+        self.os_server.reboot(reboot_type=reboot_type)
+
+        # TODO: Find a better way to wait for the server shutdown and reboot
+        # Currently, without sleeping here, the status would immediately switch back to ready,
+        # as SSH is still available until the reboot terminates the SSHD process
+        time.sleep(30)
 
     def terminate(self):
         """

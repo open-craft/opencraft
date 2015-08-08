@@ -273,6 +273,7 @@ class AnsibleInstanceMixin(models.Model):
                 self.log('info', line)
                 log_lines.append([line.rstrip()])
 
+        self.log('info', 'Playbook run completed for instance {}'.format(self))
         return log_lines
 
 
@@ -384,10 +385,16 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         self.log('info', 'Updating DNS for instance {}: Studio at {}...'.format(self, self.studio_domain))
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
-        # Ansible
+        # Provisioning (ansible)
         self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
         server.sleep_until_status('booted')
         ansible_log = self.run_playbook()
         server.update_status(provisioned=True)
+
+        # Reboot
+        self.log('info', 'Rebooting server {}...'.format(server))
+        server.reboot()
+        server.sleep_until_status('ready')
+        self.log('info', 'Provisioning completed for instance {}'.format(self))
 
         return (server, ansible_log)

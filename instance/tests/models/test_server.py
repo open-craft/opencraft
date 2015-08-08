@@ -25,7 +25,7 @@ OpenStackServer model - Tests
 import novaclient
 from mock import Mock, call, patch
 
-from instance.models.server import OpenStackServer
+from instance.models.server import OpenStackServer, ServerNotReady
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
 
@@ -118,10 +118,12 @@ class OpenStackServerTestCase(TestCase):
         """
         Update status while the server is active, when the VM becomes booted
         """
-        mock_is_port_open.return_value = True
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
             status='active')
+        mock_is_port_open.return_value = False
+        self.assertEqual(server.update_status(), 'active')
+        mock_is_port_open.return_value = True
         self.assertEqual(server.update_status(), 'booted')
         self.assertEqual(server.status, 'booted')
 
@@ -135,6 +137,31 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.update_status(), 'booted')
         self.assertEqual(server.update_status(provisioned=True), 'provisioned')
         self.assertEqual(server.status, 'provisioned')
+
+    def test_update_status_provisioned_to_rebooting(self):
+        """
+        Update status when the server is rebooted, after being provisioned
+        """
+        server = StartedOpenStackServerFactory(
+            os_server_fixture='openstack/api_server_2_active.json',
+            status='provisioned')
+        self.assertEqual(server.update_status(), 'provisioned')
+        self.assertEqual(server.update_status(rebooting=True), 'rebooting')
+        self.assertEqual(server.status, 'rebooting')
+
+    @patch('instance.models.server.is_port_open')
+    def test_update_status_rebooting_to_ready(self, mock_is_port_open):
+        """
+        Update status while the server is rebooting, when the server becomes ready (ssh accessible again)
+        """
+        server = StartedOpenStackServerFactory(
+            os_server_fixture='openstack/api_server_2_active.json',
+            status='rebooting')
+        mock_is_port_open.return_value = False
+        self.assertEqual(server.update_status(), 'rebooting')
+        mock_is_port_open.return_value = True
+        self.assertEqual(server.update_status(), 'ready')
+        self.assertEqual(server.status, 'ready')
 
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
@@ -173,6 +200,25 @@ class OpenStackServerTestCase(TestCase):
 
         self.assertEqual(server.sleep_until_status(['terminated', 'booted']), 'booted')
         self.assertEqual(server.status, 'booted')
+
+    @patch('instance.models.server.time.sleep')
+    def test_reboot_provisioned_server(self, mock_sleep):
+        """
+        Reboot a provisioned server
+        """
+        server = StartedOpenStackServerFactory(status='provisioned')
+        server.reboot()
+        self.assertEqual(server.status, 'rebooting')
+        server.os_server.reboot.assert_called_once_with(reboot_type='SOFT')
+        self.assertEqual(mock_sleep.mock_calls, [call(30)])
+
+    def test_reboot_server_wrong_status(self):
+        """
+        Attempt to reboot a server while in a status that doesn't allow it
+        """
+        server = StartedOpenStackServerFactory()
+        with self.assertRaises(ServerNotReady):
+            server.reboot()
 
     def test_terminate_new_server(self):
         """
