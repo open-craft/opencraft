@@ -28,6 +28,12 @@ EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ instance.email }}'
 # Misc
 EDXAPP_TIME_ZONE: 'UTC'
 
+# Security updates
+COMMON_SECURITY_UPDATES: true
+SECURITY_UNATTENDED_UPGRADES: true
+SECURITY_UPDATE_ALL_PACKAGES: false
+SECURITY_UPGRADE_ON_ANSIBLE: true
+
 # Pin down dependencies to specific (known to be compatible) commits.
 edx_platform_repo: '{{ instance.repository_url }}'
 edx_platform_version: '{{ instance.commit_id }}'
