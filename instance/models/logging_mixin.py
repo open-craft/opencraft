@@ -25,7 +25,6 @@ Instance app models - Logging - Mixins
 import logging
 
 from django.db import models
-from django.db.models import Q
 
 from instance.models.logging_utils import level_to_integer
 
@@ -76,7 +75,7 @@ class LoggerInstanceMixin(LoggerMixin):
         Currently only supports one non-terminated server at a time
         Returned as a text string
         """
-        current_server = self.server_set.get(~Q(status='terminated'))
+        current_server = self.active_server_set.get()
         server_logentry_set = current_server.logentry_set.filter(level__in=PUBLISHED_LOG_LEVEL_SET)\
                                                          .order_by('pk')\
                                                          .iterator()

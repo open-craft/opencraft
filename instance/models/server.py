@@ -83,6 +83,12 @@ class ServerQuerySet(models.QuerySet):
             server.terminate()
         return qs
 
+    def exclude_terminated(self):
+        """
+        Filter out terminated servers from the queryset
+        """
+        return self.filter(~Q(status='terminated'))
+
 
 class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
     """

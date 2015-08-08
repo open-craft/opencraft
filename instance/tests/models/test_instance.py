@@ -25,7 +25,7 @@ OpenEdXInstance model - Tests
 import re
 from mock import call, patch
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
@@ -67,6 +67,40 @@ class InstanceTestCase(TestCase):
         self.assertEqual(instance.commit_short_id, '6e580ca')
         instance.commit_id = None
         self.assertEqual(instance.commit_short_id, None)
+
+    def test_status(self):
+        """
+        Instance status with one active server
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.status, 'empty')
+        server = StartedOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.status, 'started')
+        server.status = 'booted'
+        server.save()
+        self.assertEqual(instance.status, 'booted')
+
+    def test_status_terminated(self):
+        """
+        Instance status should revert to 'empty' when all its servers are terminated
+        """
+        instance = OpenEdXInstanceFactory()
+        server = StartedOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.status, 'started')
+        server.status = 'terminated'
+        server.save()
+        self.assertEqual(instance.status, 'empty')
+
+    def test_status_multiple_servers(self):
+        """
+        Instance status should not allow multiple active servers
+        """
+        instance = OpenEdXInstanceFactory()
+        StartedOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.status, 'started')
+        StartedOpenStackServerFactory(instance=instance)
+        with self.assertRaises(InconsistentInstanceState):
+            instance.status #pylint: disable=pointless-statement
 
 
 class GitHubInstanceTestCase(TestCase):

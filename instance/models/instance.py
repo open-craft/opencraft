@@ -50,6 +50,15 @@ PROTOCOL_CHOICES = (
 gandi = GandiAPI()
 
 
+# Exceptions ##################################################################
+
+class InconsistentInstanceState(Exception):
+    """
+    Indicates that the status of an instance can't be determined
+    """
+    pass
+
+
 # Validators ##################################################################
 
 sha1_validator = RegexValidator(regex='^[0-9a-f]{40}$', message='Full SHA1 hash required')
@@ -90,6 +99,26 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         Instance URL
         """
         return u'{0.protocol}://{0.domain}/'.format(self)
+
+    @property
+    def active_server_set(self):
+        """
+        Returns the subset of `self.server_set` which aren't terminated
+        """
+        return self.server_set.exclude_terminated()
+
+    @property
+    def status(self):
+        """
+        Instance status
+        """
+        active_server_set = self.active_server_set
+        if not active_server_set:
+            return 'empty'
+        elif active_server_set.count() > 1:
+            raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
+        else:
+            return active_server_set[0].status
 
 
 # Git #########################################################################
