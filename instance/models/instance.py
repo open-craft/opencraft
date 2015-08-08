@@ -61,9 +61,9 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
-    sub_domain = models.CharField(max_length=50, blank=False)
+    sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
-    name = models.CharField(max_length=250, blank=False)
+    name = models.CharField(max_length=250)
 
     base_domain = models.CharField(max_length=50, default=settings.INSTANCES_BASE_DOMAIN)
     protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
@@ -104,7 +104,7 @@ class VersionControlInstanceMixin(models.Model):
 
     branch_name = models.CharField(max_length=50, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
-    commit_id = models.CharField(max_length=40, blank=False, validators=[sha1_validator])
+    commit_id = models.CharField(max_length=40, validators=[sha1_validator])
 
     @property
     def commit_short_id(self):
@@ -120,8 +120,8 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     """
     Instance linked to a GitHub repository
     """
-    github_organization_name = models.CharField(max_length=50, db_index=True, blank=False)
-    github_repository_name = models.CharField(max_length=50, db_index=True, blank=False)
+    github_organization_name = models.CharField(max_length=50, db_index=True)
+    github_repository_name = models.CharField(max_length=50, db_index=True)
 
     class Meta:
         abstract = True
