@@ -22,50 +22,17 @@ Instance views
 
 # Imports #####################################################################
 
-from rest_framework import viewsets
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from rest_framework import viewsets, status
+from rest_framework.decorators import detail_route
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from instance.models.instance import OpenEdXInstance
-from instance.models.server import OpenStackServer
-from instance.serializers import OpenStackServerSerializer, OpenEdXInstanceSerializer
-
-
-# Functions - Helpers #########################################################
-
-def get_context():
-    """
-    Commond context
-    """
-    instance_list = OpenEdXInstance.objects.order_by('-created')
-
-    context = {
-        'instance_list': instance_list,
-    }
-
-    return context
-
-
-# Views #######################################################################
-
-@login_required
-def index(request):
-    """
-    Index view
-    """
-    return render(request, 'instance/index.html', get_context())
+from instance.serializers import OpenEdXInstanceSerializer
+from instance.tasks import provision_instance
 
 
 # Views - API #################################################################
-
-class OpenStackServerViewSet(viewsets.ModelViewSet):
-    """
-    OpenStackServer API ViewSet
-    """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
-
 
 class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
     """
@@ -73,3 +40,17 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
     """
     queryset = OpenEdXInstance.objects.all()
     serializer_class = OpenEdXInstanceSerializer
+
+    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    def provision(self, request, pk=None):
+        """
+        Start the (re-)provisioning of an instance
+        """
+        instance = self.get_object()
+        if instance.status not in ('empty', 'ready'):
+            return Response({'status': 'Instance is not ready for reprovisioning'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        provision_instance(pk)
+
+        return Response({'status': 'Instance provisioning started'})

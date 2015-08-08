@@ -17,20 +17,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+Instance views
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
-from instance.api.instance import OpenEdXInstanceViewSet
-from instance.api.server import OpenStackServerViewSet
+from instance.models.instance import OpenEdXInstance
 
 
-# Router ######################################################################
+# Functions - Helpers #########################################################
 
-router = routers.DefaultRouter()
+def get_context():
+    """
+    Commond context
+    """
+    instance_list = OpenEdXInstance.objects.order_by('-created')
 
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', OpenEdXInstanceViewSet)
+    context = {
+        'instance_list': instance_list,
+    }
+
+    return context
+
+
+# Views #######################################################################
+
+@login_required
+def index(request):
+    """
+    Index view
+    """
+    return render(request, 'instance/index.html', get_context())

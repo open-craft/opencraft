@@ -3,6 +3,16 @@
         max-width: none;
     }
 
+    .instance-description {
+        margin-bottom: 0px;
+    }
+
+    .reprovision.button {
+        float: right;
+        margin-bottom: 0px;
+        margin-right: 10px;
+    }
+
     .configuration,
     .instance-log {
         font-size: 0.8em;

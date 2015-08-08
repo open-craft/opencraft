@@ -17,20 +17,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+Views - Index - Tests
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
-
-from instance.api.instance import OpenEdXInstanceViewSet
-from instance.api.server import OpenStackServerViewSet
+from instance.tests.base import WithUserTestCase
 
 
-# Router ######################################################################
+# Tests #######################################################################
 
-router = routers.DefaultRouter()
+class IndexViewsTestCase(WithUserTestCase):
+    """
+    Test cases for views
+    """
+    def test_index_unauthenticated(self):
+        """
+        Index view - Unauthenticated users go to login page
+        """
+        response = self.client.get('/')
+        self.assertRedirects(response, 'http://testserver/admin/login/?next=/')
 
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', OpenEdXInstanceViewSet)
+    def test_index_authenticated(self):
+        """
+        Index view - Authenticated
+        """
+        self.client.login(username='user1', password='pass')
+        response = self.client.get('/')
+        self.assertContains(response, 'ng-app="InstanceApp"')

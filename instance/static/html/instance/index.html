@@ -8,14 +8,14 @@
   <section class="top-bar-section">
     <!-- Right Nav Section -->
     <ul class="right">
-      <li class="active"><a href="/admin/">Admin &nbsp; -></a></li>
+      <li class="active"><a href="/admin/logout/?next=/">Logout</a></li>
     </ul>
   </section>
 </top-bar>
 
 <div class="row">
   <!-- Instances List -->
-  <div class="large-3 medium-3 columns">
+  <div class="large-3 columns">
     <ul class="side-nav" ng-if="instanceList">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
@@ -30,20 +30,34 @@
   </div>
 
   <!-- Selected instance details -->
-  <div class="large-9 medium-9 columns" ng-if="selected.instance">
+  <div class="large-9 columns" ng-if="selected.instance">
     <div class="row">
-      <h3>{{ selected.instance.name }}</h3>
-      <ul class="breadcrumbs" ng-repeat="server in selected.instance.server_set" ng-if="server.status != 'terminated'">
-        <li>Status: {{ server.status }}</li>
-      </ul>
-    </div>
-    <div class="row">
-      Instance URL: <a href="{{ selected.instance.url }}" target="_new">{{ selected.instance.url }}</a>
-    </div>
-    <div class="row">
-      <a href="{{ selected.instance.github_base_url }}" target="_new">{{ selected.instance.github_base_url }}</a>
-      |
-      {{ selected.instance.branch_name }}
+      <h3>
+        {{ selected.instance.name }}
+        <span ng-repeat="server in selected.instance.active_server_set">
+          <span class="status radius label"
+                ng-class="{warning: server.status != 'ready', success: server.status == 'ready'}">
+            {{ server.status }}
+          </span>
+        </span>
+      </h3>
+      <div class="panel">
+        <div class="row">
+          <div class="large-10 columns">
+            <ul class="instance-description">
+              <li>Instance URL: <a href="{{ selected.instance.url }}" target="_new">{{ selected.instance.url }}</a></li>
+              <li><a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> | {{ selected.instance.branch_name }}</li>
+            </ul>
+          </div>
+          <div ng-switch="selected.instance.status">
+            <button class="button reprovision" ng-switch-when="ready"
+                                               ng-click="provision(selected.instance)">
+              Reprovision
+            </button>
+            <img src="/static/img/running.png" ng-switch-default />
+          </div>
+        </div>
+      </div>
     </div>
     <div class="row">
       <tabset>

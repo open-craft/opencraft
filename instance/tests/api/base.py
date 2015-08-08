@@ -17,20 +17,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+Tests - Base Class & Utils
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
+from rest_framework.test import APIClient, APIRequestFactory
 
-from instance.api.instance import OpenEdXInstanceViewSet
-from instance.api.server import OpenStackServerViewSet
+from instance.tests.base import WithUserTestCase
 
 
-# Router ######################################################################
+# Tests #######################################################################
 
-router = routers.DefaultRouter()
+class APITestCase(WithUserTestCase):
+    """
+    Base class for API tests
+    """
+    def setUp(self):
+        super().setUp()
 
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', OpenEdXInstanceViewSet)
+        self.api_factory = APIRequestFactory()
+        self.api_client = APIClient()

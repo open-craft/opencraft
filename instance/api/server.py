@@ -17,20 +17,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+Instance views
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
+from rest_framework import viewsets
 
-from instance.api.instance import OpenEdXInstanceViewSet
-from instance.api.server import OpenStackServerViewSet
+from instance.models.server import OpenStackServer
+from instance.serializers import OpenStackServerSerializer
 
 
-# Router ######################################################################
+# Views #######################################################################
 
-router = routers.DefaultRouter()
-
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', OpenEdXInstanceViewSet)
+class OpenStackServerViewSet(viewsets.ModelViewSet):
+    """
+    OpenStackServer API ViewSet
+    """
+    queryset = OpenStackServer.objects.all()
+    serializer_class = OpenStackServerSerializer

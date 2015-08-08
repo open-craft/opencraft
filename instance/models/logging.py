@@ -104,7 +104,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
         if self.level in PUBLISHED_LOG_LEVEL_SET:
             publish_data('log', {
                 'type': 'instance_log',
-                'instance_pk': self.instance.pk,
+                'instance_id': self.instance.pk,
                 'log_entry': str(self),
             })
 
