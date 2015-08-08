@@ -143,6 +143,13 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         return 'https://github.com/{0.fork_name}'.format(self)
 
     @property
+    def github_branch_url(self):
+        """
+        GitHub URL of the branch tree
+        """
+        return '{0.github_base_url}/tree/{0.branch_name}'.format(self)
+
+    @property
     def repository_url(self):
         """
         URL of the git repository (eg. 'https://github.com/open-craft/edx-platform.git')

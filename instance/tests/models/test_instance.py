@@ -84,6 +84,7 @@ class GitHubInstanceTestCase(TestCase):
         )
         self.assertEqual(instance.fork_name, 'open-craft/edx')
         self.assertEqual(instance.github_base_url, 'https://github.com/open-craft/edx')
+        self.assertEqual(instance.github_branch_url, 'https://github.com/open-craft/edx/tree/test-branch')
         self.assertEqual(instance.repository_url, 'https://github.com/open-craft/edx.git')
         self.assertEqual(instance.updates_feed, 'https://github.com/open-craft/edx/commits/test-branch.atom')
 
