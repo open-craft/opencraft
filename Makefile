@@ -25,7 +25,7 @@ run: clean migrate collectstatic
 rundev: clean migrate
 	honcho start -f Procfile.dev
 
-shell: clean
+shell:
 	honcho run ./manage.py shell_plus
 
 test_prospector: clean
