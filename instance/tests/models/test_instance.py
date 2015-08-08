@@ -87,6 +87,26 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(instance.repository_url, 'https://github.com/open-craft/edx.git')
         self.assertEqual(instance.updates_feed, 'https://github.com/open-craft/edx/commits/test-branch.atom')
 
+    def test_github_admin_username_list_default(self):
+        """
+        By default, no admin should be configured
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.github_admin_organization_name, '')
+        self.assertEqual(instance.github_admin_username_list, [])
+        self.assertNotIn(instance.vars_str, 'COMMON_USER_INFO')
+
+    @patch('instance.models.instance.get_username_list_from_team')
+    def test_github_admin_username_list_with_org_set(self, mock_get_username_list):
+        """
+        When an admin org is set, its members should be included in the ansible conf
+        """
+        mock_get_username_list.return_value = ['admin1', 'admin2']
+        instance = OpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
+        self.assertEqual(instance.github_admin_username_list, ['admin1', 'admin2'])
+        self.assertIn('COMMON_USER_INFO:\n  - name: admin1\n    github: true\n    type: admin\n'
+                      '  - name: admin2\n    github: true\n    type: admin', instance.vars_str)
+
     def test_set_fork_name_commit(self):
         """
         Set org & repo using the fork name - Using the default commit policy (True)

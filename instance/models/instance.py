@@ -33,7 +33,7 @@ from django_extensions.db.models import TimeStampedModel
 
 from instance import ansible, github
 from instance.gandi import GandiAPI
-from instance.github import fork_name2tuple
+from instance.github import fork_name2tuple, get_username_list_from_team
 from instance.log_exception import log_exception
 from instance.repo import clone_configuration_repo
 from instance.models.logging_mixin import LoggerInstanceMixin
@@ -122,6 +122,8 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     """
     github_organization_name = models.CharField(max_length=50, db_index=True)
     github_repository_name = models.CharField(max_length=50, db_index=True)
+    github_admin_organization_name = models.CharField(max_length=50, blank=True,
+                                                      default=settings.DEFAULT_ADMIN_ORGANIZATION)
 
     class Meta:
         abstract = True
@@ -153,6 +155,18 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         RSS/Atom feed of commits made on the repository/branch
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
+
+    @property
+    def github_admin_username_list(self):
+        """
+        Returns the github usernames of this instance admins
+
+        Admins are the members of the default team of the `github_admin_organization_name` org
+        """
+        if self.github_admin_organization_name:
+            return get_username_list_from_team(self.github_admin_organization_name)
+        else:
+            return []
 
     def set_to_branch_tip(self, branch_name=None, ref_type=None, commit=True):
         """

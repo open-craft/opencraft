@@ -259,6 +259,8 @@ WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
 # Github organization to watch
 WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
 
+# Default admin organization for instances (gets shell access)
+DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
 
 # Ansible #####################################################################
 
