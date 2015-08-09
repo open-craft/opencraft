@@ -51,6 +51,7 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
             return Response({'status': 'Instance is not ready for reprovisioning'},
                             status=status.HTTP_403_FORBIDDEN)
 
+        instance.set_to_branch_tip()
         provision_instance(pk)
 
         return Response({'status': 'Instance provisioning started'})

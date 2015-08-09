@@ -22,10 +22,11 @@ Views - Tests
 
 # Imports #####################################################################
 
-from mock import patch
+from mock import call, patch
 
 from rest_framework import status
 
+from instance.models.instance import OpenEdXInstance
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
@@ -75,15 +76,22 @@ class InstanceAPITestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @patch('instance.github.get_commit_id_from_ref')
     @patch('instance.api.instance.provision_instance')
-    def test_provision(self, mock_provision_instance):
+    def test_provision(self, mock_provision_instance, mock_get_commit_id_from_ref):
         """
         POST /:id/provision
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory()
+        instance = OpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
         OpenStackServerFactory(instance=instance, status='ready')
+        mock_get_commit_id_from_ref.return_value = '1' * 40
+
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision_instance.call_count, 1)
+        self.assertEqual(OpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
+        self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
+            call('api/repo', 'api-branch', ref_type='heads'),
+        ])
