@@ -35,7 +35,7 @@ from instance.tests.models.factories.server import (
 # Tests #######################################################################
 
 # Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member
+#pylint: disable=no-member,too-many-arguments
 
 class InstanceTestCase(TestCase):
     """

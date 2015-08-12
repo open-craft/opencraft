@@ -312,7 +312,7 @@ generated-members=REQUEST,acl_users,aq_parent
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=10
+max-args=7
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore

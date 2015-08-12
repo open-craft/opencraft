@@ -59,13 +59,13 @@ class OpenStackServerTestCase(TestCase):
 
         self.assertEqual(server.status, 'new')
         server.start()
-        self.assertEqual(mock_create_server.mock_calls, [call(
+        mock_create_server.assert_called_once_with(
             server.nova,
             AnyStringMatching(r'instance\d+\.test'),
             {"ram": 4096, "disk": 40},
             {"name": "Ubuntu 12.04"},
             key_name='opencraft',
-        )])
+        )
 
         server = OpenStackServer.objects.get(pk=server.pk)
         self.assertEqual(server.status, 'started')
@@ -210,7 +210,7 @@ class OpenStackServerTestCase(TestCase):
         server.reboot()
         self.assertEqual(server.status, 'rebooting')
         server.os_server.reboot.assert_called_once_with(reboot_type='SOFT')
-        self.assertEqual(mock_sleep.mock_calls, [call(30)])
+        mock_sleep.assert_called_once_with(30)
 
     def test_reboot_server_wrong_status(self):
         """

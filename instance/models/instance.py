@@ -149,9 +149,9 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     """
     Instance linked to a GitHub repository
     """
-    github_organization_name = models.CharField(max_length=50, db_index=True)
-    github_repository_name = models.CharField(max_length=50, db_index=True)
-    github_admin_organization_name = models.CharField(max_length=50, blank=True,
+    github_organization_name = models.CharField(max_length=200, db_index=True)
+    github_repository_name = models.CharField(max_length=200, db_index=True)
+    github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
 
     class Meta:
@@ -207,6 +207,8 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     def set_to_branch_tip(self, branch_name=None, ref_type=None, commit=True):
         """
         Set the `commit_id` to the current tip of the branch
+
+        By default, save the instance object - pass `commit=False` to not save it
         """
         if branch_name is not None:
             self.branch_name = branch_name
@@ -223,15 +225,19 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     def set_fork_name(self, fork_name, commit=True):
         """
         Set the organization and repository based on the GitHub fork name
+
+        By default, save the instance object - pass `commit=False` to not save it
         """
         self.log('info', 'Setting fork name for instance {}: {}'.format(self, fork_name))
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
-        if self.github_organization_name != fork_org \
-                or self.github_repository_name != fork_repo:
-            self.github_organization_name = fork_org
-            self.github_repository_name = fork_repo
-            if commit:
-                self.save()
+        if self.github_organization_name == fork_org \
+                and self.github_repository_name == fork_repo:
+            return
+
+        self.github_organization_name = fork_org
+        self.github_repository_name = fork_repo
+        if commit:
+            self.save()
 
 
 # Ansible #####################################################################

@@ -116,7 +116,7 @@ $ make test
 To run a single test, use `make test_one`:
 
 ```
-$ make testone instance.tests.models.test_server
+$ make test_one instance.tests.models.test_server
 ```
 
 You can also run prospector and the unit tests independently:

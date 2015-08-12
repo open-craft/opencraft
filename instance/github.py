@@ -44,6 +44,16 @@ GH_HEADERS = {
 
 # Functions ###################################################################
 
+def get_object_from_url(url):
+    """
+    Send the request to the provided URL, attaching custom headers, and returns
+    the deserialized object from the returned JSON
+    """
+    r = requests.get(url, headers=GH_HEADERS)
+    r.raise_for_status()
+    return r.json()
+
+
 def fork_name2tuple(fork_name):
     """
     Converts a `fork_name` (eg. `'open-craft/edx-platform'`)
@@ -61,9 +71,7 @@ def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
         ref_type=ref_type,
         ref_name=ref_name,
     )
-    r = requests.get(url, headers=GH_HEADERS)
-    r.raise_for_status()
-    return r.json()['object']['sha']
+    return get_object_from_url(url)['object']['sha']
 
 
 def get_settings_from_pr_body(pr_body):
@@ -81,14 +89,10 @@ def get_pr_by_number(fork_name, pr_number):
     """
     Returns a PR() namedtuple based on the reponse
     """
-    url = 'https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
+    r_pr = get_object_from_url('https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
         fork_name=fork_name,
         pr_number=pr_number,
-    )
-    r = requests.get(url, headers=GH_HEADERS)
-    r.raise_for_status()
-
-    r_pr = r.json()
+    ))
     pr_fork_name = r_pr['head']['repo']['full_name']
     pr_branch_name = r_pr['head']['ref']
     pr = PR(
@@ -107,11 +111,7 @@ def get_pr_list_from_username(user_name, fork_name):
     Retreive the current active PRs for a given user
     """
     q = 'is:open is:pr author:{author} repo:{repo}'.format(author=user_name, repo=fork_name)
-    url = 'https://api.github.com/search/issues?sort=created&q={}'.format(q)
-    r = requests.get(url, headers=GH_HEADERS)
-    r.raise_for_status()
-
-    r_pr_list = r.json()
+    r_pr_list = get_object_from_url('https://api.github.com/search/issues?sort=created&q={}'.format(q))
     logger.debug('List of PRs received for user %s: %s', user_name, r_pr_list)
 
     pr_list = []
@@ -126,10 +126,7 @@ def get_team_from_organization(organization_name, team_name='Owners'):
     Retreive a team by organization & team name
     """
     url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
-    r = requests.get(url, headers=GH_HEADERS)
-    r.raise_for_status()
-
-    for team_dict in r.json():
+    for team_dict in get_object_from_url(url):
         if team_dict['name'] == team_name:
             return team_dict
     raise KeyError(team_name)
@@ -141,9 +138,7 @@ def get_username_list_from_team(organization_name, team_name='Owners'):
     """
     team = get_team_from_organization(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
-    r = requests.get(url, headers=GH_HEADERS)
-    r.raise_for_status()
-    return [user_dict['login'] for user_dict in r.json()]
+    return [user_dict['login'] for user_dict in get_object_from_url(url)]
 
 
 # Classes #####################################################################

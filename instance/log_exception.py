@@ -24,6 +24,8 @@ Facilities to log uncaught exceptions, ensuring it is properly propagated to the
 
 import traceback
 
+from functools import wraps
+
 
 # Functions ###################################################################
 
@@ -33,6 +35,7 @@ def log_exception(method):
     Uses the object logging facilities, ie the following method should be defined:
     self.log(<log_level_str>, <log_message>)`
     """
+    @wraps(method)
     def wrapper(self, *args, **kwds): #pylint: disable=missing-docstring
         try:
             return method(self, *args, **kwds)
