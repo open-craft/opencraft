@@ -6,4 +6,4 @@ dependencies:
     - pip install --upgrade pip
 test:
   override:
-    - make test
+      - make -j4 test
