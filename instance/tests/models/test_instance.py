@@ -57,6 +57,8 @@ class InstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(base_domain='example.org', sub_domain='sample', name='Sample Instance')
         self.assertEqual(instance.domain, 'sample.example.org')
         self.assertEqual(instance.url, 'http://sample.example.org/')
+        self.assertEqual(instance.studio_domain, 'studio.sample.example.org')
+        self.assertEqual(instance.studio_url, 'http://studio.sample.example.org/')
         self.assertEqual(str(instance), 'Sample Instance (http://sample.example.org/)')
 
     def test_commit_short_id(self):

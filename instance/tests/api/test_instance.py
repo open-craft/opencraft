@@ -66,6 +66,18 @@ class InstanceAPITestCase(APITestCase):
         self.assertIn(('status', 'empty'), response.data[0].items())
         self.assertIn(('base_domain', 'example.com'), response.data[0].items())
 
+    def test_get_domain(self):
+        """
+        GET - Domain attributes
+        """
+        self.api_client.login(username='user1', password='pass')
+        OpenEdXInstanceFactory(sub_domain='domain.api')
+        response = self.api_client.get('/api/v1/openedxinstance/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(('domain', 'domain.api.example.com'), response.data[0].items())
+        self.assertIn(('url', 'http://domain.api.example.com/'), response.data[0].items())
+        self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), response.data[0].items())
+
     def test_provision_not_ready(self):
         """
         POST /:id/provision - Status not ready

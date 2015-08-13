@@ -45,7 +45,11 @@
         <div class="row">
           <div class="large-10 columns">
             <ul class="instance-description">
-              <li>Instance URL: <a href="{{ selected.instance.url }}" target="_new">{{ selected.instance.url }}</a></li>
+              <li>
+                <span>LMS: <a href="{{ selected.instance.url }}" target="_new">{{ selected.instance.url }}</a></span>
+                |
+                <span>Studio: <a href="{{ selected.instance.studio_url }}" target="_new">{{ selected.instance.studio_url }}</a></span>
+              </li>
               <li><a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> | {{ selected.instance.branch_name }}</li>
             </ul>
           </div>

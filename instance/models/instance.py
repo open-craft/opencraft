@@ -404,6 +404,13 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         """
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 
+    @property
+    def studio_url(self):
+        """
+        Studio URL
+        """
+        return u'{0.protocol}://{0.studio_domain}/'.format(self)
+
     @log_exception
     def provision(self):
         """

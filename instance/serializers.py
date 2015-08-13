@@ -54,4 +54,5 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
         fields = ('id', 'api_url', 'active_server_set', 'sub_domain', 'base_domain', 'email', 'name',
                   'protocol', 'domain', 'url', 'branch_name', 'commit_id', 'github_organization_name',
                   'github_organization_name', 'github_base_url', 'github_branch_url', 'log_text',
-                  'repository_url', 'updates_feed', 'vars_str', 'created', 'modified', 'status')
+                  'repository_url', 'updates_feed', 'vars_str', 'created', 'modified', 'status',
+                  'studio_url')
