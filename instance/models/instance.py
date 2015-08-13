@@ -291,29 +291,29 @@ class AnsibleInstanceMixin(models.Model):
         """
         Run a playbook against the instance active servers
         """
-        configuration_repo_path = clone_configuration_repo()
-        playbook_path = os.path.join(configuration_repo_path, 'playbooks')
-        requirements_path = os.path.join(configuration_repo_path, 'requirements.txt')
+        with clone_configuration_repo() as configuration_repo_path:
+            playbook_path = os.path.join(configuration_repo_path, 'playbooks')
+            requirements_path = os.path.join(configuration_repo_path, 'requirements.txt')
 
-        self.log('info', 'Running playbook "{playbook_path}/{playbook_name}" for instance {instance}...'.format(
-            playbook_path=playbook_path,
-            playbook_name=playbook_name,
-            instance=self,
-        ))
+            self.log('info', 'Running playbook "{path}/{name}" for instance {instance}...'.format(
+                path=playbook_path,
+                name=playbook_name,
+                instance=self,
+            ))
 
-        log_lines = []
-        with ansible.run_playbook(
-            requirements_path,
-            self.inventory_str,
-            self.vars_str,
-            playbook_path,
-            self.ansible_playbook_filename,
-            username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-        ) as processus:
-            for line in processus.stdout:
-                line = line.decode('utf-8').rstrip()
-                self.log('info', line)
-                log_lines.append([line.rstrip()])
+            log_lines = []
+            with ansible.run_playbook(
+                requirements_path,
+                self.inventory_str,
+                self.vars_str,
+                playbook_path,
+                self.ansible_playbook_filename,
+                username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
+            ) as processus:
+                for line in processus.stdout:
+                    line = line.decode('utf-8').rstrip()
+                    self.log('info', line)
+                    log_lines.append([line.rstrip()])
 
         self.log('info', 'Playbook run completed for instance {}'.format(self))
         return log_lines

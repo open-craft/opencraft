@@ -298,7 +298,7 @@ class AnsibleInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         BootedOpenStackServerFactory(instance=instance)
-        mock_clone_configuration_repo.return_value = '/cloned/configuration-repo/path'
+        mock_clone_configuration_repo.return_value.__enter__.return_value = '/cloned/configuration-repo/path'
 
         instance.run_playbook()
         self.assertIn(call(

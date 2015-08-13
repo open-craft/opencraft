@@ -22,22 +22,28 @@ Git repository - Helper functions
 
 # Imports #####################################################################
 
-from git.repo.base import Repo
-from tempfile import mkdtemp
+import git
+import tempfile
+import shutil
+
+from contextlib import contextmanager
 
 
 # Functions ###################################################################
 
+@contextmanager
 def get_repo_from_url(repo_url):
     """
     Get a `Repo` object from a repository URL
 
     Note that this clones the repository locally
     """
-    # TODO: Delete the temporary directory after use
-    return Repo.clone_from(repo_url, mkdtemp())
+    repo_dir_path = tempfile.mkdtemp()
+    yield git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
+    shutil.rmtree(repo_dir_path)
 
 
+@contextmanager
 def clone_configuration_repo():
     """
     Clone the configuration repository, including patches to get it to work with OpenStack
@@ -45,15 +51,15 @@ def clone_configuration_repo():
     Returns the path to the directory where the repository has been cloned
     """
     # Cloning & remotes
-    configuration_repo = get_repo_from_url('https://github.com/edx/configuration.git')
-    opencraft_remote = configuration_repo.create_remote('opencraft',
-                                                        'https://github.com/open-craft/configuration.git')
-    opencraft_remote.fetch()
+    with get_repo_from_url('https://github.com/edx/configuration.git') as configuration_repo:
+        opencraft_remote = configuration_repo.create_remote('opencraft',
+                                                            'https://github.com/open-craft/configuration.git')
+        opencraft_remote.fetch()
 
-    # Merge the opencraft branch, which contains fixes to get the ansible scripts to run in our
-    # specific case, for example openstack fixes - it should be kept to a minimum and pushed upstream
-    opencraft_branch = configuration_repo.create_head('opencraft', opencraft_remote.refs.opencraft)
-    opencraft_branch.set_tracking_branch(opencraft_remote.refs.opencraft)
-    configuration_repo.git.merge('opencraft')
+        # Merge the opencraft branch, which contains fixes to get the ansible scripts to run in our
+        # specific case, for example openstack fixes - it should be kept to a minimum and pushed upstream
+        opencraft_branch = configuration_repo.create_head('opencraft', opencraft_remote.refs.opencraft)
+        opencraft_branch.set_tracking_branch(opencraft_remote.refs.opencraft)
+        configuration_repo.git.merge('opencraft')
 
-    return configuration_repo.working_dir
+        yield configuration_repo.working_dir
