@@ -22,7 +22,9 @@ Ansible - Tests
 
 # Imports #####################################################################
 
+import os.path
 import yaml
+
 from unittest.mock import call, patch
 
 from instance import ansible
@@ -97,9 +99,13 @@ class AnsibleTestCase(TestCase):
         Store a string in a temporary file
         """
         test_str = 'My kewl string\nwith unicode «ταБЬℓσ», now 20% off!'
-        file_path = ansible.string_to_file_path(test_str)
-        with open(file_path) as fp:
-            self.assertEqual(fp.read(), test_str)
+        file_path_copy = None
+        with ansible.string_to_file_path(test_str) as file_path:
+            with open(file_path) as fp:
+                self.assertEqual(fp.read(), test_str)
+            file_path_copy = file_path
+            self.assertTrue(os.path.isfile(file_path_copy))
+        self.assertFalse(os.path.isfile(file_path_copy))
 
     @patch('subprocess.Popen')
     @patch('instance.ansible.mkdtemp')
@@ -108,7 +114,7 @@ class AnsibleTestCase(TestCase):
         """
         Run the ansible-playbook command
         """
-        mock_string_to_file_path.return_value = '/test/str2path'
+        mock_string_to_file_path.return_value.__enter__.return_value = '/test/str2path'
         mock_mkdtemp.return_value = '/test/mkdtemp'
 
         ansible.run_playbook(

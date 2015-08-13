@@ -26,6 +26,7 @@ import os
 import subprocess
 import yaml
 
+from contextlib import contextmanager
 from tempfile import mkdtemp, mkstemp
 
 from django.conf import settings
@@ -66,6 +67,7 @@ def dict_merge(dict1, dict2):
     return result_dict
 
 
+@contextmanager
 def string_to_file_path(string):
     """
     Store a string in a temporary file, to pass on to a third-party shell command as a file parameter
@@ -75,8 +77,8 @@ def string_to_file_path(string):
     fp = os.fdopen(fd, 'w')
     fp.write(string)
     fp.close()
-    # TODO: Delete the temporary file after use
-    return file_path
+    yield file_path
+    os.remove(file_path)
 
 
 def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, playbook_name, username='root'):
@@ -98,14 +100,17 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
         requirements_path=requirements_path,
     )
 
-    run_playbook_cmd = '{python} -u {ansible} -i {inventory_path} -e @{vars_path} -u {user} {playbook}'.format(
-        python=venv_python_path,
-        ansible=os.path.join(venv_path, 'bin/ansible-playbook'),
-        inventory_path=string_to_file_path(inventory_str),
-        vars_path=string_to_file_path(vars_str),
-        user=username,
-        playbook=playbook_name,
-    )
+    with string_to_file_path(inventory_str) as inventory_path:
+        with string_to_file_path(vars_str) as vars_path:
+            run_playbook_cmd = '{python} -u {ansible} -i {inventory_path} -e @{vars_path} -u {user} {playbook}'\
+                .format(
+                    python=venv_python_path,
+                    ansible=os.path.join(venv_path, 'bin/ansible-playbook'),
+                    inventory_path=inventory_path,
+                    vars_path=vars_path,
+                    user=username,
+                    playbook=playbook_name,
+                )
 
     cmd = ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
     logger.info('Running: %s', cmd)
