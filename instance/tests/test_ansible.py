@@ -42,6 +42,9 @@ class YAMLTestCase(TestCase):
             'test_dict': {
                 'foo': 'firstfoo',
                 'bar': 'firstbar',
+                'recursive': {
+                    'a': 1,
+                },
             },
         }
         self.yaml_dict2 = {
@@ -50,6 +53,9 @@ class YAMLTestCase(TestCase):
             'test_dict': {
                 'foo': 'secondfoo',
                 'other': 'secondother',
+                'recursive': {
+                    'b': 2,
+                },
             }
         }
         self.yaml_str1 = yaml.dump(self.yaml_dict1)
@@ -68,6 +74,10 @@ class YAMLTestCase(TestCase):
                 'foo': 'secondfoo',
                 'bar': 'firstbar',
                 'other': 'secondother',
+                'recursive': {
+                    'a': 1,
+                    'b': 2,
+                },
             }
         })
 

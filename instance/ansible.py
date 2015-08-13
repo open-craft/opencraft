@@ -41,18 +41,29 @@ logger = logging.getLogger(__name__)
 
 def yaml_merge(yaml_str1, yaml_str2):
     """
-    Merge the two yaml strings, overriding variables from `yaml_str1` by `yaml_str2`
+    Merge the two yaml strings, recursively overriding variables from `yaml_str1` by `yaml_str2`
     """
     if not yaml_str2:
         return yaml_str1
 
-    result_dict = yaml.load(yaml_str1)
-    for key, value in yaml.load(yaml_str2).items():
-        if key in result_dict and isinstance(result_dict[key], dict) and isinstance(value, dict):
-            result_dict[key].update(value)
-        else:
-            result_dict[key] = value
+    dict1 = yaml.load(yaml_str1)
+    dict2 = yaml.load(yaml_str2)
+    result_dict = dict_merge(dict1, dict2)
+
     return yaml.dump(result_dict)
+
+
+def dict_merge(dict1, dict2):
+    """
+    Merge the two dicts, recursively overriding keys from `dict1` by `dict2`
+    """
+    result_dict = dict1.copy()
+    for key in dict2:
+        if key in result_dict and isinstance(result_dict[key], dict) and isinstance(dict2[key], dict):
+            result_dict[key] = dict_merge(result_dict[key], dict2[key])
+        else:
+            result_dict[key] = dict2[key]
+    return result_dict
 
 
 def string_to_file_path(string):
