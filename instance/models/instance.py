@@ -70,6 +70,19 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
+    EMPTY = 'empty'
+    NEW = 'new'
+    STARTED = 'started'
+    ACTIVE = 'active'
+    BOOTED = 'booted'
+    PROVISIONED = 'provisioned'
+    REBOOTING = 'rebooting'
+    READY = 'ready'
+    LIVE = 'live'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'
+    TERMINATING = 'terminating'
+
     sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250)
@@ -114,7 +127,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         """
         active_server_set = self.active_server_set
         if not active_server_set:
-            return 'empty'
+            return self.EMPTY
         elif active_server_set.count() > 1:
             raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
         else:
@@ -268,7 +281,8 @@ class AnsibleInstanceMixin(models.Model):
         The ansible inventory (list of servers) as a string
         """
         inventory = ['[app]']
-        for server in self.server_set.filter(status='booted').order_by('created'):
+        server_model = self.server_set.model
+        for server in self.server_set.filter(status=server_model.BOOTED).order_by('created'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
         self.log('debug', 'Inventory for instance {}:\n{}'.format(self, inventory_str))
@@ -428,7 +442,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
         # DNS
         self.log('info', 'Waiting for IP assignment on server {}...'.format(server))
-        server.sleep_until_status(['active', 'booted'])
+        server.sleep_until_status([server.ACTIVE, server.BOOTED])
         self.log('info', 'Updating DNS for instance {}: LMS at {}...'.format(self, self.domain))
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
         self.log('info', 'Updating DNS for instance {}: Studio at {}...'.format(self, self.studio_domain))
@@ -436,14 +450,14 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
         # Provisioning (ansible)
         self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
-        server.sleep_until_status('booted')
+        server.sleep_until_status(server.BOOTED)
         ansible_log = self.run_playbook()
         server.update_status(provisioned=True)
 
         # Reboot
         self.log('info', 'Rebooting server {}...'.format(server))
         server.reboot()
-        server.sleep_until_status('ready')
+        server.sleep_until_status(server.READY)
         self.log('info', 'Provisioning completed for instance {}'.format(self))
 
         return (server, ansible_log)

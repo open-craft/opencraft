@@ -40,24 +40,6 @@ from instance.models.logging_mixin import LoggerMixin
 from instance.models.utils import ValidateModelMixin
 
 
-# Constants ###################################################################
-
-SERVER_STATUS_CHOICES = (
-    ('new', 'New - Not yet loaded'),
-    ('started', 'Started - Running but not active yet'),
-    ('active', 'Active - Running but not booted yet'),
-    ('booted', 'Booted - Booted but not ready to be added to the application'),
-    ('provisioned', 'Provisioned - Provisioning is completed'),
-    ('rebooting', 'Rebooting - Reboot in progress, to apply changes from provisioning'),
-    ('ready', 'Ready - Rebooted and ready to add to the application'),
-    ('live', 'Live - Is actively used in the application and/or accessed by users'),
-    ('stopping', 'Stopping - Stopping temporarily'),
-    ('stopped', 'Stopped - Stopped temporarily'),
-    ('terminating', 'Terminating - Stopping forever'),
-    ('terminated', 'Terminated - Stopped forever'),
-)
-
-
 # Exceptions ##################################################################
 
 class ServerNotReady(Exception):
@@ -78,7 +60,7 @@ class ServerQuerySet(models.QuerySet):
         """
         Terminate the servers from the queryset
         """
-        qs = self.filter(~Q(status='terminated'), *args, **kwargs)
+        qs = self.filter(~Q(status=Server.TERMINATED), *args, **kwargs)
         for server in qs:
             server.terminate()
         return qs
@@ -87,14 +69,42 @@ class ServerQuerySet(models.QuerySet):
         """
         Filter out terminated servers from the queryset
         """
-        return self.filter(~Q(status='terminated'))
+        return self.filter(~Q(status=Server.TERMINATED))
 
 
 class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
     """
     A single server VM
     """
-    status = models.CharField(max_length=11, default='new', choices=SERVER_STATUS_CHOICES, db_index=True)
+    NEW = 'new'
+    STARTED = 'started'
+    ACTIVE = 'active'
+    BOOTED = 'booted'
+    PROVISIONED = 'provisioned'
+    REBOOTING = 'rebooting'
+    READY = 'ready'
+    LIVE = 'live'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'
+    TERMINATING = 'terminating'
+    TERMINATED = 'terminated'
+
+    STATUS_CHOICES = (
+        (NEW, 'New - Not yet loaded'),
+        (STARTED, 'Started - Running but not active yet'),
+        (ACTIVE, 'Active - Running but not booted yet'),
+        (BOOTED, 'Booted - Booted but not ready to be added to the application'),
+        (PROVISIONED, 'Provisioned - Provisioning is completed'),
+        (REBOOTING, 'Rebooting - Reboot in progress, to apply changes from provisioning'),
+        (READY, 'Ready - Rebooted and ready to add to the application'),
+        (LIVE, 'Live - Is actively used in the application and/or accessed by users'),
+        (STOPPING, 'Stopping - Stopping temporarily'),
+        (STOPPED, 'Stopped - Stopped temporarily'),
+        (TERMINATING, 'Terminating - Stopping forever'),
+        (TERMINATED, 'Terminated - Stopped forever'),
+    )
+
+    status = models.CharField(max_length=11, default=NEW, choices=STATUS_CHOICES, db_index=True)
 
     objects = ServerQuerySet().as_manager()
 
@@ -105,6 +115,9 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
         """
         Update the current status variable, to be called when a status change is detected
         """
+        if status not in (s[0] for s in self.STATUS_CHOICES):
+            raise ValueError(status)
+
         self.status = status
         self.log('info', 'Changed status for {}: {}'.format(self, self.status))
         self.save()
@@ -164,7 +177,7 @@ class OpenStackServer(Server):
         OpenStack nova server API endpoint
         """
         if not self.openstack_id:
-            assert self.status == 'new'
+            assert self.status == self.NEW
             self.start()
         return self.nova.servers.get(self.openstack_id)
 
@@ -191,23 +204,23 @@ class OpenStackServer(Server):
         self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'.format(
             self, self.status, to_json(os_server)))
 
-        if self.status == 'started':
+        if self.status == self.STARTED:
             self.log('debug', 'Server {}: loaded="{}" status="{}"'.format(
                 self, os_server._loaded, os_server.status))
             if os_server._loaded and os_server.status == 'ACTIVE':
-                self._set_status('active')
+                self._set_status(self.ACTIVE)
 
-        elif self.status == 'active' and is_port_open(self.public_ip, 22):
-            self._set_status('booted')
+        elif self.status == self.ACTIVE and is_port_open(self.public_ip, 22):
+            self._set_status(self.BOOTED)
 
-        elif self.status == 'booted' and provisioned:
-            self._set_status('provisioned')
+        elif self.status == self.BOOTED and provisioned:
+            self._set_status(self.PROVISIONED)
 
-        elif self.status in ('provisioned', 'ready') and rebooting:
-            self._set_status('rebooting')
+        elif self.status in (self.PROVISIONED, self.READY) and rebooting:
+            self._set_status(self.REBOOTING)
 
-        elif self.status == 'rebooting' and not rebooting and is_port_open(self.public_ip, 22):
-            self._set_status('ready')
+        elif self.status == self.REBOOTING and not rebooting and is_port_open(self.public_ip, 22):
+            self._set_status(self.READY)
 
         return self.status
 
@@ -219,7 +232,7 @@ class OpenStackServer(Server):
         TODO: Create the key dynamically
         """
         self.log('info', 'Starting server {} (status={})...'.format(self, self.status))
-        if self.status == 'new':
+        if self.status == self.NEW:
             os_server = openstack.create_server(
                 self.nova,
                 self.instance.sub_domain,
@@ -229,7 +242,7 @@ class OpenStackServer(Server):
             )
             self.openstack_id = os_server.id
             self.log('info', 'Server {} got assigned OpenStack id {}'.format(self, self.openstack_id))
-            self._set_status('started')
+            self._set_status(self.STARTED)
         else:
             raise NotImplementedError
 
@@ -241,7 +254,7 @@ class OpenStackServer(Server):
         `update_status` method. If the current state doesn't allow to switch to this status,
         a ServerNotReady exception is thrown.
         """
-        if self.update_status(rebooting=True) != 'rebooting':
+        if self.update_status(rebooting=True) != self.REBOOTING:
             raise ServerNotReady("Can't change status to 'rebooting' (current: '{}')".format(self.status))
         self.os_server.reboot(reboot_type=reboot_type)
 
@@ -255,10 +268,10 @@ class OpenStackServer(Server):
         Terminate the server
         """
         self.log('info', 'Terminating server {} (status={})...'.format(self, self.status))
-        if self.status == 'terminated':
+        if self.status == self.TERMINATED:
             return
-        elif self.status == 'new':
-            self._set_status('terminated')
+        elif self.status == self.NEW:
+            self._set_status(self.TERMINATED)
             return
 
         try:
@@ -267,6 +280,6 @@ class OpenStackServer(Server):
             self.log('exception', 'Error while attempting to terminate server {}: '
                                   'could not find OS server'.format(self))
         finally:
-            self._set_status('terminated')
+            self._set_status(self.TERMINATED)
 
 post_save.connect(Server.on_post_save, sender=OpenStackServer)

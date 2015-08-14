@@ -25,6 +25,7 @@ OpenEdXInstance model - Tests
 import re
 from mock import call, patch
 
+from instance.models.server import OpenStackServer
 from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
@@ -75,12 +76,12 @@ class InstanceTestCase(TestCase):
         Instance status with one active server
         """
         instance = OpenEdXInstanceFactory()
-        self.assertEqual(instance.status, 'empty')
+        self.assertEqual(instance.status, instance.EMPTY)
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, 'started')
-        server.status = 'booted'
+        self.assertEqual(instance.status, instance.STARTED)
+        server.status = server.BOOTED
         server.save()
-        self.assertEqual(instance.status, 'booted')
+        self.assertEqual(instance.status, instance.BOOTED)
 
     def test_status_terminated(self):
         """
@@ -88,10 +89,10 @@ class InstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, 'started')
+        self.assertEqual(instance.status, instance.STARTED)
         server.status = 'terminated'
         server.save()
-        self.assertEqual(instance.status, 'empty')
+        self.assertEqual(instance.status, instance.EMPTY)
 
     def test_status_multiple_servers(self):
         """
@@ -99,7 +100,7 @@ class InstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, 'started')
+        self.assertEqual(instance.status, instance.STARTED)
         StartedOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
             instance.status #pylint: disable=pointless-statement
@@ -393,7 +394,14 @@ class OpenEdXInstanceTestCase(TestCase):
         Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
         """
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
-        status_queue = ['started', 'booted', 'booted', 'provisioned', 'rebooting', 'ready']
+        status_queue = [
+            OpenStackServer.STARTED,
+            OpenStackServer.BOOTED,
+            OpenStackServer.BOOTED,
+            OpenStackServer.PROVISIONED,
+            OpenStackServer.REBOOTING,
+            OpenStackServer.READY,
+        ]
         status_queue.reverse() # To be able to use pop()
 
         def update_status(self, provisioned=False, rebooting=False):

@@ -27,6 +27,7 @@ from mock import call, patch
 from rest_framework import status
 
 from instance.models.instance import OpenEdXInstance
+from instance.models.server import OpenStackServer
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
@@ -96,7 +97,7 @@ class InstanceAPITestCase(APITestCase):
         """
         self.api_client.login(username='user1', password='pass')
         instance = OpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
-        OpenStackServerFactory(instance=instance, status='ready')
+        OpenStackServerFactory(instance=instance, status=OpenStackServer.READY)
         mock_get_commit_id_from_ref.return_value = '1' * 40
 
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))

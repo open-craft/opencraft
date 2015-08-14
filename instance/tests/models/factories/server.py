@@ -119,7 +119,7 @@ class StartedOpenStackServerFactory(OpenStackServerFactory):
     """
     Factory for a server with a 'started' status
     """
-    status = 'started'
+    status = OpenStackServer.STARTED
     openstack_id = factory.Sequence('started-server-id{}'.format)
 
 
@@ -127,5 +127,5 @@ class BootedOpenStackServerFactory(OpenStackServerFactory):
     """
     Factory for a server with a 'booted' status
     """
-    status = 'booted'
+    status = OpenStackServer.BOOTED
     openstack_id = factory.Sequence('booted-server-id{}'.format)
