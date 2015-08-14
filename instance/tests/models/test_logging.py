@@ -22,9 +22,7 @@ Logger models & mixins - Tests
 
 # Imports #####################################################################
 
-import pytz
-from datetime import datetime, timedelta
-from mock import patch
+from freezegun import freeze_time
 
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
@@ -46,24 +44,26 @@ class LoggerInstanceMixinTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         server = OpenStackServerFactory(instance=instance)
-        now = datetime(2015, 8, 5, 18, 7, tzinfo=pytz.utc)
-        sec = timedelta(seconds=1)
 
-        with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = now
+        with freeze_time("2015-08-05 18:07:00"):
             instance.log('info', 'Line #1, on instance')
-            mock_now.return_value = now + 1 * sec
+
+        with freeze_time("2015-08-05 18:07:01"):
             server.log('info', 'Line #2, on server')
-            mock_now.return_value = now + 2 * sec
+
+        with freeze_time("2015-08-05 18:07:02"):
             instance.log('debug', 'Line #3, on instance (debug, not published by default)')
-            mock_now.return_value = now + 3 * sec
+
+        with freeze_time("2015-08-05 18:07:03"):
             instance.log('info', 'Line #4, on instance')
 
-            mock_now.return_value = now + 4 * sec
+        with freeze_time("2015-08-05 18:07:04"):
             instance.log('warn', 'Line #5, on instance (warn)')
-            mock_now.return_value = now + 5 * sec
+
+        with freeze_time("2015-08-05 18:07:05"):
             server.log('info', 'Line #6, on server')
-            mock_now.return_value = now + 6 * sec
+
+        with freeze_time("2015-08-05 18:07:06"):
             server.log('exception', 'Line #7, on server (exception)')
 
         self.assertEqual(instance.log_text, (
