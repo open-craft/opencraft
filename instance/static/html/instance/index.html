@@ -13,6 +13,10 @@
   </section>
 </top-bar>
 
+<div class="loading-msg round warning label" ng-if="loading">
+    Loading...
+</div>
+
 <div class="row">
   <!-- Instances List -->
   <div class="large-3 columns">
@@ -23,10 +27,6 @@
       </li>
       <li class="divider"></li>
     </ul>
-
-    <div class="row" ng-if="!instanceList">
-      <p>...</p>
-    </div>
   </div>
 
   <!-- Selected instance details -->

@@ -57,6 +57,9 @@ app.factory('OpenCraftAPI', function(Restangular) {
 // Function ///////////////////////////////////////////////////////////////////
 
 function updateInstanceList($scope, OpenCraftAPI) {
+    // Display loading message
+    $scope.loading = true;
+
     OpenCraftAPI.all("openedxinstance").getList().then(function(instanceList) {
         console.log('Updating instance list', instanceList);
         $scope.instanceList = instanceList;
@@ -72,6 +75,8 @@ function updateInstanceList($scope, OpenCraftAPI) {
         }
     }, function(response) {
         console.log('Error from server: ', response);
+    }).finally(function () {
+        $scope.loading = false;
     });
 }
 
@@ -80,6 +85,9 @@ function updateInstanceList($scope, OpenCraftAPI) {
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
+        // Display loading message
+        $scope.loading = true;
+
         // Selection
         $scope.selected = Array();
         $scope.select = function(selection_type, value) {
