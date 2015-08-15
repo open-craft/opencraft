@@ -81,6 +81,7 @@ def string_to_file_path(string):
     os.remove(file_path)
 
 
+@contextmanager
 def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, playbook_name, username='root'):
     """
     Runs ansible-playbook in a dedicated venv
@@ -112,12 +113,12 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
                     playbook=playbook_name,
                 )
 
-    cmd = ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
-    logger.info('Running: %s', cmd)
-    return subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        bufsize=1, # Bufferize one line at a time
-        cwd=playbook_path,
-        shell=True,
-    )
+            cmd = ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
+            logger.info('Running: %s', cmd)
+            yield subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                bufsize=1, # Bufferize one line at a time
+                cwd=playbook_path,
+                shell=True,
+            )

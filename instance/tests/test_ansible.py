@@ -117,20 +117,18 @@ class AnsibleTestCase(TestCase):
         mock_string_to_file_path.return_value.__enter__.return_value = '/test/str2path'
         mock_mkdtemp.return_value = '/test/mkdtemp'
 
-        ansible.run_playbook(
-            '/requirements/path.txt',
-            "INVENTORY: 'str'",
-            "VARS: 'str2'",
-            '/play/book',
-            'playbook_name_str',
-        )
-        run_playbook_cmd = (
-            'virtualenv -p /usr/bin/python /test/mkdtemp && '
-            '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/pip install -r /requirements/path.txt && '
-            '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/ansible-playbook -i /test/str2path '
-            '-e @/test/str2path -u root playbook_name_str'
-        )
-        self.assertEqual(
-            mock_popen.mock_calls,
-            [call(run_playbook_cmd, bufsize=1, stdout=-1, cwd='/play/book', shell=True)]
-        )
+        with ansible.run_playbook('/requirements/path.txt',
+                                  "INVENTORY: 'str'",
+                                  "VARS: 'str2'",
+                                  '/play/book',
+                                  'playbook_name_str'):
+            run_playbook_cmd = (
+                'virtualenv -p /usr/bin/python /test/mkdtemp && '
+                '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/pip install -r /requirements/path.txt && '
+                '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/ansible-playbook -i /test/str2path '
+                '-e @/test/str2path -u root playbook_name_str'
+            )
+            self.assertEqual(
+                mock_popen.mock_calls,
+                [call(run_playbook_cmd, bufsize=1, stdout=-1, cwd='/play/book', shell=True)]
+            )
