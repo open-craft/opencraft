@@ -259,6 +259,7 @@ class AnsibleInstanceMixin(models.Model):
     """
     An instance that relies on Ansible to deploy its services
     """
+    configuration_version = models.CharField(max_length=50, default='master')
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
 
@@ -378,6 +379,11 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     """
     A single instance running a set of Open edX services
     """
+    forum_version = models.CharField(max_length=50, default='master')
+    notifier_version = models.CharField(max_length=50, default='master')
+    xqueue_version = models.CharField(max_length=50, default='master')
+    certs_version = models.CharField(max_length=50, default='master')
+
     s3_access_key = models.CharField(max_length=50, blank=True)
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)

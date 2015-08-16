@@ -268,6 +268,11 @@ class AnsibleInstanceTestCase(TestCase):
             github_organization_name='vars-org',
             github_repository_name='vars-repo',
             commit_id='9' * 40,
+            configuration_version='test-config-ver',
+            forum_version='test-forum-ver',
+            notifier_version='test-notif-ver',
+            xqueue_version='test-xq-ver',
+            certs_version='test-cert-ver',
         )
         self.assertIn('EDXAPP_PLATFORM_NAME: "Vars Instance"', instance.vars_str)
         self.assertIn("EDXAPP_SITE_NAME: 'vars.test.example.com", instance.vars_str)
@@ -275,6 +280,11 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertIn("EDXAPP_CONTACT_EMAIL: 'vars@example.com'", instance.vars_str)
         self.assertIn("edx_platform_repo: 'https://github.com/vars-org/vars-repo.git'", instance.vars_str)
         self.assertIn("edx_platform_version: '{}'".format('9' * 40), instance.vars_str)
+        self.assertIn("configuration_version: 'test-config-ver'", instance.vars_str)
+        self.assertIn("forum_version: 'test-forum-ver'", instance.vars_str)
+        self.assertIn("notifier_version: 'test-notif-ver'", instance.vars_str)
+        self.assertIn("xqueue_version: 'test-xq-ver'", instance.vars_str)
+        self.assertIn("certs_version: 'test-cert-ver'", instance.vars_str)
 
     def test_vars_str_extra_settings(self):
         """
