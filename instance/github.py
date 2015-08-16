@@ -49,6 +49,7 @@ def get_object_from_url(url):
     Send the request to the provided URL, attaching custom headers, and returns
     the deserialized object from the returned JSON
     """
+    logger.info('GET URL %s', url)
     r = requests.get(url, headers=GH_HEADERS)
     r.raise_for_status()
     return r.json()

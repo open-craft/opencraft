@@ -1,5 +1,6 @@
-# Defaults
+# Config
 WORKERS = 4
+SHELL = /bin/bash
 
 # For `test_one` use the rest as arguments and turn them into do-nothing targets
 ifeq (test_one,$(firstword $(MAKECMDGOALS)))
@@ -32,12 +33,20 @@ test_prospector: clean
 	prospector --profile opencraft
 
 test_unit: clean
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test
+	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 95%\n" && exit 2)
 
-test: clean test_prospector test_unit
+test_integration: clean
+	@if [ -a .env.integration ] ; then \
+		echo -e "\nRunning integration tests..." ; \
+		honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput ; \
+	else \
+		echo -e "\nIntegration tests skipped (create a `.env.integration` file to run them)" ; \
+	fi
+
+test: clean test_prospector test_unit test_integration
 
 test_one: clean
 	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
