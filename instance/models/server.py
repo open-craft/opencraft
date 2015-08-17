@@ -104,6 +104,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
         (TERMINATED, 'Terminated - Stopped forever'),
     )
 
+    instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
     status = models.CharField(max_length=11, default=NEW, choices=STATUS_CHOICES, db_index=True)
 
     objects = ServerQuerySet().as_manager()
@@ -158,7 +159,6 @@ class OpenStackServer(Server):
     """
     A Server VM hosted on an OpenStack cloud
     """
-    instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
     openstack_id = models.CharField(max_length=250, db_index=True, blank=True)
 
     def __init__(self, *args, **kwargs):
