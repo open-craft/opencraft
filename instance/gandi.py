@@ -40,8 +40,8 @@ class GandiAPI():
     """
     Gandi API proxy object
     """
-    def __init__(self):
-        self.client = xmlrpc.client.ServerProxy('https://rpc.gandi.net/xmlrpc/')
+    def __init__(self, api_url='https://rpc.gandi.net/xmlrpc/'):
+        self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
     def api_key(self): #pylint: disable=no-self-use
