@@ -47,6 +47,7 @@ test_integration: clean
 	fi
 
 test: clean test_prospector test_unit test_integration
+	@echo -e "\nAll tests OK!\n"
 
 test_one: clean
 	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
