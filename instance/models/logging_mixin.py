@@ -40,6 +40,25 @@ PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error', 'exception')
 logger = logging.getLogger(__name__)
 
 
+# Functions ###################################################################
+
+def get_iterator_next_function(iterator, empty_value=None):
+    """
+    Returns a function that return one element from the iterator at a time,
+    and `empty_value` once the iterator is empty
+    """
+    def iterator_next_function():
+        """
+        The function returning the next element
+        """
+        try:
+            return next(iterator)
+        except StopIteration:
+            return empty_value
+
+    return iterator_next_function
+
+
 # Models ######################################################################
 
 class LoggerMixin(models.Model):
@@ -83,33 +102,27 @@ class LoggerInstanceMixin(LoggerMixin):
                                                  .order_by('pk')\
                                                  .iterator()
 
-        def next_instance_logentry():
-            """ Get the next log entry from the instance logs iterator """
-            try:
-                return next(instance_logentry_set)
-            except StopIteration:
-                return None
-
-        def next_server_logentry():
-            """ Get the next log entry from the server logs iterator """
-            try:
-                return next(server_logentry_set)
-            except StopIteration:
-                return None
+        next_server_logentry = get_iterator_next_function(server_logentry_set)
+        next_instance_logentry = get_iterator_next_function(instance_logentry_set)
 
         log_text = ''
         instance_logentry = next_instance_logentry()
         server_logentry = next_server_logentry()
 
-        while True:
-            if instance_logentry is None and server_logentry is None:
-                break
-            elif instance_logentry is None or \
-                    (server_logentry is not None and server_logentry.created < instance_logentry.created):
+        while instance_logentry is not None and server_logentry is not None:
+            if server_logentry.created < instance_logentry.created:
                 log_text += '{}\n'.format(server_logentry)
                 server_logentry = next_server_logentry()
             else:
                 log_text += '{}\n'.format(instance_logentry)
                 instance_logentry = next_instance_logentry()
+
+        while instance_logentry is not None:
+            log_text += '{}\n'.format(instance_logentry)
+            instance_logentry = next_instance_logentry()
+
+        while server_logentry is not None:
+            log_text += '{}\n'.format(server_logentry)
+            server_logentry = next_server_logentry()
 
         return log_text
