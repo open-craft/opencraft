@@ -29,9 +29,13 @@ import sys
 from swampdragon.swampdragon_server import run_server
 
 
-# Main ########################################################################
+# Django ######################################################################
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opencraft.settings")
+from django.conf import settings
 
-host_port = sys.argv[1] if len(sys.argv) > 1 else 'localhost:2001'
+
+# Main ########################################################################
+
+host_port = sys.argv[1] if len(sys.argv) > 1 else settings.DRAGON_SERVER_ADDRESS_PORT
 run_server(host_port=host_port)

@@ -47,9 +47,9 @@ $ make rundev
 
 Then go to:
 
-* User interface: [http://localhost:5000/](http://localhost:2000/)
-* API: [http://localhost:5000/api/](http://localhost:2000/api/)
-* Admin: [http://localhost:5000/admin/](http://localhost:2000/admin/)
+* User interface: [http://localhost:5000/](http://localhost:5000/)
+* API: [http://localhost:5000/api/](http://localhost:5000/api/)
+* Admin: [http://localhost:5000/admin/](http://localhost:5000/admin/)
 
 To run the production server:
 
