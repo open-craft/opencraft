@@ -392,6 +392,9 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
     objects = OpenEdXInstanceQuerySet.as_manager()
 
+    class Meta:
+        verbose_name = 'Open edX Instance'
+
     @property
     def reference_name(self):
         """
