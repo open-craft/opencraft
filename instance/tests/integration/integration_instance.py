@@ -46,7 +46,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             fork_name='edx/edx-platform',
             ref_type='tags',
             branch_name='named-release/cypress', # Use a known working version
-            configuration_version='named-release/cypress',
+            ansible_source_repo_url='https://github.com/open-craft/configuration.git',
+            configuration_version='integration',
             forum_version='named-release/cypress',
             notifier_version='named-release/cypress',
             xqueue_version='named-release/cypress',
