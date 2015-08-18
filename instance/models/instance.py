@@ -394,6 +394,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
     class Meta:
         verbose_name = 'Open edX Instance'
+        ordering = ['-created']
 
     @property
     def reference_name(self):
