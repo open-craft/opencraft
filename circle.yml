@@ -6,4 +6,5 @@ dependencies:
     - pip install --upgrade pip
 test:
   override:
-      - make test
+      - make test:
+          timeout: 1800
