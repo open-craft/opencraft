@@ -259,6 +259,9 @@ class AnsibleInstanceMixin(models.Model):
     """
     An instance that relies on Ansible to deploy its services
     """
+    ansible_source_repo_url = models.URLField(max_length=256,
+                                              default='https://github.com/edx/configuration.git')
+
     configuration_version = models.CharField(max_length=50, default='master')
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)

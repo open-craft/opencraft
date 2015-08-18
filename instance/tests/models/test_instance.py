@@ -268,6 +268,7 @@ class AnsibleInstanceTestCase(TestCase):
             github_organization_name='vars-org',
             github_repository_name='vars-repo',
             commit_id='9' * 40,
+            ansible_source_repo_url='http://example.org/config/repo',
             configuration_version='test-config-ver',
             forum_version='test-forum-ver',
             notifier_version='test-notif-ver',
@@ -280,6 +281,7 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertIn("EDXAPP_CONTACT_EMAIL: 'vars@example.com'", instance.vars_str)
         self.assertIn("edx_platform_repo: 'https://github.com/vars-org/vars-repo.git'", instance.vars_str)
         self.assertIn("edx_platform_version: '{}'".format('9' * 40), instance.vars_str)
+        self.assertIn("edx_ansible_source_repo: 'http://example.org/config/repo'", instance.vars_str)
         self.assertIn("configuration_version: 'test-config-ver'", instance.vars_str)
         self.assertIn("forum_version: 'test-forum-ver'", instance.vars_str)
         self.assertIn("notifier_version: 'test-notif-ver'", instance.vars_str)
