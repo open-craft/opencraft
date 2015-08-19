@@ -29,6 +29,12 @@ import shutil
 from contextlib import contextmanager
 
 
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 # Functions ###################################################################
 
 @contextmanager
@@ -39,6 +45,8 @@ def open_repository(repo_url, ref='master'):
     Note that this clones the repository locally
     """
     repo_dir_path = tempfile.mkdtemp()
+    logger.info('Cloning repository %s (ref=%s) in %s...', repo_url, ref, repo_dir_path)
+
     git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
     g = git.Git(repo_dir_path)
     g.checkout(ref)
