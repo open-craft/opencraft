@@ -304,14 +304,14 @@ class AnsibleInstanceTestCase(TestCase):
     @patch('instance.models.instance.OpenEdXInstance.vars_str')
     @patch('instance.models.instance.OpenEdXInstance.inventory_str')
     @patch('instance.models.instance.ansible.run_playbook')
-    @patch('instance.models.instance.clone_configuration_repo')
-    def test_run_playbook(self, mock_clone_configuration_repo, mock_run_playbook, mock_inventory, mock_vars):
+    @patch('instance.models.instance.open_repository')
+    def test_run_playbook(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_vars):
         """
         Run the default playbook
         """
         instance = OpenEdXInstanceFactory()
         BootedOpenStackServerFactory(instance=instance)
-        mock_clone_configuration_repo.return_value.__enter__.return_value = '/cloned/configuration-repo/path'
+        mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
 
         instance.run_playbook()
         self.assertIn(call(

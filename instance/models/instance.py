@@ -35,7 +35,7 @@ from instance import ansible, github
 from instance.gandi import GandiAPI
 from instance.github import fork_name2tuple, get_username_list_from_team
 from instance.log_exception import log_exception
-from instance.repo import clone_configuration_repo
+from instance.repo import open_repository
 from instance.models.logging_mixin import LoggerInstanceMixin
 from instance.models.utils import ValidateModelMixin
 
@@ -309,9 +309,10 @@ class AnsibleInstanceMixin(models.Model):
         """
         Run a playbook against the instance active servers
         """
-        with clone_configuration_repo() as configuration_repo_path:
-            playbook_path = os.path.join(configuration_repo_path, 'playbooks')
-            requirements_path = os.path.join(configuration_repo_path, 'requirements.txt')
+        with open_repository(self.ansible_source_repo_url,
+                             ref=self.configuration_version) as configuration_repo:
+            playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
+            requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
 
             self.log('info', 'Running playbook "{path}/{name}" for instance {instance}...'.format(
                 path=playbook_path,
