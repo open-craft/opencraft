@@ -48,6 +48,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             branch_name='named-release/cypress', # Use a known working version
             ansible_source_repo_url='https://github.com/open-craft/configuration.git',
             configuration_version='integration',
+            ansible_playbook_name='opencraft_integration',
             forum_version='named-release/cypress',
             notifier_version='named-release/cypress',
             xqueue_version='named-release/cypress',
