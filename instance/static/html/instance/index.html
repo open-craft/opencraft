@@ -69,6 +69,33 @@
           <pre class="instance-log">{{ selected.instance.log_text }}</pre>
         </tab>
         <tab heading="Configuration">
+          <h4>Configuring the sandbox</h4>
+
+          <p>If you want to change the default configuration, you can add or override any of its variables by adding a "Settings" section to your PR. This ensures the information is available in a central place, for both the reviewers and the OpenCraft Instance manager. The section should use the following format:</p>
+
+          <div class="panel">
+<pre>- - -
+**Settings**
+```yaml
+[YAML: VARIABLES]
+```</pre>
+          </div>
+
+          <p>For example:</p>
+
+          <div class="panel">
+<pre>- - -
+**Settings**
+```yaml
+EDXAPP_FEATURES:
+  ALLOW_HIDING_DISCUSSION_TAB: true
+```
+</pre>
+          </div>
+
+          <p>Note: You need to match the above format exactly.</p>
+
+          <h4>Current configuration</h4>
           <pre class="configuration">{{ selected.instance.vars_str }}</pre>
         </tab>
       </tabset>
