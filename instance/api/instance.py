@@ -47,7 +47,7 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         Start the (re-)provisioning of an instance
         """
         instance = self.get_object()
-        if instance.status not in ('empty', 'ready'):
+        if instance.status not in (instance.EMPTY, instance.READY):
             return Response({'status': 'Instance is not ready for reprovisioning'},
                             status=status.HTTP_403_FORBIDDEN)
 

@@ -88,7 +88,7 @@ def get_settings_from_pr_body(pr_body):
 
 def get_pr_by_number(fork_name, pr_number):
     """
-    Returns a PR() namedtuple based on the reponse
+    Returns a PR object based on the reponse
     """
     r_pr = get_object_from_url('https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
         fork_name=fork_name,
@@ -109,7 +109,7 @@ def get_pr_by_number(fork_name, pr_number):
 
 def get_pr_list_from_username(user_name, fork_name):
     """
-    Retreive the current active PRs for a given user
+    Retrieve the current active PRs for a given user
     """
     q = 'is:open is:pr author:{author} repo:{repo}'.format(author=user_name, repo=fork_name)
     r_pr_list = get_object_from_url('https://api.github.com/search/issues?sort=created&q={}'.format(q))
@@ -124,7 +124,7 @@ def get_pr_list_from_username(user_name, fork_name):
 
 def get_team_from_organization(organization_name, team_name='Owners'):
     """
-    Retreive a team by organization & team name
+    Retrieve a team by organization & team name
     """
     url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
     for team_dict in get_object_from_url(url):
@@ -135,7 +135,7 @@ def get_team_from_organization(organization_name, team_name='Owners'):
 
 def get_username_list_from_team(organization_name, team_name='Owners'):
     """
-    Retreive the usernames of a given team's members
+    Retrieve the usernames of a given team's members
     """
     team = get_team_from_organization(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])

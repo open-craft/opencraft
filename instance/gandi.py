@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Gandi DNS - Helper dunctions
+Gandi DNS - Helper functions
 """
 
 # Imports #####################################################################

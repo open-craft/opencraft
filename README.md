@@ -25,6 +25,7 @@ Then reload `~/.bashrc`, create the virtual env and install the Python requireme
 ```
 $ . ~/.bashrc
 $ mkvirtualenv -p /usr/bin/python3 opencraft
+$ workon opencraft
 $ pip install -r requirements.txt
 ```
 
@@ -64,8 +65,8 @@ $ make run WORKERS=2
 ```
 
 
-Processus description
----------------------
+Process description
+-------------------
 
 This runs three processus via honcho, which reads `Procfile` or `Procfile.dev` and loads the
 environment from the `.env` file:
@@ -106,8 +107,14 @@ $ make migrate
 Running the tests
 -----------------
 
-First, ensure that the postgresql user can create databases, to be able to create the test database. 
-Then run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
+First, the current user can access postgresql and create databases, for the test database. Run:
+
+```
+$ sudo -u postgres createuser -d <currentunixuser>`
+```
+
+Where `<currentunixuser>` is replaced with the name of whatever user the app runs under. Then run 
+the whole test suite (pylint, pyflakes, pep8, unit tests, etc.) with:
 
 ```
 $ make test

@@ -85,7 +85,7 @@ def delete_servers_by_name(nova, server_name):
 
 def get_server_public_address(server):
     """
-    Retreive the public IP of `server`
+    Retrieve the public IP of `server`
     """
     addresses = server.addresses
     if not addresses:

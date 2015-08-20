@@ -115,12 +115,18 @@ class InstanceLogEntry(LogEntry):
     """
     instance = models.ForeignKey(OpenEdXInstance, related_name='logentry_set')
 
+    class Meta:
+        verbose_name_plural = "Instance Log Entries"
+
 
 class ServerLogEntry(LogEntry):
     """
     Single log entry for servers
     """
     server = models.ForeignKey(OpenStackServer, related_name='logentry_set')
+
+    class Meta:
+        verbose_name_plural = "Server Log Entries"
 
     @property
     def instance(self):

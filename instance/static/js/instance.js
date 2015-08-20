@@ -107,7 +107,7 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
             instance.post("provision");
         };
 
-        // Retreive instance list
+        // Retrieve instance list
         updateInstanceList($scope, OpenCraftAPI);
 
         // Intialize websockets
