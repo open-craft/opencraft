@@ -457,6 +457,8 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
     def provision(self):
         """
         Run the provisioning sequence of the instance, recreating the servers from scratch
+
+        Returns: (server, ansible_log)
         """
         self.last_provisioning_started = timezone.now()
         self.save()

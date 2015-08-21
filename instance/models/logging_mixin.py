@@ -24,6 +24,8 @@ Instance app models - Logging - Mixins
 
 import logging
 
+from functools import partial
+
 from django.db import models
 
 from instance.models.logging_utils import level_to_integer
@@ -38,25 +40,6 @@ PUBLISHED_LOG_LEVEL_SET = ('info', 'warn', 'error', 'exception')
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
-
-
-# Functions ###################################################################
-
-def get_iterator_next_function(iterator, empty_value=None):
-    """
-    Returns a function that return one element from the iterator at a time,
-    and `empty_value` once the iterator is empty
-    """
-    def iterator_next_function():
-        """
-        The function returning the next element
-        """
-        try:
-            return next(iterator)
-        except StopIteration:
-            return empty_value
-
-    return iterator_next_function
 
 
 # Models ######################################################################
@@ -102,8 +85,8 @@ class LoggerInstanceMixin(LoggerMixin):
                                                  .order_by('pk')\
                                                  .iterator()
 
-        next_server_logentry = get_iterator_next_function(server_logentry_set)
-        next_instance_logentry = get_iterator_next_function(instance_logentry_set)
+        next_server_logentry = partial(next, server_logentry_set, None)
+        next_instance_logentry = partial(next, instance_logentry_set, None)
 
         log_text = ''
         instance_logentry = next_instance_logentry()

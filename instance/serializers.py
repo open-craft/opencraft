@@ -39,7 +39,15 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OpenStackServer
-        fields = ('id', 'api_url', 'status', 'instance', 'openstack_id', 'created', 'modified')
+        fields = (
+            'id',
+            'api_url',
+            'created',
+            'instance',
+            'modified',
+            'openstack_id',
+            'status',
+        )
 
 
 class OpenEdXInstanceSerializer(serializers.ModelSerializer):
@@ -51,8 +59,27 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OpenEdXInstance
-        fields = ('id', 'api_url', 'active_server_set', 'sub_domain', 'base_domain', 'email', 'name',
-                  'protocol', 'domain', 'url', 'branch_name', 'commit_id', 'github_organization_name',
-                  'github_organization_name', 'github_base_url', 'github_branch_url', 'log_text',
-                  'repository_url', 'updates_feed', 'vars_str', 'created', 'modified', 'status',
-                  'studio_url')
+        fields = (
+            'id',
+            'api_url',
+            'active_server_set',
+            'base_domain',
+            'branch_name',
+            'commit_id',
+            'created',
+            'domain',
+            'email',
+            'github_base_url',
+            'github_branch_url', 'log_text',
+            'github_organization_name',
+            'modified',
+            'name',
+            'protocol',
+            'repository_url',
+            'status',
+            'studio_url',
+            'sub_domain',
+            'url',
+            'updates_feed',
+            'vars_str',
+        )
