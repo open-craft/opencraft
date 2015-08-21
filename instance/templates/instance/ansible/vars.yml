@@ -1,3 +1,6 @@
+# System
+COMMON_HOSTNAME: '{{ instance.domain }}'
+
 # edxapp
 EDXAPP_PLATFORM_NAME: "{{ instance.name }}"
 EDXAPP_LMS_NGINX_PORT: 80
