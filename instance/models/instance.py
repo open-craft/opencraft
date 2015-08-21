@@ -136,6 +136,45 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
 # Git #########################################################################
 
+class GitHubInstanceQuerySet(models.QuerySet):
+    """
+    Additional methods for instance querysets
+    Also used as the standard manager for the GitHubInstance model
+    """
+    def create(self, *args, **kwargs):
+        """
+        Augmented `create()` method:
+        - Adds support for `fork_name` to allow to set both the github org & repo
+        - Sets the github org & repo to `instance.default_fork` if any is missing
+        - Sets the `commit_id` to the branch tip if it isn't explicitly passed as an argument
+        """
+        fork_name = kwargs.pop('fork_name', None)
+        instance = self.model(**kwargs)
+        if fork_name is None and (not instance.github_organization_name or not instance.github_repository_name):
+            fork_name = instance.default_fork
+        if fork_name is not None:
+            instance.set_fork_name(fork_name, commit=False)
+        if not instance.commit_id:
+            instance.set_to_branch_tip(commit=False)
+        if not instance.name:
+            instance.name = '{i.sub_domain} - {i.reference_name}'.format(i=instance)
+
+        self._for_write = True
+        instance.save(force_insert=True, using=self.db)
+        return instance
+
+    def get(self, *args, **kwargs):
+        """
+        Augmented `get()` method:
+        - Adds support for `fork_name` to allow to query the github org & repo using a single argument
+        """
+        fork_name = kwargs.pop('fork_name', None)
+        if fork_name is not None:
+            kwargs['github_organization_name'], kwargs['github_repository_name'] = fork_name2tuple(fork_name)
+
+        return super().get(*args, **kwargs)
+
+
 class VersionControlInstanceMixin(models.Model):
     """
     Instances linked to a VCS, such as git
@@ -167,8 +206,17 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
 
+    objects = GitHubInstanceQuerySet.as_manager()
+
     class Meta:
         abstract = True
+
+    @property
+    def default_fork(self): #pylint: disable=no-self-use
+        """
+        Name of the fork to use by default, when no repository is specified
+        """
+        return NotImplementedError
 
     @property
     def fork_name(self):
@@ -340,45 +388,6 @@ class AnsibleInstanceMixin(models.Model):
 
 # Open edX ####################################################################
 
-class OpenEdXInstanceQuerySet(models.QuerySet):
-    """
-    Additional methods for instance querysets
-    Also used as the standard manager for the OpenEdXInstance model
-    """
-    def create(self, *args, **kwargs):
-        """
-        Augmented `create()` method:
-        - Adds support for `fork_name` to allow to set both the github org & repo
-        - Sets the github org & repo to `settings.DEFAULT_FORK` if any is missing
-        - Sets the `commit_id` to the branch tip if it isn't explicitly passed as an argument
-        """
-        fork_name = kwargs.pop('fork_name', None)
-        instance = self.model(**kwargs)
-        if fork_name is None and (not instance.github_organization_name or not instance.github_repository_name):
-            fork_name = settings.DEFAULT_FORK
-        if fork_name is not None:
-            instance.set_fork_name(fork_name, commit=False)
-        if not instance.commit_id:
-            instance.set_to_branch_tip(commit=False)
-        if not instance.name:
-            instance.name = '{i.sub_domain} - {i.reference_name}'.format(i=instance)
-
-        self._for_write = True
-        instance.save(force_insert=True, using=self.db)
-        return instance
-
-    def get(self, *args, **kwargs):
-        """
-        Augmented `get()` method:
-        - Adds support for `fork_name` to allow to query the github org & repo using a single argument
-        """
-        fork_name = kwargs.pop('fork_name', None)
-        if fork_name is not None:
-            kwargs['github_organization_name'], kwargs['github_repository_name'] = fork_name2tuple(fork_name)
-
-        return super().get(*args, **kwargs)
-
-
 class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
@@ -394,11 +403,16 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
 
     ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
 
-    objects = OpenEdXInstanceQuerySet.as_manager()
-
     class Meta:
         verbose_name = 'Open edX Instance'
         ordering = ['-created']
+
+    @property
+    def default_fork(self):
+        """
+        Name of the fork to use by default, when no repository is specified
+        """
+        return settings.DEFAULT_FORK
 
     @property
     def reference_name(self):
