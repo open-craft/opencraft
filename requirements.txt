@@ -12,7 +12,7 @@ django-appconf==1.0.1
 django-compressor==1.5
 django-debug-toolbar==1.3.2
 django-environ==0.3.0
--e git+https://github.com/django-extensions/django-extensions.git@45393942002ca04c4dc00b8915fa4e75fb48c64e#egg=django_extensions-dev
+django-extensions==1.5.6
 django-filter==0.10.0
 django-grappelli==2.7.1
 django-libsass==0.3
@@ -26,7 +26,7 @@ gitdb==0.6.4
 GitPython==1.0.1
 gunicorn==19.3.0
 honcho==0.6.6
--e git+https://github.com/antoviaque/huey.git@6a2e47485e2780ec190eef7d2ebe179b63a7c779#egg=huey-origin_django1.8-import-warning
+-e git+https://github.com/coleifer/huey.git@6a2e47485e2780ec190eef7d2ebe179b63a7c779#egg=huey-dev
 ipdb==0.8.1
 ipython==3.2.1
 iso8601==0.1.10
