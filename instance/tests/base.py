@@ -85,7 +85,9 @@ class TestCase(DjangoTestCase):
     """
     Base class for instance tests
     """
-    pass
+    def setUp(self):
+        super().setUp()
+        self.maxDiff = None #pylint: disable=invalid-name
 
 
 class WithUserTestCase(DjangoTestCase):

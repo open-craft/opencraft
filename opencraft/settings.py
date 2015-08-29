@@ -288,17 +288,20 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 ADMINS = env.json('ADMINS', default=set())
 
 BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console"])
+HANDLERS = BASE_HANDLERS + ['db']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': "[{asctime}] {levelname:>8s} | process={process:<5d} | {name} | {message}",
+            'format': "{asctime} | {levelname:>8.8s} | process={process:<5d} | {name:<25.25s} | {message}",
             'style': '{',
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'db': {
+            'format': "{name:<25.25s} | {message}",
+            'style': '{',
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },
     'handlers': {
@@ -307,32 +310,37 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
+        'db': {
+            'level': 'INFO',
+            'class': 'instance.logging.DBHandler',
+            'formatter': 'db'
+        },
     },
     'loggers': {
         '': {
-            'handlers': BASE_HANDLERS,
+            'handlers': HANDLERS,
             'propagate': True,
             'level': 'DEBUG',
         },
         'django': {
-            'handlers': BASE_HANDLERS,
+            'handlers': HANDLERS,
             'propagate': False,
             'level': 'INFO',
         },
         'opencraft': {
-            'handlers': BASE_HANDLERS,
+            'handlers': HANDLERS,
             'propagate': False,
             'level': 'DEBUG',
         },
         'requests': {
-            'handlers': BASE_HANDLERS,
+            'handlers': HANDLERS,
             'propagate': False,
             'level': 'DEBUG',
         }
     }
 }
 
-if 'file' in BASE_HANDLERS:
+if 'file' in HANDLERS:
     LOGGING['handlers']['file'] = {
         'level': 'DEBUG',
         'class': 'logging.FileHandler',

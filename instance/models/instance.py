@@ -22,11 +22,15 @@ Instance app models - Instance
 
 # Imports #####################################################################
 
+import logging
 import os
+
+from functools import partial
 
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_save
 from django.template import loader
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
@@ -34,9 +38,10 @@ from django_extensions.db.models import TimeStampedModel
 from instance import ansible, github
 from instance.gandi import GandiAPI
 from instance.github import fork_name2tuple, get_username_list_from_team
-from instance.log_exception import log_exception
+from instance.logging import log_exception
+from instance.logger_adapter import InstanceLoggerAdapter
 from instance.repo import open_repository
-from instance.models.logging_mixin import LoggerInstanceMixin
+
 from instance.models.utils import ValidateModelMixin
 
 
@@ -48,6 +53,11 @@ PROTOCOL_CHOICES = (
 )
 
 gandi = GandiAPI()
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Exceptions ##################################################################
@@ -93,9 +103,17 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
     last_provisioning_started = models.DateTimeField(blank=True, null=True)
 
+    logger = InstanceLoggerAdapter(logger, {})
+
     class Meta:
         abstract = True
         unique_together = ('base_domain', 'sub_domain')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Ensure we have the right logger
+        self.update_logger()
 
     def __str__(self):
         return '{0.name} ({0.url})'.format(self)
@@ -133,6 +151,68 @@ class Instance(ValidateModelMixin, TimeStampedModel):
             raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
         else:
             return active_server_set[0].status
+
+    @property
+    def event_context(self):
+        """
+        Context dictionary to include in events
+        """
+        return {'instance_id': self.pk}
+
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        """
+        Triggered by the post_save event, with `created` a boolean indicating if the object was just
+        created in the DB
+        """
+        self = instance
+        self.update_logger()
+
+    def update_logger(self):
+        """
+        Start referencing the instance in logs once the DB entry exist
+        """
+        if self.pk is not None:
+            self.logger = InstanceLoggerAdapter(logger, {'obj': self})
+
+    @property
+    def log_text(self):
+        """
+        Combines the instance and server log outputs in chronological order
+        Currently only supports one non-terminated server at a time
+        Returned as a text string
+        """
+        current_server = self.active_server_set.get()
+        # TODO: Filter out log entries for which the user doesn't have view rights
+        server_log_entry_set = current_server.log_entry_set.order_by('pk')\
+                                                           .iterator()
+        instance_log_entry_set = self.log_entry_set.order_by('pk')\
+                                                   .iterator()
+
+        next_server_log_entry = partial(next, server_log_entry_set, None)
+        next_instance_log_entry = partial(next, instance_log_entry_set, None)
+
+        log_text = ''
+        instance_log_entry = next_instance_log_entry()
+        server_log_entry = next_server_log_entry()
+
+        while instance_log_entry is not None and server_log_entry is not None:
+            if server_log_entry.created < instance_log_entry.created:
+                log_text += '{}\n'.format(server_log_entry)
+                server_log_entry = next_server_log_entry()
+            else:
+                log_text += '{}\n'.format(instance_log_entry)
+                instance_log_entry = next_instance_log_entry()
+
+        while instance_log_entry is not None:
+            log_text += '{}\n'.format(instance_log_entry)
+            instance_log_entry = next_instance_log_entry()
+
+        while server_log_entry is not None:
+            log_text += '{}\n'.format(server_log_entry)
+            server_log_entry = next_server_log_entry()
+
+        return log_text
 
 
 # Git #########################################################################
@@ -286,7 +366,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
             self.branch_name = branch_name
         if ref_type is not None:
             self.ref_type = ref_type
-        self.log('info', 'Setting instance {} to tip of branch {}'.format(self, self.branch_name))
+        self.logger.info('Setting instance to tip of branch %s', self.branch_name)
         new_commit_id = github.get_commit_id_from_ref(
             self.fork_name,
             self.branch_name,
@@ -312,7 +392,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 
         By default, save the instance object - pass `commit=False` to not save it
         """
-        self.log('info', 'Setting fork name for instance {}: {}'.format(self, fork_name))
+        self.logger.info('Setting fork name: %s', fork_name)
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
         if self.github_organization_name == fork_org \
                 and self.github_repository_name == fork_repo:
@@ -360,7 +440,7 @@ class AnsibleInstanceMixin(models.Model):
         for server in self.server_set.filter(status=server_model.BOOTED).order_by('created'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
-        self.log('debug', 'Inventory for instance {}:\n{}'.format(self, inventory_str))
+        self.logger.debug('Inventory:\n%s', inventory_str)
         return inventory_str
 
     @property
@@ -373,10 +453,10 @@ class AnsibleInstanceMixin(models.Model):
         for attr_name in self.ANSIBLE_SETTINGS:
             additional_vars = getattr(self, attr_name)
             vars_str = ansible.yaml_merge(vars_str, additional_vars)
-        self.log('debug', 'Vars.yml for instance {}:\n{}'.format(self, vars_str))
+        self.logger.debug('Vars.yml:\n%s', vars_str)
         return vars_str
 
-    def run_playbook(self, playbook_name=None):
+    def run_playbook(self):
         """
         Run a playbook against the instance active servers
         """
@@ -385,11 +465,7 @@ class AnsibleInstanceMixin(models.Model):
             playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
             requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
 
-            self.log('info', 'Running playbook "{path}/{name}" for instance {instance}...'.format(
-                path=playbook_path,
-                name=playbook_name,
-                instance=self,
-            ))
+            self.logger.info('Running playbook "%s/%s"...', playbook_path, self.ansible_playbook_filename)
 
             log_lines = []
             with ansible.run_playbook(
@@ -402,16 +478,16 @@ class AnsibleInstanceMixin(models.Model):
             ) as processus:
                 for line in processus.stdout:
                     line = line.decode('utf-8').rstrip()
-                    self.log('info', line)
+                    self.logger.info(line)
                     log_lines.append([line.rstrip()])
 
-        self.log('info', 'Playbook run completed for instance {}'.format(self))
+        self.logger.info('Playbook run completed')
         return log_lines
 
 
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceMixin, Instance):
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -487,30 +563,32 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         self.save()
 
         # Server
-        self.log('info', 'Terminate servers for instance {}...'.format(self))
+        self.logger.info('Terminate servers')
         self.server_set.terminate()
-        self.log('info', 'Start new server for instance {}...'.format(self))
+        self.logger.info('Start new server')
         server = self.server_set.create()
         server.start()
 
         # DNS
-        self.log('info', 'Waiting for IP assignment on server {}...'.format(server))
+        self.logger.info('Waiting for IP assignment on server %s...', server)
         server.sleep_until_status([server.ACTIVE, server.BOOTED])
-        self.log('info', 'Updating DNS for instance {}: LMS at {}...'.format(self, self.domain))
+        self.logger.info('Updating DNS: LMS at %s...', self.domain)
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
-        self.log('info', 'Updating DNS for instance {}: Studio at {}...'.format(self, self.studio_domain))
+        self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
         # Provisioning (ansible)
-        self.log('info', 'Waiting for SSH to become available on server {}...'.format(server))
+        self.logger.info('Waiting for SSH to become available on server {}...'.format(server))
         server.sleep_until_status(server.BOOTED)
         ansible_log = self.run_playbook()
         server.update_status(provisioned=True)
 
         # Reboot
-        self.log('info', 'Rebooting server {}...'.format(server))
+        self.logger.info('Rebooting server %s...', server)
         server.reboot()
         server.sleep_until_status(server.READY)
-        self.log('info', 'Provisioning completed for instance {}'.format(self))
+        self.logger.info('Provisioning completed')
 
         return (server, ansible_log)
+
+post_save.connect(OpenEdXInstance.on_post_save, sender=OpenEdXInstance)

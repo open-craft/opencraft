@@ -22,6 +22,7 @@ Instance app models - Server
 
 # Imports #####################################################################
 
+import logging
 import novaclient
 import time
 
@@ -34,10 +35,16 @@ from django.db.models.signals import post_save
 from django_extensions.db.models import TimeStampedModel
 
 from instance import openstack
+from instance.logger_adapter import ServerLoggerAdapter
 from instance.utils import is_port_open, to_json
+
 from instance.models.instance import OpenEdXInstance
-from instance.models.logging_mixin import LoggerMixin
 from instance.models.utils import ValidateModelMixin
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Exceptions ##################################################################
@@ -72,7 +79,7 @@ class ServerQuerySet(models.QuerySet):
         return self.filter(~Q(status=Server.TERMINATED))
 
 
-class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
+class Server(ValidateModelMixin, TimeStampedModel):
     """
     A single server VM
     """
@@ -109,8 +116,26 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
 
     objects = ServerQuerySet().as_manager()
 
+    logger = ServerLoggerAdapter(logger, {})
+
     class Meta:
         abstract = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Ensure we have the right logger
+        self.update_logger()
+
+    @property
+    def event_context(self):
+        """
+        Context dictionary to include in events
+        """
+        return {
+            'instance_id': self.instance.pk,
+            'server_id': self.pk,
+        }
 
     def _set_status(self, status):
         """
@@ -120,7 +145,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
             raise ValueError(status)
 
         self.status = status
-        self.log('info', 'Changed status for {}: {}'.format(self, self.status))
+        self.logger.info('Changed status: %s', self.status)
         self.save()
         return self.status
 
@@ -129,7 +154,7 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
         Sleep in a loop until the server reaches one of the specified status
         """
         target_status_list = [target_status] if isinstance(target_status, str) else target_status
-        self.log('info', 'Waiting for server {} to reach status {}...'.format(self, target_status_list))
+        self.logger.info('Waiting to reach status %s...', target_status_list)
 
         while True:
             self.update_status()
@@ -143,10 +168,20 @@ class Server(ValidateModelMixin, TimeStampedModel, LoggerMixin):
         """
         Called when an instance is saved
         """
+        self = instance
+        self.update_logger()
+
         publish_data('notification', {
             'type': 'server_update',
-            'server_pk': instance.pk,
+            'server_pk': self.pk,
         })
+
+    def update_logger(self):
+        """
+        Start referencing the server in logs once the DB entry exist
+        """
+        if self.pk is not None:
+            self.logger = ServerLoggerAdapter(logger, {'obj': self})
 
     def update_status(self, provisioned=False, rebooting=False):
         """
@@ -201,12 +236,10 @@ class OpenStackServer(Server):
         """
         # TODO: Check when server is stopped or terminated
         os_server = self.os_server
-        self.log('debug', 'Updating status for {} from nova (currently {}):\n{}'.format(
-            self, self.status, to_json(os_server)))
+        self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
 
         if self.status == self.STARTED:
-            self.log('debug', 'Server {}: loaded="{}" status="{}"'.format(
-                self, os_server._loaded, os_server.status))
+            self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._set_status(self.ACTIVE)
 
@@ -231,7 +264,7 @@ class OpenStackServer(Server):
         TODO: Add handling of quota limitations & waiting list
         TODO: Create the key dynamically
         """
-        self.log('info', 'Starting server {} (status={})...'.format(self, self.status))
+        self.logger.info('Starting server (status=%s)...', self.status)
         if self.status == self.NEW:
             os_server = openstack.create_server(
                 self.nova,
@@ -241,7 +274,7 @@ class OpenStackServer(Server):
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
             )
             self.openstack_id = os_server.id
-            self.log('info', 'Server {} got assigned OpenStack id {}'.format(self, self.openstack_id))
+            self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
             self._set_status(self.STARTED)
         else:
             raise NotImplementedError
@@ -267,7 +300,7 @@ class OpenStackServer(Server):
         """
         Terminate the server
         """
-        self.log('info', 'Terminating server {} (status={})...'.format(self, self.status))
+        self.logger.info('Terminating server (status=%s)...', self.status)
         if self.status == self.TERMINATED:
             return
         elif self.status == self.NEW:
@@ -277,9 +310,8 @@ class OpenStackServer(Server):
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
-            self.log('exception', 'Error while attempting to terminate server {}: '
-                                  'could not find OS server'.format(self))
+            self.logger.error('Error while attempting to terminate server: could not find OS server')
         finally:
             self._set_status(self.TERMINATED)
 
-post_save.connect(Server.on_post_save, sender=OpenStackServer)
+post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)

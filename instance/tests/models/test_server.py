@@ -249,10 +249,11 @@ class OpenStackServerTestCase(TestCase):
         def raise_not_found(): #pylint: disable=missing-docstring
             raise novaclient.exceptions.NotFound('not-found')
         server.os_server.delete.side_effect = raise_not_found
-        server.log = Mock()
+        server.logger = Mock()
+        mock_logger = server.logger
 
         server.terminate()
-        server.log.assert_any_call('exception', AnyStringMatching('Error while attempting to terminate server'))
+        mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
         self.assertEqual(server.status, server.TERMINATED)
 
     def test_public_ip_new_server(self):
