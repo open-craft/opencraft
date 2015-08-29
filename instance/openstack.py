@@ -22,13 +22,11 @@ OpenStack - Helper functions
 
 # Imports #####################################################################
 
-import requests
-
-from novaclient.v2.client import Client as NovaClient
+import json
 
 from django.conf import settings
 
-from instance.utils import get_requests_retry
+from instance import utils
 
 
 # Logging #####################################################################
@@ -39,48 +37,48 @@ logger = logging.getLogger(__name__)
 
 # Functions ###################################################################
 
-def get_nova_client():
+class OpenStackClient:
     """
-    Instanciate a python novaclient.Client() object with proper credentials
+    OpenStack CLI wrapper, with proper credentials set in env
     """
-    nova = NovaClient(
-        settings.OPENSTACK_USER,
-        settings.OPENSTACK_PASSWORD,
-        settings.OPENSTACK_TENANT,
-        settings.OPENSTACK_AUTH_URL,
-        region_name=settings.OPENSTACK_REGION,
-    )
+    def __init__(self, cluster_name='default'):
+        self.env = settings.OPENSTACK_CLUSTER[cluster_name]
 
-    # API queries via the nova client occasionally get connection errors from the OpenStack provider.
-    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
-    # urllib3's definition) are retried before giving up.
-    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    nova.client.open_session()
-    nova.client._session.mount('http://', adapter)
-    nova.client._session.mount('https://', adapter)
+    def sh(self, command): #pylint: disable=invalid-name
+        """
+        Run shell command in subprocess, with the right environment variables for credentials
 
-    return nova
+        Returns the command output in ascii
+        """
+        return utils.sh(command, env=self.env)
 
+    def run(self, command):
+        """
+        Run the shell command in a subprocess, requesting the output as JSON
 
-def create_server(nova, server_name, flavor_selector, image_selector, key_name=None):
-    """
-    Create a VM via nova
-    """
-    flavor = nova.flavors.find(**flavor_selector)
-    image = nova.images.find(**image_selector)
+        Returns the JSON output loaded as Python objects
+        """
+        json_output = self.sh(command + ' -f json')
+        return json.loads(json_output)
 
-    logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
-    return nova.servers.create(server_name, image, flavor, key_name=key_name)
+    def create_server(self, server_name, flavor_selector, image_selector, key_name=None):
+        """
+        Create a VM via nova
+        """
+        flavor = nova.flavors.find(**flavor_selector)
+        image = nova.images.find(**image_selector)
 
+        logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
+        return nova.servers.create(server_name, image, flavor, key_name=key_name)
 
-def delete_servers_by_name(nova, server_name):
-    """
-    Delete all servers with `server_name`
-    """
-    for server in nova.servers.list():
-        if server.name == server_name:
-            logger.info('deleting server %s', server)
-            nova.servers.delete(server)
+    def delete_servers_by_name(nova, server_name):
+        """
+        Delete all servers with `server_name`
+        """
+        for server in nova.servers.list():
+            if server.name == server_name:
+                logger.info('deleting server %s', server)
+                nova.servers.delete(server)
 
 
 def get_server_public_address(server):

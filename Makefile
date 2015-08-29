@@ -3,7 +3,7 @@ WORKERS = 4
 SHELL = /bin/bash
 
 # For `test_one` use the rest as arguments and turn them into do-nothing targets
-ifeq (test_one,$(firstword $(MAKECMDGOALS)))
+ifneq (,$(filter $(firstword $(MAKECMDGOALS)),test_one openstack))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
@@ -25,6 +25,9 @@ run: clean migrate collectstatic
 
 rundev: clean migrate
 	honcho start -f Procfile.dev
+
+openstack:
+	honcho run ./bin/openstack.py default $(RUN_ARGS)
 
 shell:
 	honcho run ./manage.py shell_plus

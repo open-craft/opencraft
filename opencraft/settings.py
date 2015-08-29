@@ -214,12 +214,20 @@ DRAGON_URL = env('DRAGON_URL', default='http://{}/'.format(DRAGON_SERVER_ADDRESS
 
 # OpenStack ###################################################################
 
-OPENSTACK_USER = env('OPENSTACK_USER')
-OPENSTACK_PASSWORD = env('OPENSTACK_PASSWORD')
-OPENSTACK_TENANT = env('OPENSTACK_TENANT')
-OPENSTACK_AUTH_URL = env('OPENSTACK_AUTH_URL')
-OPENSTACK_REGION = env('OPENSTACK_REGION')
+# Contains credentials to the OpenStack cluster to use. Currently only supports one cluster, 'default'.
+# Each entry should contain the OpenStack RC environment variables for authentication:
+#  - OS_AUTH_URL
+#  - OS_TENANT_ID
+#  - OS_TENANT_NAME
+#  - OS_USERNAME
+#  - OS_PASSWORD
+#  - OS_REGION_NAME
+#
+# Format (JSON):
+# OPENSTACK_CLUSTER='{ "default": { "OS_AUTH_URL": "https://...", ... }}'
+OPENSTACK_CLUSTER = env('OPENSTACK_CLUSTER')
 
+# Sandbox VM options
 OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default={"ram": 4096, "disk": 40})
 OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default={"name": "Ubuntu 12.04"})
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')

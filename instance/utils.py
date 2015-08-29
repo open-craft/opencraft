@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
+#
 # Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015 RedHat - Author: Loic Dachary <loic@dachary.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,10 +25,17 @@ Instance app - Util functions
 # Imports #####################################################################
 
 import json
-import requests
+import os
 import socket
+import subprocess
 
 from mock import Mock
+
+
+# Logging #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 # Functions ###################################################################
@@ -37,6 +46,29 @@ def is_port_open(ip, port):
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     return sock.connect_ex((ip, port)) == 0
+
+
+def sh(command, env=None): #pylint: disable=invalid-name
+    """
+    Run the shell command and return the output in ascii (stderr and
+    stdout).  If the command fails, raise an exception. The command
+    and its output are logged, on success and on error.
+    """
+    logger.debug('Running "%s" with env %s', command, env)
+
+    sub_env = os.environ.copy()
+    if env:
+        sub_env.update(env)
+
+    output = ''
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT,
+                                         shell=True)
+    except subprocess.CalledProcessError as e:
+        logger.exception(command + " error " + str(e.output))
+        raise e
+    logger.debug(command + " output " + str(output))
+    return output.decode('utf-8')
 
 
 def to_json(obj):
@@ -57,16 +89,3 @@ def to_json(obj):
     if not hasattr(obj, 'toJSON'):
         obj = obj.__dict__
     return json.dumps(obj, sort_keys=True, indent=4, default=dumper)
-
-
-def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_factor=0.5):
-    """
-    Returns a urllib3 `Retry` object, with the default requests retry policy
-    """
-    return requests.packages.urllib3.util.retry.Retry(
-        total=total,
-        connect=connect,
-        read=read,
-        redirect=redirect,
-        backoff_factor=backoff_factor
-    )
