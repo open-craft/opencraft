@@ -51,3 +51,6 @@ test: clean test_prospector test_unit test_integration
 
 test_one: clean
 	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
+
+upgrade_dependencies:
+	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
