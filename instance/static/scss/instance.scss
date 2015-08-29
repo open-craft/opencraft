@@ -1,0 +1,35 @@
+.loading-msg {
+    position: fixed;
+    top: 3px;
+    left: 50%;
+    margin-left: -50px;
+    font-size: 12px;
+    padding: 5px 15px;
+}
+
+.content.instance-app {
+    .row {
+        max-width: none;
+    }
+
+    .instance-description {
+        margin-bottom: 0px;
+    }
+
+    .reprovision.button {
+        float: right;
+        margin-bottom: 0px;
+        margin-right: 10px;
+    }
+
+    .configuration,
+    .instance-log {
+        font-size: 0.8em;
+    }
+}
+
+// TODO: Move to application scope
+div#djDebug #djDebugToolbarHandle {
+    top: auto !important;
+    bottom: 30px;
+}

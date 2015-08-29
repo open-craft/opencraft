@@ -1,0 +1,5 @@
+git
+python3-pip
+libpq-dev
+python-dev
+redis-server

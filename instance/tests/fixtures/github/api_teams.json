@@ -1,0 +1,22 @@
+[
+  {
+    "name": "CI",
+    "id": 1537542,
+    "slug": "ci",
+    "description": "",
+    "permission": "pull",
+    "url": "https://api.github.com/teams/1537542",
+    "members_url": "https://api.github.com/teams/1537542/members{/member}",
+    "repositories_url": "https://api.github.com/teams/1537542/repos"
+  },
+  {
+    "name": "Owners",
+    "id": 799617,
+    "slug": "owners",
+    "description": null,
+    "permission": "admin",
+    "url": "https://api.github.com/teams/799617",
+    "members_url": "https://api.github.com/teams/799617/members{/member}",
+    "repositories_url": "https://api.github.com/teams/799617/repos"
+  }
+]

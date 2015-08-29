@@ -1,0 +1,41 @@
+autodetect: true
+doc-warnings: false
+dodgy:
+  disable: []
+  enable: []
+  options: {}
+  run: null
+ignore-paths: ['migrations']
+ignore-patterns: [^setup.py$, (^|/)\..+, '^docs?/']
+max-line-length: null
+mccabe:
+  disable: []
+  enable: []
+  options: {max-complexity: 10}
+  run: null
+member-warnings: false
+output-format: null
+pep257:
+  disable: []
+  enable: []
+  options: {}
+  run: false
+pep8:
+  disable: [E261, E262, E265]
+  enable: []
+  options: {max-line-length: 120, single-line-if-stmt: n}
+  run: null
+profile-validator:
+  disable: []
+  enable: []
+  options: {}
+  run: null
+pyflakes:
+  disable: [F401, F403]
+  enable: []
+  options: {}
+  run: null
+requirements: []
+strictness: 'veryhigh'
+test-warnings: true
+uses: []

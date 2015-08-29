@@ -1,0 +1,72 @@
+{% load staticfiles %}
+{% load compress %}
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% block meta %}{% endblock meta %}
+    {% block base_title %}
+    <title>{% block title %}{% endblock title %} - OpenCraft -</title>
+    {% endblock base_title %}
+
+    {# Base Foundation CSS #}
+    {% block foundation_css %}
+    {% compress css %}
+    <link href='{% static "foundation/scss/normalize.scss" %}' type="text/x-scss" rel="stylesheet"/>
+    <link href='{% static "foundation/scss/foundation.scss" %}' type="text/x-scss" rel="stylesheet"/>
+    {% endcompress %}
+    {% endblock foundation_css %}
+
+    {# Custom CSS #}
+    {% block css %}{% endblock css %}
+
+    {# Underscore #}
+    {% block underscore_js %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    {% endblock underscore_js %}
+
+    {# Modernizr #}
+    {% block foundation_modernizer %}
+    <script src='{% static "foundation/js/vendor/modernizr.js" %}'></script>
+    {% endblock foundation_modernizer %}
+
+    {# Angular #}
+    {% block angular_js %}
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-route.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.5.1/restangular.min.js"></script>
+    {% endblock angular_js %}
+
+    {# Custom head JS #}
+    {% block head_js %}{% endblock head_js %}
+
+    {# Favicon #}
+    {% block favicon %}
+    <link rel="shortcut icon" type="image/png" href='{% static "img/favicon/favicon.ico" %}' />
+    <link rel="icon" type="image/png" sizes="192x192" href='{% static "img/favicon/favicon-192x192.png" %}' />
+    <link rel="icon" type="image/png" sizes="32x32" href='{% static "img/favicon/favicon-32x32.png" %}' />
+    <link rel="icon" type="image/png" sizes="96x96" href='{% static "img/favicon/favicon-96x96.png" %}' />
+    <link rel="icon" type="image/png" sizes="16x16" href='{% static "img/favicon/favicon-16x16.png" %}' />
+    {% endblock favicon %}
+
+</head>
+<body {% block body_attr %}{% endblock body_attr %}>
+    {# Main content goes here #}
+    {% block content %}{% endblock content %}
+
+    {# jQuery #}
+    {% block jquery_js %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    {% endblock jquery_js %}
+
+    {# Foundation JS #}
+    {% block angular_foundation_js %}
+    <script src="{% static "js/dist/angular-foundation-tpls-0.6.0.js" %}"></script>
+    {% endblock angular_foundation_js %}
+
+    {# Custom JS #}
+    {% block body_js %}{% endblock body_js %}
+</body>
+</html>
