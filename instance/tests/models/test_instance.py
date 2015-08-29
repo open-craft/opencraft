@@ -223,6 +223,16 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(instance.branch_name, 'new-branch')
         self.assertEqual(instance.ref_type, 'tag')
 
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    def test_set_to_branch_tip_replace_commit_hash(self, mock_get_commit_id_from_ref):
+        """
+        The hash should be updated in the instance name when updating
+        """
+        mock_get_commit_id_from_ref.return_value = '1234567' + 'd' * 33
+        instance = OpenEdXInstanceFactory(commit_id='a' * 40, name='Test Instance (aaaaaaa)')
+        instance.set_to_branch_tip(branch_name='new-branch', ref_type='tag')
+        self.assertEqual(instance.name, 'Test Instance (1234567)')
+
 
 class AnsibleInstanceTestCase(TestCase):
     """

@@ -277,10 +277,22 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         if ref_type is not None:
             self.ref_type = ref_type
         self.log('info', 'Setting instance {} to tip of branch {}'.format(self, self.branch_name))
-        self.commit_id = github.get_commit_id_from_ref(
+        new_commit_id = github.get_commit_id_from_ref(
             self.fork_name,
             self.branch_name,
             ref_type=self.ref_type)
+
+        if new_commit_id != self.commit_id:
+            old_commit_short_id = self.commit_short_id
+            self.commit_id = new_commit_id
+
+            # Update the hash in the instance title if it is present there
+            # TODO: Find a better way to handle this - include the hash dynamically?
+            # TODO: Figure out why the warnings aren't suppressed despite the fact that it's a mixin
+            if self.name and old_commit_short_id: #pylint: disable=access-member-before-definition
+                #pylint: disable=attribute-defined-outside-init
+                self.name = self.name.replace(old_commit_short_id, self.commit_short_id)
+
         if commit:
             self.save()
 
