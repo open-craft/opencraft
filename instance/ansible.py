@@ -58,13 +58,13 @@ def dict_merge(dict1, dict2):
     """
     Merge the two dicts, recursively overriding keys from `dict1` by `dict2`
     """
-    result_dict = dict1.copy()
+    dict1 = dict1.copy()
     for key in dict2:
-        if key in result_dict and isinstance(result_dict[key], dict) and isinstance(dict2[key], dict):
-            result_dict[key] = dict_merge(result_dict[key], dict2[key])
+        if key in dict1 and isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+            dict1[key] = dict_merge(dict1[key], dict2[key])
         else:
-            result_dict[key] = dict2[key]
-    return result_dict
+            dict1[key] = dict2[key]
+    return dict1
 
 
 @contextmanager
