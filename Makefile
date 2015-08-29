@@ -20,10 +20,13 @@ collectstatic: clean
 migrate: clean
 	honcho run ./manage.py migrate
 
-run: clean migrate collectstatic
+migration_check: clean
+	!((honcho run ./manage.py showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
+
+run: clean migration_check collectstatic
 	honcho start --concurrency "worker=$(WORKERS)"
 
-rundev: clean migrate
+rundev: clean migration_check
 	honcho start -f Procfile.dev
 
 shell:

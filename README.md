@@ -37,6 +37,23 @@ Create an `.env` file at the root of the repository or set environment variables
 settings from `opencraft/settings.py` which are loaded via `env()`.
 
 
+Migrations
+----------
+
+To run database migrations:
+
+```
+$ make migrate
+```
+
+The startup commands such as `make run` and `make rundev` check for pending migrations, and will 
+exit before starting the server if any are found. You can also check for pending migrations manually with:
+
+```
+$ make migration_check
+```
+
+
 Run
 ---
 
@@ -65,6 +82,7 @@ $ make run WORKERS=2
 ```
 
 
+
 Process description
 -------------------
 
@@ -90,17 +108,6 @@ manually:
 
 ```
 $ make collectstatic
-```
-
-
-Migrations
-----------
-
-Similarly, migrations are run automatically on startup - for both the development and production
-environments. To run it manually:
-
-```
-$ make migrate
 ```
 
 
