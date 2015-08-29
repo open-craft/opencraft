@@ -25,6 +25,7 @@ Worker tasks for instance hosting & management
 from huey.djhuey import crontab, periodic_task, task
 
 from django.conf import settings
+from django.template.defaultfilters import truncatewords
 
 from instance.github import get_username_list_from_team, get_pr_list_from_username
 from instance.models.instance import OpenEdXInstance
@@ -67,8 +68,9 @@ def watch_pr():
                 fork_name=pr.fork_name,
                 branch_name=pr.branch_name,
             )
-            instance.name = 'PR#{pr.number}: {pr.title} ({pr.username}) - {i.reference_name}'\
-                            .format(pr=pr, i=instance)
+            truncated_title = truncatewords(pr.title, 4)
+            instance.name = 'PR#{pr.number}: {truncated_title} ({pr.username}) - {i.reference_name}'\
+                            .format(pr=pr, i=instance, truncated_title=truncated_title)
             instance.ansible_extra_settings = pr.extra_settings
             instance.save()
 

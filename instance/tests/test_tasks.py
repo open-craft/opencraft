@@ -63,7 +63,7 @@ class TasksTestCase(TestCase):
             number=234,
             fork_name='watched/fork',
             branch_name='watch-branch',
-            title='Watched PR title',
+            title='Watched PR title which is very long',
             username='bradenmacdonald',
             body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\nWATCH: true\r\n```\r\nMore...',
         )
@@ -79,4 +79,4 @@ class TasksTestCase(TestCase):
         self.assertEqual(instance.ansible_extra_settings, 'WATCH: true\r\n')
         self.assertEqual(
             instance.name,
-            'PR#234: Watched PR title (bradenmacdonald) - watched/fork/watch-branch (7777777)')
+            'PR#234: Watched PR title which ... (bradenmacdonald) - watched/watch-branch (7777777)')

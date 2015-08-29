@@ -70,6 +70,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
+    # See `instance.models.server.Server` for a definition of the states
     EMPTY = 'empty'
     NEW = 'new'
     STARTED = 'started'
@@ -157,7 +158,7 @@ class GitHubInstanceQuerySet(models.QuerySet):
         if not instance.commit_id:
             instance.set_to_branch_tip(commit=False)
         if not instance.name:
-            instance.name = '{i.sub_domain} - {i.reference_name}'.format(i=instance)
+            instance.name = instance.reference_name
 
         self._for_write = True
         instance.save(force_insert=True, using=self.db)
@@ -419,7 +420,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, LoggerInstanceM
         """
         A descriptive name for the instance, which includes meaningful attributes
         """
-        return '{s.fork_name}/{s.branch_name} ({s.commit_short_id})'.format(s=self)
+        return '{s.github_organization_name}/{s.branch_name} ({s.commit_short_id})'.format(s=self)
 
     @property
     def ansible_s3_settings(self):

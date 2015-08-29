@@ -339,7 +339,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.github_organization_name, 'edx')
         self.assertEqual(instance.github_repository_name, 'edx-platform')
         self.assertEqual(instance.commit_id, '9' * 40)
-        self.assertEqual(instance.name, 'create.defaults - edx/edx-platform/master (9999999)')
+        self.assertEqual(instance.name, 'edx/master (9999999)')
 
     def test_get_by_fork_name(self):
         """
