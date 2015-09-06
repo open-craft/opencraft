@@ -23,7 +23,7 @@
 
     {# Underscore #}
     {% block underscore_js %}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src='{% static "js/dist/underscore-min.js" %}'></script>
     {% endblock underscore_js %}
 
     {# Modernizr #}
@@ -33,10 +33,10 @@
 
     {# Angular #}
     {% block angular_js %}
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-route.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/restangular/1.5.1/restangular.min.js"></script>
+    <script src='{% static "js/dist/angular.min.js" %}'></script>
+    <script src='{% static "js/dist/angular-route.min.js" %}'></script>
+    <script src='{% static "js/dist/angular-ui-router.min.js" %}'></script>
+    <script src='{% static "js/dist/restangular.min.js" %}'></script>
     {% endblock angular_js %}
 
     {# Custom head JS #}
@@ -58,12 +58,12 @@
 
     {# jQuery #}
     {% block jquery_js %}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src='{% static "js/dist/jquery.min.js" %}'></script>
     {% endblock jquery_js %}
 
     {# Foundation JS #}
     {% block angular_foundation_js %}
-    <script src="{% static "js/dist/angular-foundation-tpls-0.6.0.js" %}"></script>
+    <script src="{% static "js/dist/angular-foundation-tpls.js" %}"></script>
     {% endblock angular_foundation_js %}
 
     {# Custom JS #}
