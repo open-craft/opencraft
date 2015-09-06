@@ -4,6 +4,8 @@ machine:
 dependencies:
   pre:
     - pip install --upgrade pip
+  override:
+    - pip install -r requirements.txt
 test:
   override:
       - make test:
