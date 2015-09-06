@@ -49,7 +49,10 @@ test_integration: clean
 		echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)" ; \
 	fi
 
-test: clean test_prospector test_unit test_integration
+test_js: clean
+	cd instance/tests/js && jasmine-ci --logs --browser firefox
+
+test: clean test_prospector test_unit test_js test_integration
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean

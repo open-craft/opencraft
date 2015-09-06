@@ -168,11 +168,12 @@ To run a single test, use `make test_one`:
 $ make test_one instance.tests.models.test_server
 ```
 
-You can also run prospector and the unit tests independently:
+You can also run prospector, the unit tests, JS tests and integration independently:
 
 ```
 $ make test_prospector
 $ make test_unit
+$ make test_js
 $ make test_integration
 ```
 

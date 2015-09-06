@@ -1,5 +1,6 @@
 astroid==1.3.8
 Babel==2.0
+CherryPy==3.8.0
 cliff==1.14.0
 cmd2==0.6.8
 cookies==2.2.1
@@ -22,9 +23,11 @@ django-zurb-foundation==5.5.0
 djangorestframework==3.2.3
 dodgy==0.1.7
 factory-boy==2.5.2
+Flask==0.10.1
 freezegun==0.3.5
 gitdb==0.6.4
 GitPython==1.0.1
+glob2==0.4.1
 gunicorn==19.3.0
 honcho==0.6.6
 -e git+https://github.com/coleifer/huey.git@6a2e47485e2780ec190eef7d2ebe179b63a7c779#egg=huey-dev
@@ -32,10 +35,15 @@ ipdb==0.8.1
 ipython==4.0.0
 ipython-genutils==0.1.0
 iso8601==0.1.10
+itsdangerous==0.24
+jasmine==2.3.0
+jasmine-core==2.3.4
+Jinja2==2.8
 jira==0.50
 libsass==0.8.3
 logilab-common==1.0.2
 Markdown==2.6.2
+MarkupSafe==0.23
 mccabe==0.3.1
 mock==1.3.0
 monotonic==0.3
@@ -70,13 +78,14 @@ python-keystoneclient==1.6.0
 python-neutronclient==2.6.0
 python-novaclient==2.26.0
 pytz==2015.4
-PyYAML==3.11
+PyYAML==3.10
 redis==2.10.3
 requests==2.7.0
 requests-oauthlib==0.5.0
 requests-toolbelt==0.4.0
 requirements-detector==0.4
 responses==0.4.0
+selenium==2.47.1
 setoptconf==0.2.0
 simplegeneric==0.8.1
 simplejson==3.8.0
