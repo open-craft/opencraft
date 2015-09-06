@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(function(){
 "use strict";
-
 
 // App configuration //////////////////////////////////////////////////////////
 
@@ -44,12 +44,11 @@ app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
             url: "/",
             templateUrl: "/static/html/instance/index.html",
             controller: "Index"
-        })
+        });
 });
 
 
-// Services ///////////////////////////////////////////////////////////////////
-
+// Services
 app.factory('OpenCraftAPI', function(Restangular) {
     return Restangular.withConfig(function(RestangularConfigurer) {
         RestangularConfigurer.setBaseUrl('/api/v1');
@@ -57,48 +56,30 @@ app.factory('OpenCraftAPI', function(Restangular) {
 });
 
 
-// Function ///////////////////////////////////////////////////////////////////
-
-function updateInstanceList($scope, OpenCraftAPI) {
-    // Display loading message
-    $scope.loading = true;
-
-    OpenCraftAPI.all("openedxinstance").getList().then(function(instanceList) {
-        console.log('Updating instance list', instanceList);
-        $scope.instanceList = instanceList;
-
-        if($scope.selected.instance){
-            var updated_instance = null;
-            _.each(instanceList, function(instance) {
-                if(instance.id === $scope.selected.instance.id) {
-                    updated_instance = instance;
-                }
-            });
-            $scope.selected.instance = updated_instance;
-        }
-    }, function(response) {
-        console.log('Error from server: ', response);
-    }).finally(function () {
-        $scope.loading = false;
-    });
-}
-
-
 // Controllers ////////////////////////////////////////////////////////////////
 
 app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
     function ($scope, Restangular, OpenCraftAPI, $q) {
-        // Display loading message
-        $scope.loading = true;
 
-        // Selection
-        $scope.selected = Array();
+        $scope.init = function() {
+            $scope.loading = true;
+            $scope.selected = Array();
+
+            $scope.updateInstanceList();
+
+            // Init websockets
+            swampdragon.onChannelMessage($scope.handleChannelMessage);
+            swampdragon.ready(function() {
+                swampdragon.subscribe('notifier', 'notification', null);
+                swampdragon.subscribe('notifier', 'log', null);
+            });
+        };
+
         $scope.select = function(selection_type, value) {
             $scope.selected[selection_type] = value;
             console.log('Selected ' + selection_type + ':', value);
         };
 
-        // Reprovisioning
         $scope.provision = function(instance) {
             console.log('Provisioning instance', instance);
             instance.status = 'terminating';
@@ -107,18 +88,37 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
                     server.status = 'terminating';
                 }
             });
-            instance.post("provision");
+            return instance.post("provision");
         };
 
-        // Retrieve instance list
-        updateInstanceList($scope, OpenCraftAPI);
+        $scope.updateInstanceList = function() {
+            $scope.loading = true; // Display loading message
 
-        // Intialize websockets
-        swampdragon.onChannelMessage(function(channels, message) {
+            return OpenCraftAPI.all("openedxinstance").getList().then(function(instanceList) {
+                console.log('Updating instance list', instanceList);
+                $scope.instanceList = instanceList;
+
+                if($scope.selected.instance){
+                    var updated_instance = null;
+                    _.each(instanceList, function(instance) {
+                        if(instance.id === $scope.selected.instance.id) {
+                            updated_instance = instance;
+                        }
+                    });
+                    $scope.selected.instance = updated_instance;
+                }
+            }, function(response) {
+                console.log('Error from server: ', response);
+            }).finally(function () {
+                $scope.loading = false;
+            });
+        };
+
+        $scope.handleChannelMessage = function(channels, message) {
             console.log('Received websocket message', channels, message.data);
 
             if(message.data.type === 'server_update') {
-                updateInstanceList($scope, OpenCraftAPI);
+                $scope.updateInstanceList();
             } else if(message.data.type === 'instance_log') {
                 if($scope.selected.instance && $scope.selected.instance.id === message.data.instance_id) {
                     $scope.$apply(function(){
@@ -126,10 +126,10 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
                     });
                 }
             }
-        });
-        swampdragon.ready(function() {
-            swampdragon.subscribe('notifier', 'notification', null);
-            swampdragon.subscribe('notifier', 'log', null);
-        });
+        };
+
+        $scope.init();
     }
 ]);
+
+})();

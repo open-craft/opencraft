@@ -20,7 +20,7 @@ src_files:
     - static/js/dist/restangular.min.js
     - static/js/dist/angular-mocks.js
     - static/js/dist/jshint.js
-    - instance/static/js/*.js
+    - instance/static/js/src/*.js
 
 # stylesheets
 #

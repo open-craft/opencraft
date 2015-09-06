@@ -177,6 +177,9 @@ $ make test_js
 $ make test_integration
 ```
 
+JS tests can be run in your browser for debugging (see `make test_js_web` and then go to
+http://localhost:8888/ ), or in a CI manner via selenium and `jasmine-ci` (see `make test_js`).
+
 Note that the integration tests aren't run by default, as they require a working
 OpenStack cluster configured. To run them, create a `.env.integration` file -
 your development environment is likely a good starting point:

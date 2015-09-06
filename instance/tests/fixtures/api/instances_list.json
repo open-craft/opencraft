@@ -1,0 +1,61 @@
+[
+  {
+    "id": 2,
+    "api_url": "http://localhost:5000/api/v1/openedxinstance/2/",
+    "active_server_set": [
+      {
+        "id": 23,
+        "api_url": "http://localhost:5000/api/v1/openstackserver/23/",
+        "created": "2015-08-20T06:40:18.835733Z",
+        "instance": "http://localhost:5000/api/v1/openedxinstance/2/",
+        "modified": "2015-08-20T12:12:34.781802Z",
+        "openstack_id": "f889c46a-975a-4ecb-acb8-b6c3c5f97c8e",
+        "status": "ready"
+      }
+    ],
+    "base_domain": "opencraft.com",
+    "branch_name": "master",
+    "commit_id": "24bca27b46a0e65c00628716a77d19a6c5aecd55",
+    "created": "2015-08-08T07:22:56.062796Z",
+    "domain": "tmp.sandbox.opencraft.com",
+    "email": "contact@example.com",
+    "github_base_url": "https://github.com/antoviaque/edx-platform",
+    "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/master",
+    "log_text": "2015-08-08 07:23:16 [info] Terminate servers for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)...\n2015-08-08 07:23:16 [info] Start new server for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)...\n2015-08-08 07:23:18 [info] Waiting for IP assignment on server 3841c324-c004-4188-9d8c-f1071cd635c5...\n"
+  },
+  {
+    "id": 1,
+    "api_url": "http://localhost:5000/api/v1/openedxinstance/1/",
+    "active_server_set": [
+      {
+        "id": 19,
+        "api_url": "http://localhost:5000/api/v1/openstackserver/19/",
+        "created": "2015-08-18T05:48:55.163364Z",
+        "instance": "http://localhost:5000/api/v1/openedxinstance/1/",
+        "modified": "2015-08-18T05:48:56.360140Z",
+        "openstack_id": "c007b320-1643-4f95-838a-1467ab0927e7",
+        "status": "started"
+      }
+    ],
+    "base_domain": "opencraft.com",
+    "branch_name": "OC-791-course-timeline",
+    "commit_id": "40952060bc7573c5035620b985b211a24360f311",
+    "created": "2015-08-07T18:10:56.823929Z",
+    "domain": "pr2.sandbox.opencraft.com",
+    "email": "contact@example.com",
+    "github_base_url": "https://github.com/antoviaque/edx-platform",
+    "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/OC-791-course-timeline",
+    "log_text": "2015-08-07 18:10:56 [info] Terminate servers for instance PR#2: Display start date, end date, and number of sections (weeks) on \"Course Info\" tab of instructor dashboard. (antoviaque) - antoviaque/edx-platform/OC-791-course-timeline (4095206) (http://pr2.sandbox.opencraft.com/)...\n",
+    "github_organization_name": "antoviaque",
+    "modified": "2015-08-18T05:48:54.356884Z",
+    "name": "PR#2: Display start date, end date, and number of sections (weeks) on \"Course Info\" tab of instructor dashboard. (antoviaque) - antoviaque/edx-platform/OC-791-course-timeline (4095206)",
+    "protocol": "http",
+    "repository_url": "https://github.com/antoviaque/edx-platform.git",
+    "status": "started",
+    "studio_url": "http://studio.pr2.sandbox.opencraft.com/",
+    "sub_domain": "pr2.sandbox",
+    "url": "http://pr2.sandbox.opencraft.com/",
+    "updates_feed": "https://github.com/antoviaque/edx-platform/commits/OC-791-course-timeline.atom",
+    "vars_str": "# System\nCOMMON_HOSTNAME: 'pr2.sandbox.opencraft.com'\n\n# edxapp\nEDXAPP_PLATFORM_NAME: \"PR#2: Display start date, end date, and number of sections (weeks) on &quot;Course Info&quot; tab of instructor dashboard. (antoviaque) - antoviaque/edx-platform/OC-791-course-timeline (4095206)\"\nEDXAPP_LMS_NGINX_PORT: 80\nEDXAPP_LMS_PREVIEW_NGINX_PORT: 80\nEDXAPP_CMS_NGINX_PORT: 80\nEDXAPP_SITE_NAME: 'pr2.sandbox.opencraft.com'\nEDXAPP_LMS_SITE_NAME: 'pr2.sandbox.opencraft.com'\nEDXAPP_LMS_BASE: 'pr2.sandbox.opencraft.com'\nEDXAPP_PREVIEW_LMS_BASE: 'pr2.sandbox.opencraft.com'\n\nEDXAPP_CMS_SITE_NAME: 'studio.pr2.sandbox.opencraft.com'\nEDXAPP_CMS_BASE: 'studio.pr2.sandbox.opencraft.com'\n\n# Forum environment settings\nFORUM_RACK_ENV: 'production'\nFORUM_SINATRA_ENV: 'production'\n\n# Emails\nEDXAPP_CONTACT_EMAIL: 'contact@example.com'\nEDXAPP_TECH_SUPPORT_EMAIL: 'contact@example.com'\nEDXAPP_BUGS_EMAIL: 'contact@example.com'\nEDXAPP_FEEDBACK_SUBMISSION_EMAIL: 'contact@example.com'\nEDXAPP_DEFAULT_FROM_EMAIL: 'contact@example.com'\nEDXAPP_DEFAULT_FEEDBACK_EMAIL: 'contact@example.com'\nEDXAPP_SERVER_EMAIL: 'contact@example.com'\nEDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: 'contact@example.com'\n\n# Misc\nEDXAPP_TIME_ZONE: 'UTC'\n\n# Security updates\nCOMMON_SECURITY_UPDATES: true\nSECURITY_UNATTENDED_UPGRADES: true\nSECURITY_UPDATE_ALL_PACKAGES: false\nSECURITY_UPGRADE_ON_ANSIBLE: true\n\n# Repositories URLs\nedx_ansible_source_repo: 'https://github.com/edx/configuration.git'\nedx_platform_repo: 'https://github.com/antoviaque/edx-platform.git'\n\n# Pin down dependencies to specific (known to be compatible) commits.\nedx_platform_version: '40952060bc7573c5035620b985b211a24360f311'\nconfiguration_version: 'master'\nforum_version: 'master'\nnotifier_version: 'master'\nxqueue_version: 'master'\ncerts_version: 'master'\n\n# Features\nEDXAPP_FEATURES:\n USE_MICROSITES: false\n AUTH_USE_OPENID: false\n ENABLE_DISCUSSION_SERVICE: true\n ENABLE_INSTRUCTOR_ANALYTICS: true\n ENABLE_INSTRUCTOR_EMAIL: true\n REQUIRE_COURSE_EMAIL_AUTH: false\n ENABLE_PEARSON_HACK_TEST: false\n SUBDOMAIN_BRANDING: false\n SUBDOMAIN_COURSE_LISTINGS: false\n PREVIEW_LMS_BASE: 'pr2.sandbox.opencraft.com'\n ENABLE_DJANGO_ADMIN_SITE: true\n ALLOW_ALL_ADVANCED_COMPONENTS: true\n\n\n"
+  }
+]
