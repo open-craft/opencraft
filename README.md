@@ -15,11 +15,10 @@ $ make install_virtualenvwrapper_py3
 
 If you would like to use Vagrant:
 
-1. Install Vagrant for your OS
-2. `$ cd opencraft`
-3. `$ vagrant up`
-4. `$ vagrant ssh`
-5. Continue with the following instructions
+1. Install [Vagrant](https://www.vagrantup.com/) for your OS
+2. `$ vagrant up`
+3. `$ vagrant ssh`
+4. Continue with the following instructions
 
 Ensure you load virtualenv with Python 3 in `~/.bashrc`:
 
