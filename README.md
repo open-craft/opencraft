@@ -9,9 +9,17 @@ Instructions based on Ubuntu 14.04.
 Install the system package dependencies & virtualenv:
 
 ```
-$ sudo apt-get install `cat debian_packages.lst`
-$ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
+$ make install_system_dependencies
+$ make install_virtualenvwrapper_py3
 ```
+
+If you would like to use Vagrant:
+
+1. Install Vagrant for your OS
+2. `$ cd opencraft`
+3. `$ vagrant up`
+4. `$ vagrant ssh`
+5. Continue with the following instructions
 
 Ensure you load virtualenv with Python 3 in `~/.bashrc`:
 
