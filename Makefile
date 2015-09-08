@@ -46,7 +46,7 @@ test_prospector: clean
 	prospector --profile opencraft
 
 test_unit: clean
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' $(MANAGE) test --noinput
+	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
 	coverage html
 	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 95%\n" && exit 2)
@@ -54,7 +54,7 @@ test_unit: clean
 test_integration: clean
 	@if [ -a .env.integration ] ; then \
 		echo -e "\nRunning integration tests..." ; \
-		honcho -e .env.integration run $(MANAGE) test --pattern=integration_*.py --noinput ; \
+		honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput ; \
 	else \
 		echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)" ; \
 	fi
@@ -63,7 +63,7 @@ test: clean test_prospector test_unit test_integration
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean
-	honcho -e .env.test run $(MANAGE) test $(RUN_ARGS)
+	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
 
 upgrade_dependencies:
 	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
