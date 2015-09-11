@@ -204,6 +204,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     """
     github_organization_name = models.CharField(max_length=200, db_index=True)
     github_repository_name = models.CharField(max_length=200, db_index=True)
+    github_pr_number = models.IntegerField(blank=True, null=True)
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
 
@@ -232,6 +233,15 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         Base GitHub URL of the fork (eg. 'https://github.com/open-craft/edx-platform')
         """
         return 'https://github.com/{0.fork_name}'.format(self)
+
+    @property
+    def github_pr_url(self):
+        """
+        Web URL of the Github PR, or None if the PR number is not set.
+        """
+        if self.github_pr_number is None:
+            return None
+        return '{0.github_base_url}/pull/{0.github_pr_number}'.format(self)
 
     @property
     def github_branch_url(self):

@@ -75,6 +75,7 @@ class TasksTestCase(TestCase):
         instance = OpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
         self.assertEqual(instance.sub_domain, 'pr234.sandbox')
         self.assertEqual(instance.fork_name, 'watched/fork')
+        self.assertEqual(instance.github_pr_number, 234)
         self.assertEqual(instance.branch_name, 'watch-branch')
         self.assertEqual(instance.ansible_extra_settings, 'WATCH: true\r\n')
         self.assertEqual(

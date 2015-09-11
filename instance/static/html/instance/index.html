@@ -50,7 +50,13 @@
                 |
                 <span>Studio: <a href="{{ selected.instance.studio_url }}" target="_new">{{ selected.instance.studio_url }}</a></span>
               </li>
-              <li><a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> | {{ selected.instance.branch_name }}</li>
+              <li>
+                <a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> {{ selected.instance.branch_name }}
+                {% if selected.instance.github_pr_url %}
+                | <a href="{{ selected.instance.github_pr_url }}" target="_new">PR#{{ selected.instance.github_pr_number }}</a>
+                {% endif %}
+              </li>
+              {% endif %}
             </ul>
           </div>
           <div ng-switch="selected.instance.status">

@@ -66,6 +66,7 @@ def watch_pr():
             instance, created = OpenEdXInstance.objects.get_or_create(
                 sub_domain=pr_sub_domain,
                 fork_name=pr.fork_name,
+                github_pr_number=pr.number,
                 branch_name=pr.branch_name,
             )
             truncated_title = truncatewords(pr.title, 4)
