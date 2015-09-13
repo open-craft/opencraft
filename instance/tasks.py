@@ -66,12 +66,12 @@ def watch_pr():
             instance, created = OpenEdXInstance.objects.get_or_create(
                 sub_domain=pr_sub_domain,
                 fork_name=pr.fork_name,
-                github_pr_number=pr.number,
                 branch_name=pr.branch_name,
             )
             truncated_title = truncatewords(pr.title, 4)
             instance.name = 'PR#{pr.number}: {truncated_title} ({pr.username}) - {i.reference_name}'\
                             .format(pr=pr, i=instance, truncated_title=truncated_title)
+            instance.github_pr_number = pr.number
             instance.ansible_extra_settings = pr.extra_settings
             instance.save()
 

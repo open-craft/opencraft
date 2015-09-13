@@ -71,6 +71,8 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'email',
             'github_base_url',
             'github_branch_url',
+            'github_pr_number',
+            'github_pr_url',
             'log_text',
             'github_organization_name',
             'modified',
