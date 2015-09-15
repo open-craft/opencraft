@@ -62,3 +62,9 @@ target/
 # Local configuration
 .env
 .env.integration
+
+# Vagrant temp files
+.vagrant/
+
+# Pycharm Files
+.idea/

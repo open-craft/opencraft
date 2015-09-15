@@ -6,18 +6,26 @@ Install
 
 Instructions based on Ubuntu 14.04.
 
-Install the system package dependencies & virtualenv:
+If you're installing to your local Ubuntu 14.04:
 
 ```
-$ sudo apt-get install `cat debian_packages.lst`
-$ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
+$ make install_system_dependencies
 ```
 
-Ensure you load virtualenv with Python 3 in `~/.bashrc`:
+Or if you would prefer to use Vagrant:
+
+1. Install [Vagrant](https://www.vagrantup.com/) for your OS
+2. `$ vagrant up`
+3. `$ vagrant ssh`
+
+For either install method, continue with the following instructions:
+
+Install virtualenv and virtualenvwrapper for Python3
 
 ```
-export PATH="$PATH:$HOME/.local/bin" VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-source $HOME/.local/bin/virtualenvwrapper.sh
+$ make install_virtualenvwrapper_py3
+$ export PATH="$PATH:$HOME/.local/bin" VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+$ source $HOME/.local/bin/virtualenvwrapper.sh
 ```
 
 Then reload `~/.bashrc`, create the virtual env and install the Python requirements:
@@ -34,7 +42,8 @@ Configure
 ---------
 
 Create an `.env` file at the root of the repository or set environment variables, customizing the
-settings from `opencraft/settings.py` which are loaded via `env()`.
+settings from `opencraft/settings.py` which are loaded via `env()`. An example development .env is
+already installed if you're using Vagrant.
 
 
 Migrations

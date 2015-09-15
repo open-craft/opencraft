@@ -1,6 +1,16 @@
 # Config
 WORKERS = 4
 SHELL = /bin/bash
+MANAGE := python ./manage.py
+HONCHO_MANAGE := honcho run $(MANAGE)
+
+.PHONY: install_system_dependencies
+install_system_dependencies:
+	sudo apt-get install -y `tr -d '\r' < debian_packages.lst`
+
+.PHONY: install_virtualenvwrapper_py3
+install_virtualenvwrapper_py3:
+	pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
 
 # For `test_one` use the rest as arguments and turn them into do-nothing targets
 ifeq (test_one,$(firstword $(MAKECMDGOALS)))
@@ -15,13 +25,13 @@ clean:
 	rm -rf .coverage build
 
 collectstatic: clean
-	honcho run ./manage.py collectstatic --noinput
+	$(HONCHO_MANAGE) collectstatic --noinput
 
 migrate: clean
-	honcho run ./manage.py migrate
+	$(HONCHO_MANAGE) migrate
 
 migration_check: clean
-	!((honcho run ./manage.py showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
+	!(($(HONCHO_MANAGE) showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
 
 run: clean migration_check collectstatic
 	honcho start --concurrency "worker=$(WORKERS)"
@@ -30,7 +40,7 @@ rundev: clean migration_check
 	honcho start -f Procfile.dev
 
 shell:
-	honcho run ./manage.py shell_plus
+	$(HONCHO_MANAGE) shell_plus
 
 test_prospector: clean
 	prospector --profile opencraft

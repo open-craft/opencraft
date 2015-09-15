@@ -36,6 +36,7 @@ from urllib.parse import urlparse
 
 env = environ.Env()
 root = environ.Path(os.path.dirname(__file__), os.pardir)
+environ.Env.read_env('.env')
 
 
 # Security ####################################################################
