@@ -162,3 +162,10 @@ class PR:
         Extra settings contained in the PR body
         """
         return get_settings_from_pr_body(self.body)
+
+    @property
+    def github_pr_url(self):
+        """
+        Construct the URL for the pull request
+        """
+        return 'https://github.com/{fork_name}/pull/{number}'.format(fork_name=self.fork_name, number=self.number)

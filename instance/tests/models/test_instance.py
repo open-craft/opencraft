@@ -116,13 +116,13 @@ class GitHubInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(
             github_organization_name='open-craft',
-            github_pr_number=234,
+            github_pr_url='https://github.com/edx/edx/pull/234',
             github_repository_name='edx',
             branch_name='test-branch',
         )
         self.assertEqual(instance.fork_name, 'open-craft/edx')
         self.assertEqual(instance.github_base_url, 'https://github.com/open-craft/edx')
-        self.assertEqual(instance.github_pr_url, 'https://github.com/open-craft/edx/pull/234')
+        self.assertEqual(instance.github_pr_number, 234)
         self.assertEqual(instance.github_branch_url, 'https://github.com/open-craft/edx/tree/test-branch')
         self.assertEqual(instance.repository_url, 'https://github.com/open-craft/edx.git')
         self.assertEqual(instance.updates_feed, 'https://github.com/open-craft/edx/commits/test-branch.atom')
