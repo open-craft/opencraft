@@ -176,9 +176,9 @@ $ make test_unit
 $ make test_integration
 ```
 
-Note that the integration tests aren't run by default, as they require a working OpenStack cluster
-configured. To run them, create a `.env.test` file - your development environment is likely a good
-starting point:
+Note that the integration tests aren't run by default, as they require a working
+OpenStack cluster configured. To run them, create a `.env.integration` file -
+your development environment is likely a good starting point:
 
 ```
 $ ln -s .env .env.integration
