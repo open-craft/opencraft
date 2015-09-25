@@ -7,14 +7,14 @@ Install
 ### Vagrant install
 
 You can use [vagrant][] to set up a virtual machine for local development and
-testing. This is useful to keep you development environment isolated from the
+testing. This is useful to keep your development environment isolated from the
 rest of your system.
 
 First, install [virtualbox][] and [vagrant][]. Then run:
 
     vagrant up
 
-This will provision an virtual machine running Ubuntu 14.04, set up local
+This will provision a virtual machine running Ubuntu 14.04, set up local
 postgres and redis, install the dependencies and run the tests.
 
 Once the virtual machine is up and running, you can ssh into it with this
