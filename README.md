@@ -4,6 +4,35 @@ OpenCraft
 Install
 -------
 
+### Vagrant install
+
+You can use [vagrant][] to set up a virtual machine for local development and
+testing. This is useful to keep you development environment isolated from the
+rest of your system.
+
+First, install [virtualbox][] and [vagrant][]. Then run:
+
+    vagrant up
+
+This will provision an virtual machine running Ubuntu 14.04, set up local
+postgres and redis, install the dependencies and run the tests.
+
+Once the virtual machine is up and running, you can ssh into it with this
+command:
+
+    vagrant ssh
+
+Vagrant will set up a virtualbox share mapping your local development directory
+to `/vagrant` inside the virtual machine. Any changes you make locally will be
+reflected inside the virtual machine automatically.
+
+Vagrant will map port 5000 inside the virtual machine to port 5000 on the host,
+so you can access the development server using your web browser.
+
+
+### Local install
+
+If you prefer not to install vagrant, you can install OpenCraft manually.
 Instructions based on Ubuntu 14.04.
 
 Install the system package dependencies & virtualenv:
@@ -33,8 +62,14 @@ $ pip install -r requirements.txt
 Configure
 ---------
 
-Create an `.env` file at the root of the repository or set environment variables, customizing the
-settings from `opencraft/settings.py` which are loaded via `env()`.
+Huey will set up environment variables defined in the `.env` file at the root of
+your repository. If you are using vagrant for development, a basic `.env` file
+will already have been created for you. This is enough to run the unit tests,
+but you will need to add openstack configuration manually in order to run the
+development server.
+
+The environment variables in `.env` customize the settings from
+`opencraft/settings.py` which are loaded via `env()`.
 
 
 Migrations
@@ -168,3 +203,7 @@ You can also access the Django `manage.py` command directly, using honcho to loa
 ```
 $ honcho run ./manage.py config
 ```
+
+
+[virtualbox]: https://www.virtualbox.org/
+[vagrant]:    https://www.vagrantup.com/
