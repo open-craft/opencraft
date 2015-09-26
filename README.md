@@ -62,11 +62,11 @@ $ pip install -r requirements.txt
 Configure
 ---------
 
-Huey will set up environment variables defined in the `.env` file at the root of
-your repository. If you are using vagrant for development, a basic `.env` file
-will already have been created for you. This is enough to run the unit tests,
-but you will need to add openstack configuration manually in order to run the
-development server.
+Honcho will set up environment variables defined in the `.env` file at the root
+of your repository. If you are using vagrant for development, a basic `.env`
+file will already have been created for you, but you will need to add
+credentials for third-party services manually in order to run the development
+server or the integration tests.
 
 The environment variables in `.env` customize the settings from
 `opencraft/settings.py` which are loaded via `env()`.

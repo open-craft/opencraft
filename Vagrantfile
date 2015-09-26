@@ -41,13 +41,14 @@ EOF
 sudo service postgresql restart
 
 # Create postgres database
-createdb --encoding utf-8 --template template0 vagrant
+createdb --encoding utf-8 --template template0 opencraft
 
-# Copy configuration for local development
-cp .env.vagrant .env
+# Use test configuration for local development, excluding the line that
+# disables logging to the console.
+[ -e .env ] || grep -v '^BASE_HANDLERS' .env.test > .env
 
-# Run tests
-make test
+# Run unit tests
+make test_unit
 SCRIPT
 
 Vagrant.configure(2) do |config|
