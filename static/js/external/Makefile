@@ -18,6 +18,7 @@
 # Variables ###################################################################
 
 GET = wget -qO
+CDNJS = https://cdnjs.cloudflare.com/ajax/libs
 
 
 # Files #######################################################################
@@ -27,34 +28,34 @@ all: angular.min.js angular.min.js.map angular-mocks.js angular-route.min.js ang
 	 underscore-min.map
 
 angular.min.js:
-	$(GET) $@ https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular.min.js
 
 angular.min.js.map:
-	$(GET) $@ https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js.map
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular.min.js.map
 
 angular-mocks.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular-mocks.js
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-mocks.js
 
 angular-route.min.js:
-	$(GET) $@ https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-route.min.js
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-route.min.js
 
 angular-route.min.js.map:
-	$(GET) $@ https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-route.min.js.map
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-route.min.js.map
 
 angular-ui-router.min.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js
+	$(GET) $@ $(CDNJS)/angular-ui-router/0.2.15/angular-ui-router.min.js
 
 jquery.min.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js
+	$(GET) $@ $(CDNJS)/jquery/2.1.4/jquery.min.js
 
 jshint.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/jshint/2.8.0/jshint.js
+	$(GET) $@ $(CDNJS)/jshint/2.8.0/jshint.js
 
 restangular.min.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/restangular/1.5.1/restangular.min.js
+	$(GET) $@ $(CDNJS)/restangular/1.5.1/restangular.min.js
 
 underscore-min.js:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js
+	$(GET) $@ $(CDNJS)/underscore.js/1.8.3/underscore-min.js
 
 underscore-min.map:
-	$(GET) $@ https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.map
+	$(GET) $@ $(CDNJS)/underscore.js/1.8.3/underscore-min.map
