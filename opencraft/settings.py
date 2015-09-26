@@ -152,7 +152,7 @@ COMPRESS_PRECOMPILERS = (
 # Django-extensions ###########################################################
 
 SHELL_PLUS = "ipython"
-RUNSERVERPLUS_SERVER_ADDRESS_PORT = env('RUNDEV_SERVER_ADDRESS_PORT', default='localhost:5000')
+RUNSERVERPLUS_SERVER_ADDRESS_PORT = env('RUNDEV_SERVER_ADDRESS_PORT', default='0.0.0.0:5000')
 
 
 # Grappelli ###################################################################
@@ -208,8 +208,8 @@ HUEY = {
 SWAMP_DRAGON_REDIS_HOST = REDIS_URL_OBJ.hostname
 SWAMP_DRAGON_REDIS_PORT = REDIS_URL_OBJ.port
 SWAMP_DRAGON_CONNECTION = ('swampdragon.connections.sockjs_connection.DjangoSubscriberConnection', '/data')
-DRAGON_SERVER_ADDRESS_PORT = env('DRAGON_SERVER_ADDRESS_PORT', default='localhost:2001')
-DRAGON_URL = env('DRAGON_URL', default='http://{}/'.format(DRAGON_SERVER_ADDRESS_PORT))
+DRAGON_SERVER_ADDRESS_PORT = env('DRAGON_SERVER_ADDRESS_PORT', default='0.0.0.0:2001')
+DRAGON_URL = env('DRAGON_URL', default='http://localhost:2001/')
 
 
 # OpenStack ###################################################################
