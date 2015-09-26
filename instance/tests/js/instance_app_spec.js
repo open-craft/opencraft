@@ -20,8 +20,7 @@
 // Tests //////////////////////////////////////////////////////////////////////
 
 describe('Instance app', function () {
-    var $controller,
-        httpBackend,
+    var httpBackend,
         indexController,
         instanceList,
         OpenCraftAPI,
@@ -33,7 +32,7 @@ describe('Instance app', function () {
             ready: jasmine.createSpy()
         };
         angular.mock.module('restangular');
-        module('InstanceApp');
+        angular.mock.module('InstanceApp');
     });
 
     describe('Index controller', function() {
@@ -63,19 +62,19 @@ describe('Instance app', function () {
         });
 
         describe('$scope.updateInstanceList', function() {
-            it('loads the instance list from the API on init', inject(function ($httpBackend) {
+            it('loads the instance list from the API on init', function() {
                 expect(jasmine.sanitizeRestangularAll($scope.instanceList)).toEqual(instanceList);
-            }));
+            });
 
-            it('sets $scope.loading while making the ajax call', inject(function ($httpBackend) {
+            it('sets $scope.loading while making the ajax call', function() {
                 expect($scope.loading).not.toBeTruthy();
                 $scope.updateInstanceList();
                 expect($scope.loading).toBeTruthy();
                 httpBackend.flush();
                 expect($scope.loading).not.toBeTruthy();
-            }));
+            });
 
-            it('updates the selected instance when updating the list', inject(function ($httpBackend) {
+            it('updates the selected instance when updating the list', function() {
                 $scope.instanceList[0].domain = 'old.example.com';
                 $scope.select('instance', $scope.instanceList[0]);
                 expect($scope.selected.instance.domain).toEqual('old.example.com');
@@ -83,18 +82,18 @@ describe('Instance app', function () {
                 $scope.updateInstanceList();
                 httpBackend.flush();
                 expect($scope.selected.instance.domain).toEqual('tmp.sandbox.opencraft.com');
-            }));
+            });
         });
 
         describe('$scope.provision', function() {
-            it('notifies backend and changes status to terminating', inject(function ($httpBackend) {
+            it('notifies backend and changes status to terminating', function() {
                 var instance = $scope.instanceList[0];
                 expect(instance.active_server_set[0].status).toEqual('ready');
-                $httpBackend.expectPOST('/api/v1/openedxinstance/2/provision/').respond('');
+                httpBackend.expectPOST('/api/v1/openedxinstance/2/provision/').respond('');
                 $scope.provision(instance);
                 httpBackend.flush();
                 expect(instance.active_server_set[0].status).toEqual('terminating');
-            }));
+            });
         });
 
         describe('$scope.handleChannelMessage', function() {

@@ -39,9 +39,7 @@ jasmine.sanitizeRestangularOne = function(item) {
 
 // Apply "sanitizeRestangularOne" function to an array of items
 jasmine.sanitizeRestangularAll = function(items) {
-    return _.map(items, function(value, index) {
-        return jasmine.sanitizeRestangularOne(value);
-    });
+    return _.map(items, jasmine.sanitizeRestangularOne);
 };
 
 })();

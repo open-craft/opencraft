@@ -63,7 +63,7 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
 
         $scope.init = function() {
             $scope.loading = true;
-            $scope.selected = Array();
+            $scope.selected = {};
 
             $scope.updateInstanceList();
 
