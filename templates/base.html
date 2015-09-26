@@ -23,7 +23,7 @@
 
     {# Underscore #}
     {% block underscore_js %}
-    <script src='{% static "js/dist/underscore-min.js" %}'></script>
+    <script src='{% static "js/external/underscore-min.js" %}'></script>
     {% endblock underscore_js %}
 
     {# Modernizr #}
@@ -33,10 +33,10 @@
 
     {# Angular #}
     {% block angular_js %}
-    <script src='{% static "js/dist/angular.min.js" %}'></script>
-    <script src='{% static "js/dist/angular-route.min.js" %}'></script>
-    <script src='{% static "js/dist/angular-ui-router.min.js" %}'></script>
-    <script src='{% static "js/dist/restangular.min.js" %}'></script>
+    <script src='{% static "js/external/angular.min.js" %}'></script>
+    <script src='{% static "js/external/angular-route.min.js" %}'></script>
+    <script src='{% static "js/external/angular-ui-router.min.js" %}'></script>
+    <script src='{% static "js/external/restangular.min.js" %}'></script>
     {% endblock angular_js %}
 
     {# Custom head JS #}
@@ -58,7 +58,7 @@
 
     {# jQuery #}
     {% block jquery_js %}
-    <script src='{% static "js/dist/jquery.min.js" %}'></script>
+    <script src='{% static "js/external/jquery.min.js" %}'></script>
     {% endblock jquery_js %}
 
     {# Foundation JS #}
