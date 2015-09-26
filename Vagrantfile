@@ -8,25 +8,24 @@ set -e
 
 # cd to /vagrant on login
 cd /vagrant
-grep -q 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
+grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
 
 # Install system packages
 sudo apt-get update --quiet
 sudo apt-get install -y $(cat debian_packages.lst) postgresql
 
-# Upgrade pip
-sudo pip3 install --upgrade pip
+# Set up a virtualenv
+sudo pip3 install virtualenv
+mkdir -p ~/.virtualenvs
+virtualenv -p python3 ~/.virtualenvs/opencraft
+source ~/.virtualenvs/opencraft/bin/activate
 
-# By default, pip will install editable packages in ./src/ which is inside
-# the virtualbox share. This can slow things like prospector down a lot, so
-# configure pip to install them at the usual dist-packages location instead.
-cat << EOF | sudo tee /etc/pip.conf
-[install]
-src = /usr/local/lib/python3.4/dist-packages
-EOF
+# Activate virtualenv on login
+grep -Fq 'source ~/.virtualenvs/opencraft/bin/activate' ~/.bashrc ||
+  echo 'source ~/.virtualenvs/opencraft/bin/activate' >> ~/.bashrc
 
 # Install python dependencies
-sudo pip install -r requirements.txt
+pip install -r requirements.txt
 
 # Create postgres user
 sudo -u postgres createuser -d vagrant
