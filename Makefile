@@ -87,7 +87,7 @@ test_js: clean js_external
 	cd instance/tests/js && jasmine-ci --logs --browser firefox
 
 test_js_web: clean js_external
-	cd instance/tests/js && jasmine
+	cd instance/tests/js && jasmine --host 0.0.0.0
 
 test: clean test_prospector test_unit test_js test_integration
 	@echo -e "\nAll tests OK!\n"
