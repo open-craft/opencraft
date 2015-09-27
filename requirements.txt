@@ -30,7 +30,7 @@ GitPython==1.0.1
 glob2==0.4.1
 gunicorn==19.3.0
 honcho==0.6.6
--e git+https://github.com/coleifer/huey.git@6a2e47485e2780ec190eef7d2ebe179b63a7c779#egg=huey-dev
+huey==0.4.9
 ipdb==0.8.1
 ipython==4.0.0
 ipython-genutils==0.1.0
@@ -94,8 +94,8 @@ smmap==0.9.0
 sockjs-tornado==1.0.1
 sqlparse==0.1.16
 static3==0.6.1
-stevedore==1.7.0
--e git+https://github.com/antoviaque/swampdragon.git@008d9d93f9d274c8a6b606b2c5b1c9b9a09c6996#egg=SwampDragon-origin_django1.8-import-warning
+stevedore==1.8.0
+-e git+https://github.com/jonashagstedt/swampdragon.git@067d0bd6419238e1936ca187440b68a94ea71cf8#egg=SwampDragon-origin_master
 tlslite==0.4.9
 tornado==4.2.1
 tornado-redis==2.4.18
