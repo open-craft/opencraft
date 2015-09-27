@@ -30,7 +30,7 @@ from functools import partial
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.template import loader
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
@@ -98,7 +98,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250)
 
-    base_domain = models.CharField(max_length=50, default=settings.INSTANCES_BASE_DOMAIN)
+    base_domain = models.CharField(max_length=50, blank=True)
     protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
 
     last_provisioning_started = models.DateTimeField(blank=True, null=True)
@@ -158,6 +158,18 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         Context dictionary to include in events
         """
         return {'instance_id': self.pk}
+
+    @staticmethod
+    def on_pre_save(sender, instance, **kwargs):
+        """
+        Triggered by the pre_save event
+        """
+        self = instance
+
+        # Set default field values from settings - using the `default` field attribute confuses
+        # automatically generated migrations, generating a new one when settings don't match
+        if not self.base_domain:
+            self.base_domain = settings.INSTANCES_BASE_DOMAIN
 
     @staticmethod
     def on_post_save(sender, instance, created, **kwargs):
@@ -591,4 +603,5 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
 
         return (server, ansible_log)
 
+pre_save.connect(OpenEdXInstance.on_pre_save, sender=OpenEdXInstance)
 post_save.connect(OpenEdXInstance.on_post_save, sender=OpenEdXInstance)
