@@ -35,8 +35,9 @@ class InstanceLoggerAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         msg, kwargs = super().process(msg, kwargs)
 
-        if self.extra.get('obj', None):
-            return 'instance={} | {}'.format(self.extra['obj'].sub_domain, msg), kwargs
+        instance = self.extra['obj']
+        if instance.sub_domain:
+            return 'instance={} | {}'.format(instance.sub_domain, msg), kwargs
         else:
             return msg, kwargs
 
@@ -49,8 +50,8 @@ class ServerLoggerAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         msg, kwargs = super().process(msg, kwargs)
 
-        if self.extra.get('obj', None):
-            server = self.extra['obj']
+        server = self.extra['obj']
+        if server.instance and server.instance.sub_domain:
             return 'instance={!s:.15},server={!s:.8} | {}'.format(server.instance.sub_domain, server, msg), kwargs
         else:
             return msg, kwargs

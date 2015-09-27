@@ -30,7 +30,7 @@ from functools import partial
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import pre_save
 from django.template import loader
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
@@ -112,8 +112,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Ensure we have the right logger
-        self.update_logger()
+        self.logger = InstanceLoggerAdapter(logger, {'obj': self})
 
     def __str__(self):
         return '{0.name} ({0.url})'.format(self)
@@ -170,22 +169,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         # automatically generated migrations, generating a new one when settings don't match
         if not self.base_domain:
             self.base_domain = settings.INSTANCES_BASE_DOMAIN
-
-    @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
-        """
-        Triggered by the post_save event, with `created` a boolean indicating if the object was just
-        created in the DB
-        """
-        self = instance
-        self.update_logger()
-
-    def update_logger(self):
-        """
-        Start referencing the instance in logs once the DB entry exist
-        """
-        if self.pk is not None:
-            self.logger = InstanceLoggerAdapter(logger, {'obj': self})
 
     @property
     def log_text(self):
@@ -604,4 +587,3 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         return (server, ansible_log)
 
 pre_save.connect(OpenEdXInstance.on_pre_save, sender=OpenEdXInstance)
-post_save.connect(OpenEdXInstance.on_post_save, sender=OpenEdXInstance)

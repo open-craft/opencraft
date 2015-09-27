@@ -124,8 +124,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Ensure we have the right logger
-        self.update_logger()
+        self.logger = ServerLoggerAdapter(logger, {'obj': self})
 
     @property
     def event_context(self):
@@ -169,19 +168,10 @@ class Server(ValidateModelMixin, TimeStampedModel):
         Called when an instance is saved
         """
         self = instance
-        self.update_logger()
-
         publish_data('notification', {
             'type': 'server_update',
             'server_pk': self.pk,
         })
-
-    def update_logger(self):
-        """
-        Start referencing the server in logs once the DB entry exist
-        """
-        if self.pk is not None:
-            self.logger = ServerLoggerAdapter(logger, {'obj': self})
 
     def update_status(self, provisioned=False, rebooting=False):
         """
