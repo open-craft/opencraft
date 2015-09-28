@@ -56,12 +56,15 @@ docs/_build/
 target/
 
 # Vim
+*~
+*.swp
 *.swo
 *.swn
 
 # Local configuration
 .env
 .env.integration
+.env.local*
 
 # Vagrant
 .vagrant/

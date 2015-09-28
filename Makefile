@@ -51,6 +51,9 @@ migrate: clean
 migration_check: clean
 	!((honcho run ./manage.py showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
 
+migration_autogen: clean
+	honcho run ./manage.py makemigrations
+
 run: clean migration_check collectstatic
 	honcho start --concurrency "worker=$(WORKERS)"
 
