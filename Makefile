@@ -76,11 +76,6 @@ shell:
 upgrade_dependencies:
 	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 
-virtualenv_setup:
-	sudo pip3 install virtualenv
-	mkdir -p ~/.virtualenvs
-	virtualenv -p python3 ~/.virtualenvs/opencraft
-
 # Tests #######################################################################
 
 test_prospector: clean
