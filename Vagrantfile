@@ -12,10 +12,11 @@ grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
 
 # Install system packages
 sudo apt-get update --quiet
-sudo apt-get install -y $(cat debian_packages.lst) postgresql
+make install_system_dependencies
+make install_system_db_dependencies
 
 # Set up a virtualenv
-sudo pip3 install virtualenv
+make install_virtualenv_system
 mkdir -p ~/.virtualenvs
 virtualenv -p python3 ~/.virtualenvs/opencraft
 source ~/.virtualenvs/opencraft/bin/activate
@@ -25,7 +26,7 @@ grep -Fq 'source ~/.virtualenvs/opencraft/bin/activate' ~/.bashrc ||
   echo 'source ~/.virtualenvs/opencraft/bin/activate' >> ~/.bashrc
 
 # Install python dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Create postgres user
 sudo -u postgres createuser -d vagrant

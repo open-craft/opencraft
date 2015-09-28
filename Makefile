@@ -19,6 +19,7 @@
 
 WORKERS = 4
 SHELL = /bin/bash
+HONCHO_MANAGE := honcho run python3 manage.py 
 
 
 # Parameters ##################################################################
@@ -43,16 +44,25 @@ clean:
 	find static/js/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
 
 collectstatic: clean js_external
-	honcho run ./manage.py collectstatic --noinput
+	$(HONCHO_MANAGE) collectstatic --noinput
+
+install_system_db_dependencies:
+	sudo apt-get install -y `tr -d '\r' < debian_db_packages.lst`
+
+install_system_dependencies:
+	sudo apt-get install -y `tr -d '\r' < debian_packages.lst`
+
+install_virtualenv_system:
+	sudo pip3 install virtualenv
 
 migrate: clean
-	honcho run ./manage.py migrate
+	$(HONCHO_MANAGE) migrate
 
 migration_check: clean
-	!((honcho run ./manage.py showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
+	!(($(HONCHO_MANAGE) showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
 
 migration_autogen: clean
-	honcho run ./manage.py makemigrations
+	$(HONCHO_MANAGE) makemigrations
 
 run: clean migration_check collectstatic
 	honcho start --concurrency "worker=$(WORKERS)"
@@ -61,11 +71,15 @@ rundev: clean migration_check js_external
 	honcho start -f Procfile.dev
 
 shell:
-	honcho run ./manage.py shell_plus
+	$(HONCHO_RUN) shell_plus
 
 upgrade_dependencies:
 	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 
+virtualenv_setup:
+	sudo pip3 install virtualenv
+	mkdir -p ~/.virtualenvs
+	virtualenv -p python3 ~/.virtualenvs/opencraft
 
 # Tests #######################################################################
 

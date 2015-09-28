@@ -10,7 +10,8 @@ You can use [vagrant][] to set up a virtual machine for local development and
 testing. This is useful to keep your development environment isolated from the
 rest of your system.
 
-First, install [virtualbox][] and [vagrant][]. Then run:
+First, install [virtualbox](https://www.virtualbox.org/wiki/Downloads) and 
+[vagrant](https://www.vagrantup.com/downloads.html). Then run:
 
     vagrant up
 
@@ -38,8 +39,15 @@ Instructions based on Ubuntu 14.04.
 Install the system package dependencies & virtualenv:
 
 ```
-$ sudo apt-get install `cat debian_packages.lst`
+$ sudo apt-get update
+$ make install_system_dependencies
 $ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
+```
+
+You might also need to install PostgreSQL:
+
+```
+$ make install_system_db_dependencies
 ```
 
 Ensure you load virtualenv with Python 3 in `~/.bashrc`:
