@@ -36,6 +36,9 @@ endif
 all:
 	rundev
 
+apt_get_update:
+	sudo apt-get update
+
 clean:
 	find -name '*.pyc' -delete
 	find -name '*~' -delete
@@ -46,10 +49,10 @@ clean:
 collectstatic: clean js_external
 	$(HONCHO_MANAGE) collectstatic --noinput
 
-install_system_db_dependencies:
+install_system_db_dependencies: apt_get_update
 	sudo apt-get install -y `tr -d '\r' < debian_db_packages.lst`
 
-install_system_dependencies:
+install_system_dependencies: apt_get_update
 	sudo apt-get install -y `tr -d '\r' < debian_packages.lst`
 
 install_virtualenv_system:

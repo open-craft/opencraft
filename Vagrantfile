@@ -11,7 +11,6 @@ cd /vagrant
 grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
 
 # Install system packages
-sudo apt-get update --quiet
 make install_system_dependencies
 make install_system_db_dependencies
 
