@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # OpenCraft -- tools to aid developing and hosting free software projects
 # Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
@@ -16,23 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-Instance views
-"""
 
-# Imports #####################################################################
+# Files #######################################################################
 
-from rest_framework import viewsets
+all: js_external css_external fonts_external
+ 
+js_external:
+	$(MAKE) -C js
 
-from instance.models.server import OpenStackServer
-from instance.serializers.server import OpenStackServerSerializer
+css_external:
+	$(MAKE) -C css
 
-
-# Views #######################################################################
-
-class OpenStackServerViewSet(viewsets.ModelViewSet):
-    """
-    OpenStackServer API ViewSet
-    """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
+fonts_external:
+	$(MAKE) -C fonts

@@ -132,5 +132,5 @@ class AnsibleTestCase(TestCase):
             )
             self.assertEqual(
                 mock_popen.mock_calls,
-                [call(run_playbook_cmd, bufsize=1, stdout=-1, cwd='/play/book', shell=True)]
+                [call(run_playbook_cmd, bufsize=1, stdout=-1, stderr=-1, cwd='/play/book', shell=True)]
             )

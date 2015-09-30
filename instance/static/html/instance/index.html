@@ -24,6 +24,11 @@
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
         <a ng-click="select('instance', instance)">{{ instance.name }}</a>
+        <div class="status-icon" ng-switch="instance.progress">
+          <i class="fa fa-ellipsis-h" tooltip-placement="top" tooltip="In progress" ng-switch-when="running"></i>
+          <i class="fa fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
+          <i class="fa fa-check" tooltip-placement="top" tooltip="Success" ng-switch-when="success"></i>
+        </div>
       </li>
       <li class="divider"></li>
     </ul>
@@ -58,12 +63,19 @@
               </li>
             </ul>
           </div>
-          <div ng-switch="selected.instance.status">
-            <button class="button reprovision" ng-switch-when="ready"
-                                               ng-click="provision(selected.instance)">
-              Reprovision
-            </button>
-            <img src="/static/img/running.png" tooltip-placement="bottom" tooltip="Provisioning in progress..." alt="Provisioning in progress..." ng-switch-default />
+          <div class="large-2 columns">
+            <div class="status-icon" ng-if="selected.instance.progress != 'running'">
+              <button class="button reprovision" ng-click="provision(selected.instance)">
+                Povision
+              </button>
+            </div>
+            <div class="status-icon" ng-switch="selected.instance.progress">
+              <i class="fa fa-2x fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
+              <i class="fa fa-2x fa-check" tooltip-placement="top" tooltip="Success" ng-switch-when="success"></i>
+            </div>
+            <div class="status-icon" ng-if="selected.instance.progress == 'running'">
+              <img src="/static/img/running.png" tooltip-placement="bottom" tooltip="Provisioning in progress..." alt="Provisioning in progress..."/>
+            </div>
           </div>
         </div>
       </div>
@@ -71,7 +83,8 @@
     <div class="row">
       <tabset>
         <tab heading="Log">
-          <pre class="instance-log">{{ selected.instance.log_text }}</pre>
+          <pre ng-if="selected.instance.status_progress == 'failed'" class="error-log" ng-repeat="line in select.instance.log_error_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre><br/>
+          <pre class="instance-log" ng-repeat="line in selected.instance.log_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
         </tab>
         <tab heading="Configuration">
           <h4>Configuring the sandbox</h4>

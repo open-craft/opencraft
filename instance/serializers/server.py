@@ -17,22 +17,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+Server serializers (API representation)
 """
 
 # Imports #####################################################################
 
-from rest_framework import viewsets
+from rest_framework import serializers
 
 from instance.models.server import OpenStackServer
-from instance.serializers.server import OpenStackServerSerializer
 
 
-# Views #######################################################################
+# Serializers #################################################################
 
-class OpenStackServerViewSet(viewsets.ModelViewSet):
+class OpenStackServerSerializer(serializers.ModelSerializer):
     """
-    OpenStackServer API ViewSet
+    OpenStackServer API Serializer
     """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
+    instance = serializers.HyperlinkedRelatedField(view_name='api:openedxinstance-detail', read_only=True)
+
+    class Meta:
+        model = OpenStackServer
+        fields = (
+            'id',
+            'api_url',
+            'created',
+            'instance',
+            'modified',
+            'openstack_id',
+            'status',
+            'progress',
+        )

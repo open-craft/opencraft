@@ -87,7 +87,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     STARTED = 'started'
     ACTIVE = 'active'
     BOOTED = 'booted'
-    PROVISIONED = 'provisioned'
+    PROVISIONING = 'provisioning'
     REBOOTING = 'rebooting'
     READY = 'ready'
     LIVE = 'live'
@@ -101,7 +101,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
         (STARTED, 'Started - Running but not active yet'),
         (ACTIVE, 'Active - Running but not booted yet'),
         (BOOTED, 'Booted - Booted but not ready to be added to the application'),
-        (PROVISIONED, 'Provisioned - Provisioning is completed'),
+        (PROVISIONING, 'Provisioning - Provisioning is in progress'),
         (REBOOTING, 'Rebooting - Reboot in progress, to apply changes from provisioning'),
         (READY, 'Ready - Rebooted and ready to add to the application'),
         (LIVE, 'Live - Is actively used in the application and/or accessed by users'),
@@ -111,8 +111,19 @@ class Server(ValidateModelMixin, TimeStampedModel):
         (TERMINATED, 'Terminated - Stopped forever'),
     )
 
+    PROGRESS_RUNNING = 'running'
+    PROGRESS_SUCCESS = 'success'
+    PROGRESS_FAILED = 'failed'
+
+    PROGRESS_CHOICES = (
+        (PROGRESS_RUNNING, 'Running'),
+        (PROGRESS_SUCCESS, 'Success'),
+        (PROGRESS_FAILED, 'Failed'),
+    )
+
     instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
-    status = models.CharField(max_length=11, default=NEW, choices=STATUS_CHOICES, db_index=True)
+    status = models.CharField(max_length=20, default=NEW, choices=STATUS_CHOICES, db_index=True)
+    progress = models.CharField(max_length=7, default=PROGRESS_RUNNING, choices=PROGRESS_CHOICES)
 
     objects = ServerQuerySet().as_manager()
 
@@ -136,7 +147,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
             'server_id': self.pk,
         }
 
-    def _set_status(self, status):
+    def _set_status(self, status, progress):
         """
         Update the current status variable, to be called when a status change is detected
         """
@@ -144,7 +155,8 @@ class Server(ValidateModelMixin, TimeStampedModel):
             raise ValueError(status)
 
         self.status = status
-        self.logger.info('Changed status: %s', self.status)
+        self.progress = progress
+        self.logger.info('Changed status: %s (%s)', self.status, self.progress)
         self.save()
         return self.status
 
@@ -157,7 +169,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
 
         while True:
             self.update_status()
-            if self.status in target_status:
+            if self.status in target_status and self.progress != self.PROGRESS_RUNNING:
                 break
             time.sleep(1)
         return self.status
@@ -173,7 +185,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
             'server_pk': self.pk,
         })
 
-    def update_status(self, provisioned=False, rebooting=False):
+    def update_status(self, provisioning=False, rebooting=False, failed=None):
         """
         Check the current status and update it if it has changed
         """
@@ -220,7 +232,7 @@ class OpenStackServer(Server):
 
         return public_addr['addr']
 
-    def update_status(self, provisioned=False, rebooting=False):
+    def update_status(self, provisioning=False, rebooting=False, failed=None):
         """
         Refresh the status by querying the openstack server via nova
         """
@@ -231,19 +243,30 @@ class OpenStackServer(Server):
         if self.status == self.STARTED:
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
-                self._set_status(self.ACTIVE)
+                self._set_status(self.ACTIVE, self.PROGRESS_SUCCESS)
+            else:
+                self._set_status(self.ACTIVE, self.PROGRESS_RUNNING)
 
-        elif self.status == self.ACTIVE and is_port_open(self.public_ip, 22):
-            self._set_status(self.BOOTED)
+        elif self.status == self.ACTIVE and self.public_ip and is_port_open(self.public_ip, 22):
+            self._set_status(self.BOOTED, self.PROGRESS_RUNNING)
 
-        elif self.status == self.BOOTED and provisioned:
-            self._set_status(self.PROVISIONED)
+        elif self.status == self.BOOTED:
+            if provisioning:
+                self._set_status(self.PROVISIONING, self.PROGRESS_RUNNING)
+            else:
+                self._set_status(self.BOOTED, self.PROGRESS_SUCCESS)
 
-        elif self.status in (self.PROVISIONED, self.READY) and rebooting:
-            self._set_status(self.REBOOTING)
+        elif self.status == self.PROVISIONING and failed is not None:
+            if failed:
+                self._set_status(self.PROVISIONING, self.PROGRESS_FAILED)
+            else:
+                self._set_status(self.PROVISIONING, self.PROGRESS_SUCCESS)
+
+        elif self.status in (self.PROVISIONING, self.READY) and rebooting:
+            self._set_status(self.REBOOTING, self.PROGRESS_RUNNING)
 
         elif self.status == self.REBOOTING and not rebooting and is_port_open(self.public_ip, 22):
-            self._set_status(self.READY)
+            self._set_status(self.READY, self.PROGRESS_SUCCESS)
 
         return self.status
 
@@ -256,6 +279,7 @@ class OpenStackServer(Server):
         """
         self.logger.info('Starting server (status=%s)...', self.status)
         if self.status == self.NEW:
+            self._set_status(self.STARTED, self.PROGRESS_RUNNING)
             os_server = openstack.create_server(
                 self.nova,
                 self.instance.sub_domain,
@@ -265,7 +289,7 @@ class OpenStackServer(Server):
             )
             self.openstack_id = os_server.id
             self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
-            self._set_status(self.STARTED)
+            self._set_status(self.STARTED, self.PROGRESS_SUCCESS)
         else:
             raise NotImplementedError
 
@@ -294,14 +318,15 @@ class OpenStackServer(Server):
         if self.status == self.TERMINATED:
             return
         elif self.status == self.NEW:
-            self._set_status(self.TERMINATED)
+            self._set_status(self.TERMINATED, self.PROGRESS_SUCCESS)
             return
 
+        self._set_status(self.TERMINATED, self.PROGRESS_RUNNING)
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
         finally:
-            self._set_status(self.TERMINATED)
+            self._set_status(self.TERMINATED, self.PROGRESS_SUCCESS)
 
 post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)

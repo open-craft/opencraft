@@ -18,12 +18,15 @@
     {% endcompress %}
     {% endblock foundation_css %}
 
+    {# Fontawesome #}
+    <link rel="stylesheet" href='{% static "external/css/font-awesome.min.css" %}'/>
+
     {# Custom CSS #}
     {% block css %}{% endblock css %}
 
     {# Underscore #}
     {% block underscore_js %}
-    <script src='{% static "js/external/underscore-min.js" %}'></script>
+    <script src='{% static "external/js/underscore-min.js" %}'></script>
     {% endblock underscore_js %}
 
     {# Modernizr #}
@@ -33,10 +36,10 @@
 
     {# Angular #}
     {% block angular_js %}
-    <script src='{% static "js/external/angular.min.js" %}'></script>
-    <script src='{% static "js/external/angular-route.min.js" %}'></script>
-    <script src='{% static "js/external/angular-ui-router.min.js" %}'></script>
-    <script src='{% static "js/external/restangular.min.js" %}'></script>
+    <script src='{% static "external/js/angular.min.js" %}'></script>
+    <script src='{% static "external/js/angular-route.min.js" %}'></script>
+    <script src='{% static "external/js/angular-ui-router.min.js" %}'></script>
+    <script src='{% static "external/js/restangular.min.js" %}'></script>
     {% endblock angular_js %}
 
     {# Custom head JS #}
@@ -58,7 +61,7 @@
 
     {# jQuery #}
     {% block jquery_js %}
-    <script src='{% static "js/external/jquery.min.js" %}'></script>
+    <script src='{% static "external/js/jquery.min.js" %}'></script>
     {% endblock jquery_js %}
 
     {# Foundation JS #}

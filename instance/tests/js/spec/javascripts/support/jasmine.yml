@@ -12,14 +12,14 @@
 #   - dist/**/*.js
 #
 src_files:
-    - static/js/external/underscore-min.js
-    - static/js/external/angular.min.js
-    - static/js/external/angular-route.min.js
-    - static/js/external/angular-ui-router.min.js
+    - static/external/js/underscore-min.js
+    - static/external/js/angular.min.js
+    - static/external/js/angular-route.min.js
+    - static/external/js/angular-ui-router.min.js
     - static/js/dist/angular-foundation-tpls.js
-    - static/js/external/restangular.min.js
-    - static/js/external/angular-mocks.js
-    - static/js/external/jshint.js
+    - static/external/js/restangular.min.js
+    - static/external/js/angular-mocks.js
+    - static/external/js/jshint.js
     - instance/static/js/src/*.js
 
 # stylesheets

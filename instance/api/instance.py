@@ -28,7 +28,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from instance.models.instance import OpenEdXInstance
-from instance.serializers import OpenEdXInstanceSerializer
+from instance.serializers.instance import OpenEdXInstanceSerializer
 from instance.tasks import provision_instance
 
 
@@ -47,7 +47,7 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         Start the (re-)provisioning of an instance
         """
         instance = self.get_object()
-        if instance.status not in (instance.EMPTY, instance.READY):
+        if instance.progress == instance.PROGRESS_RUNNING:
             return Response({'status': 'Instance is not ready for reprovisioning'},
                             status=status.HTTP_403_FORBIDDEN)
 

@@ -1,0 +1,5 @@
+---
+- name: Fail on purpose
+  hosts: all
+  tasks:
+    - command: /bin/false

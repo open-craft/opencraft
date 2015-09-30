@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # OpenCraft -- tools to aid developing and hosting free software projects
 # Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
@@ -16,23 +14,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""
-Instance views
-"""
 
-# Imports #####################################################################
+# Variables ###################################################################
 
-from rest_framework import viewsets
-
-from instance.models.server import OpenStackServer
-from instance.serializers.server import OpenStackServerSerializer
+GET = wget -qO
+CDNJS = https://cdnjs.cloudflare.com/ajax/libs
 
 
-# Views #######################################################################
+# Files #######################################################################
 
-class OpenStackServerViewSet(viewsets.ModelViewSet):
-    """
-    OpenStackServer API ViewSet
-    """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
+all: font-awesome.min.css font-awesome.css.map
+
+font-awesome.min.css:
+	$(GET) $@ $(CDNJS)/font-awesome/4.4.0/css/font-awesome.min.css
+
+font-awesome.css.map:
+	$(GET) $@ $(CDNJS)/font-awesome/4.4.0/css/font-awesome.css.map

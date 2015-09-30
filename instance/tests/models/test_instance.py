@@ -23,14 +23,16 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 import re
+import tempfile
 from mock import call, patch
 
-from instance.models.server import OpenStackServer
+from instance.models.server import OpenStackServer, Server
 from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
-    StartedOpenStackServerFactory, BootedOpenStackServerFactory, patch_os_server)
+    StartedOpenStackServerFactory, BootedOpenStackServerFactory, ProvisioningOpenStackServerFactory,
+    patch_os_server)
 
 
 # Tests #######################################################################
@@ -77,8 +79,10 @@ class InstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         self.assertEqual(instance.status, instance.EMPTY)
+        self.assertEqual(instance.progress, instance.EMPTY)
         server = StartedOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.status, instance.STARTED)
+        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
         server.status = server.BOOTED
         server.save()
         self.assertEqual(instance.status, instance.BOOTED)
@@ -101,6 +105,7 @@ class InstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         StartedOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.status, instance.STARTED)
+        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
         StartedOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
             instance.status #pylint: disable=pointless-statement
@@ -262,11 +267,16 @@ class AnsibleInstanceTestCase(TestCase):
         # Server 2: 'booted'
         server2 = BootedOpenStackServerFactory(instance=instance)
         os_server_manager.add_fixture(server2.openstack_id, 'openstack/api_server_2_active.json')
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 3: 'provisioning'
+        server3 = ProvisioningOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server3.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200')
 
-        # Server 3: 'booted'
-        server3 = BootedOpenStackServerFactory(instance=instance)
-        os_server_manager.add_fixture(server3.openstack_id, 'openstack/api_server_3_active.json')
+        # Server 4: 'provisioning'
+        server4 = ProvisioningOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_3_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200\n192.168.99.66')
 
     def test_vars_str(self):
@@ -313,19 +323,20 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertNotIn('Vars Instance', instance.vars_str)
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.vars_str)
 
+    @patch('instance.models.instance.read_files')
     @patch('instance.models.instance.OpenEdXInstance.vars_str')
     @patch('instance.models.instance.OpenEdXInstance.inventory_str')
     @patch('instance.models.instance.ansible.run_playbook')
     @patch('instance.models.instance.open_repository')
-    def test_run_playbook(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_vars):
+    def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_vars, mock_read_files):
         """
-        Run the default playbook
+        Test instance deployment
         """
         instance = OpenEdXInstanceFactory()
         BootedOpenStackServerFactory(instance=instance)
         mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
 
-        instance.run_playbook()
+        instance.deploy()
         self.assertIn(call(
             '/cloned/configuration-repo/path/requirements.txt',
             mock_inventory,
@@ -334,6 +345,29 @@ class AnsibleInstanceTestCase(TestCase):
             'edx_sandbox.yml',
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
+
+    @patch('instance.models.instance.ansible.run_playbook')
+    def test_run_playbook_logging(self, mock_run_playbook):
+        """
+        Ensure logging routines are working on _run_playbook method
+        """
+        with tempfile.NamedTemporaryFile() as stdout:
+            with tempfile.NamedTemporaryFile() as stderr:
+
+                mock_run_playbook.return_value.__enter__.return_value.stdout = open(stdout.name, "rb")
+                mock_run_playbook.return_value.__enter__.return_value.stderr = open(stderr.name, "rb")
+                mock_run_playbook.return_value.__enter__.return_value.returncode = 0
+
+                stdout.write(b"HELLO\n")
+                stdout.flush()
+                stderr.write(b"HI\n")
+                stderr.flush()
+
+                instance = OpenEdXInstanceFactory()
+                log, returncode = instance._run_playbook("requirements", "playbook")
+
+                self.assertCountEqual(log, ['HELLO', 'HI'])
+                self.assertEqual(returncode, 0)
 
 
 class OpenEdXInstanceTestCase(TestCase):
@@ -388,12 +422,13 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.server.OpenStackServer.sleep_until_status')
     @patch('instance.models.server.OpenStackServer.reboot')
     @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.run_playbook')
-    def test_provision(self, os_server_manager, mock_run_playbook, mock_set_dns_record, mock_server_reboot,
+    @patch('instance.models.instance.OpenEdXInstance.deploy')
+    def test_provision(self, os_server_manager, mock_deploy, mock_set_dns_record, mock_server_reboot,
                        mock_sleep_until_status, mock_update_status, mock_openstack_create_server):
         """
         Run provisioning sequence
         """
+        mock_deploy.return_value = (['log'], 0)
         mock_openstack_create_server.return_value.id = 'test-run-provisioning-server'
         os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
@@ -403,36 +438,65 @@ class OpenEdXInstanceTestCase(TestCase):
             call(name='run.provisioning', type='A', value='192.168.100.200'),
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
         ])
-        self.assertEqual(mock_run_playbook.call_count, 1)
+        self.assertEqual(mock_deploy.call_count, 1)
         self.assertEqual(mock_server_reboot.call_count, 1)
+
+    @patch_os_server
+    @patch('instance.models.server.OpenStackServer.sleep_until_status')
+    @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
+    @patch('instance.models.server.OpenStackServer.start', autospec=True)
+    @patch('instance.models.instance.gandi.set_dns_record')
+    @patch('instance.models.instance.OpenEdXInstance.deploy')
+    def test_provision_failed(self, os_server_manager, mock_deploy, mock_set_dns_record,
+                              mock_server_start, mock_os_server, mock_sleep_until_status):
+        """
+        Run provisioning sequence failing the deployment on purpose to make sure the
+        server status will be set accordingly.
+        """
+        mock_deploy.return_value = (['log'], 1)
+        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
+
+        def server_start(self):
+            """
+            Make sure we get the server in the BOOTED state when it is started
+            """
+            self.status = Server.BOOTED
+            self.progress = Server.PROGRESS_SUCCESS
+        mock_server_start.side_effect = server_start
+
+        server = instance.provision()[0]
+        self.assertEqual(server.status, Server.PROVISIONING)
+        self.assertEqual(server.progress, Server.PROGRESS_FAILED)
 
     @patch_os_server
     @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
     @patch('instance.models.server.time.sleep')
     @patch('instance.models.server.OpenStackServer.reboot')
     @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.run_playbook')
-    def test_provision_no_active(self, os_server_manager, mock_run_playbook, mock_set_dns_record,
+    @patch('instance.models.instance.OpenEdXInstance.deploy')
+    def test_provision_no_active(self, os_server_manager, mock_deploy, mock_set_dns_record,
                                  mock_server_reboot, mock_sleep, mock_update_status):
         """
         Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
         """
+        mock_deploy.return_value = (['log'], 0)
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
         status_queue = [
             OpenStackServer.STARTED,
             OpenStackServer.BOOTED,
             OpenStackServer.BOOTED,
-            OpenStackServer.PROVISIONED,
+            OpenStackServer.PROVISIONING,
             OpenStackServer.REBOOTING,
             OpenStackServer.READY,
         ]
         status_queue.reverse() # To be able to use pop()
 
-        def update_status(self, provisioned=False, rebooting=False):
+        def update_status(self, provisioning=False, rebooting=False, failed=None):
             """ Simulate status progression successive runs """
             self.status = status_queue.pop()
+            self.progress = self.PROGRESS_SUCCESS
         mock_update_status.side_effect = update_status
 
         with patch('instance.models.server.OpenStackServer.start'):
             instance.provision()
-        self.assertEqual(mock_run_playbook.call_count, 1)
+        self.assertEqual(mock_deploy.call_count, 1)

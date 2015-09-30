@@ -105,13 +105,44 @@ describe('Instance app', function () {
 
             it('instance_log', function() {
                 $scope.select('instance', $scope.instanceList[0]);
-                expect($scope.selected.instance.log_text).not.toContain('### Added via websocket ###');
+                var log_entry = {
+                    level: 'INFO',
+                    created: new Date(2015, 10, 4, 10, 45, 0),
+                    text: '### Added via websocket ###'
+                };
+                expect($scope.selected.instance.log_entries).not.toContain(log_entry);
                 $scope.handleChannelMessage('notifier', {data: {
                     type: 'instance_log',
                     instance_id: 2,
-                    log_entry: '### Added via websocket ###'
+                    log_entry: log_entry
                 }});
-                expect($scope.selected.instance.log_text).toContain('### Added via websocket ###');
+                expect($scope.selected.instance.log_entries).toContain(log_entry);
+            });
+
+            it('errors', function() {
+                $scope.select('instance', $scope.instanceList[0]);
+                var log_entry_error = {
+                    level: 'ERROR',
+                    created: new Date(2015, 10, 4, 10, 45, 0),
+                    text: '### Added via websocket ###'
+                };
+                $scope.handleChannelMessage('notifier', {data: {
+                    type: 'instance_log',
+                    instance_id: 2,
+                    log_entry: log_entry_error
+                }});
+                var log_entry_info = {
+                    level: 'INFO',
+                    created: new Date(2015, 10, 4, 10, 45, 0),
+                    text: '### Added via websocket ###'
+                };
+                $scope.handleChannelMessage('notifier', {data: {
+                    type: 'instance_log',
+                    instance_id: 2,
+                    log_entry: log_entry_info
+                }});
+                expect($scope.selected.instance.log_error_entries).toContain(log_entry_error);
+                expect($scope.selected.instance.log_error_entries).not.toContain(log_entry_info);
             });
         });
     });

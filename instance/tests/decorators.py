@@ -17,22 +17,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+Decorators - Useful decorators for unit tests
 """
-
-# Imports #####################################################################
-
-from rest_framework import viewsets
-
-from instance.models.server import OpenStackServer
-from instance.serializers.server import OpenStackServerSerializer
+from functools import wraps
+from unittest import mock
 
 
-# Views #######################################################################
-
-class OpenStackServerViewSet(viewsets.ModelViewSet):
+def patch_git_checkout(func):
     """
-    OpenStackServer API ViewSet
+    Patch git checkout process in order to allow mocking up the checkout
+    process and the working directory
     """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
+    @wraps(func)
+    def _wrap(*args, **kwargs):
+        """
+        Calls the given function with extra parameters for git checkout
+        mocking
+        """
+        with mock.patch('git.refs.head.Head.checkout') as checkout:
+            with mock.patch('git.Git.working_dir',
+                            new_callable=mock.PropertyMock) as wd:
+                return func(git_checkout=checkout, git_working_dir=wd,
+                            *args, **kwargs)
+    return _wrap
