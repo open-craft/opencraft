@@ -26,6 +26,7 @@ import logging
 import novaclient
 import time
 
+import digitalocean
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.conf import settings
@@ -111,7 +112,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
         (TERMINATED, 'Terminated - Stopped forever'),
     )
 
-    instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
+    instance = models.ForeignKey(OpenEdXInstance)
     status = models.CharField(max_length=11, default=NEW, choices=STATUS_CHOICES, db_index=True)
 
     objects = ServerQuerySet().as_manager()
@@ -178,6 +179,34 @@ class Server(ValidateModelMixin, TimeStampedModel):
         Check the current status and update it if it has changed
         """
         raise NotImplementedError
+
+    @property
+    def public_ip(self): # pragma: no cover
+        """
+        Return one of the public address(es)
+        """
+        raise NotImplementedError
+
+    def start(self): # pragma: no cover
+        """
+        Get a server instance started
+        """
+        raise NotImplementedError
+
+    def reboot(self, reboot_type='SOFT'): # pragma: no cover
+        """
+        Reboot the server
+        """
+        raise NotImplementedError
+
+    def terminate(self): # pragma: no cover
+        """
+        Terminate the server
+        """
+        raise NotImplementedError
+
+
+post_save.connect(Server.on_post_save, sender=Server)
 
 
 class OpenStackServer(Server):
@@ -304,4 +333,121 @@ class OpenStackServer(Server):
         finally:
             self._set_status(self.TERMINATED)
 
-post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)
+
+class DigitalOceanServer(Server):
+    """
+    A Server VM hosted on an DigitalOcean account
+    """
+    droplet_id = models.CharField(max_length=250, db_index=True, blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.manager = digitalocean.Manager(token=settings.DIGITALOCEAN_TOKEN)
+
+    def __str__(self):
+        if self.droplet_id:
+            return self.droplet_id
+        else:
+            return 'New DigitalOcean Server'
+
+    @property
+    def os_server(self):
+        """
+        DigitalOcean droplet API endpoint
+        """
+        if not self.droplet_id:
+            assert self.status == self.NEW
+            self.start()
+        return self.manager.get_droplet(int(self.droplet_id))
+
+    @property
+    def public_ip(self):
+        """
+        Return one of the public address(es)
+        """
+        if not self.droplet_id:
+            return None
+
+        public_addr = self.os_server.networks['v4'][0]['ip_address'] # pylint: disable=invalid-sequence-index
+        if not public_addr:
+            return None
+
+        return public_addr
+
+    def update_status(self, provisioned=False, rebooting=False):
+        """
+        Refresh the status by querying the DigitalOcean API
+        """
+        # TODO: Check when server is stopped or terminated
+        os_server = self.os_server
+        self.logger.debug('Updating status from DigitalOcean (currently %s):\n%s', self.status, to_json(os_server))
+
+        if self.status == self.STARTED:
+            if os_server.status == 'active':
+                self._set_status(self.ACTIVE)
+
+        elif self.status == self.ACTIVE and is_port_open(self.public_ip, 22):
+            self._set_status(self.BOOTED)
+
+        elif self.status == self.BOOTED and provisioned:
+            self._set_status(self.PROVISIONED)
+
+        elif self.status in (self.PROVISIONED, self.READY) and rebooting:
+            self._set_status(self.REBOOTING)
+
+        elif self.status == self.REBOOTING and not rebooting and is_port_open(self.public_ip, 22):
+            self._set_status(self.READY)
+
+        return self.status
+
+    def start(self):
+        """
+        Get a server instance started and an droplet_id assigned
+        """
+        self.logger.info('Starting server (status=%s)...', self.status)
+        if self.status == self.NEW:
+            os_server = digitalocean.Droplet(
+                token=settings.DIGITALOCEAN_TOKEN,
+                name=self.instance.sub_domain,
+                size_slug=settings.DIGITALOCEAN_SIZE,
+                image=settings.DIGITALOCEAN_IMAGE,
+                region=settings.DIGITALOCEAN_REGION,
+                ssh_keys=settings.DIGITALOCEAN_SSH_KEYS,
+            )
+            os_server.create()
+            self.droplet_id = str(os_server.id)
+            self.logger.info('Server got assigned DigitalOcean id %s', self.droplet_id)
+            self._set_status(self.STARTED)
+        else:
+            raise NotImplementedError
+
+    def reboot(self, reboot_type='SOFT'):
+        """
+        Reboot the server
+
+        This requires to switch the status to 'rebooting', which is first attempted via the
+        `update_status` method. If the current state doesn't allow to switch to this status,
+        a ServerNotReady exception is thrown.
+        """
+        if self.update_status(rebooting=True) != self.REBOOTING:
+            raise ServerNotReady("Can't change status to 'rebooting' (current: '{}')".format(self.status))
+        self.os_server.reboot()
+
+        # TODO: Find a better way to wait for the server shutdown and reboot
+        # Currently, without sleeping here, the status would immediately switch back to ready,
+        # as SSH is still available until the reboot terminates the SSHD process
+        time.sleep(30)
+
+    def terminate(self):
+        """
+        Terminate the server
+        """
+        self.logger.info('Terminating server (status=%s)...', self.status)
+        if self.status == self.TERMINATED:
+            return
+        elif self.status == self.NEW:
+            self._set_status(self.TERMINATED)
+            return
+
+        self.os_server.destroy()
+        self._set_status(self.TERMINATED)

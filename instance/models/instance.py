@@ -27,6 +27,7 @@ import os
 
 from functools import partial
 
+from django.apps import apps
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
@@ -130,6 +131,14 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         Instance URL
         """
         return u'{0.protocol}://{0.domain}/'.format(self)
+
+    @property
+    def server_set(self):
+        """
+        Returns the list of strategy records associated with this instance
+        """
+        model = apps.get_model(apps.get_app_config("instance").strategy)
+        return model.objects.filter(instance=self)
 
     @property
     def active_server_set(self):
@@ -469,7 +478,7 @@ class AnsibleInstanceMixin(models.Model):
                 self.vars_str,
                 playbook_path,
                 self.ansible_playbook_filename,
-                username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
+                username=settings.SSH_USERNAME,
             ) as processus:
                 for line in processus.stdout:
                     line = line.decode('utf-8').rstrip()
@@ -561,7 +570,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         self.logger.info('Terminate servers')
         self.server_set.terminate()
         self.logger.info('Start new server')
-        server = self.server_set.create()
+        server = self.server_set.create(instance=self)
         server.start()
 
         # DNS

@@ -104,3 +104,4 @@ unicodecsv==0.13.0
 virtualenv==13.1.2
 Werkzeug==0.10.4
 wrapt==1.10.5
+python-digitalocean==1.6

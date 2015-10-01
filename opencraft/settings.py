@@ -61,7 +61,7 @@ DATABASES = {
 
 LOCAL_APPS = (
     'api',
-    'instance',
+    'instance.apps.InstanceConfig',
 )
 
 INSTALLED_APPS = (
@@ -212,6 +212,11 @@ DRAGON_SERVER_ADDRESS_PORT = env('DRAGON_SERVER_ADDRESS_PORT', default='0.0.0.0:
 DRAGON_URL = env('DRAGON_URL', default='http://localhost:2001/')
 
 
+# Deployment ###################################################################
+
+SSH_USERNAME = env('SSH_USERNAME', default='ubuntu')
+
+
 # OpenStack ###################################################################
 
 OPENSTACK_USER = env('OPENSTACK_USER')
@@ -223,7 +228,15 @@ OPENSTACK_REGION = env('OPENSTACK_REGION')
 OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default={"ram": 4096, "disk": 40})
 OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default={"name": "Ubuntu 12.04"})
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
-OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
+
+
+# DigitalOcean ###################################################################
+
+DIGITALOCEAN_TOKEN = env('DIGITALOCEAN_TOKEN')
+DIGITALOCEAN_SIZE = env('DIGITALOCEAN_SIZE')
+DIGITALOCEAN_IMAGE = env('DIGITALOCEAN_IMAGE')
+DIGITALOCEAN_REGION = env('DIGITALOCEAN_REGION')
+DIGITALOCEAN_SSH_KEYS = env.json('DIGITALOCEAN_SSH_KEYS')
 
 
 # DNS (Gandi) #################################################################
