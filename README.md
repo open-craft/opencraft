@@ -96,6 +96,16 @@ exit before starting the server if any are found. You can also check for pending
 $ make migration_check
 ```
 
+Creating a user
+---------------
+
+In order to login to the development server locally you will need to create a superuser through 
+
+```
+honcho run ./manage.py createsuperuser
+```
+
+Once created, you will be able to logon to your locally-host instance with the username and password you set up.
 
 Run
 ---
