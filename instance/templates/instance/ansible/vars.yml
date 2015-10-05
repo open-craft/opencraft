@@ -30,6 +30,7 @@ EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ instance.email }}'
 
 # Misc
 EDXAPP_TIME_ZONE: 'UTC'
+edxapp_theme_name: '{{ instance.theme_name }}'
 
 # Security updates
 COMMON_SECURITY_UPDATES: true
@@ -40,6 +41,7 @@ SECURITY_UPGRADE_ON_ANSIBLE: true
 # Repositories URLs
 edx_ansible_source_repo: '{{ instance.ansible_source_repo_url }}'
 edx_platform_repo: '{{ instance.repository_url }}'
+edxapp_theme_source_repo: '{{ instance.theme_source_repo }}'
 
 # Pin down dependencies to specific (known to be compatible) commits.
 edx_platform_version: '{{ instance.commit_id }}'
@@ -48,6 +50,8 @@ forum_version: '{{ instance.forum_version }}'
 notifier_version: '{{ instance.notifier_version }}'
 xqueue_version: '{{ instance.xqueue_version }}'
 certs_version: '{{ instance.certs_version }}'
+edxapp_theme_version: '{{ instance.theme_version }}'
+
 
 # Features
 EDXAPP_FEATURES:
