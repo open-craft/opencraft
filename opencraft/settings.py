@@ -148,6 +148,9 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
+THEME_NAME = env('THEME_NAME', default='default')
+THEME_SOURCE_REPO = env('THEME_SOURCE_REPO', default='https://github.com/Stanford-Online/edx-theme.git')
+THEME_VERSION = env('THEME_VERSION', default='master')
 
 # Django-extensions ###########################################################
 
