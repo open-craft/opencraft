@@ -490,6 +490,10 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     notifier_version = models.CharField(max_length=50, default='master')
     xqueue_version = models.CharField(max_length=50, default='master')
     certs_version = models.CharField(max_length=50, default='master')
+    
+    theme_name = models.CharField(max_length=50, default=settings.THEME_NAME)
+    theme_source_repo = models.CharField(max_length=256, default=settings.THEME_SOURCE_REPO)
+    theme_version = models.CharField(max_length=50, default=settings.THEME_VERSION)
 
     s3_access_key = models.CharField(max_length=50, blank=True)
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
