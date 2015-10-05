@@ -382,6 +382,20 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIn('XQUEUE_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.vars_str)
         self.assertIn('XQUEUE_S3_BUCKET: test-s3-bucket-name', instance.vars_str)
 
+    def test_vars_str_theme_settings(self):
+        """
+        Test the theme settings being loaded into ansible
+        """
+        instance = OpenEdXInstanceFactory(
+            theme_source_repo='test-repo-url',
+            theme_name='test-theme-name',
+            theme_version='test-version-master',
+        )
+
+        self.assertIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
+        self.assertIn('edxapp_theme_name: test-theme-name', instance.vars_str)
+        self.assertIn('edxapp_theme_version: test-version-master', instance.vars_str)
+
     @patch_os_server
     @patch('instance.models.server.openstack.create_server')
     @patch('instance.models.server.OpenStackServer.update_status')
