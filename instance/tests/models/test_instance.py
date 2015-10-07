@@ -353,6 +353,11 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.commit_id, '9' * 40)
         self.assertEqual(instance.name, 'edx/master (9999999)')
 
+        # theme defaults
+        self.assertEqual(instance.theme_name, 'default')
+        self.assertEqual(instance.theme_source_repo, 'https://github.com/Stanford-Online/edx-theme.git')
+        self.assertEqual(instance.theme_version, 'master')
+
     def test_get_by_fork_name(self):
         """
         Use `fork_name` to get an instance object from the ORM
@@ -392,9 +397,9 @@ class OpenEdXInstanceTestCase(TestCase):
             theme_version='test-version-master',
         )
 
-        self.assertIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
-        self.assertIn('edxapp_theme_name: test-theme-name', instance.vars_str)
-        self.assertIn('edxapp_theme_version: test-version-master', instance.vars_str)
+        self.assertIn('edxapp_theme_source_repo: \'test-repo-url\'', instance.vars_str)
+        self.assertIn('edxapp_theme_name: \'test-theme-name\'', instance.vars_str)
+        self.assertIn('edxapp_theme_version: \'test-version-master\'', instance.vars_str)
 
     @patch_os_server
     @patch('instance.models.server.openstack.create_server')
