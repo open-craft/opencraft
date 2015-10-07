@@ -69,6 +69,13 @@ class InconsistentInstanceState(Exception):
     pass
 
 
+class AnsibleRunFailed(Exception):
+    """
+    Indicates that an ansible run failed
+    """
+    pass
+
+
 # Validators ##################################################################
 
 sha1_validator = RegexValidator(regex='^[0-9a-f]{40}$', message='Full SHA1 hash required')
@@ -470,11 +477,13 @@ class AnsibleInstanceMixin(models.Model):
                 playbook_path,
                 self.ansible_playbook_filename,
                 username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-            ) as processus:
-                for line in processus.stdout:
+            ) as process:
+                for line in process.stdout:
                     line = line.decode('utf-8').rstrip()
                     self.logger.info(line)
                     log_lines.append([line.rstrip()])
+                if process.wait() != 0:
+                    raise AnsibleRunFailed('Return code: {0.returncode}'.format(process))
 
         self.logger.info('Playbook run completed')
         return log_lines
