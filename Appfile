@@ -1,0 +1,8 @@
+application {
+  name = "opencraft"
+  type = "custom"
+}
+
+customization "dev" {
+    vagrantfile = "./Vagrantfile"
+}

@@ -68,3 +68,4 @@ target/
 
 # Vagrant
 .vagrant/
+.otto/
