@@ -486,25 +486,30 @@ class ThemeableInstanceMixin(models.Model):
     An instance that has a theme 
     """
 
+    theme_name = models.CharField(max_length=50, default='default')
+    theme_source_repo = models.CharField(max_length=256, default=None)
+    theme_version = models.CharField(max_length=50, default='master')
+    theme_enabled = models.BooleanField(default=False)
+
     _theme_settings_names = ['theme_name', 'theme_source_repo', 'theme_version']
 
     ANSIBLE_SETTINGS = [] if not settings.THEME_ENABLED else _theme_settings_names
-    
-    @property
-    def theme_name(self):
-        return settings.THEME_NAME
 
-    @property
-    def theme_source_repo(self):
-        return settings.THEME_SOURCE_REPO
+    @staticmethod
+    def on_pre_save(sender, instance, **kwargs):
+        """
+        Triggered by the pre_save event
+        """
+        self = instance
 
-    @property 
-    def theme_version(self):
-        return settings.THEME_VERSION
+        if self.theme_name is None or not self.theme_name:
+            self.theme_name = settings.THEME_NAME
 
-    @property
-    def theme_enabled(self):
-        return settings.THEME_ENABLED
+        if self.theme_source_repo is None or not self.theme_source_repo:
+            self.theme_source_repo = settings.THEME_SOURCE_REPO
+
+        if self.theme_version is None or not self.theme_version:
+            self.theme_version = settings.THEME_VERSION
 
     class Meta:
         abstract = True
@@ -525,10 +530,11 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstan
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = 
+    ANSIBLE_SETTINGS = (
         AnsibleInstanceMixin.ANSIBLE_SETTINGS + 
         ThemeableInstanceMixin.ANSIBLE_SETTINGS +
         ['ansible_s3_settings']
+        )
 
 
     class Meta:
