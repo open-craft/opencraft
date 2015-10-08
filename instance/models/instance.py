@@ -479,10 +479,40 @@ class AnsibleInstanceMixin(models.Model):
         self.logger.info('Playbook run completed')
         return log_lines
 
+# Theme #####################################################################
+
+class ThemeableInstanceMixin(models.Model):
+    """
+    An instance that has a theme 
+    """
+
+    _theme_settings_names = ['theme_name', 'theme_source_repo', 'theme_version']
+
+    ANSIBLE_SETTINGS = [] if not settings.THEME_ENABLED else _theme_settings_names
+    
+    @property
+    def theme_name(self):
+        return settings.THEME_NAME
+
+    @property
+    def theme_source_repo(self):
+        return settings.THEME_SOURCE_REPO
+
+    @property 
+    def theme_version(self):
+        return settings.THEME_VERSION
+
+    @property
+    def theme_enabled(self):
+        return settings.THEME_ENABLED
+
+    class Meta:
+        abstract = True
+
 
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -490,16 +520,16 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     notifier_version = models.CharField(max_length=50, default='master')
     xqueue_version = models.CharField(max_length=50, default='master')
     certs_version = models.CharField(max_length=50, default='master')
-    
-    theme_name = models.CharField(max_length=50, default=settings.THEME_NAME)
-    theme_source_repo = models.CharField(max_length=256, default=settings.THEME_SOURCE_REPO)
-    theme_version = models.CharField(max_length=50, default=settings.THEME_VERSION)
 
     s3_access_key = models.CharField(max_length=50, blank=True)
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+    ANSIBLE_SETTINGS = 
+        AnsibleInstanceMixin.ANSIBLE_SETTINGS + 
+        ThemeableInstanceMixin.ANSIBLE_SETTINGS +
+        ['ansible_s3_settings']
+
 
     class Meta:
         verbose_name = 'Open edX Instance'
