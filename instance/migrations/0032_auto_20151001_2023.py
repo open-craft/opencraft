@@ -10,7 +10,7 @@ import instance.models.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0030_auto_20150927_1045'),
+        ('instance', '0031_openedxinstance_github_pr_url'),
     ]
 
     operations = [

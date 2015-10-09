@@ -288,7 +288,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     """
     github_organization_name = models.CharField(max_length=200, db_index=True)
     github_repository_name = models.CharField(max_length=200, db_index=True)
-    github_pr_number = models.IntegerField(blank=True, null=True)
+    github_pr_url = models.URLField(blank=True)
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
 
@@ -319,20 +319,20 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         return 'https://github.com/{0.fork_name}'.format(self)
 
     @property
-    def github_pr_url(self):
-        """
-        Web URL of the Github PR, or None if the PR number is not set.
-        """
-        if self.github_pr_number is None:
-            return None
-        return '{0.github_base_url}/pull/{0.github_pr_number}'.format(self)
-
-    @property
     def github_branch_url(self):
         """
         GitHub URL of the branch tree
         """
         return '{0.github_base_url}/tree/{0.branch_name}'.format(self)
+
+    @property
+    def github_pr_number(self):
+        """
+        Get the PR number from the URL of the PR.
+        """
+        if not self.github_pr_url:
+            return None
+        return int(self.github_pr_url.split('/')[-1])
 
     @property
     def repository_url(self):
