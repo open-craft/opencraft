@@ -24,11 +24,11 @@ Instance app models - LogEntry
 
 import logging
 
+from django.apps import apps
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
 from instance.models.instance import OpenEdXInstance
-from instance.models.server import OpenStackServer
 from instance.models.utils import ValidateModelMixin
 
 
@@ -86,7 +86,8 @@ class ServerLogEntry(LogEntry):
     """
     Single log entry for servers
     """
-    obj = models.ForeignKey(OpenStackServer, related_name='log_entry_set')
+    obj = models.ForeignKey(apps.get_app_config("instance").strategy,
+                            related_name='log_entry_set')
 
     class Meta:
         verbose_name_plural = "Server Log Entries"
