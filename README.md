@@ -8,23 +8,24 @@ Install
 
 ### Vagrant install
 
-You can use [vagrant][] to set up a virtual machine for local development and
+You can use Vagrant to set up a virtual machine for local development and
 testing. This is useful to keep your development environment isolated from the
 rest of your system.
 
-First, install [virtualbox][] and [vagrant][]. Then run:
+First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and 
+[Vagrant](https://www.vagrantup.com/downloads.html). Then run:
 
     vagrant up
 
 This will provision a virtual machine running Ubuntu 14.04, set up local
-postgres and redis, install the dependencies and run the tests.
+Postgres and Redis, install the dependencies and run the tests.
 
 Once the virtual machine is up and running, you can ssh into it with this
 command:
 
     vagrant ssh
 
-Vagrant will set up a virtualbox share mapping your local development directory
+Vagrant will set up a VirtualBox share mapping your local development directory
 to `/vagrant` inside the virtual machine. Any changes you make locally will be
 reflected inside the virtual machine automatically.
 
@@ -34,14 +35,21 @@ so you can access the development server using your web browser.
 
 ### Local install
 
-If you prefer not to install vagrant, you can install OpenCraft manually.
+If you prefer not to install Vagrant, you can install OpenCraft manually.
 Instructions based on Ubuntu 14.04.
 
 Install the system package dependencies & virtualenv:
 
 ```
-$ sudo apt-get install `cat debian_packages.lst`
+$ sudo apt-get update
+$ make install_system_dependencies
 $ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
+```
+
+You might also need to install PostgreSQL:
+
+```
+$ make install_system_db_dependencies
 ```
 
 Ensure you load virtualenv with Python 3 in `~/.bashrc`:
@@ -133,7 +141,7 @@ $ make run WORKERS=2
 Process description
 -------------------
 
-This runs three processus via honcho, which reads `Procfile` or `Procfile.dev` and loads the
+This runs three processus via Honcho, which reads `Procfile` or `Procfile.dev` and loads the
 environment from the `.env` file:
 
 * *web*: the main HTTP server (Django - Werkzeug debugger in dev, gunicorn in prod)
@@ -147,8 +155,8 @@ of Python commands. It should *not* be run in production.
 Static assets collection
 ------------------------
 
-The Web server started in the development environment also doesn't require to run collectstatic
-after each change.
+The Web server started in the development environment also doesn't require 
+collectstatic to run after each change.
 
 The production environment automatically runs collectstatic on startup, but you can also run it
 manually:
@@ -161,7 +169,7 @@ $ make collectstatic
 Running the tests
 -----------------
 
-First, the current user can access postgresql and create databases, for the test database. Run:
+First, the current user can access PostgreSQL and create databases, for the test database. Run:
 
 ```
 $ sudo -u postgres createuser -d <currentunixuser>`
@@ -180,7 +188,7 @@ To run a single test, use `make test_one`:
 $ make test_one instance.tests.models.test_server
 ```
 
-You can also run prospector, the unit tests, JS tests and integration independently:
+You can also run Prospector, the unit tests, JS tests and integration independently:
 
 ```
 $ make test_prospector
@@ -214,12 +222,9 @@ $ make shell
 Manage.py
 ---------
 
-You can also access the Django `manage.py` command directly, using honcho to load the environment:
+You can also access the Django `manage.py` command directly, using Honcho to load the environment:
 
 ```
 $ honcho run ./manage.py config
 ```
 
-
-[virtualbox]: https://www.virtualbox.org/
-[vagrant]:    https://www.vagrantup.com/
