@@ -49,7 +49,6 @@ notifier_version: '{{ instance.notifier_version }}'
 xqueue_version: '{{ instance.xqueue_version }}'
 certs_version: '{{ instance.certs_version }}'
 
-
 # Features
 EDXAPP_FEATURES:
   USE_MICROSITES: false
@@ -65,15 +64,16 @@ EDXAPP_FEATURES:
   ENABLE_DJANGO_ADMIN_SITE: true
   ALLOW_ALL_ADVANCED_COMPONENTS: true
 
-{% if instance.github_admin_username_list %}# Users
-COMMON_USER_INFO:{% for github_username in instance.github_admin_username_list %}
-  - name: {{ github_username }}
-    github: true
-    type: admin{% endfor %}{% endif %}
-
 # theme settings if enabled
 {% if instance.theme_enabled %}
 edxapp_theme_name: '{{ instance.theme_name }}'
 edxapp_theme_version: '{{ instance.theme_version }}'
 edxapp_theme_source_repo: '{{ instance.theme_source_repo }}'
 {% endif %}
+
+
+{% if instance.github_admin_username_list %}# Users
+COMMON_USER_INFO:{% for github_username in instance.github_admin_username_list %}
+  - name: {{ github_username }}
+    github: true
+    type: admin{% endfor %}{% endif %}

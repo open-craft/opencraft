@@ -479,21 +479,18 @@ class AnsibleInstanceMixin(models.Model):
         self.logger.info('Playbook run completed')
         return log_lines
 
+
 # Theme #####################################################################
 
 class ThemeableInstanceMixin(models.Model):
     """
-    An instance that has a theme 
+    An instance that has a theme
     """
 
     theme_name = models.CharField(max_length=50, default='default')
-    theme_source_repo = models.CharField(max_length=256, default=None)
+    theme_source_repo = models.CharField(max_length=256, blank='https://github.com/eeue56/edx-theme.git')
     theme_version = models.CharField(max_length=50, default='master')
     theme_enabled = models.BooleanField(default=False)
-
-    _theme_settings_names = ['theme_name', 'theme_source_repo', 'theme_version']
-
-    ANSIBLE_SETTINGS = [] if not settings.THEME_ENABLED else _theme_settings_names
 
     @staticmethod
     def on_pre_save(sender, instance, **kwargs):
@@ -530,12 +527,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstan
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = (
-        AnsibleInstanceMixin.ANSIBLE_SETTINGS + 
-        ThemeableInstanceMixin.ANSIBLE_SETTINGS +
-        ['ansible_s3_settings']
-        )
-
+    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
 
     class Meta:
         verbose_name = 'Open edX Instance'
