@@ -194,7 +194,6 @@ CACHES = {
 # Huey (redis task queue) #####################################################
 
 HUEY = {
-    'backend': 'huey.backends.redis_backend',
     'name': 'opencraft',
     'connection': {
         'host': REDIS_URL_OBJ.hostname,
@@ -204,7 +203,7 @@ HUEY = {
     'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 1, 'loglevel': logging.DEBUG},
+    'consumer': {'workers': 1, 'loglevel': logging.DEBUG},
 }
 
 
