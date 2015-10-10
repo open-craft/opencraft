@@ -12,7 +12,7 @@ Django==1.8.5
 django-angular==0.7.15
 django-appconf==1.0.1
 django-compressor==1.5
-django-debug-toolbar==1.3.2
+django-debug-toolbar==1.4
 django-environ==0.4.0
 django-extensions==1.5.7
 django-filter==0.11.0
@@ -46,7 +46,7 @@ Markdown==2.6.2
 MarkupSafe==0.23
 mccabe==0.3.1
 mock==1.3.0
-monotonic==0.3
+monotonic==0.4
 msgpack-python==0.4.6
 netaddr==0.7.18
 netifaces==0.10.4
@@ -54,14 +54,14 @@ oauthlib==1.0.3
 ordereddict==1.1
 oslo.config==2.4.0
 oslo.i18n==2.6.0
-oslo.serialization==1.9.0
+oslo.serialization==1.10.0
 oslo.utils==2.5.0
 path.py==8.1.2
-pbr==1.8.0
-pep257==0.6.0
+pbr==1.8.1
+pep257==0.7.0
 pep8==1.6.2
 pep8-naming==0.3.3
-pexpect==4.0
+pexpect==4.0.1
 pickleshare==0.5
 prettytable==0.7.2
 -e git+https://github.com/antoviaque/prospector.git@a62c73b41eaee0c92bde51438268cecd13acbc18#egg=prospector-origin_pylint-extconfig-plugins
@@ -75,28 +75,28 @@ pylint-django==0.6.1
 pylint-plugin-utils==0.2.3
 pyparsing==2.0.3
 python-dateutil==2.4.2
-python-keystoneclient==1.7.1
+python-keystoneclient==1.7.2
 python-neutronclient==3.1.0
 python-novaclient==2.31.0
 pytz==2015.6
 PyYAML==3.10
 redis==2.10.3
-requests==2.7.0
+requests==2.8.0
 requests-oauthlib==0.5.0
 requests-toolbelt==0.4.0
 requirements-detector==0.4
 responses==0.4.0
-selenium==2.47.3
+selenium==2.48.0
 setoptconf==0.2.0
 simplegeneric==0.8.1
 simplejson==3.8.0
-six==1.9.0
+six==1.10.0
 smmap==0.9.0
 sockjs-tornado==1.0.2
 sqlparse==0.1.16
 static3==0.6.1
 stevedore==1.8.0
--e git+https://github.com/jonashagstedt/swampdragon.git@067d0bd6419238e1936ca187440b68a94ea71cf8#egg=SwampDragon-master
+-e git+https://github.com/jonashagstedt/swampdragon.git@067d0bd6419238e1936ca187440b68a94ea71cf8#egg=SwampDragon-dev
 tlslite==0.4.9
 tornado==4.2.1
 tornado-redis==2.4.18
@@ -104,4 +104,5 @@ traitlets==4.0.0
 unicodecsv==0.14.1
 virtualenv==13.1.2
 Werkzeug==0.10.4
+wheel==0.26.0
 wrapt==1.10.5
