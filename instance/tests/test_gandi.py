@@ -35,6 +35,8 @@ class GandiTestCase(TestCase):
     Test cases for Gandi API calls
     """
     def setUp(self):
+        super().setUp()
+
         with patch('xmlrpc.client.ServerProxy'):
             self.api = gandi.GandiAPI()
             self.api.client.domain.zone.version.new.return_value = 'new_zone_version'

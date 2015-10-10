@@ -22,9 +22,12 @@ Tests - Base Class & Utils
 
 # Imports #####################################################################
 
+import huey
 import json
 import os.path
 import re
+
+from mock import Mock
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase as DjangoTestCase
@@ -88,6 +91,15 @@ class TestCase(DjangoTestCase):
     def setUp(self):
         super().setUp()
         self.maxDiff = None #pylint: disable=invalid-name
+
+        # Don't close tasks DB connections in tests, this conflicts with the atomic transaction blocks
+        # used by the test runner to isolate DB operations from each test
+        self.orig_db_connection_close = huey.djhuey.connection.close
+        self.mock_db_connection_close = Mock()
+        huey.djhuey.connection.close = self.mock_db_connection_close
+
+    def tearDown(self):
+        huey.djhuey.connection.close = self.orig_db_connection_close
 
 
 class WithUserTestCase(DjangoTestCase):
