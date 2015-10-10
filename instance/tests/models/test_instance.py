@@ -22,11 +22,12 @@ OpenEdXInstance model - Tests
 
 # Imports #####################################################################
 
+import subprocess
 import re
 from mock import call, patch
 
 from instance.models.server import OpenStackServer
-from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
+from instance.models.instance import InconsistentInstanceState, AnsibleRunFailed, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
@@ -325,6 +326,9 @@ class AnsibleInstanceTestCase(TestCase):
         BootedOpenStackServerFactory(instance=instance)
         mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
 
+        process = subprocess.Popen('exit 0', stdout=subprocess.PIPE, shell=True)
+        mock_run_playbook.return_value.__enter__.return_value = process
+
         instance.run_playbook()
         self.assertIn(call(
             '/cloned/configuration-repo/path/requirements.txt',
@@ -334,6 +338,24 @@ class AnsibleInstanceTestCase(TestCase):
             'edx_sandbox.yml',
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
+
+    @patch('instance.models.instance.OpenEdXInstance.vars_str', '')
+    @patch('instance.models.instance.OpenEdXInstance.inventory_str', '')
+    @patch('instance.models.instance.ansible.run_playbook')
+    @patch('instance.models.instance.open_repository')
+    def test_run_playbook_fail(self, mock_open_repo, mock_run_playbook):
+        """
+        Raise an exception if the playbook run fails
+        """
+        instance = OpenEdXInstanceFactory()
+        BootedOpenStackServerFactory(instance=instance)
+        mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
+
+        failed_process = subprocess.Popen('exit 1', stdout=subprocess.PIPE, shell=True)
+        mock_run_playbook.return_value.__enter__.return_value = failed_process
+
+        with self.assertRaises(AnsibleRunFailed):
+            instance.run_playbook()
 
 
 class OpenEdXInstanceTestCase(TestCase):
