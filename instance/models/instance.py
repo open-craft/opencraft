@@ -527,7 +527,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstan
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings', 'ansible_theme_settings']
 
     class Meta:
         verbose_name = 'Open edX Instance'
@@ -556,6 +556,17 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstan
             return ''
 
         template = loader.get_template('instance/ansible/s3.yml')
+        return template.render({'instance': self})
+
+    @property
+    def ansible_theme_settings(self):
+        """
+        Ansible settings for theming
+        """
+        if not self.theme_enabled:
+            return ''
+
+        template = loader.get_template('instance/ansible/theme.yml')
         return template.render({'instance': self})
 
     @property
