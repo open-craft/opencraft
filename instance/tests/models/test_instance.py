@@ -50,7 +50,6 @@ class InstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         self.assertEqual(OpenEdXInstance.objects.get().pk, instance.pk)
         self.assertTrue(re.search(r'Test Instance \d+ \(http://instance\d+\.test\.example\.com/\)', str(instance)))
-        print((str(instance)))
 
     def test_domain_url(self):
         """
@@ -337,6 +336,54 @@ class AnsibleInstanceTestCase(TestCase):
         ), mock_run_playbook.mock_calls)
 
 
+class ThemeableInstanceTestCase(TestCase):
+    """
+    Test cases for ThemeableInstanceMixin models
+    """
+    def test_vars_str_theme_settings(self):
+        """
+        Test the theme settings being loaded into ansible
+        """
+        instance = OpenEdXInstanceFactory(
+            theme_source_repo='test-repo-url',
+            theme_name='test-theme-name',
+            theme_version='test-version-master',
+            theme_enabled=True
+        )
+
+        self.assertIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
+        self.assertIn('edxapp_theme_name: test-theme-name', instance.vars_str)
+        self.assertIn('edxapp_theme_version: test-version-master', instance.vars_str)
+
+    def test_vars_str_no_theme_settings(self):
+        """
+        Test the theme settings being loaded into ansible
+        """
+        instance = OpenEdXInstanceFactory(
+            theme_source_repo='test-repo-url',
+            theme_name='test-theme-name',
+            theme_version='test-version-master',
+            theme_enabled=False
+        )
+
+        self.assertNotIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
+        self.assertNotIn('edxapp_theme_name: test-theme-name', instance.vars_str)
+        self.assertNotIn('edxapp_theme_version: test-version-master', instance.vars_str)
+
+    def test_create_defaults(self):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+
+        instance = OpenEdXInstance.objects.create()
+
+        self.assertEqual(instance.theme_name, 'default')
+        self.assertEqual(instance.theme_source_repo, 'https://github.com/eeue56/edx-theme.git')
+        self.assertEqual(instance.theme_version, 'master')
+        self.assertEqual(instance.theme_enabled, False)
+
+
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models
@@ -382,21 +429,6 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIn('XQUEUE_AWS_ACCESS_KEY_ID: test-s3-access-key', instance.vars_str)
         self.assertIn('XQUEUE_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.vars_str)
         self.assertIn('XQUEUE_S3_BUCKET: test-s3-bucket-name', instance.vars_str)
-
-    def test_vars_str_theme_settings(self):
-        """
-        Test the theme settings being loaded into ansible
-        """
-        instance = OpenEdXInstanceFactory(
-            theme_source_repo='test-repo-url',
-            theme_name='test-theme-name',
-            theme_version='test-version-master',
-            theme_enabled=True
-        )
-
-        self.assertIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
-        self.assertIn('edxapp_theme_name: test-theme-name', instance.vars_str)
-        self.assertIn('edxapp_theme_version: test-version-master', instance.vars_str)
 
     @patch_os_server
     @patch('instance.models.server.openstack.create_server')
