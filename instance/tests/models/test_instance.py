@@ -376,7 +376,7 @@ class ThemeableInstanceTestCase(TestCase):
         leaving it up to the create method to set them
         """
 
-        instance = OpenEdXInstance.objects.create()
+        instance = OpenEdXInstanceFactory()
 
         self.assertEqual(instance.theme_name, 'default')
         self.assertEqual(instance.theme_source_repo, 'https://github.com/eeue56/edx-theme.git')
