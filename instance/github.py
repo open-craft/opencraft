@@ -145,6 +145,7 @@ def get_watched_usernames():
         usernames.append(settings.WATCH_USER)
     return sorted(set(usernames))
 
+
 def get_username_list_from_team(organization_name, team_name='Owners'):
     """
     Retrieve the usernames of a given team's members
@@ -182,6 +183,14 @@ class PR:
         """
         return 'https://github.com/{fork_name}/pull/{number}'.format(fork_name=self.fork_name, number=self.number)
 
-    @property
-    def is_auto_reloaded(self):
-        return re.match('.*autoreload.*', self.body, re.IGNORECASE) is not None
+    def use_continuous_provisioning(self, domain):
+        """
+        Return True if the PR body specified that the sandbox should be continuously provisioned
+        from its branch, False if it is only manually provisioned, or None otherwise
+        """
+        escaped_domain = re.escape(domain)
+        if re.search(r'{0}.*continuously (re)?provisioned'.format(escaped_domain), self.body):
+            return True
+        if re.search(r'{0}.*manually (re)?provisioned'.format(escaped_domain), self.body):
+            return False
+        return None

@@ -262,6 +262,7 @@ class VersionControlInstanceMixin(models.Model):
     branch_name = models.CharField(max_length=50, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
     commit_id = models.CharField(max_length=40, validators=[sha1_validator])
+    continuously_provisioned = models.BooleanField(default=False)
 
     @property
     def commit_short_id(self):
@@ -282,7 +283,6 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     github_pr_url = models.URLField(blank=True)
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
-    github_is_auto_reloaded = models.BooleanField(default=False)
 
     objects = GitHubInstanceQuerySet.as_manager()
 

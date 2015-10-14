@@ -138,6 +138,9 @@ class GitHubTestCase(TestCase):
 
     @override_settings(WATCH_ORGANIZATION=None, WATCH_USER="luckyluke")
     def test_get_watched_users(self):
+        """
+        Get the list of watched users
+        """
         self.assertEqual(['luckyluke'], github.get_watched_usernames())
 
     @responses.activate
@@ -175,8 +178,27 @@ class GitHubTestCase(TestCase):
         with self.assertRaises(KeyError, msg='non-existent'):
             github.get_username_list_from_team('open-craft', team_name='non-existent')
 
-    def test_auto_updated_pr(self):
-        self.assertFalse(github.PR("number", "fork_name", "branch_name", "title", "username",
-                                   body='some body').is_auto_reloaded)
-        self.assertTrue(github.PR("number", "fork_name", "branch_name", "title", "username",
-                                   body='should be autOReloadeD').is_auto_reloaded)
+    def test_use_continuous_provisioning_none(self):
+        """
+        PR doesn't specify if continuous provisioning should be provided or not - return None
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username", body='some body')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), None)
+
+    def test_use_continuous_reprovisioning_true(self):
+        """
+        PR specifies that continuous provisioning should be provided - return True
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username",
+                       body='some body\nci.example.com (continuously provisioned)')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), True)
+        self.assertEqual(pr.use_continuous_provisioning('other.example.com'), None)
+
+    def test_use_continuous_reprovisioning_false(self):
+        """
+        PR specifies that reprovisioning should be manual - return False
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username",
+                       body='some body\nci.example.com (manually reprovisioned)')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), False)
+        self.assertEqual(pr.use_continuous_provisioning('other.example.com'), None)

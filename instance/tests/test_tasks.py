@@ -88,42 +88,52 @@ class TasksTestCase(TestCase):
 
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
-    def test_watch_branch_changes_with_no_change(self, mock_provision_instance, mock_get_commit_id_from_ref):
+    def test_continuous_provisioning_no_change(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Branch has no new commit - don't reprovision
+        """
         commit_id = 'a' * 40
         mock_get_commit_id_from_ref.return_value = commit_id
-        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
-                                                  sub_domain="pr123.sandbox",
-                                                  github_is_auto_reloaded=True)
+        OpenEdXInstance.objects.create(commit_id=commit_id,
+                                       sub_domain="pr123.sandbox",
+                                       continuously_provisioned=True)
 
-        tasks.watch_branch_changes()
+        tasks.continuous_provisioning()
 
         self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
         self.assertEqual(mock_provision_instance.call_count, 0)
 
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
-    def test_watch_branch_changes_with_changes(self, mock_provision_instance, mock_get_commit_id_from_ref):
+    def test_continuous_provisioning_changes(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Branch has new commits - reprovision
+        """
         commit_id = 'a' * 40
         mock_get_commit_id_from_ref.return_value = 'b' * 40
         instance = OpenEdXInstance.objects.create(commit_id=commit_id,
                                                   sub_domain="pr123.sandbox",
-                                                  github_is_auto_reloaded=True)
+                                                  continuously_provisioned=True)
 
-        tasks.watch_branch_changes()
+        tasks.continuous_provisioning()
 
         self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
         self.assertEqual(mock_provision_instance.call_count, 1)
+        self.assertEqual(mock_provision_instance.mock_calls[0][1][0], instance.pk)
 
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
-    def test_watch_branch_changes_with_no_auto_reloaded_instance(self, mock_provision_instance, mock_get_commit_id_from_ref):
+    def test_continuous_provisioning_disabled(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Instance should not be continuously provisioned
+        """
         commit_id = 'a' * 40
         mock_get_commit_id_from_ref.return_value = 'b' * 40
-        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
-                                                  sub_domain="pr123.sandbox",
-                                                  github_is_auto_reloaded=False)
+        OpenEdXInstance.objects.create(commit_id=commit_id,
+                                       sub_domain="pr123.sandbox",
+                                       continuously_provisioned=False)
 
-        tasks.watch_branch_changes()
+        tasks.continuous_provisioning()
 
         self.assertEqual(mock_get_commit_id_from_ref.call_count, 0)
         self.assertEqual(mock_provision_instance.call_count, 0)
