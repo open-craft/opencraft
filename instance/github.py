@@ -133,6 +133,18 @@ def get_team_from_organization(organization_name, team_name='Owners'):
     raise KeyError(team_name)
 
 
+def get_watched_usernames():
+    """
+    Retrieve the usernames to watch from both the watched organization and
+    username settings.
+    """
+    usernames = []
+    if settings.WATCH_ORGANIZATION:
+        usernames += get_username_list_from_team(settings.WATCH_ORGANIZATION)
+    if settings.WATCH_USER:
+        usernames.append(settings.WATCH_USER)
+    return sorted(set(usernames))
+
 def get_username_list_from_team(organization_name, team_name='Owners'):
     """
     Retrieve the usernames of a given team's members
