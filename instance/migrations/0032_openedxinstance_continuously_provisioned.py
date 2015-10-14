@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='openedxinstance',
-            name='github_is_auto_reloaded',
+            name='continuously_provisioned',
             field=models.BooleanField(default=False),
         ),
     ]
