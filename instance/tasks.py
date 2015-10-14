@@ -27,7 +27,7 @@ from huey.djhuey import crontab, db_periodic_task, db_task
 from django.conf import settings
 from django.template.defaultfilters import truncatewords
 
-from instance.github import get_username_list_from_team, get_pr_list_from_username
+from instance.github import get_watched_usernames, get_pr_list_from_username
 from instance.models.instance import OpenEdXInstance
 
 
@@ -44,7 +44,7 @@ def provision_instance(instance_pk):
     """
     Run provisioning on an existing instance
     """
-    logger.info('Retreiving instance: pk=%s', instance_pk)
+    logger.info('Retrieving instance: pk=%s', instance_pk)
     instance = OpenEdXInstance.objects.get(pk=instance_pk)
 
     logger.info('Running provisioning on %s', instance)
@@ -57,9 +57,8 @@ def watch_pr():
     Automatically create/update sandboxes for PRs opened by members of the watched
     organization on the watched repository
     """
-    team_username_list = get_username_list_from_team(settings.WATCH_ORGANIZATION)
 
-    for username in team_username_list:
+    for username in get_watched_usernames():
         for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
             pr_sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
 

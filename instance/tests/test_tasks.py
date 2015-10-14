@@ -53,7 +53,7 @@ class TasksTestCase(TestCase):
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
     @patch('instance.tasks.get_pr_list_from_username')
-    @patch('instance.tasks.get_username_list_from_team')
+    @patch('instance.tasks.get_watched_usernames')
     def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
                           mock_provision_instance, mock_get_commit_id_from_ref):
         """
