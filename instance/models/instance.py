@@ -282,6 +282,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     github_pr_url = models.URLField(blank=True)
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
+    github_is_auto_reloaded = models.BooleanField(default=False)
 
     objects = GitHubInstanceQuerySet.as_manager()
 
@@ -362,11 +363,8 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         if ref_type is not None:
             self.ref_type = ref_type
         self.logger.info('Setting instance to tip of branch %s', self.branch_name)
-        new_commit_id = github.get_commit_id_from_ref(
-            self.fork_name,
-            self.branch_name,
-            ref_type=self.ref_type)
 
+        new_commit_id = self.get_branch_tip_commit_id()
         if new_commit_id != self.commit_id:
             old_commit_short_id = self.commit_short_id
             self.commit_id = new_commit_id
@@ -380,6 +378,16 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 
         if commit:
             self.save()
+
+    def get_branch_tip_commit_id(self):
+        """
+        Get the commit id of the tip of the current branch.
+        """
+        return github.get_commit_id_from_ref(
+            self.fork_name,
+            self.branch_name,
+            ref_type=self.ref_type
+        )
 
     def set_fork_name(self, fork_name, commit=True):
         """

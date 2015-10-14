@@ -26,6 +26,8 @@ import json
 import requests
 import responses
 
+from django.test.utils import override_settings
+
 from mock import patch
 
 from instance import github
@@ -134,6 +136,10 @@ class GitHubTestCase(TestCase):
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146]]
         )
 
+    @override_settings(WATCH_ORGANIZATION=None, WATCH_USER="luckyluke")
+    def test_get_watched_users(self):
+        self.assertEqual(['luckyluke'], github.get_watched_usernames())
+
     @responses.activate
     def test_get_username_list_from_team(self):
         """
@@ -168,3 +174,9 @@ class GitHubTestCase(TestCase):
 
         with self.assertRaises(KeyError, msg='non-existent'):
             github.get_username_list_from_team('open-craft', team_name='non-existent')
+
+    def test_auto_updated_pr(self):
+        self.assertFalse(github.PR("number", "fork_name", "branch_name", "title", "username",
+                                   body='some body').is_auto_reloaded)
+        self.assertTrue(github.PR("number", "fork_name", "branch_name", "title", "username",
+                                   body='should be autOReloadeD').is_auto_reloaded)
