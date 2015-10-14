@@ -282,6 +282,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
     github_pr_url = models.URLField(blank=True)
     github_admin_organization_name = models.CharField(max_length=200, blank=True,
                                                       default=settings.DEFAULT_ADMIN_ORGANIZATION)
+    github_is_auto_reloaded = models.BooleanField(default=False)
 
     objects = GitHubInstanceQuerySet.as_manager()
 
@@ -380,7 +381,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 
     def get_branch_tip_commit_id(self):
         """
-        Get the commit id that corresponds to the tip of the current branch.
+        Get the commit id of the tip of the current branch.
         """
         return github.get_commit_id_from_ref(
             self.fork_name,

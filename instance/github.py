@@ -181,3 +181,7 @@ class PR:
         Construct the URL for the pull request
         """
         return 'https://github.com/{fork_name}/pull/{number}'.format(fork_name=self.fork_name, number=self.number)
+
+    @property
+    def is_auto_reloaded(self):
+        return re.match('.*autoreload.*', self.body, re.IGNORECASE) is not None

@@ -83,3 +83,47 @@ class TasksTestCase(TestCase):
         self.assertEqual(
             instance.name,
             'PR#234: Watched PR title which ... (bradenmacdonald) - watched/watch-branch (7777777)')
+
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_watch_branch_changes_with_no_change(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = commit_id
+        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
+                                                  sub_domain="pr123.sandbox",
+                                                  github_is_auto_reloaded=True)
+
+        tasks.watch_branch_changes()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
+        self.assertEqual(mock_provision_instance.call_count, 0)
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_watch_branch_changes_with_changes(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = 'b' * 40
+        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
+                                                  sub_domain="pr123.sandbox",
+                                                  github_is_auto_reloaded=True)
+
+        tasks.watch_branch_changes()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
+        self.assertEqual(mock_provision_instance.call_count, 1)
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_watch_branch_changes_with_no_auto_reloaded_instance(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = 'b' * 40
+        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
+                                                  sub_domain="pr123.sandbox",
+                                                  github_is_auto_reloaded=False)
+
+        tasks.watch_branch_changes()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 0)
+        self.assertEqual(mock_provision_instance.call_count, 0)
+

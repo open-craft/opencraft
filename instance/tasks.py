@@ -71,12 +71,14 @@ def watch_pr():
             instance.name = 'PR#{pr.number}: {truncated_title} ({pr.username}) - {i.reference_name}'\
                             .format(pr=pr, i=instance, truncated_title=truncated_title)
             instance.github_pr_url = pr.github_pr_url
+            instance.github_is_auto_reloaded = pr.is_auto_reloaded
             instance.ansible_extra_settings = pr.extra_settings
             instance.save()
 
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
                 provision_instance(instance.pk)
+
 
 @periodic_task(crontab(minute='*/1'))
 def watch_branch_changes():
@@ -85,8 +87,8 @@ def watch_branch_changes():
     TODO: what we really want to do is to create a new instance and delete the
     previous one once the new one is ready.
     """
-    for instance in OpenEdXInstance.objects.all():
+    for instance in OpenEdXInstance.objects.filter(github_is_auto_reloaded=True):
         commit_id = instance.commit_id
         new_commit_id = instance.get_branch_tip_commit_id()
         if new_commit_id != commit_id:
-            instance.provision()
+            provision_instance(instance.pk)
