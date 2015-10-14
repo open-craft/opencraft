@@ -35,9 +35,10 @@ class IntegrationTestCase(TestCase):
     Base class for API tests
     """
     def setUp(self):
+        super().setUp()
         # Override the environment setting - always run task in the same process
         djhuey.HUEY.always_eager = True
 
     def tearDown(self):
-        # Ensure we don't leave any VM running
         OpenStackServer.objects.terminate()
+        super().tearDown()

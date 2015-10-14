@@ -74,7 +74,7 @@ rundev: clean migration_check js_external
 	honcho start -f Procfile.dev
 
 shell:
-	$(HONCHO_RUN) shell_plus
+	$(HONCHO_MANAGE) shell_plus
 
 upgrade_dependencies:
 	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U

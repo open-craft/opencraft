@@ -22,7 +22,7 @@ Worker tasks for instance hosting & management
 
 # Imports #####################################################################
 
-from huey.djhuey import crontab, periodic_task, task
+from huey.djhuey import crontab, db_periodic_task, db_task
 
 from django.conf import settings
 from django.template.defaultfilters import truncatewords
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 # Tasks #######################################################################
 
-@task()
+@db_task()
 def provision_instance(instance_pk):
     """
     Run provisioning on an existing instance
@@ -51,7 +51,7 @@ def provision_instance(instance_pk):
     instance.provision()
 
 
-@periodic_task(crontab(minute='*/1'))
+@db_periodic_task(crontab(minute='*/1'))
 def watch_pr():
     """
     Automatically create/update sandboxes for PRs opened by members of the watched

@@ -38,6 +38,8 @@ class OpenStackTestCase(TestCase):
     Test cases for OpenStack helper functions
     """
     def setUp(self):
+        super().setUp()
+
         self.nova = Mock()
 
     def test_create_server(self):

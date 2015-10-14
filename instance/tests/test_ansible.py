@@ -38,6 +38,8 @@ class YAMLTestCase(TestCase):
     Test cases for YAML helper functions
     """
     def setUp(self):
+        super().setUp()
+
         self.yaml_dict1 = {
             'testa': 'firsta with unicode «ταБЬℓσ»',
             'testb': 'firstb',

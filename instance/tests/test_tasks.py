@@ -48,6 +48,7 @@ class TasksTestCase(TestCase):
         tasks.provision_instance(instance.pk)
         self.assertEqual(mock_instance_provision.call_count, 1)
         self.assertEqual(mock_instance_provision.mock_calls[0][1][0].pk, instance.pk)
+        self.mock_db_connection_close.assert_called_once_with()
 
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
@@ -83,3 +84,4 @@ class TasksTestCase(TestCase):
         self.assertEqual(
             instance.name,
             'PR#234: Watched PR title which ... (bradenmacdonald) - watched/watch-branch (7777777)')
+        self.mock_db_connection_close.assert_called_once_with()
