@@ -44,7 +44,7 @@ def provision_instance(instance_pk):
     """
     Run provisioning on an existing instance
     """
-    logger.info('Retreiving instance: pk=%s', instance_pk)
+    logger.info('Retrieving instance: pk=%s', instance_pk)
     instance = OpenEdXInstance.objects.get(pk=instance_pk)
 
     logger.info('Running provisioning on %s', instance)
