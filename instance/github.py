@@ -86,12 +86,12 @@ def get_settings_from_pr_body(pr_body):
         return ''
 
 
-def get_pr_by_number(fork_name, pr_number):
+def get_pr_by_number(pr_target_fork_name, pr_number):
     """
     Returns a PR object based on the reponse
     """
-    r_pr = get_object_from_url('https://api.github.com/repos/{fork_name}/pulls/{pr_number}'.format(
-        fork_name=fork_name,
+    r_pr = get_object_from_url('https://api.github.com/repos/{pr_target_fork_name}/pulls/{pr_number}'.format(
+        pr_target_fork_name=pr_target_fork_name,
         pr_number=pr_number,
     ))
     pr_fork_name = r_pr['head']['repo']['full_name']
@@ -99,6 +99,7 @@ def get_pr_by_number(fork_name, pr_number):
     pr = PR(
         pr_number,
         pr_fork_name,
+        pr_target_fork_name,
         pr_branch_name,
         r_pr['title'],
         r_pr['user']['login'],
@@ -148,9 +149,11 @@ class PR:
     """
     Representation of a GitHub Pull Request
     """
-    def __init__(self, number, fork_name, branch_name, title, username, body=''):
+    # pylint: disable=too-many-arguments
+    def __init__(self, number, source_fork_name, target_fork_name, branch_name, title, username, body=''):
         self.number = number
-        self.fork_name = fork_name
+        self.fork_name = source_fork_name
+        self.repo_name = target_fork_name
         self.branch_name = branch_name
         self.title = title
         self.username = username
@@ -168,4 +171,4 @@ class PR:
         """
         Construct the URL for the pull request
         """
-        return 'https://github.com/{fork_name}/pull/{number}'.format(fork_name=self.fork_name, number=self.number)
+        return 'https://github.com/{repo_name}/pull/{number}'.format(repo_name=self.repo_name, number=self.number)
