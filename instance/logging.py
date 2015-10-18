@@ -74,7 +74,8 @@ class DBHandler(logging.Handler):
         else:
             log_entry_set = obj.log_entry_set
 
-        log_entry = log_entry_set.create(level=record.levelname, text=self.format(record))
+        text = u"%s" % self.format(record)
+        log_entry = log_entry_set.create(level=record.levelname, text=text)
 
         log_event = {
             'type': 'instance_log',
