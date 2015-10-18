@@ -17,13 +17,17 @@
 
 # Files #######################################################################
 
+.PHONY: all
 all: js_external css_external fonts_external
  
+.PHONY: js_external
 js_external:
 	$(MAKE) -C js
 
+.PHONY: css_external
 css_external:
 	$(MAKE) -C css
 
+.PHONY: fonts_external
 fonts_external:
 	$(MAKE) -C fonts
