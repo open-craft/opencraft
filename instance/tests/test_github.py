@@ -26,6 +26,8 @@ import json
 import requests
 import responses
 
+from django.test.utils import override_settings
+
 from mock import patch
 
 from instance import github
@@ -134,6 +136,13 @@ class GitHubTestCase(TestCase):
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146]]
         )
 
+    @override_settings(WATCH_ORGANIZATION=None, WATCH_USER="luckyluke")
+    def test_get_watched_users(self):
+        """
+        Get the list of watched users
+        """
+        self.assertEqual(['luckyluke'], github.get_watched_usernames())
+
     @responses.activate
     def test_get_username_list_from_team(self):
         """
@@ -168,3 +177,28 @@ class GitHubTestCase(TestCase):
 
         with self.assertRaises(KeyError, msg='non-existent'):
             github.get_username_list_from_team('open-craft', team_name='non-existent')
+
+    def test_use_continuous_provisioning_none(self):
+        """
+        PR doesn't specify if continuous provisioning should be provided or not - return None
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username", body='some body')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), None)
+
+    def test_use_continuous_reprovisioning_true(self):
+        """
+        PR specifies that continuous provisioning should be provided - return True
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username",
+                       body='some body\nci.example.com (continuously provisioned)')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), True)
+        self.assertEqual(pr.use_continuous_provisioning('other.example.com'), None)
+
+    def test_use_continuous_reprovisioning_false(self):
+        """
+        PR specifies that reprovisioning should be manual - return False
+        """
+        pr = github.PR("number", "fork_name", "branch_name", "title", "username",
+                       body='some body\nci.example.com (manually reprovisioned)')
+        self.assertEqual(pr.use_continuous_provisioning('ci.example.com'), False)
+        self.assertEqual(pr.use_continuous_provisioning('other.example.com'), None)

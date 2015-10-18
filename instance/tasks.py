@@ -27,7 +27,7 @@ from huey.djhuey import crontab, db_periodic_task, db_task
 from django.conf import settings
 from django.template.defaultfilters import truncatewords
 
-from instance.github import get_username_list_from_team, get_pr_list_from_username
+from instance.github import get_watched_usernames, get_pr_list_from_username
 from instance.models.instance import OpenEdXInstance
 
 
@@ -44,7 +44,7 @@ def provision_instance(instance_pk):
     """
     Run provisioning on an existing instance
     """
-    logger.info('Retreiving instance: pk=%s', instance_pk)
+    logger.info('Retrieving instance: pk=%s', instance_pk)
     instance = OpenEdXInstance.objects.get(pk=instance_pk)
 
     logger.info('Running provisioning on %s', instance)
@@ -57,9 +57,8 @@ def watch_pr():
     Automatically create/update sandboxes for PRs opened by members of the watched
     organization on the watched repository
     """
-    team_username_list = get_username_list_from_team(settings.WATCH_ORGANIZATION)
 
-    for username in team_username_list:
+    for username in get_watched_usernames():
         for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
             pr_sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
 
@@ -72,9 +71,24 @@ def watch_pr():
             instance.name = 'PR#{pr.number}: {truncated_title} ({pr.username}) - {i.reference_name}'\
                             .format(pr=pr, i=instance, truncated_title=truncated_title)
             instance.github_pr_url = pr.github_pr_url
+            instance.continuously_provisioned = pr.use_continuous_provisioning(instance.domain) or False
             instance.ansible_extra_settings = pr.extra_settings
             instance.save()
 
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
                 provision_instance(instance.pk)
+
+
+@db_periodic_task(crontab(minute='*/1'))
+def continuous_provisioning():
+    """
+    Re-provision an existing instance whenever a branch has been updated.
+    TODO: what we really want to do is to create a new instance and delete the
+    previous one once the new one is ready.
+    """
+    for instance in OpenEdXInstance.objects.filter(continuously_provisioned=True):
+        commit_id = instance.commit_id
+        new_commit_id = instance.get_branch_tip_commit_id()
+        if new_commit_id != commit_id:
+            provision_instance(instance.pk)

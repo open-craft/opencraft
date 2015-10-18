@@ -53,7 +53,7 @@ class TasksTestCase(TestCase):
     @patch('instance.models.instance.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
     @patch('instance.tasks.get_pr_list_from_username')
-    @patch('instance.tasks.get_username_list_from_team')
+    @patch('instance.tasks.get_watched_usernames')
     def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
                           mock_provision_instance, mock_get_commit_id_from_ref):
         """
@@ -85,3 +85,55 @@ class TasksTestCase(TestCase):
             instance.name,
             'PR#234: Watched PR title which ... (bradenmacdonald) - watched/watch-branch (7777777)')
         self.mock_db_connection_close.assert_called_once_with()
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_continuous_provisioning_no_change(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Branch has no new commit - don't reprovision
+        """
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = commit_id
+        OpenEdXInstance.objects.create(commit_id=commit_id,
+                                       sub_domain="pr123.sandbox",
+                                       continuously_provisioned=True)
+
+        tasks.continuous_provisioning()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
+        self.assertEqual(mock_provision_instance.call_count, 0)
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_continuous_provisioning_changes(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Branch has new commits - reprovision
+        """
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = 'b' * 40
+        instance = OpenEdXInstance.objects.create(commit_id=commit_id,
+                                                  sub_domain="pr123.sandbox",
+                                                  continuously_provisioned=True)
+
+        tasks.continuous_provisioning()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 1)
+        self.assertEqual(mock_provision_instance.call_count, 1)
+        self.assertEqual(mock_provision_instance.mock_calls[0][1][0], instance.pk)
+
+    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.tasks.provision_instance')
+    def test_continuous_provisioning_disabled(self, mock_provision_instance, mock_get_commit_id_from_ref):
+        """
+        Instance should not be continuously provisioned
+        """
+        commit_id = 'a' * 40
+        mock_get_commit_id_from_ref.return_value = 'b' * 40
+        OpenEdXInstance.objects.create(commit_id=commit_id,
+                                       sub_domain="pr123.sandbox",
+                                       continuously_provisioned=False)
+
+        tasks.continuous_provisioning()
+
+        self.assertEqual(mock_get_commit_id_from_ref.call_count, 0)
+        self.assertEqual(mock_provision_instance.call_count, 0)

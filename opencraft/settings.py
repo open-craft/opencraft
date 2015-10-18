@@ -258,7 +258,10 @@ DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
 WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
 
 # Github organization to watch
-WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
+WATCH_ORGANIZATION = env('WATCH_ORGANIZATION', default=None)
+
+# Github user to watch
+WATCH_USER = env('WATCH_USER', default=None)
 
 # Default admin organization for instances (gets shell access)
 DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
