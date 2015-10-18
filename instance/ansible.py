@@ -118,6 +118,7 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
             yield subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 bufsize=1, # Bufferize one line at a time
                 cwd=playbook_path,
                 shell=True,

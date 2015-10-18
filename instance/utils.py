@@ -24,6 +24,7 @@ Instance app - Util functions
 
 import json
 import requests
+import select
 import socket
 
 from mock import Mock
@@ -70,3 +71,28 @@ def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_facto
         redirect=redirect,
         backoff_factor=backoff_factor
     )
+
+
+def read_files(*fds):
+    """
+    Given a list of objects implementing the file interface, poll them for new
+    data and yield the lines read as they are written.
+
+    Each line returned is a 2-items tuple, with the first item being the object
+    implementing the file interface, and the second the text read.
+    """
+    poll = select.poll()
+    fd_map = {}
+    for fd in fds:
+        poll.register(fd.fileno(), select.POLLIN)
+        fd_map[fd.fileno()] = fd
+    while fd_map:
+        available = poll.poll()
+        for entry in available:
+            fileno = entry[0]
+            line = fd_map[fileno].readline()
+            if line:
+                yield (fd_map[fileno], line)
+            else:
+                poll.unregister(fileno)
+                del fd_map[fileno]

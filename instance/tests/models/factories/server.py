@@ -129,3 +129,11 @@ class BootedOpenStackServerFactory(OpenStackServerFactory):
     """
     status = OpenStackServer.BOOTED
     openstack_id = factory.Sequence('booted-server-id{}'.format)
+
+
+class ProvisioningOpenStackServerFactory(OpenStackServerFactory):
+    """
+    Factory for a server with a 'provisioning' status
+    """
+    status = OpenStackServer.PROVISIONING
+    openstack_id = factory.Sequence('provisioning-server-id{}'.format)

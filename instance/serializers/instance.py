@@ -25,30 +25,11 @@ Instance serializers (API representation)
 from rest_framework import serializers
 
 from instance.models.instance import OpenEdXInstance
-from instance.models.server import OpenStackServer
+from instance.serializers.server import OpenStackServerSerializer
+from instance.serializers.logentry import LogEntrySerializer
 
 
 # Serializers #################################################################
-
-class OpenStackServerSerializer(serializers.ModelSerializer):
-    """
-    OpenStackServer API Serializer
-    """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
-    instance = serializers.HyperlinkedRelatedField(view_name='api:openedxinstance-detail', read_only=True)
-
-    class Meta:
-        model = OpenStackServer
-        fields = (
-            'id',
-            'api_url',
-            'created',
-            'instance',
-            'modified',
-            'openstack_id',
-            'status',
-        )
-
 
 class OpenEdXInstanceSerializer(serializers.ModelSerializer):
     """
@@ -56,6 +37,8 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
     """
     api_url = serializers.HyperlinkedIdentityField(view_name='api:openedxinstance-detail')
     active_server_set = OpenStackServerSerializer(many=True, read_only=True)
+    log_entries = LogEntrySerializer(many=True, read_only=True)
+    log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
     class Meta:
         model = OpenEdXInstance
@@ -73,13 +56,15 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'github_branch_url',
             'github_pr_number',
             'github_pr_url',
-            'log_text',
+            'log_entries',
+            'log_error_entries',
             'github_organization_name',
             'modified',
             'name',
             'protocol',
             'repository_url',
             'status',
+            'progress',
             'studio_url',
             'sub_domain',
             'url',

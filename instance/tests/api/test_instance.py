@@ -85,7 +85,8 @@ class InstanceAPITestCase(APITestCase):
         """
         self.api_client.login(username='user1', password='pass')
         instance = OpenEdXInstanceFactory()
-        OpenStackServerFactory(instance=instance)
+        OpenStackServerFactory(instance=instance, progress=OpenStackServer.PROGRESS_RUNNING)
+        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -97,7 +98,9 @@ class InstanceAPITestCase(APITestCase):
         """
         self.api_client.login(username='user1', password='pass')
         instance = OpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
-        OpenStackServerFactory(instance=instance, status=OpenStackServer.READY)
+        OpenStackServerFactory(instance=instance,
+                               status=OpenStackServer.READY,
+                               progress=OpenStackServer.PROGRESS_SUCCESS)
         mock_get_commit_id_from_ref.return_value = '1' * 40
 
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
@@ -108,3 +111,55 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
             call('api/repo', 'api-branch', ref_type='heads'),
         ])
+
+    def test_get_log_entries(self):
+        """
+        GET - Log entries
+        """
+        self.api_client.login(username='user1', password='pass')
+        instance = OpenEdXInstanceFactory(sub_domain='instance0')
+        server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
+        instance.logger.info("info")
+        instance.logger.error("error")
+        server.logger.info("info")
+        server.logger.error("error")
+
+        response = self.api_client.get('/api/v1/openedxinstance/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected_list = [
+            {'level': 'INFO', 'text': 'instance.models.instance  | instance=instance0 | info'},
+            {'level': 'ERROR', 'text': 'instance.models.instance  | instance=instance0 | error'},
+            {'level': 'INFO', 'text': 'instance.models.server    | instance=instance0,server=vm0 | info'},
+            {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
+        ]
+        self.assertEqual(len(expected_list), len(response.data[0]['log_entries']))
+
+        for expected_entry, log_entry in zip(expected_list, response.data[0]['log_entries']):
+            self.assertEqual(expected_entry['level'], log_entry['level'])
+            self.assertEqual(expected_entry['text'], log_entry['text'])
+
+    def test_get_log_error_entries(self):
+        """
+        GET - Log error entries
+        """
+        self.api_client.login(username='user1', password='pass')
+        instance = OpenEdXInstanceFactory(sub_domain='instance0')
+        server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
+        instance.logger.info("info")
+        instance.logger.error("error")
+        server.logger.info("info")
+        server.logger.error("error")
+
+        response = self.api_client.get('/api/v1/openedxinstance/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected_list = [
+            {'level': 'ERROR', 'text': 'instance.models.instance  | instance=instance0 | error'},
+            {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
+        ]
+        self.assertEqual(len(expected_list), len(response.data[0]['log_error_entries']))
+
+        for expected_entry, log_entry in zip(expected_list, response.data[0]['log_error_entries']):
+            self.assertEqual(expected_entry['level'], log_entry['level'])
+            self.assertEqual(expected_entry['text'], log_entry['text'])

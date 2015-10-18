@@ -122,7 +122,10 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
             } else if(message.data.type === 'instance_log') {
                 if($scope.selected.instance && $scope.selected.instance.id === message.data.instance_id) {
                     $scope.$apply(function(){
-                        $scope.selected.instance.log_text += message.data.log_entry + '\n';
+                        if (message.data.log_entry.level == 'ERROR' || message.data.log_entry.level == 'CRITICAL') {
+                            $scope.selected.instance.log_error_entries.push(message.data.log_entry);
+                        }
+                        $scope.selected.instance.log_entries.push(message.data.log_entry);
                     });
                 }
             }

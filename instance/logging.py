@@ -31,6 +31,8 @@ from swampdragon.pubsub_providers.data_publisher import publish_data
 from django.apps import apps
 from django.db import models
 
+from instance.serializers.logentry import LogEntrySerializer
+
 
 # Logging #####################################################################
 
@@ -76,7 +78,7 @@ class DBHandler(logging.Handler):
 
         log_event = {
             'type': 'instance_log',
-            'log_entry': str(log_entry),
+            'log_entry': LogEntrySerializer(log_entry).data
         }
         if hasattr(obj, 'event_context'):
             log_event.update(obj.event_context)

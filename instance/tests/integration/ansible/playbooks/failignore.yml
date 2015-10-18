@@ -1,0 +1,6 @@
+---
+- name: Fail and ignore on purpose
+  hosts: all
+  tasks:
+    - command: /bin/false
+      ignore_errors: True

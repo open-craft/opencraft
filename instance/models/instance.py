@@ -28,7 +28,7 @@ import os
 from functools import partial
 
 from django.conf import settings
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.signals import pre_save
 from django.template import loader
@@ -41,6 +41,7 @@ from instance.github import fork_name2tuple, get_username_list_from_team
 from instance.logging import log_exception
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.repo import open_repository
+from instance.utils import read_files
 
 from instance.models.utils import ValidateModelMixin
 
@@ -86,13 +87,17 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     STARTED = 'started'
     ACTIVE = 'active'
     BOOTED = 'booted'
-    PROVISIONED = 'provisioned'
+    PROVISIONING = 'provisioning'
     REBOOTING = 'rebooting'
     READY = 'ready'
     LIVE = 'live'
     STOPPING = 'stopping'
     STOPPED = 'stopped'
     TERMINATING = 'terminating'
+
+    PROGRESS_RUNNING = 'running'
+    PROGRESS_SUCCESS = 'success'
+    PROGRESS_FAILED = 'failed'
 
     sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
@@ -139,17 +144,38 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         return self.server_set.exclude_terminated()
 
     @property
+    def _current_server(self):
+        """
+        Current active server. Raises InconsistentInstanceState if more than
+        one exists.
+        """
+        active_server_set = self.active_server_set
+        if not active_server_set:
+            return
+        elif active_server_set.count() > 1:
+            raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
+        else:
+            return active_server_set[0]
+
+    @property
     def status(self):
         """
         Instance status
         """
-        active_server_set = self.active_server_set
-        if not active_server_set:
-            return self.EMPTY
-        elif active_server_set.count() > 1:
-            raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
-        else:
-            return active_server_set[0].status
+        server = self._current_server
+        if server:
+            return server.status
+        return self.EMPTY
+
+    @property
+    def progress(self):
+        """
+        Instance's current status progress
+        """
+        server = self._current_server
+        if server:
+            return server.progress
+        return self.EMPTY
 
     @property
     def event_context(self):
@@ -170,44 +196,68 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         if not self.base_domain:
             self.base_domain = settings.INSTANCES_BASE_DOMAIN
 
-    @property
-    def log_text(self):
+    @staticmethod
+    def _sort_log_entries(server_logs, instance_logs):
         """
-        Combines the instance and server log outputs in chronological order
-        Currently only supports one non-terminated server at a time
-        Returned as a text string
+        Helper method to combine the instance and server log outputs in chronological order
         """
-        current_server = self.active_server_set.get()
-        # TODO: Filter out log entries for which the user doesn't have view rights
-        server_log_entry_set = current_server.log_entry_set.order_by('pk')\
-                                                           .iterator()
-        instance_log_entry_set = self.log_entry_set.order_by('pk')\
-                                                   .iterator()
+        next_server_log_entry = partial(next, server_logs, None)
+        next_instance_log_entry = partial(next, instance_logs, None)
 
-        next_server_log_entry = partial(next, server_log_entry_set, None)
-        next_instance_log_entry = partial(next, instance_log_entry_set, None)
-
-        log_text = ''
+        log = []
         instance_log_entry = next_instance_log_entry()
         server_log_entry = next_server_log_entry()
 
         while instance_log_entry is not None and server_log_entry is not None:
             if server_log_entry.created < instance_log_entry.created:
-                log_text += '{}\n'.format(server_log_entry)
+                log.append(server_log_entry)
                 server_log_entry = next_server_log_entry()
             else:
-                log_text += '{}\n'.format(instance_log_entry)
+                log.append(instance_log_entry)
                 instance_log_entry = next_instance_log_entry()
 
         while instance_log_entry is not None:
-            log_text += '{}\n'.format(instance_log_entry)
+            log.append(instance_log_entry)
             instance_log_entry = next_instance_log_entry()
 
         while server_log_entry is not None:
-            log_text += '{}\n'.format(server_log_entry)
+            log.append(server_log_entry)
             server_log_entry = next_server_log_entry()
 
-        return log_text
+        return log
+
+    def _get_log_entries(self, level_list=None):
+        """
+        Return the list of log entry instances for the instance and its current active server,
+        optionally filtering by logging level.
+        """
+        # TODO: Filter out log entries for which the user doesn't have view rights
+        server_log_entry_set = self._current_server.log_entry_set
+        if level_list:
+            server_log_entry_set = server_log_entry_set.filter(level__in=level_list)
+        server_log_entry_set = server_log_entry_set.order_by('pk').iterator()
+
+        instance_log_entry_set = self.log_entry_set
+        if level_list:
+            instance_log_entry_set = instance_log_entry_set.filter(level__in=level_list)
+        instance_log_entry_set = instance_log_entry_set.order_by('pk').iterator()
+
+        return Instance._sort_log_entries(server_log_entry_set, instance_log_entry_set)
+
+    @property
+    def log_entries(self):
+        """
+        Return the list of log entry instances for the instance and its current active server
+        """
+        return self._get_log_entries()
+
+    @property
+    def log_error_entries(self):
+        """
+        Return the list of error or critical log entry instances for the instance and its current
+        active server
+        """
+        return self._get_log_entries(level_list=['ERROR', 'CRITICAL'])
 
 
 # Git #########################################################################
@@ -412,6 +462,10 @@ class AnsibleInstanceMixin(models.Model):
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
 
+    attempts = models.SmallIntegerField(default=3, validators=[
+        MinValueValidator(1),
+    ])
+
     # List of attributes to include in the settings output
     ANSIBLE_SETTINGS = ['ansible_extra_settings']
 
@@ -432,7 +486,9 @@ class AnsibleInstanceMixin(models.Model):
         """
         inventory = ['[app]']
         server_model = self.server_set.model
-        for server in self.server_set.filter(status=server_model.BOOTED).order_by('created'):
+        for server in self.server_set.filter(status=server_model.PROVISIONING,
+                                             progress=server_model.PROGRESS_RUNNING)\
+                                     .order_by('created'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
         self.logger.debug('Inventory:\n%s', inventory_str)
@@ -451,33 +507,59 @@ class AnsibleInstanceMixin(models.Model):
         self.logger.debug('Vars.yml:\n%s', vars_str)
         return vars_str
 
-    def run_playbook(self):
+    def _run_playbook(self, requirements_path, playbook_path):
         """
         Run a playbook against the instance active servers
         """
-        with open_repository(self.ansible_source_repo_url,
-                             ref=self.configuration_version) as configuration_repo:
-            playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
-            requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
-
-            self.logger.info('Running playbook "%s/%s"...', playbook_path, self.ansible_playbook_filename)
-
-            log_lines = []
-            with ansible.run_playbook(
-                requirements_path,
-                self.inventory_str,
-                self.vars_str,
-                playbook_path,
-                self.ansible_playbook_filename,
-                username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-            ) as processus:
-                for line in processus.stdout:
-                    line = line.decode('utf-8').rstrip()
+        log_lines = []
+        with ansible.run_playbook(
+            requirements_path,
+            self.inventory_str,
+            self.vars_str,
+            playbook_path,
+            self.ansible_playbook_filename,
+            username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
+        ) as processus:
+            for fd, line in read_files(processus.stdout, processus.stderr):
+                line = line.decode('utf-8').rstrip()
+                if fd == processus.stdout:
                     self.logger.info(line)
-                    log_lines.append([line.rstrip()])
+                elif fd == processus.stderr:
+                    self.logger.error(line)
+                log_lines.append(line)
+            processus.wait()
+            return (log_lines, processus.returncode)
 
-        self.logger.info('Playbook run completed')
-        return log_lines
+    def deploy(self):
+        """
+        Deploy instance to the active servers
+        """
+        for attempt in range(self.attempts):
+            with open_repository(self.ansible_source_repo_url,
+                                 ref=self.configuration_version) as configuration_repo:
+                playbook_path = os.path.join(configuration_repo.working_dir,
+                                             'playbooks')
+                requirements_path = os.path.join(configuration_repo.working_dir,
+                                                 'requirements.txt')
+
+                log = ('Running playbook "{path}/{name}" attempt {attempt} of '
+                       '{attempts}:').format(
+                           path=playbook_path,
+                           name=self.ansible_playbook_name,
+                           attempts=self.attempts,
+                           attempt=attempt + 1)
+                self.logger.info(log)
+                log, returncode = self._run_playbook(requirements_path, playbook_path)
+                if returncode != 0:
+                    self.logger.error(
+                        'Playbook failed for instance {}'.format(self))
+                    continue
+                else:
+                    break
+
+        if returncode == 0:
+            self.logger.info('Playbook completed for instance {}'.format(self))
+        return (log, returncode)
 
 
 # Open edX ####################################################################
@@ -552,7 +634,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         """
         Run the provisioning sequence of the instance, recreating the servers from scratch
 
-        Returns: (server, ansible_log)
+        Returns: (server, log)
         """
         self.last_provisioning_started = timezone.now()
         self.save()
@@ -563,20 +645,22 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         self.logger.info('Start new server')
         server = self.server_set.create()
         server.start()
-
         # DNS
         self.logger.info('Waiting for IP assignment on server %s...', server)
         server.sleep_until_status([server.ACTIVE, server.BOOTED])
+        server.update_status(provisioning=True)
         self.logger.info('Updating DNS: LMS at %s...', self.domain)
         gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
         # Provisioning (ansible)
-        self.logger.info('Waiting for SSH to become available on server {}...'.format(server))
-        server.sleep_until_status(server.BOOTED)
-        ansible_log = self.run_playbook()
-        server.update_status(provisioned=True)
+        log, exit_code = self.deploy()
+        if exit_code != 0:
+            server.update_status(provisioning=True, failed=True)
+            return (server, log)
+
+        server.update_status(provisioning=True, failed=False)
 
         # Reboot
         self.logger.info('Rebooting server %s...', server)
@@ -584,6 +668,6 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         server.sleep_until_status(server.READY)
         self.logger.info('Provisioning completed')
 
-        return (server, ansible_log)
+        return (server, log)
 
 pre_save.connect(OpenEdXInstance.on_pre_save, sender=OpenEdXInstance)

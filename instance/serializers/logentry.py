@@ -17,22 +17,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+LogEntry serializers (API representation)
 """
 
 # Imports #####################################################################
 
-from rest_framework import viewsets
-
-from instance.models.server import OpenStackServer
-from instance.serializers.server import OpenStackServerSerializer
+from rest_framework import serializers
 
 
-# Views #######################################################################
+# Serializers #################################################################
 
-class OpenStackServerViewSet(viewsets.ModelViewSet):
+class LogEntrySerializer(serializers.Serializer): #pylint: disable=abstract-method
     """
-    OpenStackServer API ViewSet
+    Log entries API serializer
     """
-    queryset = OpenStackServer.objects.all()
-    serializer_class = OpenStackServerSerializer
+    level = serializers.CharField(read_only=True)
+    text = serializers.CharField(read_only=True)
+    created = serializers.DateTimeField(read_only=True)
