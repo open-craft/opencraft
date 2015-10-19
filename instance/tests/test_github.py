@@ -94,6 +94,7 @@ class GitHubTestCase(TestCase):
             '- - -\r\n**Settings**\r\n```yaml\r\nEDXAPP_FEATURES:\r\n  ALLOW: true\r\n```')
         self.assertEqual(pr.number, 8474)
         self.assertEqual(pr.fork_name, 'open-craft/edx-platform')
+        self.assertEqual(pr.repo_name, 'edx/edx-platform')
         self.assertEqual(pr.branch_name, 'smarnach/hide-discussion-tab')
         self.assertEqual(pr.extra_settings, 'EDXAPP_FEATURES:\r\n  ALLOW: true\r\n')
         self.assertEqual(pr.username, 'smarnach')

@@ -62,13 +62,14 @@ class TasksTestCase(TestCase):
         mock_get_username_list.return_value = ['itsjeyd']
         pr = github.PR(
             number=234,
-            fork_name='watched/fork',
+            source_fork_name='fork/repo',
+            target_fork_name='source/repo',
             branch_name='watch-branch',
             title='Watched PR title which is very long',
             username='bradenmacdonald',
             body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\nWATCH: true\r\n```\r\nMore...',
         )
-        self.assertEqual(pr.github_pr_url, 'https://github.com/watched/fork/pull/234')
+        self.assertEqual(pr.github_pr_url, 'https://github.com/source/repo/pull/234')
         mock_get_pr_list_from_username.return_value = [pr]
         mock_get_commit_id_from_ref.return_value = '7' * 40
 
@@ -76,12 +77,13 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_provision_instance.call_count, 1)
         instance = OpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
         self.assertEqual(instance.sub_domain, 'pr234.sandbox')
-        self.assertEqual(instance.fork_name, 'watched/fork')
+        self.assertEqual(instance.fork_name, 'fork/repo')
         self.assertEqual(instance.github_pr_number, 234)
-        self.assertEqual(instance.github_pr_url, 'https://github.com/watched/fork/pull/234')
+        self.assertEqual(instance.github_pr_url, 'https://github.com/source/repo/pull/234')
+        self.assertEqual(instance.github_base_url, 'https://github.com/fork/repo')
         self.assertEqual(instance.branch_name, 'watch-branch')
         self.assertEqual(instance.ansible_extra_settings, 'WATCH: true\r\n')
         self.assertEqual(
             instance.name,
-            'PR#234: Watched PR title which ... (bradenmacdonald) - watched/watch-branch (7777777)')
+            'PR#234: Watched PR title which ... (bradenmacdonald) - fork/watch-branch (7777777)')
         self.mock_db_connection_close.assert_called_once_with()
