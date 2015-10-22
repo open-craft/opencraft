@@ -461,6 +461,7 @@ class AnsibleInstanceMixin(models.Model):
     configuration_version = models.CharField(max_length=50, default='master')
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
+    ansible_settings = models.TextField(blank=True)
 
     attempts = models.SmallIntegerField(default=3, validators=[
         MinValueValidator(1),
@@ -494,10 +495,9 @@ class AnsibleInstanceMixin(models.Model):
         self.logger.debug('Inventory:\n%s', inventory_str)
         return inventory_str
 
-    @property
-    def vars_str(self):
+    def reset_ansible_settings(self, commit=True):
         """
-        The ansible vars (private configuration) as a string
+        Set the ansible_settings field from the Ansible vars template.
         """
         template = loader.get_template('instance/ansible/vars.yml')
         vars_str = template.render({'instance': self})
@@ -505,7 +505,9 @@ class AnsibleInstanceMixin(models.Model):
             additional_vars = getattr(self, attr_name)
             vars_str = ansible.yaml_merge(vars_str, additional_vars)
         self.logger.debug('Vars.yml:\n%s', vars_str)
-        return vars_str
+        self.ansible_settings = vars_str
+        if commit:
+            self.save()
 
     def _run_playbook(self, requirements_path, playbook_path):
         """
@@ -515,7 +517,7 @@ class AnsibleInstanceMixin(models.Model):
         with ansible.run_playbook(
             requirements_path,
             self.inventory_str,
-            self.vars_str,
+            self.ansible_settings,
             playbook_path,
             self.ansible_playbook_filename,
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
@@ -637,7 +639,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         Returns: (server, log)
         """
         self.last_provisioning_started = timezone.now()
-        self.save()
+        self.reset_ansible_settings(commit=True)
 
         # Server
         self.logger.info('Terminate servers')

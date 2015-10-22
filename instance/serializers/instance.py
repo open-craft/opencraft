@@ -46,6 +46,7 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'id',
             'api_url',
             'active_server_set',
+            'ansible_settings',
             'base_domain',
             'branch_name',
             'commit_id',
@@ -69,5 +70,4 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'sub_domain',
             'url',
             'updates_feed',
-            'vars_str',
         )
