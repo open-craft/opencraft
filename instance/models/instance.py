@@ -500,7 +500,12 @@ class AnsibleInstanceMixin(models.Model):
         Set the ansible_settings field from the Ansible vars template.
         """
         template = loader.get_template('instance/ansible/vars.yml')
-        vars_str = template.render({'instance': self})
+        vars_str = template.render({
+            'instance': self,
+            # This proerty is needed twice in the template.  To avoid evaluating it twice (and
+            # querying the Github API twice), we pass it as a context variable.
+            'github_admin_username_list': self.github_admin_username_list,
+        })
         for attr_name in self.ANSIBLE_SETTINGS:
             additional_vars = getattr(self, attr_name)
             vars_str = ansible.yaml_merge(vars_str, additional_vars)
