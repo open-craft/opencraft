@@ -64,8 +64,8 @@ EDXAPP_FEATURES:
   ENABLE_DJANGO_ADMIN_SITE: true
   ALLOW_ALL_ADVANCED_COMPONENTS: true
 
-{% if instance.github_admin_username_list %}# Users
-COMMON_USER_INFO:{% for github_username in instance.github_admin_username_list %}
+{% if github_admin_username_list %}# Users
+COMMON_USER_INFO:{% for github_username in github_admin_username_list %}
   - name: {{ github_username }}
     github: true
     type: admin{% endfor %}{% endif %}

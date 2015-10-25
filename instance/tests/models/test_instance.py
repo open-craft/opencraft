@@ -137,9 +137,10 @@ class GitHubInstanceTestCase(TestCase):
         By default, no admin should be configured
         """
         instance = OpenEdXInstanceFactory()
+        instance.reset_ansible_settings()
         self.assertEqual(instance.github_admin_organization_name, '')
         self.assertEqual(instance.github_admin_username_list, [])
-        self.assertNotIn(instance.vars_str, 'COMMON_USER_INFO')
+        self.assertNotIn('COMMON_USER_INFO', instance.ansible_settings)
 
     @patch('instance.models.instance.get_username_list_from_team')
     def test_github_admin_username_list_with_org_set(self, mock_get_username_list):
@@ -148,9 +149,10 @@ class GitHubInstanceTestCase(TestCase):
         """
         mock_get_username_list.return_value = ['admin1', 'admin2']
         instance = OpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
+        instance.reset_ansible_settings()
         self.assertEqual(instance.github_admin_username_list, ['admin1', 'admin2'])
         self.assertIn('COMMON_USER_INFO:\n  - name: admin1\n    github: true\n    type: admin\n'
-                      '  - name: admin2\n    github: true\n    type: admin', instance.vars_str)
+                      '  - name: admin2\n    github: true\n    type: admin', instance.ansible_settings)
 
     def test_set_fork_name_commit(self):
         """
@@ -279,7 +281,7 @@ class AnsibleInstanceTestCase(TestCase):
         os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_3_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200\n192.168.99.66')
 
-    def test_vars_str(self):
+    def test_reset_ansible_settings(self):
         """
         Ansible vars as a string
         """
@@ -297,20 +299,21 @@ class AnsibleInstanceTestCase(TestCase):
             xqueue_version='test-xq-ver',
             certs_version='test-cert-ver',
         )
-        self.assertIn('EDXAPP_PLATFORM_NAME: "Vars Instance"', instance.vars_str)
-        self.assertIn("EDXAPP_SITE_NAME: 'vars.test.example.com", instance.vars_str)
-        self.assertIn("EDXAPP_CMS_SITE_NAME: 'studio.vars.test.example.com'", instance.vars_str)
-        self.assertIn("EDXAPP_CONTACT_EMAIL: 'vars@example.com'", instance.vars_str)
-        self.assertIn("edx_platform_repo: 'https://github.com/vars-org/vars-repo.git'", instance.vars_str)
-        self.assertIn("edx_platform_version: '{}'".format('9' * 40), instance.vars_str)
-        self.assertIn("edx_ansible_source_repo: 'http://example.org/config/repo'", instance.vars_str)
-        self.assertIn("configuration_version: 'test-config-ver'", instance.vars_str)
-        self.assertIn("forum_version: 'test-forum-ver'", instance.vars_str)
-        self.assertIn("notifier_version: 'test-notif-ver'", instance.vars_str)
-        self.assertIn("xqueue_version: 'test-xq-ver'", instance.vars_str)
-        self.assertIn("certs_version: 'test-cert-ver'", instance.vars_str)
+        instance.reset_ansible_settings()
+        self.assertIn('EDXAPP_PLATFORM_NAME: "Vars Instance"', instance.ansible_settings)
+        self.assertIn("EDXAPP_SITE_NAME: 'vars.test.example.com", instance.ansible_settings)
+        self.assertIn("EDXAPP_CMS_SITE_NAME: 'studio.vars.test.example.com'", instance.ansible_settings)
+        self.assertIn("EDXAPP_CONTACT_EMAIL: 'vars@example.com'", instance.ansible_settings)
+        self.assertIn("edx_platform_repo: 'https://github.com/vars-org/vars-repo.git'", instance.ansible_settings)
+        self.assertIn("edx_platform_version: '{}'".format('9' * 40), instance.ansible_settings)
+        self.assertIn("edx_ansible_source_repo: 'http://example.org/config/repo'", instance.ansible_settings)
+        self.assertIn("configuration_version: 'test-config-ver'", instance.ansible_settings)
+        self.assertIn("forum_version: 'test-forum-ver'", instance.ansible_settings)
+        self.assertIn("notifier_version: 'test-notif-ver'", instance.ansible_settings)
+        self.assertIn("xqueue_version: 'test-xq-ver'", instance.ansible_settings)
+        self.assertIn("certs_version: 'test-cert-ver'", instance.ansible_settings)
 
-    def test_vars_str_extra_settings(self):
+    def test_ansible_extra_settings(self):
         """
         Add extra settings in ansible vars, which can override existing settings
         """
@@ -319,16 +322,16 @@ class AnsibleInstanceTestCase(TestCase):
             email='vars@example.com',
             ansible_extra_settings='EDXAPP_PLATFORM_NAME: "Overriden!"',
         )
-        self.assertIn('EDXAPP_PLATFORM_NAME: Overriden!', instance.vars_str)
-        self.assertNotIn('Vars Instance', instance.vars_str)
-        self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.vars_str)
+        instance.reset_ansible_settings()
+        self.assertIn('EDXAPP_PLATFORM_NAME: Overriden!', instance.ansible_settings)
+        self.assertNotIn('Vars Instance', instance.ansible_settings)
+        self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.ansible_settings)
 
     @patch('instance.models.instance.read_files')
-    @patch('instance.models.instance.OpenEdXInstance.vars_str')
     @patch('instance.models.instance.OpenEdXInstance.inventory_str')
     @patch('instance.models.instance.ansible.run_playbook')
     @patch('instance.models.instance.open_repository')
-    def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_vars, mock_read_files):
+    def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_read_files):
         """
         Test instance deployment
         """
@@ -340,7 +343,7 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertIn(call(
             '/cloned/configuration-repo/path/requirements.txt',
             mock_inventory,
-            mock_vars,
+            instance.ansible_settings,
             '/cloned/configuration-repo/path/playbooks',
             'edx_sandbox.yml',
             username='ubuntu',
@@ -398,7 +401,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstance.objects.get(fork_name='get-by/fork-name')
         self.assertEqual(instance.fork_name, 'get-by/fork-name')
 
-    def test_vars_str_s3_settings(self):
+    def test_ansible_s3_settings(self):
         """
         Add extra settings in ansible vars, which can override existing settings
         """
@@ -407,14 +410,15 @@ class OpenEdXInstanceTestCase(TestCase):
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
         )
-        self.assertIn('AWS_ACCESS_KEY_ID: test-s3-access-key', instance.vars_str)
-        self.assertIn('AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.vars_str)
-        self.assertIn('EDXAPP_AUTH_EXTRA: {AWS_STORAGE_BUCKET_NAME: test-s3-bucket-name}', instance.vars_str)
-        self.assertIn('EDXAPP_AWS_ACCESS_KEY_ID: test-s3-access-key', instance.vars_str)
-        self.assertIn('EDXAPP_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.vars_str)
-        self.assertIn('XQUEUE_AWS_ACCESS_KEY_ID: test-s3-access-key', instance.vars_str)
-        self.assertIn('XQUEUE_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.vars_str)
-        self.assertIn('XQUEUE_S3_BUCKET: test-s3-bucket-name', instance.vars_str)
+        instance.reset_ansible_settings()
+        self.assertIn('AWS_ACCESS_KEY_ID: test-s3-access-key', instance.ansible_settings)
+        self.assertIn('AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.ansible_settings)
+        self.assertIn('EDXAPP_AUTH_EXTRA: {AWS_STORAGE_BUCKET_NAME: test-s3-bucket-name}', instance.ansible_settings)
+        self.assertIn('EDXAPP_AWS_ACCESS_KEY_ID: test-s3-access-key', instance.ansible_settings)
+        self.assertIn('EDXAPP_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.ansible_settings)
+        self.assertIn('XQUEUE_AWS_ACCESS_KEY_ID: test-s3-access-key', instance.ansible_settings)
+        self.assertIn('XQUEUE_AWS_SECRET_ACCESS_KEY: test-s3-secret-access-key', instance.ansible_settings)
+        self.assertIn('XQUEUE_S3_BUCKET: test-s3-bucket-name', instance.ansible_settings)
 
     @patch_os_server
     @patch('instance.models.server.openstack.create_server')
