@@ -1,0 +1,11 @@
+EDXAPP_MONGO_USER: '{{ user }}'
+EDXAPP_MONGO_PASSWORD: '{{ pass }}'
+EDXAPP_MONGO_HOSTS: ['{{ host }}']
+EDXAPP_MONGO_PORT: {{ port }}
+EDXAPP_MONGO_DB_NAME: '{{ database }}'
+
+FORUM_MONGO_USER: '{{ user }}'
+FORUM_MONGO_PASSWORD: '{{ pass }}'
+FORUM_MONGO_HOSTS: ['{{ host }}']
+FORUM_MONGO_PORT: {{ port }}
+FORUM_MONGO_DATABASE: '{{ forum_database }}'

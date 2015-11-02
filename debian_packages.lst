@@ -1,6 +1,7 @@
 git
 python3-pip
 libpq-dev
+libmysqlclient-dev
 python-dev
 redis-server
 firefox

@@ -347,3 +347,16 @@ if 'file' in HANDLERS:
         'filename': 'log/main.log',
         'formatter': 'verbose'
     }
+
+
+# Instances ###################################################################
+
+# By default, instances use local mysql and mongo databases. Set this to False
+# to use external databases instead
+INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=True)
+
+# Configure external databases here
+INSTANCE_MYSQL_URL = env('INSTANCE_MYSQL_URL', default=None)
+INSTANCE_MONGO_URL = env('INSTANCE_MONGO_URL', default=None)
+INSTANCE_MYSQL_URL_OBJ = urlparse(INSTANCE_MYSQL_URL) if INSTANCE_MYSQL_URL else None
+INSTANCE_MONGO_URL_OBJ = urlparse(INSTANCE_MONGO_URL) if INSTANCE_MONGO_URL else None

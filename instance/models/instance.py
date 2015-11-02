@@ -24,16 +24,22 @@ Instance app models - Instance
 
 import logging
 import os
+import string
 
 from functools import partial
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.db.backends.utils import truncate_name
 from django.db.models.signals import pre_save
 from django.template import loader
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django_extensions.db.models import TimeStampedModel
+
+import MySQLdb as mysql
+import pymongo
 
 from instance import ansible, github
 from instance.gandi import GandiAPI
@@ -267,6 +273,19 @@ class GitHubInstanceQuerySet(models.QuerySet):
     Additional methods for instance querysets
     Also used as the standard manager for the GitHubInstance model
     """
+    def update_or_create_from_pr(self, pr, sub_domain):
+        """
+        Create or update an instance for the given pull request
+        """
+        instance, created = self.get_or_create(
+            sub_domain=sub_domain,
+            fork_name=pr.fork_name,
+            branch_name=pr.branch_name,
+        )
+        instance.update_from_pr(pr)
+        instance.save()
+        return instance, created
+
     def create(self, *args, **kwargs):
         """
         Augmented `create()` method:
@@ -353,6 +372,13 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         return '{0.github_organization_name}/{0.github_repository_name}'.format(self)
 
     @property
+    def reference_name(self):
+        """
+        A descriptive name for the instance, which includes meaningful attributes
+        """
+        return '{0.github_organization_name}/{0.branch_name} ({0.commit_short_id})'.format(self)
+
+    @property
     def github_base_url(self):
         """
         Base GitHub URL of the fork (eg. 'https://github.com/open-craft/edx-platform')
@@ -423,8 +449,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
 
             # Update the hash in the instance title if it is present there
             # TODO: Find a better way to handle this - include the hash dynamically?
-            # TODO: Figure out why the warnings aren't suppressed despite the fact that it's a mixin
-            if self.name and old_commit_short_id: #pylint: disable=access-member-before-definition
+            if self.name and old_commit_short_id:
                 #pylint: disable=attribute-defined-outside-init
                 self.name = self.name.replace(old_commit_short_id, self.commit_short_id)
 
@@ -447,6 +472,14 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         self.github_repository_name = fork_repo
         if commit:
             self.save()
+
+    def update_from_pr(self, pr):
+        """
+        Update this instance with settings from the given pull request
+        """
+        self.name = ('PR#{pr.number}: {pr.truncated_title}' +  #pylint: disable=attribute-defined-outside-init
+                     ' ({pr.username}) - {i.reference_name}').format(pr=pr, i=self)
+        self.github_pr_url = pr.github_pr_url
 
 
 # Ansible #####################################################################
@@ -569,9 +602,85 @@ class AnsibleInstanceMixin(models.Model):
         return (log, returncode)
 
 
+# Databases ###################################################################
+
+class MySQLInstanceMixin(models.Model):
+    """
+    An instance that uses mysql databases
+    """
+    mysql_user = models.CharField(max_length=16, blank=True)  # 16 chars is mysql maximum
+    mysql_pass = models.CharField(max_length=32, blank=True)
+    mysql_provisioned = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def mysql_database_names(self): #pylint: disable=no-self-use
+        """
+        An iterable of database names
+        """
+        return NotImplementedError
+
+    def provision_mysql(self):
+        """
+        Create mysql user and databases
+        """
+        if settings.INSTANCE_MYSQL_URL_OBJ and not self.mysql_provisioned:
+            connection = mysql.connect(
+                host=settings.INSTANCE_MYSQL_URL_OBJ.hostname,
+                user=settings.INSTANCE_MYSQL_URL_OBJ.username,
+                passwd=settings.INSTANCE_MYSQL_URL_OBJ.password or '',
+                port=settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
+            )
+            cursor = connection.cursor()
+
+            for database in self.mysql_database_names:
+                # We can't use the database name in a parameterized query, the
+                # driver doesn't escape it properly. Se we escape it here instead
+                database_name = connection.escape_string(database).decode()
+                cursor.execute('CREATE DATABASE {0} DEFAULT CHARACTER SET utf8'.format(database_name))
+                cursor.execute('GRANT ALL ON {0}.* TO %s IDENTIFIED BY %s'.format(database_name),
+                               (self.mysql_user, self.mysql_pass))
+
+            self.mysql_provisioned = True
+            self.save()
+
+
+class MongoDBInstanceMixin(models.Model):
+    """
+    An instance that uses mongo databases
+    """
+    mongo_user = models.CharField(max_length=16, blank=True)
+    mongo_pass = models.CharField(max_length=32, blank=True)
+    mongo_provisioned = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def mongo_database_names(self): #pylint: disable=no-self-use
+        """
+        An iterable of database names
+        """
+        return NotImplementedError
+
+    def provision_mongo(self):
+        """
+        Create mongo user and databases
+        """
+        if settings.INSTANCE_MONGO_URL and not self.mongo_provisioned:
+            mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
+            for database in self.mongo_database_names:
+                mongo[database].add_user(self.mongo_user, self.mongo_pass)
+
+            self.mongo_provisioned = True
+            self.save()
+
+
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
+class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -584,7 +693,13 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+    use_ephemeral_databases = models.BooleanField()
+
+    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + [
+        'ansible_s3_settings',
+        'ansible_mysql_settings',
+        'ansible_mongo_settings',
+    ]
 
     class Meta:
         verbose_name = 'Open edX Instance'
@@ -598,13 +713,6 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         return settings.DEFAULT_FORK
 
     @property
-    def reference_name(self):
-        """
-        A descriptive name for the instance, which includes meaningful attributes
-        """
-        return '{s.github_organization_name}/{s.branch_name} ({s.commit_short_id})'.format(s=self)
-
-    @property
     def ansible_s3_settings(self):
         """
         Ansible settings for the S3 bucket
@@ -614,6 +722,37 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
 
         template = loader.get_template('instance/ansible/s3.yml')
         return template.render({'instance': self})
+
+    @property
+    def ansible_mysql_settings(self):
+        """
+        Ansible settings for the external mysql database
+        """
+        if self.use_ephemeral_databases or not settings.INSTANCE_MYSQL_URL_OBJ:
+            return ''
+
+        template = loader.get_template('instance/ansible/mysql.yml')
+        return template.render({'user': self.mysql_user,
+                                'pass': self.mysql_pass,
+                                'host': settings.INSTANCE_MYSQL_URL_OBJ.hostname,
+                                'port': settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
+                                'database': self.mysql_database_name})
+
+    @property
+    def ansible_mongo_settings(self):
+        """
+        Ansible settings for the external mongo database
+        """
+        if self.use_ephemeral_databases or not settings.INSTANCE_MONGO_URL_OBJ:
+            return ''
+
+        template = loader.get_template('instance/ansible/mongo.yml')
+        return template.render({'user': self.mongo_user,
+                                'pass': self.mongo_pass,
+                                'host': settings.INSTANCE_MONGO_URL_OBJ.hostname,
+                                'port': settings.INSTANCE_MONGO_URL_OBJ.port or 27017,
+                                'database': self.mongo_database_name,
+                                'forum_database': self.forum_database_name})
 
     @property
     def studio_sub_domain(self):
@@ -636,6 +775,72 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         """
         return u'{0.protocol}://{0.studio_domain}/'.format(self)
 
+    @property
+    def database_name(self):
+        """
+        The database name used for external databases. Escape all non-ascii characters and truncate to 64 chars, the
+        maximum for mysql
+        """
+        name = self.domain.replace('.', '_')
+        allowed = string.ascii_letters + string.digits + '_'
+        escaped = ''.join(char for char in name if char in allowed)
+        return truncate_name(escaped, length=64)
+
+    @property
+    def mysql_database_name(self):
+        """
+        The mysql database name for this instance
+        """
+        return self.database_name
+
+    @property
+    def mysql_database_names(self):
+        """
+        List of mysql database names
+        """
+        return [self.mysql_database_name]
+
+    @property
+    def mongo_database_name(self):
+        """
+        The name of the main external mongo database
+        """
+        return self.database_name
+
+    @property
+    def forum_database_name(self):
+        """
+        The name of the external database used for forums
+        """
+        return '{0}_forum'.format(self.database_name)
+
+    @property
+    def mongo_database_names(self):
+        """
+        List of mongo database names
+        """
+        return [self.mongo_database_name, self.forum_database_name]
+
+    @staticmethod
+    def on_pre_save(sender, instance, **kwargs):
+        """
+        Set this instance's default field values
+        """
+        super().on_pre_save(sender, instance, **kwargs)
+
+        self = instance
+
+        if self.use_ephemeral_databases is None:
+            self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
+
+    def update_from_pr(self, pr):
+        """
+        Update this instance with settings from the given pull request
+        """
+        super().update_from_pr(pr)
+        self.ansible_extra_settings = pr.extra_settings
+        self.use_ephemeral_databases = pr.use_ephemeral_databases(self.domain)
+
     @log_exception
     def provision(self):
         """
@@ -644,7 +849,6 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         Returns: (server, log)
         """
         self.last_provisioning_started = timezone.now()
-        self.reset_ansible_settings(commit=True)
 
         # Server
         self.logger.info('Terminate servers')
@@ -661,7 +865,14 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
+        # Provisioning (external databases)
+        if not self.use_ephemeral_databases:
+            self.logger.info('Provisioning external databases...')
+            self.provision_mysql()
+            self.provision_mongo()
+
         # Provisioning (ansible)
+        self.reset_ansible_settings(commit=True)
         log, exit_code = self.deploy()
         if exit_code != 0:
             server.update_status(provisioning=True, failed=True)
@@ -676,5 +887,23 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         self.logger.info('Provisioning completed')
 
         return (server, log)
+
+    def provision_mysql(self):
+        """
+        Set mysql credentials and provision the database.
+        """
+        if not self.mysql_provisioned:
+            self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
+            self.mysql_pass = get_random_string(length=32)
+        return super().provision_mysql()
+
+    def provision_mongo(self):
+        """
+        Set mongo credentials and provision the database.
+        """
+        if not self.mongo_provisioned:
+            self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
+            self.mongo_pass = get_random_string(length=32)
+        return super().provision_mongo()
 
 pre_save.connect(OpenEdXInstance.on_pre_save, sender=OpenEdXInstance)

@@ -18,7 +18,7 @@ First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and
     vagrant up
 
 This will provision a virtual machine running Ubuntu 14.04, set up local
-Postgres and Redis, install the dependencies and run the tests.
+Postgres, MySQL, MongoDB and Redis, install the dependencies and run the tests.
 
 Once the virtual machine is up and running, you can ssh into it with this
 command:
@@ -46,11 +46,13 @@ $ make install_system_dependencies
 $ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
 ```
 
-You might also need to install PostgreSQL:
+You might also need to install PostgreSQL, MySQL and MongoDB:
 
 ```
 $ make install_system_db_dependencies
 ```
+Note that the tests expect to be able to access MySQL on localhost using the
+default port, connecting as the root user without a password.
 
 Ensure you load virtualenv with Python 3 in `~/.bashrc`:
 
@@ -169,7 +171,9 @@ $ make collectstatic
 Running the tests
 -----------------
 
-First, the current user can access PostgreSQL and create databases, for the test database. Run:
+If you are setting up a development environment manually, you will need to
+create a database user to run the tests. **If you are using vagrant you can skip
+this step**.
 
 ```
 $ sudo -u postgres createuser -d <currentunixuser>`
@@ -228,3 +232,14 @@ You can also access the Django `manage.py` command directly, using Honcho to loa
 $ honcho run ./manage.py config
 ```
 
+
+User workflow
+-------------
+
+To use ephemeral databases that will be destroyed every time the sandbox is
+reprovisioned, include `(ephemeral databases)` on the same line as the sandbox
+domain in the pull request body.
+
+To request persistent databases that will survive reprovisioning, include
+`(persistent databases)` on the same line as the sandbox domain in the pull
+request body.

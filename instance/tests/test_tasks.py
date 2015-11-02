@@ -24,9 +24,10 @@ Worker tasks - Tests
 
 from mock import patch
 
-from instance import github, tasks
+from instance import tasks
 from instance.models.instance import OpenEdXInstance
 from instance.tests.base import TestCase
+from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 
 
@@ -60,7 +61,7 @@ class TasksTestCase(TestCase):
         New PR created on the watched repo
         """
         mock_get_username_list.return_value = ['itsjeyd']
-        pr = github.PR(
+        pr = PRFactory(
             number=234,
             source_fork_name='fork/repo',
             target_fork_name='source/repo',
