@@ -1,0 +1,8 @@
+EDXAPP_MYSQL_USER: '{{ user }}'
+EDXAPP_MYSQL_PASSWORD: '{{ pass }}'
+EDXAPP_MYSQL_HOST: '{{ host }}'
+EDXAPP_MYSQL_PORT: {{ port }}
+EDXAPP_MYSQL_DB_NAME: '{{ database }}'
+
+COMMON_MYSQL_MIGRATE_USER: '{{ user }}'
+COMMON_MYSQL_MIGRATE_PASS: '{{ pass }}'

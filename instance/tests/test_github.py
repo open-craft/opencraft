@@ -73,6 +73,32 @@ class GitHubTestCase(TestCase):
         pr_body = "Description\r\nover\r\nlines\r\n- - -\r\n**Settings**\r\nMALFORMED"
         self.assertEqual(github.get_settings_from_pr_body(pr_body), '')
 
+    def test_pr_ephemeral_databases(self):
+        """
+        Should the sandbox use ephemeral databases?
+        """
+        pr_body = ('**JIRA Ticket:** https://openedx.atlassian.net/browse/YONK-83\r\n'
+                   '**Sandbox:** [LMS](http://pr9848.sandbox.opencraft.com/), '
+                   '[Studio](http://studio.pr9848.sandbox.opencraft.com/) (ephemeral database)\r\n')
+        domain = 'studio.pr9848.sandbox.opencraft.com'
+        self.assertTrue(github.is_pr_body_requesting_ephemeral_databases(pr_body, domain))
+
+    def test_pr_persistent_databases(self):
+        """
+        Should the sandbox use persistent databases?
+        """
+        pr_body = '* [LMS](http://sandbox.example.com) (persistent databases, please)'
+        domain = 'sandbox.example.com'
+        self.assertFalse(github.is_pr_body_requesting_ephemeral_databases(pr_body, domain))
+
+    def test_pr_databases_not_specified(self):
+        """
+        Does the PR specify whether databases should be ephemeral or persistent?
+        """
+        pr_body = '* [LMS](http://sandbox.example.com)'
+        domain = 'sandbox.example.com'
+        self.assertIsNone(github.is_pr_body_requesting_ephemeral_databases(pr_body, domain))
+
     @responses.activate
     def test_get_pr_by_number(self):
         """
