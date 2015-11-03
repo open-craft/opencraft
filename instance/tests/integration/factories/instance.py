@@ -50,3 +50,4 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     notifier_version = 'named-release/cypress'
     xqueue_version = 'named-release/cypress'
     certs_version = 'named-release/cypress'
+    use_ephemeral_databases = True

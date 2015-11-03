@@ -23,6 +23,10 @@ Instance - Integration Tests
 # Imports #####################################################################
 
 import os
+import time
+
+import requests
+from django.conf import settings
 
 from instance.models.instance import OpenEdXInstance
 from instance.tests.decorators import patch_git_checkout
@@ -37,6 +41,24 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks
     """
+    def assert_instance_up(self, instance):
+        """
+        Check that the given instance is up and accepting requests
+        """
+        self.assertEqual(instance.status, OpenEdXInstance.READY)
+        self.assertEqual(instance.progress, OpenEdXInstance.PROGRESS_SUCCESS)
+        server = instance.server_set.first()
+        attempts = 3
+        while True:
+            attempts -= 1
+            try:
+                requests.get('http://{0}'.format(server.public_ip)).raise_for_status()
+                break
+            except Exception:  # pylint: disable=broad-except
+                if not attempts:
+                    raise
+            time.sleep(15)
+
     def test_provision_instance(self):
         """
         Provision an instance
@@ -44,7 +66,20 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         OpenEdXInstanceFactory(name='Integration - test_provision_instance')
         instance = OpenEdXInstance.objects.get()
         provision_instance(instance.pk)
-        self.assertEqual(instance.status, 'ready')
+        self.assert_instance_up(instance)
+
+    def test_external_databases(self):
+        """
+        Ensure that the instance can connect to external databases
+        """
+        if not settings.INSTANCE_MYSQL_URL or not settings.INSTANCE_MONGO_URL:
+            print('External databases not configured, skipping integration test')
+            return
+        OpenEdXInstanceFactory(name='Integration - test_external_databases',
+                               use_ephemeral_databases=False)
+        instance = OpenEdXInstance.objects.get()
+        provision_instance(instance.pk)
+        self.assert_instance_up(instance)
 
     @patch_git_checkout
     def test_ansible_failure(self, git_checkout, git_working_dir):
