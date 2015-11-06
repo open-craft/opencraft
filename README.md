@@ -40,6 +40,8 @@ Instructions based on Ubuntu 14.04.
 
 Install the system package dependencies & virtualenv:
 
+TODO: update this
+
 ```
 $ sudo apt-get update
 $ make install_system_dependencies

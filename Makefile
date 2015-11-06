@@ -41,6 +41,10 @@ all:
 apt_get_update:
 	sudo apt-get update
 
+.PHONY: apt_get_dist_upgrade
+apt_get_dist_upgrade:
+	sudo apt-get dist-upgrade -y
+
 .PHONY: clean
 clean:
 	find -name '*.pyc' -delete
@@ -59,7 +63,20 @@ install_system_dependencies: apt_get_update
 
 .PHONY: install_virtualenv_system
 install_virtualenv_system:
-	sudo pip3 install virtualenv virtualenvwrapper
+	pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
+	grep -Fq 'VIRTUALENVWRAPPER_PYTHON' ~/.bashrc || \
+		echo 'export PATH="$$PATH:$$HOME/.local/bin" VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3' >> ~/.bashrc
+	grep -Fq 'virtualenvwrapper.sh' ~/.bashrc || \
+		echo 'source $$HOME/.local/bin/virtualenvwrapper.sh' >> ~/.bashrc
+
+.PHONY: install_python_dependencies
+install_python_dependencies:
+	source ~/.local/bin/virtualenvwrapper.sh && rmvirtualenv opencraft
+	mkvirtualenv -p /usr/bin/python3 opencraft
+	pip install -r requirements.txt
+
+.PHONY: upgrade
+upgrade: apt_get_dist_upgrade install_system_dependencies install_python_dependencies migrate test
 
 .PHONY: collectstatic
 collectstatic: clean static_external
