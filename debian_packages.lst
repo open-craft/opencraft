@@ -1,3 +1,4 @@
+make
 git
 python3-pip
 libpq-dev

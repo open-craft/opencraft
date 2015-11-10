@@ -1,55 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# This script provisions a vagrant development environment with local
-# postgres and redis servers for development and testing.
-PROVISION = <<SCRIPT
-set -e
-
-# cd to /vagrant on login
-cd /vagrant
-grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
-
-# Install system packages
-make install_system_dependencies
-make install_system_db_dependencies
-
-# Set up a virtualenv
-make install_virtualenv_system
-mkdir -p ~/.virtualenvs
-virtualenv -p python3 ~/.virtualenvs/opencraft
-source ~/.virtualenvs/opencraft/bin/activate
-
-# Activate virtualenv on login
-grep -Fq 'source ~/.virtualenvs/opencraft/bin/activate' ~/.bashrc ||
-  echo 'source ~/.virtualenvs/opencraft/bin/activate' >> ~/.bashrc
-
-# Install python dependencies
-pip3 install -r requirements.txt
-
-# Create postgres user
-sudo -u postgres createuser -d vagrant
-
-# Allow access to postgres from localhost without password
-cat << EOF | sudo tee /etc/postgresql/9.3/main/pg_hba.conf
-local   all             postgres                                peer
-local   all             all                                     trust
-host    all             all             127.0.0.1/32            trust
-host    all             all             ::1/128                 trust
-EOF
-sudo service postgresql restart
-
-# Create postgres database
-createdb --encoding utf-8 --template template0 opencraft
-
-# Use test configuration for local development, excluding the line that
-# disables logging to the console.
-[ -e .env ] || grep -v '^BASE_HANDLERS' .env.test > .env
-
-# Run unit tests
-make test_unit
-SCRIPT
-
 Vagrant.configure(2) do |config|
   config.vm.box = 'ubuntu/trusty64'
   config.vm.network 'forwarded_port', guest: 2001, host: 2001
@@ -57,7 +8,7 @@ Vagrant.configure(2) do |config|
   config.vm.network 'forwarded_port', guest: 8888, host: 8888
   config.ssh.forward_x11 = true
   config.vm.provision 'shell',
-                      inline: PROVISION,
+                      path: 'bin/bootstrap',
                       privileged: false,
                       keep_color: true
 
