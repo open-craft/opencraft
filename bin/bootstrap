@@ -1,0 +1,54 @@
+#!/bin/bash
+# This script provisions a development environment with local postgres and
+# redis servers for development and testing. Assumes ubuntu 14.04
+
+set -e
+
+# If this is a vagrant VM, cd to /vagrant on login
+if [[ $USER == 'vagrant' ]]; then
+  cd /vagrant
+  grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
+fi
+
+# Install system packages
+make install_system_dependencies
+make install_system_db_dependencies
+
+# Set up a virtualenv
+make install_virtualenv_system
+mkdir -p ~/.virtualenvs
+virtualenv -p python3 ~/.virtualenvs/opencraft
+source ~/.virtualenvs/opencraft/bin/activate
+
+# If this is a vagrant VM, activate virtualenv on login
+if [[ $USER == 'vagrant' ]]; then
+  grep -Fq 'source ~/.virtualenvs/opencraft/bin/activate' ~/.bashrc ||
+    echo 'source ~/.virtualenvs/opencraft/bin/activate' >> ~/.bashrc
+fi
+
+# Install python dependencies
+pip3 install -r requirements.txt
+
+# Create postgres user
+sudo -u postgres createuser -d $USER ||
+  echo "Could not create postgres user '$USER' - it probably already exists"
+
+# Allow access to postgres from localhost without password
+cat << EOF | sudo tee /etc/postgresql/9.3/main/pg_hba.conf
+local   all             postgres                                peer
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
+EOF
+sudo service postgresql restart
+
+# Create postgres database
+createdb --encoding utf-8 --template template0 opencraft ||
+  echo "Could not create database 'opencraft' - it probably already exists"
+
+# Use test configuration for local development, excluding the line that
+# disables logging to the console.
+[ -e .env ] || grep -v '^BASE_HANDLERS' .env.test > .env
+
+# Run unit tests
+make test_unit

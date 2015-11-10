@@ -35,7 +35,8 @@ so you can access the development server using your web browser.
 
 ### Local install
 
-If you prefer not to install Vagrant, you can install OpenCraft manually.
+If you prefer not to install Vagrant, you can install OpenCraft manually. Refer
+to the [bootstrap](bin/bootstrap) script used by Vagrant for an example.
 Instructions based on Ubuntu 14.04.
 
 Install the system package dependencies & virtualenv:
