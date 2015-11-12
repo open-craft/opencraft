@@ -22,8 +22,11 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
+import functools
+import operator
 import re
 import requests
+import yaml
 
 from django.conf import settings
 
@@ -165,6 +168,15 @@ class PR:
         Extra settings contained in the PR body
         """
         return get_settings_from_pr_body(self.body)
+
+    def get_extra_setting(self, name):
+        """
+        Return the setting given by "name" from extra_settings.
+
+        The name may be a dot-separated path to retrieve nested settings.
+        """
+        extra_settings_dict = yaml.load(self.extra_settings) or {}
+        return functools.reduce(operator.getitem, name.split('.'), extra_settings_dict)
 
     @property
     def github_pr_url(self):

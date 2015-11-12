@@ -30,7 +30,6 @@ from functools import partial
 from django.conf import settings
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models.signals import pre_save
 from django.template import loader
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
@@ -184,17 +183,15 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         """
         return {'instance_id': self.pk}
 
-    @staticmethod
-    def on_pre_save(sender, instance, **kwargs):
+    def save(self, **kwargs):
         """
-        Triggered by the pre_save event
+        Set default values before saving the instance.
         """
-        self = instance
-
         # Set default field values from settings - using the `default` field attribute confuses
         # automatically generated migrations, generating a new one when settings don't match
         if not self.base_domain:
             self.base_domain = settings.INSTANCES_BASE_DOMAIN
+        super().save(**kwargs)
 
     @staticmethod
     def _sort_log_entries(server_logs, instance_logs):
@@ -455,10 +452,8 @@ class AnsibleInstanceMixin(models.Model):
     """
     An instance that relies on Ansible to deploy its services
     """
-    ansible_source_repo_url = models.URLField(max_length=256,
-                                              default='https://github.com/edx/configuration.git')
-
-    configuration_version = models.CharField(max_length=50, default='master')
+    ansible_source_repo_url = models.URLField(max_length=256, blank=True)
+    configuration_version = models.CharField(max_length=50, blank=True)
     ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
     ansible_extra_settings = models.TextField(blank=True)
     ansible_settings = models.TextField(blank=True)
@@ -472,6 +467,18 @@ class AnsibleInstanceMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, **kwargs):
+        """
+        Set default values before saving the instance.
+        """
+        # Set default field values from settings - using the `default` field attribute confuses
+        # automatically generated migrations, generating a new one when settings don't match
+        if not self.ansible_source_repo_url:
+            self.ansible_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
+        if not self.configuration_version:
+            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
+        super().save(**kwargs)
 
     @property
     def ansible_playbook_filename(self):
@@ -676,5 +683,3 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
         self.logger.info('Provisioning completed')
 
         return (server, log)
-
-pre_save.connect(OpenEdXInstance.on_pre_save, sender=OpenEdXInstance)

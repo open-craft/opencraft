@@ -73,6 +73,8 @@ def watch_pr():
                             .format(pr=pr, i=instance, truncated_title=truncated_title)
             instance.github_pr_url = pr.github_pr_url
             instance.ansible_extra_settings = pr.extra_settings
+            instance.ansible_source_repo_url = pr.get_extra_setting('edx_ansible_source_repo')
+            instance.configuration_version = pr.get_extra_setting('configuration_version')
             instance.save()
 
             if created:
