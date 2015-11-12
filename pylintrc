@@ -94,13 +94,13 @@ confidence=
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 disable=
-    no-init,
     fixme,
     locally-disabled,
+    no-init,
     too-few-public-methods,
     too-many-ancestors,
-    unused-argument,
-    protected-access
+    protected-access,
+    unused-argument
 
 [SPELLING]
 

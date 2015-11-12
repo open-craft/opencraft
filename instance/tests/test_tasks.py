@@ -22,6 +22,8 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
+import textwrap
+
 from mock import patch
 
 from instance import github, tasks
@@ -59,6 +61,11 @@ class TasksTestCase(TestCase):
         """
         New PR created on the watched repo
         """
+        ansible_extra_settings = textwrap.dedent("""\
+            WATCH: true
+            edx_ansible_source_repo: https://github.com/open-craft/configuration
+            configuration_version: named-release/elder
+        """)
         mock_get_username_list.return_value = ['itsjeyd']
         pr = github.PR(
             number=234,
@@ -67,7 +74,9 @@ class TasksTestCase(TestCase):
             branch_name='watch-branch',
             title='Watched PR title which is very long',
             username='bradenmacdonald',
-            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\nWATCH: true\r\n```\r\nMore...',
+            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\n{}```\r\nMore...'.format(
+                ansible_extra_settings
+            ),
         )
         self.assertEqual(pr.github_pr_url, 'https://github.com/source/repo/pull/234')
         mock_get_pr_list_from_username.return_value = [pr]
@@ -82,7 +91,9 @@ class TasksTestCase(TestCase):
         self.assertEqual(instance.github_pr_url, 'https://github.com/source/repo/pull/234')
         self.assertEqual(instance.github_base_url, 'https://github.com/fork/repo')
         self.assertEqual(instance.branch_name, 'watch-branch')
-        self.assertEqual(instance.ansible_extra_settings, 'WATCH: true\r\n')
+        self.assertEqual(instance.ansible_extra_settings, ansible_extra_settings)
+        self.assertEqual(instance.ansible_source_repo_url, 'https://github.com/open-craft/configuration')
+        self.assertEqual(instance.configuration_version, 'named-release/elder')
         self.assertEqual(
             instance.name,
             'PR#234: Watched PR title which ... (bradenmacdonald) - fork/watch-branch (7777777)')
