@@ -36,7 +36,7 @@ class UtilsTestCase(TestCase):
     """
     def test_read_files(self):
         """
-        Ensure that the lines read are in the order they were written
+        Ensure that the lines read are in the order they were written in each stream.
         """
         process = subprocess.Popen([
             "echo line1; echo line1 >&2; echo line2; echo line2 >&2; echo line3"

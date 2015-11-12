@@ -268,6 +268,11 @@ DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
 # Ansible requires a Python 2 interpreter
 ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
 
+# Time in seconds to wait for the next log line when running an Ansible playbook.
+ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=900)  # 15 minutes
+
+# Timeout in seconds for an entire Ansible playbook.
+ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 hours
 
 # Emails ######################################################################
 

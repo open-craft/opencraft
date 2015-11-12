@@ -22,8 +22,8 @@ OpenEdXInstance model - Tests
 
 # Imports #####################################################################
 
+import os
 import re
-import tempfile
 from mock import call, patch
 
 from instance.models.server import OpenStackServer, Server
@@ -354,23 +354,20 @@ class AnsibleInstanceTestCase(TestCase):
         """
         Ensure logging routines are working on _run_playbook method
         """
-        with tempfile.NamedTemporaryFile() as stdout:
-            with tempfile.NamedTemporaryFile() as stderr:
-
-                mock_run_playbook.return_value.__enter__.return_value.stdout = open(stdout.name, "rb")
-                mock_run_playbook.return_value.__enter__.return_value.stderr = open(stderr.name, "rb")
-                mock_run_playbook.return_value.__enter__.return_value.returncode = 0
-
-                stdout.write(b"HELLO\n")
-                stdout.flush()
-                stderr.write(b"HI\n")
-                stderr.flush()
-
-                instance = OpenEdXInstanceFactory()
-                log, returncode = instance._run_playbook("requirements", "playbook")
-
-                self.assertCountEqual(log, ['HELLO', 'HI'])
-                self.assertEqual(returncode, 0)
+        stdout_r, stdout_w = os.pipe()
+        stderr_r, stderr_w = os.pipe()
+        with open(stdout_r, 'rb', buffering=0) as stdout, open(stderr_r, 'rb', buffering=0) as stderr:
+            mock_run_playbook.return_value.__enter__.return_value.stdout = stdout
+            mock_run_playbook.return_value.__enter__.return_value.stderr = stderr
+            mock_run_playbook.return_value.__enter__.return_value.returncode = 0
+            os.write(stdout_w, b'Hello\n')
+            os.close(stdout_w)
+            os.write(stderr_w, b'Hi\n')
+            os.close(stderr_w)
+            instance = OpenEdXInstanceFactory()
+            log, returncode = instance._run_playbook("requirements", "playbook")
+            self.assertCountEqual(log, ['Hello', 'Hi'])
+            self.assertEqual(returncode, 0)
 
 
 class OpenEdXInstanceTestCase(TestCase):

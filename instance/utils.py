@@ -22,10 +22,12 @@ Instance app - Util functions
 
 # Imports #####################################################################
 
+import itertools
 import json
 import requests
-import select
+import selectors
 import socket
+import time
 
 from mock import Mock
 
@@ -73,26 +75,50 @@ def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_facto
     )
 
 
-def read_files(*fds):
+def _line_timeout_generator(line_timeout, global_timeout):
     """
-    Given a list of objects implementing the file interface, poll them for new
-    data and yield the lines read as they are written.
+    Helper function for read_files() to compute the timeout for a single line.
+    """
+    if global_timeout is not None:
+        deadline = time.time() + global_timeout
+        while True:
+            global_timeout = deadline - time.time()
+            if line_timeout is not None:
+                yield min(line_timeout, global_timeout)
+            else:
+                yield global_timeout
+    else:
+        yield from itertools.repeat(line_timeout)
+
+
+def read_files(*files, line_timeout=None, global_timeout=None):
+    """
+    Poll a set of file objects for new data and return it line by line.
+
+    The file objects should be line-buffered or unbuffered.  Regular files won't
+    work on some systems (notably Linux, where DefaultSelector uses epoll() by
+    default; this function is pointless for regular files anyway, since they are
+    always ready for reading and writing).
 
     Each line returned is a 2-items tuple, with the first item being the object
     implementing the file interface, and the second the text read.
+
+    The optional parameters line_timeout and global_timeout specify how long in
+    seconds to wait at most for a single line or for all lines.  If no timeout
+    is specified, this function will block indefintely for each line.
     """
-    poll = select.poll()
-    fd_map = {}
-    for fd in fds:
-        poll.register(fd.fileno(), select.POLLIN)
-        fd_map[fd.fileno()] = fd
-    while fd_map:
-        available = poll.poll()
-        for entry in available:
-            fileno = entry[0]
-            line = fd_map[fileno].readline()
+    selector = selectors.DefaultSelector()
+    for fileobj in files:
+        selector.register(fileobj, selectors.EVENT_READ)
+    timeout = _line_timeout_generator(line_timeout, global_timeout)
+    while selector.get_map():
+        available = selector.select(next(timeout))
+        if not available:
+            # TODO(smarnach): This can also mean that the process received a signal.
+            raise TimeoutError
+        for key, unused_mask in available:
+            line = key.fileobj.readline()
             if line:
-                yield (fd_map[fileno], line)
+                yield (key.fileobj, line)
             else:
-                poll.unregister(fileno)
-                del fd_map[fileno]
+                selector.unregister(key.fileobj)
