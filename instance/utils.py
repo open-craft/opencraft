@@ -77,7 +77,7 @@ def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_facto
 
 def _line_timeout_generator(line_timeout, global_timeout):
     """
-    Helper function for read_files() to compute the timeout for a single line.
+    Helper function for poll_streams() to compute the timeout for a single line.
     """
     if global_timeout is not None:
         deadline = time.time() + global_timeout
@@ -91,7 +91,7 @@ def _line_timeout_generator(line_timeout, global_timeout):
         yield from itertools.repeat(line_timeout)
 
 
-def read_files(*files, line_timeout=None, global_timeout=None):
+def poll_streams(*files, line_timeout=None, global_timeout=None):
     """
     Poll a set of file objects for new data and return it line by line.
 

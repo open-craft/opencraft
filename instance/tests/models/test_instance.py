@@ -327,11 +327,11 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertNotIn('Vars Instance', instance.ansible_settings)
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.ansible_settings)
 
-    @patch('instance.models.instance.read_files')
+    @patch('instance.models.instance.poll_streams')
     @patch('instance.models.instance.OpenEdXInstance.inventory_str')
     @patch('instance.models.instance.ansible.run_playbook')
     @patch('instance.models.instance.open_repository')
-    def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_read_files):
+    def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_poll_streams):
         """
         Test instance deployment
         """

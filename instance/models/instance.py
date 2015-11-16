@@ -41,7 +41,7 @@ from instance.github import fork_name2tuple, get_username_list_from_team
 from instance.logging import log_exception
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.repo import open_repository
-from instance.utils import read_files
+from instance.utils import poll_streams
 
 from instance.models.utils import ValidateModelMixin
 
@@ -528,7 +528,7 @@ class AnsibleInstanceMixin(models.Model):
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
         ) as process:
             try:
-                log_line_generator = read_files(
+                log_line_generator = poll_streams(
                     process.stdout,
                     process.stderr,
                     line_timeout=settings.ANSIBLE_LINE_TIMEOUT,

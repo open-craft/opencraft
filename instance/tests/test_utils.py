@@ -25,7 +25,7 @@ Utils module - Tests
 import subprocess
 
 from instance.tests.base import TestCase
-from instance.utils import read_files
+from instance.utils import poll_streams
 
 
 # Tests #######################################################################
@@ -34,14 +34,14 @@ class UtilsTestCase(TestCase):
     """
     Test cases for functions in the utils module
     """
-    def test_read_files(self):
+    def test_poll_streams(self):
         """
         Ensure that the lines read are in the order they were written in each stream.
         """
         process = subprocess.Popen([
             "echo line1; echo line1 >&2; echo line2; echo line2 >&2; echo line3"
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        lines = read_files(process.stdout, process.stderr)
+        lines = poll_streams(process.stdout, process.stderr)
 
         expected = [
             (process.stdout, b"line1\n"),
