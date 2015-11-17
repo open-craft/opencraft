@@ -91,24 +91,12 @@ def get_settings_from_pr_body(pr_body):
 
 def get_pr_by_number(pr_target_fork_name, pr_number):
     """
-    Returns a PR object based on the reponse
+    Retrieves the JSON description of a PR
     """
-    r_pr = get_object_from_url('https://api.github.com/repos/{pr_target_fork_name}/pulls/{pr_number}'.format(
+    return get_object_from_url('https://api.github.com/repos/{pr_target_fork_name}/pulls/{pr_number}'.format(
         pr_target_fork_name=pr_target_fork_name,
         pr_number=pr_number,
     ))
-    pr_fork_name = r_pr['head']['repo']['full_name']
-    pr_branch_name = r_pr['head']['ref']
-    pr = PR(
-        pr_number,
-        pr_fork_name,
-        pr_target_fork_name,
-        pr_branch_name,
-        r_pr['title'],
-        r_pr['user']['login'],
-        body=r_pr['body'],
-    )
-    return pr
 
 
 def get_pr_list_from_username(user_name, fork_name):
@@ -121,7 +109,7 @@ def get_pr_list_from_username(user_name, fork_name):
 
     pr_list = []
     for pr_dict in r_pr_list['items']:
-        pr = get_pr_by_number(fork_name, pr_dict['number'])
+        pr = PR(fork_name, pr_dict['number'])
         pr_list.append(pr)
     return pr_list
 
@@ -152,35 +140,48 @@ class PR:
     """
     Representation of a GitHub Pull Request
     """
-    # pylint: disable=too-many-arguments
-    def __init__(self, number, source_fork_name, target_fork_name, branch_name, title, username, body=''):
+
+    def __init__(self, target_fork_name, number):
         self.number = number
-        self.fork_name = source_fork_name
         self.repo_name = target_fork_name
-        self.branch_name = branch_name
-        self.title = title
-        self.username = username
-        self.body = body
+        self.update_data()
+
+    def update_data(self):
+        self._data = get_pr_by_number(target_fork_name, number)
+        self._extra_settings = get_settings_from_pr_body(self.body)
+        self._extra_settings_dict = yaml.load(self.extra_settings) or {}
 
     @property
     def extra_settings(self):
-        """
-        Extra settings contained in the PR body
-        """
-        return get_settings_from_pr_body(self.body)
+        return self._extra_settings
 
-    def get_extra_setting(self, name):
-        """
-        Return the setting given by "name" from extra_settings.
+    @property
+    def extra_settings_dict(self):
+        return self._extra_settings_dict
 
-        The name may be a dot-separated path to retrieve nested settings.
-        """
-        extra_settings_dict = yaml.load(self.extra_settings) or {}
-        return functools.reduce(operator.getitem, name.split('.'), extra_settings_dict)
+    @property
+    def fork_name(self):
+        return self._data['head']['repo']['full_name']
+
+    @property
+    def branch_name(self):
+        return self._data['head']['ref']
+
+    @property
+    def title(self):
+        return self._data['title']
+
+    @property
+    def username(self):
+        return self._data['user']['login']
+
+    @property
+    def body(self):
+        return self._data['body']
 
     @property
     def github_pr_url(self):
         """
         Construct the URL for the pull request
         """
-        return 'https://github.com/{repo_name}/pull/{number}'.format(repo_name=self.repo_name, number=self.number)
+        return self._data['html_url']
