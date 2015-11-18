@@ -263,6 +263,12 @@ WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
 # Default admin organization for instances (gets shell access)
 DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
 
+# Fork and branch of the Open edX configuration repo used for sandboxes created for PRs.
+DEFAULT_CONFIGURATION_REPO_URL = env(
+    'DEFAULT_CONFIGURATION_FORK', default='https://github.com/edx/configuration.git'
+)
+DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default='master')
+
 # Ansible #####################################################################
 
 # Ansible requires a Python 2 interpreter
