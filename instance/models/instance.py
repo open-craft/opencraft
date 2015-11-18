@@ -40,7 +40,7 @@ from instance.github import fork_name2tuple, get_username_list_from_team
 from instance.logging import log_exception
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.repo import open_repository
-from instance.utils import read_files
+from instance.utils import poll_streams
 
 from instance.models.utils import ValidateModelMixin
 
@@ -533,16 +533,26 @@ class AnsibleInstanceMixin(models.Model):
             playbook_path,
             self.ansible_playbook_filename,
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-        ) as processus:
-            for fd, line in read_files(processus.stdout, processus.stderr):
-                line = line.decode('utf-8').rstrip()
-                if fd == processus.stdout:
-                    self.logger.info(line)
-                elif fd == processus.stderr:
-                    self.logger.error(line)
-                log_lines.append(line)
-            processus.wait()
-            return (log_lines, processus.returncode)
+        ) as process:
+            try:
+                log_line_generator = poll_streams(
+                    process.stdout,
+                    process.stderr,
+                    line_timeout=settings.ANSIBLE_LINE_TIMEOUT,
+                    global_timeout=settings.ANSIBLE_GLOBAL_TIMEOUT,
+                )
+                for f, line in log_line_generator:
+                    line = line.decode('utf-8').rstrip()
+                    if f == process.stdout:
+                        self.logger.info(line)
+                    elif f == process.stderr:
+                        self.logger.error(line)
+                    log_lines.append(line)
+            except TimeoutError:
+                self.logger.error('Playbook run timed out.  Terminating the Ansible process.')
+                process.terminate()
+            process.wait()
+            return log_lines, process.returncode
 
     def deploy(self):
         """
