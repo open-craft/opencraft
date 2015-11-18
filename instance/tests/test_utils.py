@@ -22,10 +22,13 @@ Utils module - Tests
 
 # Imports #####################################################################
 
+import itertools
 import subprocess
 
+from mock import patch
+
 from instance.tests.base import TestCase
-from instance.utils import read_files
+from instance.utils import poll_streams, _line_timeout_generator
 
 
 # Tests #######################################################################
@@ -34,14 +37,14 @@ class UtilsTestCase(TestCase):
     """
     Test cases for functions in the utils module
     """
-    def test_read_files(self):
+    def test_poll_streams(self):
         """
-        Ensure that the lines read are in the order they were written
+        Ensure that the lines read are in the order they were written in each stream.
         """
         process = subprocess.Popen([
             "echo line1; echo line1 >&2; echo line2; echo line2 >&2; echo line3"
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        lines = read_files(process.stdout, process.stderr)
+        lines = poll_streams(process.stdout, process.stderr)
 
         expected = [
             (process.stdout, b"line1\n"),
@@ -59,3 +62,21 @@ class UtilsTestCase(TestCase):
             return entry[0].fileno()
 
         self.assertEqual(sorted(lines, key=key), sorted(expected, key=key))
+
+    @patch('time.time')
+    def test_line_timeout_generator(self, mock_time):
+        """
+        Test the helper function to generate timeouts for poll_streams().
+        """
+        # Test with global timeout set
+        mock_time.side_effect = itertools.count().__next__
+        timeout = _line_timeout_generator(3, 6)
+        for actual, expected in zip(timeout, [3, 3, 3, 2, 1, 0]):
+            self.assertEqual(actual, expected)
+
+        # Test without global timeout
+        timeout = _line_timeout_generator(3, None)
+        mock_time.reset_mock()
+        for actual, expected in zip(timeout, [3, 3, 3, 3, 3, 3]):
+            self.assertEqual(actual, expected)
+        self.assertFalse(mock_time.called)
