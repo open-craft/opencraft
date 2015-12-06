@@ -42,7 +42,6 @@ Instructions based on Ubuntu 14.04.
 Install the system package dependencies & virtualenv:
 
 ```
-$ sudo apt-get update
 $ make install_system_dependencies
 $ pip3 install --user virtualenv && pip3 install --user virtualenvwrapper
 ```
