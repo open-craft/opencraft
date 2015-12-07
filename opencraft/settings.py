@@ -275,7 +275,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default='ma
 ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
 
 # Time in seconds to wait for the next log line when running an Ansible playbook.
-ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=900)  # 15 minutes
+ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=1500)  # 25 minutes
 
 # Timeout in seconds for an entire Ansible playbook.
 ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 hours
