@@ -33,6 +33,7 @@ from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tasks import provision_instance
+from opencraft.tests.utils import shard
 
 
 # Tests #######################################################################
@@ -59,6 +60,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                     raise
             time.sleep(15)
 
+    @shard(1)
     def test_provision_instance(self):
         """
         Provision an instance
@@ -68,6 +70,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         provision_instance(instance.pk)
         self.assert_instance_up(instance)
 
+    @shard(2)
     def test_external_databases(self):
         """
         Ensure that the instance can connect to external databases

@@ -149,6 +149,11 @@ COMPRESS_PRECOMPILERS = (
 )
 
 
+# Test runner #################################################################
+
+TEST_RUNNER = env('TEST_RUNNER', default='django.test.runner.DiscoverRunner')
+
+
 # Django-extensions ###########################################################
 
 SHELL_PLUS = "ipython"
