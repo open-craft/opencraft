@@ -1,0 +1,3 @@
+edxapp_theme_name: '{{ instance.theme_name }}'
+edxapp_theme_version: '{{ instance.theme_version }}'
+edxapp_theme_source_repo: '{{ instance.theme_source_repo }}'

@@ -370,6 +370,54 @@ class AnsibleInstanceTestCase(TestCase):
             self.assertEqual(returncode, 0)
 
 
+class ThemeableInstanceTestCase(TestCase):
+    """
+    Test cases for ThemeableInstanceMixin models
+    """
+    def test_vars_str_theme_settings(self):
+        """
+        Test the theme settings being loaded into ansible
+        """
+        instance = OpenEdXInstanceFactory(
+            theme_source_repo='test-repo-url',
+            theme_name='test-theme-name',
+            theme_version='test-version-master',
+            theme_enabled=True
+        )
+
+        self.assertIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
+        self.assertIn('edxapp_theme_name: test-theme-name', instance.vars_str)
+        self.assertIn('edxapp_theme_version: test-version-master', instance.vars_str)
+
+    def test_vars_str_no_theme_settings(self):
+        """
+        Test the theme settings being loaded into ansible
+        """
+        instance = OpenEdXInstanceFactory(
+            theme_source_repo='test-repo-url',
+            theme_name='test-theme-name',
+            theme_version='test-version-master',
+            theme_enabled=False
+        )
+
+        self.assertNotIn('edxapp_theme_source_repo: test-repo-url', instance.vars_str)
+        self.assertNotIn('edxapp_theme_name: test-theme-name', instance.vars_str)
+        self.assertNotIn('edxapp_theme_version: test-version-master', instance.vars_str)
+
+    def test_create_defaults(self):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+
+        instance = OpenEdXInstanceFactory()
+
+        self.assertEqual(instance.theme_name, 'default')
+        self.assertEqual(instance.theme_source_repo, 'https://github.com/eeue56/edx-theme.git')
+        self.assertEqual(instance.theme_version, 'master')
+        self.assertEqual(instance.theme_enabled, False)
+
+
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models

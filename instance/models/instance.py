@@ -586,9 +586,41 @@ class AnsibleInstanceMixin(models.Model):
         return (log, returncode)
 
 
+# Theme #####################################################################
+
+class ThemeableInstanceMixin(models.Model):
+    """
+    An instance that has a theme
+    """
+
+    theme_name = models.CharField(max_length=50, default='default')
+    theme_source_repo = models.CharField(max_length=256, blank='https://github.com/eeue56/edx-theme.git')
+    theme_version = models.CharField(max_length=50, default='master')
+    theme_enabled = models.BooleanField(default=False)
+
+    @staticmethod
+    def on_pre_save(sender, instance, **kwargs):
+        """
+        Triggered by the pre_save event
+        """
+        self = instance
+
+        if self.theme_name is None or not self.theme_name:
+            self.theme_name = settings.THEME_NAME
+
+        if self.theme_source_repo is None or not self.theme_source_repo:
+            self.theme_source_repo = settings.THEME_SOURCE_REPO
+
+        if self.theme_version is None or not self.theme_version:
+            self.theme_version = settings.THEME_VERSION
+
+    class Meta:
+        abstract = True
+
+
 # Open edX ####################################################################
 
-class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
+class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, ThemeableInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -601,7 +633,7 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
 
-    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings']
+    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + ['ansible_s3_settings', 'ansible_theme_settings']
 
     class Meta:
         verbose_name = 'Open edX Instance'
@@ -630,6 +662,17 @@ class OpenEdXInstance(AnsibleInstanceMixin, GitHubInstanceMixin, Instance):
             return ''
 
         template = loader.get_template('instance/ansible/s3.yml')
+        return template.render({'instance': self})
+
+    @property
+    def ansible_theme_settings(self):
+        """
+        Ansible settings for theming
+        """
+        if not self.theme_enabled:
+            return ''
+
+        template = loader.get_template('instance/ansible/theme.yml')
         return template.render({'instance': self})
 
     @property
