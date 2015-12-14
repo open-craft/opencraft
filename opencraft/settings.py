@@ -149,6 +149,11 @@ COMPRESS_PRECOMPILERS = (
 )
 
 
+# Test runner #################################################################
+
+TEST_RUNNER = env('TEST_RUNNER', default='django.test.runner.DiscoverRunner')
+
+
 # Django-extensions ###########################################################
 
 SHELL_PLUS = "ipython"
@@ -275,7 +280,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default='ma
 ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
 
 # Time in seconds to wait for the next log line when running an Ansible playbook.
-ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=900)  # 15 minutes
+ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=1500)  # 25 minutes
 
 # Timeout in seconds for an entire Ansible playbook.
 ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 hours
@@ -358,3 +363,16 @@ if 'file' in HANDLERS:
         'filename': 'log/main.log',
         'formatter': 'verbose'
     }
+
+
+# Instances ###################################################################
+
+# By default, instances use local mysql and mongo databases. Set this to False
+# to use external databases instead
+INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=True)
+
+# Configure external databases here
+INSTANCE_MYSQL_URL = env('INSTANCE_MYSQL_URL', default=None)
+INSTANCE_MONGO_URL = env('INSTANCE_MONGO_URL', default=None)
+INSTANCE_MYSQL_URL_OBJ = urlparse(INSTANCE_MYSQL_URL) if INSTANCE_MYSQL_URL else None
+INSTANCE_MONGO_URL_OBJ = urlparse(INSTANCE_MONGO_URL) if INSTANCE_MONGO_URL else None

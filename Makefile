@@ -37,6 +37,8 @@ all:
 	rundev
 
 apt_get_update:
+	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+	echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
 	sudo apt-get update
 
 clean:
@@ -47,10 +49,10 @@ clean:
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
 
 install_system_db_dependencies: apt_get_update
-	sudo apt-get install -y `tr -d '\r' < debian_db_packages.lst`
+	sudo -E apt-get install -y `tr -d '\r' < debian_db_packages.lst`
 
 install_system_dependencies: apt_get_update
-	sudo apt-get install -y `tr -d '\r' < debian_packages.lst`
+	sudo -E apt-get install -y `tr -d '\r' < debian_packages.lst`
 
 install_virtualenv_system:
 	sudo pip3 install virtualenv

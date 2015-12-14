@@ -17,37 +17,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+Test factory: PR (Github pull request)
 """
 
 # Imports #####################################################################
-import uuid
 
 import factory
-from factory.django import DjangoModelFactory
 
-from instance.models.instance import OpenEdXInstance
+from instance import github
 
 
 # Classes #####################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class PRFactory(factory.Factory):
     """
-    Factory for OpenEdXInstance
+    Factory for PR instances
     """
     class Meta: #pylint: disable=missing-docstring
-        model = OpenEdXInstance
+        model = github.PR
 
-    sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))
-    name = factory.Sequence('Test Instance {}'.format)
-    fork_name = 'edx/edx-platform'
-    ref_type = 'tags'
-    branch_name = 'named-release/cypress' # Use a known working version
-    ansible_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration'
-    ansible_playbook_name = 'opencraft_integration'
-    forum_version = 'named-release/cypress'
-    notifier_version = 'named-release/cypress'
-    xqueue_version = 'named-release/cypress'
-    certs_version = 'named-release/cypress'
-    use_ephemeral_databases = True
+    number = factory.Sequence(int)
+    source_fork_name = 'fork/repo'
+    target_fork_name = 'source/repo'
+    branch_name = 'master'
+    title = factory.Sequence('PR #{}'.format)
+    username = 'edx'
+    body = ''

@@ -11,6 +11,7 @@ if [[ $USER == 'vagrant' ]]; then
 fi
 
 # Install system packages
+export DEBIAN_FRONTEND=noninteractive  # Prevent mysql prompt for root password
 make install_system_dependencies
 make install_system_db_dependencies
 

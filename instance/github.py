@@ -29,6 +29,7 @@ import requests
 import yaml
 
 from django.conf import settings
+from django.template.defaultfilters import truncatewords
 
 
 # Logging #####################################################################
@@ -87,6 +88,19 @@ def get_settings_from_pr_body(pr_body):
         return m.groups()[0]
     else:
         return ''
+
+
+def is_pr_body_requesting_ephemeral_databases(pr_body, domain):
+    """
+    Return True if the PR body specified that the sandbox should use ephemeral
+    databases, False if it specifies persistent databases, or None otherwise
+    """
+    escaped_domain = re.escape(domain)
+    if re.search(r'{0}.*ephemeral databases?'.format(escaped_domain), pr_body):
+        return True
+    if re.search(r'{0}.*persistent databases?'.format(escaped_domain), pr_body):
+        return False
+    return None
 
 
 def get_pr_by_number(pr_target_fork_name, pr_number):
@@ -163,6 +177,13 @@ class PR:
         self.body = body
 
     @property
+    def truncated_title(self):
+        """
+        This PR's title truncated to 4 words
+        """
+        return truncatewords(self.title, 4)
+
+    @property
     def extra_settings(self):
         """
         Extra settings contained in the PR body
@@ -187,3 +208,9 @@ class PR:
         Construct the URL for the pull request
         """
         return 'https://github.com/{repo_name}/pull/{number}'.format(repo_name=self.repo_name, number=self.number)
+
+    def use_ephemeral_databases(self, domain):
+        """
+        Does this PR request ephemeral databases?
+        """
+        return is_pr_body_requesting_ephemeral_databases(self.body, domain)
