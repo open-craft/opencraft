@@ -113,8 +113,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
     last_provisioning_started = models.DateTimeField(blank=True, null=True)
 
-    logger = InstanceLoggerAdapter(logger, {})
-
     class Meta:
         abstract = True
         unique_together = ('base_domain', 'sub_domain')
