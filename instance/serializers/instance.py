@@ -31,14 +31,12 @@ from instance.serializers.logentry import LogEntrySerializer
 
 # Serializers #################################################################
 
-class OpenEdXInstanceSerializer(serializers.ModelSerializer):
+class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
     """
-    OpenEdXInstance API Serializer
+    OpenEdXInstance API Serializer (list view).
     """
     api_url = serializers.HyperlinkedIdentityField(view_name='api:openedxinstance-detail')
     active_server_set = OpenStackServerSerializer(many=True, read_only=True)
-    log_entries = LogEntrySerializer(many=True, read_only=True)
-    log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
     class Meta:
         model = OpenEdXInstance
@@ -57,8 +55,6 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'github_branch_url',
             'github_pr_number',
             'github_pr_url',
-            'log_entries',
-            'log_error_entries',
             'github_organization_name',
             'modified',
             'name',
@@ -71,3 +67,14 @@ class OpenEdXInstanceSerializer(serializers.ModelSerializer):
             'url',
             'updates_feed',
         )
+
+
+class OpenEdXInstanceDetailSerializer(OpenEdXInstanceListSerializer):
+    """
+    OpenEdXInstance API Serializer (detail view). Includes log entries.
+    """
+    log_entries = LogEntrySerializer(many=True, read_only=True)
+    log_error_entries = LogEntrySerializer(many=True, read_only=True)
+
+    class Meta(OpenEdXInstanceListSerializer.Meta):
+        fields = OpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')
