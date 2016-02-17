@@ -5,5 +5,5 @@ libpq-dev
 libmysqlclient-dev
 python-dev
 redis-server
+xvfb
 firefox
-libmysqlclient-dev

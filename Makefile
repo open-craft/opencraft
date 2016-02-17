@@ -101,7 +101,7 @@ test_integration: clean
 	fi
 
 test_js: clean static_external
-	cd instance/tests/js && jasmine-ci --logs --browser firefox
+	cd instance/tests/js && xvfb-run jasmine-ci --logs --browser firefox
 
 test_js_web: clean static_external
 	cd instance/tests/js && jasmine --host 0.0.0.0
