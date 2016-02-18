@@ -52,7 +52,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
     )
 
     text = models.TextField(blank=True)
-    level = models.CharField(max_length=9, db_index=True, default='info', choices=LOG_LEVEL_CHOICES)
+    level = models.CharField(max_length=9, db_index=True, default='INFO', choices=LOG_LEVEL_CHOICES)
 
     class Meta:
         abstract = True

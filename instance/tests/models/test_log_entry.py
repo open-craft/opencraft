@@ -25,6 +25,7 @@ Logger models & mixins - Tests
 from freezegun import freeze_time
 from mock import patch
 
+from instance.models.log_entry import GeneralLogEntry
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
@@ -39,6 +40,13 @@ class LogEntryTestCase(TestCase):
     """
     Test cases for LoggerInstanceMixin
     """
+    def test_default_log_level(self):
+        """
+        Check that the default log level is INFO
+        """
+        log_entry = GeneralLogEntry(text='OHAI')
+        self.assertEqual(log_entry.level, 'INFO')
+
     def test_log_entries(self):
         """
         Check `log_entries` output for combination of instance & server logs
