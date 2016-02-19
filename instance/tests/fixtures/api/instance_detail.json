@@ -1,0 +1,29 @@
+{
+  "id": 2,
+  "api_url": "http://localhost:5000/api/v1/openedxinstance/2/",
+  "active_server_set": [
+    {
+      "id": 23,
+      "api_url": "http://localhost:5000/api/v1/openstackserver/23/",
+      "created": "2015-08-20T06:40:18.835733Z",
+      "instance": "http://localhost:5000/api/v1/openedxinstance/2/",
+      "modified": "2015-08-20T12:12:34.781802Z",
+      "openstack_id": "f889c46a-975a-4ecb-acb8-b6c3c5f97c8e",
+      "status": "ready"
+    }
+  ],
+  "base_domain": "opencraft.com",
+  "branch_name": "master",
+  "commit_id": "24bca27b46a0e65c00628716a77d19a6c5aecd55",
+  "created": "2015-08-08T07:22:56.062796Z",
+  "domain": "tmp.sandbox.opencraft.com",
+  "email": "contact@example.com",
+  "github_base_url": "https://github.com/antoviaque/edx-platform",
+  "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/master",
+  "log_entries": [
+      {"date": "2015-08-08T07:23:16Z", "level": "INFO", "text": "Terminate servers for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)..."},
+      {"date": "2015-08-08T07:23:16Z", "level": "INFO", "text": "Start new server for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)..."},
+      {"date": "2015-08-08T07:23:18Z", "level": "INFO", "text": "Waiting for IP assignment on server 3841c324-c004-4188-9d8c-f1071cd635c5..."}
+  ],
+  "log_error_entries": []
+}

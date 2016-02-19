@@ -28,7 +28,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from instance.models.instance import OpenEdXInstance
-from instance.serializers.instance import OpenEdXInstanceSerializer
+from instance.serializers.instance import (OpenEdXInstanceListSerializer,
+                                           OpenEdXInstanceDetailSerializer)
 from instance.tasks import provision_instance
 
 
@@ -39,7 +40,6 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
     OpenEdXInstance API ViewSet
     """
     queryset = OpenEdXInstance.objects.all()
-    serializer_class = OpenEdXInstanceSerializer
 
     @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
     def provision(self, request, pk=None):
@@ -55,3 +55,11 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         provision_instance(pk)
 
         return Response({'status': 'Instance provisioning started'})
+
+    def get_serializer_class(self):
+        """
+        Return the list serializer for the list action, and the detail serializer otherwise.
+        """
+        if self.action == 'list':
+            return OpenEdXInstanceListSerializer
+        return OpenEdXInstanceDetailSerializer

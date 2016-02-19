@@ -20,13 +20,7 @@
     "domain": "tmp.sandbox.opencraft.com",
     "email": "contact@example.com",
     "github_base_url": "https://github.com/antoviaque/edx-platform",
-    "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/master",
-    "log_entries": [
-        {"date": "2015-08-08T07:23:16Z", "level": "INFO", "text": "Terminate servers for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)..."},
-        {"date": "2015-08-08T07:23:16Z", "level": "INFO", "text": "Start new server for instance tmp.sandbox - antoviaque/edx-platform/master (24bca27) (http://tmp.sandbox.opencraft.com/)..."},
-        {"date": "2015-08-08T07:23:18Z", "level": "INFO", "text": "Waiting for IP assignment on server 3841c324-c004-4188-9d8c-f1071cd635c5..."}
-    ],
-    "log_error_entries": []
+    "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/master"
   },
   {
     "id": 1,
@@ -51,10 +45,6 @@
     "email": "contact@example.com",
     "github_base_url": "https://github.com/antoviaque/edx-platform",
     "github_branch_url": "https://github.com/antoviaque/edx-platform/tree/OC-791-course-timeline",
-    "log_entries": [
-        {"date": "2015-08-07T18:10:56Z", "level": "INFO", "text": "Terminate servers for instance PR#2: Display start date, end date, and number of sections (weeks) on \"Course Info\" tab of instructor dashboard. (antoviaque) - antoviaque/edx-platform/OC-791-course-timeline (4095206) (http://pr2.sandbox.opencraft.com/)..."}
-    ],
-    "log_error_entries": [],
     "github_organization_name": "antoviaque",
     "modified": "2015-08-18T05:48:54.356884Z",
     "name": "PR#2: Display start date, end date, and number of sections (weeks) on \"Course Info\" tab of instructor dashboard. (antoviaque) - antoviaque/edx-platform/OC-791-course-timeline (4095206)",

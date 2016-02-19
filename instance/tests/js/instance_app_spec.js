@@ -23,6 +23,7 @@ describe('Instance app', function () {
     var httpBackend,
         indexController,
         instanceList,
+        instanceDetail,
         OpenCraftAPI,
         $scope;
 
@@ -43,7 +44,9 @@ describe('Instance app', function () {
 
             // Models
             instanceList = jasmine.loadFixture('api/instances_list.json');
+            instanceDetail = jasmine.loadFixture('api/instance_detail.json');
             httpBackend.whenGET('/api/v1/openedxinstance/').respond(instanceList);
+            httpBackend.whenGET('/api/v1/openedxinstance/2/').respond(instanceDetail);
 
             indexController = $controller('Index', {$scope: $scope, OpenCraftAPI: OpenCraftAPI});
             httpBackend.flush(); // Clear calls from the controller init
@@ -56,8 +59,9 @@ describe('Instance app', function () {
 
         describe('$scope.select', function() {
             it('select the instance', function() {
-                $scope.select('a', 'b');
-                expect($scope.selected.a).toEqual('b');
+                $scope.select({id: 2});
+                httpBackend.flush();
+                expect($scope.selected.instance.domain).toEqual('tmp.sandbox.opencraft.com');
             });
         });
 
@@ -75,10 +79,12 @@ describe('Instance app', function () {
             });
 
             it('updates the selected instance when updating the list', function() {
-                $scope.instanceList[0].domain = 'old.example.com';
-                $scope.select('instance', $scope.instanceList[0]);
+                instanceDetail.domain = 'old.example.com';
+                $scope.select($scope.instanceList[0]);
+                httpBackend.flush();
                 expect($scope.selected.instance.domain).toEqual('old.example.com');
 
+                instanceDetail.domain = 'tmp.sandbox.opencraft.com';
                 $scope.updateInstanceList();
                 httpBackend.flush();
                 expect($scope.selected.instance.domain).toEqual('tmp.sandbox.opencraft.com');
@@ -104,7 +110,8 @@ describe('Instance app', function () {
             });
 
             it('instance_log', function() {
-                $scope.select('instance', $scope.instanceList[0]);
+                $scope.select($scope.instanceList[0]);
+                httpBackend.flush();
                 var log_entry = {
                     level: 'INFO',
                     created: new Date(2015, 10, 4, 10, 45, 0),
@@ -120,7 +127,8 @@ describe('Instance app', function () {
             });
 
             it('errors', function() {
-                $scope.select('instance', $scope.instanceList[0]);
+                $scope.select($scope.instanceList[0]);
+                httpBackend.flush();
                 var log_entry_error = {
                     level: 'ERROR',
                     created: new Date(2015, 10, 4, 10, 45, 0),

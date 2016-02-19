@@ -113,8 +113,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
     last_provisioning_started = models.DateTimeField(blank=True, null=True)
 
-    logger = InstanceLoggerAdapter(logger, {})
-
     class Meta:
         abstract = True
         unique_together = ('base_domain', 'sub_domain')
@@ -229,30 +227,42 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
         return log
 
-    def _get_log_entries(self, level_list=None):
+    def _get_log_entries(self, level_list=None, limit=None):
         """
         Return the list of log entry instances for the instance and its current active server,
-        optionally filtering by logging level.
+        optionally filtering by logging level. If a limit is given, only the latest records are
+        returned.
         """
         # TODO: Filter out log entries for which the user doesn't have view rights
         server_log_entry_set = self._current_server.log_entry_set
         if level_list:
             server_log_entry_set = server_log_entry_set.filter(level__in=level_list)
-        server_log_entry_set = server_log_entry_set.order_by('pk').iterator()
+        server_log_entry_set = server_log_entry_set.order_by('pk')
+        if limit:
+            server_log_entry_set = reversed(server_log_entry_set.reverse()[:limit])
+        else:
+            server_log_entry_set = server_log_entry_set.iterator()
 
         instance_log_entry_set = self.log_entry_set
         if level_list:
             instance_log_entry_set = instance_log_entry_set.filter(level__in=level_list)
-        instance_log_entry_set = instance_log_entry_set.order_by('pk').iterator()
+        instance_log_entry_set = instance_log_entry_set.order_by('pk')
+        if limit:
+            instance_log_entry_set = reversed(instance_log_entry_set.reverse()[:limit])
+        else:
+            instance_log_entry_set = instance_log_entry_set.iterator()
 
-        return Instance._sort_log_entries(server_log_entry_set, instance_log_entry_set)
+        entries = self._sort_log_entries(server_log_entry_set, instance_log_entry_set)
+        if limit:
+            return entries[-limit:]
+        return entries
 
     @property
     def log_entries(self):
         """
         Return the list of log entry instances for the instance and its current active server
         """
-        return self._get_log_entries()
+        return self._get_log_entries(limit=settings.LOG_LIMIT)
 
     @property
     def log_error_entries(self):

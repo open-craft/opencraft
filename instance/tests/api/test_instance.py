@@ -124,7 +124,7 @@ class InstanceAPITestCase(APITestCase):
         server.logger.info("info")
         server.logger.error("error")
 
-        response = self.api_client.get('/api/v1/openedxinstance/'.format(pk=instance.pk))
+        response = self.api_client.get('/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         expected_list = [
@@ -133,9 +133,9 @@ class InstanceAPITestCase(APITestCase):
             {'level': 'INFO', 'text': 'instance.models.server    | instance=instance0,server=vm0 | info'},
             {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
         ]
-        self.assertEqual(len(expected_list), len(response.data[0]['log_entries']))
+        self.assertEqual(len(expected_list), len(response.data['log_entries']))
 
-        for expected_entry, log_entry in zip(expected_list, response.data[0]['log_entries']):
+        for expected_entry, log_entry in zip(expected_list, response.data['log_entries']):
             self.assertEqual(expected_entry['level'], log_entry['level'])
             self.assertEqual(expected_entry['text'], log_entry['text'])
 
@@ -151,15 +151,15 @@ class InstanceAPITestCase(APITestCase):
         server.logger.info("info")
         server.logger.error("error")
 
-        response = self.api_client.get('/api/v1/openedxinstance/'.format(pk=instance.pk))
+        response = self.api_client.get('/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         expected_list = [
             {'level': 'ERROR', 'text': 'instance.models.instance  | instance=instance0 | error'},
             {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
         ]
-        self.assertEqual(len(expected_list), len(response.data[0]['log_error_entries']))
+        self.assertEqual(len(expected_list), len(response.data['log_error_entries']))
 
-        for expected_entry, log_entry in zip(expected_list, response.data[0]['log_error_entries']):
+        for expected_entry, log_entry in zip(expected_list, response.data['log_error_entries']):
             self.assertEqual(expected_entry['level'], log_entry['level'])
             self.assertEqual(expected_entry['text'], log_entry['text'])

@@ -75,9 +75,18 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
             });
         };
 
-        $scope.select = function(selection_type, value) {
-            $scope.selected[selection_type] = value;
-            console.log('Selected ' + selection_type + ':', value);
+        $scope.select = function(instance) {
+            $scope.loading = true; // Display loading message
+            console.log('Selected instance', instance.id);
+
+            return OpenCraftAPI.one('openedxinstance', instance.id).get().then(function(instance) {
+                console.log('Fetched instance', instance.id);
+                $scope.selected.instance = instance;
+            }, function(response) {
+                console.log('Error from server: ', response);
+            }).finally(function () {
+                $scope.loading = false;
+            });
         };
 
         $scope.provision = function(instance) {
@@ -98,14 +107,8 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
                 console.log('Updating instance list', instanceList);
                 $scope.instanceList = instanceList;
 
-                if($scope.selected.instance){
-                    var updated_instance = null;
-                    _.each(instanceList, function(instance) {
-                        if(instance.id === $scope.selected.instance.id) {
-                            updated_instance = instance;
-                        }
-                    });
-                    $scope.selected.instance = updated_instance;
+                if($scope.selected.instance) {
+                    $scope.select($scope.selected.instance);
                 }
             }, function(response) {
                 console.log('Error from server: ', response);
