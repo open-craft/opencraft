@@ -22,6 +22,7 @@ Gandi DNS - Helper functions
 
 # Imports #####################################################################
 
+import time
 import xmlrpc.client
 
 from django.conf import settings
@@ -92,7 +93,7 @@ class GandiAPI():
         """
         return self.client_zone.version.set(self.api_key, self.zone_id, zone_version_id)
 
-    def set_dns_record(self, **record):
+    def set_dns_record(self, attempts=4, retry_delay=1, **record):
         """
         Set a DNS record - Automatically create a new version, update with the change & activate
         """
@@ -100,9 +101,17 @@ class GandiAPI():
             record['ttl'] = 1200
 
         with cache.lock('gandi_set_dns_record'): # Only do one DNS update at a time
-            logger.info('Setting DNS record: %s', record)
-            new_zone_version = self.create_new_zone_version()
-            self.delete_dns_record(new_zone_version, record['name'])
-            returned_record = self.add_dns_record(new_zone_version, record)
-            self.set_zone_version(new_zone_version)
+            for i in range(1, attempts + 1):
+                try:
+                    logger.info('Setting DNS record: %s (attempt %d out of %d)', record, i, attempts)
+                    new_zone_version = self.create_new_zone_version()
+                    self.delete_dns_record(new_zone_version, record['name'])
+                    returned_record = self.add_dns_record(new_zone_version, record)
+                    self.set_zone_version(new_zone_version)
+                    break
+                except xmlrpc.client.Fault:
+                    if i == attempts:
+                        raise
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
         return returned_record

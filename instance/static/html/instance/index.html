@@ -23,12 +23,12 @@
     <ul class="side-nav" ng-if="instanceList">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
-        <a ng-click="select(instance)">{{ instance.name }}</a>
         <div class="status-icon" ng-switch="instance.progress">
           <i class="fa fa-ellipsis-h" tooltip-placement="top" tooltip="In progress" ng-switch-when="running"></i>
           <i class="fa fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
           <i class="fa fa-check" tooltip-placement="top" tooltip="Success" ng-switch-when="success"></i>
         </div>
+        <a ng-click="select(instance)">{{ instance.name }}</a>
       </li>
       <li class="divider"></li>
     </ul>
@@ -43,6 +43,10 @@
           <span class="status radius label"
                 ng-class="{warning: server.status != 'ready', success: server.status == 'ready'}">
             {{ server.status }}
+          </span>
+          <span ng-switch="selected.instance.progress">
+            <i class="fa fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
+            <i class="fa fa-check" tooltip-placement="top" tooltip="Success" ng-switch-when="success"></i>
           </span>
         </span>
       </h3>
@@ -66,12 +70,8 @@
           <div class="large-2 columns">
             <div class="status-icon" ng-if="selected.instance.progress != 'running'">
               <button class="button reprovision" ng-click="provision(selected.instance)">
-                Povision
+                Provision
               </button>
-            </div>
-            <div class="status-icon" ng-switch="selected.instance.progress">
-              <i class="fa fa-2x fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
-              <i class="fa fa-2x fa-check" tooltip-placement="top" tooltip="Success" ng-switch-when="success"></i>
             </div>
             <div class="status-icon" ng-if="selected.instance.progress == 'running'">
               <img src="/static/img/running.png" tooltip-placement="bottom" tooltip="Provisioning in progress..." alt="Provisioning in progress..."/>

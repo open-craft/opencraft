@@ -23,6 +23,7 @@ Gandi - Tests
 # Imports #####################################################################
 
 from unittest.mock import call, patch
+import xmlrpc.client
 
 from instance import gandi
 from instance.tests.base import TestCase
@@ -39,17 +40,16 @@ class GandiTestCase(TestCase):
 
         with patch('xmlrpc.client.ServerProxy'):
             self.api = gandi.GandiAPI()
-            self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
 
-    def test_set_dns_record(self):
+    def assert_set_dns_record_calls(self, attempts=1):
         """
-        Set a DNS record value
+        Verify Gandi API calls for setting a DNS record value.
         """
-        self.api.set_dns_record(type='A', name='sub.domain', value='192.168.99.99')
         self.assertEqual(
             self.api.client.mock_calls,
             [
-                call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900),
+                call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900)
+            ] * attempts + [
                 call.domain.zone.record.delete('TEST_GANDI_API_KEY', 9900, 'new_zone_version', {
                     'type': ['A', 'CNAME'],
                     'name': 'sub.domain',
@@ -63,3 +63,36 @@ class GandiTestCase(TestCase):
                 call.domain.zone.version.set('TEST_GANDI_API_KEY', 9900, 'new_zone_version')
             ]
         )
+
+    def test_set_dns_record(self):
+        """
+        Set a DNS record value.
+        """
+        self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
+        self.api.set_dns_record(type='A', name='sub.domain', value='192.168.99.99')
+        self.assert_set_dns_record_calls()
+
+    @patch('time.sleep')
+    def test_set_dns_record_error_retry_and_succeed(self, sleep):
+        """
+        Test retry behaviour when setting a DNS record.  Succeed in the third attempt.
+        """
+        fault = xmlrpc.client.Fault(581091, 'Error')
+        self.api.client.domain.zone.version.new.side_effect = [fault, fault, 'new_zone_version']
+        self.api.set_dns_record(
+            type='A', name='sub.domain', value='192.168.99.99', attempts=3, retry_delay=3
+        )
+        self.assert_set_dns_record_calls(attempts=3)
+        self.assertEqual(sleep.mock_calls, [call(3), call(6)])
+
+    @patch('time.sleep')
+    def test_set_dns_record_error_retry_and_fail(self, sleep):
+        """
+        Test retry behaviour when setting a DNS record.  Fail all attempts.
+        """
+        self.api.client.domain.zone.version.new.side_effect = xmlrpc.client.Fault(581091, 'Error')
+        with self.assertRaises(xmlrpc.client.Fault):
+            self.api.set_dns_record(
+                type='A', name='sub.domain', value='192.168.99.99', attempts=4, retry_delay=2
+            )
+        self.assertEqual(sleep.mock_calls, [call(2), call(4), call(8)])
