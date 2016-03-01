@@ -385,7 +385,8 @@ class MySQLInstanceTestCase(TestCase):
     """
     def check_mysql(self, instance):
         """
-        Check that the mysql databases and user have been created, then remove them
+        Check that the mysql databases and user have been created, and that we can write utf-8 data
+        to them. Then remove the databases and user.
         """
         self.assertIs(instance.mysql_provisioned, True)
         self.assertTrue(instance.mysql_user)
@@ -394,13 +395,24 @@ class MySQLInstanceTestCase(TestCase):
         try:
             for database in instance.mysql_database_names:
                 self.assertIn(database, databases)
-                mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
+                mysql_cmd = (
+                    'mysql'
+                    ' --default-character-set=utf8mb4'
+                    ' --user={user}'
+                    ' --password={password}'
+                    ' {db_name}'
+                ).format(
                     user=instance.mysql_user,
                     password=instance.mysql_pass,
                     db_name=database,
                 )
-                tables = subprocess.call(mysql_cmd, shell=True)
-                self.assertEqual(tables, 0)
+                process = subprocess.Popen(mysql_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+                test_sql = ("CREATE TABLE test (value TEXT);"
+                            "INSERT INTO test (value) VALUES ('OHAI 😜');"
+                            "SELECT value FROM test;")
+                output, _ = process.communicate(input=test_sql.encode('utf-8'))
+                self.assertEqual(process.returncode, 0)
+                self.assertIn('😜', output.decode('utf-8'))
         finally:
             for database in instance.mysql_database_names:
                 #pylint: disable=undefined-loop-variable
