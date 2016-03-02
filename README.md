@@ -435,6 +435,10 @@ when the sandbox is reprovisioned. If you want to reuse databases, change the
 databases and update the `INSTANCE_MYSQL_URL` and `INSTANCE_MONGO_URL` settings
 to point to these databases.
 
+Note that databases will be provisioned with the `utf8mb4` character set. This
+uses 4 bytes per character when storing keys - we recommend using mysql 5.7 to
+avoid issues with key sizes.
+
 When provisioning a sandbox from the GitHub pull request, you can override the
 default by including `(ephemeral databases)` or `(persistent databases)` on the
 same line as the sandbox domain in the pull request description. For example:
