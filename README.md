@@ -411,12 +411,17 @@ provision_instance(instance.pk)
 To reprovision an instance from the shell, simply run the `provision_instance`
 task again:
 
-    provision_instance(instance.pk)
+```python
+instance = OpenEdXInstance.objects.get(name__contains='...')
+provision_instance(instance.pk)
+```
 
 To delete an instance, ensuring that all virtual machines are terminated, run:
 
-    instance.server_set.terminate()
-    instance.delete()
+```python
+instance.server_set.terminate()
+instance.delete()
+```
 
 
 manage.py
