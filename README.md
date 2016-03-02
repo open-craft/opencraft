@@ -382,39 +382,46 @@ Note: You need to match the above format exactly.
 If you want to provision a sandbox outside of a GitHub pull request, you can do
 so from the shell:
 
-    from instance.models.instance import OpenEdXInstance
-    from instance.tasks import provision_instance
+```python
+from instance.models.instance import OpenEdXInstance
+from instance.tasks import provision_instance
 
-    instance = OpenEdXInstance(
-        sub_domain='dogwood.sandbox',
-        name='Dogwood',
-        fork_name='edx/edx-platform',
-        branch_name='named-release/dogwood',
-        configuration_version='named-release/dogwood',
-        forum_version='named-release/dogwood',
-        notifier_version='named-release/dogwood',
-        xqueue_version='named-release/dogwood',
-        certs_version='named-release/dogwood',
-        ansible_source_repo_url='https://github.com/edx/configuration.git',
-    )
+instance = OpenEdXInstance.objects.create(
+    sub_domain='dogwood.sandbox',
+    name='Dogwood',
+    fork_name='edx/edx-platform',
+    branch_name='named-release/dogwood',
+    configuration_version='named-release/dogwood',
+    forum_version='named-release/dogwood',
+    notifier_version='named-release/dogwood',
+    xqueue_version='named-release/dogwood',
+    certs_version='named-release/dogwood',
+    ansible_source_repo_url='https://github.com/edx/configuration.git',
+)
 
-    instance.ansible_extra_settings = """
-    # Add custom ansible settings here, as yaml
-    NGINX_ENABLE_SSL: true
-    """
+instance.ansible_extra_settings = """
+# Add custom ansible settings here, as yaml
+NGINX_ENABLE_SSL: true
+"""
 
-    instance.save()
-    provision_instance(instance.pk)
+instance.save()
+provision_instance(instance.pk)
+```
 
 To reprovision an instance from the shell, simply run the `provision_instance`
 task again:
 
-    provision_instance(instance.pk)
+```python
+instance = OpenEdXInstance.objects.get(name__contains='...')
+provision_instance(instance.pk)
+```
 
 To delete an instance, ensuring that all virtual machines are terminated, run:
 
-    instance.server_set.terminate()
-    instance.delete()
+```python
+instance.server_set.terminate()
+instance.delete()
+```
 
 
 manage.py
