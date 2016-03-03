@@ -666,7 +666,7 @@ class MySQLInstanceMixin(models.Model):
                 # We can't use the database name in a parameterized query, the
                 # driver doesn't escape it properly. Se we escape it here instead
                 database_name = connection.escape_string(database).decode()
-                cursor.execute('CREATE DATABASE `{0}` DEFAULT CHARACTER SET utf8'.format(database_name))
+                cursor.execute('CREATE DATABASE `{0}` DEFAULT CHARACTER SET utf8mb4'.format(database_name))
                 cursor.execute('GRANT ALL ON `{0}`.* TO %s IDENTIFIED BY %s'.format(database_name),
                                (self.mysql_user, self.mysql_pass))
 

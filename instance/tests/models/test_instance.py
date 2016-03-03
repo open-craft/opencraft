@@ -24,13 +24,13 @@ OpenEdXInstance model - Tests
 
 import os
 import re
-import subprocess
 from mock import call, patch
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.test import override_settings
 
+import MySQLdb as mysql
 import pymongo
 import yaml
 
@@ -385,27 +385,63 @@ class MySQLInstanceTestCase(TestCase):
     """
     def check_mysql(self, instance):
         """
-        Check that the mysql databases and user have been created, then remove them
+        Check that the mysql databases and user have been created, and that we can write utf-8 data
+        to them. Then remove the databases and user.
         """
         self.assertIs(instance.mysql_provisioned, True)
         self.assertTrue(instance.mysql_user)
         self.assertTrue(instance.mysql_pass)
-        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
+
+        databases = self.show_databases()
         try:
             for database in instance.mysql_database_names:
                 self.assertIn(database, databases)
-                mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
-                    user=instance.mysql_user,
-                    password=instance.mysql_pass,
-                    db_name=database,
-                )
-                tables = subprocess.call(mysql_cmd, shell=True)
-                self.assertEqual(tables, 0)
+                self.check_database(database,
+                                    username=instance.mysql_user,
+                                    password=instance.mysql_pass)
         finally:
+            connection = mysql.connect(user='root')
+            cursor = connection.cursor()
             for database in instance.mysql_database_names:
                 #pylint: disable=undefined-loop-variable
-                subprocess.check_call("mysql -u root -e 'DROP DATABASE IF EXISTS {0}'".format(database), shell=True)
-            subprocess.check_call("mysql -u root -e 'DROP USER {0}'".format(instance.mysql_user), shell=True)
+                cursor.execute('DROP DATABASE IF EXISTS {0}'.format(database))
+            cursor.execute('DROP USER {0}'.format(instance.mysql_user))
+            connection.close()
+
+    @staticmethod
+    def show_databases():
+        """
+        Return a list of mysql databases
+        """
+        connection = mysql.connect(user='root')
+        cursor = connection.cursor()
+        cursor.execute('SHOW DATABASES')
+        try:
+            return [row[0] for row in cursor.fetchall()]
+        finally:
+            connection.close()
+
+    def check_database(self, database, username, password):
+        """
+        Check that the given credentials have read/write access to the given database, and that the
+        database can handle utf-8 data.
+        """
+        connection = mysql.connect(host='localhost',
+                                   user=username,
+                                   passwd=password,
+                                   db=database,
+                                   charset='utf8mb4')
+        cursor = connection.cursor()
+        test_sql = ("CREATE TABLE test (value TEXT)",
+                    "INSERT INTO test (value) VALUES ('OHAI 😜')",
+                    "SELECT value FROM test")
+        try:
+            for sql in test_sql:
+                cursor.execute(sql)
+            result = cursor.fetchone()[0]
+            self.assertIn('😜', result)
+        finally:
+            connection.close()
 
     def test_provision_mysql(self):
         """
@@ -422,7 +458,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.provision_mysql()
-        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
+        databases = self.show_databases()
         for database in instance.mysql_database_names:
             self.assertNotIn(database, databases)
 
