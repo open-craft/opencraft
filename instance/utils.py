@@ -62,7 +62,8 @@ def to_json(obj):
     return json.dumps(obj, sort_keys=True, indent=4, default=dumper)
 
 
-def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_factor=0.5):
+def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_factor=0,
+                       status_forcelist=range(500, 600)):
     """
     Returns a urllib3 `Retry` object, with the default requests retry policy
     """
@@ -71,7 +72,8 @@ def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_facto
         connect=connect,
         read=read,
         redirect=redirect,
-        backoff_factor=backoff_factor
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
     )
 
 
