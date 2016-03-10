@@ -22,15 +22,30 @@ OpenStackServer model - Tests
 
 # Imports #####################################################################
 
+import http.client
+import io
+
 import novaclient
 from mock import Mock, call, patch
 
 from instance.models.server import OpenStackServer, ServerNotReady
 from instance.tests.base import AnyStringMatching, TestCase
+from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
 
 
 # Tests #######################################################################
+
+class MockHTTPResponse(http.client.HTTPResponse):
+    """
+    A fake http.client.HTTPResponse, for stubbing low-level urllib3 calls.
+    """
+    def __init__(self, status_code=200, body='{}'):
+        content = 'HTTP/1.1 {status}\n\n{body}'.format(status=status_code, body=body).encode()
+        sock = Mock()
+        sock.makefile.return_value = io.BytesIO(content)
+        super().__init__(sock)
+
 
 class OpenStackServerTestCase(TestCase):
     """
@@ -85,6 +100,27 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServerFactory()
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('new-server-id')])
+
+    @patch('novaclient.client.HTTPClient.authenticate', autospec=True)
+    @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
+    @patch('instance.models.server.openstack.create_server')
+    def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate):
+        """
+        The nova client should retry in case of server errors
+        """
+        mock_create_server.return_value.id = 'new-server-id'
+        mock_response_class.side_effect = (MockHTTPResponse(500),
+                                           MockHTTPResponse(200, body='{"server": {}}'))
+
+        def authenticate(client):
+            """ Simulate nova client authentication """
+            client.management_url = 'http://example.com'
+        mock_authenticate.side_effect = authenticate
+
+        # We do not use the OpenStackServerFactory here as it mocks the retry
+        # behaviour that we are trying to test
+        server = OpenStackServer.objects.create(instance=OpenEdXInstanceFactory())
+        self.assertTrue(server.os_server)
 
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
