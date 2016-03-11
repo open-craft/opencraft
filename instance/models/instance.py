@@ -882,37 +882,43 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
         self.logger.info('Start new server')
         server = self.server_set.create()
         server.start()
-        # DNS
-        self.logger.info('Waiting for IP assignment on server %s...', server)
-        server.sleep_until_status([server.ACTIVE, server.BOOTED])
-        server.update_status(provisioning=True)
-        self.logger.info('Updating DNS: LMS at %s...', self.domain)
-        gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
-        self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
-        gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
-        # Provisioning (external databases)
-        if not self.use_ephemeral_databases:
-            self.logger.info('Provisioning external databases...')
-            self.provision_mysql()
-            self.provision_mongo()
+        try:
+            # DNS
+            self.logger.info('Waiting for IP assignment on server %s...', server)
+            server.sleep_until_status([server.ACTIVE, server.BOOTED])
+            server.update_status(provisioning=True)
+            self.logger.info('Updating DNS: LMS at %s...', self.domain)
+            gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
+            self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
+            gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
 
-        # Provisioning (ansible)
-        self.reset_ansible_settings(commit=True)
-        log, exit_code = self.deploy()
-        if exit_code != 0:
-            server.update_status(provisioning=True, failed=True)
+            # Provisioning (external databases)
+            if not self.use_ephemeral_databases:
+                self.logger.info('Provisioning external databases...')
+                self.provision_mysql()
+                self.provision_mongo()
+
+            # Provisioning (ansible)
+            self.reset_ansible_settings(commit=True)
+            log, exit_code = self.deploy()
+            if exit_code != 0:
+                server.update_status(provisioning=True, failed=True)
+                return (server, log)
+
+            server.update_status(provisioning=True, failed=False)
+
+            # Reboot
+            self.logger.info('Rebooting server %s...', server)
+            server.reboot()
+            server.sleep_until_status(server.READY)
+            self.logger.info('Provisioning completed')
+
             return (server, log)
 
-        server.update_status(provisioning=True, failed=False)
-
-        # Reboot
-        self.logger.info('Rebooting server %s...', server)
-        server.reboot()
-        server.sleep_until_status(server.READY)
-        self.logger.info('Provisioning completed')
-
-        return (server, log)
+        except:
+            self.server_set.terminate()
+            raise
 
     def provision_mysql(self):
         """
