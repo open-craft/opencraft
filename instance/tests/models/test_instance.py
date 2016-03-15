@@ -749,6 +749,24 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(server.progress, Server.PROGRESS_FAILED)
 
     @patch_os_server
+    @patch('instance.models.server.OpenStackServer.sleep_until_status')
+    @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
+    @patch('instance.models.server.OpenStackServer.start', autospec=True)
+    @patch('instance.models.instance.gandi.set_dns_record')
+    def test_provision_unhandled_exception(self, os_server_manager, mock_set_dns_record,
+                                           mock_server_start, mock_os_server,
+                                           mock_sleep_until_status):
+        """
+        Make sure that all servers are terminated if there is an unhandled exception during
+        provisioning.
+        """
+        mock_set_dns_record.side_effect = Exception('Something went catastrophically wrong')
+        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
+        with self.assertRaises(Exception):
+            instance.provision()
+        self.assertFalse(instance.server_set.exclude_terminated())
+
+    @patch_os_server
     @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
     @patch('instance.models.server.time.sleep')
     @patch('instance.models.server.OpenStackServer.reboot')
