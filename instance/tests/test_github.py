@@ -23,7 +23,6 @@ GitHub - Tests
 # Imports #####################################################################
 
 import json
-import requests
 import responses
 
 from mock import patch
@@ -57,6 +56,20 @@ class GitHubTestCase(TestCase):
         self.assertEqual(
             github.get_commit_id_from_ref('edx/edx-platform', 'master'),
             'test-sha')
+
+    @responses.activate
+    def test_get_commit_id_from_ref_404(self):
+        """
+        Attempt to fetch a branch that has been deleted
+        """
+        responses.add(
+            responses.GET, 'https://api.github.com/repos/edx/edx-platform/git/refs/heads/deleted-branch',
+            body=json.dumps({'message': 'Not Found'}),
+            content_type='application/json; charset=utf8',
+            status=404)
+
+        with self.assertRaises(github.ObjectDoesNotExist):
+            github.get_commit_id_from_ref('edx/edx-platform', 'deleted-branch')
 
     def test_get_settings_from_pr_body(self):
         """
@@ -136,9 +149,8 @@ class GitHubTestCase(TestCase):
             content_type='application/json; charset=utf8',
             status=404)
 
-        with self.assertRaises(requests.exceptions.HTTPError) as cm:
+        with self.assertRaises(github.ObjectDoesNotExist):
             github.get_pr_by_number('edx/edx-platform', 1234567890)
-        self.assertEqual(cm.exception.response.status_code, 404)
 
     @responses.activate
     @patch('instance.github.get_pr_by_number')

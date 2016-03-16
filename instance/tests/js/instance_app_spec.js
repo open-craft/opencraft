@@ -98,7 +98,20 @@ describe('Instance app', function () {
                 httpBackend.expectPOST('/api/v1/openedxinstance/2/provision/').respond('');
                 $scope.provision(instance);
                 httpBackend.flush();
+                expect($scope.notification.message).toEqual('Provisioning');
                 expect(instance.active_server_set[0].status).toEqual('terminating');
+            });
+
+            it('displays errors on 4xx response', function() {
+                var instance = $scope.instanceList[0],
+                    beforeStatus = instance.active_server_set[0].status;
+                httpBackend
+                    .expectPOST('/api/v1/openedxinstance/2/provision/')
+                    .respond(403, {status: 'FAIL'});
+                $scope.provision(instance);
+                httpBackend.flush();
+                expect($scope.notification.message).toEqual('FAIL');
+                expect(instance.active_server_set[0].status).toEqual(beforeStatus);
             });
         });
 

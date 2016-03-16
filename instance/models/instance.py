@@ -445,10 +445,15 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         if ref_type is not None:
             self.ref_type = ref_type
         self.logger.info('Setting instance to tip of branch %s', self.branch_name)
-        new_commit_id = github.get_commit_id_from_ref(
-            self.fork_name,
-            self.branch_name,
-            ref_type=self.ref_type)
+        try:
+            new_commit_id = github.get_commit_id_from_ref(
+                self.fork_name,
+                self.branch_name,
+                ref_type=self.ref_type)
+        except github.ObjectDoesNotExist:
+            self.logger.error("Branch '%s' not found. Has it been deleted on GitHub?",
+                              self.branch_name)
+            raise
 
         if new_commit_id != self.commit_id:
             old_commit_short_id = self.commit_short_id

@@ -17,6 +17,10 @@
     Loading...
 </div>
 
+<div class="notification label {{ notification.type }}" ng-if="notification">
+    {{ notification.message }}
+</div>
+
 <div class="row">
   <!-- Instances List -->
   <div class="large-3 columns">

@@ -7,6 +7,13 @@
     padding: 5px 15px;
 }
 
+.notification {
+    position: fixed;
+    top: 48px;
+    right: 3px;
+    font-size: 14px;
+}
+
 .content.instance-app {
     .row {
         max-width: none;

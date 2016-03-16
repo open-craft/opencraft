@@ -58,11 +58,12 @@ app.factory('OpenCraftAPI', function(Restangular) {
 
 // Controllers ////////////////////////////////////////////////////////////////
 
-app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
-    function ($scope, Restangular, OpenCraftAPI, $q) {
+app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q', '$timeout',
+    function ($scope, Restangular, OpenCraftAPI, $q, $timeout) {
 
         $scope.init = function() {
             $scope.loading = true;
+            $scope.notification = null;
             $scope.selected = {};
 
             $scope.updateInstanceList();
@@ -91,13 +92,23 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
 
         $scope.provision = function(instance) {
             console.log('Provisioning instance', instance);
-            instance.status = 'terminating';
-            _.each(instance.active_server_set, function(server) {
-                if(server.status !== 'terminated') {
-                    server.status = 'terminating';
+            var notification = function(response, fallback) {
+                if (response && response.data) {
+                    return response.data.status || fallback;
                 }
+                return fallback;
+            };
+            return instance.post('provision').then(function(response) {
+                instance.status = 'terminating';
+                _.each(instance.active_server_set, function(server) {
+                    if(server.status !== 'terminated') {
+                        server.status = 'terminating';
+                    }
+                });
+                $scope.notify(notification(response, 'Provisioning'));
+            }, function(response) {
+                $scope.notify(notification(response, 'Provisioning failed'), 'alert');
             });
-            return instance.post("provision");
         };
 
         $scope.updateInstanceList = function() {
@@ -132,6 +143,20 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q',
                     });
                 }
             }
+        };
+
+        // Display a notification message for 10 seconds
+        $scope.notify = function(message, type) {
+            if ($scope.notification) {
+                $timeout.cancel($scope.notification.timeout);
+            }
+            $scope.notification = {
+                message: message,
+                type: type,
+                timeout: $timeout(function() {
+                    $scope.notification = null;
+                }, 10000)
+            };
         };
 
         $scope.init();

@@ -26,6 +26,7 @@ from mock import call, patch
 
 from rest_framework import status
 
+from instance import github
 from instance.models.instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.api.base import APITestCase
@@ -88,7 +89,18 @@ class InstanceAPITestCase(APITestCase):
         OpenStackServerFactory(instance=instance, progress=OpenStackServer.PROGRESS_RUNNING)
         self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch('instance.github.get_commit_id_from_ref')
+    def test_provision_github_branch_deleted(self, mock_get_commit_id_from_ref):
+        """
+        POST /:id/provision - GitHub returns 404 response for instance branch
+        """
+        self.api_client.login(username='user1', password='pass')
+        instance = OpenEdXInstanceFactory()
+        mock_get_commit_id_from_ref.side_effect = github.ObjectDoesNotExist
+        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch('instance.github.get_commit_id_from_ref')
     @patch('instance.api.instance.provision_instance')

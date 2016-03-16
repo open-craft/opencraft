@@ -51,10 +51,14 @@ GH_HEADERS = {
 def get_object_from_url(url):
     """
     Send the request to the provided URL, attaching custom headers, and returns
-    the deserialized object from the returned JSON
+    the deserialized object from the returned JSON.
+
+    Raises ObjectDoesNotExist if github returns a 404 response.
     """
     logger.info('GET URL %s', url)
     r = requests.get(url, headers=GH_HEADERS)
+    if r.status_code == 404:
+        raise ObjectDoesNotExist('404 response from {0}'.format(url))
     r.raise_for_status()
     return r.json()
 
@@ -214,3 +218,10 @@ class PR:
         Does this PR request ephemeral databases?
         """
         return is_pr_body_requesting_ephemeral_databases(self.body, domain)
+
+
+class ObjectDoesNotExist(Exception):
+    """
+    Exception raised when trying to access a github object that does not exist.
+    """
+    pass
