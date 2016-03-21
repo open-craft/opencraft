@@ -27,6 +27,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from instance import github
 from instance.models.instance import OpenEdXInstance
 from instance.serializers.instance import (OpenEdXInstanceListSerializer,
                                            OpenEdXInstanceDetailSerializer)
@@ -49,11 +50,17 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.progress == instance.PROGRESS_RUNNING:
             return Response({'status': 'Instance is not ready for reprovisioning'},
-                            status=status.HTTP_403_FORBIDDEN)
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        instance.set_to_branch_tip()
+        try:
+            instance.set_to_branch_tip()
+        except github.ObjectDoesNotExist:
+            return Response({
+                'status': ("Branch '{0}' not found."
+                           'Has it been deleted on GitHub?'.format(instance.branch_name))
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         provision_instance(pk)
-
         return Response({'status': 'Instance provisioning started'})
 
     def get_serializer_class(self):
