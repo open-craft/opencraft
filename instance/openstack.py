@@ -24,7 +24,7 @@ OpenStack - Helper functions
 
 import requests
 
-from novaclient.v2.client import Client as NovaClient
+from novaclient.client import Client as NovaClient
 
 from django.conf import settings
 
@@ -39,11 +39,12 @@ logger = logging.getLogger(__name__)
 
 # Functions ###################################################################
 
-def get_nova_client():
+def get_nova_client(api_version=2):
     """
     Instanciate a python novaclient.Client() object with proper credentials
     """
     nova = NovaClient(
+        api_version,
         settings.OPENSTACK_USER,
         settings.OPENSTACK_PASSWORD,
         settings.OPENSTACK_TENANT,
