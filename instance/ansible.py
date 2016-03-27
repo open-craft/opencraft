@@ -25,8 +25,6 @@ Ansible - Helper functions
 import os
 import shutil
 import subprocess
-import sys
-import traceback
 import yaml
 
 from contextlib import contextmanager
@@ -80,21 +78,6 @@ def string_to_file_path(string, root_dir=None):
     return f.name
 
 
-def on_remove_error(*args):
-    """
-    A helper function intended to be passed to shutil.rmtree as oneror argiment.
-
-    The only reason it is public is to unittest it.
-    """
-    exctype, value = sys.exc_info()[:2]
-    exception_message = '\n'.join(traceback.format_exception_only(exctype, value)).strip()
-    logger.warning(
-        "Error while deleting temporary directory, this is not related to VM "
-        "creation, but might fill /tmp directory of the IM.\n Exception "
-        "is %s", exception_message
-    )
-
-
 @contextmanager
 def create_temp_dir():
     """
@@ -107,10 +90,7 @@ def create_temp_dir():
     finally:
         # If tempdir is None it means that if wasn't created, so we don't need to delete it
         if temp_dir is not None:
-            # This is really a "best effort" solution, if something will
-            # block the deletion (like file being locked somehow)
-            # this should just move on rather than raise.
-            shutil.rmtree(temp_dir, onerror=on_remove_error)
+            shutil.rmtree(temp_dir)
 
 
 def render_sandbox_creation_command(

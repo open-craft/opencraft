@@ -23,7 +23,6 @@ Ansible - Tests
 # Imports #####################################################################
 
 import os.path
-from tempfile import mkdtemp
 from unittest import mock
 from unittest.mock import patch
 import yaml
@@ -201,61 +200,3 @@ class AnsibleTestCase(TestCase):
                 self.assertEqual("TEST ąęłźżó", f.read())
         finally:
             os.remove(file_path)
-
-    def test_error_message(self):  # pylint: disable=no-self-use
-        """
-        Checks if on_remove_error method correctly logs an exception
-        without message.
-        """
-        with patch('instance.ansible.logger') as logger:
-            try:
-                raise ValueError
-            except ValueError:
-                ansible.on_remove_error()
-        logger.warning.assert_called_once_with(
-            'Error while deleting temporary directory, this is not related to '
-            'VM creation, but might fill /tmp directory of the IM.\n '
-            'Exception is %s', 'ValueError'
-        )
-
-    def test_error_message_for_exception_with_message(self):  # pylint: disable=no-self-use
-        """
-        Checks if on_remove_error method correctly logs an exception
-        with message.
-        """
-        with patch('instance.ansible.logger') as logger:
-            try:
-                raise ValueError("Foo")
-            except ValueError:
-                ansible.on_remove_error()
-
-        logger.warning.assert_called_once_with(
-            'Error while deleting temporary directory, this is not related to '
-            'VM creation, but might fill /tmp directory of the IM.\n '
-            'Exception is %s', 'ValueError: Foo'
-        )
-
-    def test_create_temp_dir_handles_errors(self):  # pylint: disable=no-self-use
-        """
-        Checks if create_temp_dir handles exceptions raised during cleanup
-        gracefully --- that is by logging them and ignoring.
-        """
-
-        temp_dir = mkdtemp()
-        os.rmdir(temp_dir)
-
-        # We patch mkdtemp to return a nonexistent directory, which will in
-        # turn raise FileNotFound from shutil.rmtree. This is the easiest
-        # way to raise reliably the same exception from shutil.rmtree
-        with patch('instance.ansible.logger') as logger, \
-                patch('instance.ansible.mkdtemp', return_value=temp_dir):
-            with ansible.create_temp_dir():
-                pass
-        logger.warning.assert_called_once_with(
-            "Error while deleting temporary directory, this is not related to "
-            "VM creation, but might fill /tmp directory of the IM.\n "
-            "Exception is %s",
-            "FileNotFoundError: [Errno 2] No such file or directory: '{}'".format(
-                temp_dir
-            )
-        )
