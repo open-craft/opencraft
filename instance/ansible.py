@@ -23,11 +23,12 @@ Ansible - Helper functions
 # Imports #####################################################################
 
 import os
+import shutil
 import subprocess
 import yaml
 
 from contextlib import contextmanager
-from tempfile import mkdtemp, mkstemp
+from tempfile import mkdtemp, NamedTemporaryFile
 
 from django.conf import settings
 
@@ -67,18 +68,59 @@ def dict_merge(dict1, dict2):
     return dict1
 
 
+def string_to_file_path(string, root_dir=None):
+    """
+    Store a string in a temporary file
+    """
+    f = NamedTemporaryFile('w', delete=False, dir=root_dir)
+    f.write(string)
+    f.close()
+    return f.name
+
+
 @contextmanager
-def string_to_file_path(string):
+def create_temp_dir():
     """
-    Store a string in a temporary file, to pass on to a third-party shell command as a file parameter
-    Returns the file path string
+    A context manager that creates a temporary directory, returns it. Directory is deleted upon context manager exit.
     """
-    fd, file_path = mkstemp(text=True)
-    fp = os.fdopen(fd, 'w')
-    fp.write(string)
-    fp.close()
-    yield file_path
-    os.remove(file_path)
+    temp_dir = None
+    try:
+        temp_dir = mkdtemp()
+        yield temp_dir
+    finally:
+        # If tempdir is None it means that if wasn't created, so we don't need to delete it
+        if temp_dir is not None:
+            shutil.rmtree(temp_dir)
+
+
+def render_sandbox_creation_command(
+        requirements_path, inventory_path, vars_path, playbook_name, remote_username, venv_path):
+    """
+    Renders the shell command used to create the sandbox
+    """
+
+    venv_python_path = os.path.join(venv_path, 'bin/python')
+    create_venv_cmd = 'virtualenv -p {python_path} {venv_path}'.format(
+        python_path=settings.ANSIBLE_PYTHON_PATH,
+        venv_path=venv_path,
+    )
+
+    install_requirements_cmd = '{python} -u {pip} install -r {requirements_path}'.format(
+        python=venv_python_path,
+        pip=os.path.join(venv_path, 'bin/pip'),
+        requirements_path=requirements_path,
+    )
+
+    run_playbook_cmd = '{python} -u {ansible} -i {inventory_path} -e @{vars_path} -u {user} {playbook}'.format(
+        python=venv_python_path,
+        ansible=os.path.join(venv_path, 'bin/ansible-playbook'),
+        inventory_path=inventory_path,
+        vars_path=vars_path,
+        user=remote_username,
+        playbook=playbook_name,
+    )
+
+    return ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
 
 
 @contextmanager
@@ -88,38 +130,35 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
 
     Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
     """
-    venv_path = mkdtemp()
-    create_venv_cmd = 'virtualenv -p {python_path} {venv_path}'.format(
-        python_path=settings.ANSIBLE_PYTHON_PATH,
-        venv_path=venv_path,
-    )
 
-    venv_python_path = os.path.join(venv_path, 'bin/python')
-    install_requirements_cmd = '{python} -u {pip} install -r {requirements_path}'.format(
-        python=venv_python_path,
-        pip=os.path.join(venv_path, 'bin/pip'),
-        requirements_path=requirements_path,
-    )
+    with create_temp_dir() as ansible_tmp_dir:
 
-    with string_to_file_path(inventory_str) as inventory_path:
-        with string_to_file_path(vars_str) as vars_path:
-            run_playbook_cmd = '{python} -u {ansible} -i {inventory_path} -e @{vars_path} -u {user} {playbook}'\
-                .format(
-                    python=venv_python_path,
-                    ansible=os.path.join(venv_path, 'bin/ansible-playbook'),
-                    inventory_path=inventory_path,
-                    vars_path=vars_path,
-                    user=username,
-                    playbook=playbook_name,
-                )
+        vars_path = string_to_file_path(vars_str, root_dir=ansible_tmp_dir)
+        inventory_path = string_to_file_path(inventory_str, root_dir=ansible_tmp_dir)
+        venv_path = os.path.join(ansible_tmp_dir, 'venv')
 
-            cmd = ' && '.join([create_venv_cmd, install_requirements_cmd, run_playbook_cmd])
-            logger.info('Running: %s', cmd)
-            yield subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=1, # Bufferize one line at a time
-                cwd=playbook_path,
-                shell=True,
-            )
+        cmd = render_sandbox_creation_command(
+            requirements_path=requirements_path,
+            inventory_path=inventory_path,
+            vars_path=vars_path,
+            playbook_name=playbook_name,
+            remote_username=username,
+            venv_path=venv_path
+        )
+
+        logger.info('Running: %s', cmd)
+
+        # Override TMPDIR environmental variable so any temp files created by ansible (and anything else)
+        # are created in a directory that we will safely delete after this command exits
+        env = dict(os.environ)
+        env['TMPDIR'] = ansible_tmp_dir
+
+        yield subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1, # Buffer one line at a time
+            cwd=playbook_path,
+            shell=True,
+            env=env,
+        )

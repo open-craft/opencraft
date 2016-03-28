@@ -23,9 +23,9 @@ Ansible - Tests
 # Imports #####################################################################
 
 import os.path
+from unittest import mock
+from unittest.mock import patch
 import yaml
-
-from unittest.mock import call, patch
 
 from instance import ansible
 from instance.tests.base import TestCase
@@ -96,41 +96,107 @@ class AnsibleTestCase(TestCase):
     """
     Test cases for ansible helper functions & wrappers
     """
-    def test_string_to_file_path(self):
-        """
-        Store a string in a temporary file
-        """
-        test_str = 'My kewl string\nwith unicode «ταБЬℓσ», now 20% off!'
-        file_path_copy = None
-        with ansible.string_to_file_path(test_str) as file_path:
-            with open(file_path) as fp:
-                self.assertEqual(fp.read(), test_str)
-            file_path_copy = file_path
-            self.assertTrue(os.path.isfile(file_path_copy))
-        self.assertFalse(os.path.isfile(file_path_copy))
-
-    @patch('subprocess.Popen')
-    @patch('instance.ansible.mkdtemp')
-    @patch('instance.ansible.string_to_file_path')
-    def test_run_playbook(self, mock_string_to_file_path, mock_mkdtemp, mock_popen):
+    def test_run_playbook(self):
         """
         Run the ansible-playbook command
         """
-        mock_string_to_file_path.return_value.__enter__.return_value = '/test/str2path'
-        mock_mkdtemp.return_value = '/test/mkdtemp'
 
-        with ansible.run_playbook('/requirements/path.txt',
-                                  "INVENTORY: 'str'",
-                                  "VARS: 'str2'",
-                                  '/play/book',
-                                  'playbook_name_str'):
-            run_playbook_cmd = (
-                'virtualenv -p /usr/bin/python /test/mkdtemp && '
-                '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/pip install -r /requirements/path.txt && '
-                '/test/mkdtemp/bin/python -u /test/mkdtemp/bin/ansible-playbook -i /test/str2path '
-                '-e @/test/str2path -u root playbook_name_str'
+        popen_result = object()
+
+        with patch('instance.ansible.render_sandbox_creation_command', return_value="ANSIBLE CMD") as mock_render, \
+                patch('instance.ansible.create_temp_dir') as mock_create_temp, \
+                patch('instance.ansible.string_to_file_path', return_value='/tmp/string/file'), \
+                patch('subprocess.Popen', return_value=popen_result) as mock_popen:
+
+            mock_create_temp.return_value.__enter__.return_value = '/tmp/tempdir'
+
+            with ansible.run_playbook(
+                requirements_path="/tmp/requirements.txt",
+                inventory_str="INVENTORY: 'str'",
+                vars_str="VARS: 'str2'",
+                playbook_path='/play/book',
+                playbook_name='playbook_name'
+            ) as run_playbook_result:
+
+                # This checks if run_playbook returns a Process object (or more precisely: object returned from Popen)
+                self.assertEqual(run_playbook_result, popen_result)
+
+            mock_render.assert_called_once_with(
+                inventory_path='/tmp/string/file',
+                vars_path='/tmp/string/file',
+                requirements_path='/tmp/requirements.txt',
+                playbook_name='playbook_name',
+                remote_username='root',
+                venv_path='/tmp/tempdir/venv'
             )
-            self.assertEqual(
-                mock_popen.mock_calls,
-                [call(run_playbook_cmd, bufsize=1, stdout=-1, stderr=-1, cwd='/play/book', shell=True)]
+
+            mock_popen.assert_called_once_with(
+                "ANSIBLE CMD", bufsize=1, stdout=-1, stderr=-1, cwd='/play/book', shell=True, env=mock.ANY
             )
+            call_kwargs = mock_popen.mock_calls[0][2]
+            self.assertIn('env', call_kwargs)
+            self.assertEqual(call_kwargs['env']['TMPDIR'], '/tmp/tempdir')
+
+    def test_render_command(self):
+        """
+        Run the render_sandbox_creation_command function
+        """
+
+        run_playbook_command = ansible.render_sandbox_creation_command(
+            requirements_path='/requirements/path.txt',
+            inventory_path="/tmp/inventory/path",
+            vars_path="/tmp/vars/path",
+            playbook_name='playbook_name',
+            remote_username="root",
+            venv_path='/tmp/venv'
+        )
+        expected = (
+            'virtualenv -p /usr/bin/python /tmp/venv && '
+            '/tmp/venv/bin/python -u /tmp/venv/bin/pip install -r /requirements/path.txt && '
+            '/tmp/venv/bin/python -u /tmp/venv/bin/ansible-playbook -i /tmp/inventory/path '
+            '-e @/tmp/vars/path -u root playbook_name'
+        )
+
+        self.assertEqual(expected, run_playbook_command)
+
+    def test_create_temp_dir_ok(self):
+        """
+        Check if create_temp_dir behaves correctly when no exception is
+        raised from inside it.
+
+        By behave correctly we mean: creates and returns a tempdir, which
+        is deleted after we exit the context manager.
+        """
+        with ansible.create_temp_dir() as temp_dir:
+            self.assertTrue(os.path.exists(temp_dir))
+            self.assertTrue(os.path.isdir(temp_dir))
+        self.assertFalse(os.path.exists(temp_dir))
+
+    def test_create_temp_dir_exception(self):
+        """
+        Check if create_temp_dir behaves correctly when an exception is
+        raised from inside it.
+
+        By behave correctly we mean: creates and returns a tempdir, which
+        is deleted after we exit the context manager.
+        """
+        saved_temp_dir = None
+        with self.assertRaises(KeyboardInterrupt):
+            with ansible.create_temp_dir() as temp_dir:
+                saved_temp_dir = temp_dir
+                self.assertTrue(os.path.exists(temp_dir))
+                self.assertTrue(os.path.isdir(temp_dir))
+                raise KeyboardInterrupt()
+        self.assertIsNotNone(saved_temp_dir)
+        self.assertFalse(os.path.exists(saved_temp_dir))
+
+    def test_string_to_file_path_ok(self):
+        """
+        Check if string_to_file_path creates a file with proper contents.
+        """
+        file_path = ansible.string_to_file_path("TEST ąęłźżó")
+        try:
+            with open(file_path, 'r') as f:
+                self.assertEqual("TEST ąęłźżó", f.read())
+        finally:
+            os.remove(file_path)
