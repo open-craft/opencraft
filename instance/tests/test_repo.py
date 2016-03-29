@@ -23,7 +23,6 @@ Git repository - Tests
 # Imports #####################################################################
 
 import os.path
-
 from unittest.mock import call, patch
 
 from instance import repo

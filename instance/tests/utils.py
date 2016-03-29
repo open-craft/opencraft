@@ -20,12 +20,15 @@
 Test utils
 """
 
-from contextlib import ExitStack
+# Imports #####################################################################
 
-from mock import Mock, patch
+from contextlib import ExitStack
+from unittest.mock import Mock, patch
 
 from instance.tests.models.factories.server import OSServerMockManager
 
+
+# Functions ###################################################################
 
 def patch_services(func):
     """

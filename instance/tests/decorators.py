@@ -19,9 +19,14 @@
 """
 Decorators - Useful decorators for unit tests
 """
+
+# Imports #####################################################################
+
 from functools import wraps
 from unittest import mock
 
+
+# Functions ###################################################################
 
 def patch_git_checkout(func):
     """

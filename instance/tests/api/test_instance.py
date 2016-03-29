@@ -22,10 +22,9 @@ Views - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import call, patch
+
 from ddt import ddt, data
-
-from mock import call, patch
-
 from rest_framework import status
 
 from instance import github

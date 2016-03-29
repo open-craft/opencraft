@@ -22,10 +22,10 @@ OpenStack - Tests
 
 # Imports #####################################################################
 
-import requests
-
 from collections import namedtuple
 from unittest.mock import Mock, call, patch
+
+import requests
 
 from instance import openstack
 from instance.tests.base import TestCase

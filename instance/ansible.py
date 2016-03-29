@@ -22,20 +22,19 @@ Ansible - Helper functions
 
 # Imports #####################################################################
 
+from contextlib import contextmanager
+import logging
 import os
 import shutil
 import subprocess
-import yaml
-
-from contextlib import contextmanager
 from tempfile import mkdtemp, NamedTemporaryFile
+import yaml
 
 from django.conf import settings
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

@@ -24,8 +24,7 @@ Utils module - Tests
 
 import itertools
 import subprocess
-
-from mock import patch
+from unittest.mock import patch
 
 from instance.tests.base import TestCase
 from instance.utils import poll_streams, _line_timeout_generator

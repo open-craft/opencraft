@@ -22,6 +22,7 @@ Instance app models - Instance
 
 # Imports #####################################################################
 
+from functools import partial
 import logging
 import string
 
@@ -32,7 +33,6 @@ from django.template import loader
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django_extensions.db.models import TimeStampedModel
-from functools import partial
 
 from instance.gandi import GandiAPI
 from instance.logger_adapter import InstanceLoggerAdapter

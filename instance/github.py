@@ -22,19 +22,19 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
+import logging
 import functools
 import operator
 import re
-import requests
-import yaml
 
 from django.conf import settings
 from django.template.defaultfilters import truncatewords
+import requests
+import yaml
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

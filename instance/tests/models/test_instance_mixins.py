@@ -19,14 +19,17 @@
 """
 Model Mixins - Tests
 """
-import subprocess
+
+# Imports #####################################################################
 
 import os
+import subprocess
+from unittest.mock import patch, call
+
 import pymongo
 from django.conf import settings
 from django.core import mail as django_mail
 from django.test.utils import override_settings
-from mock import patch, call
 
 from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tests.base import TestCase
@@ -36,8 +39,10 @@ from instance.tests.models.factories.server import (
     BootingOpenStackServerFactory, OpenStackServerFactory, ReadyOpenStackServerFactory
 )
 
-#pylint: disable=no-member
 
+# Tests #######################################################################
+
+#pylint: disable=no-member
 
 class GitHubInstanceTestCase(TestCase):
     """

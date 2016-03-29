@@ -23,25 +23,23 @@ Instance app models - Server
 # Imports #####################################################################
 
 import logging
-import novaclient
 import time
-
-from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django_extensions.db.models import TimeStampedModel
+import novaclient
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack
 from instance.logger_adapter import ServerLoggerAdapter
-from instance.utils import is_port_open, to_json
-
 from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
 )
+from instance.utils import is_port_open, to_json
 
 
 # Logging #####################################################################

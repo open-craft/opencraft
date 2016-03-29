@@ -19,7 +19,11 @@
 """
 Instance app model mixins - Ansible
 """
+
+# Imports #####################################################################
+
 import os
+
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -29,6 +33,8 @@ from instance import ansible
 from instance.repo import open_repository
 from instance.utils import poll_streams
 
+
+# Classes #####################################################################
 
 class AnsibleInstanceMixin(models.Model):
     """

@@ -22,9 +22,10 @@ Logger models & mixins - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 from django.test import override_settings
 from freezegun import freeze_time
-from mock import patch
 
 from instance.models.log_entry import GeneralLogEntry
 from instance.tests.base import TestCase

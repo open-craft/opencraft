@@ -22,7 +22,7 @@ Tests - Integration - Base
 
 # Imports #####################################################################
 
-from huey import djhuey
+from huey.contrib import djhuey
 
 from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.server import OpenStackServer
