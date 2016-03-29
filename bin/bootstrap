@@ -1,13 +1,13 @@
 #!/bin/bash
 # This script provisions a development environment with local postgres and
-# redis servers for development and testing. Assumes ubuntu 14.04
+# redis servers for development and testing. Assumes Ubuntu 16.04
 
 set -e
 
-# If this is a vagrant VM, cd to /vagrant on login
+# If this is a vagrant VM, cd to ~/vagrant on login
 if [[ $USER == 'vagrant' ]]; then
-  cd /vagrant
-  grep -Fq 'cd /vagrant' ~/.bashrc || echo 'cd /vagrant' >> ~/.bashrc
+  cd ~/opencraft
+  grep -Fq 'cd ~/opencraft' ~/.bashrc || echo 'cd ~/opencraft' >> ~/.bashrc
 fi
 
 # Install system packages
@@ -28,14 +28,19 @@ if [[ $USER == 'vagrant' ]]; then
 fi
 
 # Install python dependencies
-pip3 install -r requirements.txt
+pip install -r requirements.txt
+
+# TODO: Should only be needed for the unofficial vagrant image
+# Remove when switching to the official, when it is released
+echo "update user set plugin='mysql_native_password' where user='root' and host='localhost'; flush privileges;" \
+    | sudo -H -u root mysql mysql
 
 # Create postgres user
 sudo -u postgres createuser -d $USER ||
   echo "Could not create postgres user '$USER' - it probably already exists"
 
 # Allow access to postgres from localhost without password
-cat << EOF | sudo tee /etc/postgresql/9.3/main/pg_hba.conf
+cat << EOF | sudo tee /etc/postgresql/9.5/main/pg_hba.conf
 local   all             postgres                                peer
 local   all             all                                     trust
 host    all             all             127.0.0.1/32            trust
