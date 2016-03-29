@@ -183,6 +183,8 @@ flavor:
 * `REDIS_URL` (default: `redis://localhost:6379/`)
 * `HUEY_ALWAYS_EAGER` Set to True to run huey tasks synchronously, in the web
   process. Use in development only (default: False)
+* `LOGGING_ROTATE_MAX_KBYTES`: The max size of each log file (in KB, default: 10MB)
+* `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
 
 ### OpenStack credentials
 
