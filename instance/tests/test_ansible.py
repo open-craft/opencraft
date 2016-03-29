@@ -25,6 +25,7 @@ Ansible - Tests
 import os.path
 from unittest import mock
 from unittest.mock import patch
+
 import yaml
 
 from instance import ansible
@@ -70,7 +71,7 @@ class YAMLTestCase(TestCase):
         Merge of two yaml strings with overlapping variables
         """
         yaml_result_str = ansible.yaml_merge(self.yaml_str1, self.yaml_str2)
-        self.assertEquals(yaml.load(yaml_result_str), {
+        self.assertEqual(yaml.load(yaml_result_str), {
             'testa': 'firsta with unicode «ταБЬℓσ»',
             'testb': 'secondb with unicode «ταБЬℓσ2»',
             'testc': 'secondc',

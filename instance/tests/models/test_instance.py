@@ -26,15 +26,13 @@ OpenEdXInstance model - Tests
 import os
 import re
 import subprocess
-
-from contextlib import ExitStack
-from mock import call, patch, Mock
 from urllib.parse import urlparse
 
+from contextlib import ExitStack
 from django.core import mail as django_mail
 from django.conf import settings
 from django.test import override_settings
-
+from mock import call, patch, Mock
 import pymongo
 import yaml
 

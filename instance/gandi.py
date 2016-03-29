@@ -22,6 +22,7 @@ Gandi DNS - Helper functions
 
 # Imports #####################################################################
 
+import logging
 import time
 import xmlrpc.client
 
@@ -31,7 +32,6 @@ from django.core.cache import cache
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -45,14 +45,14 @@ class GandiAPI():
         self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
-    def api_key(self): #pylint: disable=no-self-use
+    def api_key(self):
         """
         Gandi API key
         """
         return settings.GANDI_API_KEY
 
     @property
-    def zone_id(self): #pylint: disable=no-self-use
+    def zone_id(self):
         """
         Gandi Zone ID of the domain
         """

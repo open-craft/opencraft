@@ -22,9 +22,10 @@ OpenStackServer model - Factories
 
 # Imports #####################################################################
 
+from functools import wraps
+
 import factory
 from factory.django import DjangoModelFactory
-from functools import wraps
 from mock import MagicMock, Mock, patch
 
 from instance.models.server import OpenStackServer
@@ -122,6 +123,7 @@ class OpenStackServerFactory(DjangoModelFactory):
         if 'progress' in kwargs:
             kwargs['_progress'] = kwargs.pop('progress').state_id
         if hasattr(cls, '_status') and '_status' not in kwargs:
+            #TODO: why is no-member disabled?
             kwargs['_status'] = cls._status  # pylint: disable=no-member
         return kwargs
 

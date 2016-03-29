@@ -22,7 +22,7 @@ Tests - Integration - Base
 
 # Imports #####################################################################
 
-from huey import djhuey
+from huey.contrib import djhuey
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import TestCase

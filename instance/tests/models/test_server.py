@@ -25,8 +25,8 @@ OpenStackServer model - Tests
 import http.client
 import io
 
-import novaclient
 from mock import Mock, call, patch
+import novaclient
 
 from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress
 from instance.models.utils import SteadyStateException, WrongStateException

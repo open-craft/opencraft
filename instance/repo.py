@@ -22,16 +22,16 @@ Git repository - Helper functions
 
 # Imports #####################################################################
 
-import git
+import logging
 import tempfile
 import shutil
-
 from contextlib import contextmanager
+
+import git
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

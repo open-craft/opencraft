@@ -24,12 +24,12 @@ Instance app - Util functions
 
 import itertools
 import json
-import requests
 import selectors
 import socket
 import time
 
 from mock import Mock
+import requests
 
 
 # Functions ###################################################################

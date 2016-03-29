@@ -69,6 +69,8 @@ class ValidateModelMixin(object):
 class ClassProperty(property):
     """ Same as built-in 'property' global but also works when accessed as a class attribute """
     def __get__(self, cls, owner):
+        # TODO: Requires astroid 2.0+ to pass pylint
+        # https://bitbucket.org/logilab/pylint/issues/439/confused-by-descriptors
         return self.fget.__get__(None, owner)()  # pylint: disable=no-member
 
 
@@ -244,6 +246,7 @@ class ResourceStateDescriptor:
                 """
                 state = self.__get__(resource)
                 if not isinstance(state, accepted_states):
+                    #TODO: why is no-member disabled?
                     raise WrongStateException("The method '{}' cannot be called in this state ({} / {}).".format(
                         method.__name__, state.name, state.__class__.__name__  # pylint: disable=no-member
                     ))
@@ -265,6 +268,7 @@ class ResourceStateDescriptor:
                         return method(resource, *args, **kwargs)
                     wrapped_method.is_available = lambda: isinstance(descriptor.__get__(resource), accepted_states)
                     return wrapped_method
+
             return MagicWrapper()
         return wrap
 
@@ -284,6 +288,7 @@ class ResourceStateDescriptor:
             """ The method that performs a specific transition """
             current_state = self.__get__(resource)
             if from_states and not isinstance(current_state, from_states):
+                #TODO: why is no-member disabled?
                 raise WrongStateException("This transition cannot be used to move from {} to {}".format(
                     current_state.name, to_state.name  # pylint: disable=no-member
                 ))

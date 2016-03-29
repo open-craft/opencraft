@@ -26,13 +26,10 @@ Websocket server, based on Tornado & SwampDragon
 import os
 import sys
 
-from swampdragon.swampdragon_server import run_server
-
-
-# Django ######################################################################
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opencraft.settings")
+
 from django.conf import settings
+from swampdragon.swampdragon_server import run_server
 
 
 # Main ########################################################################

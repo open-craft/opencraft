@@ -289,13 +289,13 @@ class SimpleResourceTestCase(TestCase):
         It is forbidden to declare a ResourceStateDescriptor which has multiple states with the
         same state_id.
         """
-        with self.assertRaisesRegexp(AssertionError, "A resource's states must each have a unique state_id"):
+        with self.assertRaisesRegex(AssertionError, "A resource's states must each have a unique state_id"):
             ResourceStateDescriptor(state_classes=(State1, State1, State3), default_state=State1)
 
         class ChildState(State2):
             """ A child of state2 with the same state_id """
 
-        with self.assertRaisesRegexp(AssertionError, "A resource's states must each have a unique state_id"):
+        with self.assertRaisesRegex(AssertionError, "A resource's states must each have a unique state_id"):
             ResourceStateDescriptor(state_classes=(State1, State2, ChildState), default_state=State1)
 
     def test_missing_state_ids(self):
@@ -303,7 +303,7 @@ class SimpleResourceTestCase(TestCase):
         It is forbidden to declare ResourceStateDescriptor using states that have no state_id
         """
         self.assertEqual(BaseState.state_id, None)
-        with self.assertRaisesRegexp(AssertionError, "A resource's states must each declare a state_id string"):
+        with self.assertRaisesRegex(AssertionError, "A resource's states must each declare a state_id string"):
             ResourceStateDescriptor(state_classes=(State1, BaseState), default_state=State1)
 
     def test_cannot_assign_state(self):
@@ -371,22 +371,26 @@ class SimpleResourceTestCase(TestCase):
         # In State 1, we can call method_one():
         res.return_value = 'A'
         self.assertEqual(res.method_one(), 'A')
-        self.assertEqual(res.method_one.is_available(), True)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_one.is_available(), True) #pylint: disable=no-member
 
         # In State 1, we can call method_one_with_args():
         self.assertEqual(res.method_one_with_args(4, 5, c=6), 32)
-        self.assertEqual(res.method_one_with_args.is_available(), True)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_one_with_args.is_available(), True) #pylint: disable=no-member
 
         # But not method_two()
         expected_message = "The method 'method_two' cannot be called in this state \\(State 1 / State1\\)."
         with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_two()
-        self.assertEqual(res.method_two.is_available(), False)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_two.is_available(), False) #pylint: disable=no-member
 
         # In State 1, we can call method_odd():
         res.return_value = 'B'
         self.assertEqual(res.method_odd(), 'B')
-        self.assertEqual(res.method_odd.is_available(), True)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_odd.is_available(), True) #pylint: disable=no-member
 
         # Go to State 2:
         res.increment_state()
@@ -395,11 +399,13 @@ class SimpleResourceTestCase(TestCase):
         expected_message = "The method 'method_one' cannot be called in this state \\(State 2 / State2\\)."
         with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_one()
-        self.assertEqual(res.method_one.is_available(), False)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_one.is_available(), False) #pylint: disable=no-member
 
         res.return_value = 'C'
         self.assertEqual(res.method_two(), 'C')
-        self.assertEqual(res.method_two.is_available(), True)
+        # TODO: Why do we need to disable no-member for `is_available`?
+        self.assertEqual(res.method_two.is_available(), True) #pylint: disable=no-member
 
     def test_property_only_for(self):
         """

@@ -25,11 +25,11 @@ using the variable name passed to `env()` below
 
 # Imports #####################################################################
 
-import environ
 import logging
 import os
-
 from urllib.parse import urlparse
+
+import environ
 
 
 # Functions ###################################################################
@@ -77,7 +77,7 @@ INSTALLED_APPS = (
     'compressor',
     'djangular',
     'rest_framework',
-    'huey.djhuey',
+    'huey.contrib.djhuey',
     'swampdragon',
     'debug_toolbar',
 ) + LOCAL_APPS
