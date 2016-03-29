@@ -36,7 +36,7 @@ class IndexViewsTestCase(WithUserTestCase):
         Index view - Unauthenticated users go to login page
         """
         response = self.client.get('/')
-        self.assertRedirects(response, 'http://testserver/admin/login/?next=/')
+        self.assertRedirects(response, '/admin/login/?next=/')
 
     def test_index_authenticated(self):
         """

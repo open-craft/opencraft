@@ -26,6 +26,8 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
+import instance
+
 
 # URL Patterns ################################################################
 
@@ -35,5 +37,5 @@ urlpatterns = [
     url(r'^api/', include('api.urls', namespace="api")),
     url(r'^instance/', include('instance.urls', namespace="instance")),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', 'instance.views.index'),
+    url(r'^$', instance.views.index),
 ]
