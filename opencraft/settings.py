@@ -305,6 +305,8 @@ ADMINS = env.json('ADMINS', default=set())
 
 BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console"])
 HANDLERS = BASE_HANDLERS + ['db']
+LOGGING_ROTATE_MAX_KBYTES = env.json('LOGGING_ROTATE_MAX_KBYTES', default=10 * 1024)
+LOGGING_ROTATE_MAX_FILES = env.json('LOGGING_ROTATE_MAX_FILES', default=60)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -359,8 +361,10 @@ LOGGING = {
 if 'file' in HANDLERS:
     LOGGING['handlers']['file'] = {
         'level': 'DEBUG',
-        'class': 'logging.FileHandler',
+        'class': 'logging.handlers.RotatingFileHandler',
         'filename': 'log/main.log',
+        'maxBytes': LOGGING_ROTATE_MAX_KBYTES * 1024,
+        'backupCount': LOGGING_ROTATE_MAX_FILES,
         'formatter': 'verbose'
     }
 
