@@ -28,7 +28,8 @@ import io
 import novaclient
 from mock import Mock, call, patch
 
-from instance.models.server import OpenStackServer, ServerNotReady
+from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress
+from instance.models.utils import WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
@@ -62,8 +63,8 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServerFactory()
         self.assertEqual(OpenStackServer.objects.get().pk, server.pk)
         self.assertEqual(str(server), 'New OpenStack Server')
-        self.assertEqual(server.status, server.NEW)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+        self.assertEqual(server.status, ServerStatus.New)
+        self.assertEqual(server.progress, ServerProgress.Running)
 
     @patch('instance.models.server.openstack.create_server')
     def test_start_server(self, mock_create_server):
@@ -73,8 +74,8 @@ class OpenStackServerTestCase(TestCase):
         mock_create_server.return_value.id = 'new-server-id'
         server = OpenStackServerFactory()
 
-        self.assertEqual(server.status, server.NEW)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+        self.assertEqual(server.status, ServerStatus.New)
+        self.assertEqual(server.progress, ServerProgress.Running)
         server.start()
         mock_create_server.assert_called_once_with(
             server.nova,
@@ -85,8 +86,8 @@ class OpenStackServerTestCase(TestCase):
         )
 
         server = OpenStackServer.objects.get(pk=server.pk)
-        self.assertEqual(server.status, server.STARTED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.status, ServerStatus.Started)
+        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(server.openstack_id, 'new-server-id')
         self.assertEqual(str(server), 'new-server-id')
 
@@ -129,50 +130,50 @@ class OpenStackServerTestCase(TestCase):
         Sleep until the server gets to 'booted' status (single status string argument)
         """
         server = OpenStackServerFactory()
-        status_queue = [server.STARTED, server.STARTED, server.ACTIVE, server.BOOTED, server.TERMINATED]
+        status_queue = [ServerStatus.Started, ServerStatus.Started, ServerStatus.Active, ServerStatus.Booted, ServerStatus.Terminated]
         status_queue.reverse() # To be able to use pop()
 
         def update_status():
             """ Simulate status progression successive runs """
             server.status = status_queue.pop()
-            server.progress = server.PROGRESS_SUCCESS
+            server.progress = ServerProgress.Success
         mock_update_status.side_effect = update_status
 
-        self.assertEqual(server.sleep_until_status(server.BOOTED), server.BOOTED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
-        self.assertEqual(server.status, server.BOOTED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.sleep_until_status(ServerStatus.Booted), ServerStatus.Booted)
+        self.assertEqual(server.progress, ServerProgress.Success)
+        self.assertEqual(server.status, ServerStatus.Booted)
+        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(mock_sleep.call_count, 3)
-        self.assertEqual(status_queue, [server.TERMINATED])
+        self.assertEqual(status_queue, [ServerStatus.Terminated])
 
+    @patch('instance.models.server.OpenStackServer.save')
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_status_list(self, mock_sleep, mock_update_status):
+    def test_sleep_until_status_list(self, mock_sleep, mock_update_status, mock_save):
         """
         Sleep until the server gets to one of the status in a list
         """
         server = OpenStackServerFactory()
-        status_queue = [server.STARTED, server.ACTIVE, server.BOOTED]
+        status_queue = [server._status_to_started, server._status_to_active, server._status_to_booted]
         status_queue.reverse() # To be able to use pop()
 
         def update_status():
             """ Simulate status progression successive runs """
-            server.status = status_queue.pop()
-            server.progress = server.PROGRESS_SUCCESS
+            server._transition(status_queue.pop())
         mock_update_status.side_effect = update_status
 
-        self.assertEqual(server.sleep_until_status([server.TERMINATED, server.BOOTED]), server.BOOTED)
-        self.assertEqual(server.status, server.BOOTED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.sleep_until_status([ServerStatus.Terminated, ServerStatus.Booted]), ServerStatus.Booted)
+        self.assertEqual(server.status, ServerStatus.Booted)
+        self.assertEqual(server.progress, ServerProgress.Success)
 
     @patch('instance.models.server.time.sleep')
     def test_reboot_provisioned_server(self, mock_sleep):
         """
         Reboot a provisioned server
         """
-        server = StartedOpenStackServerFactory(status=OpenStackServer.PROVISIONING)
+        server = StartedOpenStackServerFactory(_status=ServerStatus.Provisioning.state_id)
         server.reboot()
-        self.assertEqual(server.status, server.REBOOTING)
+        self.assertEqual(server.status, ServerStatus.Rebooting)
         server.os_server.reboot.assert_called_once_with(reboot_type='SOFT')
         mock_sleep.assert_called_once_with(30)
 
@@ -181,7 +182,7 @@ class OpenStackServerTestCase(TestCase):
         Attempt to reboot a server while in a status that doesn't allow it
         """
         server = StartedOpenStackServerFactory()
-        with self.assertRaises(ServerNotReady):
+        with self.assertRaises(WrongStateException):
             server.reboot()
 
     def test_terminate_new_server(self):
@@ -190,11 +191,11 @@ class OpenStackServerTestCase(TestCase):
         """
         server = OpenStackServerFactory()
         server.terminate()
-        self.assertEqual(server.status, server.TERMINATED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        self.assertEqual(server.progress, ServerProgress.Success)
         server.terminate() # This shouldn't change anything
-        self.assertEqual(server.status, server.TERMINATED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertFalse(server.nova.mock_calls)
 
     def test_terminate_started_server(self):
@@ -203,8 +204,8 @@ class OpenStackServerTestCase(TestCase):
         """
         server = StartedOpenStackServerFactory()
         server.terminate()
-        self.assertEqual(server.status, server.TERMINATED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        self.assertEqual(server.progress, ServerProgress.Success)
         server.os_server.delete.assert_called_once_with()
 
     def test_terminate_server_not_found(self):
@@ -221,8 +222,8 @@ class OpenStackServerTestCase(TestCase):
 
         server.terminate()
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
-        self.assertEqual(server.status, server.TERMINATED)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        self.assertEqual(server.progress, ServerProgress.Success)
 
     def test_public_ip_new_server(self):
         """
@@ -260,18 +261,18 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         mock_create_server.return_value.id = 'new-server-id'
         server = OpenStackServerFactory(os_server_fixture='openstack/api_server_1_building.json')
-        self.assertEqual(server.status, server.NEW)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
-        self.assertEqual(server.update_status(), server.ACTIVE)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+        self.assertEqual(server.status, ServerStatus.New)
+        self.assertEqual(server.progress, ServerProgress.Running)
+        self.assertIsInstance(server.update_status(), ServerStatus.Active)
+        self.assertEqual(server.progress, ServerProgress.Running)
 
     def test_update_status_started(self):
         """
         Update status while the server is started, without change on the OpenStack VM
         """
         server = StartedOpenStackServerFactory(os_server_fixture='openstack/api_server_1_building.json')
-        self.assertEqual(server.update_status(), server.ACTIVE)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+        self.assertIsInstance(server.update_status(), ServerStatus.Active)
+        self.assertEqual(server.progress, ServerProgress.Running)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_started_to_active(self, mock_is_port_open):
@@ -280,9 +281,9 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         mock_is_port_open.return_value = False
         server = StartedOpenStackServerFactory(os_server_fixture='openstack/api_server_2_active.json')
-        self.assertEqual(server.update_status(), server.ACTIVE)
-        self.assertEqual(server.status, server.ACTIVE)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertIsInstance(server.update_status(), ServerStatus.Active)
+        self.assertEqual(server.status, ServerStatus.Active)
+        self.assertEqual(server.progress, ServerProgress.Success)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_active_to_booted(self, mock_is_port_open):
@@ -291,13 +292,13 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            status=OpenStackServer.ACTIVE)
+            _status=ServerStatus.Active.state_id)
         mock_is_port_open.return_value = False
-        self.assertEqual(server.update_status(), server.ACTIVE)
+        self.assertIsInstance(server.update_status(), ServerStatus.Active)
         mock_is_port_open.return_value = True
-        self.assertEqual(server.update_status(), server.BOOTED)
-        self.assertEqual(server.status, server.BOOTED)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+        self.assertIsInstance(server.update_status(), ServerStatus.Booted)
+        self.assertEqual(server.status, ServerStatus.Booted)
+        self.assertEqual(server.progress, ServerProgress.Success)
 
     def test_update_status_booted_to_provisioned(self):
         """
@@ -305,12 +306,14 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            status=OpenStackServer.BOOTED)
-        self.assertEqual(server.update_status(), server.BOOTED)
-        self.assertEqual(server.update_status(provisioning=True), server.PROVISIONING)
-        self.assertEqual(server.update_status(provisioning=True, failed=False), server.PROVISIONING)
-        self.assertEqual(server.status, server.PROVISIONING)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+            _status=ServerStatus.Booted.state_id)
+        self.assertIsInstance(server.update_status(), ServerStatus.Booted)
+        server.mark_as_provisioning()
+        self.assertEqual(server.status, ServerStatus.Provisioning)
+        self.assertEqual(server.progress, ServerProgress.Running)
+        server.mark_provisioning_finished(success=True)
+        self.assertEqual(server.status, ServerStatus.Provisioning)
+        self.assertEqual(server.progress, ServerProgress.Success)
 
     def test_update_status_booted_to_error(self):
         """
@@ -318,25 +321,31 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            status=OpenStackServer.BOOTED)
-        self.assertEqual(server.update_status(), server.BOOTED)
-        self.assertEqual(server.update_status(provisioning=True), server.PROVISIONING)
-        self.assertEqual(server.update_status(provisioning=True, failed=True), server.PROVISIONING)
-        self.assertEqual(server.progress, server.PROGRESS_FAILED)
+            _status=ServerStatus.Booted.state_id)
+        self.assertIsInstance(server.update_status(), ServerStatus.Booted)
+        server.mark_as_provisioning()
+        self.assertEqual(server.status, ServerStatus.Provisioning)
+        self.assertEqual(server.progress, ServerProgress.Running)
+        server.mark_provisioning_finished(success=False)
+        self.assertEqual(server.status, ServerStatus.Provisioning)
+        self.assertEqual(server.progress, ServerProgress.Failed)
 
-    def test_update_status_provisioned_to_rebooting(self):
+    @patch('instance.models.server.time.sleep')
+    def test_update_status_provisioned_to_rebooting(self, _mock_sleep):
         """
         Update status when the server is rebooted, after being provisioned
         """
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            status=OpenStackServer.PROVISIONING,
-            progress=OpenStackServer.PROGRESS_SUCCESS)
-        self.assertEqual(server.update_status(), server.PROVISIONING)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
-        self.assertEqual(server.update_status(rebooting=True), server.REBOOTING)
-        self.assertEqual(server.status, server.REBOOTING)
-        self.assertEqual(server.progress, server.PROGRESS_RUNNING)
+            _status=ServerStatus.Provisioning.state_id,
+            _progress=ServerProgress.Success.state_id)
+        self.assertIsInstance(server.update_status(), ServerStatus.Provisioning)
+        self.assertEqual(server.progress, ServerProgress.Success)
+        server.reboot()
+        self.assertEqual(server.status, ServerStatus.Rebooting)
+        self.assertIsInstance(server.update_status(), ServerStatus.Rebooting)
+        self.assertEqual(server.status, ServerStatus.Rebooting)
+        self.assertEqual(server.progress, ServerProgress.Running)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_rebooting_to_ready(self, mock_is_port_open):
@@ -345,10 +354,10 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         server = StartedOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            status=OpenStackServer.REBOOTING)
+            _status=ServerStatus.Rebooting.state_id)
         mock_is_port_open.return_value = False
-        self.assertEqual(server.update_status(), server.REBOOTING)
+        self.assertIsInstance(server.update_status(), ServerStatus.Rebooting)
         mock_is_port_open.return_value = True
-        self.assertEqual(server.update_status(), server.READY)
-        self.assertEqual(server.status, server.READY)
-        self.assertEqual(server.progress, server.PROGRESS_SUCCESS)
+        self.assertIsInstance(server.update_status(), ServerStatus.Ready)
+        self.assertEqual(server.status, ServerStatus.Ready)
+        self.assertEqual(server.progress, ServerProgress.Success)

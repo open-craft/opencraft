@@ -86,8 +86,8 @@ class InstanceAPITestCase(APITestCase):
         """
         self.api_client.login(username='user1', password='pass')
         instance = OpenEdXInstanceFactory()
-        OpenStackServerFactory(instance=instance, progress=OpenStackServer.PROGRESS_RUNNING)
-        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
+        OpenStackServerFactory(instance=instance, progress=OpenStackServer.Progress.Running)
+        self.assertEqual(instance.progress, OpenStackServer.Progress.Running)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -111,8 +111,8 @@ class InstanceAPITestCase(APITestCase):
         self.api_client.login(username='user1', password='pass')
         instance = OpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
         OpenStackServerFactory(instance=instance,
-                               status=OpenStackServer.READY,
-                               progress=OpenStackServer.PROGRESS_SUCCESS)
+                               status=OpenStackServer.Status.Ready,
+                               progress=OpenStackServer.Progress.Success)
         mock_get_commit_id_from_ref.return_value = '1' * 40
 
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
