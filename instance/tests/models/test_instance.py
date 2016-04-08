@@ -25,9 +25,11 @@ OpenEdXInstance model - Tests
 import os
 import re
 import subprocess
+
 from mock import call, patch
 from urllib.parse import urlparse
 
+from django.core import mail as django_mail
 from django.conf import settings
 from django.test import override_settings
 
@@ -151,7 +153,7 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(instance.github_admin_username_list, [])
         self.assertNotIn('COMMON_USER_INFO', instance.ansible_settings)
 
-    @patch('instance.models.instance.get_username_list_from_team')
+    @patch('instance.models.mixins.version_control.get_username_list_from_team')
     def test_github_admin_username_list_with_org_set(self, mock_get_username_list):
         """
         When an admin org is set, its members should be included in the ansible conf
@@ -194,7 +196,7 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(db_instance.github_organization_name, 'open-craft')
         self.assertEqual(db_instance.github_repository_name, 'edx')
 
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_set_to_branch_tip_commit(self, mock_get_commit_id_from_ref):
         """
         Set the commit id to the tip of the current branch, using the default commit policy (True)
@@ -215,7 +217,7 @@ class GitHubInstanceTestCase(TestCase):
         db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.commit_id, 'b' * 40)
 
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_set_to_branch_tip_no_commit(self, mock_get_commit_id_from_ref):
         """
         Set the commit id to the tip of the current branch, with commit=False
@@ -229,7 +231,7 @@ class GitHubInstanceTestCase(TestCase):
         db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.commit_id, 'a' * 40)
 
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_set_to_branch_tip_extra_args(self, mock_get_commit_id_from_ref):
         """
         Set the commit id to the tip of a specified reference
@@ -241,7 +243,7 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(instance.branch_name, 'new-branch')
         self.assertEqual(instance.ref_type, 'tag')
 
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_set_to_branch_tip_replace_commit_hash(self, mock_get_commit_id_from_ref):
         """
         The hash should be updated in the instance name when updating
@@ -336,10 +338,10 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertNotIn('Vars Instance', instance.ansible_settings)
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.ansible_settings)
 
-    @patch('instance.models.instance.poll_streams')
+    @patch('instance.models.mixins.ansible.poll_streams')
     @patch('instance.models.instance.OpenEdXInstance.inventory_str')
-    @patch('instance.models.instance.ansible.run_playbook')
-    @patch('instance.models.instance.open_repository')
+    @patch('instance.models.mixins.ansible.ansible.run_playbook')
+    @patch('instance.models.mixins.ansible.open_repository')
     def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_poll_streams):
         """
         Test instance deployment
@@ -358,7 +360,7 @@ class AnsibleInstanceTestCase(TestCase):
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 
-    @patch('instance.models.instance.ansible.run_playbook')
+    @patch('instance.models.mixins.ansible.ansible.run_playbook')
     def test_run_playbook_logging(self, mock_run_playbook):
         """
         Ensure logging routines are working on _run_playbook method
@@ -503,12 +505,114 @@ class MongoDBInstanceTestCase(TestCase):
         self.check_mongo(instance)
 
 
+class EmailMixinInstanceTestCase(TestCase):
+    """
+    Test cases for EmailMixin
+    """
+
+    def _assert_called(self, mock, call_count=1):
+        """
+        Helper method - asserts that mock was called `call_count` times
+        """
+        self.assertTrue(mock.called)
+        self.assertEqual(len(mock.call_args_list), call_count)
+
+    def _get_call_arguments(self, mock, call_index=0):
+        """
+        Helper method - returns args and kwargs for `call_number`-th call
+        """
+        self.assertGreaterEqual(len(mock.call_args_list), call_index + 1)
+        args, unused_kwargs = mock.call_args_list[call_index]
+        return args
+
+    def _check_email_attachment(self, args, name, content_parts, mimetype=None):
+        """
+        Checks that `email.attach` arguments are as expected
+        """
+        attachment_name, attachment_content, attachment_mime = args
+
+        self.assertEqual(attachment_name, name)
+        for part in content_parts:
+            self.assertIn(part, attachment_content)
+
+        if mimetype:
+            self.assertEqual(attachment_mime, mimetype)
+
+    @override_settings(ADMINS=(("admin1", "admin1@localhost"),))
+    def test_provision_failed_email(self):
+        """
+        Tests that provision_failed sends email when called from normal program flow
+        """
+        instance = OpenEdXInstanceFactory(name='test', sub_domain='test')
+        reason = "something went wrong"
+        log_lines = ["log line1", "log_line2"]
+
+        instance.provision_failed_email(reason, log_lines)
+
+        expected_subject = OpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
+            instance_name=instance.name, instance_url=instance.url
+        )
+        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS]
+
+        self.assertEqual(len(django_mail.outbox), 1)
+        mail = django_mail.outbox[0]
+
+        self.assertIn(expected_subject, mail.subject)
+        self.assertIn(instance.name, mail.body)
+        self.assertIn(reason, mail.body)
+        self.assertEqual(mail.from_email, settings.SERVER_EMAIL)
+        self.assertEqual(mail.to, expected_recipients)
+
+        self.assertEqual(len(mail.attachments), 1)
+        self.assertEqual(mail.attachments[0], ("provision.log", "\n".join(log_lines), "text/plain"))
+
+    @override_settings(ADMINS=(
+        ("admin1", "admin1@localhost"),
+        ("admin2", "admin2@localhost"),
+    ))
+    def test_provision_failed_exception_email(self):
+        """
+        Tests that provision_failed sends email when called from exception handler
+        """
+        instance = OpenEdXInstanceFactory(name='exception_test', sub_domain='exception_test')
+        reason = "something went wrong"
+        log_lines = ["log line1", "log_line2"]
+
+        exception_message = "Something Bad happened Unexpectedly"
+        exception = Exception(exception_message)
+        try:
+            raise exception
+        except Exception:  # pylint: disable=broad-except
+            instance.provision_failed_email(reason, log_lines)
+
+        expected_subject = OpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
+            instance_name=instance.name, instance_url=instance.url
+        )
+        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS]
+
+        self.assertEqual(len(django_mail.outbox), 1)
+        mail = django_mail.outbox[0]
+
+        self.assertIn(expected_subject, mail.subject)
+        self.assertIn(instance.name, mail.body)
+        self.assertIn(reason, mail.body)
+        self.assertEqual(mail.from_email, settings.SERVER_EMAIL)
+        self.assertEqual(mail.to, expected_recipients)
+
+        self.assertEqual(len(mail.attachments), 2)
+        self.assertEqual(mail.attachments[0], ("provision.log", "\n".join(log_lines), "text/plain"))
+        name, content, mime_type = mail.attachments[1]
+        self.assertEqual(name, "debug.html")
+        self.assertIn(exception_message, content)
+        self.assertEqual(mime_type, "text/html")
+
+
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models
     """
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_create_defaults(self, mock_get_commit_id_from_ref):
         """
         Create an instance without specifying additional fields,
@@ -526,7 +630,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertFalse(instance.mongo_pass)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_create_from_pr(self, mock_get_commit_id_from_ref):
         """
         Create an instance from a pull request
@@ -542,7 +646,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIs(instance.use_ephemeral_databases, True)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_create_from_pr_ephemeral_databases(self, mock_get_commit_id_from_ref):
         """
         Instances should use ephemeral databases if requested in the PR
@@ -553,7 +657,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIs(instance.use_ephemeral_databases, True)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     def test_create_from_pr_persistent_databases(self, mock_get_commit_id_from_ref):
         """
         Instances should use persistent databases if requested in the PR
@@ -722,18 +826,20 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mock_provision_mongo.call_count, 0)
 
     @patch_os_server
+    @patch('instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email')
     @patch('instance.models.server.OpenStackServer.sleep_until_status')
     @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
     @patch('instance.models.server.OpenStackServer.start', autospec=True)
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.deploy')
     def test_provision_failed(self, os_server_manager, mock_deploy, mock_set_dns_record,
-                              mock_server_start, mock_os_server, mock_sleep_until_status):
+                              mock_server_start, mock_os_server, mock_sleep_until_status, mock_provision_failed_email):
         """
         Run provisioning sequence failing the deployment on purpose to make sure the
         server status will be set accordingly.
         """
-        mock_deploy.return_value = (['log'], 1)
+        log_lines = ['log']
+        mock_deploy.return_value = (log_lines, 1)
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
 
         def server_start(self):
@@ -747,24 +853,30 @@ class OpenEdXInstanceTestCase(TestCase):
         server = instance.provision()[0]
         self.assertEqual(server.status, Server.PROVISIONING)
         self.assertEqual(server.progress, Server.PROGRESS_FAILED)
+        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
+        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
 
     @patch_os_server
+    @patch('instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email')
     @patch('instance.models.server.OpenStackServer.sleep_until_status')
     @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
     @patch('instance.models.server.OpenStackServer.start', autospec=True)
     @patch('instance.models.instance.gandi.set_dns_record')
     def test_provision_unhandled_exception(self, os_server_manager, mock_set_dns_record,
                                            mock_server_start, mock_os_server,
-                                           mock_sleep_until_status):
+                                           mock_sleep_until_status, mock_provision_failed_email):
         """
         Make sure that all servers are terminated if there is an unhandled exception during
         provisioning.
         """
-        mock_set_dns_record.side_effect = Exception('Something went catastrophically wrong')
+        exception_raised = Exception('Something went catastrophically wrong')
+        mock_set_dns_record.side_effect = exception_raised
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
         with self.assertRaises(Exception):
             instance.provision()
         self.assertFalse(instance.server_set.exclude_terminated())
+
+        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_EXCEPTION)
 
     @patch_os_server
     @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
@@ -808,8 +920,8 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.server.OpenStackServer.reboot')
     @patch('instance.models.instance.gandi.set_dns_record')
     @patch('instance.models.instance.OpenEdXInstance.deploy')
-    @patch('instance.models.instance.MySQLInstanceMixin.provision_mysql')
-    @patch('instance.models.instance.MongoDBInstanceMixin.provision_mongo')
+    @patch('instance.models.mixins.database.MySQLInstanceMixin.provision_mysql')
+    @patch('instance.models.mixins.database.MongoDBInstanceMixin.provision_mongo')
     def test_provision_with_external_databases(self, os_server_manager, mock_provision_mongo, mock_provision_mysql,
                                                mock_deploy, mock_set_dns_record, mock_server_reboot,
                                                mock_sleep_until_status, mock_update_status,

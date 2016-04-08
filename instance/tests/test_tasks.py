@@ -53,7 +53,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_instance_provision.mock_calls[0][1][0].pk, instance.pk)
         self.mock_db_connection_close.assert_called_once_with()
 
-    @patch('instance.models.instance.github.get_commit_id_from_ref')
+    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
     @patch('instance.tasks.provision_instance')
     @patch('instance.tasks.get_pr_list_from_username')
     @patch('instance.tasks.get_username_list_from_team')
