@@ -31,7 +31,7 @@ profile-validator:
   options: {}
   run: null
 pyflakes:
-  disable: [F401, F403]
+  disable: [F401, F403, F841]
   enable: []
   options: {}
   run: null
