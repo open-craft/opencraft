@@ -29,6 +29,7 @@ import requests
 from django.conf import settings
 
 from instance.models.instance import OpenEdXInstance
+from instance.models.server import Status, Progress
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
@@ -46,8 +47,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Check that the given instance is up and accepting requests
         """
-        self.assertEqual(instance.status, OpenEdXInstance.READY)
-        self.assertEqual(instance.progress, OpenEdXInstance.PROGRESS_SUCCESS)
+        self.assertEqual(instance.status, Status.Ready)
+        self.assertEqual(instance.progress, Progress.Success)
         server = instance.server_set.first()
         attempts = 3
         while True:
@@ -95,8 +96,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                ansible_playbook_name='failure')
         instance = OpenEdXInstance.objects.get()
         provision_instance(instance.pk)
-        self.assertEqual(instance.status, OpenEdXInstance.PROVISIONING)
-        self.assertEqual(instance.progress, OpenEdXInstance.PROGRESS_FAILED)
+        self.assertEqual(instance.status, Status.Provisioning)
+        self.assertEqual(instance.progress, Progress.Failed)
 
     @patch_git_checkout
     def test_ansible_failignore(self, git_checkout, git_working_dir):
@@ -109,5 +110,5 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                ansible_playbook_name='failignore')
         instance = OpenEdXInstance.objects.get()
         provision_instance(instance.pk)
-        self.assertEqual(instance.status, OpenEdXInstance.READY)
-        self.assertEqual(instance.progress, OpenEdXInstance.PROGRESS_SUCCESS)
+        self.assertEqual(instance.status, Status.Ready)
+        self.assertEqual(instance.progress, Progress.Success)

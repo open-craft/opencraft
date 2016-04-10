@@ -23,6 +23,7 @@ from weakref import WeakKeyDictionary
 
 # Exceptions ##################################################################
 
+
 class WrongStateException(RuntimeError):
     """
     Raised when a method/action is attempted but the object's current state
@@ -59,7 +60,7 @@ class ValidateModelMixin(object):
 class ClassProperty(property):
     """ Same as built-in 'property' global but also works when accessed as a class attribute """
     def __get__(self, cls, owner):
-        return self.fget.__get__(None, owner)()
+        return self.fget.__get__(None, owner)()  # pylint: disable=no-member
 
 
 class ResourceState:
@@ -91,12 +92,6 @@ class ResourceState:
         """
         return cls.__doc__.strip()
 
-    # healthy: True if this is a good state (online, ready, loading, provisioning, etc.)
-    #          True is this is a state that may or may not be good (shut down, offline, etc.)
-    #          False if this state is definitely bad (something failed etc.)
-    # This is not a dynamic property of the state; any state is healthy or not by definition..
-    healthy = True
-
     # Constants:
     PROGRESS_UNKNOWN = -1
 
@@ -124,22 +119,6 @@ class ResourceState:
         self._resource = resource
         self._state_manager = state_manager
 
-    @property
-    def has_progress(self):
-        """ Should the UI show a progress bar for this resource due to its current state? """
-        return self.progress is not None
-
-    @property
-    def progress(self):
-        """
-        If the state represents some action in progress, get the progress value.
-        Returns:
-            - A number between 0 and 1 if an action is in progress
-            - None if no action is in progress
-            - PROGRESS_UNKNOWN if something is in progress but the progress is unknown
-        """
-        return None
-
     class Enum:
         """
         Syntacic sugar for declaring a group of ResourceState classes inside a class.
@@ -161,6 +140,9 @@ class ResourceState:
         @ClassProperty
         @classmethod
         def states(cls):
+            """
+            Get an iterable listing all the classes defined within this class
+            """
             return tuple(state for name, state in cls.__dict__.items() if name[:1] != '_' and name != 'states')
 
 
@@ -193,7 +175,9 @@ class ResourceStateDescriptor:
     # Public API (implements the python descriptor interface)
 
     def __get__(self, resource, _type=None):
-        """ Get the current state """
+        """
+        Get the current state
+        """
         if resource is None:
             return self  # when accessed via the class, return this descriptor itself.
         try:
@@ -209,9 +193,12 @@ class ResourceStateDescriptor:
         return state
 
     def __set__(self, resource, value):
+        """
+        Prevent changes to the state other than through the allowed transitions
+        """
         raise AttributeError("You cannot assign to a state machine attribute to change the state.")
 
-    def only_for(self, *accepted_states):
+    def only_for(self, *accepted_states):  # Not sure why this warning is raised: pylint: disable=no-self-use
         """
         Decorator that can annotate a method and will raise an error if the method is called
         when the state machine is not in one of the specified states (accepted_states).
@@ -227,26 +214,35 @@ class ResourceStateDescriptor:
             assert state in self.state_classes
 
         def wrap(method):
+            """
+            Create a MagicWrapper descriptor that will implement the only_for() behavior.
+            """
             def require_valid_state(resource):
+                """
+                Raise a WrongStateException if resource is not in one of the required states
+                """
                 state = self.__get__(resource)
                 if not isinstance(state, accepted_states):
                     raise WrongStateException("The method '{}' cannot be called in this state ({} / {}).".format(
-                        method.__name__, state.name, state.__class__.__name__
+                        method.__name__, state.name, state.__class__.__name__  # pylint: disable=no-member
                     ))
+
+            descriptor = self
 
             class MagicWrapper:
                 """ Class which can wrap a method; the result can be used as a property or as a method. """
-                def __call__(_magic_wrapper_instance, resource):
+                def __call__(self, resource):
                     """ We are wrapping a property, not a method. No fancy stuff needed. """
                     require_valid_state(resource)
                     return method(resource)
 
-                def __get__(_magic_wrapper_instance, resource, _type):
+                def __get__(self, resource, _type):
                     """ Get the (wrapped) method, and add a .is_available method to it """
                     def wrapped_method(*args, **kwargs):
+                        """ Wrapper around the method which checks the state requirements first """
                         require_valid_state(resource)
                         return method(resource, *args, **kwargs)
-                    wrapped_method.is_available = lambda: isinstance(self.__get__(resource), accepted_states)
+                    wrapped_method.is_available = lambda: isinstance(descriptor.__get__(resource), accepted_states)
                     return wrapped_method
             return MagicWrapper()
         return wrap
@@ -262,13 +258,13 @@ class ResourceStateDescriptor:
         assert to_state in self.state_classes
 
         def do_transition(resource):
+            """ The method that performs a specific transition """
             current_state = self.__get__(resource)
             if from_states and not isinstance(current_state, from_states):
                 raise WrongStateException("This transition cannot be used to move from {} to {}".format(
-                    current_state.__class__.__name__, to_state.__name__
+                    current_state.name, to_state.name  # pylint: disable=no-member
                 ))
-            state_instance = self._instantiate_state(resource, to_state)
-            self._set_state(resource, state_instance)
+            self._set_state(resource, to_state)
         do_transition.from_states = from_states  # Convenient way for other code to inspect this transition
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition
         return do_transition
@@ -285,6 +281,9 @@ class ResourceStateDescriptor:
     # Internal helper methods:
 
     def _get_initial_state(self, resource):
+        """
+        Get the initial ResourceState subclass that should be used for this resource.
+        """
         assert resource not in self.cache, "_get_initial_state is only for determining the initial state."
         # If the current state was saved into the database in a django field, use that:
         if self.model_field_name:
@@ -292,20 +291,26 @@ class ResourceStateDescriptor:
             if state_id:
                 state_class = self._get_state_class_from_id(state_id)
                 if state_class:
-                    return self._instantiate_state(resource, state_class)
+                    return state_class
         # Otherwise, just use the default:
-        return self._instantiate_state(resource, self.default_state_class)
+        return self.default_state_class
 
     def _get_state_class_from_id(self, state_id):
+        """
+        Given a state_id, get the ResourceState subclass, or None
+        """
         for state_class in self.state_classes:
             if state_class.state_id == state_id:
                 return state_class
 
-    def _instantiate_state(self, resource, state_class):
-        assert state_class in self.state_classes
-        return state_class(resource=resource, state_manager=self)
+    def _set_state(self, resource, new_state_class):
+        """
+        Internal method: Set the state of resource to new_state_class
 
-    def _set_state(self, resource, new_state):
+        new_state_class should be a ResourceState subclass (not instantiated).
+        """
+        assert new_state_class in self.state_classes
+        new_state = new_state_class(resource=resource, state_manager=self)
         self.cache[resource] = new_state
         if self.model_field_name:
             setattr(resource, self.model_field_name, new_state.state_id)

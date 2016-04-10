@@ -130,13 +130,20 @@ class OpenStackServerTestCase(TestCase):
         Sleep until the server gets to 'booted' status (single status string argument)
         """
         server = OpenStackServerFactory()
-        status_queue = [ServerStatus.Started, ServerStatus.Started, ServerStatus.Active, ServerStatus.Booted, ServerStatus.Terminated]
+        status_queue = [
+            None,
+            server._status_to_started,
+            server._status_to_active,
+            server._status_to_booted,
+            server._status_to_terminated,
+        ]
         status_queue.reverse() # To be able to use pop()
 
         def update_status():
             """ Simulate status progression successive runs """
-            server.status = status_queue.pop()
-            server.progress = ServerProgress.Success
+            new_status = status_queue.pop()
+            if new_status:
+                server._transition(new_status, progress=ServerProgress.Success)
         mock_update_status.side_effect = update_status
 
         self.assertEqual(server.sleep_until_status(ServerStatus.Booted), ServerStatus.Booted)
@@ -144,12 +151,11 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Booted)
         self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(mock_sleep.call_count, 3)
-        self.assertEqual(status_queue, [ServerStatus.Terminated])
+        self.assertEqual(status_queue, [server._status_to_terminated])
 
-    @patch('instance.models.server.OpenStackServer.save')
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_status_list(self, mock_sleep, mock_update_status, mock_save):
+    def test_sleep_until_status_list(self, mock_sleep, mock_update_status):
         """
         Sleep until the server gets to one of the status in a list
         """
@@ -159,10 +165,10 @@ class OpenStackServerTestCase(TestCase):
 
         def update_status():
             """ Simulate status progression successive runs """
-            server._transition(status_queue.pop())
+            server._transition(status_queue.pop(), progress=ServerProgress.Success)
         mock_update_status.side_effect = update_status
 
-        self.assertEqual(server.sleep_until_status([ServerStatus.Terminated, ServerStatus.Booted]), ServerStatus.Booted)
+        self.assertEqual(server.sleep_until_status(ServerStatus.Terminated, ServerStatus.Booted), ServerStatus.Booted)
         self.assertEqual(server.status, ServerStatus.Booted)
         self.assertEqual(server.progress, ServerProgress.Success)
 

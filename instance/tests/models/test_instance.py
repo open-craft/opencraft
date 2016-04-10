@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 
+from contextlib import ExitStack
 from mock import call, patch, Mock
 from urllib.parse import urlparse
 
@@ -36,7 +37,7 @@ from django.test import override_settings
 import pymongo
 import yaml
 
-from instance.models.server import OpenStackServer, Server
+from instance.models.server import Server
 from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
@@ -57,20 +58,18 @@ def patch_services(func):
     new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4'), ]
 
     def wrapper(self, *args, **kwargs):
+        """ Wrap the test with appropriate mocks """
         os_server_manager = OSServerMockManager()
         os_server_manager.set_os_server_attributes('server1', _loaded=True, status='ACTIVE')
-        with \
-        patch('instance.models.server.openstack.get_nova_client') as mock_get_nova_client, \
-        patch('instance.models.server.is_port_open', return_value=True) as mock_is_port_open, \
-        patch('instance.models.server.openstack.create_server', side_effect=new_servers) as mock_create_server, \
-        patch('instance.models.server.time.sleep') as mock_sleep, \
-        patch('instance.models.instance.gandi.set_dns_record') as mock_set_dns_record, \
-        patch('instance.models.instance.OpenEdXInstance.deploy') as mock_deploy, \
-        patch('instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email') \
-        as mock_provision_failed_email, \
-        patch('instance.models.instance.MySQLInstanceMixin.provision_mysql') as mock_provision_mysql, \
-        patch('instance.models.instance.MongoDBInstanceMixin.provision_mongo') as mock_provision_mongo:
-        #patch('instance.openstack.get_server_public_address', return_value={'addr': '1.1.1.1'}) as mock_get_server_public_address:
+
+        with ExitStack() as stack:
+            def stack_patch(*args, **kwargs):
+                """ Add another patch to the context and return its mock """
+                return stack.enter_context(patch(*args, **kwargs))
+
+            mock_sleep = stack_patch('instance.models.server.time.sleep')
+            mock_get_nova_client = stack_patch('instance.models.server.openstack.get_nova_client')
+            mock_get_nova_client.return_value.servers.get = os_server_manager.get_os_server
 
             def check_sleep_count(_delay):
                 """ Check that time.sleep() is not used in some sort of infinite loop """
@@ -80,17 +79,19 @@ def patch_services(func):
             mocks = Mock(
                 os_server_manager=os_server_manager,
                 mock_get_nova_client=mock_get_nova_client,
-                mock_is_port_open=mock_is_port_open,
-                mock_create_server=mock_create_server,
+                mock_is_port_open=stack_patch('instance.models.server.is_port_open', return_value=True),
+                mock_create_server=stack_patch(
+                    'instance.models.server.openstack.create_server', side_effect=new_servers,
+                ),
                 mock_sleep=mock_sleep,
-                mock_set_dns_record=mock_set_dns_record,
-                mock_deploy=mock_deploy,
-                mock_provision_failed_email=mock_provision_failed_email,
-                mock_provision_mysql=mock_provision_mysql,
-                mock_provision_mongo=mock_provision_mongo,
-               # mock_get_server_public_address=mock_get_server_public_address,
+                mock_set_dns_record=stack_patch('instance.models.instance.gandi.set_dns_record'),
+                mock_deploy=stack_patch('instance.models.instance.OpenEdXInstance.deploy'),
+                mock_provision_failed_email=stack_patch(
+                    'instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email'
+                ),
+                mock_provision_mysql=stack_patch('instance.models.instance.MySQLInstanceMixin.provision_mysql'),
+                mock_provision_mongo=stack_patch('instance.models.instance.MongoDBInstanceMixin.provision_mongo'),
             )
-            mock_get_nova_client.return_value.servers.get = os_server_manager.get_os_server
             return func(self, mocks, *args, **kwargs)
     return wrapper
 
@@ -98,7 +99,7 @@ def patch_services(func):
 # Tests #######################################################################
 
 # Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member,too-many-arguments
+#pylint: disable=no-member
 
 class InstanceTestCase(TestCase):
     """
@@ -143,8 +144,9 @@ class InstanceTestCase(TestCase):
         server = StartedOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.status, Server.Status.Started)
         self.assertEqual(instance.progress, Server.Progress.Running)
-        server.status = Server.Status.Booted
-        server.save()
+        server._transition(server._status_to_active)
+        self.assertEqual(instance.status, Server.Status.Active)
+        server._transition(server._status_to_booted)
         self.assertEqual(instance.status, Server.Status.Booted)
 
     def test_status_terminated(self):
@@ -154,8 +156,7 @@ class InstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         server = StartedOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.status, server.Status.Started)
-        server.status = 'terminated'
-        server.save()
+        server._transition(server._status_to_terminated)
         self.assertIsNone(instance.status)
 
     def test_status_multiple_servers(self):

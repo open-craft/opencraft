@@ -75,7 +75,7 @@ class OSServerMockManager:
         Returns the mock `os_server` for this `openstack_id`
         """
         if openstack_id not in self._os_server_dict.keys():
-            self._os_server_dict[openstack_id] = MagicMock(addresses={"Ext-Net": [{"addr": "1.1.1.1",}]})
+            self._os_server_dict[openstack_id] = MagicMock(addresses={"Ext-Net": [{"addr": "1.1.1.1", }]})
         return self._os_server_dict[openstack_id]
 
     def set_os_server_attributes(self, openstack_id, **attributes):
@@ -122,7 +122,7 @@ class OpenStackServerFactory(DjangoModelFactory):
         if 'progress' in kwargs:
             kwargs['_progress'] = kwargs.pop('progress').state_id
         if hasattr(cls, '_status') and '_status' not in kwargs:
-            kwargs['_status'] = cls._status
+            kwargs['_status'] = cls._status  # pylint: disable=no-member
         return kwargs
 
 

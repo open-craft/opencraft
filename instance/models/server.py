@@ -122,8 +122,8 @@ class Progress(ResourceState.Enum):
         is_final = True
 
 
-
 # Models ######################################################################
+
 
 class ServerQuerySet(models.QuerySet):
     """

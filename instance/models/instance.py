@@ -41,7 +41,7 @@ from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
 from instance.models.mixins.version_control import GitHubInstanceMixin
-from instance.models.utils import ValidateModelMixin, ResourceState
+from instance.models.utils import ValidateModelMixin
 
 # Constants ###################################################################
 

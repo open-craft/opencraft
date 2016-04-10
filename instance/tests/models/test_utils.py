@@ -29,8 +29,16 @@ from instance.models.utils import ResourceState, ResourceStateDescriptor, WrongS
 
 # Tests #######################################################################
 
+
 class ResourceStateTests(TestCase):
+    """
+    Basic tests for the ResourceState class
+    """
+
     def test_state_declarations(self):
+        """
+        Basic properties of a state can be declared easily and read from an instance or class.
+        """
         class Alpha(ResourceState):
             """ The first letter of the greek alphabet """
             state_id = 'alpha'
@@ -45,6 +53,7 @@ class ResourceStateTests(TestCase):
         self.assertEqual(Alpha.description, "The first letter of the greek alphabet")
 
         class Beta(ResourceState):
+            """ A state called Beta """
             state_id = 'beta'
             name = 'Beta!'
             description = "The second letter of the greek alphabet"
@@ -59,38 +68,50 @@ class ResourceStateTests(TestCase):
         self.assertEqual(beta.description, "The second letter of the greek alphabet")
 
     def test_state_enum(self):
+        """
+        Test the ResourceState.Enum helper class
+        """
         class StateSet(ResourceState.Enum):
+            """ Enum class """
             class StateA(ResourceState):
+                """ StateA """
                 state_id = 'a'
 
             class StateB(ResourceState):
+                """ StateB """
                 state_id = 'b'
 
         self.assertCountEqual(StateSet.states, [StateSet.StateA, StateSet.StateB])
 
 
-
 class BaseState(ResourceState):
-    pass
+    """
+    The base class for the three test states, State1, State2, and State3
+    """
 
 
 class State1(BaseState):
+    """ The first test state """
     state_id = 'state1'
     name = "State 1"
 
 
 class State2(BaseState):
+    """ The second test state """
     state_id = 'state2'
     name = "State 2"
 
 
 class State3(BaseState):
+    """ The third test state """
     state_id = 'state3'
     name = "State 3"
 
 
 class SimpleResource:
-    # Define a three-state FSM:
+    """
+    A simple resource class for test purposes, which has one three-state FSM, 'state'.
+    """
     state = ResourceStateDescriptor(
         state_classes=(State1, State2, State3),
         default_state=State1,
@@ -98,10 +119,10 @@ class SimpleResource:
     # Define some transitions:
     done_one = state.transition(from_states=State1, to_state=State2)
     done_two = state.transition(from_states=State2, to_state=State3)
-    reset_to_one = state.transition(from_states=(State2, State3), to_state=State3)
-    reset_to_one_alt = state.transition(from_states=BaseState, to_state=State3)
+    reset_to_one = state.transition(from_states=(State2, State3), to_state=State1)
+    reset_to_one_alt = state.transition(from_states=BaseState, to_state=State1)
 
-    return_value = True
+    return_value = True  # Change this to change the expected return value of each method.
 
     @state.only_for(State1)
     def method_one(self):
@@ -109,7 +130,7 @@ class SimpleResource:
         return self.return_value
 
     @state.only_for(State1)
-    def method_one_with_args(self, a, b, c):
+    def method_one_with_args(self, a, b, c):  # pylint: disable=no-self-use,invalid-name
         """ A method that only can be called in state 1 """
         return (a * 1) + (b * 2) + (c * 3)
 
@@ -137,6 +158,7 @@ class SimpleResource:
 
     @state.only_for(State1, State2)
     def increment_state(self):
+        """ Increment the state """
         if isinstance(self.state, State1):
             self.done_one()
         else:
@@ -148,7 +170,9 @@ class SimpleResourceTestCase(TestCase):
     ResourceStateDescriptor tests that use the SimpleResource class
     """
     def test_comparison_to_state_class(self):
-        """ Test the overloaded comparison operators """
+        """
+        Test the overloaded comparison operators
+        """
         res1 = SimpleResource()
         res2 = SimpleResource()
         self.assertEqual(res1.state, State1)
@@ -159,6 +183,9 @@ class SimpleResourceTestCase(TestCase):
         self.assertFalse(res1.state != State1)
 
     def test_comparison_to_state_instance(self):
+        """
+        Test the syntactic sugar that allows comparing ResourceState instances.
+        """
         res1 = SimpleResource()
         res2 = SimpleResource()
         self.assertEqual(res1.state, State1)
@@ -170,28 +197,85 @@ class SimpleResourceTestCase(TestCase):
         res2.increment_state()
         self.assertNotEqual(res1.state, res2.state)
 
-
     def test_default_state(self):
+        """
+        Test that when a resource is initialized it uses the correct default state.
+        """
         res = SimpleResource()
-        self.assertIsInstance(res.state, State1)
+        self.assertEqual(res.state, State1)
         self.assertEqual(res.state.name, "State 1")
 
-    def test_cannot_assign_state(self):
+    def test_one_of(self):
+        """
+        Test the one_of() helper method
+        """
         res = SimpleResource()
-        with self.assertRaisesRegex(AttributeError, "You cannot assign to a state machine attribute to change the state."):
+        self.assertEqual(res.state, State1)
+        self.assertTrue(res.state.one_of(State1))
+        self.assertTrue(res.state.one_of(State2, State1, State3))
+        self.assertFalse(res.state.one_of(State2, State3))
+
+    def test_cannot_assign_state(self):
+        """
+        Ensure that a resource's state cannot be changed by assigning to the state attribute.
+        (Instead, a transition should be used.)
+        """
+        res = SimpleResource()
+        expected_message = "You cannot assign to a state machine attribute to change the state."
+        with self.assertRaisesRegex(AttributeError, expected_message):
             res.state = State2
 
     def test_mutator(self):
+        """
+        Test an exmaple method that changes the state.
+        """
         res = SimpleResource()
-        self.assertIsInstance(res.state, State1)
+        self.assertEqual(res.state, State1)
         res.increment_state()
-        self.assertIsInstance(res.state, State2)
+        self.assertEqual(res.state, State2)
         res.increment_state()
-        self.assertIsInstance(res.state, State3)
+        self.assertEqual(res.state, State3)
+
+    def test_disallowed_transition(self):
+        """
+        Test that disallowed transitions will raise an exception.
+        """
+        res = SimpleResource()
+        self.assertEqual(res.state, State1)
+        expected_message = "This transition cannot be used to move from State 1 to State 3"
+        with self.assertRaisesRegex(WrongStateException, expected_message):
+            res.done_two()
+        expected_message = "This transition cannot be used to move from State 1 to State 1"
+        with self.assertRaisesRegex(WrongStateException, expected_message):
+            res.reset_to_one()
+
+    def test_multiple_from_states(self):
+        """
+        Test that transitions can be defined with multiple from_states.
+        """
+        res = SimpleResource()
+        res.increment_state()
+        res.increment_state()
+        self.assertEqual(res.state, State3)
+        res.reset_to_one()
+        self.assertEqual(res.state, State1)
+
+    def test_inherited_from_states(self):
+        """
+        Test that transitions can be defined with from_states specifying a base class or mixin.
+        """
+        res = SimpleResource()
+        res.increment_state()
+        self.assertEqual(res.state, State2)
+        res.reset_to_one_alt()
+        self.assertEqual(res.state, State1)
 
     def test_method_only_for(self):
+        """
+        Test that the @state.only_for() decorator works when used to decorate methods.
+        """
         res = SimpleResource()
-        self.assertIsInstance(res.state, State1)
+        self.assertEqual(res.state, State1)
 
         # In State 1, we can call method_one():
         res.return_value = 'A'
@@ -203,7 +287,8 @@ class SimpleResourceTestCase(TestCase):
         self.assertEqual(res.method_one_with_args.is_available(), True)
 
         # But not method_two()
-        with self.assertRaisesRegex(WrongStateException, "The method 'method_two' cannot be called in this state \\(State 1 / State1\\)."):
+        expected_message = "The method 'method_two' cannot be called in this state \\(State 1 / State1\\)."
+        with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_two()
         self.assertEqual(res.method_two.is_available(), False)
 
@@ -212,12 +297,12 @@ class SimpleResourceTestCase(TestCase):
         self.assertEqual(res.method_odd(), 'B')
         self.assertEqual(res.method_odd.is_available(), True)
 
-
         # Go to State 2:
         res.increment_state()
-        self.assertIsInstance(res.state, State2)
+        self.assertEqual(res.state, State2)
 
-        with self.assertRaisesRegex(WrongStateException, "The method 'method_one' cannot be called in this state \\(State 2 / State2\\)."):
+        expected_message = "The method 'method_one' cannot be called in this state \\(State 2 / State2\\)."
+        with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_one()
         self.assertEqual(res.method_one.is_available(), False)
 
@@ -226,8 +311,11 @@ class SimpleResourceTestCase(TestCase):
         self.assertEqual(res.method_two.is_available(), True)
 
     def test_property_only_for(self):
+        """
+        Test that the @state.only_for() decorator works with the @property decorator.
+        """
         res = SimpleResource()
-        self.assertIsInstance(res.state, State1)
+        self.assertEqual(res.state, State1)
 
         # In State 1, we can access .prop_one:
         res.return_value = 'A'
@@ -236,5 +324,6 @@ class SimpleResourceTestCase(TestCase):
         self.assertEqual(res.prop_one, 'B')
 
         # But not .prop_two:
-        with self.assertRaisesRegex(WrongStateException, "The method 'prop_two' cannot be called in this state \\(State 1 / State1\\)."):
-            _unused = res.prop_two
+        expected_message = "The method 'prop_two' cannot be called in this state \\(State 1 / State1\\)."
+        with self.assertRaisesRegex(WrongStateException, expected_message):
+            dummy = res.prop_two
