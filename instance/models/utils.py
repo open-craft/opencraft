@@ -19,6 +19,7 @@
 """
 Models Utils
 """
+import inspect
 from weakref import WeakKeyDictionary
 
 # Exceptions ##################################################################
@@ -90,7 +91,7 @@ class ResourceState:
         Defaults to the state class's docstring, but you can override it.
         Doesn't need to be a property; override in the subclass using just 'description = "..."'
         """
-        return cls.__doc__.strip()
+        return inspect.getdoc(cls).strip()
 
     # Constants:
     PROGRESS_UNKNOWN = -1
@@ -103,11 +104,18 @@ class ResourceState:
         Syntactic sugar to make comparing states easier.
 
         obj should be a ResourceState class or instance.
+
+        Returns true if the class/instance is of the exact same state class.
+        To compare with inherited classes etc., use a full isinstance or issubclass expression.
         """
-        try:
-            return issubclass(self.__class__, obj)
-        except TypeError:  # The provided argument is not a class
-            return type(obj) is type(self)
+        if inspect.isclass(obj):
+            return type(self) is obj  # pylint: disable=unidiomatic-typecheck
+        else:
+            return type(self) is type(obj)
+
+    def __hash__(self):
+        """ Get an appropriate hash value (for consistency with __eq__) """
+        return hash(type(self))
 
     @classmethod
     def one_of(cls, *state_classes):
@@ -141,9 +149,17 @@ class ResourceState:
         @classmethod
         def states(cls):
             """
-            Get an iterable listing all the classes defined within this class
+            Get a tuple listing all the classes defined within this class
             """
-            return tuple(state for name, state in cls.__dict__.items() if name[:1] != '_' and name != 'states')
+            def generate():
+                """ Search for ResourceStates defined on this class or inherited classes """
+                for name in dir(cls):
+                    if name[:1] == '_' or name == 'states':
+                        continue
+                    state = getattr(cls, name)
+                    if inspect.isclass(state) and issubclass(state, ResourceState):
+                        yield state
+            return tuple(generate())
 
 
 class ResourceStateDescriptor:
@@ -164,7 +180,9 @@ class ResourceStateDescriptor:
         model_field_name: The name of a django CharField to keep updated with the name of the
             current state, or None. (caching the state in a field is optional)
         """
-        self.state_classes = state_classes
+        self.state_classes = frozenset(state_classes)
+        assert all(isinstance(state_class.state_id, str) for state_class in state_classes), \
+            "A resource's states must each declare a state_id string"
         assert len(set(state_class.state_id for state_class in state_classes)) == len(state_classes), \
             "A resource's states must each have a unique state_id"
         assert default_state in state_classes
@@ -186,10 +204,10 @@ class ResourceStateDescriptor:
             # 'resource' refers to a brand new object, whose state property hasn't been accessed
             # yet. Load the state from the django field, or use the default state.
             state = self._set_state(resource, self._get_initial_state(resource))
-        assert isinstance(state, self.state_classes)
+        assert type(state) in self.state_classes  # pylint: disable=unidiomatic-typecheck
         if self.model_field_name:
             assert getattr(resource, self.model_field_name) == state.state_id, \
-                "The reource's {} field has been tampered with".format(self.model_field_name)
+                "The resource's {} field has been tampered with".format(self.model_field_name)
         return state
 
     def __set__(self, resource, value):
@@ -256,6 +274,8 @@ class ResourceStateDescriptor:
         state classes, a tuple of mixins, etc.. if None, any valid state will be accepted.
         """
         assert to_state in self.state_classes
+        if from_states is None:
+            from_states = tuple(self.state_classes)
 
         def do_transition(resource):
             """ The method that performs a specific transition """

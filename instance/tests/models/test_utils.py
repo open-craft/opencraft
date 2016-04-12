@@ -40,7 +40,9 @@ class ResourceStateTests(TestCase):
         Basic properties of a state can be declared easily and read from an instance or class.
         """
         class Alpha(ResourceState):
-            """ The first letter of the greek alphabet """
+            """
+            The first letter of the greek alphabet
+            """
             state_id = 'alpha'
 
         alpha = Alpha(resource=Mock(), state_manager=Mock())
@@ -67,6 +69,19 @@ class ResourceStateTests(TestCase):
         self.assertEqual(Beta.description, "The second letter of the greek alphabet")
         self.assertEqual(beta.description, "The second letter of the greek alphabet")
 
+        # One last check of another docstring format (make sure it has no trailing space):
+
+        class Gamma(ResourceState):
+            """ The third letter of the greek alphabet """
+            state_id = 'Γ'
+
+        gamma = Gamma(resource=Mock(), state_manager=Mock())
+
+        self.assertEqual(Gamma.state_id, 'Γ')
+        self.assertEqual(gamma.state_id, 'Γ')
+        self.assertEqual(Gamma.description, "The third letter of the greek alphabet")
+        self.assertEqual(gamma.description, "The third letter of the greek alphabet")
+
     def test_state_enum(self):
         """
         Test the ResourceState.Enum helper class
@@ -81,7 +96,22 @@ class ResourceStateTests(TestCase):
                 """ StateB """
                 state_id = 'b'
 
+            class Other:
+                """ Other object - not a state """
+
+        self.assertIsInstance(StateSet.states, tuple)
         self.assertCountEqual(StateSet.states, [StateSet.StateA, StateSet.StateB])
+
+        # And with inheritance:
+
+        class MoreStates(StateSet):
+            """ Inherited enum class """
+            class StateC(ResourceState):
+                """ StateC """
+                state_id = 'c'
+
+        self.assertIsInstance(MoreStates.states, tuple)
+        self.assertCountEqual(MoreStates.states, [StateSet.StateA, StateSet.StateB, MoreStates.StateC])
 
 
 class BaseState(ResourceState):
@@ -177,6 +207,7 @@ class SimpleResourceTestCase(TestCase):
         res2 = SimpleResource()
         self.assertEqual(res1.state, State1)
         self.assertEqual(res2.state, State1)
+        self.assertNotEqual(res1.state, BaseState)
         self.assertNotEqual(res1.state, State2)
         self.assertNotEqual(res2.state, State2)
         self.assertTrue(res1.state == State1)
@@ -192,10 +223,39 @@ class SimpleResourceTestCase(TestCase):
         self.assertEqual(res2.state, State1)
         # States are also equal if their instances are equal:
         self.assertEqual(res1.state, res1.state)
+        self.assertEqual(hash(res1.state), hash(res1.state))
         # States are also equal if they are the same type but different resources:
         self.assertEqual(res1.state, res2.state)
+        self.assertEqual(hash(res1.state), hash(res2.state))
         res2.increment_state()
         self.assertNotEqual(res1.state, res2.state)
+        self.assertNotEqual(hash(res1.state), hash(res2.state))
+
+    def test_comparison_to_related_states(self):
+        """
+        Test that states do not compare as equal to parent/child states.
+        (Use proper isinstance() / issubclass() syntax if you want to check that.)
+        """
+        res = SimpleResource()
+        self.assertEqual(res.state, State1)
+        base_state = BaseState(Mock(), Mock())
+
+        class ChildOverrideState(State1):
+            """ A child of State1 with the same state_id """
+
+        child_state = ChildOverrideState(Mock(), Mock())
+
+        # It's OK for two states that exist to have the same state_id, as long as they are not
+        # both used by the same ResourceStateDescriptor.
+        self.assertEqual(res.state.state_id, child_state.state_id)
+
+        # The syntactic sugar for comparison should not consider parent or child states equal.
+        # (Even if their state_id is the same.)
+        # The semantics of this are debatable, but this way is hopefully more clear and consistent.
+        self.assertNotEqual(res.state, base_state)
+        self.assertNotEqual(hash(res.state), hash(base_state))
+        self.assertNotEqual(res.state, child_state)
+        self.assertNotEqual(hash(res.state), hash(child_state))
 
     def test_default_state(self):
         """
@@ -214,6 +274,28 @@ class SimpleResourceTestCase(TestCase):
         self.assertTrue(res.state.one_of(State1))
         self.assertTrue(res.state.one_of(State2, State1, State3))
         self.assertFalse(res.state.one_of(State2, State3))
+
+    def test_unique_state_ids(self):
+        """
+        It is forbidden to declare a ResourceStateDescriptor which has multiple states with the
+        same state_id.
+        """
+        with self.assertRaisesRegexp(AssertionError, "A resource's states must each have a unique state_id"):
+            ResourceStateDescriptor(state_classes=(State1, State1, State3), default_state=State1)
+
+        class ChildState(State2):
+            """ A child of state2 with the same state_id """
+
+        with self.assertRaisesRegexp(AssertionError, "A resource's states must each have a unique state_id"):
+            ResourceStateDescriptor(state_classes=(State1, State2, ChildState), default_state=State1)
+
+    def test_missing_state_ids(self):
+        """
+        It is forbidden to declare ResourceStateDescriptor using states that have no state_id
+        """
+        self.assertEqual(BaseState.state_id, None)
+        with self.assertRaisesRegexp(AssertionError, "A resource's states must each declare a state_id string"):
+            ResourceStateDescriptor(state_classes=(State1, BaseState), default_state=State1)
 
     def test_cannot_assign_state(self):
         """

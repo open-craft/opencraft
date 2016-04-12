@@ -248,7 +248,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
 
         while True:
             self.update_status()
-            if self.progress.is_final and isinstance(self.status, target_status_list):
+            if self.progress.is_final and self.status.one_of(*target_status_list):
                 break
             time.sleep(1)
         return self.status

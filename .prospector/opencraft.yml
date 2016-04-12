@@ -31,7 +31,10 @@ profile-validator:
   options: {}
   run: null
 pyflakes:
-  disable: [F401, F403, F841]
+  disable:
+    - F401
+    - F403
+    - F841  # "local variable is assigned to but never used" - pylint has an equivalent check, and the pylint version correctly ignores names like 'dummy'
   enable: []
   options: {}
   run: null

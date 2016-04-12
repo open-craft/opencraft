@@ -149,7 +149,6 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.sleep_until_status(ServerStatus.Booted), ServerStatus.Booted)
         self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(server.status, ServerStatus.Booted)
-        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(mock_sleep.call_count, 3)
         self.assertEqual(status_queue, [server._status_to_terminated])
 
