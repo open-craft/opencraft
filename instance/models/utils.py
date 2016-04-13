@@ -123,9 +123,9 @@ class ResourceState:
         return issubclass(cls, state_classes)
 
     def __init__(self, resource, state_manager):
-        """ Instantiate this state, saving a reference to the parent resource """
-        self._resource = resource
-        self._state_manager = state_manager
+        """
+        Instantiate this state
+        """
 
     class Enum:
         """
