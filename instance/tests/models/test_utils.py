@@ -159,7 +159,7 @@ class SimpleResource:
     reset_to_one = state.transition(from_states=(State2, State3), to_state=State1)
     reset_to_one_alt = state.transition(from_states=BaseState, to_state=State1)
 
-    return_value = True  # Change this to change the expected return value of each method.
+    return_value = True  # Change this to change the expected return value of most of these methods.
 
     @state.only_for(State1)
     def method_one(self):
@@ -438,7 +438,7 @@ class DjangoResource:
     reset_to_one = state.transition(from_states=(State2, State3), to_state=State1)
     reset_to_one_alt = state.transition(from_states=BaseState, to_state=State1)
 
-    return_value = True  # Change this to change the expected return value of each method.
+    return_value = True  # Change this to change the expected return value of most of these methods.
 
     @state.only_for(State1)
     def method_one(self):
