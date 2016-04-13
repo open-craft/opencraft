@@ -39,7 +39,7 @@ from instance.logger_adapter import ServerLoggerAdapter
 from instance.utils import is_port_open, to_json
 
 from instance.models.instance import OpenEdXInstance
-from instance.models.utils import ValidateModelMixin, ResourceState, ResourceStateDescriptor
+from instance.models.utils import ValidateModelMixin, ResourceState, ModelResourceStateDescriptor
 
 
 # Logging #####################################################################
@@ -151,7 +151,9 @@ class Server(ValidateModelMixin, TimeStampedModel):
     A single server VM
     """
     Status = Status
-    status = ResourceStateDescriptor(state_classes=Status.states, default_state=Status.New, model_field_name='_status')
+    status = ModelResourceStateDescriptor(
+        state_classes=Status.states, default_state=Status.New, model_field_name='_status'
+    )
     _status = models.CharField(
         max_length=20,
         default=status.default_state_class.state_id,
@@ -173,7 +175,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     _status_to_terminated = status.transition(to_state=Status.Terminated)
 
     Progress = Progress
-    progress = ResourceStateDescriptor(
+    progress = ModelResourceStateDescriptor(
         state_classes=Progress.states,
         default_state=Progress.Running,
         model_field_name='_progress',

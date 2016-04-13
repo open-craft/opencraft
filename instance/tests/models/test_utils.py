@@ -25,7 +25,14 @@ model utils - Tests, mostly for state machine
 from unittest import TestCase
 from mock import Mock
 
-from instance.models.utils import ResourceState, ResourceStateDescriptor, WrongStateException
+from django.db import models
+
+from instance.models.utils import (
+    ResourceState,
+    ResourceStateDescriptor,
+    ModelResourceStateDescriptor,
+    WrongStateException,
+)
 
 # Tests #######################################################################
 
@@ -199,12 +206,14 @@ class SimpleResourceTestCase(TestCase):
     """
     ResourceStateDescriptor tests that use the SimpleResource class
     """
+    make_resource = SimpleResource
+
     def test_comparison_to_state_class(self):
         """
         Test the overloaded comparison operators
         """
-        res1 = SimpleResource()
-        res2 = SimpleResource()
+        res1 = self.make_resource()
+        res2 = self.make_resource()
         self.assertEqual(res1.state, State1)
         self.assertEqual(res2.state, State1)
         self.assertNotEqual(res1.state, BaseState)
@@ -217,8 +226,8 @@ class SimpleResourceTestCase(TestCase):
         """
         Test the syntactic sugar that allows comparing ResourceState instances.
         """
-        res1 = SimpleResource()
-        res2 = SimpleResource()
+        res1 = self.make_resource()
+        res2 = self.make_resource()
         self.assertEqual(res1.state, State1)
         self.assertEqual(res2.state, State1)
         # States are also equal if their instances are equal:
@@ -236,7 +245,7 @@ class SimpleResourceTestCase(TestCase):
         Test that states do not compare as equal to parent/child states.
         (Use proper isinstance() / issubclass() syntax if you want to check that.)
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
         base_state = BaseState(Mock(), Mock())
 
@@ -261,7 +270,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that when a resource is initialized it uses the correct default state.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
         self.assertEqual(res.state.name, "State 1")
 
@@ -269,7 +278,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test the one_of() helper method
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
         self.assertTrue(res.state.one_of(State1))
         self.assertTrue(res.state.one_of(State2, State1, State3))
@@ -302,7 +311,7 @@ class SimpleResourceTestCase(TestCase):
         Ensure that a resource's state cannot be changed by assigning to the state attribute.
         (Instead, a transition should be used.)
         """
-        res = SimpleResource()
+        res = self.make_resource()
         expected_message = "You cannot assign to a state machine attribute to change the state."
         with self.assertRaisesRegex(AttributeError, expected_message):
             res.state = State2
@@ -311,7 +320,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test an exmaple method that changes the state.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
         res.increment_state()
         self.assertEqual(res.state, State2)
@@ -322,7 +331,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that disallowed transitions will raise an exception.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
         expected_message = "This transition cannot be used to move from State 1 to State 3"
         with self.assertRaisesRegex(WrongStateException, expected_message):
@@ -335,7 +344,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that transitions can be defined with multiple from_states.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         res.increment_state()
         res.increment_state()
         self.assertEqual(res.state, State3)
@@ -346,7 +355,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that transitions can be defined with from_states specifying a base class or mixin.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         res.increment_state()
         self.assertEqual(res.state, State2)
         res.reset_to_one_alt()
@@ -356,7 +365,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that the @state.only_for() decorator works when used to decorate methods.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
 
         # In State 1, we can call method_one():
@@ -396,7 +405,7 @@ class SimpleResourceTestCase(TestCase):
         """
         Test that the @state.only_for() decorator works with the @property decorator.
         """
-        res = SimpleResource()
+        res = self.make_resource()
         self.assertEqual(res.state, State1)
 
         # In State 1, we can access .prop_one:
@@ -409,3 +418,71 @@ class SimpleResourceTestCase(TestCase):
         expected_message = "The method 'prop_two' cannot be called in this state \\(State 1 / State1\\)."
         with self.assertRaisesRegex(WrongStateException, expected_message):
             dummy = res.prop_two
+
+
+class DjangoResource:
+    """
+    Same as SimpleResource but django-backed
+    """
+    state = ModelResourceStateDescriptor(
+        state_classes=(State1, State2, State3),
+        default_state=State1,
+        model_field_name='backing_field',
+    )
+
+    backing_field = models.CharField(max_length=100, choices=state.model_field_choices)
+
+    # Define some transitions:
+    done_one = state.transition(from_states=State1, to_state=State2)
+    done_two = state.transition(from_states=State2, to_state=State3)
+    reset_to_one = state.transition(from_states=(State2, State3), to_state=State1)
+    reset_to_one_alt = state.transition(from_states=BaseState, to_state=State1)
+
+    return_value = True  # Change this to change the expected return value of each method.
+
+    @state.only_for(State1)
+    def method_one(self):
+        """ A method that only can be called in state 1 """
+        return self.return_value
+
+    @state.only_for(State1)
+    def method_one_with_args(self, a, b, c):  # pylint: disable=no-self-use,invalid-name
+        """ A method that only can be called in state 1 """
+        return (a * 1) + (b * 2) + (c * 3)
+
+    @state.only_for(State2)
+    def method_two(self):
+        """ A method that only can be called in state 2 """
+        return self.return_value
+
+    @state.only_for(State1, State3)
+    def method_odd(self):
+        """ A method that only can be called in states 1 or 3 """
+        return self.return_value
+
+    @property
+    @state.only_for(State1)
+    def prop_one(self):
+        """ A property whose value is only available in state 1 """
+        return self.return_value
+
+    @property
+    @state.only_for(State2, State3)
+    def prop_two(self):
+        """ A property whose value is only available in state 2 or 3 """
+        return self.return_value
+
+    @state.only_for(State1, State2)
+    def increment_state(self):
+        """ Increment the state """
+        if isinstance(self.state, State1):
+            self.done_one()
+        else:
+            self.done_two()
+
+
+class DjangoResourceTest(SimpleResourceTestCase):
+    """
+    Run the same tests as in SimpleResourceTestCase, but using DjangoResource.
+    """
+    make_resource = DjangoResource

@@ -171,14 +171,12 @@ class ResourceStateDescriptor:
     The 'state' property cannot be assigned to; only the current state instance is allowed to
     change the state. This makes it easy to reason about the behavior of the state.
     """
-    def __init__(self, state_classes, default_state, model_field_name=None):
+    def __init__(self, state_classes, default_state):
         """
         Instantiate a ResourceStateDescriptor to manage a state machine.
 
         state_classes: A list of class types that are valid states for this state machine.
         default_state: If no state has been set, assume the state is this state class.
-        model_field_name: The name of a django CharField to keep updated with the name of the
-            current state, or None. (caching the state in a field is optional)
         """
         self.state_classes = frozenset(state_classes)
         assert all(isinstance(state_class.state_id, str) for state_class in state_classes), \
@@ -187,7 +185,7 @@ class ResourceStateDescriptor:
             "A resource's states must each have a unique state_id"
         assert default_state in state_classes
         self.default_state_class = default_state
-        self.model_field_name = model_field_name
+        self.state_id_map = {state_class.state_id: state_class for state_class in self.state_classes}
         self.cache = WeakKeyDictionary()  # This holds the current state instance for each resource
 
     # Public API (implements the python descriptor interface)
@@ -205,9 +203,6 @@ class ResourceStateDescriptor:
             # yet. Load the state from the django field, or use the default state.
             state = self._set_state(resource, self._get_initial_state(resource))
         assert type(state) in self.state_classes  # pylint: disable=unidiomatic-typecheck
-        if self.model_field_name:
-            assert getattr(resource, self.model_field_name) == state.state_id, \
-                "The resource's {} field has been tampered with".format(self.model_field_name)
         return state
 
     def __set__(self, resource, value):
@@ -289,6 +284,65 @@ class ResourceStateDescriptor:
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition
         return do_transition
 
+    # Internal helper methods:
+
+    def _get_initial_state(self, resource):
+        """
+        Get the initial ResourceState subclass that should be used for this resource.
+        """
+        assert resource not in self.cache, "_get_initial_state is only for determining the initial state."
+        return self.default_state_class
+
+    def _get_state_class_from_id(self, state_id):
+        """
+        Given a state_id, get the ResourceState subclass, or None
+        """
+        return self.state_id_map.get(state_id)
+
+    def _set_state(self, resource, new_state_class):
+        """
+        Internal method: Set the state of resource to new_state_class
+
+        new_state_class should be a ResourceState subclass (not instantiated).
+        """
+        assert new_state_class in self.state_classes
+        new_state = new_state_class(resource=resource, state_manager=self)
+        self.cache[resource] = new_state
+        return new_state
+
+
+class ModelResourceStateDescriptor(ResourceStateDescriptor):
+    """
+    Descriptor which implements a finite state machine, backed by a django field.
+    """
+    def __init__(self, state_classes, default_state, model_field_name):
+        """
+        Instantiate a ResourceStateDescriptor to manage a state machine.
+
+        state_classes: A list of class types that are valid states for this state machine.
+        default_state: If no state has been set, assume the state is this state class.
+        model_field_name: The name of a django CharField to keep updated with the name of the
+            current state.
+        """
+        super().__init__(state_classes, default_state)
+        self.cache = None  # A django field is used as the storage of the current state.
+        self.model_field_name = model_field_name
+
+    # Public API (implements the python descriptor interface)
+
+    def __get__(self, resource, _type=None):
+        """
+        Get the current state
+        """
+        if resource is None:
+            return self  # when accessed via the class, return this descriptor itself.
+        state_class = self._get_state_class_from_id(getattr(resource, self.model_field_name))
+        if state_class:
+            assert state_class in self.state_classes
+            return state_class(resource=resource, state_manager=self)
+        else:
+            return self._set_state(resource, self.default_state_class)
+
     @property
     def model_field_choices(self):
         """
@@ -300,29 +354,6 @@ class ResourceStateDescriptor:
 
     # Internal helper methods:
 
-    def _get_initial_state(self, resource):
-        """
-        Get the initial ResourceState subclass that should be used for this resource.
-        """
-        assert resource not in self.cache, "_get_initial_state is only for determining the initial state."
-        # If the current state was saved into the database in a django field, use that:
-        if self.model_field_name:
-            state_id = getattr(resource, self.model_field_name)
-            if state_id:
-                state_class = self._get_state_class_from_id(state_id)
-                if state_class:
-                    return state_class
-        # Otherwise, just use the default:
-        return self.default_state_class
-
-    def _get_state_class_from_id(self, state_id):
-        """
-        Given a state_id, get the ResourceState subclass, or None
-        """
-        for state_class in self.state_classes:
-            if state_class.state_id == state_id:
-                return state_class
-
     def _set_state(self, resource, new_state_class):
         """
         Internal method: Set the state of resource to new_state_class
@@ -331,7 +362,5 @@ class ResourceStateDescriptor:
         """
         assert new_state_class in self.state_classes
         new_state = new_state_class(resource=resource, state_manager=self)
-        self.cache[resource] = new_state
-        if self.model_field_name:
-            setattr(resource, self.model_field_name, new_state.state_id)
+        setattr(resource, self.model_field_name, new_state_class.state_id)
         return new_state
