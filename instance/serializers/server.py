@@ -54,4 +54,7 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
         # Convert the state values from objects to strings:
         output['status'] = obj.status.state_id
         output['progress'] = obj.progress.state_id
+        # Add state name and description for display purposes:
+        output['status_name'] = obj.status.name
+        output['status_description'] = obj.status.description
         return output

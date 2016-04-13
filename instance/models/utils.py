@@ -33,6 +33,14 @@ class WrongStateException(RuntimeError):
     pass
 
 
+class SteadyStateException(WrongStateException):
+    """
+    Raised when attempting to wait until object reaches a state that fulfills a certain condition
+    but the object's current state is steady, i.e., it is not expected to change.
+    """
+    pass
+
+
 # Classes #####################################################################
 
 class ValidateModelMixin(object):

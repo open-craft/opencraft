@@ -426,10 +426,14 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
         server = self.server_set.create()
         server.start()
 
+        def can_proceed():
+            """ Is server in a state from which we can proceed? """
+            return server.status.accepts_ssh_commands
+
         try:
             # DNS
             self.logger.info('Waiting for IP assignment on server %s...', server)
-            server.sleep_until_status(server.Status.Active, server.Status.Booted)
+            server.sleep_until(can_proceed)
             self.logger.info('Updating DNS: LMS at %s...', self.domain)
             gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
             self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
@@ -442,7 +446,6 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
                 self.provision_mongo()
 
             # Provisioning (ansible)
-            server.sleep_until_status(server.Status.Booted)
             server.mark_as_provisioning()
             self.reset_ansible_settings(commit=True)
             log, exit_code = self.deploy()
@@ -456,7 +459,7 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
             # Reboot
             self.logger.info('Rebooting server %s...', server)
             server.reboot()
-            server.sleep_until_status(server.Status.Ready)
+            server.sleep_until(can_proceed)
             self.logger.info('Provisioning completed')
 
             return (server, log)

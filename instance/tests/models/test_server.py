@@ -29,7 +29,7 @@ import novaclient
 from mock import Mock, call, patch
 
 from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress
-from instance.models.utils import WrongStateException
+from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
@@ -125,51 +125,89 @@ class OpenStackServerTestCase(TestCase):
 
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_status(self, mock_sleep, mock_update_status):
+    def test_sleep_until_condition_already_fulfilled(self, mock_sleep, mock_update_status):
         """
-        Sleep until the server gets to 'booted' status (single status string argument)
+        Check if sleep_until behaves correctly if condition to wait for
+        is already fulfilled.
         """
-        server = OpenStackServerFactory()
-        status_queue = [
-            None,
-            server._status_to_started,
-            server._status_to_active,
-            server._status_to_booted,
-            server._status_to_terminated,
+        conditions = [
+            lambda: server.status.is_steady_state,
+            lambda: server.status.accepts_ssh_commands,
         ]
-        status_queue.reverse() # To be able to use pop()
+        for condition in conditions:
+            server = OpenStackServerFactory()
+            status_queue = [
+                server._status_to_started,
+                server._status_to_active,
+                server._status_to_booted,
+            ]
+            # Transition to state fulfilling condition
+            for state_transition in status_queue:
+                server._transition(state_transition, progress=ServerProgress.Success)
 
-        def update_status():
-            """ Simulate status progression successive runs """
-            new_status = status_queue.pop()
-            if new_status:
-                server._transition(new_status, progress=ServerProgress.Success)
-        mock_update_status.side_effect = update_status
-
-        self.assertEqual(server.sleep_until_status(ServerStatus.Booted), ServerStatus.Booted)
-        self.assertEqual(server.progress, ServerProgress.Success)
-        self.assertEqual(server.status, ServerStatus.Booted)
-        self.assertEqual(mock_sleep.call_count, 3)
-        self.assertEqual(status_queue, [server._status_to_terminated])
+            # Sleep until condition is fulfilled
+            server.sleep_until(condition)
+            self.assertEqual(server.status, ServerStatus.Booted)
+            self.assertEqual(server.progress, ServerProgress.Success)
+            self.assertEqual(mock_sleep.call_count, 0)
 
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_status_list(self, mock_sleep, mock_update_status):
+    def test_sleep_until_state_changes(self, mock_sleep, mock_update_status):
         """
-        Sleep until the server gets to one of the status in a list
+        Check if sleep_until behaves correctly if condition to wait for
+        is unfulfilled initially.
+        """
+        conditions = [
+            lambda: server.status.is_steady_state,
+            lambda: server.status.accepts_ssh_commands,
+        ]
+
+        def scoped_update_status(server=None, status_queue=None):
+            """ Return mock update_status scoped to a specific server and status_queue """
+            def update_status():
+                """ Simulate status progression """
+                server._transition(status_queue.pop(), progress=ServerProgress.Success)
+            return update_status
+
+        for condition in conditions:
+            server = OpenStackServerFactory()
+            status_queue = [
+                server._status_to_started,
+                server._status_to_active,
+                server._status_to_booted,
+            ]
+            status_queue.reverse() # To be able to use pop()
+
+            mock_update_status.side_effect = scoped_update_status(server, status_queue)
+            mock_sleep.call_count = 0
+
+            # Sleep until condition is fulfilled
+            server.sleep_until(condition)
+            self.assertEqual(server.status, ServerStatus.Booted)
+            self.assertEqual(server.progress, ServerProgress.Success)
+            self.assertEqual(mock_sleep.call_count, 2)
+
+    @patch('instance.models.server.OpenStackServer.update_status')
+    def test_sleep_until_steady_state(self, mock_update_status):
+        """
+        Check if sleep_until behaves correctly if condition to wait for
+        can not be fulfilled because server is in a steady state
+        (that doesn't fulfill the condition).
         """
         server = OpenStackServerFactory()
-        status_queue = [server._status_to_started, server._status_to_active, server._status_to_booted]
-        status_queue.reverse() # To be able to use pop()
 
         def update_status():
-            """ Simulate status progression successive runs """
-            server._transition(status_queue.pop(), progress=ServerProgress.Success)
+            """ Simulate status progression """
+            server._transition(server._status_to_started, progress=ServerProgress.Success)
         mock_update_status.side_effect = update_status
 
-        self.assertEqual(server.sleep_until_status(ServerStatus.Terminated, ServerStatus.Booted), ServerStatus.Booted)
-        self.assertEqual(server.status, ServerStatus.Booted)
-        self.assertEqual(server.progress, ServerProgress.Success)
+        # Pretend that Status.Started (which doesn't accept SSH commands) is a steady state
+        ServerStatus.Started.is_steady_state = True
+
+        # Try to sleep until condition is fulfilled
+        with self.assertRaises(SteadyStateException):
+            server.sleep_until(lambda: server.status.accepts_ssh_commands)
 
     @patch('instance.models.server.time.sleep')
     def test_reboot_provisioned_server(self, mock_sleep):

@@ -39,7 +39,9 @@ from instance.logger_adapter import ServerLoggerAdapter
 from instance.utils import is_port_open, to_json
 
 from instance.models.instance import OpenEdXInstance
-from instance.models.utils import ValidateModelMixin, ResourceState, ModelResourceStateDescriptor
+from instance.models.utils import (
+    ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
+)
 
 
 # Logging #####################################################################
@@ -54,6 +56,18 @@ class ServerState(ResourceState):
     """
     A [finite state machine] state describing a virtual machine.
     """
+    # A state is "steady" if we don't expect it to change.
+    # This information can be used to:
+    # - delay execution of an operation until the target server reaches a steady state
+    # - raise an exception when trying to schedule an operation that depends on a state change
+    #   while the target server is in a steady state
+    # Steady states include: Status.Booted, Status.Ready, Status.Terminated
+    is_steady_state = False
+
+    # A server accepts SSH commands if it has Status.Booted, Status.Provisioning, or Status.Ready.
+    # This information can be used to delay execution of an operation
+    # until the target server has reached one of these statuses.
+    accepts_ssh_commands = False
 
 
 class Status(ResourceState.Enum):
@@ -78,10 +92,13 @@ class Status(ResourceState.Enum):
     class Booted(ServerState):
         """ Booted but not ready to be added to the application """
         state_id = 'booted'
+        is_steady_state = True
+        accepts_ssh_commands = True
 
     class Provisioning(ServerState):
         """ Provisioning is in progress """
         state_id = 'provisioning'
+        accepts_ssh_commands = True
 
     class Rebooting(ServerState):
         """ Reboot in progress, to apply changes from provisioning """
@@ -90,6 +107,8 @@ class Status(ResourceState.Enum):
     class Ready(ServerState):
         """ Booted and ready to add to the application """
         state_id = 'ready'
+        is_steady_state = True
+        accepts_ssh_commands = True
 
     #class Stopped(ServerState):
     #    """ Stopped temporarily """
@@ -98,6 +117,7 @@ class Status(ResourceState.Enum):
     class Terminated(ServerState):
         """ Stopped forever """
         state_id = 'terminated'
+        is_steady_state = True
 
 
 class Progress(ResourceState.Enum):
@@ -242,18 +262,33 @@ class Server(ValidateModelMixin, TimeStampedModel):
         # The '_progress' field needs to be saved:
         self.save()
 
-    def sleep_until_status(self, *target_status_list):
+    def sleep_until(self, condition):
         """
-        Sleep in a loop until the server reaches one of the specified statuses
-        """
-        self.logger.info('Waiting to reach status %s...', target_status_list)
+        Sleep in a loop until condition related to server status is fulfilled.
 
+        Raises an exception if the desired condition can not be fulfilled.
+        This can happen if the server is in a steady state (i.e., a state that is not expected to change)
+        that does not fulfill the desired condition.
+
+        Use as follows:
+
+            server.sleep_until(lambda: server.status.is_steady_state)
+            server.sleep_until(lambda: server.status.accepts_ssh_commands)
+        """
+        self.logger.info('Waiting to reach status from which we can proceed...')
         while True:
             self.update_status()
-            if self.progress.is_final and self.status.one_of(*target_status_list):
-                break
+            if condition():
+                if self.progress.is_final:
+                    self.logger.info('Reached appropriate status. Proceeding.')
+                    break
+            else:
+                if self.status.is_steady_state:
+                    raise SteadyStateException(
+                        "The current state ({name}) does not fulfill the desired condition "
+                        "and is steady, i.e., it is not expected to change.".format(name=self.status.name)
+                    )
             time.sleep(1)
-        return self.status
 
     @staticmethod
     def on_post_save(sender, instance, created, **kwargs):

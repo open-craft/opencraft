@@ -45,8 +45,9 @@
         {{ selected.instance.name }}
         <span ng-repeat="server in selected.instance.active_server_set">
           <span class="status radius label"
-                ng-class="{warning: server.status != 'ready', success: server.status == 'ready'}">
-            {{ server.status }}
+                ng-class="{warning: server.status != 'ready', success: server.status == 'ready'}"
+                title="{{ server.status_description }}">
+            {{ server.status_name }}
           </span>
           <span ng-switch="selected.instance.progress">
             <i class="fa fa-times" tooltip-placement="top" tooltip="Failed" ng-switch-when="failed"></i>
