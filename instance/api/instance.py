@@ -29,6 +29,7 @@ from rest_framework.response import Response
 
 from instance import github
 from instance.models.instance import OpenEdXInstance
+from instance.models.server import Server
 from instance.serializers.instance import (OpenEdXInstanceListSerializer,
                                            OpenEdXInstanceDetailSerializer)
 from instance.tasks import provision_instance
@@ -48,7 +49,7 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         Start the (re-)provisioning of an instance
         """
         instance = self.get_object()
-        if instance.progress == instance.PROGRESS_RUNNING:
+        if instance.progress == Server.Progress.Running:
             return Response({'status': 'Instance is not ready for reprovisioning'},
                             status=status.HTTP_400_BAD_REQUEST)
 

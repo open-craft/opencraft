@@ -68,6 +68,19 @@ class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
             'updates_feed',
         )
 
+    def to_representation(self, obj):
+        output = super().to_representation(obj)
+        # Convert the state values from objects to strings:
+        if output['status'] is None:
+            output['status'] = 'empty'  # 'empty' for backwards compatibility
+        else:
+            output['status'] = obj.status.state_id
+        if output['progress'] is None:
+            output['progress'] = 'empty'
+        else:
+            output['progress'] = obj.progress.state_id
+        return output
+
 
 class OpenEdXInstanceDetailSerializer(OpenEdXInstanceListSerializer):
     """

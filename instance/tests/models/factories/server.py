@@ -75,7 +75,7 @@ class OSServerMockManager:
         Returns the mock `os_server` for this `openstack_id`
         """
         if openstack_id not in self._os_server_dict.keys():
-            self._os_server_dict[openstack_id] = MagicMock()
+            self._os_server_dict[openstack_id] = MagicMock(addresses={"Ext-Net": [{"addr": "1.1.1.1", }]})
         return self._os_server_dict[openstack_id]
 
     def set_os_server_attributes(self, openstack_id, **attributes):
@@ -105,7 +105,7 @@ class OpenStackServerFactory(DjangoModelFactory):
         os_server_fixture = kwargs.pop('os_server_fixture', None)
         server = super()._create(model_class, *args, **kwargs)
 
-        # This isn't a model fields, so it needs to be set separately, not passed to the model `__init__`
+        # This isn't a model field, so it needs to be set separately, not passed to the model `__init__`
         server.nova = Mock()
 
         # Allow to set OpenStack API data for the current `self.os_server`, using fixtures
@@ -114,26 +114,37 @@ class OpenStackServerFactory(DjangoModelFactory):
 
         return server
 
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        """ Force FactoryBoy to set the field '_status' even though it starts with an underscore """
+        if 'status' in kwargs:
+            kwargs['_status'] = kwargs.pop('status').state_id
+        if 'progress' in kwargs:
+            kwargs['_progress'] = kwargs.pop('progress').state_id
+        if hasattr(cls, '_status') and '_status' not in kwargs:
+            kwargs['_status'] = cls._status  # pylint: disable=no-member
+        return kwargs
+
 
 class StartedOpenStackServerFactory(OpenStackServerFactory):
     """
-    Factory for a server with a 'started' status
+    Factory for a server with a 'started' state
     """
-    status = OpenStackServer.STARTED
+    _status = OpenStackServer.Status.Started.state_id
     openstack_id = factory.Sequence('started-server-id{}'.format)
 
 
 class BootedOpenStackServerFactory(OpenStackServerFactory):
     """
-    Factory for a server with a 'booted' status
+    Factory for a server with a 'booted' state
     """
-    status = OpenStackServer.BOOTED
+    _status = OpenStackServer.Status.Booted.state_id
     openstack_id = factory.Sequence('booted-server-id{}'.format)
 
 
 class ProvisioningOpenStackServerFactory(OpenStackServerFactory):
     """
-    Factory for a server with a 'provisioning' status
+    Factory for a server with a 'provisioning' state
     """
-    status = OpenStackServer.PROVISIONING
+    _status = OpenStackServer.Status.Provisioning.state_id
     openstack_id = factory.Sequence('provisioning-server-id{}'.format)

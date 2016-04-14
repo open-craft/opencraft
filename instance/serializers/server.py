@@ -48,3 +48,10 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'status',
             'progress',
         )
+
+    def to_representation(self, obj):
+        output = super().to_representation(obj)
+        # Convert the state values from objects to strings:
+        output['status'] = obj.status.state_id
+        output['progress'] = obj.progress.state_id
+        return output

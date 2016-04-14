@@ -73,24 +73,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
-    # See `instance.models.server.Server` for a definition of the states
-    EMPTY = 'empty'
-    NEW = 'new'
-    STARTED = 'started'
-    ACTIVE = 'active'
-    BOOTED = 'booted'
-    PROVISIONING = 'provisioning'
-    REBOOTING = 'rebooting'
-    READY = 'ready'
-    LIVE = 'live'
-    STOPPING = 'stopping'
-    STOPPED = 'stopped'
-    TERMINATING = 'terminating'
-
-    PROGRESS_RUNNING = 'running'
-    PROGRESS_SUCCESS = 'success'
-    PROGRESS_FAILED = 'failed'
-
     sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250)
@@ -155,7 +137,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         server = self._current_server
         if server:
             return server.status
-        return self.EMPTY
+        return None
 
     @property
     def progress(self):
@@ -165,7 +147,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         server = self._current_server
         if server:
             return server.progress
-        return self.EMPTY
+        return None
 
     @property
     def event_context(self):
@@ -447,8 +429,7 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
         try:
             # DNS
             self.logger.info('Waiting for IP assignment on server %s...', server)
-            server.sleep_until_status([server.ACTIVE, server.BOOTED])
-            server.update_status(provisioning=True)
+            server.sleep_until_status(server.Status.Active, server.Status.Booted)
             self.logger.info('Updating DNS: LMS at %s...', self.domain)
             gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
             self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
@@ -461,19 +442,21 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
                 self.provision_mongo()
 
             # Provisioning (ansible)
+            server.sleep_until_status(server.Status.Booted)
+            server.mark_as_provisioning()
             self.reset_ansible_settings(commit=True)
             log, exit_code = self.deploy()
             if exit_code != 0:
-                server.update_status(provisioning=True, failed=True)
+                server.mark_provisioning_finished(success=False)
                 self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, log)
                 return (server, log)
 
-            server.update_status(provisioning=True, failed=False)
+            server.mark_provisioning_finished(success=True)
 
             # Reboot
             self.logger.info('Rebooting server %s...', server)
             server.reboot()
-            server.sleep_until_status(server.READY)
+            server.sleep_until_status(server.Status.Ready)
             self.logger.info('Provisioning completed')
 
             return (server, log)

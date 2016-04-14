@@ -26,7 +26,8 @@ import os
 import re
 import subprocess
 
-from mock import call, patch
+from contextlib import ExitStack
+from mock import call, patch, Mock
 from urllib.parse import urlparse
 
 from django.core import mail as django_mail
@@ -36,20 +37,69 @@ from django.test import override_settings
 import pymongo
 import yaml
 
-from instance.models.server import OpenStackServer, Server
+from instance.models.server import Server
 from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
     StartedOpenStackServerFactory, BootedOpenStackServerFactory, ProvisioningOpenStackServerFactory,
-    patch_os_server)
+    patch_os_server, OSServerMockManager)
+
+
+# Helper functions ############################################################
+
+def patch_services(func):
+    """
+    Mock most external services so that things 'seem to work' when provisioning a server.
+
+    Returns a mock containing all the mocked services, so each test can customize the process.
+    """
+    new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4'), ]
+
+    def wrapper(self, *args, **kwargs):
+        """ Wrap the test with appropriate mocks """
+        os_server_manager = OSServerMockManager()
+        os_server_manager.set_os_server_attributes('server1', _loaded=True, status='ACTIVE')
+
+        with ExitStack() as stack:
+            def stack_patch(*args, **kwargs):
+                """ Add another patch to the context and return its mock """
+                return stack.enter_context(patch(*args, **kwargs))
+
+            mock_sleep = stack_patch('instance.models.server.time.sleep')
+            mock_get_nova_client = stack_patch('instance.models.server.openstack.get_nova_client')
+            mock_get_nova_client.return_value.servers.get = os_server_manager.get_os_server
+
+            def check_sleep_count(_delay):
+                """ Check that time.sleep() is not used in some sort of infinite loop """
+                self.assertLess(mock_sleep.call_count, 1000, "time.sleep() called too many times.")
+            mock_sleep.side_effect = check_sleep_count
+
+            mocks = Mock(
+                os_server_manager=os_server_manager,
+                mock_get_nova_client=mock_get_nova_client,
+                mock_is_port_open=stack_patch('instance.models.server.is_port_open', return_value=True),
+                mock_create_server=stack_patch(
+                    'instance.models.server.openstack.create_server', side_effect=new_servers,
+                ),
+                mock_sleep=mock_sleep,
+                mock_set_dns_record=stack_patch('instance.models.instance.gandi.set_dns_record'),
+                mock_deploy=stack_patch('instance.models.instance.OpenEdXInstance.deploy'),
+                mock_provision_failed_email=stack_patch(
+                    'instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email'
+                ),
+                mock_provision_mysql=stack_patch('instance.models.instance.MySQLInstanceMixin.provision_mysql'),
+                mock_provision_mongo=stack_patch('instance.models.instance.MongoDBInstanceMixin.provision_mongo'),
+            )
+            return func(self, mocks, *args, **kwargs)
+    return wrapper
 
 
 # Tests #######################################################################
 
 # Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member,too-many-arguments
+#pylint: disable=no-member
 
 class InstanceTestCase(TestCase):
     """
@@ -89,14 +139,15 @@ class InstanceTestCase(TestCase):
         Instance status with one active server
         """
         instance = OpenEdXInstanceFactory()
-        self.assertEqual(instance.status, instance.EMPTY)
-        self.assertEqual(instance.progress, instance.EMPTY)
+        self.assertIsNone(instance.status)
+        self.assertIsNone(instance.progress)
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, instance.STARTED)
-        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
-        server.status = server.BOOTED
-        server.save()
-        self.assertEqual(instance.status, instance.BOOTED)
+        self.assertEqual(instance.status, Server.Status.Started)
+        self.assertEqual(instance.progress, Server.Progress.Running)
+        server._transition(server._status_to_active)
+        self.assertEqual(instance.status, Server.Status.Active)
+        server._transition(server._status_to_booted)
+        self.assertEqual(instance.status, Server.Status.Booted)
 
     def test_status_terminated(self):
         """
@@ -104,10 +155,9 @@ class InstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, instance.STARTED)
-        server.status = 'terminated'
-        server.save()
-        self.assertEqual(instance.status, instance.EMPTY)
+        self.assertEqual(instance.status, server.Status.Started)
+        server._transition(server._status_to_terminated)
+        self.assertIsNone(instance.status)
 
     def test_status_multiple_servers(self):
         """
@@ -115,8 +165,8 @@ class InstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, instance.STARTED)
-        self.assertEqual(instance.progress, instance.PROGRESS_RUNNING)
+        self.assertEqual(instance.status, Server.Status.Started)
+        self.assertEqual(instance.progress, Server.Progress.Running)
         StartedOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
             instance.status #pylint: disable=pointless-statement
@@ -795,142 +845,64 @@ class OpenEdXInstanceTestCase(TestCase):
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, instance.ansible_settings)
 
-    @patch_os_server
-    @patch('instance.models.server.openstack.create_server')
-    @patch('instance.models.server.OpenStackServer.update_status')
-    @patch('instance.models.server.OpenStackServer.sleep_until_status')
-    @patch('instance.models.server.OpenStackServer.reboot')
-    @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.deploy')
-    @patch('instance.models.instance.OpenEdXInstance.provision_mysql')
-    @patch('instance.models.instance.OpenEdXInstance.provision_mongo')
-    def test_provision(self, os_server_manager, mock_provision_mongo, mock_provision_mysql, mock_deploy,
-                       mock_set_dns_record, mock_server_reboot, mock_sleep_until_status, mock_update_status,
-                       mock_openstack_create_server):
+    @patch_services
+    def test_provision(self, mocks):
         """
         Run provisioning sequence
         """
-        mock_deploy.return_value = (['log'], 0)
-        mock_openstack_create_server.return_value.id = 'test-run-provisioning-server'
-        os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
+        mocks.mock_deploy.return_value = (['log'], 0)
+        mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
+        mock_reboot = mocks.os_server_manager.get_os_server('test-run-provisioning-server').reboot
 
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True)
         instance.provision()
-        self.assertEqual(mock_set_dns_record.mock_calls, [
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call(name='run.provisioning', type='A', value='192.168.100.200'),
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
         ])
-        self.assertEqual(mock_deploy.call_count, 1)
-        self.assertEqual(mock_server_reboot.call_count, 1)
-        self.assertEqual(mock_provision_mysql.call_count, 0)
-        self.assertEqual(mock_provision_mongo.call_count, 0)
+        self.assertEqual(mocks.mock_deploy.call_count, 1)
+        self.assertEqual(mock_reboot.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
+        self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
 
-    @patch_os_server
-    @patch('instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email')
-    @patch('instance.models.server.OpenStackServer.sleep_until_status')
-    @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
-    @patch('instance.models.server.OpenStackServer.start', autospec=True)
-    @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.deploy')
-    def test_provision_failed(self, os_server_manager, mock_deploy, mock_set_dns_record,
-                              mock_server_start, mock_os_server, mock_sleep_until_status, mock_provision_failed_email):
+    @patch_services
+    def test_provision_failed(self, mocks):
         """
         Run provisioning sequence failing the deployment on purpose to make sure the
         server status will be set accordingly.
         """
         log_lines = ['log']
-        mock_deploy.return_value = (log_lines, 1)
+        mocks.mock_deploy.return_value = (log_lines, 1)
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
 
-        def server_start(self):
-            """
-            Make sure we get the server in the BOOTED state when it is started
-            """
-            self.status = Server.BOOTED
-            self.progress = Server.PROGRESS_SUCCESS
-        mock_server_start.side_effect = server_start
-
         server = instance.provision()[0]
-        self.assertEqual(server.status, Server.PROVISIONING)
-        self.assertEqual(server.progress, Server.PROGRESS_FAILED)
-        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
-        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
+        self.assertEqual(server.status, Server.Status.Provisioning)
+        self.assertEqual(server.progress, Server.Progress.Failed)
+        mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
+        mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
 
-    @patch_os_server
-    @patch('instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email')
-    @patch('instance.models.server.OpenStackServer.sleep_until_status')
-    @patch('instance.models.server.OpenStackServer.os_server', autospec=True)
-    @patch('instance.models.server.OpenStackServer.start', autospec=True)
-    @patch('instance.models.instance.gandi.set_dns_record')
-    def test_provision_unhandled_exception(self, os_server_manager, mock_set_dns_record,
-                                           mock_server_start, mock_os_server,
-                                           mock_sleep_until_status, mock_provision_failed_email):
+    @patch_services
+    def test_provision_unhandled_exception(self, mocks):
         """
         Make sure that all servers are terminated if there is an unhandled exception during
         provisioning.
         """
-        exception_raised = Exception('Something went catastrophically wrong')
-        mock_set_dns_record.side_effect = exception_raised
+        mocks.mock_set_dns_record.side_effect = Exception('Something went catastrophically wrong')
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
-        with self.assertRaises(Exception):
+        with self.assertRaisesRegex(Exception, 'Something went catastrophically wrong'):
             instance.provision()
         self.assertFalse(instance.server_set.exclude_terminated())
 
-        mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_EXCEPTION)
+        mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_EXCEPTION)
 
-    @patch_os_server
-    @patch('instance.models.server.OpenStackServer.update_status', autospec=True)
-    @patch('instance.models.server.time.sleep')
-    @patch('instance.models.server.OpenStackServer.reboot')
-    @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.deploy')
-    @patch('instance.models.instance.OpenEdXInstance.provision_mysql')
-    @patch('instance.models.instance.OpenEdXInstance.provision_mongo')
-    def test_provision_no_active(self, os_server_manager, mock_provision_mongo, mock_provision_mysql, mock_deploy,
-                                 mock_set_dns_record, mock_server_reboot, mock_sleep, mock_update_status):
-        """
-        Run provisioning sequence, with status jumping from 'started' to 'booted' (no 'active')
-        """
-        mock_deploy.return_value = (['log'], 0)
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning.noactive')
-        status_queue = [
-            OpenStackServer.STARTED,
-            OpenStackServer.BOOTED,
-            OpenStackServer.BOOTED,
-            OpenStackServer.PROVISIONING,
-            OpenStackServer.REBOOTING,
-            OpenStackServer.READY,
-        ]
-        status_queue.reverse() # To be able to use pop()
-
-        def update_status(self, provisioning=False, rebooting=False, failed=None):
-            """ Simulate status progression successive runs """
-            self.status = status_queue.pop()
-            self.progress = self.PROGRESS_SUCCESS
-        mock_update_status.side_effect = update_status
-
-        with patch('instance.models.server.OpenStackServer.start'):
-            instance.provision()
-        self.assertEqual(mock_deploy.call_count, 1)
-
-    @patch_os_server
-    @patch('instance.models.server.openstack.create_server')
-    @patch('instance.models.server.OpenStackServer.update_status')
-    @patch('instance.models.server.OpenStackServer.sleep_until_status')
-    @patch('instance.models.server.OpenStackServer.reboot')
-    @patch('instance.models.instance.gandi.set_dns_record')
-    @patch('instance.models.instance.OpenEdXInstance.deploy')
-    @patch('instance.models.mixins.database.MySQLInstanceMixin.provision_mysql')
-    @patch('instance.models.mixins.database.MongoDBInstanceMixin.provision_mongo')
-    def test_provision_with_external_databases(self, os_server_manager, mock_provision_mongo, mock_provision_mysql,
-                                               mock_deploy, mock_set_dns_record, mock_server_reboot,
-                                               mock_sleep_until_status, mock_update_status,
-                                               mock_openstack_create_server):
+    @patch_services
+    def test_provision_with_external_databases(self, mocks):
         """
         Run provisioning sequence, with external databases
         """
-        mock_openstack_create_server.return_value.id = 'test-run-provisioning-server'
-        os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
+        mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=False)
 
@@ -944,7 +916,7 @@ class OpenEdXInstanceTestCase(TestCase):
                 self.assertTrue(ansible_settings[setting])
             return (['log'], 0)
 
-        mock_deploy.side_effect = deploy
+        mocks.mock_deploy.side_effect = deploy
         instance.provision()
-        self.assertEqual(mock_provision_mysql.call_count, 1)
-        self.assertEqual(mock_provision_mongo.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
