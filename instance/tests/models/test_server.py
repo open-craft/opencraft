@@ -145,8 +145,10 @@ class OpenStackServerTestCase(TestCase):
             for state_transition in status_queue:
                 server._transition(state_transition, progress=ServerProgress.Success)
 
-            # Sleep until condition is fulfilled
-            server.sleep_until(condition)
+            # Sleep until condition is fulfilled.
+            # Use a small value for "timeout" to ensure that we can fail quickly
+            # if server can not reach desired status because transition logic is broken:
+            server.sleep_until(condition, timeout=5)
             self.assertEqual(server.status, ServerStatus.Booted)
             self.assertEqual(server.progress, ServerProgress.Success)
             self.assertEqual(mock_sleep.call_count, 0)
@@ -182,14 +184,17 @@ class OpenStackServerTestCase(TestCase):
             mock_update_status.side_effect = scoped_update_status(server, status_queue)
             mock_sleep.call_count = 0
 
-            # Sleep until condition is fulfilled
-            server.sleep_until(condition)
+            # Sleep until condition is fulfilled.
+            # Use a small value for "timeout" to ensure that we can fail quickly
+            # if server can not reach desired status because transition logic is broken:
+            server.sleep_until(condition, timeout=5)
             self.assertEqual(server.status, ServerStatus.Booted)
             self.assertEqual(server.progress, ServerProgress.Success)
             self.assertEqual(mock_sleep.call_count, 2)
 
     @patch('instance.models.server.OpenStackServer.update_status')
-    def test_sleep_until_steady_state(self, mock_update_status):
+    @patch('instance.models.server.Status.Started.is_steady_state')
+    def test_sleep_until_steady_state(self, mock_started_is_steady_state, mock_update_status):
         """
         Check if sleep_until behaves correctly if condition to wait for
         can not be fulfilled because server is in a steady state
@@ -203,11 +208,41 @@ class OpenStackServerTestCase(TestCase):
         mock_update_status.side_effect = update_status
 
         # Pretend that Status.Started (which doesn't accept SSH commands) is a steady state
-        ServerStatus.Started.is_steady_state = True
+        mock_started_is_steady_state.return_value = True
 
-        # Try to sleep until condition is fulfilled
         with self.assertRaises(SteadyStateException):
-            server.sleep_until(lambda: server.status.accepts_ssh_commands)
+            # Try to sleep until condition is fulfilled.
+            # Use a small value for "timeout" to ensure that we can fail quickly
+            # if server can not reach desired status because transition logic is broken:
+            server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=5)
+
+    @patch('instance.models.server.OpenStackServer.update_status')
+    @patch('instance.models.server.time.sleep')
+    def test_sleep_until_timeout(self, mock_sleep, mock_update_status):
+        """
+        Check if sleep_until behaves correctly if condition to wait for
+        is unfulfilled when timeout is reached.
+        """
+        server = OpenStackServerFactory()
+
+        def update_status():
+            """ Simulate status progression """
+            server._transition(server._status_to_started, progress=ServerProgress.Success)
+        mock_update_status.side_effect = update_status
+
+        with self.assertRaises(TimeoutError):
+            server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=1)
+            self.assertEqual(mock_sleep.call_count, 1)
+
+    def test_sleep_until_invalid_timeout(self):
+        """
+        Check if sleep_until behaves correctly when passed an invalid timeout value.
+        """
+        server = OpenStackServerFactory()
+
+        for value in (-1, 0):
+            with self.assertRaises(AssertionError):
+                server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=value)
 
     @patch('instance.models.server.time.sleep')
     def test_reboot_provisioned_server(self, mock_sleep):

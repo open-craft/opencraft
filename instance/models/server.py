@@ -262,33 +262,51 @@ class Server(ValidateModelMixin, TimeStampedModel):
         # The '_progress' field needs to be saved:
         self.save()
 
-    def sleep_until(self, condition):
+    def sleep_until(self, condition, timeout=3600):
         """
-        Sleep in a loop until condition related to server status is fulfilled.
+        Sleep in a loop until condition related to server status is fulfilled,
+        or until timeout (provided in seconds) is reached.
 
         Raises an exception if the desired condition can not be fulfilled.
         This can happen if the server is in a steady state (i.e., a state that is not expected to change)
         that does not fulfill the desired condition.
+
+        The default timeout is 1h.
 
         Use as follows:
 
             server.sleep_until(lambda: server.status.is_steady_state)
             server.sleep_until(lambda: server.status.accepts_ssh_commands)
         """
+        # Check if we received a valid timeout value
+        # to avoid the possibility of entering an infinite loop (if timeout is negative)
+        # or reaching the timeout right away (if timeout is zero)
+        assert timeout > 0, "Timeout must be greater than 0 to be able to do anything useful"
+
         self.logger.info('Waiting to reach status from which we can proceed...')
-        while True:
+
+        while timeout > 0:
             self.update_status()
             if condition():
                 if self.progress.is_final:
-                    self.logger.info('Reached appropriate status. Proceeding.')
-                    break
+                    self.logger.info(
+                        'Reached appropriate status ({name}). Proceeding.'.format(name=self.status.name)
+                    )
+                    return
             else:
                 if self.status.is_steady_state:
                     raise SteadyStateException(
-                        "The current state ({name}) does not fulfill the desired condition "
-                        "and is steady, i.e., it is not expected to change.".format(name=self.status.name)
+                        "The current status ({name}) does not fulfill the desired condition "
+                        "and is not expected to change.".format(name=self.status.name)
                     )
             time.sleep(1)
+            timeout -= 1
+
+        # If we get here, this means we've reached the timeout
+        raise TimeoutError(
+            "Waited {minutes:.2f} to reach appropriate status, and got nowhere. "
+            "Aborting with a status of {status}.".format(minutes=timeout / 60, status=self.status.name)
+        )
 
     @staticmethod
     def on_post_save(sender, instance, created, **kwargs):
