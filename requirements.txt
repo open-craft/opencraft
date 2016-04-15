@@ -1,5 +1,5 @@
 astroid==1.4.5
-Babel==2.2.0
+Babel==2.3.3
 CherryPy==5.1.0
 cliff==2.0.0
 cmd2==0.6.8
@@ -8,7 +8,7 @@ coverage==4.0.3
 debtcollector==1.3.0
 decorator==4.0.9
 dj-static==0.0.6
-Django==1.9.4
+Django==1.9.5
 django-angular==0.8.1
 django-appconf==1.0.1
 django-compressor==2.0
@@ -18,7 +18,7 @@ django-extensions==1.6.1
 django-filter==0.13.0
 django-grappelli==2.8.1
 django-libsass==0.6
-django-redis==4.3.0
+django-redis==4.4.1
 django-zurb-foundation==5.5.0
 djangorestframework==3.3.3
 dodgy==0.1.9
@@ -29,9 +29,9 @@ gitdb==0.6.4
 GitPython==1.0.2
 glob2==0.4.1
 gunicorn==19.4.5
-honcho==0.6.6
+honcho==0.7.1
 huey==1.1.1
-ipdb==0.9.0
+ipdb==0.9.3
 ipython==4.1.2
 ipython-genutils==0.1.0
 iso8601==0.1.11
@@ -45,25 +45,25 @@ logilab-common==1.2.0
 Markdown==2.6.6
 MarkupSafe==0.23
 mccabe==0.4.0
-mock==1.3.0
+mock==2.0.0
 monotonic==1.0
 msgpack-python==0.4.7
 mysqlclient==1.3.7
 netaddr==0.7.18
 netifaces==0.10.4
-oauthlib==1.0.3
+oauthlib==1.1.0
 ordereddict==1.1
 oslo.config==3.9.0
 oslo.i18n==3.5.0
 oslo.serialization==2.4.0
 oslo.utils==3.8.0
-path.py==8.1.2
-pbr==1.8.1
+path.py==8.2
+pbr==1.9.1
 pep257==0.7.0
 pep8==1.7.0
 pep8-naming==0.3.3
 pexpect==4.0.1
-pickleshare==0.6
+pickleshare==0.7.2
 prettytable==0.7.2
 -e git+https://github.com/antoviaque/prospector.git@a62c73b41eaee0c92bde51438268cecd13acbc18#egg=prospector-origin_pylint-extconfig-plugins
 psycopg2==2.6.1
@@ -78,8 +78,8 @@ pymongo==3.2.2
 pyparsing==2.1.1
 python-dateutil==2.5.2
 python-keystoneclient==2.3.1
-python-neutronclient==4.1.2
-python-novaclient==3.3.1
+python-neutronclient==4.2.0
+python-novaclient==3.4.0
 pytz==2016.3
 PyYAML==3.11
 redis==2.10.5
@@ -94,7 +94,7 @@ simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0
 smmap==0.9.0
-sockjs-tornado==1.0.2
+sockjs-tornado==1.0.3
 sqlparse==0.1.19
 static3==0.6.1
 stevedore==1.12.0
@@ -105,5 +105,5 @@ tornado-redis==2.4.18
 traitlets==4.2.1
 unicodecsv==0.14.1
 virtualenv==15.0.1
-Werkzeug==0.11.5
-wrapt==1.10.7
+Werkzeug==0.11.8
+wrapt==1.10.8
