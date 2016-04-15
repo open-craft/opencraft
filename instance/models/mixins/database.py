@@ -19,10 +19,13 @@
 """
 Instance app model mixins - Database
 """
-import MySQLdb as mysql
-import pymongo
+
 from django.conf import settings
 from django.db import models
+import MySQLdb as mysql
+import pymongo
+
+from instance.openstack import create_swift_container
 
 
 class MySQLInstanceMixin(models.Model):
@@ -96,4 +99,43 @@ class MongoDBInstanceMixin(models.Model):
                 mongo[database].add_user(self.mongo_user, self.mongo_pass)
 
             self.mongo_provisioned = True
+            self.save()
+
+
+class SwiftContainerInstanceMixin(models.Model):
+    """
+    Mixin to provision Swift containers for an instance.
+    """
+    swift_openstack_user = models.CharField(max_length=32, blank=True)
+    swift_openstack_password = models.CharField(max_length=64, blank=True)
+    swift_openstack_tenant = models.CharField(max_length=32, blank=True)
+    swift_openstack_auth_url = models.URLField(blank=True)
+    swift_openstack_region = models.CharField(max_length=16, blank=True)
+    swift_provisioned = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def swift_container_names(self):  # pylint: disable=no-self-use
+        """
+        An iterable of Swift container names.
+        """
+        return NotImplementedError
+
+    def provision_swift(self):
+        """
+        Create the Swift containers if necessary.
+        """
+        if settings.SWIFT_ENABLE and not self.swift_provisioned:
+            for container_name in self.swift_container_names:
+                create_swift_container(
+                    container_name,
+                    user=self.swift_openstack_user,
+                    password=self.swift_openstack_password,
+                    tenant=self.swift_openstack_tenant,
+                    auth_url=self.swift_openstack_auth_url,
+                    region=self.swift_openstack_region,
+                )
+            self.swift_provisioned = True
             self.save()

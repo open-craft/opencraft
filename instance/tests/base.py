@@ -100,6 +100,7 @@ class TestCase(DjangoTestCase):
 
     def tearDown(self):
         huey.djhuey.connection.close = self.orig_db_connection_close
+        super().tearDown()
 
 
 class WithUserTestCase(DjangoTestCase):

@@ -38,7 +38,7 @@ from instance.gandi import GandiAPI
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.logging import log_exception
 from instance.models.mixins.ansible import AnsibleInstanceMixin
-from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
+from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
 from instance.models.mixins.version_control import GitHubInstanceMixin
 from instance.models.utils import ValidateModelMixin
@@ -243,8 +243,8 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceMixin,
-                      GitHubInstanceMixin, EmailInstanceMixin, Instance):
+class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
+                      AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -263,6 +263,7 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
         'ansible_s3_settings',
         'ansible_mysql_settings',
         'ansible_mongo_settings',
+        'ansible_swift_settings',
     ]
 
     class ProvisionMessages(object):
@@ -324,6 +325,21 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
                                 'port': settings.INSTANCE_MONGO_URL_OBJ.port or 27017,
                                 'database': self.mongo_database_name,
                                 'forum_database': self.forum_database_name})
+
+    @property
+    def ansible_swift_settings(self):
+        """
+        Ansible settings for Swift access.
+        """
+        if self.use_ephemeral_databases or not settings.SWIFT_ENABLE:
+            return ''
+
+        template = loader.get_template('instance/ansible/swift.yml')
+        return template.render({'user': self.swift_openstack_user,
+                                'password': self.swift_openstack_password,
+                                'tenant': self.swift_openstack_tenant,
+                                'auth_url': self.swift_openstack_auth_url,
+                                'region': self.swift_openstack_region})
 
     @property
     def studio_sub_domain(self):
@@ -392,6 +408,20 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
         """
         return [self.mongo_database_name, self.forum_database_name]
 
+    @property
+    def swift_container_name(self):
+        """
+        The name of the Swift container used by the instance.
+        """
+        return self.database_name
+
+    @property
+    def swift_container_names(self):
+        """
+        The list of Swift container names to be created.
+        """
+        return [self.swift_container_name]
+
     def save(self, **kwargs):
         """
         Set this instance's default field values
@@ -441,9 +471,12 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
 
             # Provisioning (external databases)
             if not self.use_ephemeral_databases:
-                self.logger.info('Provisioning external databases...')
+                self.logger.info('Provisioning MySQL database...')
                 self.provision_mysql()
+                self.logger.info('Provisioning MongoDB databases...')
                 self.provision_mongo()
+                self.logger.info('Provisioning Swift container...')
+                self.provision_swift()
 
             # Provisioning (ansible)
             server.mark_as_provisioning()
@@ -486,3 +519,18 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, AnsibleInstanceM
             self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
             self.mongo_pass = get_random_string(length=32)
         return super().provision_mongo()
+
+    def provision_swift(self):
+        """
+        Set Swfit credentials and create the Swift container.
+        """
+        if settings.SWIFT_ENABLE and not self.swift_provisioned:
+            # TODO: Figure out a way to use separate credentials for each instance.  Access control
+            # on Swift containers is granted to users, and there doesn't seem to be a way to create
+            # Keystone users in OpenStack public clouds.
+            self.swift_openstack_user = settings.SWIFT_OPENSTACK_USER
+            self.swift_openstack_password = settings.SWIFT_OPENSTACK_PASSWORD
+            self.swift_openstack_tenant = settings.SWIFT_OPENSTACK_TENANT
+            self.swift_openstack_auth_url = settings.SWIFT_OPENSTACK_AUTH_URL
+            self.swift_openstack_region = settings.SWIFT_OPENSTACK_REGION
+        return super().provision_swift()

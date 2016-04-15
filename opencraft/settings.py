@@ -230,6 +230,16 @@ OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default=
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
 OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
 
+# Separate credentials for Swift.  These credentials are currently passed on to each instance
+# when Swift is enabled and INSTANCE_EPHEMERAL_DATABASES is disabled.
+
+SWIFT_ENABLE = env.bool('SWIFT_ENABLE', default=True)
+SWIFT_OPENSTACK_USER = env('SWIFT_OPENSTACK_USER', default=OPENSTACK_USER)
+SWIFT_OPENSTACK_PASSWORD = env('SWIFT_OPENSTACK_PASSWORD', default=OPENSTACK_PASSWORD)
+SWIFT_OPENSTACK_TENANT = env('SWIFT_OPENSTACK_TENANT', default=OPENSTACK_TENANT)
+SWIFT_OPENSTACK_AUTH_URL = env('SWIFT_OPENSTACK_AUTH_URL', default=OPENSTACK_AUTH_URL)
+SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
+
 
 # DNS (Gandi) #################################################################
 
@@ -371,8 +381,8 @@ if 'file' in HANDLERS:
 
 # Instances ###################################################################
 
-# By default, instances use local mysql and mongo databases. Set this to False
-# to use external databases instead
+# By default, instances use local mysql and mongo databases and local file storage.
+# Set this to False to use external databases and Swift object storage instead.
 INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=True)
 
 # Configure external databases here
