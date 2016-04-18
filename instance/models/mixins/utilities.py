@@ -19,15 +19,11 @@
 """
 Instance app model mixins - Utilities
 """
-import logging
 import sys
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
 from django.views.debug import ExceptionReporter
-
-
-logger = logging.getLogger(__name__)
 
 
 class EmailInstanceMixin(object):
@@ -85,7 +81,7 @@ class EmailInstanceMixin(object):
             html_message = reporter.get_traceback_html()
             attachments.append(("debug.html", html_message, "text/html"))
 
-        logger.info("Sending message to admins: %s - %s", subject, message)
+        self.logger.info("Sending message to admins: %s - %s", subject, message)
         self._mail_admins_with_attachment(subject, message, attachments=attachments)
 
     @staticmethod
