@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block title %}Register for Beta{% endblock title %}
+
+{% block css %}
+{% compress css %}
+<link href="{% static "djng/css/styles.css" %}" type="text/css" rel="stylesheet"/>
+<link href="{% static "scss/betatest.scss" %}" type="text/x-scss" rel="stylesheet"/>
+{% endcompress %}
+{% endblock css %}
+
+{% block head_js %}
+<script src="{% static "djng/js/django-angular.min.js" %}"></script>
+{% endblock head_js %}
+
+{% block content %}
+<div class="container content" ng-app="BetaTestApp">
+    <div class="row">
+        <div class="large-12 columns">
+            <h1>Register for Beta</h1>
+            <p>This is the application form for the beta of the self-service
+            hosting offered by OpenCraft. For enterprise or institutional
+            offerings, <a href="mailto:contact@opencraft.com">contact
+            us</a>.</p>
+            {% include "betatest/registration_form.html" %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block body_js %}
+<script src="{% static "js/src/betatest.js" %}"></script>
+{% endblock body_js %}

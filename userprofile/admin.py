@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,27 +17,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Global URL Patterns
+Admin for the userprofile app
 """
 
 # Imports #####################################################################
 
-from django.conf.urls import include, url
 from django.contrib import admin
-from django.views.generic.base import RedirectView
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
-import instance
+from userprofile.models import UserProfile
 
 
-# URL Patterns ################################################################
+# ModelAdmins #################################################################
 
-urlpatterns = [
-    url(r'^grappelli/', include('grappelli.urls')),
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include('api.urls', namespace="api")),
-    url(r'^instance/', include('instance.urls', namespace="instance")),
-    url(r'^beta/', include('betatest.urls', namespace='beta')),
-    url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
-    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', instance.views.index),
-]
+class UserProfileInline(admin.TabularInline): #pylint: disable=missing-docstring
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'profile'
+
+
+class UserAdmin(BaseUserAdmin): #pylint: disable=missing-docstring
+    inlines = (UserProfileInline,)
+
+
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)

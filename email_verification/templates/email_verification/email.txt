@@ -1,0 +1,3 @@
+Please verify your email address by clicking the following link, or pasting it into your browser's address bar:
+
+{{ verification_url }}

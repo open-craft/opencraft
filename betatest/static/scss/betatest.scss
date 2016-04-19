@@ -1,0 +1,16 @@
+#registration-form {
+    .help-text {
+        white-space: pre-line;
+    }
+}
+
+#id_subdomain_container {
+    input {
+        display: inline;
+        width: 50%;
+    }
+
+    &::after {
+        content: '.opencraft.hosting';
+    }
+}
