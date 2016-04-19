@@ -88,7 +88,7 @@ requests-oauthlib==0.6.1
 requests-toolbelt==0.6.0
 requirements-detector==0.4.1
 responses==0.5.1
-selenium==2.53.1
+selenium==2.53.2
 setoptconf==0.2.0
 simplegeneric==0.8.1
 simplejson==3.8.2
