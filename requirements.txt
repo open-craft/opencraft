@@ -10,7 +10,7 @@ decorator==4.0.9
 dj-static==0.0.6
 Django==1.9.5
 django-angular==0.8.1
-django-appconf==1.0.1
+django-appconf==1.0.2
 django-compressor==2.0
 django-debug-toolbar==1.4
 django-environ==0.4.0
