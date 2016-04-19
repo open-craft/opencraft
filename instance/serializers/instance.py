@@ -24,22 +24,22 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.serializers.server import OpenStackServerSerializer
 from instance.serializers.logentry import LogEntrySerializer
 
 
 # Serializers #################################################################
 
-class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
+class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
     """
-    OpenEdXInstance API Serializer (list view).
+    SingleVMOpenEdXInstance API Serializer (list view).
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:openedxinstance-detail')
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:singlevmopenedxinstance-detail')
     active_server_set = OpenStackServerSerializer(many=True, read_only=True)
 
     class Meta:
-        model = OpenEdXInstance
+        model = SingleVMOpenEdXInstance
         fields = (
             'id',
             'api_url',
@@ -82,12 +82,12 @@ class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
         return output
 
 
-class OpenEdXInstanceDetailSerializer(OpenEdXInstanceListSerializer):
+class SingleVMOpenEdXInstanceDetailSerializer(SingleVMOpenEdXInstanceListSerializer):
     """
-    OpenEdXInstance API Serializer (detail view). Includes log entries.
+    SingleVMOpenEdXInstance API Serializer (detail view). Includes log entries.
     """
     log_entries = LogEntrySerializer(many=True, read_only=True)
     log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
-    class Meta(OpenEdXInstanceListSerializer.Meta):
-        fields = OpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')
+    class Meta(SingleVMOpenEdXInstanceListSerializer.Meta):
+        fields = SingleVMOpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')

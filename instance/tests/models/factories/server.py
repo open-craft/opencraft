@@ -29,7 +29,7 @@ from mock import MagicMock, Mock, patch
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import add_fixture_to_object
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 
 
 # Functions ###################################################################
@@ -98,7 +98,7 @@ class OpenStackServerFactory(DjangoModelFactory):
     class Meta: #pylint: disable=missing-docstring
         model = OpenStackServer
 
-    instance = factory.SubFactory(OpenEdXInstanceFactory)
+    instance = factory.SubFactory(SingleVMOpenEdXInstanceFactory)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

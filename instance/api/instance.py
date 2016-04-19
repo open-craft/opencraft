@@ -28,20 +28,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from instance import github
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.server import Server
-from instance.serializers.instance import (OpenEdXInstanceListSerializer,
-                                           OpenEdXInstanceDetailSerializer)
+from instance.serializers.instance import (
+    SingleVMOpenEdXInstanceListSerializer, SingleVMOpenEdXInstanceDetailSerializer
+)
 from instance.tasks import provision_instance
 
 
 # Views - API #################################################################
 
-class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
+class SingleVMOpenEdXInstanceViewSet(viewsets.ModelViewSet):
     """
-    OpenEdXInstance API ViewSet
+    SingleVMOpenEdXInstance API ViewSet
     """
-    queryset = OpenEdXInstance.objects.all()
+    queryset = SingleVMOpenEdXInstance.objects.all()
 
     @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
     def provision(self, request, pk=None):
@@ -69,5 +70,5 @@ class OpenEdXInstanceViewSet(viewsets.ModelViewSet):
         Return the list serializer for the list action, and the detail serializer otherwise.
         """
         if self.action == 'list':
-            return OpenEdXInstanceListSerializer
-        return OpenEdXInstanceDetailSerializer
+            return SingleVMOpenEdXInstanceListSerializer
+        return SingleVMOpenEdXInstanceDetailSerializer

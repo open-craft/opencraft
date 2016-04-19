@@ -243,8 +243,8 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
-                      AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
+class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
+                              AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """

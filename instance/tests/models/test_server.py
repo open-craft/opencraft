@@ -31,7 +31,7 @@ from mock import Mock, call, patch
 from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress
 from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory, StartedOpenStackServerFactory
 
 
@@ -120,7 +120,7 @@ class OpenStackServerTestCase(TestCase):
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
-        server = OpenStackServer.objects.create(instance=OpenEdXInstanceFactory())
+        server = OpenStackServer.objects.create(instance=SingleVMOpenEdXInstanceFactory())
         self.assertTrue(server.os_server)
 
     @patch('instance.models.server.OpenStackServer.update_status')

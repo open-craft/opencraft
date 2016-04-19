@@ -63,7 +63,7 @@ def patch_services(func):
                 ),
                 mock_sleep=mock_sleep,
                 mock_set_dns_record=stack_patch('instance.models.instance.gandi.set_dns_record'),
-                mock_deploy=stack_patch('instance.models.instance.OpenEdXInstance.deploy'),
+                mock_deploy=stack_patch('instance.models.instance.SingleVMOpenEdXInstance.deploy'),
                 mock_provision_failed_email=stack_patch(
                     'instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email'
                 ),

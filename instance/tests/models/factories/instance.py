@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+SingleVMOpenEdXInstance model - Factories
 """
 
 # Imports #####################################################################
@@ -25,17 +25,17 @@ OpenEdXInstance model - Factories
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 
 
 # Classes #####################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
     """
-    Factory for OpenEdXInstance
+    Factory for SingleVMOpenEdXInstance
     """
     class Meta: #pylint: disable=missing-docstring
-        model = OpenEdXInstance
+        model = SingleVMOpenEdXInstance
 
     sub_domain = factory.Sequence('instance{}.test'.format)
     name = factory.Sequence('Test Instance {}'.format)

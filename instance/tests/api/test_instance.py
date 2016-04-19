@@ -27,10 +27,10 @@ from mock import call, patch
 from rest_framework import status
 
 from instance import github
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.api.base import APITestCase
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
 
 
@@ -59,7 +59,7 @@ class InstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/openedxinstance/')
         self.assertEqual(response.data, [])
 
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         response = self.api_client.get('/api/v1/openedxinstance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(('id', instance.pk), response.data[0].items())
@@ -73,7 +73,7 @@ class InstanceAPITestCase(APITestCase):
         GET - Domain attributes
         """
         self.api_client.login(username='user1', password='pass')
-        OpenEdXInstanceFactory(sub_domain='domain.api')
+        SingleVMOpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/openedxinstance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(('domain', 'domain.api.example.com'), response.data[0].items())
@@ -85,7 +85,7 @@ class InstanceAPITestCase(APITestCase):
         POST /:id/provision - Status not ready
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         OpenStackServerFactory(instance=instance, progress=OpenStackServer.Progress.Running)
         self.assertEqual(instance.progress, OpenStackServer.Progress.Running)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
@@ -97,7 +97,7 @@ class InstanceAPITestCase(APITestCase):
         POST /:id/provision - GitHub returns 404 response for instance branch
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         mock_get_commit_id_from_ref.side_effect = github.ObjectDoesNotExist
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -109,7 +109,7 @@ class InstanceAPITestCase(APITestCase):
         POST /:id/provision
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
+        instance = SingleVMOpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
         OpenStackServerFactory(instance=instance,
                                status=OpenStackServer.Status.Ready,
                                progress=OpenStackServer.Progress.Success)
@@ -119,7 +119,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision_instance.call_count, 1)
-        self.assertEqual(OpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
+        self.assertEqual(SingleVMOpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
         self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
             call('api/repo', 'api-branch', ref_type='heads'),
         ])
@@ -129,7 +129,7 @@ class InstanceAPITestCase(APITestCase):
         GET - Log entries
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory(sub_domain='instance0')
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='instance0')
         server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
         instance.logger.info("info")
         instance.logger.error("error")
@@ -156,7 +156,7 @@ class InstanceAPITestCase(APITestCase):
         GET - Log error entries
         """
         self.api_client.login(username='user1', password='pass')
-        instance = OpenEdXInstanceFactory(sub_domain='instance0')
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='instance0')
         server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
         instance.logger.info("info")
         instance.logger.error("error")

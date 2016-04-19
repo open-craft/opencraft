@@ -28,7 +28,7 @@ from mock import patch
 
 from instance.models.log_entry import GeneralLogEntry
 from instance.tests.base import TestCase
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
 
 
@@ -46,7 +46,7 @@ class LoggingTestCase(TestCase):
         Set up an instance and server to use for testing.
         """
         super().setUp()
-        self.instance = OpenEdXInstanceFactory(sub_domain='my.instance')
+        self.instance = SingleVMOpenEdXInstanceFactory(sub_domain='my.instance')
         self.server = OpenStackServerFactory(instance=self.instance, openstack_id='vm1_id')
 
     def check_log_entries(self, entries, expected):

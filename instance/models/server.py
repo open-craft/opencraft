@@ -38,7 +38,7 @@ from instance import openstack
 from instance.logger_adapter import ServerLoggerAdapter
 from instance.utils import is_port_open, to_json
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
 )
@@ -210,7 +210,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     _progress_failed = progress.transition(from_states=Progress.Running, to_state=Progress.Failed)
     _progress_reset = progress.transition(to_state=Progress.Running)
 
-    instance = models.ForeignKey(OpenEdXInstance, related_name='server_set')
+    instance = models.ForeignKey(SingleVMOpenEdXInstance, related_name='server_set')
 
     objects = ServerQuerySet().as_manager()
 
