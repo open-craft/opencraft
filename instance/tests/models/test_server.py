@@ -408,8 +408,9 @@ class OpenStackServerStatusTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Provisioning)
         self.assertEqual(server.progress, ServerProgress.Failed)
 
+    @patch('instance.models.server.is_port_open')
     @patch('instance.models.server.time.sleep')
-    def test_update_status_provisioned_to_rebooting(self, _mock_sleep):
+    def test_update_status_provisioned_to_rebooting(self, _mock_sleep, mock_is_port_open):
         """
         Update status when the server is rebooted, after being provisioned
         """
@@ -417,6 +418,12 @@ class OpenStackServerStatusTestCase(TestCase):
             os_server_fixture='openstack/api_server_2_active.json',
             _status=ServerStatus.Provisioning.state_id,
             _progress=ServerProgress.Success.state_id)
+        # If server is in Status.Rebooting, update_status calls is_port_open
+        # to determine if server should transition to Status.Ready.
+        # When using a fixture for server.os_server, is_port_open will eventually return False,
+        # but only after a delay of about two minutes.
+        # So we mock out is_port_open here to speed up testing:
+        mock_is_port_open.return_value = False
         self.assertIsInstance(server.update_status(), ServerStatus.Provisioning)
         self.assertEqual(server.progress, ServerProgress.Success)
         server.reboot()
