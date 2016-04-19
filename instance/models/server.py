@@ -436,8 +436,8 @@ class OpenStackServer(Server):
         """
         Reboot the server
 
-        This requires to switch the status to 'rebooting', which is first attempted via the
-        `update_status` method. If the current state doesn't allow to switch to this status,
+        This requires to switch the status to 'rebooting'.
+        If the current state doesn't allow to switch to this status,
         a WrongStateException exception is thrown.
         """
         if self.status == Status.Rebooting:
