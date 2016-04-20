@@ -230,6 +230,15 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         """
         return {'instance_id': self.pk}
 
+    def _transition(self, state_transition):
+        """
+        Helper method to update the state of this instance.
+
+        Ensures that state is in sync with the Django DB.
+        """
+        state_transition()
+        self.save()
+
     def save(self, **kwargs):
         """
         Set default values before saving the instance.
@@ -543,12 +552,16 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
         """
         self.last_provisioning_started = timezone.now()
 
+        # Instance
+        self.logger.info('Prepare for (re-)provisioning')
+        self._transition(self._status_to_waiting_for_server)
+
         # Server
         self.logger.info('Terminate servers')
         self.server_set.terminate()
         self.logger.info('Start new server')
         server = self.server_set.create()
-        server.start()
+        server.start()  # FIXME: If this goes wrong, instance needs to transition to Status.Error
 
         def accepts_ssh_commands():
             """ Does server accept SSH commands? """
@@ -573,15 +586,13 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
                 self.provision_swift()
 
             # Provisioning (ansible)
-            server.mark_as_provisioning()
+            self.mark_as_provisioning()
             self.reset_ansible_settings(commit=True)
             deploy_log, exit_code = self.deploy()
             if exit_code != 0:
-                server.mark_provisioning_finished(success=False)
+                self.mark_provisioning_finished(success=False)
                 self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, deploy_log)
                 return (server, deploy_log, False)
-
-            server.mark_provisioning_finished(success=True)
 
             # Reboot
             self.logger.info('Rebooting server %s...', server)
@@ -589,12 +600,32 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
             server.sleep_until(accepts_ssh_commands)
             self.logger.info('Provisioning completed')
 
+            # Declare instance up and running
+            self.mark_provisioning_finished(success=True)
+
             return (server, deploy_log, True)
 
         except:
             self.server_set.terminate()
             self.provision_failed_email(self.ProvisionMessages.PROVISION_EXCEPTION)
             raise
+
+    @Instance.status.only_for(Status.WaitingForServer)
+    def mark_as_provisioning(self):
+        """
+        Indicate that this instance is being provisioned.
+        """
+        self._transition(self._status_to_configuring_server)
+
+    @Instance.status.only_for(Status.ConfiguringServer)
+    def mark_provisioning_finished(self, success):
+        """
+        Indicate that this instance is done provisioning, either due to success or failure.
+        """
+        if success:
+            self._transition(self._status_to_running)
+        else:
+            self._transition(self._status_to_configuration_failed)
 
     def provision_mysql(self):
         """

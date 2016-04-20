@@ -30,8 +30,8 @@ from django.conf import settings
 from django.test import override_settings
 from mock import call, patch, Mock
 
-from instance.models.instance import InconsistentInstanceState, SingleVMOpenEdXInstance
-from instance.models.server import Server
+from instance.models.instance import InconsistentInstanceState, Instance, SingleVMOpenEdXInstance
+from instance.models.server import Server, Progress as ServerProgress
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
@@ -380,16 +380,16 @@ class SingleVMOpenEdXInstanceTestCase(TestCase):
     @patch_services
     def test_provision_failed(self, mocks):
         """
-        Run provisioning sequence failing the deployment on purpose to make sure the
-        server status will be set accordingly.
+        Run provisioning sequence failing the deployment on purpose to make sure
+        server and instance statuses will be set accordingly.
         """
         log_lines = ['log']
         mocks.mock_deploy.return_value = (log_lines, 1)
         instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning', attempts=1)
 
         server = instance.provision()[0]
-        self.assertEqual(server.status, Server.Status.Provisioning)
-        self.assertEqual(server.progress, Server.Progress.Failed)
+        self.assertEqual(instance.status, Instance.Status.ConfigurationFailed)
+        self.assertEqual(server.status, Server.Status.Ready)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
 

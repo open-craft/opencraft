@@ -32,7 +32,9 @@ from instance.models.server import OpenStackServer, Status as ServerStatus, Prog
 from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
-from instance.tests.models.factories.server import OpenStackServerFactory, BuildingOpenStackServerFactory
+from instance.tests.models.factories.server import (
+    OpenStackServerFactory, BuildingOpenStackServerFactory, ReadyOpenStackServerFactory
+)
 
 
 # Tests #######################################################################
@@ -245,11 +247,11 @@ class OpenStackServerTestCase(TestCase):
                 server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=value)
 
     @patch('instance.models.server.time.sleep')
-    def test_reboot_provisioned_server(self, mock_sleep):
+    def test_reboot_ready_server(self, mock_sleep):
         """
-        Reboot a provisioned server
+        Reboot a server that has status 'ready'
         """
-        server = BuildingOpenStackServerFactory(_status=ServerStatus.Provisioning.state_id)
+        server = ReadyOpenStackServerFactory()
         server.reboot()
         self.assertEqual(server.status, ServerStatus.Booting)
         server.os_server.reboot.assert_called_once_with(reboot_type='SOFT')
@@ -378,53 +380,23 @@ class OpenStackServerStatusTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Ready)
         self.assertEqual(server.progress, ServerProgress.Success)
 
-    def test_update_status_ready_to_provisioning(self):
-        """
-        Update status while the server is ready, when the VM is provisioned
-        """
-        server = BuildingOpenStackServerFactory(
-            os_server_fixture='openstack/api_server_2_active.json',
-            _status=ServerStatus.Ready.state_id)
-        self.assertIsInstance(server.update_status(), ServerStatus.Ready)
-        server.mark_as_provisioning()
-        self.assertEqual(server.status, ServerStatus.Provisioning)
-        self.assertEqual(server.progress, ServerProgress.Running)
-        server.mark_provisioning_finished(success=True)
-        self.assertEqual(server.status, ServerStatus.Provisioning)
-        self.assertEqual(server.progress, ServerProgress.Success)
-
-    def test_update_status_ready_to_error(self):
-        """
-        Update status while the server is ready, when the VM failed to be provisioned
-        """
-        server = BuildingOpenStackServerFactory(
-            os_server_fixture='openstack/api_server_2_active.json',
-            _status=ServerStatus.Ready.state_id)
-        self.assertIsInstance(server.update_status(), ServerStatus.Ready)
-        server.mark_as_provisioning()
-        self.assertEqual(server.status, ServerStatus.Provisioning)
-        self.assertEqual(server.progress, ServerProgress.Running)
-        server.mark_provisioning_finished(success=False)
-        self.assertEqual(server.status, ServerStatus.Provisioning)
-        self.assertEqual(server.progress, ServerProgress.Failed)
-
     @patch('instance.models.server.is_port_open')
     @patch('instance.models.server.time.sleep')
-    def test_update_status_provisioned_to_booting(self, _mock_sleep, mock_is_port_open):
+    def test_update_status_ready_to_booting(self, _mock_sleep, mock_is_port_open):
         """
-        Update status when the server is rebooted, after being provisioned
+        Update status when the server is rebooted
         """
-        server = BuildingOpenStackServerFactory(
+        server = ReadyOpenStackServerFactory(
             os_server_fixture='openstack/api_server_2_active.json',
-            _status=ServerStatus.Provisioning.state_id,
-            _progress=ServerProgress.Success.state_id)
+            _progress=ServerProgress.Success.state_id
+        )
         # If server is in Status.Booting, update_status calls is_port_open
         # to determine if server should transition to Status.Ready.
         # When using a fixture for server.os_server, is_port_open will eventually return False,
         # but only after a delay of about two minutes.
         # So we mock out is_port_open here to speed up testing:
         mock_is_port_open.return_value = False
-        self.assertIsInstance(server.update_status(), ServerStatus.Provisioning)
+        self.assertIsInstance(server.update_status(), ServerStatus.Ready)
         self.assertEqual(server.progress, ServerProgress.Success)
         server.reboot()
         self.assertEqual(server.status, ServerStatus.Booting)

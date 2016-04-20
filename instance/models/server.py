@@ -92,11 +92,6 @@ class Status(ResourceState.Enum):
         is_steady_state = True
         accepts_ssh_commands = True
 
-    class Provisioning(ServerState):
-        """ Provisioning is in progress """
-        state_id = 'provisioning'
-        accepts_ssh_commands = True
-
     class Terminated(ServerState):
         """ Stopped forever """
         state_id = 'terminated'
@@ -176,11 +171,8 @@ class Server(ValidateModelMixin, TimeStampedModel):
     # State transitions:
     _status_to_building = status.transition(from_states=Status.Pending, to_state=Status.Building)
     _status_to_build_failed = status.transition(from_states=Status.Building, to_state=Status.BuildFailed)
-    _status_to_booting = status.transition(
-        from_states=(Status.Building, Status.Ready, Status.Provisioning), to_state=Status.Booting
-    )
-    _status_to_ready = status.transition(from_states=(Status.Booting, Status.Provisioning), to_state=Status.Ready)
-    _status_to_provisioning = status.transition(from_states=Status.Ready, to_state=Status.Provisioning)
+    _status_to_booting = status.transition(from_states=(Status.Building, Status.Ready), to_state=Status.Booting)
+    _status_to_ready = status.transition(from_states=Status.Booting, to_state=Status.Ready)
     _status_to_terminated = status.transition(to_state=Status.Terminated)
     _status_to_unknown = status.transition(
         from_states=(Status.Building, Status.Booting, Status.Ready), to_state=Status.Unknown
@@ -378,27 +370,6 @@ class OpenStackServer(Server):
 
         return self.status
 
-    @Server.status.only_for(Status.Ready)
-    def mark_as_provisioning(self):
-        """
-        Indicate that this server is being provisioned.
-
-        TODO: Remove this. A 'server' resource shouldn't know or care is ansible is running or not.
-        """
-        self._transition(self._status_to_provisioning, Progress.Running)
-
-    @Server.status.only_for(Status.Provisioning)
-    def mark_provisioning_finished(self, success):
-        """
-        Indicate that this server is done provisioning, either due to success or failure.
-        """
-        if success:
-            # Status does not switch to Ready at this point because the instance reboots the
-            # server before declaring it ready.
-            self._set_progress(Progress.Success, expected_status=Status.Provisioning)
-        else:
-            self._set_progress(Progress.Failed, expected_status=Status.Provisioning)
-
     @Server.status.only_for(Status.Pending)
     def start(self):
         """
@@ -409,6 +380,7 @@ class OpenStackServer(Server):
         """
         self.logger.info('Starting server (status=%s)...', self.status)
         self._transition(self._status_to_building)
+        # FIXME: If next step goes wrong, server needs to transition to Status.BuildFailed
         os_server = openstack.create_server(
             self.nova,
             self.instance.sub_domain,
@@ -420,7 +392,7 @@ class OpenStackServer(Server):
         self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
         self._set_progress(Progress.Success, expected_status=Status.Building)
 
-    @Server.status.only_for(Status.Provisioning, Status.Ready, Status.Booting)
+    @Server.status.only_for(Status.Ready, Status.Booting)
     def reboot(self, reboot_type='SOFT'):
         """
         Reboot the server

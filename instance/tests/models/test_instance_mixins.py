@@ -29,11 +29,12 @@ from django.test.utils import override_settings
 from mock import patch, call
 
 from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.server import Progress as ServerProgress
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
     patch_os_server, BuildingOpenStackServerFactory,
-    ReadyOpenStackServerFactory, ProvisioningOpenStackServerFactory
+    BootingOpenStackServerFactory, ReadyOpenStackServerFactory
 )
 
 #pylint: disable=no-member
@@ -212,18 +213,24 @@ class AnsibleInstanceTestCase(TestCase):
         BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 2: 'ready'
-        server2 = ReadyOpenStackServerFactory(instance=instance)
+        # Server 2: 'booting'
+        server2 = BootingOpenStackServerFactory(instance=instance)
         os_server_manager.add_fixture(server2.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 3: 'provisioning'
-        server3 = ProvisioningOpenStackServerFactory(instance=instance)
+        # Server 3: 'ready'
+        server3 = ReadyOpenStackServerFactory(
+            instance=instance,
+            _progress=ServerProgress.Success.state_id
+        )
         os_server_manager.add_fixture(server3.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200')
 
-        # Server 4: 'provisioning'
-        server4 = ProvisioningOpenStackServerFactory(instance=instance)
+        # Server 4: 'ready'
+        server4 = ReadyOpenStackServerFactory(
+            instance=instance,
+            _progress=ServerProgress.Success.state_id
+        )
         os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_3_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200\n192.168.99.66')
 

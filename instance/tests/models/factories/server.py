@@ -134,17 +134,17 @@ class BuildingOpenStackServerFactory(OpenStackServerFactory):
     openstack_id = factory.Sequence('building-server-id{}'.format)
 
 
+class BootingOpenStackServerFactory(OpenStackServerFactory):
+    """
+    Factory for a server with a 'building' state
+    """
+    _status = OpenStackServer.Status.Booting.state_id
+    openstack_id = factory.Sequence('booting-server-id{}'.format)
+
+
 class ReadyOpenStackServerFactory(OpenStackServerFactory):
     """
     Factory for a server with a 'ready' state
     """
     _status = OpenStackServer.Status.Ready.state_id
     openstack_id = factory.Sequence('ready-server-id{}'.format)
-
-
-class ProvisioningOpenStackServerFactory(OpenStackServerFactory):
-    """
-    Factory for a server with a 'provisioning' state
-    """
-    _status = OpenStackServer.Status.Provisioning.state_id
-    openstack_id = factory.Sequence('provisioning-server-id{}'.format)
