@@ -65,7 +65,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertIn(('id', instance.pk), response.data[0].items())
         self.assertIn(('api_url', 'http://testserver/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk)),
                       response.data[0].items())
-        self.assertIn(('status', 'empty'), response.data[0].items())
+        self.assertIn(('server_status', 'empty'), response.data[0].items())
         self.assertIn(('base_domain', 'example.com'), response.data[0].items())
 
     def test_get_domain(self):

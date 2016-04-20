@@ -85,15 +85,15 @@ class InstanceTestCase(TestCase):
         Instance status with one active server
         """
         instance = SingleVMOpenEdXInstanceFactory()
-        self.assertIsNone(instance.status)
+        self.assertIsNone(instance.server_status)
         self.assertIsNone(instance.progress)
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, Server.Status.Started)
+        self.assertEqual(instance.server_status, Server.Status.Started)
         self.assertEqual(instance.progress, Server.Progress.Running)
         server._transition(server._status_to_active)
-        self.assertEqual(instance.status, Server.Status.Active)
+        self.assertEqual(instance.server_status, Server.Status.Active)
         server._transition(server._status_to_booted)
-        self.assertEqual(instance.status, Server.Status.Booted)
+        self.assertEqual(instance.server_status, Server.Status.Booted)
 
     def test_status_terminated(self):
         """
@@ -101,9 +101,9 @@ class InstanceTestCase(TestCase):
         """
         instance = SingleVMOpenEdXInstanceFactory()
         server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, server.Status.Started)
+        self.assertEqual(instance.server_status, server.Status.Started)
         server._transition(server._status_to_terminated)
-        self.assertIsNone(instance.status)
+        self.assertIsNone(instance.server_status)
 
     def test_status_multiple_servers(self):
         """
@@ -111,11 +111,11 @@ class InstanceTestCase(TestCase):
         """
         instance = SingleVMOpenEdXInstanceFactory()
         StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, Server.Status.Started)
+        self.assertEqual(instance.server_status, Server.Status.Started)
         self.assertEqual(instance.progress, Server.Progress.Running)
         StartedOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
-            instance.status #pylint: disable=pointless-statement
+            instance.server_status #pylint: disable=pointless-statement
 
 
 @patch('instance.openstack.SwiftConnection')

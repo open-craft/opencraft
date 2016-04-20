@@ -48,7 +48,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Check that the given instance is up and accepting requests
         """
-        self.assertEqual(instance.status, Status.Ready)
+        self.assertEqual(instance.server_status, Status.Ready)
         self.assertEqual(instance.progress, Progress.Success)
         server = instance.server_set.first()
         attempts = 3
@@ -111,7 +111,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                        ansible_playbook_name='failure')
         instance = SingleVMOpenEdXInstance.objects.get()
         provision_instance(instance.pk)
-        self.assertEqual(instance.status, Status.Provisioning)
+        self.assertEqual(instance.server_status, Status.Provisioning)
         self.assertEqual(instance.progress, Progress.Failed)
 
     @patch_git_checkout
@@ -125,5 +125,5 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                        ansible_playbook_name='failignore')
         instance = SingleVMOpenEdXInstance.objects.get()
         provision_instance(instance.pk)
-        self.assertEqual(instance.status, Status.Ready)
+        self.assertEqual(instance.server_status, Status.Ready)
         self.assertEqual(instance.progress, Progress.Success)

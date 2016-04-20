@@ -41,7 +41,7 @@ from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
 from instance.models.mixins.version_control import GitHubInstanceMixin
-from instance.models.utils import ValidateModelMixin
+from instance.models.utils import ModelResourceStateDescriptor, ResourceState, ValidateModelMixin
 
 # Constants ###################################################################
 
@@ -66,6 +66,49 @@ class InconsistentInstanceState(Exception):
     """
     pass
 
+
+# States ######################################################################
+
+class InstanceState(ResourceState):
+    """
+    A [finite state machine] state describing an instance.
+    """
+
+
+class Status(ResourceState.Enum):
+    """
+    The states that an instance can be in.
+    """
+
+    class New(InstanceState):
+        """ Newly created """
+        state_id = 'new'
+
+    class WaitingForServer(InstanceState):
+        """ Server not yet accessible """
+        state_id = 'waiting'
+
+    class ConfiguringServer(InstanceState):
+        """ Running Ansible playbooks on server """
+        state_id = 'configuring'
+
+    class Running(InstanceState):
+        """ Instance is up and running """
+        state_id = 'running'
+
+    class ConfigurationFailed(InstanceState):
+        """ Instance was not configured successfully (but may be partially online) """
+        state_id = 'failed'
+
+    class Error(InstanceState):
+        """ Instance never got up and running (something went wrong when trying to build new VM) """
+        state_id = 'error'
+
+    class Terminated(InstanceState):
+        """ Instance was running successfully and has been shut down """
+        state_id = 'terminated'
+
+
 # Models ######################################################################
 
 
@@ -73,6 +116,37 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
+    Status = Status
+    status = ModelResourceStateDescriptor(
+        state_classes=Status.states, default_state=Status.New, model_field_name='_status'
+    )
+    _status = models.CharField(
+        max_length=20,
+        default=status.default_state_class.state_id,
+        choices=status.model_field_choices,
+        db_index=True,
+        db_column='status',
+    )
+    # State transitions:
+    _status_to_waiting_for_server = status.transition(
+        from_states=Status.New, to_state=Status.WaitingForServer
+    )
+    _status_to_configuring_server = status.transition(
+        from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
+    )
+    _status_to_error = status.transition(
+        from_states=Status.WaitingForServer, to_state=Status.Error
+    )
+    _status_to_running = status.transition(
+        from_states=Status.ConfiguringServer, to_state=Status.Running
+    )
+    _status_to_configuration_failed = status.transition(
+        from_states=Status.ConfiguringServer, to_state=Status.ConfigurationFailed
+    )
+    _status_to_terminated = status.transition(
+        from_states=Status.Running, to_state=Status.Terminated
+    )
+
     sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250)
@@ -130,7 +204,7 @@ class Instance(ValidateModelMixin, TimeStampedModel):
             return active_server_set[0]
 
     @property
-    def status(self):
+    def server_status(self):
         """
         Instance status
         """
