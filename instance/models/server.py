@@ -61,10 +61,10 @@ class ServerState(ResourceState):
     # - delay execution of an operation until the target server reaches a steady state
     # - raise an exception when trying to schedule an operation that depends on a state change
     #   while the target server is in a steady state
-    # Steady states include: Status.Booted, Status.Ready, Status.Terminated
+    # Steady states include: Status.BuildFailed, Status.Ready, Status.Terminated
     is_steady_state = False
 
-    # A server accepts SSH commands if it has Status.Booted, Status.Provisioning, or Status.Ready.
+    # A server accepts SSH commands if it has Status.Ready.
     # This information can be used to delay execution of an operation
     # until the target server has reached one of these statuses.
     accepts_ssh_commands = False
@@ -73,25 +73,22 @@ class ServerState(ResourceState):
 class Status(ResourceState.Enum):
     """
     The states that a server can be in.
-
-    TODO:
-    * Reduce these to Unknown, Pending, Building, Booting, Ready, BuildFailed, and Terminated.
     """
-    class New(ServerState):
-        """ Not yet loaded """
-        state_id = 'new'
+    class Pending(ServerState):
+        """ Not yet loaded (need to request new VM from OpenStack API) """
+        state_id = 'pending'
 
-    class Started(ServerState):
-        """ Running but not active yet """
-        state_id = 'started'
+    class Building(ServerState):
+        """ Building new VM from image """
+        state_id = 'building'
 
-    class Active(ServerState):
-        """ Running but not booted yet """
-        state_id = 'active'
+    class Booting(ServerState):
+        """ (Re-)Booting """
+        state_id = 'booting'
 
-    class Booted(ServerState):
-        """ Booted but not ready to be added to the application """
-        state_id = 'booted'
+    class Ready(ServerState):
+        """ Booted and ready to add to the application """
+        state_id = 'ready'
         is_steady_state = True
         accepts_ssh_commands = True
 
@@ -100,23 +97,18 @@ class Status(ResourceState.Enum):
         state_id = 'provisioning'
         accepts_ssh_commands = True
 
-    class Rebooting(ServerState):
-        """ Reboot in progress, to apply changes from provisioning """
-        state_id = 'rebooting'
-
-    class Ready(ServerState):
-        """ Booted and ready to add to the application """
-        state_id = 'ready'
-        is_steady_state = True
-        accepts_ssh_commands = True
-
-    #class Stopped(ServerState):
-    #    """ Stopped temporarily """
-    #    state_id = 'stopped'
-
     class Terminated(ServerState):
         """ Stopped forever """
         state_id = 'terminated'
+        is_steady_state = True
+
+    class Unknown(ServerState):
+        """ OpenStack API is not responsive """
+        state_id = 'unknown'
+
+    class BuildFailed(ServerState):
+        """ OpenStack failed to create the server """
+        state_id = 'failed'
         is_steady_state = True
 
 
@@ -172,7 +164,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     """
     Status = Status
     status = ModelResourceStateDescriptor(
-        state_classes=Status.states, default_state=Status.New, model_field_name='_status'
+        state_classes=Status.states, default_state=Status.Pending, model_field_name='_status'
     )
     _status = models.CharField(
         max_length=20,
@@ -182,17 +174,17 @@ class Server(ValidateModelMixin, TimeStampedModel):
         db_column='status',
     )
     # State transitions:
-    _status_to_started = status.transition(from_states=Status.New, to_state=Status.Started)
-    _status_to_active = status.transition(from_states=Status.Started, to_state=Status.Active)
-    _status_to_booted = status.transition(from_states=Status.Active, to_state=Status.Booted)
-    _status_to_provisioning = status.transition(from_states=Status.Booted, to_state=Status.Provisioning)
-    _status_to_rebooting = status.transition(
-        from_states=(Status.Active, Status.Booted, Status.Ready, Status.Provisioning), to_state=Status.Rebooting
+    _status_to_building = status.transition(from_states=Status.Pending, to_state=Status.Building)
+    _status_to_build_failed = status.transition(from_states=Status.Building, to_state=Status.BuildFailed)
+    _status_to_booting = status.transition(
+        from_states=(Status.Building, Status.Ready, Status.Provisioning), to_state=Status.Booting
     )
-    _status_to_ready = status.transition(
-        from_states=(Status.Active, Status.Booted, Status.Provisioning, Status.Rebooting), to_state=Status.Ready
-    )
+    _status_to_ready = status.transition(from_states=(Status.Booting, Status.Provisioning), to_state=Status.Ready)
+    _status_to_provisioning = status.transition(from_states=Status.Ready, to_state=Status.Provisioning)
     _status_to_terminated = status.transition(to_state=Status.Terminated)
+    _status_to_unknown = status.transition(
+        from_states=(Status.Building, Status.Booting, Status.Ready), to_state=Status.Unknown
+    )
 
     Progress = Progress
     progress = ModelResourceStateDescriptor(
@@ -340,7 +332,7 @@ class OpenStackServer(Server):
         if self.openstack_id:
             return self.openstack_id
         else:
-            return 'New OpenStack Server'
+            return 'Pending OpenStack Server'
 
     @property
     def os_server(self):
@@ -348,7 +340,7 @@ class OpenStackServer(Server):
         OpenStack nova server API endpoint
         """
         if not self.openstack_id:
-            assert self.status == Status.New
+            assert self.status == Status.Pending
             self.start()
         return self.nova.servers.get(self.openstack_id)
 
@@ -374,22 +366,19 @@ class OpenStackServer(Server):
         os_server = self.os_server
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
 
-        if self.status == Status.Started:
+        if self.status == Status.Building:
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
-                self._transition(self._status_to_active, Progress.Success)
+                self._transition(self._status_to_booting, Progress.Success)
             else:
-                self._transition(self._status_to_active, Progress.Running)
+                self._transition(self._status_to_booting, Progress.Running)
 
-        elif self.status == Status.Active and self.public_ip and is_port_open(self.public_ip, 22):
-            self._transition(self._status_to_booted, Progress.Success)
-
-        elif self.status == Status.Rebooting and is_port_open(self.public_ip, 22):
+        elif self.status == Status.Booting and self.public_ip and is_port_open(self.public_ip, 22):
             self._transition(self._status_to_ready, Progress.Success)
 
         return self.status
 
-    @Server.status.only_for(Status.Booted)
+    @Server.status.only_for(Status.Ready)
     def mark_as_provisioning(self):
         """
         Indicate that this server is being provisioned.
@@ -410,7 +399,7 @@ class OpenStackServer(Server):
         else:
             self._set_progress(Progress.Failed, expected_status=Status.Provisioning)
 
-    @Server.status.only_for(Status.New)
+    @Server.status.only_for(Status.Pending)
     def start(self):
         """
         Get a server instance started and an openstack_id assigned
@@ -419,7 +408,7 @@ class OpenStackServer(Server):
         TODO: Create the key dynamically
         """
         self.logger.info('Starting server (status=%s)...', self.status)
-        self._transition(self._status_to_started)
+        self._transition(self._status_to_building)
         os_server = openstack.create_server(
             self.nova,
             self.instance.sub_domain,
@@ -429,20 +418,20 @@ class OpenStackServer(Server):
         )
         self.openstack_id = os_server.id
         self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
-        self._set_progress(Progress.Success, expected_status=Status.Started)
+        self._set_progress(Progress.Success, expected_status=Status.Building)
 
-    @Server.status.only_for(Status.Provisioning, Status.Ready, Status.Rebooting)
+    @Server.status.only_for(Status.Provisioning, Status.Ready, Status.Booting)
     def reboot(self, reboot_type='SOFT'):
         """
         Reboot the server
 
-        This requires to switch the status to 'rebooting'.
+        This requires to switch the status to 'booting'.
         If the current state doesn't allow to switch to this status,
         a WrongStateException exception is thrown.
         """
-        if self.status == Status.Rebooting:
+        if self.status == Status.Booting:
             return
-        self._transition(self._status_to_rebooting, Progress.Running)
+        self._transition(self._status_to_booting, Progress.Running)
         self.os_server.reboot(reboot_type=reboot_type)
 
         # TODO: Find a better way to wait for the server shutdown and reboot
@@ -457,7 +446,7 @@ class OpenStackServer(Server):
         self.logger.info('Terminating server (status=%s)...', self.status)
         if self.status == Status.Terminated:
             return
-        elif self.status == Status.New:
+        elif self.status == Status.Pending:
             self._transition(self._status_to_terminated, Progress.Success)
             return
 

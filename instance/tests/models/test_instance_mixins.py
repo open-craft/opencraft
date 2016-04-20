@@ -32,8 +32,8 @@ from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
-    patch_os_server, StartedOpenStackServerFactory,
-    BootedOpenStackServerFactory, ProvisioningOpenStackServerFactory
+    patch_os_server, BuildingOpenStackServerFactory,
+    ReadyOpenStackServerFactory, ProvisioningOpenStackServerFactory
 )
 
 #pylint: disable=no-member
@@ -203,17 +203,17 @@ class AnsibleInstanceTestCase(TestCase):
     @patch_os_server
     def test_inventory_str(self, os_server_manager):
         """
-        Ansible inventory - showing servers once they are in booted status
+        Ansible inventory - showing servers once they are in ready status
         """
         instance = SingleVMOpenEdXInstanceFactory()
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 1: 'started'
-        StartedOpenStackServerFactory(instance=instance)
+        # Server 1: 'building'
+        BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 2: 'booted'
-        server2 = BootedOpenStackServerFactory(instance=instance)
+        # Server 2: 'ready'
+        server2 = ReadyOpenStackServerFactory(instance=instance)
         os_server_manager.add_fixture(server2.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]')
 
@@ -282,7 +282,7 @@ class AnsibleInstanceTestCase(TestCase):
         Test instance deployment
         """
         instance = SingleVMOpenEdXInstanceFactory()
-        BootedOpenStackServerFactory(instance=instance)
+        ReadyOpenStackServerFactory(instance=instance)
         mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
 
         instance.deploy()

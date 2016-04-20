@@ -126,20 +126,20 @@ class OpenStackServerFactory(DjangoModelFactory):
         return kwargs
 
 
-class StartedOpenStackServerFactory(OpenStackServerFactory):
+class BuildingOpenStackServerFactory(OpenStackServerFactory):
     """
-    Factory for a server with a 'started' state
+    Factory for a server with a 'building' state
     """
-    _status = OpenStackServer.Status.Started.state_id
-    openstack_id = factory.Sequence('started-server-id{}'.format)
+    _status = OpenStackServer.Status.Building.state_id
+    openstack_id = factory.Sequence('building-server-id{}'.format)
 
 
-class BootedOpenStackServerFactory(OpenStackServerFactory):
+class ReadyOpenStackServerFactory(OpenStackServerFactory):
     """
-    Factory for a server with a 'booted' state
+    Factory for a server with a 'ready' state
     """
-    _status = OpenStackServer.Status.Booted.state_id
-    openstack_id = factory.Sequence('booted-server-id{}'.format)
+    _status = OpenStackServer.Status.Ready.state_id
+    openstack_id = factory.Sequence('ready-server-id{}'.format)
 
 
 class ProvisioningOpenStackServerFactory(OpenStackServerFactory):

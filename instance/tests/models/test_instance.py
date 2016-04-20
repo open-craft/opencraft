@@ -35,7 +35,7 @@ from instance.models.server import Server
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
-from instance.tests.models.factories.server import StartedOpenStackServerFactory
+from instance.tests.models.factories.server import BuildingOpenStackServerFactory
 from instance.tests.utils import patch_services
 
 
@@ -87,21 +87,21 @@ class InstanceTestCase(TestCase):
         instance = SingleVMOpenEdXInstanceFactory()
         self.assertIsNone(instance.server_status)
         self.assertIsNone(instance.progress)
-        server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.server_status, Server.Status.Started)
+        server = BuildingOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, Server.Status.Building)
         self.assertEqual(instance.progress, Server.Progress.Running)
-        server._transition(server._status_to_active)
-        self.assertEqual(instance.server_status, Server.Status.Active)
-        server._transition(server._status_to_booted)
-        self.assertEqual(instance.server_status, Server.Status.Booted)
+        server._transition(server._status_to_booting)
+        self.assertEqual(instance.server_status, Server.Status.Booting)
+        server._transition(server._status_to_ready)
+        self.assertEqual(instance.server_status, Server.Status.Ready)
 
     def test_status_terminated(self):
         """
         Instance status should revert to 'empty' when all its servers are terminated
         """
         instance = SingleVMOpenEdXInstanceFactory()
-        server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.server_status, server.Status.Started)
+        server = BuildingOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, server.Status.Building)
         server._transition(server._status_to_terminated)
         self.assertIsNone(instance.server_status)
 
@@ -110,10 +110,10 @@ class InstanceTestCase(TestCase):
         Instance status should not allow multiple active servers
         """
         instance = SingleVMOpenEdXInstanceFactory()
-        StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.server_status, Server.Status.Started)
+        BuildingOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, Server.Status.Building)
         self.assertEqual(instance.progress, Server.Progress.Running)
-        StartedOpenStackServerFactory(instance=instance)
+        BuildingOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
             instance.server_status #pylint: disable=pointless-statement
 
