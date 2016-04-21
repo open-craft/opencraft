@@ -18,7 +18,7 @@ django-extensions==1.6.1
 django-filter==0.13.0
 django-grappelli==2.8.1
 django-libsass==0.6
-django-redis==4.4.1
+django-redis==4.4.2
 django-zurb-foundation==5.5.0
 djangorestframework==3.3.3
 dodgy==0.1.9
