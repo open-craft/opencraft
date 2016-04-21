@@ -127,3 +127,11 @@ def create_swift_container(container_name, **kwargs):
         container_name,
         headers={'X-Container-Read': '.r:*'},  # Allow public read access given the URL.
     )
+
+
+def delete_swift_container(container_name, **kwargs):
+    """
+    Delete a Swift container.
+    """
+    connection = get_swift_connection(**kwargs)
+    connection.delete_container(container_name)

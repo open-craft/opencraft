@@ -24,6 +24,7 @@ Tests - Integration - Base
 
 from huey import djhuey
 
+from instance.models.instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.base import TestCase
 
@@ -41,4 +42,8 @@ class IntegrationTestCase(TestCase):
 
     def tearDown(self):
         OpenStackServer.objects.terminate()
+        for instance in OpenEdXInstance.objects.iterator():
+            instance.deprovision_swift()
+            instance.deprovision_mongo()
+            instance.deprovision_mysql()
         super().tearDown()
