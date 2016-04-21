@@ -189,8 +189,6 @@ class SwiftContainerInstanceMixin(models.Model):
                     )
                 except SwiftClientException:
                     # If deleting a Swift container fails, we still want to continue.
-                    self.logger.exception(
-                        'Could not delete Swift container "%s".', container_name, exc_info=True
-                    )
+                    self.logger.exception('Could not delete Swift container "%s".', container_name)
             self.swift_provisioned = False
             self.save()
