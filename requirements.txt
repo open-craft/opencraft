@@ -54,7 +54,7 @@ netifaces==0.10.4
 oauthlib==1.1.0
 ordereddict==1.1
 oslo.config==3.9.0
-oslo.i18n==3.5.0
+oslo.i18n==3.6.0
 oslo.serialization==2.4.0
 oslo.utils==3.8.0
 path.py==8.2.1
@@ -76,7 +76,7 @@ pylint-django==0.7.1
 pylint-plugin-utils==0.2.3
 pymongo==3.2.2
 pyparsing==2.1.1
-python-dateutil==2.5.2
+python-dateutil==2.5.3
 python-keystoneclient==2.3.1
 python-neutronclient==4.2.0
 python-novaclient==4.0.0
