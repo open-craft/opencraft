@@ -28,8 +28,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from instance import github
-from instance.models.instance import SingleVMOpenEdXInstance
-from instance.models.server import Server
+from instance.models.instance import Instance, SingleVMOpenEdXInstance
 from instance.serializers.instance import (
     SingleVMOpenEdXInstanceListSerializer, SingleVMOpenEdXInstanceDetailSerializer
 )
@@ -50,7 +49,7 @@ class SingleVMOpenEdXInstanceViewSet(viewsets.ModelViewSet):
         Start the (re-)provisioning of an instance
         """
         instance = self.get_object()
-        if instance.progress == Server.Progress.Running:
+        if instance.status in (Instance.Status.WaitingForServer, Instance.Status.ConfiguringServer):
             return Response({'status': 'Instance is not ready for reprovisioning'},
                             status=status.HTTP_400_BAD_REQUEST)
 

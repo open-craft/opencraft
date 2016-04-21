@@ -107,28 +107,6 @@ class Status(ResourceState.Enum):
         is_steady_state = True
 
 
-class Progress(ResourceState.Enum):
-    """
-    The progress states that a server can be in.
-
-    TODO: Refactor and perhaps remove this second state.
-    """
-    class Running(ResourceState):
-        """ Running """
-        state_id = 'running'
-        is_final = False
-
-    class Success(ResourceState):
-        """ Success """
-        state_id = 'success'
-        is_final = True
-
-    class Failed(ResourceState):
-        """ Failed """
-        state_id = 'failed'
-        is_final = True
-
-
 # Models ######################################################################
 
 
@@ -178,22 +156,6 @@ class Server(ValidateModelMixin, TimeStampedModel):
         from_states=(Status.Building, Status.Booting, Status.Ready), to_state=Status.Unknown
     )
 
-    Progress = Progress
-    progress = ModelResourceStateDescriptor(
-        state_classes=Progress.states,
-        default_state=Progress.Running,
-        model_field_name='_progress',
-    )
-    _progress = models.CharField(
-        max_length=7,
-        default=progress.default_state_class.state_id,
-        choices=progress.model_field_choices,
-        db_column='progress',
-    )
-    _progress_success = progress.transition(from_states=(Progress.Running, Progress.Success), to_state=Progress.Success)
-    _progress_failed = progress.transition(from_states=Progress.Running, to_state=Progress.Failed)
-    _progress_reset = progress.transition(to_state=Progress.Running)
-
     instance = models.ForeignKey(SingleVMOpenEdXInstance, related_name='server_set')
 
     objects = ServerQuerySet().as_manager()
@@ -218,32 +180,13 @@ class Server(ValidateModelMixin, TimeStampedModel):
             'server_id': self.pk,
         }
 
-    def _transition(self, state_transition, progress=Progress.Running):
+    def _transition(self, state_transition):
         """
-        Helper method to update the state and the progress.
+        Helper method to update the state of this server.
 
-        Mostly exists to ensure the 'progress' is in sync with 'state' and the django DB.
+        Ensures that state is in sync with the Django DB.
         """
         state_transition()
-        self._set_progress(progress, expected_status=state_transition.to_state)
-
-    def _set_progress(self, progress, expected_status=None):
-        """
-        Helper method to update the progress.
-
-        Mostly exists to ensure the 'progress' is in sync with the django DB.
-        """
-        if expected_status:
-            assert isinstance(self.status, expected_status)
-        if progress is Progress.Running:
-            self._progress_reset()
-        elif progress is Progress.Success:
-            self._progress_success()
-        else:
-            assert progress is Progress.Failed
-            self._progress_failed()
-        self.logger.info('Changed status: %s (%s)', self.status, self.progress)
-        # The '_progress' field needs to be saved:
         self.save()
 
     def sleep_until(self, condition, timeout=3600):
@@ -272,11 +215,10 @@ class Server(ValidateModelMixin, TimeStampedModel):
         while timeout > 0:
             self.update_status()
             if condition():
-                if self.progress.is_final:
-                    self.logger.info(
-                        'Reached appropriate status ({name}). Proceeding.'.format(name=self.status.name)
-                    )
-                    return
+                self.logger.info(
+                    'Reached appropriate status ({name}). Proceeding.'.format(name=self.status.name)
+                )
+                return
             else:
                 if self.status.is_steady_state:
                     raise SteadyStateException(
@@ -361,12 +303,10 @@ class OpenStackServer(Server):
         if self.status == Status.Building:
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
-                self._transition(self._status_to_booting, Progress.Success)
-            else:
-                self._transition(self._status_to_booting, Progress.Running)
+                self._transition(self._status_to_booting)
 
         elif self.status == Status.Booting and self.public_ip and is_port_open(self.public_ip, 22):
-            self._transition(self._status_to_ready, Progress.Success)
+            self._transition(self._status_to_ready)
 
         return self.status
 
@@ -390,7 +330,8 @@ class OpenStackServer(Server):
         )
         self.openstack_id = os_server.id
         self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
-        self._set_progress(Progress.Success, expected_status=Status.Building)
+        # Persist OpenStack ID
+        self.save()
 
     @Server.status.only_for(Status.Ready, Status.Booting)
     def reboot(self, reboot_type='SOFT'):
@@ -403,7 +344,7 @@ class OpenStackServer(Server):
         """
         if self.status == Status.Booting:
             return
-        self._transition(self._status_to_booting, Progress.Running)
+        self._transition(self._status_to_booting)
         self.os_server.reboot(reboot_type=reboot_type)
 
         # TODO: Find a better way to wait for the server shutdown and reboot
@@ -419,7 +360,7 @@ class OpenStackServer(Server):
         if self.status == Status.Terminated:
             return
         elif self.status == Status.Pending:
-            self._transition(self._status_to_terminated, Progress.Success)
+            self._transition(self._status_to_terminated)
             return
 
         self._transition(self._status_to_terminated)
@@ -427,7 +368,5 @@ class OpenStackServer(Server):
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
-        finally:
-            self._set_progress(Progress.Success, expected_status=Status.Terminated)
 
 post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)

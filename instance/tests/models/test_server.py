@@ -28,7 +28,7 @@ import io
 import novaclient
 from mock import Mock, call, patch
 
-from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress
+from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
@@ -66,7 +66,6 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(OpenStackServer.objects.get().pk, server.pk)
         self.assertEqual(str(server), 'Pending OpenStack Server')
         self.assertEqual(server.status, ServerStatus.Pending)
-        self.assertEqual(server.progress, ServerProgress.Running)
 
     @patch('instance.models.server.openstack.create_server')
     def test_start_server(self, mock_create_server):
@@ -77,7 +76,6 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServerFactory()
 
         self.assertEqual(server.status, ServerStatus.Pending)
-        self.assertEqual(server.progress, ServerProgress.Running)
         server.start()
         mock_create_server.assert_called_once_with(
             server.nova,
@@ -89,7 +87,6 @@ class OpenStackServerTestCase(TestCase):
 
         server = OpenStackServer.objects.get(pk=server.pk)
         self.assertEqual(server.status, ServerStatus.Building)
-        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertEqual(server.openstack_id, 'pending-server-id')
         self.assertEqual(str(server), 'pending-server-id')
 
@@ -145,14 +142,13 @@ class OpenStackServerTestCase(TestCase):
             ]
             # Transition to state fulfilling condition
             for state_transition in status_queue:
-                server._transition(state_transition, progress=ServerProgress.Success)
+                server._transition(state_transition)
 
             # Sleep until condition is fulfilled.
             # Use a small value for "timeout" to ensure that we can fail quickly
             # if server can not reach desired status because transition logic is broken:
             server.sleep_until(condition, timeout=5)
             self.assertEqual(server.status, ServerStatus.Ready)
-            self.assertEqual(server.progress, ServerProgress.Success)
             self.assertEqual(mock_sleep.call_count, 0)
 
     @patch('instance.models.server.OpenStackServer.update_status')
@@ -171,7 +167,7 @@ class OpenStackServerTestCase(TestCase):
             """ Return mock update_status scoped to a specific server and status_queue """
             def update_status():
                 """ Simulate status progression """
-                server._transition(status_queue.pop(), progress=ServerProgress.Success)
+                server._transition(status_queue.pop())
             return update_status
 
         for condition in conditions:
@@ -191,7 +187,6 @@ class OpenStackServerTestCase(TestCase):
             # if server can not reach desired status because transition logic is broken:
             server.sleep_until(condition, timeout=5)
             self.assertEqual(server.status, ServerStatus.Ready)
-            self.assertEqual(server.progress, ServerProgress.Success)
             self.assertEqual(mock_sleep.call_count, 2)
 
     @patch('instance.models.server.OpenStackServer.update_status')
@@ -206,7 +201,7 @@ class OpenStackServerTestCase(TestCase):
 
         def update_status():
             """ Simulate status progression """
-            server._transition(server._status_to_building, progress=ServerProgress.Success)
+            server._transition(server._status_to_building)
         mock_update_status.side_effect = update_status
 
         # Pretend that Status.Building (which doesn't accept SSH commands) is a steady state
@@ -229,7 +224,7 @@ class OpenStackServerTestCase(TestCase):
 
         def update_status():
             """ Simulate status progression """
-            server._transition(server._status_to_building, progress=ServerProgress.Success)
+            server._transition(server._status_to_building)
         mock_update_status.side_effect = update_status
 
         with self.assertRaises(TimeoutError):
@@ -272,10 +267,8 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServerFactory()
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
-        self.assertEqual(server.progress, ServerProgress.Success)
         server.terminate() # This shouldn't change anything
         self.assertEqual(server.status, ServerStatus.Terminated)
-        self.assertEqual(server.progress, ServerProgress.Success)
         self.assertFalse(server.nova.mock_calls)
 
     def test_terminate_building_server(self):
@@ -285,7 +278,6 @@ class OpenStackServerTestCase(TestCase):
         server = BuildingOpenStackServerFactory()
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
-        self.assertEqual(server.progress, ServerProgress.Success)
         server.os_server.delete.assert_called_once_with()
 
     def test_terminate_server_not_found(self):
@@ -303,7 +295,6 @@ class OpenStackServerTestCase(TestCase):
         server.terminate()
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
         self.assertEqual(server.status, ServerStatus.Terminated)
-        self.assertEqual(server.progress, ServerProgress.Success)
 
     def test_public_ip_new_server(self):
         """
@@ -335,24 +326,21 @@ class OpenStackServerStatusTestCase(TestCase):
     #pylint: disable=no-member
 
     @patch('instance.models.server.openstack.create_server')
-    def test_update_status_new(self, mock_create_server):
+    def test_update_status_pending(self, mock_create_server):
         """
-        Update status while the server is new
+        Update status while the server is pending
         """
         mock_create_server.return_value.id = 'pending-server-id'
         server = OpenStackServerFactory(os_server_fixture='openstack/api_server_1_building.json')
         self.assertEqual(server.status, ServerStatus.Pending)
-        self.assertEqual(server.progress, ServerProgress.Running)
-        self.assertIsInstance(server.update_status(), ServerStatus.Booting)
-        self.assertEqual(server.progress, ServerProgress.Running)
+        self.assertIsInstance(server.update_status(), ServerStatus.Building)
 
     def test_update_status_building(self):
         """
         Update status while the server is building, without change on the OpenStack VM
         """
         server = BuildingOpenStackServerFactory(os_server_fixture='openstack/api_server_1_building.json')
-        self.assertIsInstance(server.update_status(), ServerStatus.Booting)
-        self.assertEqual(server.progress, ServerProgress.Running)
+        self.assertIsInstance(server.update_status(), ServerStatus.Building)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_building_to_booting(self, mock_is_port_open):
@@ -363,7 +351,6 @@ class OpenStackServerStatusTestCase(TestCase):
         server = BuildingOpenStackServerFactory(os_server_fixture='openstack/api_server_2_active.json')
         self.assertIsInstance(server.update_status(), ServerStatus.Booting)
         self.assertEqual(server.status, ServerStatus.Booting)
-        self.assertEqual(server.progress, ServerProgress.Success)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_booting_to_ready(self, mock_is_port_open):
@@ -378,7 +365,6 @@ class OpenStackServerStatusTestCase(TestCase):
         mock_is_port_open.return_value = True
         self.assertIsInstance(server.update_status(), ServerStatus.Ready)
         self.assertEqual(server.status, ServerStatus.Ready)
-        self.assertEqual(server.progress, ServerProgress.Success)
 
     @patch('instance.models.server.is_port_open')
     @patch('instance.models.server.time.sleep')
@@ -386,10 +372,7 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         Update status when the server is rebooted
         """
-        server = ReadyOpenStackServerFactory(
-            os_server_fixture='openstack/api_server_2_active.json',
-            _progress=ServerProgress.Success.state_id
-        )
+        server = ReadyOpenStackServerFactory(os_server_fixture='openstack/api_server_2_active.json')
         # If server is in Status.Booting, update_status calls is_port_open
         # to determine if server should transition to Status.Ready.
         # When using a fixture for server.os_server, is_port_open will eventually return False,
@@ -397,12 +380,10 @@ class OpenStackServerStatusTestCase(TestCase):
         # So we mock out is_port_open here to speed up testing:
         mock_is_port_open.return_value = False
         self.assertIsInstance(server.update_status(), ServerStatus.Ready)
-        self.assertEqual(server.progress, ServerProgress.Success)
         server.reboot()
         self.assertEqual(server.status, ServerStatus.Booting)
         self.assertIsInstance(server.update_status(), ServerStatus.Booting)
         self.assertEqual(server.status, ServerStatus.Booting)
-        self.assertEqual(server.progress, ServerProgress.Running)
 
     @patch('instance.models.server.is_port_open')
     def test_update_status_rebooting_to_ready(self, mock_is_port_open):
@@ -417,4 +398,3 @@ class OpenStackServerStatusTestCase(TestCase):
         mock_is_port_open.return_value = True
         self.assertIsInstance(server.update_status(), ServerStatus.Ready)
         self.assertEqual(server.status, ServerStatus.Ready)
-        self.assertEqual(server.progress, ServerProgress.Success)

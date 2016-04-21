@@ -214,16 +214,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         return None
 
     @property
-    def progress(self):
-        """
-        Instance's current status progress
-        """
-        server = self._current_server
-        if server:
-            return server.progress
-        return None
-
-    @property
     def event_context(self):
         """
         Context dictionary to include in events

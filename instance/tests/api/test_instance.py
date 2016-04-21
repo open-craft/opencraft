@@ -80,14 +80,20 @@ class InstanceAPITestCase(APITestCase):
         self.assertIn(('url', 'http://domain.api.example.com/'), response.data[0].items())
         self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), response.data[0].items())
 
-    def test_provision_not_ready(self):
+    def test_provision_waiting_for_server(self):
         """
-        POST /:id/provision - Status not ready
+        POST /:id/provision - Instance is waiting for server
         """
         self.api_client.login(username='user1', password='pass')
         instance = SingleVMOpenEdXInstanceFactory()
-        OpenStackServerFactory(instance=instance, progress=OpenStackServer.Progress.Running)
-        self.assertEqual(instance.progress, OpenStackServer.Progress.Running)
+        # Pretend instance is waiting for server
+        instance._transition(instance._status_to_waiting_for_server)
+        OpenStackServerFactory(instance=instance)
+        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Pretend instance is configuring server
+        instance._transition(instance._status_to_configuring_server)
+        OpenStackServerFactory(instance=instance)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -111,8 +117,7 @@ class InstanceAPITestCase(APITestCase):
         self.api_client.login(username='user1', password='pass')
         instance = SingleVMOpenEdXInstanceFactory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
         OpenStackServerFactory(instance=instance,
-                               status=OpenStackServer.Status.Ready,
-                               progress=OpenStackServer.Progress.Success)
+                               status=OpenStackServer.Status.Ready)
         mock_get_commit_id_from_ref.return_value = '1' * 40
 
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))

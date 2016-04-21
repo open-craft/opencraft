@@ -61,7 +61,7 @@ class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
             'protocol',
             'repository_url',
             'server_status',
-            'progress',
+            'status',
             'studio_url',
             'sub_domain',
             'url',
@@ -75,10 +75,10 @@ class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
             output['server_status'] = 'empty'  # 'empty' for backwards compatibility
         else:
             output['server_status'] = obj.server_status.state_id
-        if output['progress'] is None:
-            output['progress'] = 'empty'
+        if output['status'] is None:
+            output['status'] = 'empty'
         else:
-            output['progress'] = obj.progress.state_id
+            output['status'] = obj.status.state_id
         return output
 
 

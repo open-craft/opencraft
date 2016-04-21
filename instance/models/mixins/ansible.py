@@ -76,9 +76,7 @@ class AnsibleInstanceMixin(models.Model):
         """
         inventory = ['[app]']
         server_model = self.server_set.model
-        for server in self.server_set.filter(_status=server_model.Status.Ready.state_id,
-                                             _progress=server_model.Progress.Success.state_id) \
-                                     .order_by('created'):
+        for server in self.server_set.filter(_status=server_model.Status.Ready.state_id).order_by('created'):
             inventory.append(server.public_ip)
         inventory_str = '\n'.join(inventory)
         self.logger.debug('Inventory:\n%s', inventory_str)

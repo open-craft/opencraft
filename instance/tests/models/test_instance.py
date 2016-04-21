@@ -31,7 +31,7 @@ from django.test import override_settings
 from mock import call, patch, Mock
 
 from instance.models.instance import InconsistentInstanceState, Instance, SingleVMOpenEdXInstance
-from instance.models.server import Server, Progress as ServerProgress
+from instance.models.server import Server
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
@@ -86,10 +86,8 @@ class InstanceTestCase(TestCase):
         """
         instance = SingleVMOpenEdXInstanceFactory()
         self.assertIsNone(instance.server_status)
-        self.assertIsNone(instance.progress)
         server = BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.server_status, Server.Status.Building)
-        self.assertEqual(instance.progress, Server.Progress.Running)
         server._transition(server._status_to_booting)
         self.assertEqual(instance.server_status, Server.Status.Booting)
         server._transition(server._status_to_ready)
@@ -112,7 +110,6 @@ class InstanceTestCase(TestCase):
         instance = SingleVMOpenEdXInstanceFactory()
         BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.server_status, Server.Status.Building)
-        self.assertEqual(instance.progress, Server.Progress.Running)
         BuildingOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
             instance.server_status #pylint: disable=pointless-statement

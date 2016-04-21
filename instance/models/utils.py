@@ -101,9 +101,6 @@ class ResourceState:
         """
         return inspect.getdoc(cls).strip()
 
-    # Constants:
-    PROGRESS_UNKNOWN = -1
-
     def __str__(self):
         return "{} [{}]".format(self.name, self.state_id)
 
