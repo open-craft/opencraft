@@ -69,6 +69,9 @@ class ServerState(ResourceState):
     # until the target server has reached one of these statuses.
     accepts_ssh_commands = False
 
+    # We know that a VM is available if a server has Status.Booting or Status.Ready.
+    vm_available = False
+
 
 class Status(ResourceState.Enum):
     """
@@ -85,12 +88,14 @@ class Status(ResourceState.Enum):
     class Booting(ServerState):
         """ (Re-)Booting """
         state_id = 'booting'
+        vm_available = True
 
     class Ready(ServerState):
         """ Booted and ready to add to the application """
         state_id = 'ready'
         is_steady_state = True
         accepts_ssh_commands = True
+        vm_available = True
 
     class Terminated(ServerState):
         """ Stopped forever """
@@ -320,18 +325,21 @@ class OpenStackServer(Server):
         """
         self.logger.info('Starting server (status=%s)...', self.status)
         self._transition(self._status_to_building)
-        # FIXME: If next step goes wrong, server needs to transition to Status.BuildFailed
-        os_server = openstack.create_server(
-            self.nova,
-            self.instance.sub_domain,
-            settings.OPENSTACK_SANDBOX_FLAVOR,
-            settings.OPENSTACK_SANDBOX_BASE_IMAGE,
-            key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
-        )
-        self.openstack_id = os_server.id
-        self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
-        # Persist OpenStack ID
-        self.save()
+        try:
+            os_server = openstack.create_server(
+                self.nova,
+                self.instance.sub_domain,
+                settings.OPENSTACK_SANDBOX_FLAVOR,
+                settings.OPENSTACK_SANDBOX_BASE_IMAGE,
+                key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
+            )
+        except novaclient.exceptions.ClientException:
+            self._transition(self._status_to_build_failed)
+        else:
+            self.openstack_id = os_server.id
+            self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
+            # Persist OpenStack ID
+            self.save()
 
     @Server.status.only_for(Status.Ready, Status.Booting)
     def reboot(self, reboot_type='SOFT'):

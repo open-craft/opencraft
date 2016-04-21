@@ -41,7 +41,9 @@ from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
 from instance.models.mixins.version_control import GitHubInstanceMixin
-from instance.models.utils import ModelResourceStateDescriptor, ResourceState, ValidateModelMixin
+from instance.models.utils import (
+    ModelResourceStateDescriptor, ResourceState, SteadyStateException, ValidateModelMixin
+)
 
 # Constants ###################################################################
 
@@ -551,7 +553,13 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
         self.server_set.terminate()
         self.logger.info('Start new server')
         server = self.server_set.create()
-        server.start()  # FIXME: If this goes wrong, instance needs to transition to Status.Error
+        server.start()
+
+        try:
+            server.sleep_until(lambda: server.status.vm_available)
+        except SteadyStateException:
+            self._transition(self._status_to_error)
+            return (server, None, False)  # No deploy logs available yet; instance has not been provisioned
 
         def accepts_ssh_commands():
             """ Does server accept SSH commands? """
