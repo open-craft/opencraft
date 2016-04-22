@@ -75,6 +75,18 @@ class InstanceState(ResourceState):
     """
     A [finite state machine] state describing an instance.
     """
+    # A state is "steady" if we don't expect it to change.
+    # This information can be used to:
+    # - delay execution of an operation until the target server reaches a steady state
+    # - raise an exception when trying to schedule an operation that depends on a state change
+    #   while the target server is in a steady state
+    # Steady states include: Status.Running, Status.ConfigurationFailed, Status.Error, Status.Terminated
+    is_steady_state = False
+
+    # An instance is healthy if it has Status.Running.
+    # This information can be used to delay execution of an operation
+    # until the target instance has reached this status.
+    is_healthy_state = False
 
 
 class Status(ResourceState.Enum):
@@ -97,18 +109,23 @@ class Status(ResourceState.Enum):
     class Running(InstanceState):
         """ Instance is up and running """
         state_id = 'running'
+        is_steady_state = True
+        is_healthy_state = True
 
     class ConfigurationFailed(InstanceState):
         """ Instance was not configured successfully (but may be partially online) """
         state_id = 'failed'
+        is_steady_state = True
 
     class Error(InstanceState):
         """ Instance never got up and running (something went wrong when trying to build new VM) """
         state_id = 'error'
+        is_steady_state = True
 
     class Terminated(InstanceState):
         """ Instance was running successfully and has been shut down """
         state_id = 'terminated'
+        is_steady_state = True
 
 
 # Models ######################################################################
@@ -221,15 +238,6 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         Context dictionary to include in events
         """
         return {'instance_id': self.pk}
-
-    def _transition(self, state_transition):
-        """
-        Helper method to update the state of this instance.
-
-        Ensures that state is in sync with the Django DB.
-        """
-        state_transition()
-        self.save()
 
     def save(self, **kwargs):
         """
@@ -546,7 +554,7 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
 
         # Instance
         self.logger.info('Prepare for (re-)provisioning')
-        self._transition(self._status_to_waiting_for_server)
+        self._status_to_waiting_for_server()
 
         # Server
         self.logger.info('Terminate servers')
@@ -558,7 +566,7 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
         try:
             server.sleep_until(lambda: server.status.vm_available)
         except SteadyStateException:
-            self._transition(self._status_to_error)
+            self._status_to_error()
             return (server, None, False)  # No deploy logs available yet; instance has not been provisioned
 
         def accepts_ssh_commands():
@@ -584,22 +592,24 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
                 self.provision_swift()
 
             # Provisioning (ansible)
-            self.mark_as_provisioning()
+            self.logger.info('Provisioning server...')
+            self._status_to_configuring_server()
             self.reset_ansible_settings(commit=True)
             deploy_log, exit_code = self.deploy()
             if exit_code != 0:
-                self.mark_provisioning_finished(success=False)
+                self.logger.info('Provisioning failed')
+                self._status_to_configuration_failed()
                 self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, deploy_log)
                 return (server, deploy_log, False)
 
             # Reboot
+            self.logger.info('Provisioning completed')
             self.logger.info('Rebooting server %s...', server)
             server.reboot()
             server.sleep_until(accepts_ssh_commands)
-            self.logger.info('Provisioning completed')
 
             # Declare instance up and running
-            self.mark_provisioning_finished(success=True)
+            self._status_to_running()
 
             return (server, deploy_log, True)
 
@@ -607,23 +617,6 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
             self.server_set.terminate()
             self.provision_failed_email(self.ProvisionMessages.PROVISION_EXCEPTION)
             raise
-
-    @Instance.status.only_for(Status.WaitingForServer)
-    def mark_as_provisioning(self):
-        """
-        Indicate that this instance is being provisioned.
-        """
-        self._transition(self._status_to_configuring_server)
-
-    @Instance.status.only_for(Status.ConfiguringServer)
-    def mark_provisioning_finished(self, success):
-        """
-        Indicate that this instance is done provisioning, either due to success or failure.
-        """
-        if success:
-            self._transition(self._status_to_running)
-        else:
-            self._transition(self._status_to_configuration_failed)
 
     def provision_mysql(self):
         """

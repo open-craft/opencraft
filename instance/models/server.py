@@ -51,7 +51,6 @@ logger = logging.getLogger(__name__)
 
 # States ######################################################################
 
-
 class ServerState(ResourceState):
     """
     A [finite state machine] state describing a virtual machine.
@@ -66,10 +65,12 @@ class ServerState(ResourceState):
 
     # A server accepts SSH commands if it has Status.Ready.
     # This information can be used to delay execution of an operation
-    # until the target server has reached one of these statuses.
+    # until the target server has reached this status.
     accepts_ssh_commands = False
 
     # We know that a VM is available if a server has Status.Booting or Status.Ready.
+    # This information can be used to delay execution of an operation
+    # until the target server has reached one of these statuses.
     vm_available = False
 
 
@@ -78,7 +79,7 @@ class Status(ResourceState.Enum):
     The states that a server can be in.
     """
     class Pending(ServerState):
-        """ Not yet loaded (need to request new VM from OpenStack API) """
+        """ Not yet loaded (need to request new VM) """
         state_id = 'pending'
 
     class Building(ServerState):
@@ -184,15 +185,6 @@ class Server(ValidateModelMixin, TimeStampedModel):
             'instance_id': self.instance.pk,
             'server_id': self.pk,
         }
-
-    def _transition(self, state_transition):
-        """
-        Helper method to update the state of this server.
-
-        Ensures that state is in sync with the Django DB.
-        """
-        state_transition()
-        self.save()
 
     def sleep_until(self, condition, timeout=3600):
         """
@@ -308,10 +300,10 @@ class OpenStackServer(Server):
         if self.status == Status.Building:
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
-                self._transition(self._status_to_booting)
+                self._status_to_booting()
 
         elif self.status == Status.Booting and self.public_ip and is_port_open(self.public_ip, 22):
-            self._transition(self._status_to_ready)
+            self._status_to_ready()
 
         return self.status
 
@@ -324,7 +316,7 @@ class OpenStackServer(Server):
         TODO: Create the key dynamically
         """
         self.logger.info('Starting server (status=%s)...', self.status)
-        self._transition(self._status_to_building)
+        self._status_to_building()
         try:
             os_server = openstack.create_server(
                 self.nova,
@@ -334,7 +326,7 @@ class OpenStackServer(Server):
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
             )
         except novaclient.exceptions.ClientException:
-            self._transition(self._status_to_build_failed)
+            self._status_to_build_failed()
         else:
             self.openstack_id = os_server.id
             self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
@@ -352,7 +344,7 @@ class OpenStackServer(Server):
         """
         if self.status == Status.Booting:
             return
-        self._transition(self._status_to_booting)
+        self._status_to_booting()
         self.os_server.reboot(reboot_type=reboot_type)
 
         # TODO: Find a better way to wait for the server shutdown and reboot
@@ -368,10 +360,10 @@ class OpenStackServer(Server):
         if self.status == Status.Terminated:
             return
         elif self.status == Status.Pending:
-            self._transition(self._status_to_terminated)
+            self._status_to_terminated()
             return
 
-        self._transition(self._status_to_terminated)
+        self._status_to_terminated()
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:

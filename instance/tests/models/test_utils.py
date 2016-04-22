@@ -318,7 +318,7 @@ class SimpleResourceTestCase(TestCase):
 
     def test_mutator(self):
         """
-        Test an exmaple method that changes the state.
+        Test an example method that changes the state.
         """
         res = self.make_resource()
         self.assertEqual(res.state, State1)
@@ -486,3 +486,35 @@ class DjangoResourceTest(SimpleResourceTestCase):
     Run the same tests as in SimpleResourceTestCase, but using DjangoResource.
     """
     make_resource = DjangoResource
+
+    def setUp(self):
+        self.make_resource.save = Mock()
+
+    def test_model_field_choices(self):
+        """
+        Test that ModelResourceStateDescriptor produces a sensible set of field choices.
+        """
+        model_field_choices = set(self.make_resource.state.model_field_choices)
+        expected_model_field_choices = set((
+            ('state1', 'State1'),
+            ('state2', 'State2'),
+            ('state3', 'State3'),
+        ))
+        self.assertEqual(model_field_choices, expected_model_field_choices)
+
+    def test_mutator(self):
+        """
+        Test an example method that changes the state.
+        """
+        res = self.make_resource()
+        self.assertEqual(res.state, State1)
+        self.assertEqual(self.make_resource.save.call_count, 1)
+        self.make_resource.save.assert_called_with(update_fields=['backing_field'])
+        res.increment_state()
+        self.assertEqual(res.state, State2)
+        self.assertEqual(self.make_resource.save.call_count, 2)
+        self.make_resource.save.assert_called_with(update_fields=['backing_field'])
+        res.increment_state()
+        self.assertEqual(res.state, State3)
+        self.assertEqual(self.make_resource.save.call_count, 3)
+        self.make_resource.save.assert_called_with(update_fields=['backing_field'])

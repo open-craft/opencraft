@@ -88,9 +88,9 @@ class InstanceTestCase(TestCase):
         self.assertIsNone(instance.server_status)
         server = BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.server_status, Server.Status.Building)
-        server._transition(server._status_to_booting)
+        server._status_to_booting()
         self.assertEqual(instance.server_status, Server.Status.Booting)
-        server._transition(server._status_to_ready)
+        server._status_to_ready()
         self.assertEqual(instance.server_status, Server.Status.Ready)
 
     def test_status_terminated(self):
@@ -100,7 +100,7 @@ class InstanceTestCase(TestCase):
         instance = SingleVMOpenEdXInstanceFactory()
         server = BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.server_status, server.Status.Building)
-        server._transition(server._status_to_terminated)
+        server._status_to_terminated()
         self.assertIsNone(instance.server_status)
 
     def test_status_multiple_servers(self):

@@ -27,12 +27,11 @@
     <ul class="side-nav" ng-if="instanceList">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance == selected.instance}">
-        <div class="status-icon" ng-switch="instance.status">
-          <i class="fa fa-ellipsis-h" tooltip-placement="top" tooltip="Waiting for server" ng-switch-when="waiting"></i>
-          <i class="fa fa-ellipsis-h" tooltip-placement="top" tooltip="Configuring server" ng-switch-when="configuring"></i>
-          <i class="fa fa-times" tooltip-placement="top" tooltip="Error" ng-switch-when="error"></i>
-          <i class="fa fa-times" tooltip-placement="top" tooltip="Configuration Failed" ng-switch-when="failed"></i>
-          <i class="fa fa-check" tooltip-placement="top" tooltip="Running" ng-switch-when="running"></i>
+        <div class="status-icon">
+          <i ng-attr-class="{{ instance.is_steady && (instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"
+             tooltip-placement="top"
+             tooltip="{{ instance.status_description }}">
+          </i>
         </div>
         <a ng-click="select(instance)">{{ instance.name }}</a>
       </li>
@@ -51,10 +50,11 @@
                 title="{{ server.status_description }}">
             {{ server.status_name }}
           </span>
-          <span ng-switch="selected.instance.status">
-            <i class="fa fa-times" tooltip-placement="top" tooltip="Error" ng-switch-when="error"></i>
-            <i class="fa fa-times" tooltip-placement="top" tooltip="Configuration Failed" ng-switch-when="failed"></i>
-            <i class="fa fa-check" tooltip-placement="top" tooltip="Running" ng-switch-when="running"></i>
+          <span>
+            <i ng-attr-class="{{ selected.instance.is_steady && (selected.instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"
+               tooltip-placement="top"
+               tooltip="{{ selected.instance.status_description }}">
+            </i>
           </span>
         </span>
       </h3>
@@ -76,21 +76,18 @@
             </ul>
           </div>
           <div class="large-2 columns">
-            <div class="status-icon" ng-if="selected.instance.status == 'failed'">
-              <button class="button reprovision" ng-click="provision(selected.instance)">
+            <div ng-if="selected.instance.is_steady"
+                 ng-attr-class="status-icon status-{{ selected.instance.status }}">
+              <button>
                 Provision
               </button>
             </div>
-            <div class="status-icon" ng-if="selected.instance.status == 'running'">
-              <button class="button reprovision" ng-click="provision(selected.instance)">
-                Provision
-              </button>
-            </div>
-            <div class="status-icon" ng-if="selected.instance.status == 'waiting'">
-              <img src="/static/img/running.png" tooltip-placement="bottom" tooltip="Waiting for server..." alt="Waiting for server..."/>
-            </div>
-            <div class="status-icon" ng-if="selected.instance.status == 'configuring'">
-              <img src="/static/img/running.png" tooltip-placement="bottom" tooltip="Provisioning in progress..." alt="Provisioning in progress..."/>
+            <div ng-if="!selected.instance.is_steady"
+                 ng-attr-class="status-icon status-{{ selected.instance.status }}">
+              <img src="/static/img/running.png"
+                   tooltip-placement="bottom"
+                   tooltip="{{ selected.instance.status_description }}"
+                   alt="{{ selected.instance.status_description }}" />
             </div>
           </div>
         </div>

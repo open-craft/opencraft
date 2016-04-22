@@ -60,7 +60,6 @@ class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
             'name',
             'protocol',
             'repository_url',
-            'server_status',
             'status',
             'studio_url',
             'sub_domain',
@@ -71,14 +70,13 @@ class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         output = super().to_representation(obj)
         # Convert the state values from objects to strings:
-        if output['server_status'] is None:
-            output['server_status'] = 'empty'  # 'empty' for backwards compatibility
-        else:
-            output['server_status'] = obj.server_status.state_id
-        if output['status'] is None:
-            output['status'] = 'empty'
-        else:
-            output['status'] = obj.status.state_id
+        output['status'] = obj.status.state_id
+        # Add state name and description for display purposes:
+        output['status_name'] = obj.status.name
+        output['status_description'] = obj.status.description
+        # Add info about relevant conditions related to instance status
+        output['is_steady'] = obj.status.is_steady_state
+        output['is_healthy'] = obj.status.is_healthy_state
         return output
 
 

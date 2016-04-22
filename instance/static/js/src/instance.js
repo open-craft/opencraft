@@ -99,7 +99,6 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q', '$timeou
                 return fallback;
             };
             return instance.post('provision').then(function(response) {
-                instance.server_status = 'terminating';
                 _.each(instance.active_server_set, function(server) {
                     if(server.status !== 'terminated') {
                         server.status = 'terminating';

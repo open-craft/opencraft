@@ -62,11 +62,12 @@ class InstanceAPITestCase(APITestCase):
         instance = SingleVMOpenEdXInstanceFactory()
         response = self.api_client.get('/api/v1/openedxinstance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(('id', instance.pk), response.data[0].items())
+        instance_data = response.data[0].items()
+        self.assertIn(('id', instance.pk), instance_data)
         self.assertIn(('api_url', 'http://testserver/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk)),
-                      response.data[0].items())
-        self.assertIn(('server_status', 'empty'), response.data[0].items())
-        self.assertIn(('base_domain', 'example.com'), response.data[0].items())
+                      instance_data)
+        self.assertIn(('status', 'new'), instance_data)
+        self.assertIn(('base_domain', 'example.com'), instance_data)
 
     def test_get_domain(self):
         """
@@ -76,9 +77,10 @@ class InstanceAPITestCase(APITestCase):
         SingleVMOpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/openedxinstance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(('domain', 'domain.api.example.com'), response.data[0].items())
-        self.assertIn(('url', 'http://domain.api.example.com/'), response.data[0].items())
-        self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), response.data[0].items())
+        instance_data = response.data[0].items()
+        self.assertIn(('domain', 'domain.api.example.com'), instance_data)
+        self.assertIn(('url', 'http://domain.api.example.com/'), instance_data)
+        self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), instance_data)
 
     def test_provision_waiting_for_server(self):
         """
@@ -87,12 +89,12 @@ class InstanceAPITestCase(APITestCase):
         self.api_client.login(username='user1', password='pass')
         instance = SingleVMOpenEdXInstanceFactory()
         # Pretend instance is waiting for server
-        instance._transition(instance._status_to_waiting_for_server)
+        instance._status_to_waiting_for_server()
         OpenStackServerFactory(instance=instance)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # Pretend instance is configuring server
-        instance._transition(instance._status_to_configuring_server)
+        instance._status_to_configuring_server()
         OpenStackServerFactory(instance=instance)
         response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

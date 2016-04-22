@@ -142,7 +142,7 @@ class OpenStackServerTestCase(TestCase):
             ]
             # Transition to state fulfilling condition
             for state_transition in status_queue:
-                server._transition(state_transition)
+                state_transition()
 
             # Sleep until condition is fulfilled.
             # Use a small value for "timeout" to ensure that we can fail quickly
@@ -167,7 +167,7 @@ class OpenStackServerTestCase(TestCase):
             """ Return mock update_status scoped to a specific server and status_queue """
             def update_status():
                 """ Simulate status progression """
-                server._transition(status_queue.pop())
+                status_queue.pop()()
             return update_status
 
         for condition in conditions:
@@ -201,7 +201,7 @@ class OpenStackServerTestCase(TestCase):
 
         def update_status():
             """ Simulate status progression """
-            server._transition(server._status_to_building)
+            server._status_to_building()
         mock_update_status.side_effect = update_status
 
         # Pretend that Status.Building (which doesn't accept SSH commands) is a steady state
@@ -224,7 +224,7 @@ class OpenStackServerTestCase(TestCase):
 
         def update_status():
             """ Simulate status progression """
-            server._transition(server._status_to_building)
+            server._status_to_building()
         mock_update_status.side_effect = update_status
 
         with self.assertRaises(TimeoutError):
