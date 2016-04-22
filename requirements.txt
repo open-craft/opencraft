@@ -1,5 +1,5 @@
 astroid==1.4.5
-Babel==2.3.3
+Babel==2.3.4
 CherryPy==5.1.0
 cliff==2.0.0
 cmd2==0.6.8
@@ -26,7 +26,7 @@ factory-boy==2.7.0
 Flask==0.10.1
 freezegun==0.3.6
 gitdb==0.6.4
-GitPython==1.0.2
+GitPython==2.0.0
 glob2==0.4.1
 gunicorn==19.4.5
 honcho==0.7.1
@@ -80,7 +80,7 @@ python-dateutil==2.5.3
 python-keystoneclient==2.3.1
 python-neutronclient==4.2.0
 python-novaclient==4.0.0
-pytz==2016.3
+pytz==2016.4
 PyYAML==3.11
 redis==2.10.5
 requests==2.9.1
