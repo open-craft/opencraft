@@ -80,6 +80,7 @@ python-dateutil==2.5.3
 python-keystoneclient==2.3.1
 python-neutronclient==4.2.0
 python-novaclient==4.0.0
+python-swiftclient==3.0.0
 pytz==2016.4
 PyYAML==3.11
 redis==2.10.5
