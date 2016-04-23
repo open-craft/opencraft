@@ -22,18 +22,18 @@ OpenStack - Helper functions
 
 # Imports #####################################################################
 
-import requests
-
-from novaclient.client import Client as NovaClient
+import logging
 
 from django.conf import settings
+from novaclient.client import Client as NovaClient
+import requests
+from swiftclient.client import Connection as SwiftConnection
 
 from instance.utils import get_requests_retry
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 def get_nova_client(api_version=2):
     """
-    Instanciate a python novaclient.Client() object with proper credentials
+    Instantiate a python novaclient.Client() object with proper credentials
     """
     nova = NovaClient(
         api_version,
@@ -97,3 +97,33 @@ def get_server_public_address(server):
     first_address = addresses[first_address_key][0]
 
     return first_address
+
+
+def get_swift_connection(
+        user=settings.SWIFT_OPENSTACK_USER,
+        password=settings.SWIFT_OPENSTACK_PASSWORD,
+        tenant=settings.SWIFT_OPENSTACK_TENANT,
+        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL,
+        region=settings.SWIFT_OPENSTACK_REGION):
+    """
+    Create a new Swift client connection.
+    """
+    return SwiftConnection(
+        auth_version='2',
+        user=user,
+        key=password,
+        tenant_name=tenant,
+        authurl=auth_url,
+        os_options=dict(region_name=region),
+    )
+
+
+def create_swift_container(container_name, **kwargs):
+    """
+    Create a Swift container with publicly readable objects (given the URL).
+    """
+    connection = get_swift_connection(**kwargs)
+    connection.put_container(
+        container_name,
+        headers={'X-Container-Read': '.r:*'},  # Allow public read access given the URL.
+    )

@@ -30,6 +30,7 @@ from django.conf import settings
 
 from instance.models.instance import OpenEdXInstance
 from instance.models.server import Status, Progress
+from instance.openstack import get_swift_connection
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
@@ -61,6 +62,20 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                     raise
             time.sleep(15)
 
+    def assert_swift_container_provisioned(self, instance):
+        """
+        Verify the Swift container for the instance has been provisioned successfully.
+
+        This is done here because we can't test provisioning Swift locally.  We also delete the
+        container after the check.
+        """
+        if not settings.SWIFT_ENABLE:
+            return
+        connection = get_swift_connection()
+        header = connection.head_container(instance.swift_container_name)
+        self.assertEqual(header['x-container-read'], '.r:*')
+        connection.delete_container(instance.swift_container_name)
+
     @shard(1)
     def test_provision_instance(self):
         """
@@ -83,6 +98,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                use_ephemeral_databases=False)
         instance = OpenEdXInstance.objects.get()
         provision_instance(instance.pk)
+        self.assert_swift_container_provisioned(instance)
         self.assert_instance_up(instance)
 
     @patch_git_checkout
