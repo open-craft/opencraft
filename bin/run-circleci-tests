@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+case $CIRCLE_NODE_INDEX in
+    0)
+        make test
+        ;;
+    *)
+        make test_integration
+        ;;
+esac

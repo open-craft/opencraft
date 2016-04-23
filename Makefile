@@ -63,6 +63,7 @@ collectstatic: clean static_external
 migrate: clean
 	$(HONCHO_MANAGE) migrate
 
+# Check for unapplied migrations
 migration_check: clean
 	!(($(HONCHO_MANAGE) showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
 
@@ -92,6 +93,10 @@ test_unit: clean
 	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 95%\n" && exit 2)
 
+# Check whether migrations need to be generated
+test_migrations_missing: clean
+	! honcho -e .env.test run ./manage.py makemigrations --dry-run --exit
+
 test_integration: clean
 	@if [ -a .env.integration ] ; then \
 		echo -e "\nRunning integration tests..." ; \
@@ -106,7 +111,7 @@ test_js: clean static_external
 test_js_web: clean static_external
 	cd instance/tests/js && jasmine --host 0.0.0.0
 
-test: clean test_prospector test_unit test_js test_integration
+test: clean test_prospector test_unit test_migrations_missing test_js test_integration
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean

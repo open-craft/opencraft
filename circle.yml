@@ -8,6 +8,6 @@ dependencies:
     - pip install -r requirements.txt
 test:
   override:
-      - case $CIRCLE_NODE_INDEX in 0) make test ;; *) make test_integration ;; esac:
+      - bin/run-circleci-tests:
           timeout: 1800
           parallel: true
