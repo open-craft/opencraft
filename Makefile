@@ -25,7 +25,7 @@ HONCHO_MANAGE := honcho run python3 manage.py
 # Parameters ##################################################################
 
 # For `test_one` use the rest as arguments and turn them into do-nothing targets
-ifeq (test_one,$(firstword $(MAKECMDGOALS)))
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),test_one manage))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
@@ -57,6 +57,9 @@ install_virtualenv_system:
 
 collectstatic: clean static_external
 	honcho run ./manage.py collectstatic --noinput
+
+manage:
+	$(HONCHO_MANAGE) $(RUN_ARGS)
 
 migrate: clean
 	$(HONCHO_MANAGE) migrate

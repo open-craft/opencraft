@@ -258,7 +258,7 @@ Creating a user
 In order to login to the development server locally you will need to create a
 superuser by running:
 
-    honcho run ./manage.py createsuperuser
+    make manage createsuperuser
 
 Once created, you will be able to login with the username and password you set
 up.
@@ -431,6 +431,10 @@ manage.py
 
 You can also access the Django `manage.py` command directly, using Honcho to
 load the environment:
+
+    make manage <command>
+
+Or run any command using the application environment:
 
     honcho run ./manage.py <command>
 
