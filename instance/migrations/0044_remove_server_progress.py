@@ -7,12 +7,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0041_auto_20160420_1409'),
+        ('instance', '0043_change_server_statuses'),
     ]
 
     operations = [
         migrations.RemoveField(
             model_name='openstackserver',
-            name='progress',
+            name='_progress',
         ),
     ]

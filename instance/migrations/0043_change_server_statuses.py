@@ -7,14 +7,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0040_auto_20160420_0754'),
+        ('instance', '0042_add_instance_status'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='openstackserver',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('building', 'Building'), ('booting', 'Booting'), ('ready', 'Ready'), ('terminated', 'Terminated'), ('unknown', 'Unknown'), ('failed', 'BuildFailed')], max_length=20, db_index=True, default='pending'),
+            name='_status',
+            field=models.CharField(choices=[('booting', 'Booting'), ('building', 'Building'), ('failed', 'BuildFailed'), ('pending', 'Pending'), ('ready', 'Ready'), ('terminated', 'Terminated'), ('unknown', 'Unknown')], default='pending', db_column='status', max_length=20, db_index=True),
         ),
         migrations.RunSQL(
             [
