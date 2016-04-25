@@ -44,18 +44,11 @@
     <div class="row">
       <h3>
         {{ selected.instance.name }}
-        <span ng-repeat="server in selected.instance.active_server_set">
-          <span class="status radius label"
-                ng-class="{warning: server.status != 'ready', success: server.status == 'ready'}"
-                title="{{ server.status_description }}">
-            {{ server.status_name }}
-          </span>
-          <span>
-            <i ng-attr-class="{{ selected.instance.is_steady && (selected.instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"
-               tooltip-placement="top"
-               tooltip="{{ selected.instance.status_description }}">
-            </i>
-          </span>
+        <span class="status radius label"
+              ng-class="{warning: !selected.instance.is_healthy, success: selected.instance.is_healthy}"
+              tooltip="{{ selected.instance.status_description }}">
+          <i ng-attr-class="{{ selected.instance.is_steady && (selected.instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+          {{ selected.instance.status_name }}
         </span>
       </h3>
       <div class="panel">
@@ -71,6 +64,12 @@
                 <a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> {{ selected.instance.branch_name }}
                 <span ng-if="selected.instance.github_pr_number">
                   | <a href="{{ selected.instance.github_pr_url }}" target="_new">PR#{{ selected.instance.github_pr_number }}</a>
+                </span>
+              </li>
+              <li class="instance-server-list">
+                Servers:
+                <span ng-repeat="server in selected.instance.active_server_set">
+                  VM {{server.id}} ({{server.status_name}})
                 </span>
               </li>
             </ul>

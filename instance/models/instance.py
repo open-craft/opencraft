@@ -80,13 +80,24 @@ class InstanceState(ResourceState):
     # - delay execution of an operation until the target server reaches a steady state
     # - raise an exception when trying to schedule an operation that depends on a state change
     #   while the target server is in a steady state
-    # Steady states include: Status.Running, Status.ConfigurationFailed, Status.Error, Status.Terminated
-    is_steady_state = False
+    # Steady states include:
+    # - Status.New
+    # - Status.Running
+    # - Status.ConfigurationFailed
+    # - Status.Error
+    # - Status.Terminated
+    is_steady_state = True
 
-    # An instance is healthy if it has Status.Running.
+    # An instance is healthy if it is part of a normal (expected) workflow.
     # This information can be used to delay execution of an operation
-    # until the target instance has reached this status.
-    is_healthy_state = False
+    # until the target server has reached a healthy state.
+    # Healthy states include:
+    # - Status.New
+    # - Status.WaitingForServer
+    # - Status.ConfiguringServer
+    # - Status.Running
+    # - Status.Terminated
+    is_healthy_state = True
 
 
 class Status(ResourceState.Enum):
@@ -101,31 +112,30 @@ class Status(ResourceState.Enum):
     class WaitingForServer(InstanceState):
         """ Server not yet accessible """
         state_id = 'waiting'
+        is_steady_state = False
 
     class ConfiguringServer(InstanceState):
         """ Running Ansible playbooks on server """
         state_id = 'configuring'
+        is_steady_state = False
 
     class Running(InstanceState):
         """ Instance is up and running """
         state_id = 'running'
-        is_steady_state = True
-        is_healthy_state = True
 
     class ConfigurationFailed(InstanceState):
         """ Instance was not configured successfully (but may be partially online) """
         state_id = 'failed'
-        is_steady_state = True
+        is_healthy_state = False
 
     class Error(InstanceState):
         """ Instance never got up and running (something went wrong when trying to build new VM) """
         state_id = 'error'
-        is_steady_state = True
+        is_healthy_state = False
 
     class Terminated(InstanceState):
         """ Instance was running successfully and has been shut down """
         state_id = 'terminated'
-        is_steady_state = True
 
 
 # Models ######################################################################

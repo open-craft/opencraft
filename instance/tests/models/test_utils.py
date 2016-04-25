@@ -494,12 +494,12 @@ class DjangoResourceTest(SimpleResourceTestCase):
         """
         Test that ModelResourceStateDescriptor produces a sensible set of field choices.
         """
-        model_field_choices = set(self.make_resource.state.model_field_choices)
-        expected_model_field_choices = set((
+        model_field_choices = self.make_resource.state.model_field_choices
+        expected_model_field_choices = [
             ('state1', 'State1'),
             ('state2', 'State2'),
             ('state3', 'State3'),
-        ))
+        ]
         self.assertEqual(model_field_choices, expected_model_field_choices)
 
     def test_mutator(self):
