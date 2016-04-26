@@ -33,7 +33,7 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
     patch_os_server, BuildingOpenStackServerFactory,
-    BootingOpenStackServerFactory, ReadyOpenStackServerFactory
+    BootingOpenStackServerFactory, OpenStackServerFactory, ReadyOpenStackServerFactory
 )
 
 #pylint: disable=no-member
@@ -208,23 +208,38 @@ class AnsibleInstanceTestCase(TestCase):
         instance = SingleVMOpenEdXInstanceFactory()
         self.assertEqual(instance.inventory_str, '[app]')
 
+        # Server 0: 'pending'
+        OpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.inventory_str, '[app]')
+
         # Server 1: 'building'
         BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 2: 'booting'
-        server2 = BootingOpenStackServerFactory(instance=instance)
-        os_server_manager.add_fixture(server2.openstack_id, 'openstack/api_server_2_active.json')
+        # Server 2: 'failed'
+        server2 = BuildingOpenStackServerFactory(instance=instance)
+        server2._status_to_build_failed()
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 3: 'ready'
-        server3 = ReadyOpenStackServerFactory(instance=instance)
+        # Server 3: 'booting'
+        server3 = BootingOpenStackServerFactory(instance=instance)
         os_server_manager.add_fixture(server3.openstack_id, 'openstack/api_server_2_active.json')
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 4: 'terminated'
+        server4 = ReadyOpenStackServerFactory(instance=instance)
+        server4._status_to_terminated()
+        os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_2_active.json')
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 5: 'ready'
+        server5 = ReadyOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server5.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200')
 
-        # Server 4: 'ready'
-        server4 = ReadyOpenStackServerFactory(instance=instance)
-        os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_3_active.json')
+        # Server 6: 'ready'
+        server6 = ReadyOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server6.openstack_id, 'openstack/api_server_3_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200\n192.168.99.66')
 
     def test_reset_ansible_settings(self):

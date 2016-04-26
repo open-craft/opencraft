@@ -42,3 +42,54 @@ class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
     commit_id = factory.Sequence('{:>040}'.format)
     github_organization_name = factory.Sequence('test-org{}'.format)
     github_repository_name = factory.Sequence('test-repo{}'.format)
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        """ Force FactoryBoy to set the field '_status' even though it starts with an underscore """
+        if 'status' in kwargs:
+            kwargs['_status'] = kwargs.pop('status').state_id
+        if hasattr(cls, '_status') and '_status' not in kwargs:
+            kwargs['_status'] = cls._status  # pylint: disable=no-member
+        return kwargs
+
+
+class WaitingSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'waiting' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.WaitingForServer.state_id
+
+
+class ConfiguringSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'configuring' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.ConfiguringServer.state_id
+
+
+class RunningSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'running' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.Running.state_id
+
+
+class ConfigFailedSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'failed' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.ConfigurationFailed.state_id
+
+
+class ErrorSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with an 'error' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.Error.state_id
+
+
+class TerminatedSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'terminated' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.Terminated.state_id

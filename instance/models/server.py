@@ -294,6 +294,12 @@ class OpenStackServer(Server):
         Refresh the status by querying the openstack server via nova
         """
         # TODO: Check when server is stopped or terminated
+
+        # First check if it makes sense to update the current status.
+        # This is not the case if we can not interact with the server:
+        if self.status == Status.BuildFailed:
+            return self.status
+
         os_server = self.os_server
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
 
