@@ -56,7 +56,7 @@ def patch_services(func):
 
     Returns a mock containing all the mocked services, so each test can customize the process.
     """
-    new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4'), ]
+    new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4')]
 
     def wrapper(self, *args, **kwargs):
         """ Wrap the test with appropriate mocks """
@@ -716,6 +716,7 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(mime_type, "text/html")
 
 
+# pylint: disable=too-many-public-methods
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models
@@ -979,13 +980,45 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         log_lines = ['log']
         mocks.mock_deploy.return_value = (log_lines, 1)
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
+        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', attempts=1)
 
         server = instance.provision()[0]
         self.assertEqual(server.status, Server.Status.Provisioning)
         self.assertEqual(server.progress, Server.Progress.Failed)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
+
+    @patch_services
+    def test_provision_second_attempt(self, mocks):
+        """
+        Tests provisioning is retried if first attempt fails
+        """
+        mocks.mock_deploy.side_effect = [(['log'], 1), ([], 0)]
+        mocks.mock_create_server.side_effect = [
+            Mock(id='test-run-provisioning-server-1'), Mock(id='test-run-provisioning-server-2')
+        ]
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server-1', 'openstack/api_server_2_active.json')
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server-2', 'openstack/api_server_3_active.json')
+        mock_reboot1 = mocks.os_server_manager.get_os_server('test-run-provisioning-server-1').reboot
+        mock_reboot2 = mocks.os_server_manager.get_os_server('test-run-provisioning-server-2').reboot
+
+        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True, attempts=2)
+
+        instance.provision()
+        print(mocks.mock_set_dns_record.mock_calls)
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
+            call(name='run.provisioning', type='A', value='192.168.100.200'),
+            call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
+            call(name='run.provisioning', type='A', value='192.168.99.66'),
+            call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
+        ])
+        self.assertEqual(mocks.mock_create_server.call_count, 2)  # creates new server for each attempt
+        self.assertEqual(mocks.mock_deploy.call_count, 2)
+        self.assertEqual(mock_reboot1.call_count, 0)
+        self.assertEqual(mock_reboot2.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
+        self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
+        self.assertEqual(mocks.mock_provision_swift.call_count, 0)
 
     @patch_services
     def test_provision_unhandled_exception(self, mocks):
