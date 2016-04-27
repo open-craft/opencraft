@@ -439,47 +439,50 @@ class MySQLInstanceTestCase(TestCase):
     """
     Test cases for MySQLInstanceMixin models
     """
-    def check_mysql(self, instance):
+    def setUp(self):
+        super().setUp()
+        self.instance = None
+
+    def tearDown(self):
+        if self.instance:
+            self.instance.deprovision_mysql()
+        super().tearDown()
+
+    def check_mysql(self):
         """
         Check that the mysql databases and user have been created, then remove them
         """
-        self.assertIs(instance.mysql_provisioned, True)
-        self.assertTrue(instance.mysql_user)
-        self.assertTrue(instance.mysql_pass)
+        self.assertIs(self.instance.mysql_provisioned, True)
+        self.assertTrue(self.instance.mysql_user)
+        self.assertTrue(self.instance.mysql_pass)
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        try:
-            for database in instance.mysql_database_names:
-                self.assertIn(database, databases)
-                mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
-                    user=instance.mysql_user,
-                    password=instance.mysql_pass,
-                    db_name=database,
-                )
-                tables = subprocess.call(mysql_cmd, shell=True)
-                self.assertEqual(tables, 0)
-        finally:
-            for database in instance.mysql_database_names:
-                #pylint: disable=undefined-loop-variable
-                subprocess.check_call("mysql -u root -e 'DROP DATABASE IF EXISTS {0}'".format(database), shell=True)
-            subprocess.check_call("mysql -u root -e 'DROP USER {0}'".format(instance.mysql_user), shell=True)
+        for database in self.instance.mysql_database_names:
+            self.assertIn(database, databases)
+            mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
+                user=self.instance.mysql_user,
+                password=self.instance.mysql_pass,
+                db_name=database,
+            )
+            tables = subprocess.call(mysql_cmd, shell=True)
+            self.assertEqual(tables, 0)
 
     def test_provision_mysql(self):
         """
         Provision mysql database
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mysql()
-        self.check_mysql(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.provision_mysql()
+        self.check_mysql()
 
     @override_settings(INSTANCE_MYSQL_URL_OBJ=None)
     def test_provision_mysql_no_url(self):
         """
         Don't provision a mysql database if INSTANCE_MYSQL_URL is not set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mysql()
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.provision_mysql()
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in instance.mysql_database_names:
+        for database in self.instance.mysql_database_names:
             self.assertNotIn(database, databases)
 
     def test_provision_mysql_weird_domain(self):
@@ -488,48 +491,56 @@ class MySQLInstanceTestCase(TestCase):
         """
         sub_domain = 'really.really.really.really.long.subdomain'
         base_domain = 'this-is-a-really-long-unusual-domain-แปลกมาก.com'
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                          sub_domain=sub_domain,
-                                          base_domain=base_domain)
-        instance.provision_mysql()
-        self.check_mysql(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
+                                               sub_domain=sub_domain,
+                                               base_domain=base_domain)
+        self.instance.provision_mysql()
+        self.check_mysql()
 
     def test_provision_mysql_again(self):
         """
         Only create the database once
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mysql()
-        self.assertIs(instance.mysql_provisioned, True)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.provision_mysql()
+        self.assertIs(self.instance.mysql_provisioned, True)
 
-        mysql_user = instance.mysql_user
-        mysql_pass = instance.mysql_pass
-        instance.provision_mysql()
-        self.assertEqual(instance.mysql_user, mysql_user)
-        self.assertEqual(instance.mysql_pass, mysql_pass)
-        self.check_mysql(instance)
+        mysql_user = self.instance.mysql_user
+        mysql_pass = self.instance.mysql_pass
+        self.instance.provision_mysql()
+        self.assertEqual(self.instance.mysql_user, mysql_user)
+        self.assertEqual(self.instance.mysql_pass, mysql_pass)
+        self.check_mysql()
 
 
 class MongoDBInstanceTestCase(TestCase):
     """
     Test cases for MongoDBInstanceMixin models
     """
-    def check_mongo(self, instance):
+    def setUp(self):
+        super().setUp()
+        self.instance = None
+
+    def tearDown(self):
+        if self.instance:
+            self.instance.deprovision_mongo()
+        super().tearDown()
+
+    def check_mongo(self):
         """
         Check that the instance mongo user has access to the external mongo database
         """
         mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
-        for database in instance.mongo_database_names:
-            self.assertTrue(mongo[database].authenticate(instance.mongo_user, instance.mongo_pass))
-            mongo[database].remove_user(instance.mongo_user)
+        for database in self.instance.mongo_database_names:
+            self.assertTrue(mongo[database].authenticate(self.instance.mongo_user, self.instance.mongo_pass))
 
     def test_provision_mongo(self):
         """
         Provision mongo databases
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mongo()
-        self.check_mongo(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.provision_mongo()
+        self.check_mongo()
 
     def test_provision_mongo_no_url(self):
         """
@@ -537,26 +548,26 @@ class MongoDBInstanceTestCase(TestCase):
         """
         mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
         with override_settings(INSTANCE_MONGO_URL=None):
-            instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-            instance.provision_mongo()
+            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+            self.instance.provision_mongo()
             databases = mongo.database_names()
-            for database in instance.mongo_database_names:
+            for database in self.instance.mongo_database_names:
                 self.assertNotIn(database, databases)
 
     def test_provision_mongo_again(self):
         """
         Only create the databases once
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mongo()
-        self.assertIs(instance.mongo_provisioned, True)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.provision_mongo()
+        self.assertIs(self.instance.mongo_provisioned, True)
 
-        mongo_user = instance.mongo_user
-        mongo_pass = instance.mongo_pass
-        instance.provision_mongo()
-        self.assertEqual(instance.mongo_user, mongo_user)
-        self.assertEqual(instance.mongo_pass, mongo_pass)
-        self.check_mongo(instance)
+        mongo_user = self.instance.mongo_user
+        mongo_pass = self.instance.mongo_pass
+        self.instance.provision_mongo()
+        self.assertEqual(self.instance.mongo_user, mongo_user)
+        self.assertEqual(self.instance.mongo_pass, mongo_pass)
+        self.check_mongo()
 
 
 @patch('instance.openstack.SwiftConnection')

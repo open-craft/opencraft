@@ -74,7 +74,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         connection = get_swift_connection()
         header = connection.head_container(instance.swift_container_name)
         self.assertEqual(header['x-container-read'], '.r:*')
-        connection.delete_container(instance.swift_container_name)
 
     @shard(1)
     def test_provision_instance(self):
