@@ -89,8 +89,7 @@ class InstanceState(ResourceState):
     is_steady_state = True
 
     # An instance is healthy if it is part of a normal (expected) workflow.
-    # This information can be used to delay execution of an operation
-    # until the target server has reached a healthy state.
+    # This information can be used to detect problems and highlight them in the UI or notify users.
     # Healthy states include:
     # - Status.New
     # - Status.WaitingForServer
@@ -112,11 +111,13 @@ class Status(ResourceState.Enum):
     class WaitingForServer(InstanceState):
         """ Server not yet accessible """
         state_id = 'waiting'
+        name = 'Waiting for server'
         is_steady_state = False
 
     class ConfiguringServer(InstanceState):
         """ Running Ansible playbooks on server """
         state_id = 'configuring'
+        name = 'Configuring server'
         is_steady_state = False
 
     class Running(InstanceState):
@@ -126,6 +127,7 @@ class Status(ResourceState.Enum):
     class ConfigurationFailed(InstanceState):
         """ Instance was not configured successfully (but may be partially online) """
         state_id = 'failed'
+        name = 'Configuration failed'
         is_healthy_state = False
 
     class Error(InstanceState):

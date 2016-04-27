@@ -154,11 +154,3 @@ class BuildFailedOpenStackServerFactory(OpenStackServerFactory):
     """
     _status = OpenStackServer.Status.BuildFailed.state_id
     openstack_id = factory.Sequence('failed-server-id{}'.format)
-
-
-class TerminatedOpenStackServerFactory(OpenStackServerFactory):
-    """
-    Factory for a server with a 'terminated' state
-    """
-    _status = OpenStackServer.Status.Terminated.state_id
-    openstack_id = factory.Sequence('terminated-server-id{}'.format)

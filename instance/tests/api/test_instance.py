@@ -22,23 +22,24 @@ Views - Tests
 
 # Imports #####################################################################
 
+from ddt import ddt, data
+
 from mock import call, patch
 
 from rest_framework import status
 
 from instance import github
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance, Status as InstanceStatus
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.instance import (
-    ConfiguringSingleVMOpenEdXInstanceFactory, ConfigFailedSingleVMOpenEdXInstanceFactory,
-    ErrorSingleVMOpenEdXInstanceFactory, RunningSingleVMOpenEdXInstanceFactory,
-    SingleVMOpenEdXInstanceFactory, TerminatedSingleVMOpenEdXInstanceFactory, WaitingSingleVMOpenEdXInstanceFactory
+    SingleVMOpenEdXInstanceFactory,
 )
 from instance.tests.models.factories.server import OpenStackServerFactory
 
 
 # Tests #######################################################################
 
+@ddt
 class InstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls
@@ -85,20 +86,19 @@ class InstanceAPITestCase(APITestCase):
         self.assertIn(('url', 'http://domain.api.example.com/'), instance_data)
         self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), instance_data)
 
-    def test_provision_not_allowed(self):
+    @data(
+        InstanceStatus.WaitingForServer,
+        InstanceStatus.ConfiguringServer,
+    )
+    def test_provision_not_allowed(self, instance_status):
         """
         POST /:id/provision - Instance is waiting for server or configuring server
         """
-        instance_factories = (
-            WaitingSingleVMOpenEdXInstanceFactory, ConfiguringSingleVMOpenEdXInstanceFactory
-        )
         self.api_client.login(username='user1', password='pass')
-
-        for instance_factory in instance_factories:
-            instance = instance_factory()
-            OpenStackServerFactory(instance=instance)
-            response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        instance = SingleVMOpenEdXInstanceFactory(status=instance_status)
+        OpenStackServerFactory(instance=instance)
+        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch('instance.github.get_commit_id_from_ref')
     def test_provision_github_branch_deleted(self, mock_get_commit_id_from_ref):
@@ -113,29 +113,31 @@ class InstanceAPITestCase(APITestCase):
 
     @patch('instance.github.get_commit_id_from_ref')
     @patch('instance.api.instance.provision_instance')
-    def test_provision(self, mock_provision_instance, mock_get_commit_id_from_ref):
+    @data(
+        InstanceStatus.New,
+        InstanceStatus.Running,
+        InstanceStatus.Error,
+        InstanceStatus.ConfigurationFailed,
+        InstanceStatus.Terminated,
+    )
+    def test_provision(self, instance_status, mock_provision_instance, mock_get_commit_id_from_ref):
         """
         POST /:id/provision - Instance is in a state that allows provisioning
         """
-        instance_factories = (
-            SingleVMOpenEdXInstanceFactory, RunningSingleVMOpenEdXInstanceFactory,
-            ErrorSingleVMOpenEdXInstanceFactory, ConfigFailedSingleVMOpenEdXInstanceFactory,
-            TerminatedSingleVMOpenEdXInstanceFactory
-        )
         self.api_client.login(username='user1', password='pass')
+        instance = SingleVMOpenEdXInstanceFactory(
+            commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo', status=instance_status
+        )
+        mock_get_commit_id_from_ref.return_value = '1' * 40
 
-        for attempt, instance_factory in enumerate(instance_factories, start=1):
-            instance = instance_factory(commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo')
-            mock_get_commit_id_from_ref.return_value = '1' * 40
-
-            response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data, {'status': 'Instance provisioning started'})
-            self.assertEqual(mock_provision_instance.call_count, attempt)
-            self.assertEqual(SingleVMOpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
-            self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
-                call('api/repo', 'api-branch', ref_type='heads'),
-            ] * attempt)
+        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'Instance provisioning started'})
+        self.assertEqual(mock_provision_instance.call_count, 1)
+        self.assertEqual(SingleVMOpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
+        self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
+            call('api/repo', 'api-branch', ref_type='heads'),
+        ])
 
     def test_get_log_entries(self):
         """

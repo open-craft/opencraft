@@ -26,6 +26,7 @@ import http.client
 import io
 
 import novaclient
+from ddt import ddt, data, unpack
 from mock import Mock, call, patch
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
@@ -33,8 +34,11 @@ from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
-    OpenStackServerFactory, BootingOpenStackServerFactory, BuildingOpenStackServerFactory,
-    BuildFailedOpenStackServerFactory, ReadyOpenStackServerFactory, TerminatedOpenStackServerFactory
+    OpenStackServerFactory,
+    BootingOpenStackServerFactory,
+    BuildingOpenStackServerFactory,
+    BuildFailedOpenStackServerFactory,
+    ReadyOpenStackServerFactory,
 )
 
 
@@ -51,6 +55,7 @@ class MockHTTPResponse(http.client.HTTPResponse):
         super().__init__(sock)
 
 
+@ddt
 class OpenStackServerTestCase(TestCase):
     """
     Test cases for OpenStackServer models
@@ -139,86 +144,79 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServer.objects.create(instance=SingleVMOpenEdXInstanceFactory())
         self.assertTrue(server.os_server)
 
+    @data(
+        'is_steady_state',
+        'accepts_ssh_commands',
+        'vm_available',
+    )
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_condition_already_fulfilled(self, mock_sleep, mock_update_status):
+    def test_sleep_until_condition_already_fulfilled(self, condition, mock_sleep, mock_update_status):
         """
         Check if sleep_until behaves correctly if condition to wait for
         is already fulfilled.
         """
-        conditions = [
-            lambda: server.status.is_steady_state,
-            lambda: server.status.accepts_ssh_commands,
-            lambda: server.status.vm_available,
+        server = OpenStackServerFactory()
+        status_queue = [
+            server._status_to_building,
+            server._status_to_booting,
+            server._status_to_ready,
         ]
-        for condition in conditions:
-            server = OpenStackServerFactory()
-            status_queue = [
-                server._status_to_building,
-                server._status_to_booting,
-                server._status_to_ready,
-            ]
-            # Transition to state fulfilling condition
-            for state_transition in status_queue:
-                state_transition()
+        # Transition to state fulfilling condition
+        for state_transition in status_queue:
+            state_transition()
 
-            # Sleep until condition is fulfilled.
-            # Use a small value for "timeout" to ensure that we can fail quickly
-            # if server can not reach desired status because transition logic is broken:
-            server.sleep_until(condition, timeout=5)
-            self.assertEqual(server.status, ServerStatus.Ready)
-            self.assertEqual(mock_sleep.call_count, 0)
+        # Sleep until condition is fulfilled.
+        # Use a small value for "timeout" to ensure that we can fail quickly
+        # if server can not reach desired status because transition logic is broken:
+        server.sleep_until(lambda: getattr(server.status, condition), timeout=5)
+        self.assertEqual(server.status, ServerStatus.Ready)
+        self.assertEqual(mock_sleep.call_count, 0)
 
+    @data(
+        {
+            'name': 'is_steady_state',
+            'required_transitions': 3,
+            'expected_status': ServerStatus.Ready,
+        },
+        {
+            'name': 'accepts_ssh_commands',
+            'required_transitions': 3,
+            'expected_status': ServerStatus.Ready,
+        },
+        {
+            'name': 'vm_available',
+            'required_transitions': 2,
+            'expected_status': ServerStatus.Booting,
+        },
+    )
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
-    def test_sleep_until_state_changes(self, mock_sleep, mock_update_status):
+    def test_sleep_until_state_changes(self, condition, mock_sleep, mock_update_status):
         """
         Check if sleep_until behaves correctly if condition to wait for
         is unfulfilled initially.
         """
-        conditions = {
-            'is_steady_state': {
-                'check_function': lambda: server.status.is_steady_state,
-                'required_transitions': 3,
-                'expected_status': ServerStatus.Ready,
-            },
-            'accepts_ssh_commands': {
-                'check_function': lambda: server.status.accepts_ssh_commands,
-                'required_transitions': 3,
-                'expected_status': ServerStatus.Ready,
-            },
-            'vm_available': {
-                'check_function': lambda: server.status.vm_available,
-                'required_transitions': 2,
-                'expected_status': ServerStatus.Booting,
-            },
-        }
+        server = OpenStackServerFactory()
+        status_queue = [
+            server._status_to_building,
+            server._status_to_booting,
+            server._status_to_ready,
+        ]
+        status_queue.reverse() # To be able to use pop()
 
-        def scoped_update_status(server=None, status_queue=None):
-            """ Return mock update_status scoped to a specific server and status_queue """
-            def update_status():
-                """ Simulate status progression """
-                status_queue.pop()()
-            return update_status
+        def update_status():
+            """ Simulate status progression """
+            status_queue.pop()()
 
-        for condition in conditions:
-            server = OpenStackServerFactory()
-            status_queue = [
-                server._status_to_building,
-                server._status_to_booting,
-                server._status_to_ready,
-            ]
-            status_queue.reverse() # To be able to use pop()
+        mock_update_status.side_effect = update_status
 
-            mock_update_status.side_effect = scoped_update_status(server, status_queue)
-            mock_sleep.call_count = 0
-
-            # Sleep until condition is fulfilled.
-            # Use a small value for "timeout" to ensure that we can fail quickly
-            # if server can not reach desired status because transition logic is broken:
-            server.sleep_until(conditions[condition]['check_function'], timeout=5)
-            self.assertEqual(server.status, conditions[condition]['expected_status'])
-            self.assertEqual(mock_sleep.call_count, conditions[condition]['required_transitions'] - 1)
+        # Sleep until condition is fulfilled.
+        # Use a small value for "timeout" to ensure that we can fail quickly
+        # if server can not reach desired status because transition logic is broken:
+        server.sleep_until(lambda: getattr(server.status, condition['name']), timeout=5)
+        self.assertEqual(server.status, condition['expected_status'])
+        self.assertEqual(mock_sleep.call_count, condition['required_transitions'] - 1)
 
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.Status.Building.is_steady_state')
@@ -294,18 +292,19 @@ class OpenStackServerTestCase(TestCase):
         server.os_server.reboot.assert_called_once_with(reboot_type='SOFT')
         mock_sleep.assert_called_once_with(30)
 
-    def test_reboot_server_wrong_status(self):
+    @data(
+        ServerStatus.Pending,
+        ServerStatus.Building,
+        ServerStatus.BuildFailed,
+        ServerStatus.Terminated,
+    )
+    def test_reboot_server_wrong_status(self, server_status):
         """
         Attempt to reboot a server while in a status that doesn't allow it
         """
-        server_factories = (
-            OpenStackServerFactory, BuildingOpenStackServerFactory,
-            BuildFailedOpenStackServerFactory, TerminatedOpenStackServerFactory
-        )
-        for server_factory in server_factories:
-            server = server_factory()
-            with self.assertRaises(WrongStateException):
-                server.reboot()
+        server = OpenStackServerFactory(status=server_status)
+        with self.assertRaises(WrongStateException):
+            server.reboot()
 
     def test_terminate_pending_server(self):
         """
@@ -318,19 +317,21 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Terminated)
         self.assertFalse(server.nova.mock_calls)
 
-    def test_terminate_building_server(self):
+    @data(
+        ('building-server-id', ServerStatus.Building),
+        ('booting-server-id', ServerStatus.Booting),
+        ('failed-server-id', ServerStatus.BuildFailed),
+        ('ready-server-id', ServerStatus.Ready),
+    )
+    @unpack
+    def test_terminate_server(self, openstack_id, server_status):
         """
-        Terminate a server with a 'building' status
+        Terminate a server
         """
-        server_factories = (
-            BuildingOpenStackServerFactory, BootingOpenStackServerFactory,
-            BuildFailedOpenStackServerFactory, ReadyOpenStackServerFactory
-        )
-        for server_factory in server_factories:
-            server = server_factory()
-            server.terminate()
-            self.assertEqual(server.status, ServerStatus.Terminated)
-            server.os_server.delete.assert_called_once_with()
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        server.terminate()
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        server.os_server.delete.assert_called_once_with()
 
     def test_terminate_server_not_found(self):
         """

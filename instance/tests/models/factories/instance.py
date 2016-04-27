@@ -65,31 +65,3 @@ class ConfiguringSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
     Factory for an instance with a 'configuring' state
     """
     _status = SingleVMOpenEdXInstance.Status.ConfiguringServer.state_id
-
-
-class RunningSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
-    """
-    Factory for an instance with a 'running' state
-    """
-    _status = SingleVMOpenEdXInstance.Status.Running.state_id
-
-
-class ConfigFailedSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
-    """
-    Factory for an instance with a 'failed' state
-    """
-    _status = SingleVMOpenEdXInstance.Status.ConfigurationFailed.state_id
-
-
-class ErrorSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
-    """
-    Factory for an instance with an 'error' state
-    """
-    _status = SingleVMOpenEdXInstance.Status.Error.state_id
-
-
-class TerminatedSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
-    """
-    Factory for an instance with a 'terminated' state
-    """
-    _status = SingleVMOpenEdXInstance.Status.Terminated.state_id

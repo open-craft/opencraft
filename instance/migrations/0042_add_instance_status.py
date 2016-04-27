@@ -9,15 +9,31 @@ from instance.models.instance import Status as InstanceStatus
 def set_instance_states(apps, schema_editor):
     SingleVMOpenEdXInstance = apps.get_model("instance", "SingleVMOpenEdXInstance")
     SingleVMOpenEdXInstance.objects.filter(
-        server_set___status__in=("new", "started", "active", "rebooting")).update(
+        server_set___status__in=("new", "active")).update(
             _status=InstanceStatus.WaitingForServer.state_id
+        )
+    SingleVMOpenEdXInstance.objects.filter(
+        server_set___status="started", server_set___progress__in=("running", "success")).update(
+            _status=InstanceStatus.WaitingForServer.state_id
+        )
+    SingleVMOpenEdXInstance.objects.filter(
+        server_set___status="started", server_set___progress="failed").update(
+            _status=InstanceStatus.Error.state_id
         )
     SingleVMOpenEdXInstance.objects.filter(
         server_set___status__in=("booted", "ready")).update(
             _status=InstanceStatus.Running.state_id
         )
     SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="provisioning").update(
+        server_set___status="provisioning", server_set___progress__in=("running", "success")).update(
+            _status=InstanceStatus.ConfiguringServer.state_id
+        )
+    SingleVMOpenEdXInstance.objects.filter(
+        server_set___status="provisioning", server_set___progress="failed").update(
+            _status=InstanceStatus.ConfigurationFailed.state_id
+        )
+    SingleVMOpenEdXInstance.objects.filter(
+        server_set___status="rebooting").update(
             _status=InstanceStatus.ConfiguringServer.state_id
         )
     SingleVMOpenEdXInstance.objects.filter(

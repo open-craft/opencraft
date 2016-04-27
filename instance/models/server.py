@@ -110,6 +110,7 @@ class Status(ResourceState.Enum):
     class BuildFailed(ServerState):
         """ OpenStack failed to create the server """
         state_id = 'failed'
+        name = 'Build failed'
         is_steady_state = True
 
 
