@@ -140,29 +140,15 @@ class AnsibleInstanceMixin(models.Model):
         """
         Deploy instance to the active servers
         """
-        for attempt in range(self.attempts):
-            with open_repository(self.ansible_source_repo_url,
-                                 ref=self.configuration_version) as configuration_repo:
-                playbook_path = os.path.join(configuration_repo.working_dir,
-                                             'playbooks')
-                requirements_path = os.path.join(configuration_repo.working_dir,
-                                                 'requirements.txt')
+        with open_repository(self.ansible_source_repo_url, ref=self.configuration_version) as configuration_repo:
+            playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
+            requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
 
-                log = ('Running playbook "{path}/{name}" attempt {attempt} of '
-                       '{attempts}:').format(
-                           path=playbook_path,
-                           name=self.ansible_playbook_name,
-                           attempts=self.attempts,
-                           attempt=attempt + 1)
-                self.logger.info(log)
-                log, returncode = self._run_playbook(requirements_path, playbook_path)
-                if returncode != 0:
-                    self.logger.error(
-                        'Playbook failed for instance {}'.format(self))
-                    continue
-                else:
-                    break
+            self.logger.info(
+                'Running playbook "{path}/{name}":'.format(path=playbook_path, name=self.ansible_playbook_name)
+            )
 
-        if returncode == 0:
-            self.logger.info('Playbook completed for instance {}'.format(self))
+            log, returncode = self._run_playbook(requirements_path, playbook_path)
+            playbook_result = 'completed' if returncode == 0 else 'failed'
+            self.logger.error('Playbook {result} for instance {instance}'.format(result=playbook_result, instance=self))
         return (log, returncode)

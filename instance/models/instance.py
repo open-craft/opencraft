@@ -447,6 +447,26 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
 
         Returns: (server, log)
         """
+        attempt_num = 1
+        provisioned = False
+        server, logs = None, []
+
+        while attempt_num <= self.attempts and not provisioned:
+            self.logger.info(
+                'Provision attempt {attempt} of {attempts}'.format(attempt=attempt_num, attempts=self.attempts)
+            )
+            server, deploy_log, provisioned = self._provision_attempt()
+            logs.extend(deploy_log)
+            attempt_num += 1
+
+        return (server, logs)
+
+    def _provision_attempt(self):
+        """
+        Runs single provisioning attempt, creating servers from scratch
+
+        Returns: (server, log)
+        """
         self.last_provisioning_started = timezone.now()
 
         # Server
@@ -481,11 +501,11 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
             # Provisioning (ansible)
             server.mark_as_provisioning()
             self.reset_ansible_settings(commit=True)
-            log, exit_code = self.deploy()
+            deploy_log, exit_code = self.deploy()
             if exit_code != 0:
                 server.mark_provisioning_finished(success=False)
-                self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, log)
-                return (server, log)
+                self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, deploy_log)
+                return (server, deploy_log, False)
 
             server.mark_provisioning_finished(success=True)
 
@@ -495,7 +515,7 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
             server.sleep_until(accepts_ssh_commands)
             self.logger.info('Provisioning completed')
 
-            return (server, log)
+            return (server, deploy_log, True)
 
         except:
             self.server_set.terminate()
