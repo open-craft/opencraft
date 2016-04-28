@@ -558,7 +558,8 @@ class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftCon
                 'Provision attempt {attempt} of {attempts}'.format(attempt=attempt_num, attempts=self.attempts)
             )
             server, deploy_log, provisioned = self._provision_attempt()
-            logs.extend(deploy_log)
+            if deploy_log is not None:  # If server fails to build, no deployment logs will be available
+                logs.extend(deploy_log)
             attempt_num += 1
 
         return (server, logs)

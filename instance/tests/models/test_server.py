@@ -306,38 +306,46 @@ class OpenStackServerTestCase(TestCase):
         with self.assertRaises(WrongStateException):
             server.reboot()
 
-    def test_terminate_pending_server(self):
-        """
-        Terminate a server with a 'pending' status
-        """
-        server = OpenStackServerFactory()
-        server.terminate()
-        self.assertEqual(server.status, ServerStatus.Terminated)
-        server.terminate() # This shouldn't change anything
-        self.assertEqual(server.status, ServerStatus.Terminated)
-        self.assertFalse(server.nova.mock_calls)
-
     @data(
-        ('building-server-id', ServerStatus.Building),
         ('booting-server-id', ServerStatus.Booting),
-        ('failed-server-id', ServerStatus.BuildFailed),
         ('ready-server-id', ServerStatus.Ready),
     )
     @unpack
-    def test_terminate_server(self, openstack_id, server_status):
+    def test_terminate_server_vm_available(self, openstack_id, server_status):
         """
-        Terminate a server
+        Terminate a server that was created successfully
         """
         server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
 
-    def test_terminate_server_not_found(self):
+    @data(
+        ('pending-server-id', ServerStatus.Pending),
+        ('building-server-id', ServerStatus.Building),
+        ('failed-server-id', ServerStatus.BuildFailed),
+        ('terminated-server-id', ServerStatus.Terminated),
+    )
+    @unpack
+    def test_terminate_server_vm_unavailable(self, openstack_id, server_status):
+        """
+        Terminate a server that is unavailable
+        """
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        server.terminate()
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        server.os_server.delete.assert_not_called()
+
+    @data(
+        ('booting-server-id', ServerStatus.Booting),
+        ('ready-server-id', ServerStatus.Ready),
+    )
+    @unpack
+    def test_terminate_server_not_found(self, openstack_id, server_status):
         """
         Terminate a server for which the corresponding VM doesn't exist anymore
         """
-        server = BuildingOpenStackServerFactory()
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
 
         def raise_not_found(): #pylint: disable=missing-docstring
             raise novaclient.exceptions.NotFound('not-found')
@@ -346,8 +354,9 @@ class OpenStackServerTestCase(TestCase):
         mock_logger = server.logger
 
         server.terminate()
-        mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
         self.assertEqual(server.status, ServerStatus.Terminated)
+        server.os_server.delete.assert_called_once_with()
+        mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
 
     def test_public_ip_new_server(self):
         """

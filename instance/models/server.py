@@ -366,7 +366,7 @@ class OpenStackServer(Server):
         self.logger.info('Terminating server (status=%s)...', self.status)
         if self.status == Status.Terminated:
             return
-        elif self.status == Status.Pending:
+        elif not self.status.vm_available:
             self._status_to_terminated()
             return
 
