@@ -371,6 +371,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.public_ip, '192.168.100.200')
 
 
+@ddt
 class OpenStackServerStatusTestCase(TestCase):
     """
     Test cases for status switching in OpenStackServer models
@@ -416,6 +417,50 @@ class OpenStackServerStatusTestCase(TestCase):
         instance_bad_server._status_to_build_failed()
         self.assertEqual(instance_bad_server.status, ServerStatus.BuildFailed)
         self._assert_status_conditions(server, is_steady_state=True)
+
+    @data(
+        {
+            'name': '_status_to_building',
+            'from_states': [ServerStatus.Pending],
+        },
+        {
+            'name': '_status_to_build_failed',
+            'from_states': [ServerStatus.Building],
+        },
+        {
+            'name': '_status_to_booting',
+            'from_states': [
+                ServerStatus.Building,
+                ServerStatus.Ready,
+            ],
+        },
+        {
+            'name': '_status_to_ready',
+            'from_states': [ServerStatus.Booting],
+        },
+        {
+            'name': '_status_to_terminated',
+            'from_states': ServerStatus.states,
+        },
+        {
+            'name': '_status_to_unknown',
+            'from_states': [
+                ServerStatus.Building,
+                ServerStatus.Booting,
+                ServerStatus.Ready,
+            ],
+        },
+    )
+    def test_invalid_status_transitions(self, transition):
+        """
+        Test that invalid status transitions raise exception
+        """
+        invalid_from_states = (state for state in ServerStatus.states if state not in transition['from_states'])
+        for invalid_from_state in invalid_from_states:
+            instance = OpenStackServerFactory(status=invalid_from_state)
+            self.assertEqual(instance.status, invalid_from_state)
+            with self.assertRaises(WrongStateException):
+                getattr(instance, transition['name'])()
 
     @patch('instance.models.server.openstack.create_server')
     def test_update_status_pending(self, mock_create_server):

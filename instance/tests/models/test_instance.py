@@ -27,12 +27,14 @@ from urllib.parse import urlparse
 import re
 import novaclient
 import yaml
+from ddt import ddt, data
 from django.conf import settings
 from django.test import override_settings
 from mock import call, patch, Mock
 
 from instance.models.instance import InconsistentInstanceState, Instance, SingleVMOpenEdXInstance
 from instance.models.server import Server
+from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
 from instance.tests.models.factories.instance import (
@@ -504,6 +506,7 @@ class SingleVMOpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 1)
 
 
+@ddt
 class InstanceStatusTestCase(TestCase):
     """
     Test cases for status switching in instance models
@@ -552,3 +555,61 @@ class InstanceStatusTestCase(TestCase):
         instance_provisioning_failed._status_to_configuration_failed()
         self.assertEqual(instance_provisioning_failed.status, Instance.Status.ConfigurationFailed)
         self._assert_status_conditions(instance_provisioning_failed, is_healthy_state=False)
+
+        # Reprovisioning from steady states
+        steady_states = (
+            Instance.Status.New,
+            Instance.Status.Error,
+            Instance.Status.ConfigurationFailed,
+            Instance.Status.Running,
+            Instance.Status.Terminated
+        )
+        for steady_state in steady_states:
+            instance = SingleVMOpenEdXInstanceFactory(status=steady_state)
+            self.assertEqual(instance.status, steady_state)
+            instance._status_to_waiting_for_server()
+            self.assertEqual(instance.status, Instance.Status.WaitingForServer)
+            self._assert_status_conditions(instance, is_steady_state=False)
+
+    @data(
+        {
+            'name': '_status_to_waiting_for_server',
+            'from_states': [
+                Instance.Status.New,
+                Instance.Status.Error,
+                Instance.Status.ConfigurationFailed,
+                Instance.Status.Running,
+                Instance.Status.Terminated,
+            ],
+        },
+        {
+            'name': '_status_to_error',
+            'from_states': [Instance.Status.WaitingForServer],
+        },
+        {
+            'name': '_status_to_configuring_server',
+            'from_states': [Instance.Status.WaitingForServer],
+        },
+        {
+            'name': '_status_to_configuration_failed',
+            'from_states': [Instance.Status.ConfiguringServer],
+        },
+        {
+            'name': '_status_to_running',
+            'from_states': [Instance.Status.ConfiguringServer],
+        },
+        {
+            'name': '_status_to_terminated',
+            'from_states': [Instance.Status.Running],
+        },
+    )
+    def test_invalid_status_transitions(self, transition):
+        """
+        Test that invalid status transitions raise exception
+        """
+        invalid_from_states = (state for state in Instance.Status.states if state not in transition['from_states'])
+        for invalid_from_state in invalid_from_states:
+            instance = SingleVMOpenEdXInstanceFactory(status=invalid_from_state)
+            self.assertEqual(instance.status, invalid_from_state)
+            with self.assertRaises(WrongStateException):
+                getattr(instance, transition['name'])()

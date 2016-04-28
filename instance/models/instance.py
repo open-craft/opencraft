@@ -160,19 +160,26 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     )
     # State transitions:
     _status_to_waiting_for_server = status.transition(
-        from_states=Status.New, to_state=Status.WaitingForServer
-    )
-    _status_to_configuring_server = status.transition(
-        from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
+        from_states=(
+            Status.New,
+            Status.Error,
+            Status.ConfigurationFailed,
+            Status.Running,
+            Status.Terminated
+        ),
+        to_state=Status.WaitingForServer
     )
     _status_to_error = status.transition(
         from_states=Status.WaitingForServer, to_state=Status.Error
     )
-    _status_to_running = status.transition(
-        from_states=Status.ConfiguringServer, to_state=Status.Running
+    _status_to_configuring_server = status.transition(
+        from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
     )
     _status_to_configuration_failed = status.transition(
         from_states=Status.ConfiguringServer, to_state=Status.ConfigurationFailed
+    )
+    _status_to_running = status.transition(
+        from_states=Status.ConfiguringServer, to_state=Status.Running
     )
     _status_to_terminated = status.transition(
         from_states=Status.Running, to_state=Status.Terminated
