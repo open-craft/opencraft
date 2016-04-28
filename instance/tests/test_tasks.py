@@ -23,8 +23,7 @@ Worker tasks - Tests
 # Imports #####################################################################
 
 import textwrap
-
-from mock import patch
+from unittest.mock import patch
 
 from instance import tasks
 from instance.models.instance import OpenEdXInstance

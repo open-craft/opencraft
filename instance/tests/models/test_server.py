@@ -24,8 +24,8 @@ OpenStackServer model - Tests
 
 import http.client
 import io
+from unittest.mock import Mock, call, patch
 
-from mock import Mock, call, patch
 import novaclient
 
 from instance.models.server import OpenStackServer, Status as ServerStatus, Progress as ServerProgress

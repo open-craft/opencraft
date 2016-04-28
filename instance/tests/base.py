@@ -25,11 +25,11 @@ Tests - Base Class & Utils
 import json
 import os.path
 import re
+from unittest.mock import Mock
 
 import huey
 from django.contrib.auth.models import User
 from django.test import Client, TestCase as DjangoTestCase
-from mock import Mock
 
 
 # Functions ###################################################################

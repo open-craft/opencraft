@@ -23,7 +23,7 @@ model utils - Tests, mostly for state machine
 # Imports #####################################################################
 
 from unittest import TestCase
-from mock import Mock
+from unittest.mock import Mock
 
 from django.db import models
 

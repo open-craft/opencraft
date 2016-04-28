@@ -23,10 +23,10 @@ OpenStackServer model - Factories
 # Imports #####################################################################
 
 from functools import wraps
+from unittest.mock import MagicMock, Mock, patch
 
 import factory
 from factory.django import DjangoModelFactory
-from mock import MagicMock, Mock, patch
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import add_fixture_to_object

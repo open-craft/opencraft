@@ -22,7 +22,8 @@ Views - Tests
 
 # Imports #####################################################################
 
-from mock import call, patch
+from unittest.mock import call, patch
+
 from rest_framework import status
 
 from instance import github

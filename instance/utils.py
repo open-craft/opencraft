@@ -27,8 +27,8 @@ import json
 import selectors
 import socket
 import time
+from unittest.mock import Mock
 
-from mock import Mock
 import requests
 
 

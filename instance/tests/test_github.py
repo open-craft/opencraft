@@ -23,9 +23,9 @@ GitHub - Tests
 # Imports #####################################################################
 
 import json
-import responses
+from unittest.mock import patch
 
-from mock import patch
+import responses
 
 from instance import github
 from instance.tests.base import TestCase, get_raw_fixture
