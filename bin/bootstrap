@@ -4,7 +4,7 @@
 
 set -e
 
-# If this is a vagrant VM, cd to ~/vagrant on login
+# If this is a vagrant VM, cd to ~/opencraft on login
 if [[ $USER == 'vagrant' ]]; then
   cd ~/opencraft
   grep -Fq 'cd ~/opencraft' ~/.bashrc || echo 'cd ~/opencraft' >> ~/.bashrc
@@ -31,7 +31,7 @@ fi
 pip install -r requirements.txt
 
 # TODO: Should only be needed for the unofficial vagrant image
-# Remove when switching to the official, when it is released
+# Remove when switching to the official, when vagrant release a xenial box
 echo "update user set plugin='mysql_native_password' where user='root' and host='localhost'; flush privileges;" \
     | sudo -H -u root mysql mysql
 
