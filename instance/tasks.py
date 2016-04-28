@@ -24,8 +24,8 @@ Worker tasks for instance hosting & management
 
 import logging
 
-from huey.contrib.djhuey import crontab, db_periodic_task, db_task
 from django.conf import settings
+from huey.contrib.djhuey import crontab, db_periodic_task, db_task
 
 from instance.github import get_username_list_from_team, get_pr_list_from_username
 from instance.models.instance import OpenEdXInstance
