@@ -144,8 +144,9 @@ class AnsibleInstanceMixin(models.Model):
             playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
             requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
 
-            log = 'Running playbook "{path}/{name}":'.format(path=playbook_path, name=self.ansible_playbook_name)
-            self.logger.info(log)
+            self.logger.info(
+                'Running playbook "{path}/{name}":'.format(path=playbook_path, name=self.ansible_playbook_name)
+            )
 
             log, returncode = self._run_playbook(requirements_path, playbook_path)
             playbook_result = 'completed' if returncode == 0 else 'failed'

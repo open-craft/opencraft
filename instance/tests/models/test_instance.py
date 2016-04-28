@@ -312,6 +312,24 @@ class AnsibleInstanceTestCase(TestCase):
     """
     Test cases for AnsibleInstanceMixin models
     """
+    def check_ansible_settings(self, instance, expected=True):
+        """
+        Verify the Ansible settings.
+        """
+        instance.reset_ansible_settings()
+        expected_settings = {
+            'EDXAPP_SWIFT_USERNAME': 'swift_openstack_user',
+            'EDXAPP_SWIFT_KEY': 'swift_openstack_password',
+            'EDXAPP_SWIFT_TENANT_NAME': 'swift_openstack_tenant',
+            'EDXAPP_SWIFT_AUTH_URL': 'swift_openstack_auth_url',
+            'EDXAPP_SWIFT_REGION_NAME': 'swift_openstack_region',
+        }
+        for ansible_var, attribute in expected_settings.items():
+            if expected:
+                self.assertIn('{}: {}'.format(ansible_var, getattr(instance, attribute)), instance.ansible_settings)
+            else:
+                self.assertNotIn(ansible_var, instance.ansible_settings)
+
     def test_ansible_playbook_filename(self):
         """
         Set name of ansible playbook & get filename
@@ -433,6 +451,28 @@ class AnsibleInstanceTestCase(TestCase):
             log, returncode = instance._run_playbook("requirements", "playbook")
             self.assertCountEqual(log, ['Hello', 'Hi'])
             self.assertEqual(returncode, 0)
+
+    def test_ansible_settings_swift(self):
+        """
+        Verify Swift Ansible configuration when Swift is enabled.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.check_ansible_settings(instance)
+
+    @override_settings(SWIFT_ENABLE=False)
+    def test_ansible_settings_swift_disabled(self):
+        """
+        Verify Swift Ansible configuration is not included when Swift is disabled.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.check_ansible_settings(instance, expected=False)
+
+    def test_ansible_settings_swift_ephemeral(self):
+        """
+        Verify Swift Ansible configuration is not included when using ephemeral databases.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        self.check_ansible_settings(instance, expected=False)
 
 
 class MySQLInstanceTestCase(TestCase):
@@ -716,7 +756,6 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(mime_type, "text/html")
 
 
-# pylint: disable=too-many-public-methods
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstanceMixin models
@@ -910,46 +949,6 @@ class OpenEdXInstanceTestCase(TestCase):
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, instance.ansible_settings)
 
-    def check_ansible_settings(self, instance, expected=True):
-        """
-        Verify the Ansible settings.
-        """
-        instance.reset_ansible_settings()
-        expected_settings = {
-            'EDXAPP_SWIFT_USERNAME': 'swift_openstack_user',
-            'EDXAPP_SWIFT_KEY': 'swift_openstack_password',
-            'EDXAPP_SWIFT_TENANT_NAME': 'swift_openstack_tenant',
-            'EDXAPP_SWIFT_AUTH_URL': 'swift_openstack_auth_url',
-            'EDXAPP_SWIFT_REGION_NAME': 'swift_openstack_region',
-        }
-        for ansible_var, attribute in expected_settings.items():
-            if expected:
-                self.assertIn('{}: {}'.format(ansible_var, getattr(instance, attribute)), instance.ansible_settings)
-            else:
-                self.assertNotIn(ansible_var, instance.ansible_settings)
-
-    def test_ansible_settings_swift(self):
-        """
-        Verify Swift Ansible configuration when Swift is enabled.
-        """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        self.check_ansible_settings(instance)
-
-    @override_settings(SWIFT_ENABLE=False)
-    def test_ansible_settings_swift_disabled(self):
-        """
-        Verify Swift Ansible configuration is not included when Swift is disabled.
-        """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        self.check_ansible_settings(instance, expected=False)
-
-    def test_ansible_settings_swift_ephemeral(self):
-        """
-        Verify Swift Ansible configuration is not included when using ephemeral databases.
-        """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        self.check_ansible_settings(instance, expected=False)
-
     @patch_services
     def test_provision(self, mocks):
         """
@@ -1005,7 +1004,6 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True, attempts=2)
 
         instance.provision()
-        print(mocks.mock_set_dns_record.mock_calls)
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call(name='run.provisioning', type='A', value='192.168.100.200'),
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),

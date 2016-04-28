@@ -452,6 +452,9 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
         server, logs = None, []
 
         while attempt_num <= self.attempts and not provisioned:
+            self.logger.info(
+                'Provision attempt {attempt} of {attempts}'.format(attempt=attempt_num, attempts=self.attempts)
+            )
             server, deploy_log, provisioned = self._provision_attempt()
             logs.extend(deploy_log)
             attempt_num += 1
