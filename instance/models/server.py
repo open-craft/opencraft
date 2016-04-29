@@ -290,6 +290,13 @@ class OpenStackServer(Server):
 
         return public_addr['addr']
 
+    @property
+    def vm_created(self):
+        """
+        Return True if this server has a VM, False otherwise
+        """
+        return self.status.vm_available or (self.status == Status.Building and self.openstack_id)
+
     def update_status(self):
         """
         Refresh the status by querying the openstack server via nova
@@ -366,7 +373,7 @@ class OpenStackServer(Server):
         self.logger.info('Terminating server (status=%s)...', self.status)
         if self.status == Status.Terminated:
             return
-        elif not self.status.vm_available:
+        elif not self.vm_created:
             self._status_to_terminated()
             return
 

@@ -307,13 +307,40 @@ class OpenStackServerTestCase(TestCase):
             server.reboot()
 
     @data(
+        ('building-server-id', ServerStatus.Building),
         ('booting-server-id', ServerStatus.Booting),
         ('ready-server-id', ServerStatus.Ready),
     )
     @unpack
-    def test_terminate_server_vm_available(self, openstack_id, server_status):
+    def test_vm_created(self, openstack_id, server_status):
         """
-        Terminate a server that was created successfully
+        Test that server correctly reports that a VM has been created for it
+        """
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        self.assertTrue(server.vm_created)
+
+    @data(
+        ServerStatus.Pending,
+        ServerStatus.Building,  # Edge case: Server has status 'building' but no OpenStack ID yet
+        ServerStatus.BuildFailed,
+        ServerStatus.Terminated,
+    )
+    def test_vm_not_created(self, server_status):
+        """
+        Test that server correctly reports that no VM has been created for it
+        """
+        server = OpenStackServerFactory(status=server_status)
+        self.assertFalse(server.vm_created)
+
+    @data(
+        ('building-server-id', ServerStatus.Building),
+        ('booting-server-id', ServerStatus.Booting),
+        ('ready-server-id', ServerStatus.Ready),
+    )
+    @unpack
+    def test_terminate_server_vm_created(self, openstack_id, server_status):
+        """
+        Terminate a server with a VM
         """
         server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
         server.terminate()
@@ -321,20 +348,22 @@ class OpenStackServerTestCase(TestCase):
         server.os_server.delete.assert_called_once_with()
 
     @data(
-        ('pending-server-id', ServerStatus.Pending),
-        ('building-server-id', ServerStatus.Building),
-        ('failed-server-id', ServerStatus.BuildFailed),
-        ('terminated-server-id', ServerStatus.Terminated),
+        ServerStatus.Pending,
+        ServerStatus.Building,  # Edge case: Server has status 'building' but no OpenStack ID yet
+        ServerStatus.BuildFailed,
+        ServerStatus.Terminated,
     )
-    @unpack
-    def test_terminate_server_vm_unavailable(self, openstack_id, server_status):
+    def test_terminate_server_vm_unavailable(self, server_status):
         """
-        Terminate a server that is unavailable
+        Terminate a server without a VM
         """
-        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
-        server.terminate()
-        self.assertEqual(server.status, ServerStatus.Terminated)
-        server.os_server.delete.assert_not_called()
+        server = OpenStackServerFactory(status=server_status)
+        try:
+            server.terminate()
+        except AssertionError:
+            self.fail('Termination logic tried to operate on non-existent VM.')
+        else:
+            self.assertEqual(server.status, ServerStatus.Terminated)
 
     @data(
         ('booting-server-id', ServerStatus.Booting),
