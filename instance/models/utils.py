@@ -101,9 +101,6 @@ class ResourceState:
         """
         return inspect.getdoc(cls).strip()
 
-    # Constants:
-    PROGRESS_UNKNOWN = -1
-
     def __str__(self):
         return "{} [{}]".format(self.name, self.state_id)
 
@@ -358,7 +355,7 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
 
         Suitable for passing to a django CharField choices parameter.
         """
-        return sorted((state.state_id, state.__class__.__name__) for state in self.state_classes)
+        return sorted((state.state_id, state.__name__) for state in self.state_classes)
 
     # Internal helper methods:
 
@@ -371,4 +368,6 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
         assert new_state_class in self.state_classes
         new_state = new_state_class(resource=resource, state_manager=self)
         setattr(resource, self.model_field_name, new_state_class.state_id)
+        # Save changes to this one field only
+        resource.save(update_fields=[self.model_field_name])
         return new_state

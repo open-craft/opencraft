@@ -27,7 +27,7 @@ import logging
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.models.utils import ValidateModelMixin
 
@@ -76,7 +76,7 @@ class InstanceLogEntry(LogEntry):
     """
     Single log entry for instances
     """
-    obj = models.ForeignKey(OpenEdXInstance, related_name='log_entry_set')
+    obj = models.ForeignKey(SingleVMOpenEdXInstance, related_name='log_entry_set')
 
     class Meta:
         verbose_name_plural = "Instance Log Entries"

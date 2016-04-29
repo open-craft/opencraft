@@ -28,12 +28,12 @@ from django.core import mail as django_mail
 from django.test.utils import override_settings
 from mock import patch, call
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tests.base import TestCase
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
-    patch_os_server, StartedOpenStackServerFactory,
-    BootedOpenStackServerFactory, ProvisioningOpenStackServerFactory
+    patch_os_server, BuildingOpenStackServerFactory,
+    BootingOpenStackServerFactory, OpenStackServerFactory, ReadyOpenStackServerFactory
 )
 
 #pylint: disable=no-member
@@ -47,7 +47,7 @@ class GitHubInstanceTestCase(TestCase):
         """
         GitHub-specific instance attributes
         """
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             github_organization_name='open-craft',
             github_pr_url='https://github.com/edx/edx/pull/234',
             github_repository_name='edx',
@@ -64,7 +64,7 @@ class GitHubInstanceTestCase(TestCase):
         """
         By default, no admin should be configured
         """
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         instance.reset_ansible_settings()
         self.assertEqual(instance.github_admin_organization_name, '')
         self.assertEqual(instance.github_admin_username_list, [])
@@ -76,7 +76,7 @@ class GitHubInstanceTestCase(TestCase):
         When an admin org is set, its members should be included in the ansible conf
         """
         mock_get_username_list.return_value = ['admin1', 'admin2']
-        instance = OpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
+        instance = SingleVMOpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
         instance.reset_ansible_settings()
         self.assertEqual(instance.github_admin_username_list, ['admin1', 'admin2'])
         self.assertIn('COMMON_USER_INFO:\n  - name: admin1\n    github: true\n    type: admin\n'
@@ -86,13 +86,13 @@ class GitHubInstanceTestCase(TestCase):
         """
         Set org & repo using the fork name - Using the default commit policy (True)
         """
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         instance.set_fork_name('org2/another-repo')
         self.assertEqual(instance.github_organization_name, 'org2')
         self.assertEqual(instance.github_repository_name, 'another-repo')
 
         # Check values in DB
-        db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        db_instance = SingleVMOpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.github_organization_name, 'org2')
         self.assertEqual(db_instance.github_repository_name, 'another-repo')
 
@@ -100,7 +100,7 @@ class GitHubInstanceTestCase(TestCase):
         """
         Set org & repo using the fork name, with commit=False
         """
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             github_organization_name='open-craft',
             github_repository_name='edx',
         )
@@ -109,7 +109,7 @@ class GitHubInstanceTestCase(TestCase):
         self.assertEqual(instance.github_repository_name, 'another-repo')
 
         # Check values in DB
-        db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        db_instance = SingleVMOpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.github_organization_name, 'open-craft')
         self.assertEqual(db_instance.github_repository_name, 'edx')
 
@@ -119,7 +119,7 @@ class GitHubInstanceTestCase(TestCase):
         Set the commit id to the tip of the current branch, using the default commit policy (True)
         """
         mock_get_commit_id_from_ref.return_value = 'b' * 40
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             github_organization_name='org3',
             github_repository_name='repo3',
             commit_id='a' * 40,
@@ -131,7 +131,7 @@ class GitHubInstanceTestCase(TestCase):
         ])
 
         # Check values in DB
-        db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        db_instance = SingleVMOpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.commit_id, 'b' * 40)
 
     @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
@@ -140,12 +140,12 @@ class GitHubInstanceTestCase(TestCase):
         Set the commit id to the tip of the current branch, with commit=False
         """
         mock_get_commit_id_from_ref.return_value = 'b' * 40
-        instance = OpenEdXInstanceFactory(commit_id='a' * 40)
+        instance = SingleVMOpenEdXInstanceFactory(commit_id='a' * 40)
         instance.set_to_branch_tip(commit=False)
         self.assertEqual(instance.commit_id, 'b' * 40)
 
         # Check values in DB
-        db_instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        db_instance = SingleVMOpenEdXInstance.objects.get(pk=instance.pk)
         self.assertEqual(db_instance.commit_id, 'a' * 40)
 
     @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
@@ -154,7 +154,7 @@ class GitHubInstanceTestCase(TestCase):
         Set the commit id to the tip of a specified reference
         """
         mock_get_commit_id_from_ref.return_value = 'c' * 40
-        instance = OpenEdXInstanceFactory(commit_id='a' * 40)
+        instance = SingleVMOpenEdXInstanceFactory(commit_id='a' * 40)
         instance.set_to_branch_tip(branch_name='new-branch', ref_type='tag')
         self.assertEqual(instance.commit_id, 'c' * 40)
         self.assertEqual(instance.branch_name, 'new-branch')
@@ -166,7 +166,7 @@ class GitHubInstanceTestCase(TestCase):
         The hash should be updated in the instance name when updating
         """
         mock_get_commit_id_from_ref.return_value = '1234567' + 'd' * 33
-        instance = OpenEdXInstanceFactory(commit_id='a' * 40, name='Test Instance (aaaaaaa)')
+        instance = SingleVMOpenEdXInstanceFactory(commit_id='a' * 40, name='Test Instance (aaaaaaa)')
         instance.set_to_branch_tip(branch_name='new-branch', ref_type='tag')
         self.assertEqual(instance.name, 'Test Instance (1234567)')
 
@@ -197,41 +197,56 @@ class AnsibleInstanceTestCase(TestCase):
         """
         Set name of ansible playbook & get filename
         """
-        instance = OpenEdXInstanceFactory(ansible_playbook_name='test_playbook')
+        instance = SingleVMOpenEdXInstanceFactory(ansible_playbook_name='test_playbook')
         self.assertEqual(instance.ansible_playbook_filename, 'test_playbook.yml')
 
     @patch_os_server
     def test_inventory_str(self, os_server_manager):
         """
-        Ansible inventory - showing servers once they are in booted status
+        Ansible inventory - showing servers once they are in ready status
         """
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 1: 'started'
-        StartedOpenStackServerFactory(instance=instance)
+        # Server 0: 'pending'
+        OpenStackServerFactory(instance=instance)
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 2: 'booted'
-        server2 = BootedOpenStackServerFactory(instance=instance)
-        os_server_manager.add_fixture(server2.openstack_id, 'openstack/api_server_2_active.json')
+        # Server 1: 'building'
+        BuildingOpenStackServerFactory(instance=instance)
         self.assertEqual(instance.inventory_str, '[app]')
 
-        # Server 3: 'provisioning'
-        server3 = ProvisioningOpenStackServerFactory(instance=instance)
+        # Server 2: 'failed'
+        server2 = BuildingOpenStackServerFactory(instance=instance)
+        server2._status_to_build_failed()
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 3: 'booting'
+        server3 = BootingOpenStackServerFactory(instance=instance)
         os_server_manager.add_fixture(server3.openstack_id, 'openstack/api_server_2_active.json')
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 4: 'terminated'
+        server4 = ReadyOpenStackServerFactory(instance=instance)
+        server4._status_to_terminated()
+        os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_2_active.json')
+        self.assertEqual(instance.inventory_str, '[app]')
+
+        # Server 5: 'ready'
+        server5 = ReadyOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server5.openstack_id, 'openstack/api_server_2_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200')
 
-        # Server 4: 'provisioning'
-        server4 = ProvisioningOpenStackServerFactory(instance=instance)
-        os_server_manager.add_fixture(server4.openstack_id, 'openstack/api_server_3_active.json')
+        # Server 6: 'ready'
+        server6 = ReadyOpenStackServerFactory(instance=instance)
+        os_server_manager.add_fixture(server6.openstack_id, 'openstack/api_server_3_active.json')
         self.assertEqual(instance.inventory_str, '[app]\n192.168.100.200\n192.168.99.66')
 
     def test_reset_ansible_settings(self):
         """
         Ansible vars as a string
         """
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             name='Vars Instance',
             sub_domain='vars.test',
             email='vars@example.com',
@@ -263,7 +278,7 @@ class AnsibleInstanceTestCase(TestCase):
         """
         Add extra settings in ansible vars, which can override existing settings
         """
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             name='Vars Instance',
             email='vars@example.com',
             ansible_extra_settings='EDXAPP_PLATFORM_NAME: "Overriden!"',
@@ -274,15 +289,15 @@ class AnsibleInstanceTestCase(TestCase):
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", instance.ansible_settings)
 
     @patch('instance.models.mixins.ansible.poll_streams')
-    @patch('instance.models.instance.OpenEdXInstance.inventory_str')
+    @patch('instance.models.instance.SingleVMOpenEdXInstance.inventory_str')
     @patch('instance.models.mixins.ansible.ansible.run_playbook')
     @patch('instance.models.mixins.ansible.open_repository')
     def test_deployment(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_poll_streams):
         """
         Test instance deployment
         """
-        instance = OpenEdXInstanceFactory()
-        BootedOpenStackServerFactory(instance=instance)
+        instance = SingleVMOpenEdXInstanceFactory()
+        ReadyOpenStackServerFactory(instance=instance)
         mock_open_repo.return_value.__enter__.return_value.working_dir = '/cloned/configuration-repo/path'
 
         instance.deploy()
@@ -310,7 +325,7 @@ class AnsibleInstanceTestCase(TestCase):
             os.close(stdout_w)
             os.write(stderr_w, b'Hi\n')
             os.close(stderr_w)
-            instance = OpenEdXInstanceFactory()
+            instance = SingleVMOpenEdXInstanceFactory()
             log, returncode = instance._run_playbook("requirements", "playbook")
             self.assertCountEqual(log, ['Hello', 'Hi'])
             self.assertEqual(returncode, 0)
@@ -319,7 +334,7 @@ class AnsibleInstanceTestCase(TestCase):
         """
         Verify Swift Ansible configuration when Swift is enabled.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.check_ansible_settings(instance)
 
     @override_settings(SWIFT_ENABLE=False)
@@ -327,14 +342,14 @@ class AnsibleInstanceTestCase(TestCase):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.check_ansible_settings(instance, expected=False)
 
     def test_ansible_settings_swift_ephemeral(self):
         """
         Verify Swift Ansible configuration is not included when using ephemeral databases.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=True)
         self.check_ansible_settings(instance, expected=False)
 
 
@@ -373,7 +388,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Provision mysql database
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -382,7 +397,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Don't provision a mysql database if INSTANCE_MYSQL_URL is not set
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_database_names:
@@ -394,9 +409,9 @@ class MySQLInstanceTestCase(TestCase):
         """
         sub_domain = 'really.really.really.really.long.subdomain'
         base_domain = 'this-is-a-really-long-unusual-domain-แปลกมาก.com'
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               sub_domain=sub_domain,
-                                               base_domain=base_domain)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False,
+                                                       sub_domain=sub_domain,
+                                                       base_domain=base_domain)
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -404,7 +419,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Only create the database once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         self.assertIs(self.instance.mysql_provisioned, True)
 
@@ -441,7 +456,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Provision mongo databases
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mongo()
         self.check_mongo()
 
@@ -451,7 +466,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
         with override_settings(INSTANCE_MONGO_URL=None):
-            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+            self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
             self.instance.provision_mongo()
             databases = mongo.database_names()
             for database in self.instance.mongo_database_names:
@@ -461,7 +476,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Only create the databases once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mongo()
         self.assertIs(self.instance.mongo_provisioned, True)
 
@@ -511,13 +526,13 @@ class EmailMixinInstanceTestCase(TestCase):
         """
         Tests that provision_failed sends email when called from normal program flow
         """
-        instance = OpenEdXInstanceFactory(name='test', sub_domain='test')
+        instance = SingleVMOpenEdXInstanceFactory(name='test', sub_domain='test')
         reason = "something went wrong"
         log_lines = ["log line1", "log_line2"]
 
         instance.provision_failed_email(reason, log_lines)
 
-        expected_subject = OpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
+        expected_subject = SingleVMOpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
             instance_name=instance.name, instance_url=instance.url
         )
         expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS]
@@ -542,7 +557,7 @@ class EmailMixinInstanceTestCase(TestCase):
         """
         Tests that provision_failed sends email when called from exception handler
         """
-        instance = OpenEdXInstanceFactory(name='exception_test', sub_domain='exception_test')
+        instance = SingleVMOpenEdXInstanceFactory(name='exception_test', sub_domain='exception_test')
         reason = "something went wrong"
         log_lines = ["log line1", "log_line2"]
 
@@ -553,7 +568,7 @@ class EmailMixinInstanceTestCase(TestCase):
         except Exception:  # pylint: disable=broad-except
             instance.provision_failed_email(reason, log_lines)
 
-        expected_subject = OpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
+        expected_subject = SingleVMOpenEdXInstance.EmailSubject.PROVISION_FAILED.format(
             instance_name=instance.name, instance_url=instance.url
         )
         expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS]

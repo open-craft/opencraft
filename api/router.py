@@ -24,7 +24,7 @@ REST Framework API - Router
 
 from rest_framework import routers
 
-from instance.api.instance import OpenEdXInstanceViewSet
+from instance.api.instance import SingleVMOpenEdXInstanceViewSet
 from instance.api.server import OpenStackServerViewSet
 
 
@@ -33,4 +33,4 @@ from instance.api.server import OpenStackServerViewSet
 router = routers.DefaultRouter()
 
 router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', OpenEdXInstanceViewSet)
+router.register(r'openedxinstance', SingleVMOpenEdXInstanceViewSet)

@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Tests
+SingleVMOpenEdXInstance model - Tests
 """
 
 # Imports #####################################################################
@@ -25,18 +25,24 @@ OpenEdXInstance model - Tests
 from urllib.parse import urlparse
 
 import re
+import novaclient
 import yaml
+from ddt import ddt, data
 from django.conf import settings
 from django.test import override_settings
 from mock import call, patch, Mock
 
-from instance.models.instance import InconsistentInstanceState, OpenEdXInstance
+from instance.models.instance import InconsistentInstanceState, Instance, SingleVMOpenEdXInstance
 from instance.models.server import Server
+from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
-from instance.tests.models.factories.server import StartedOpenStackServerFactory
+from instance.tests.models.factories.instance import (
+    ConfiguringSingleVMOpenEdXInstanceFactory, SingleVMOpenEdXInstanceFactory, WaitingSingleVMOpenEdXInstanceFactory
+)
+from instance.tests.models.factories.server import BuildingOpenStackServerFactory, OpenStackServerFactory
 from instance.tests.utils import patch_services
+
 
 # Tests #######################################################################
 
@@ -50,18 +56,23 @@ class InstanceTestCase(TestCase):
     """
     def test_new_instance(self):
         """
-        New OpenEdXInstance object
+        New SingleVMOpenEdXInstance object
         """
-        self.assertFalse(OpenEdXInstance.objects.all())
-        instance = OpenEdXInstanceFactory()
-        self.assertEqual(OpenEdXInstance.objects.get().pk, instance.pk)
+        self.assertFalse(SingleVMOpenEdXInstance.objects.all())
+        instance = SingleVMOpenEdXInstanceFactory()
+        created_instance = SingleVMOpenEdXInstance.objects.get()
+        self.assertEqual(created_instance.pk, instance.pk)
+        self.assertIsInstance(created_instance.status, Instance.Status.New)
+        self.assertIsNone(created_instance.server_status)
         self.assertTrue(re.search(r'Test Instance \d+ \(http://instance\d+\.test\.example\.com/\)', str(instance)))
 
     def test_domain_url(self):
         """
         Domain and URL attributes
         """
-        instance = OpenEdXInstanceFactory(base_domain='example.org', sub_domain='sample', name='Sample Instance')
+        instance = SingleVMOpenEdXInstanceFactory(
+            base_domain='example.org', sub_domain='sample', name='Sample Instance'
+        )
         self.assertEqual(instance.domain, 'sample.example.org')
         self.assertEqual(instance.url, 'http://sample.example.org/')
         self.assertEqual(instance.studio_domain, 'studio.sample.example.org')
@@ -72,47 +83,52 @@ class InstanceTestCase(TestCase):
         """
         Short representation of a commit_id
         """
-        instance = OpenEdXInstanceFactory(commit_id='6e580ca9fed6fb65ec45949494dabec40e8cb533')
+        instance = SingleVMOpenEdXInstanceFactory(commit_id='6e580ca9fed6fb65ec45949494dabec40e8cb533')
         self.assertEqual(instance.commit_short_id, '6e580ca')
         instance.commit_id = None
         self.assertEqual(instance.commit_short_id, None)
 
-    def test_status(self):
+    def test_server_status(self):
         """
-        Instance status with one active server
+        Server status of an instance with one active server
         """
-        instance = OpenEdXInstanceFactory()
-        self.assertIsNone(instance.status)
-        self.assertIsNone(instance.progress)
-        server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, Server.Status.Started)
-        self.assertEqual(instance.progress, Server.Progress.Running)
-        server._transition(server._status_to_active)
-        self.assertEqual(instance.status, Server.Status.Active)
-        server._transition(server._status_to_booted)
-        self.assertEqual(instance.status, Server.Status.Booted)
+        instance = SingleVMOpenEdXInstanceFactory()
+        self.assertIsNone(instance.server_status)
+        server = OpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, Server.Status.Pending)
+        server._status_to_building()
+        self.assertEqual(instance.server_status, Server.Status.Building)
+        server._status_to_booting()
+        self.assertEqual(instance.server_status, Server.Status.Booting)
+        server._status_to_ready()
+        self.assertEqual(instance.server_status, Server.Status.Ready)
+        server._status_to_terminated()
+        self.assertIsNone(instance.server_status)
+        bad_instance = SingleVMOpenEdXInstanceFactory()
+        bad_server = BuildingOpenStackServerFactory(instance=bad_instance)
+        bad_server._status_to_build_failed()
+        self.assertEqual(bad_instance.server_status, Server.Status.BuildFailed)
 
-    def test_status_terminated(self):
+    def test_server_status_terminated(self):
         """
-        Instance status should revert to 'empty' when all its servers are terminated
+        Server status of an instance should revert to 'empty' when all its servers are terminated
         """
-        instance = OpenEdXInstanceFactory()
-        server = StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, server.Status.Started)
-        server._transition(server._status_to_terminated)
-        self.assertIsNone(instance.status)
+        instance = SingleVMOpenEdXInstanceFactory()
+        server = BuildingOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, server.Status.Building)
+        server._status_to_terminated()
+        self.assertIsNone(instance.server_status)
 
-    def test_status_multiple_servers(self):
+    def test_server_status_multiple_servers(self):
         """
-        Instance status should not allow multiple active servers
+        Server status of an instance should not allow multiple active servers
         """
-        instance = OpenEdXInstanceFactory()
-        StartedOpenStackServerFactory(instance=instance)
-        self.assertEqual(instance.status, Server.Status.Started)
-        self.assertEqual(instance.progress, Server.Progress.Running)
-        StartedOpenStackServerFactory(instance=instance)
+        instance = SingleVMOpenEdXInstanceFactory()
+        BuildingOpenStackServerFactory(instance=instance)
+        self.assertEqual(instance.server_status, Server.Status.Building)
+        BuildingOpenStackServerFactory(instance=instance)
         with self.assertRaises(InconsistentInstanceState):
-            instance.status #pylint: disable=pointless-statement
+            instance.server_status #pylint: disable=pointless-statement
 
 
 @patch('instance.openstack.SwiftConnection')
@@ -139,7 +155,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Test provisioning Swift containers, and that they are provisioned only once.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.provision_swift()
         self.check_swift(instance, mock_swift_connection)
 
@@ -153,15 +169,15 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Verify disabling Swift provisioning works.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.provision_swift()
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(mock_swift_connection.called)
 
 
-class OpenEdXInstanceTestCase(TestCase):
+class SingleVMOpenEdXInstanceTestCase(TestCase):
     """
-    Test cases for OpenEdXInstanceMixin models
+    Test cases for SingleVMOpenEdXInstance models
     """
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
     @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
@@ -171,7 +187,8 @@ class OpenEdXInstanceTestCase(TestCase):
         leaving it up to the create method to set them
         """
         mock_get_commit_id_from_ref.return_value = '9' * 40
-        instance = OpenEdXInstance.objects.create(sub_domain='create.defaults')
+        instance = SingleVMOpenEdXInstance.objects.create(sub_domain='create.defaults')
+        self.assertEqual(instance.status, Instance.Status.New)
         self.assertEqual(instance.github_organization_name, 'edx')
         self.assertEqual(instance.github_repository_name, 'edx-platform')
         self.assertEqual(instance.commit_id, '9' * 40)
@@ -194,7 +211,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         mock_get_commit_id_from_ref.return_value = '9' * 40
         pr = PRFactory()
-        instance, created = OpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
+        instance, created = SingleVMOpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
         self.assertTrue(created)
         self.assertEqual(instance.fork_name, pr.fork_name)
         self.assertEqual(instance.branch_name, pr.branch_name)
@@ -210,7 +227,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         mock_get_commit_id_from_ref.return_value = '9' * 40
         pr = PRFactory(body='test.sandbox.example.com (ephemeral databases)')
-        instance, _ = OpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
+        instance, _ = SingleVMOpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
         self.assertIs(instance.use_ephemeral_databases, True)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
@@ -221,25 +238,25 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         mock_get_commit_id_from_ref.return_value = '9' * 40
         pr = PRFactory(body='test.sandbox.example.com (persistent databases)')
-        instance, _ = OpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
+        instance, _ = SingleVMOpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain='test.sandbox')
         self.assertIs(instance.use_ephemeral_databases, False)
 
     def test_get_by_fork_name(self):
         """
         Use `fork_name` to get an instance object from the ORM
         """
-        OpenEdXInstanceFactory(
+        SingleVMOpenEdXInstanceFactory(
             github_organization_name='get-by',
             github_repository_name='fork-name',
         )
-        instance = OpenEdXInstance.objects.get(fork_name='get-by/fork-name')
+        instance = SingleVMOpenEdXInstance.objects.get(fork_name='get-by/fork-name')
         self.assertEqual(instance.fork_name, 'get-by/fork-name')
 
     def test_ansible_s3_settings(self):
         """
         Add extra settings in ansible vars, which can override existing settings
         """
-        instance = OpenEdXInstanceFactory(
+        instance = SingleVMOpenEdXInstanceFactory(
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
@@ -259,7 +276,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Add mysql ansible vars if INSTANCE_MYSQL_URL is set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.reset_ansible_settings()
         self.assertIn('EDXAPP_MYSQL_USER: {0}'.format(instance.mysql_user), instance.ansible_settings)
         self.assertIn('EDXAPP_MYSQL_PASSWORD: {0}'.format(instance.mysql_pass), instance.ansible_settings)
@@ -274,7 +291,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Don't add mysql ansible vars if INSTANCE_MYSQL_URL is not set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.reset_ansible_settings()
         self.check_mysql_vars_not_set(instance)
 
@@ -283,7 +300,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Don't add mysql ansible vars for ephemeral databases
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=True)
         instance.reset_ansible_settings()
         self.check_mysql_vars_not_set(instance)
 
@@ -305,7 +322,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Add mongo ansible vars if INSTANCE_MONGO_URL is set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.reset_ansible_settings()
         self.assertIn('EDXAPP_MONGO_USER: {0}'.format(instance.mongo_user), instance.ansible_settings)
         self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(instance.mongo_pass), instance.ansible_settings)
@@ -323,7 +340,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Don't add mongo ansible vars if INSTANCE_MONGO_URL is not set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.reset_ansible_settings()
         self.check_mongo_vars_not_set(instance)
 
@@ -332,7 +349,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Don't add mongo ansible vars if INSTANCE_MONGO_URL is not set
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        instance = SingleVMOpenEdXInstanceFactory(use_ephemeral_databases=True)
         instance.reset_ansible_settings()
         self.check_mongo_vars_not_set(instance)
 
@@ -362,8 +379,12 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
         mock_reboot = mocks.os_server_manager.get_os_server('test-run-provisioning-server').reboot
 
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True)
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True)
+        self.assertEqual(instance.status, Instance.Status.New)
+        self.assertIsNone(instance.server_status)
         instance.provision()
+        self.assertEqual(instance.status, Instance.Status.Running)
+        self.assertEqual(instance.server_status, Server.Status.Ready)
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call(name='run.provisioning', type='A', value='192.168.100.200'),
             call(name='studio.run.provisioning', type='CNAME', value='run.provisioning'),
@@ -375,18 +396,38 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
 
     @patch_services
+    def test_provision_build_failed(self, mocks):
+        """
+        Run provisioning sequence failing server creation on purpose to make sure
+        server and instance statuses will be set accordingly.
+        """
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning')
+        self.assertEqual(instance.status, Instance.Status.New)
+        self.assertIsNone(instance.server_status)
+
+        mocks.mock_create_server.side_effect = novaclient.exceptions.ClientException(400)
+        instance.provision()
+
+        self.assertEqual(instance.status, Instance.Status.Error)
+        self.assertEqual(instance.server_status, Server.Status.BuildFailed)
+        # If server fails to build, provisioning sequence never gets to the point
+        # where it starts interacting with the server:
+        mocks.mock_set_dns_record.assert_not_called()
+
+    @patch_services
     def test_provision_failed(self, mocks):
         """
-        Run provisioning sequence failing the deployment on purpose to make sure the
-        server status will be set accordingly.
+        Run provisioning sequence failing the deployment on purpose to make sure
+        server and instance statuses will be set accordingly.
         """
         log_lines = ['log']
         mocks.mock_deploy.return_value = (log_lines, 1)
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', attempts=1)
-
-        server = instance.provision()[0]
-        self.assertEqual(server.status, Server.Status.Provisioning)
-        self.assertEqual(server.progress, Server.Progress.Failed)
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning', attempts=1)
+        self.assertEqual(instance.status, Instance.Status.New)
+        self.assertIsNone(instance.server_status)
+        instance.provision()
+        self.assertEqual(instance.status, Instance.Status.ConfigurationFailed)
+        self.assertEqual(instance.server_status, Server.Status.Ready)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
         mocks.mock_provision_failed_email.assert_called_once_with(instance.ProvisionMessages.PROVISION_ERROR, log_lines)
 
@@ -404,7 +445,9 @@ class OpenEdXInstanceTestCase(TestCase):
         mock_reboot1 = mocks.os_server_manager.get_os_server('test-run-provisioning-server-1').reboot
         mock_reboot2 = mocks.os_server_manager.get_os_server('test-run-provisioning-server-2').reboot
 
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=True, attempts=2)
+        instance = SingleVMOpenEdXInstanceFactory(
+            sub_domain='run.provisioning', use_ephemeral_databases=True, attempts=2
+        )
 
         instance.provision()
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
@@ -428,7 +471,7 @@ class OpenEdXInstanceTestCase(TestCase):
         provisioning.
         """
         mocks.mock_set_dns_record.side_effect = Exception('Something went catastrophically wrong')
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning')
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning')
         with self.assertRaisesRegex(Exception, 'Something went catastrophically wrong'):
             instance.provision()
         self.assertFalse(instance.server_set.exclude_terminated())
@@ -443,7 +486,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
-        instance = OpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=False)
+        instance = SingleVMOpenEdXInstanceFactory(sub_domain='run.provisioning', use_ephemeral_databases=False)
 
         def deploy():
             """
@@ -461,3 +504,112 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
         self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
         self.assertEqual(mocks.mock_provision_swift.call_count, 1)
+
+
+@ddt
+class InstanceStatusTestCase(TestCase):
+    """
+    Test cases for status switching in instance models
+    """
+
+    def _assert_status_conditions(self, instance, is_steady_state=True, is_healthy_state=True):
+        """
+        Assert that status conditions for instance hold as specified
+        """
+        self.assertEqual(instance.status.is_steady_state, is_steady_state)
+        self.assertEqual(instance.status.is_healthy_state, is_healthy_state)
+
+    def test_status_transitions(self):
+        """
+        Test that status transitions work as expected for different instance workflows
+        """
+        # Normal workflow
+        instance = SingleVMOpenEdXInstanceFactory()
+        self.assertEqual(instance.status, Instance.Status.New)
+        self._assert_status_conditions(instance)
+
+        instance._status_to_waiting_for_server()
+        self.assertEqual(instance.status, Instance.Status.WaitingForServer)
+        self._assert_status_conditions(instance, is_steady_state=False)
+
+        instance._status_to_configuring_server()
+        self.assertEqual(instance.status, Instance.Status.ConfiguringServer)
+        self._assert_status_conditions(instance, is_steady_state=False)
+
+        instance._status_to_running()
+        self.assertEqual(instance.status, Instance.Status.Running)
+        self._assert_status_conditions(instance)
+
+        instance._status_to_terminated()
+        self.assertEqual(instance.status, Instance.Status.Terminated)
+        self._assert_status_conditions(instance)
+
+        # Server creation fails
+        instance_bad_server = WaitingSingleVMOpenEdXInstanceFactory()
+        instance_bad_server._status_to_error()
+        self.assertEqual(instance_bad_server.status, Instance.Status.Error)
+        self._assert_status_conditions(instance_bad_server, is_healthy_state=False)
+
+        # Provisioning fails
+        instance_provisioning_failed = ConfiguringSingleVMOpenEdXInstanceFactory()
+        instance_provisioning_failed._status_to_configuration_failed()
+        self.assertEqual(instance_provisioning_failed.status, Instance.Status.ConfigurationFailed)
+        self._assert_status_conditions(instance_provisioning_failed, is_healthy_state=False)
+
+        # Reprovisioning from steady states
+        steady_states = (
+            Instance.Status.New,
+            Instance.Status.Error,
+            Instance.Status.ConfigurationFailed,
+            Instance.Status.Running,
+            Instance.Status.Terminated
+        )
+        for steady_state in steady_states:
+            instance = SingleVMOpenEdXInstanceFactory(status=steady_state)
+            self.assertEqual(instance.status, steady_state)
+            instance._status_to_waiting_for_server()
+            self.assertEqual(instance.status, Instance.Status.WaitingForServer)
+            self._assert_status_conditions(instance, is_steady_state=False)
+
+    @data(
+        {
+            'name': '_status_to_waiting_for_server',
+            'from_states': [
+                Instance.Status.New,
+                Instance.Status.Error,
+                Instance.Status.ConfigurationFailed,
+                Instance.Status.Running,
+                Instance.Status.Terminated,
+            ],
+        },
+        {
+            'name': '_status_to_error',
+            'from_states': [Instance.Status.WaitingForServer],
+        },
+        {
+            'name': '_status_to_configuring_server',
+            'from_states': [Instance.Status.WaitingForServer],
+        },
+        {
+            'name': '_status_to_configuration_failed',
+            'from_states': [Instance.Status.ConfiguringServer],
+        },
+        {
+            'name': '_status_to_running',
+            'from_states': [Instance.Status.ConfiguringServer],
+        },
+        {
+            'name': '_status_to_terminated',
+            'from_states': [Instance.Status.Running],
+        },
+    )
+    def test_invalid_status_transitions(self, transition):
+        """
+        Test that invalid status transitions raise exception
+        """
+        invalid_from_states = (state for state in Instance.Status.states if state not in transition['from_states'])
+        for invalid_from_state in invalid_from_states:
+            instance = SingleVMOpenEdXInstanceFactory(status=invalid_from_state)
+            self.assertEqual(instance.status, invalid_from_state)
+            with self.assertRaises(WrongStateException):
+                getattr(instance, transition['name'])()

@@ -27,7 +27,7 @@ from huey.djhuey import crontab, db_periodic_task, db_task
 from django.conf import settings
 
 from instance.github import get_username_list_from_team, get_pr_list_from_username
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 
 
 # Logging #####################################################################
@@ -44,7 +44,7 @@ def provision_instance(instance_pk):
     Run provisioning on an existing instance
     """
     logger.info('Retreiving instance: pk=%s', instance_pk)
-    instance = OpenEdXInstance.objects.get(pk=instance_pk)
+    instance = SingleVMOpenEdXInstance.objects.get(pk=instance_pk)
 
     logger.info('Running provisioning on %s', instance)
     instance.provision()
@@ -61,7 +61,7 @@ def watch_pr():
     for username in team_username_list:
         for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
             sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
-            instance, created = OpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain)
+            instance, created = SingleVMOpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain)
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
                 provision_instance(instance.pk)

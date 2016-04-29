@@ -27,10 +27,10 @@ import textwrap
 from mock import patch
 
 from instance import tasks
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.factories.pr import PRFactory
-from instance.tests.models.factories.instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 
 
 # Tests #######################################################################
@@ -42,12 +42,12 @@ class TasksTestCase(TestCase):
     """
     Test cases for worker tasks
     """
-    @patch('instance.models.instance.OpenEdXInstance.provision', autospec=True)
+    @patch('instance.models.instance.SingleVMOpenEdXInstance.provision', autospec=True)
     def test_provision_sandbox_instance(self, mock_instance_provision):
         """
         Create sandbox instance
         """
-        instance = OpenEdXInstanceFactory()
+        instance = SingleVMOpenEdXInstanceFactory()
         tasks.provision_instance(instance.pk)
         self.assertEqual(mock_instance_provision.call_count, 1)
         self.assertEqual(mock_instance_provision.mock_calls[0][1][0].pk, instance.pk)
@@ -85,7 +85,7 @@ class TasksTestCase(TestCase):
 
         tasks.watch_pr()
         self.assertEqual(mock_provision_instance.call_count, 1)
-        instance = OpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
+        instance = SingleVMOpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
         self.assertEqual(instance.sub_domain, 'pr234.sandbox')
         self.assertEqual(instance.fork_name, 'fork/repo')
         self.assertEqual(instance.github_pr_number, 234)

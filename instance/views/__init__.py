@@ -25,7 +25,7 @@ Instance views
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 
 
 # Functions - Helpers #########################################################
@@ -34,7 +34,7 @@ def get_context():
     """
     Commond context
     """
-    instance_list = OpenEdXInstance.objects.order_by('-created')
+    instance_list = SingleVMOpenEdXInstance.objects.order_by('-created')
 
     context = {
         'instance_list': instance_list,

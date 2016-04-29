@@ -24,22 +24,22 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.serializers.server import OpenStackServerSerializer
 from instance.serializers.logentry import LogEntrySerializer
 
 
 # Serializers #################################################################
 
-class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
+class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
     """
-    OpenEdXInstance API Serializer (list view).
+    SingleVMOpenEdXInstance API Serializer (list view).
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:openedxinstance-detail')
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:singlevmopenedxinstance-detail')
     active_server_set = OpenStackServerSerializer(many=True, read_only=True)
 
     class Meta:
-        model = OpenEdXInstance
+        model = SingleVMOpenEdXInstance
         fields = (
             'id',
             'api_url',
@@ -61,7 +61,6 @@ class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
             'protocol',
             'repository_url',
             'status',
-            'progress',
             'studio_url',
             'sub_domain',
             'url',
@@ -71,23 +70,22 @@ class OpenEdXInstanceListSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         output = super().to_representation(obj)
         # Convert the state values from objects to strings:
-        if output['status'] is None:
-            output['status'] = 'empty'  # 'empty' for backwards compatibility
-        else:
-            output['status'] = obj.status.state_id
-        if output['progress'] is None:
-            output['progress'] = 'empty'
-        else:
-            output['progress'] = obj.progress.state_id
+        output['status'] = obj.status.state_id
+        # Add state name and description for display purposes:
+        output['status_name'] = obj.status.name
+        output['status_description'] = obj.status.description
+        # Add info about relevant conditions related to instance status
+        output['is_steady'] = obj.status.is_steady_state
+        output['is_healthy'] = obj.status.is_healthy_state
         return output
 
 
-class OpenEdXInstanceDetailSerializer(OpenEdXInstanceListSerializer):
+class SingleVMOpenEdXInstanceDetailSerializer(SingleVMOpenEdXInstanceListSerializer):
     """
-    OpenEdXInstance API Serializer (detail view). Includes log entries.
+    SingleVMOpenEdXInstance API Serializer (detail view). Includes log entries.
     """
     log_entries = LogEntrySerializer(many=True, read_only=True)
     log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
-    class Meta(OpenEdXInstanceListSerializer.Meta):
-        fields = OpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')
+    class Meta(SingleVMOpenEdXInstanceListSerializer.Meta):
+        fields = SingleVMOpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')

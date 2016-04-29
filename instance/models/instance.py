@@ -41,7 +41,9 @@ from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
 from instance.models.mixins.version_control import GitHubInstanceMixin
-from instance.models.utils import ValidateModelMixin
+from instance.models.utils import (
+    ModelResourceStateDescriptor, ResourceState, SteadyStateException, ValidateModelMixin
+)
 
 # Constants ###################################################################
 
@@ -66,6 +68,78 @@ class InconsistentInstanceState(Exception):
     """
     pass
 
+
+# States ######################################################################
+
+class InstanceState(ResourceState):
+    """
+    A [finite state machine] state describing an instance.
+    """
+    # A state is "steady" if we don't expect it to change.
+    # This information can be used to:
+    # - delay execution of an operation until the target server reaches a steady state
+    # - raise an exception when trying to schedule an operation that depends on a state change
+    #   while the target server is in a steady state
+    # Steady states include:
+    # - Status.New
+    # - Status.Running
+    # - Status.ConfigurationFailed
+    # - Status.Error
+    # - Status.Terminated
+    is_steady_state = True
+
+    # An instance is healthy if it is part of a normal (expected) workflow.
+    # This information can be used to detect problems and highlight them in the UI or notify users.
+    # Healthy states include:
+    # - Status.New
+    # - Status.WaitingForServer
+    # - Status.ConfiguringServer
+    # - Status.Running
+    # - Status.Terminated
+    is_healthy_state = True
+
+
+class Status(ResourceState.Enum):
+    """
+    The states that an instance can be in.
+    """
+
+    class New(InstanceState):
+        """ Newly created """
+        state_id = 'new'
+
+    class WaitingForServer(InstanceState):
+        """ Server not yet accessible """
+        state_id = 'waiting'
+        name = 'Waiting for server'
+        is_steady_state = False
+
+    class ConfiguringServer(InstanceState):
+        """ Running Ansible playbooks on server """
+        state_id = 'configuring'
+        name = 'Configuring server'
+        is_steady_state = False
+
+    class Running(InstanceState):
+        """ Instance is up and running """
+        state_id = 'running'
+
+    class ConfigurationFailed(InstanceState):
+        """ Instance was not configured successfully (but may be partially online) """
+        state_id = 'failed'
+        name = 'Configuration failed'
+        is_healthy_state = False
+
+    class Error(InstanceState):
+        """ Instance never got up and running (something went wrong when trying to build new VM) """
+        state_id = 'error'
+        is_healthy_state = False
+
+    class Terminated(InstanceState):
+        """ Instance was running successfully and has been shut down """
+        state_id = 'terminated'
+
+
 # Models ######################################################################
 
 
@@ -73,6 +147,44 @@ class Instance(ValidateModelMixin, TimeStampedModel):
     """
     Instance - Group of servers running an application made of multiple services
     """
+    Status = Status
+    status = ModelResourceStateDescriptor(
+        state_classes=Status.states, default_state=Status.New, model_field_name='_status'
+    )
+    _status = models.CharField(
+        max_length=20,
+        default=status.default_state_class.state_id,
+        choices=status.model_field_choices,
+        db_index=True,
+        db_column='status',
+    )
+    # State transitions:
+    _status_to_waiting_for_server = status.transition(
+        from_states=(
+            Status.New,
+            Status.Error,
+            Status.ConfigurationFailed,
+            Status.Running,
+            Status.Terminated
+        ),
+        to_state=Status.WaitingForServer
+    )
+    _status_to_error = status.transition(
+        from_states=Status.WaitingForServer, to_state=Status.Error
+    )
+    _status_to_configuring_server = status.transition(
+        from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
+    )
+    _status_to_configuration_failed = status.transition(
+        from_states=Status.ConfiguringServer, to_state=Status.ConfigurationFailed
+    )
+    _status_to_running = status.transition(
+        from_states=Status.ConfiguringServer, to_state=Status.Running
+    )
+    _status_to_terminated = status.transition(
+        from_states=Status.Running, to_state=Status.Terminated
+    )
+
     sub_domain = models.CharField(max_length=50)
     email = models.EmailField(default='contact@example.com')
     name = models.CharField(max_length=250)
@@ -130,23 +242,13 @@ class Instance(ValidateModelMixin, TimeStampedModel):
             return active_server_set[0]
 
     @property
-    def status(self):
+    def server_status(self):
         """
         Instance status
         """
         server = self._current_server
         if server:
             return server.status
-        return None
-
-    @property
-    def progress(self):
-        """
-        Instance's current status progress
-        """
-        server = self._current_server
-        if server:
-            return server.progress
         return None
 
     @property
@@ -243,8 +345,8 @@ class Instance(ValidateModelMixin, TimeStampedModel):
 
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
-                      AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
+class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
+                              AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
     """
     A single instance running a set of Open edX services
     """
@@ -456,7 +558,8 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
                 'Provision attempt {attempt} of {attempts}'.format(attempt=attempt_num, attempts=self.attempts)
             )
             server, deploy_log, provisioned = self._provision_attempt()
-            logs.extend(deploy_log)
+            if deploy_log is not None:  # If server fails to build, no deployment logs will be available
+                logs.extend(deploy_log)
             attempt_num += 1
 
         return (server, logs)
@@ -469,12 +572,22 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
         """
         self.last_provisioning_started = timezone.now()
 
+        # Instance
+        self.logger.info('Prepare for (re-)provisioning')
+        self._status_to_waiting_for_server()
+
         # Server
         self.logger.info('Terminate servers')
         self.server_set.terminate()
         self.logger.info('Start new server')
         server = self.server_set.create()
         server.start()
+
+        try:
+            server.sleep_until(lambda: server.status.vm_available)
+        except SteadyStateException:
+            self._status_to_error()
+            return (server, None, False)  # No deploy logs available yet; instance has not been provisioned
 
         def accepts_ssh_commands():
             """ Does server accept SSH commands? """
@@ -499,21 +612,24 @@ class OpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerIn
                 self.provision_swift()
 
             # Provisioning (ansible)
-            server.mark_as_provisioning()
+            self.logger.info('Provisioning server...')
+            self._status_to_configuring_server()
             self.reset_ansible_settings(commit=True)
             deploy_log, exit_code = self.deploy()
             if exit_code != 0:
-                server.mark_provisioning_finished(success=False)
+                self.logger.info('Provisioning failed')
+                self._status_to_configuration_failed()
                 self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, deploy_log)
                 return (server, deploy_log, False)
 
-            server.mark_provisioning_finished(success=True)
-
             # Reboot
+            self.logger.info('Provisioning completed')
             self.logger.info('Rebooting server %s...', server)
             server.reboot()
             server.sleep_until(accepts_ssh_commands)
-            self.logger.info('Provisioning completed')
+
+            # Declare instance up and running
+            self._status_to_running()
 
             return (server, deploy_log, True)
 

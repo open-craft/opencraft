@@ -23,7 +23,7 @@ Admin for the instance app
 # Imports #####################################################################
 
 from django.contrib import admin
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.log_entry import GeneralLogEntry, InstanceLogEntry, ServerLogEntry
 from instance.models.server import OpenStackServer
 
@@ -46,7 +46,7 @@ class OpenStackServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('openstack_id', 'status', 'instance', 'created', 'modified')
 
 
-class OpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class SingleVMOpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('sub_domain', 'base_domain', 'name', 'created', 'modified')
 
 
@@ -54,4 +54,4 @@ admin.site.register(GeneralLogEntry, GeneralLogEntryAdmin)
 admin.site.register(InstanceLogEntry, InstanceLogEntryAdmin)
 admin.site.register(ServerLogEntry, ServerLogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
-admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
+admin.site.register(SingleVMOpenEdXInstance, SingleVMOpenEdXInstanceAdmin)

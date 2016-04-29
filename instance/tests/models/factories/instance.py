@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+SingleVMOpenEdXInstance model - Factories
 """
 
 # Imports #####################################################################
@@ -25,20 +25,43 @@ OpenEdXInstance model - Factories
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 
 
 # Classes #####################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
     """
-    Factory for OpenEdXInstance
+    Factory for SingleVMOpenEdXInstance
     """
     class Meta: #pylint: disable=missing-docstring
-        model = OpenEdXInstance
+        model = SingleVMOpenEdXInstance
 
     sub_domain = factory.Sequence('instance{}.test'.format)
     name = factory.Sequence('Test Instance {}'.format)
     commit_id = factory.Sequence('{:>040}'.format)
     github_organization_name = factory.Sequence('test-org{}'.format)
     github_repository_name = factory.Sequence('test-repo{}'.format)
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        """ Force FactoryBoy to set the field '_status' even though it starts with an underscore """
+        if 'status' in kwargs:
+            kwargs['_status'] = kwargs.pop('status').state_id
+        if hasattr(cls, '_status') and '_status' not in kwargs:
+            kwargs['_status'] = cls._status  # pylint: disable=no-member
+        return kwargs
+
+
+class WaitingSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'waiting' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.WaitingForServer.state_id
+
+
+class ConfiguringSingleVMOpenEdXInstanceFactory(SingleVMOpenEdXInstanceFactory):
+    """
+    Factory for an instance with a 'configuring' state
+    """
+    _status = SingleVMOpenEdXInstance.Status.ConfiguringServer.state_id

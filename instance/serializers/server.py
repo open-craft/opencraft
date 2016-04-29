@@ -34,7 +34,7 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
     OpenStackServer API Serializer
     """
     api_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
-    instance = serializers.HyperlinkedRelatedField(view_name='api:openedxinstance-detail', read_only=True)
+    instance = serializers.HyperlinkedRelatedField(view_name='api:singlevmopenedxinstance-detail', read_only=True)
 
     class Meta:
         model = OpenStackServer
@@ -46,14 +46,12 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'modified',
             'openstack_id',
             'status',
-            'progress',
         )
 
     def to_representation(self, obj):
         output = super().to_representation(obj)
         # Convert the state values from objects to strings:
         output['status'] = obj.status.state_id
-        output['progress'] = obj.progress.state_id
         # Add state name and description for display purposes:
         output['status_name'] = obj.status.name
         output['status_description'] = obj.status.description

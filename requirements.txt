@@ -22,6 +22,7 @@ django-redis==4.2.0
 django-zurb-foundation==5.5.0
 djangorestframework==3.2.4
 dodgy==0.1.7
+ddt==1.0.1
 factory-boy==2.5.2
 Flask==0.10.1
 freezegun==0.3.5

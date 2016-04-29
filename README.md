@@ -20,7 +20,7 @@ to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
 system.
 
-First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and 
+First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and
 [Vagrant](https://www.vagrantup.com/downloads.html). Then run:
 
     vagrant up
@@ -385,10 +385,10 @@ If you want to provision a sandbox outside of a GitHub pull request, you can do
 so from the shell:
 
 ```python
-from instance.models.instance import OpenEdXInstance
+from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tasks import provision_instance
 
-instance = OpenEdXInstance.objects.create(
+instance = SingleVMOpenEdXInstance.objects.create(
     sub_domain='dogwood.sandbox',
     name='Dogwood',
     fork_name='edx/edx-platform',
@@ -414,7 +414,7 @@ To reprovision an instance from the shell, simply run the `provision_instance`
 task again:
 
 ```python
-instance = OpenEdXInstance.objects.get(name__contains='...')
+instance = SingleVMOpenEdXInstance.objects.get(name__contains='...')
 provision_instance(instance.pk)
 ```
 
