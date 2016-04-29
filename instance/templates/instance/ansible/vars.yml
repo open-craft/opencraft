@@ -75,3 +75,6 @@ COMMON_USER_INFO:{% for github_username in github_admin_username_list %}
   - name: {{ github_username }}
     github: true
     type: admin{% endfor %}{% endif %}
+
+# Workers
+edxapp_worker_default_stopwaitsecs: 1200
