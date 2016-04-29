@@ -6,40 +6,40 @@ from django.db import migrations, models
 from instance.models.instance import Status as InstanceStatus
 
 
+def get_current_server(instance):
+    return instance.server_set.order_by("id").last()
+
+def get_instance_state(server_status, server_progress):
+    if server_status in ("new", "active"):
+        return InstanceStatus.WaitingForServer.state_id
+    if server_status == "started":
+        if server_progress in ("running", "success"):
+            return InstanceStatus.WaitingForServer.state_id
+        elif server_progress == "failed":
+            return InstanceStatus.Error.state_id
+    if server_status in ("booted", "ready"):
+        return InstanceStatus.Running.state_id
+    if server_status == "provisioning":
+        if server_progress in ("running", "success"):
+            return InstanceStatus.ConfiguringServer.state_id
+        elif server_progress == "failed":
+            return InstanceStatus.ConfigurationFailed.state_id
+    if server_status == "rebooting":
+        return InstanceStatus.ConfiguringServer.state_id
+    if server_status == "terminated":
+        return InstanceStatus.Terminated.state_id
+
 def set_instance_states(apps, schema_editor):
     SingleVMOpenEdXInstance = apps.get_model("instance", "SingleVMOpenEdXInstance")
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status__in=("new", "active")).update(
-            _status=InstanceStatus.WaitingForServer.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="started", server_set___progress__in=("running", "success")).update(
-            _status=InstanceStatus.WaitingForServer.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="started", server_set___progress="failed").update(
-            _status=InstanceStatus.Error.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status__in=("booted", "ready")).update(
-            _status=InstanceStatus.Running.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="provisioning", server_set___progress__in=("running", "success")).update(
-            _status=InstanceStatus.ConfiguringServer.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="provisioning", server_set___progress="failed").update(
-            _status=InstanceStatus.ConfigurationFailed.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="rebooting").update(
-            _status=InstanceStatus.ConfiguringServer.state_id
-        )
-    SingleVMOpenEdXInstance.objects.filter(
-        server_set___status="terminated").update(
-            _status=InstanceStatus.Terminated.state_id
-        )
+    for instance in SingleVMOpenEdXInstance.objects.iterator():
+        current_server = get_current_server(instance)
+        if current_server:  # instance.server_set contains at least one server
+            server_status = current_server._status
+            server_progress = current_server._progress
+            instance._status = get_instance_state(server_status, server_progress)
+        else:  # instance.server_set is empty (this happens when there are more instances created than workers are available to spawn servers)
+            instance._status = InstanceStatus.New.state_id
+        instance.save()
 
 
 class Migration(migrations.Migration):
