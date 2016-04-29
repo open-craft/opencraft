@@ -17,32 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Worker tasks for instance hosting & management
+AppConfig for the PR watcher app
 """
-
-# Imports #####################################################################
-
-import logging
-
-from huey.contrib.djhuey import db_task
-
-from instance.models.openedx_instance import OpenEdXInstance
+from django.apps import AppConfig
 
 
-# Logging #####################################################################
-
-logger = logging.getLogger(__name__)
-
-
-# Tasks #######################################################################
-
-@db_task()
-def provision_instance(instance_ref_id):
+class PRWatchAppConfig(AppConfig):
     """
-    Run provisioning on an existing instance
+    AppConfig for the PR watcher app
     """
-    logger.info('Retrieving instance: ID=%s', instance_ref_id)
-    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
-
-    logger.info('Spawning new AppServer on %s', instance)
-    instance.spawn_appserver()
+    name = 'pr_watch'
+    verbose_name = 'Pull Request Watcher'

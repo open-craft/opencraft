@@ -73,7 +73,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
         """
         Clean fields, including the 'object_id' field
         """
-        super().clean_fields(**kwargs)  # pylint: disable=no-member
+        super().clean_fields(**kwargs)
         # This check is here rather than in clean() because it must come after the built-in
         # validation of the content_type field, and we should only check object_id if
         # content_type has passed validation.

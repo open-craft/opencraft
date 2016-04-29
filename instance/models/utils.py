@@ -41,6 +41,17 @@ class SteadyStateException(WrongStateException):
     pass
 
 
+# Functions ###################################################################
+
+def format_help_text(help_text):
+    """
+    Fix whitespace in a multi-line help_text string for a django field.
+
+    Removes new lines and repeated whitespace
+    """
+    return " ".join(help_text.replace('\n', ' ').split())
+
+
 # Classes #####################################################################
 
 class ValidateModelMixin(object):
@@ -64,6 +75,25 @@ class ValidateModelMixin(object):
         """Call :meth:`full_clean` before saving."""
         self.full_clean()
         super(ValidateModelMixin, self).save(*args, **kwargs)
+
+    def set_field_defaults(self):
+        """
+        Set default values.
+
+        We don't use django field 'defaults=callable' because changes to the field defaults
+        affect automatically generated migrations, generating a new one when settings don't match
+
+        This method is called by clean_fields() before validation and save()
+        """
+        pass
+
+    def clean_fields(self, exclude=None):
+        """
+        Set default values before validation.
+        """
+        if not self.pk:
+            self.set_field_defaults()
+        super().clean_fields(exclude=exclude)
 
 
 class ClassProperty(property):

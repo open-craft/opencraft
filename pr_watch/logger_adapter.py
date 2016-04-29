@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,32 +17,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Worker tasks for instance hosting & management
+PR Watch app - Logger Adapters
 """
 
 # Imports #####################################################################
 
 import logging
 
-from huey.contrib.djhuey import db_task
+from instance.logger_adapter import format_instance
 
-from instance.models.openedx_instance import OpenEdXInstance
-
-
-# Logging #####################################################################
-
-logger = logging.getLogger(__name__)
+# Adapters ####################################################################
 
 
-# Tasks #######################################################################
-
-@db_task()
-def provision_instance(instance_ref_id):
+class WatchedPullRequestLoggerAdapter(logging.LoggerAdapter):
     """
-    Run provisioning on an existing instance
+    Custom LoggerAdapter for WatchedPullRequest objects
+    Include the InstanceReference ID in the output
     """
-    logger.info('Retrieving instance: ID=%s', instance_ref_id)
-    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
+    def process(self, msg, kwargs):
+        msg, kwargs = super().process(msg, kwargs)
 
-    logger.info('Spawning new AppServer on %s', instance)
-    instance.spawn_appserver()
+        watched_pr = self.extra['obj']
+        msg = '{} | {}'.format(format_instance(watched_pr.instance), msg)
+        return msg, kwargs

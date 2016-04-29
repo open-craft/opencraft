@@ -63,6 +63,7 @@ LOCAL_APPS = (
     'api',
     'instance',
     'email_verification',
+    'pr_watch',
     'userprofile',
     'betatest',
 )
@@ -285,7 +286,14 @@ DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
 DEFAULT_CONFIGURATION_REPO_URL = env(
     'DEFAULT_CONFIGURATION_REPO_URL', default='https://github.com/edx/configuration.git'
 )
-DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default='master')
+
+# Default release to use. Should be 'master' or a "named-release/treename.rc" tag, since
+# it must be a valid refspec for edx-platform, forum, notifier, xqueue, and certs.
+DEFAULT_OPENEDX_RELEASE = env('DEFAULT_OPENEDX_RELEASE', default='master')
+
+# Default version (git branch/commit/tag) of the repo at DEFAULT_CONFIGURATION_REPO_URL to use
+# for provisioning Open edX app servers.
+DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEFAULT_OPENEDX_RELEASE)
 
 # Ansible #####################################################################
 

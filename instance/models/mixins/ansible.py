@@ -22,12 +22,11 @@ Instance app model mixins - Ansible
 
 # Imports #####################################################################
 
+from collections import namedtuple
 import os
 
 from django.conf import settings
-from django.core.validators import MinValueValidator
 from django.db import models
-from django.template import loader
 
 from instance import ansible
 from instance.repo import open_repository
@@ -36,88 +35,54 @@ from instance.utils import poll_streams
 
 # Classes #####################################################################
 
-class AnsibleInstanceMixin(models.Model):
+Playbook = namedtuple('Playbook', [
+    'source_repo',  # Path or URL to a git repository containing the playbook to run
+    'playbook_path',  # Relative path to the playbook within source_repo
+    'requirements_path',  # Relative path to a python requirements file to install before running the playbook
+    'version',  # The git tag/commit hash/branch to use
+    'variables',  # A YAML string containing extra variables to pass to ansible when running this playbook
+])
+
+
+class AnsibleAppServerMixin(models.Model):
     """
-    An instance that relies on Ansible to deploy its services
+    An AppServer that relies on Ansible to deploy its services
     """
-    ansible_source_repo_url = models.URLField(max_length=256, blank=True)
-    configuration_version = models.CharField(max_length=50, blank=True)
-    ansible_playbook_name = models.CharField(max_length=50, default='edx_sandbox')
-    ansible_extra_settings = models.TextField(blank=True)
-    ansible_settings = models.TextField(blank=True)
-
-    attempts = models.SmallIntegerField(default=3, validators=[
-        MinValueValidator(1),
-    ])
-
-    # List of attributes to include in the settings output
-    ANSIBLE_SETTINGS = ['ansible_extra_settings']
-
     class Meta:
         abstract = True
 
-    def save(self, **kwargs):
+    def get_playbooks(self):  # pylint: disable=no-self-use
         """
-        Set default values before saving the instance.
-        """
-        # Set default field values from settings - using the `default` field attribute confuses
-        # automatically generated migrations, generating a new one when settings don't match
-        if not self.ansible_source_repo_url:
-            self.ansible_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
-        if not self.configuration_version:
-            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
-        super().save(**kwargs)
+        Get a list of Playbook objects which describe the playbooks to run in order to install
+        apps onto this AppServer.
 
-    @property
-    def ansible_playbook_filename(self):
+        Subclasses should override this like:
+            return super().get_playbooks + [
+                Playbook(source_repo="...", ...)
+            ]
         """
-        File name of the ansible playbook
-        """
-        return '{}.yml'.format(self.ansible_playbook_name)
+        return []
 
     @property
     def inventory_str(self):
         """
         The ansible inventory (list of servers) as a string
         """
-        inventory = ['[app]']
-        server_model = self.server_set.model
-        for server in self.server_set.filter(_status=server_model.Status.Ready.state_id).order_by('created'):
-            inventory.append(server.public_ip)
-        inventory_str = '\n'.join(inventory)
-        self.logger.debug('Inventory:\n%s', inventory_str)
-        return inventory_str
+        return '[app]\n{server_ip}'.format(server_ip=self.server.public_ip)
 
-    def reset_ansible_settings(self, commit=True):
+    def _run_playbook(self, working_dir, playbook):
         """
-        Set the ansible_settings field from the Ansible vars template.
+        Run a playbook against the AppServer's VM
         """
-        template = loader.get_template('instance/ansible/vars.yml')
-        vars_str = template.render({
-            'instance': self,
-            # This proerty is needed twice in the template.  To avoid evaluating it twice (and
-            # querying the Github API twice), we pass it as a context variable.
-            'github_admin_username_list': self.github_admin_username_list,
-        })
-        for attr_name in self.ANSIBLE_SETTINGS:
-            additional_vars = getattr(self, attr_name)
-            vars_str = ansible.yaml_merge(vars_str, additional_vars)
-        self.logger.debug('Vars.yml:\n%s', vars_str)
-        self.ansible_settings = vars_str
-        if commit:
-            self.save()
+        playbook_path = os.path.join(working_dir, playbook.playbook_path)
 
-    def _run_playbook(self, requirements_path, playbook_path):
-        """
-        Run a playbook against the instance active servers
-        """
         log_lines = []
         with ansible.run_playbook(
-            requirements_path,
-            self.inventory_str,
-            self.ansible_settings,
-            playbook_path,
-            self.ansible_playbook_filename,
+            requirements_path=os.path.join(working_dir, playbook.requirements_path),
+            inventory_str=self.inventory_str,
+            vars_str=playbook.variables,
+            playbook_path=os.path.dirname(playbook_path),
+            playbook_name=os.path.basename(playbook_path),
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
         ) as process:
             try:
@@ -140,19 +105,20 @@ class AnsibleInstanceMixin(models.Model):
             process.wait()
             return log_lines, process.returncode
 
-    def deploy(self):
+    def run_ansible_playbooks(self):
         """
-        Deploy instance to the active servers
+        Provision the server using ansible
         """
-        with open_repository(self.ansible_source_repo_url, ref=self.configuration_version) as configuration_repo:
-            playbook_path = os.path.join(configuration_repo.working_dir, 'playbooks')
-            requirements_path = os.path.join(configuration_repo.working_dir, 'requirements.txt')
+        log = []
+        for playbook in self.get_playbooks():
+            with open_repository(playbook.source_repo, ref=playbook.version) as configuration_repo:
+                self.logger.info('Running playbook "%s" from "%s"', playbook.playbook_path, playbook.source_repo)
+                playbook_log, returncode = self._run_playbook(configuration_repo.working_dir, playbook)
+                log += playbook_log
+                if returncode != 0:
+                    self.logger.error('Playbook failed for AppServer %s', self)
+                    break
 
-            self.logger.info(
-                'Running playbook "{path}/{name}":'.format(path=playbook_path, name=self.ansible_playbook_name)
-            )
-
-            log, returncode = self._run_playbook(requirements_path, playbook_path)
-            playbook_result = 'completed' if returncode == 0 else 'failed'
-            self.logger.error('Playbook {result} for instance {instance}'.format(result=playbook_result, instance=self))
+        if returncode == 0:
+            self.logger.info('Playbooks completed for AppServer %s', self)
         return (log, returncode)

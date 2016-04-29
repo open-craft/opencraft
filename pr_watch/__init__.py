@@ -17,32 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Worker tasks for instance hosting & management
+Pull Request Watcher app
 """
 
-# Imports #####################################################################
-
-import logging
-
-from huey.contrib.djhuey import db_task
-
-from instance.models.openedx_instance import OpenEdXInstance
-
-
-# Logging #####################################################################
-
-logger = logging.getLogger(__name__)
-
-
-# Tasks #######################################################################
-
-@db_task()
-def provision_instance(instance_ref_id):
-    """
-    Run provisioning on an existing instance
-    """
-    logger.info('Retrieving instance: ID=%s', instance_ref_id)
-    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
-
-    logger.info('Spawning new AppServer on %s', instance)
-    instance.spawn_appserver()
+default_app_config = 'pr_watch.apps.PRWatchAppConfig'
