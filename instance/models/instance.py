@@ -26,7 +26,9 @@ import logging
 import string
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
 from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
@@ -36,6 +38,7 @@ from django_extensions.db.models import TimeStampedModel
 from instance.gandi import GandiAPI
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.logging import log_exception
+from instance.models.log_entry import LogEntry
 from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
@@ -272,6 +275,8 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         Return the list of log entry instances for the instance and its current active server,
         optionally filtering by logging level. If a limit is given, only the latest records are
         returned.
+
+        Returns oldest entries first.
         """
         # TODO: Filter out log entries for which the user doesn't have view rights
         instance_type = ContentType.objects.get_for_model(self)
@@ -282,17 +287,12 @@ class Instance(ValidateModelMixin, TimeStampedModel):
             (Q(content_type=server_type) & Q(object_id__in=server_ids))
         )
         if level_list:
-            instance_log_entry_set = instance_log_entry_set.filter(level__in=level_list)
-        instance_log_entry_set = instance_log_entry_set.order_by('pk')
+            entries = entries.filter(level__in=level_list)
         if limit:
-            instance_log_entry_set = reversed(instance_log_entry_set.reverse()[:limit])
-        else:
-            instance_log_entry_set = instance_log_entry_set.iterator()
-
-        entries = self._sort_log_entries(server_log_entry_set, instance_log_entry_set)
-        if limit:
-            return entries[-limit:]
-        return entries
+            # Apply the limit at the SQL/DB level while sorted by descending date, then reverse.
+            # Otherwise, we'd have to retrieve all rows and then apply the limit using python.
+            return reversed(list(entries[:limit]))
+        return entries.order_by('created')
 
     @property
     def log_entries(self):
