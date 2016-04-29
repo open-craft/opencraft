@@ -32,7 +32,7 @@ glob2==0.4.1
 gunicorn==19.4.5
 honcho==0.7.1
 huey==1.1.1
-ipdb==0.9.3
+ipdb==0.10.0
 ipython==4.2.0
 ipython-genutils==0.1.0
 iso8601==0.1.11
