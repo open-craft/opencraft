@@ -1,0 +1,44 @@
+# Note: due to security concerns we prefer using git hashes than ansible versions.
+
+- name: geerlingguy.nginx
+  src: https://github.com/geerlingguy/ansible-role-nginx
+  version: e81825546577cfb300efbcaec32aae4716561385
+
+# Our fork of security, can be synced when this is merged: https://github.com/geerlingguy/ansible-role-security/pull/16
+- name: geerlingguy.security
+  src: https://github.com/open-craft/ansible-role-security
+  version: 'origin/jbzdak/notify-mail'
+
+- name: kamaln7.swapfile
+  src: https://github.com/kamaln7/ansible-swapfile
+  version: 8eb0e18d90a7f25b6658fbf56bcba01b84a664fc
+
+# Our fork of pmbauer tarsnap.
+# Can be cleared when this is closed: https://github.com/pmbauer/ansible-tarsnap/pull/3
+- name: pmbauer.tarsnap
+  src: https://github.com/open-craft/ansible-tarsnap
+  version: d96b1e69ae6b930e0841d7b025a3070c408a23f4
+
+- name: backup-to-tarsnap
+  src: https://github.com/open-craft/ansible-backup-to-tarsnap
+  version: 'origin/jbzdak/tasrsnap'
+
+- name: common-server
+  src: https://github.com/open-craft/ansible-common-server
+  version: 'origin/jbzdak/common-server'
+
+- name: configure-apt
+  src: https://github.com/open-craft/ansible-configure-apt
+  version: 'origin/jbzdak/configure-apt'
+
+- name: sanity-checker
+  src: https://github.com/open-craft/ansible-sanity-checker/
+  version: 'origin/jbzdak/sanity-checker'
+
+- name: forward-server-mail
+  src: https://github.com/open-craft/ansible-forward-server-mail
+  version: 'origin/jbzdak/forward-mail'
+
+- name: opencraft
+  src: https://github.com/open-craft/ansible-opencraft
+  version: 'origin/smarnach/opencraft'
