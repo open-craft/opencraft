@@ -6,6 +6,13 @@ running on Ubuntu 16.04 xenial.  It has been tested with this image:
 
 https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
 
+You need two DNS names pointing to your server, one for the web server itself and another one for
+web sockets.  The recommended setup is to add the subdomain "websocket" to the web server domain
+name as the web socket domain.
+
+The databases need to run on external servers.  The server deployed by this playbook is intended to
+be stateless, and no backups are performed by default.
+
 Running the playbook
 --------------------
 
@@ -13,6 +20,7 @@ Running the playbook
    `OPENCRAFT_ENV_TOKENS` dictionary, e.g.
 
         OPENCRAFT_ENV_TOKENS:
+          DATABASE_URL: 'postgres://db-user:password@postgres.example.com:port/db-name'
           DEFAULT_FORK: 'edx/edx-platform'
           SECRET_KEY: 'your-secret-key-goes-here'
 
