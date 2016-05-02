@@ -130,7 +130,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         Check that the username is unique.
         """
         username = self.cleaned_data.get('username')
-        if username and User.objects.filter(username=username).exists():
+        if username and User.objects.filter(username=username).exists(): #pylint: disable=no-member
             raise forms.ValidationError(
                 'This username is already taken.',
                 code='unique',
@@ -142,7 +142,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         Check that the email address is unique.
         """
         email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exists(): #pylint: disable=no-member
             raise forms.ValidationError(
                 'This email address is already registered.',
                 code='unique',

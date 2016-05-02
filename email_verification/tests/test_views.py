@@ -38,7 +38,7 @@ class VerifyEmailTestCase(TestCase):
     Tests for the verify_email view.
     """
     def setUp(self):
-        self.user = User.objects.create(username='ThePurpleOne')
+        self.user = User.objects.create(username='ThePurpleOne') #pylint: disable=no-member
         self.email = EmailAddress.objects.create_unconfirmed(
             email='raspberryberet@example.com',
             user=self.user,

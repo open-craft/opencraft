@@ -51,7 +51,7 @@ class BetaTestApplicationView(CreateView):
         response = super().form_valid(form)
         for email_address in (self.object.user.email,
                               self.object.public_contact_email):
-            if not EmailAddress.objects.filter(email=email_address).exists():
+            if not EmailAddress.objects.filter(email=email_address).exists(): #pylint: disable=no-member
                 email = EmailAddress.objects.create_unconfirmed(email_address,
                                                                 self.object.user)
                 send_email_verification(email, self.request)

@@ -105,9 +105,9 @@ class BetaTestApplicationViewTestMixin:
         self.assertEqual(profile.full_name, self.form_data['full_name'])
 
         # Test email verification flow
-        self.assertEqual(EmailAddress.objects.count(), 2)
+        self.assertEqual(EmailAddress.objects.count(), 2) #pylint: disable=no-member
         for email_address in (user.email, application.public_contact_email):
-            email = EmailAddress.objects.get(email=email_address)
+            email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
             self.assertEqual(email.is_confirmed, False)
         self.assertEqual(len(mail.outbox), 2)
         for verification_email in mail.outbox:
@@ -115,7 +115,7 @@ class BetaTestApplicationViewTestMixin:
                                    verification_email.body).group(0)
             self.client.get(verify_url)
         for email_address in (user.email, application.public_contact_email):
-            email = EmailAddress.objects.get(email=email_address)
+            email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
             self.assertEqual(email.is_confirmed, True)
 
     def assert_registration_fails(self, form_data, expected_errors=None):
@@ -157,7 +157,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='I got here first',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username='test'),
+            user=User.objects.create(username='test'), #pylint: disable=no-member
         )
         self.assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
@@ -201,7 +201,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='That username is mine',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username=self.form_data['username']),
+            user=User.objects.create(username=self.form_data['username']), #pylint: disable=no-member
         )
         self.assert_registration_fails(self.form_data, expected_errors={
             'username': ['This username is already taken.'],
@@ -225,7 +225,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='That email address is mine',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username='test',
+            user=User.objects.create(username='test', #pylint: disable=no-member
                                      email=self.form_data['email']),
         )
         self.assert_registration_fails(self.form_data, expected_errors={
