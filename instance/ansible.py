@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,20 +22,19 @@ Ansible - Helper functions
 
 # Imports #####################################################################
 
+from contextlib import contextmanager
+import logging
 import os
 import shutil
 import subprocess
-import yaml
-
-from contextlib import contextmanager
 from tempfile import mkdtemp, NamedTemporaryFile
+import yaml
 
 from django.conf import settings
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

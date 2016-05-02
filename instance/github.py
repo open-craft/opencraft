@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,19 +22,19 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
+import logging
 import functools
 import operator
 import re
-import requests
-import yaml
 
 from django.conf import settings
 from django.template.defaultfilters import truncatewords
+import requests
+import yaml
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,10 +22,11 @@ OpenStackServer model - Factories
 
 # Imports #####################################################################
 
+from functools import wraps
+from unittest.mock import MagicMock, Mock, patch
+
 import factory
 from factory.django import DjangoModelFactory
-from functools import wraps
-from mock import MagicMock, Mock, patch
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import add_fixture_to_object
@@ -120,6 +121,7 @@ class OpenStackServerFactory(DjangoModelFactory):
         if 'status' in kwargs:
             kwargs['_status'] = kwargs.pop('status').state_id
         if hasattr(cls, '_status') and '_status' not in kwargs:
+            #TODO: why is no-member disabled?
             kwargs['_status'] = cls._status  # pylint: disable=no-member
         return kwargs
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,8 @@
 Instance app model mixins - Database
 """
 
+# Imports #####################################################################
+
 from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
@@ -28,6 +30,8 @@ from swiftclient.exceptions import ClientException as SwiftClientException
 
 from instance import openstack
 
+
+# Functions ###################################################################
 
 def _get_mysql_cursor():
     """
@@ -42,6 +46,8 @@ def _get_mysql_cursor():
     return connection.cursor(), connection
 
 
+# Classes #####################################################################
+
 class MySQLInstanceMixin(models.Model):
     """
     An instance that uses mysql databases
@@ -54,7 +60,7 @@ class MySQLInstanceMixin(models.Model):
         abstract = True
 
     @property
-    def mysql_database_names(self):  # pylint: disable=no-self-use
+    def mysql_database_names(self):
         """
         An iterable of database names
         """
@@ -104,7 +110,7 @@ class MongoDBInstanceMixin(models.Model):
         abstract = True
 
     @property
-    def mongo_database_names(self): # pylint: disable=no-self-use
+    def mongo_database_names(self):
         """
         An iterable of database names
         """
@@ -149,7 +155,7 @@ class SwiftContainerInstanceMixin(models.Model):
         abstract = True
 
     @property
-    def swift_container_names(self):  # pylint: disable=no-self-use
+    def swift_container_names(self):
         """
         An iterable of Swift container names.
         """

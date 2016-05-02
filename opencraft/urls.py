@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +26,8 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
+import instance
+
 
 # URL Patterns ################################################################
 
@@ -35,5 +37,5 @@ urlpatterns = [
     url(r'^api/', include('api.urls', namespace="api")),
     url(r'^instance/', include('instance.urls', namespace="instance")),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', 'instance.views.index'),
+    url(r'^$', instance.views.index),
 ]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,10 +24,10 @@ OpenStackServer model - Tests
 
 import http.client
 import io
+from unittest.mock import Mock, call, patch
 
-import novaclient
 from ddt import ddt, data, unpack
-from mock import Mock, call, patch
+import novaclient
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
@@ -493,7 +493,9 @@ class OpenStackServerStatusTestCase(TestCase):
         """
         Test that invalid status transitions raise exception
         """
-        invalid_from_states = (state for state in ServerStatus.states if state not in transition['from_states'])
+        # TODO: Get pylint to see state as an iterable
+        invalid_from_states = (state for state in ServerStatus.states #pylint: disable=not-an-iterable
+                               if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
             instance = OpenStackServerFactory(status=invalid_from_state)
             self.assertEqual(instance.status, invalid_from_state)

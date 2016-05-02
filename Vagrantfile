@@ -1,12 +1,25 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+unless Vagrant.has_plugin?("vagrant-vbguest")
+  raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
+end
+
 Vagrant.configure(2) do |config|
-  config.vm.box = 'ubuntu/trusty64'
+  # TODO: Switch back to the official box once it is released
+  config.vm.box = 'opencraft/xenial64'
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.vm.synced_folder '.', '/home/vagrant/opencraft'
+
+  config.vbguest.auto_update = true
+  config.vbguest.auto_reboot = true
+
   config.vm.network 'forwarded_port', guest: 2001, host: 2001
   config.vm.network 'forwarded_port', guest: 5000, host: 5000
   config.vm.network 'forwarded_port', guest: 8888, host: 8888
+
   config.ssh.forward_x11 = true
+
   config.vm.provision 'shell',
                       path: 'bin/bootstrap',
                       privileged: false,

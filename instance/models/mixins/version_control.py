@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,6 +19,9 @@
 """
 Instance app model mixins - Version Control
 """
+
+# Imports #####################################################################
+
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
@@ -124,7 +127,7 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         abstract = True
 
     @property
-    def default_fork(self): #pylint: disable=no-self-use
+    def default_fork(self):
         """
         Name of the fork to use by default, when no repository is specified
         """
@@ -221,7 +224,6 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
             # Update the hash in the instance title if it is present there
             # TODO: Find a better way to handle this - include the hash dynamically?
             if self.name and old_commit_short_id:
-                #pylint: disable=attribute-defined-outside-init
                 self.name = self.name.replace(old_commit_short_id, self.commit_short_id)
 
         if commit:
@@ -248,6 +250,6 @@ class GitHubInstanceMixin(VersionControlInstanceMixin):
         """
         Update this instance with settings from the given pull request
         """
-        self.name = ('PR#{pr.number}: {pr.truncated_title}' +  #pylint: disable=attribute-defined-outside-init
+        self.name = ('PR#{pr.number}: {pr.truncated_title}' +
                      ' ({pr.username}) - {i.reference_name}').format(pr=pr, i=self)
         self.github_pr_url = pr.github_pr_url

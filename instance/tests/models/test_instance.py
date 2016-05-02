@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,15 +22,15 @@ SingleVMOpenEdXInstance model - Tests
 
 # Imports #####################################################################
 
+import re
+from unittest.mock import call, patch, Mock
 from urllib.parse import urlparse
 
-import re
-import novaclient
-import yaml
 from ddt import ddt, data
 from django.conf import settings
 from django.test import override_settings
-from mock import call, patch, Mock
+import novaclient
+import yaml
 
 from instance.models.instance import InconsistentInstanceState, Instance, SingleVMOpenEdXInstance
 from instance.models.server import Server
@@ -48,7 +48,6 @@ from instance.tests.utils import patch_services
 
 # Factory boy doesn't properly support pylint+django
 #pylint: disable=no-member
-
 
 class InstanceTestCase(TestCase):
     """
@@ -607,7 +606,9 @@ class InstanceStatusTestCase(TestCase):
         """
         Test that invalid status transitions raise exception
         """
-        invalid_from_states = (state for state in Instance.Status.states if state not in transition['from_states'])
+        # TODO: Get pylint to see state as an iterable
+        invalid_from_states = (state for state in Instance.Status.states #pylint: disable=not-an-iterable
+                               if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
             instance = SingleVMOpenEdXInstanceFactory(status=invalid_from_state)
             self.assertEqual(instance.status, invalid_from_state)

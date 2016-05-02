@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,12 +24,12 @@ Instance app - Util functions
 
 import itertools
 import json
-import requests
 import selectors
 import socket
 import time
+from unittest.mock import Mock
 
-from mock import Mock
+import requests
 
 
 # Functions ###################################################################

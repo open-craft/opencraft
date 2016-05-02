@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,11 +25,11 @@ using the variable name passed to `env()` below
 
 # Imports #####################################################################
 
-import environ
 import logging
 import os
-
 from urllib.parse import urlparse
+
+import environ
 
 
 # Functions ###################################################################
@@ -75,9 +75,9 @@ INSTALLED_APPS = (
     'django_extensions',
     'foundation',
     'compressor',
-    'djangular',
+    'djng',
     'rest_framework',
-    'huey.djhuey',
+    'huey.contrib.djhuey',
     'swampdragon',
     'debug_toolbar',
 ) + LOCAL_APPS
@@ -106,7 +106,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.core.context_processors.request',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -194,7 +194,6 @@ CACHES = {
 # Huey (redis task queue) #####################################################
 
 HUEY = {
-    'backend': 'huey.backends.redis_backend',
     'name': 'opencraft',
     'connection': {
         'host': REDIS_URL_OBJ.hostname,
@@ -204,7 +203,7 @@ HUEY = {
     'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer_options': {'workers': 1, 'loglevel': logging.DEBUG},
+    'consumer': {'workers': 1, 'loglevel': logging.DEBUG},
 }
 
 

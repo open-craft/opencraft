@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,9 +22,10 @@ Worker tasks for instance hosting & management
 
 # Imports #####################################################################
 
-from huey.djhuey import crontab, db_periodic_task, db_task
+import logging
 
 from django.conf import settings
+from huey.contrib.djhuey import crontab, db_periodic_task, db_task
 
 from instance.github import get_username_list_from_team, get_pr_list_from_username
 from instance.models.instance import SingleVMOpenEdXInstance
@@ -32,7 +33,6 @@ from instance.models.instance import SingleVMOpenEdXInstance
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

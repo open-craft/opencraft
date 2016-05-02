@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,11 @@
 """
 Instance app model mixins - Ansible
 """
+
+# Imports #####################################################################
+
 import os
+
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -29,6 +33,8 @@ from instance import ansible
 from instance.repo import open_repository
 from instance.utils import poll_streams
 
+
+# Classes #####################################################################
 
 class AnsibleInstanceMixin(models.Model):
     """

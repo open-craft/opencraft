@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,14 +22,13 @@ Instance app - Logging utils
 
 # Imports #####################################################################
 
+from functools import wraps
 import logging
 import traceback
 
-from functools import wraps
-from swampdragon.pubsub_providers.data_publisher import publish_data
-
 from django.apps import apps
 from django.db import models
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.serializers.logentry import LogEntrySerializer
 

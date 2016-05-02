@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,9 +22,10 @@ Logger models & mixins - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 from django.test import override_settings
 from freezegun import freeze_time
-from mock import patch
 
 from instance.models.log_entry import GeneralLogEntry
 from instance.tests.base import TestCase

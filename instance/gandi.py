@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,7 @@ Gandi DNS - Helper functions
 
 # Imports #####################################################################
 
+import logging
 import time
 import xmlrpc.client
 
@@ -31,7 +32,6 @@ from django.core.cache import cache
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -45,14 +45,14 @@ class GandiAPI():
         self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
-    def api_key(self): #pylint: disable=no-self-use
+    def api_key(self):
         """
         Gandi API key
         """
         return settings.GANDI_API_KEY
 
     @property
-    def zone_id(self): #pylint: disable=no-self-use
+    def zone_id(self):
         """
         Gandi Zone ID of the domain
         """

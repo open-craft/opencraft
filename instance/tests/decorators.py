@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,9 +19,14 @@
 """
 Decorators - Useful decorators for unit tests
 """
+
+# Imports #####################################################################
+
 from functools import wraps
 from unittest import mock
 
+
+# Functions ###################################################################
 
 def patch_git_checkout(func):
     """

@@ -25,7 +25,7 @@ First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and
 
     vagrant up
 
-This will provision a virtual machine running Ubuntu 14.04, set up local
+This will provision a virtual machine running Ubuntu 16.04, set up local
 Postgres, MySQL, MongoDB and Redis, install the dependencies and run the tests.
 
 Once the virtual machine is up and running, you can ssh into it with this
@@ -45,7 +45,7 @@ web browser.
 
 If you prefer not to use Vagrant, you can install OpenCraft manually. Refer to
 the [bootstrap](bin/bootstrap) script used by Vagrant for an example.
-Instructions based on Ubuntu 14.04.
+Instructions based on Ubuntu 16.04.
 
 Install the system package dependencies & virtualenv:
 
@@ -258,7 +258,7 @@ Creating a user
 In order to login to the development server locally you will need to create a
 superuser by running:
 
-    honcho run ./manage.py createsuperuser
+    make manage createsuperuser
 
 Once created, you will be able to login with the username and password you set
 up.
@@ -431,6 +431,10 @@ manage.py
 
 You can also access the Django `manage.py` command directly, using Honcho to
 load the environment:
+
+    make manage <command>
+
+Or run any command using the application environment:
 
     honcho run ./manage.py <command>
 

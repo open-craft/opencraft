@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,16 +22,16 @@ Git repository - Helper functions
 
 # Imports #####################################################################
 
-import git
-import tempfile
-import shutil
-
 from contextlib import contextmanager
+import logging
+import shutil
+import tempfile
+
+import git
 
 
 # Logging #####################################################################
 
-import logging
 logger = logging.getLogger(__name__)
 
 

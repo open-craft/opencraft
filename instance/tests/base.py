@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,15 +22,14 @@ Tests - Base Class & Utils
 
 # Imports #####################################################################
 
-import huey
 import json
 import os.path
 import re
-
-from mock import Mock
+from unittest.mock import Mock
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase as DjangoTestCase
+import huey
 
 
 # Functions ###################################################################
@@ -94,12 +93,12 @@ class TestCase(DjangoTestCase):
 
         # Don't close tasks DB connections in tests, this conflicts with the atomic transaction blocks
         # used by the test runner to isolate DB operations from each test
-        self.orig_db_connection_close = huey.djhuey.connection.close
+        self.orig_db_connection_close = huey.contrib.djhuey.connection.close
         self.mock_db_connection_close = Mock()
-        huey.djhuey.connection.close = self.mock_db_connection_close
+        huey.contrib.djhuey.connection.close = self.mock_db_connection_close
 
     def tearDown(self):
-        huey.djhuey.connection.close = self.orig_db_connection_close
+        huey.contrib.djhuey.connection.close = self.orig_db_connection_close
         super().tearDown()
 
 
