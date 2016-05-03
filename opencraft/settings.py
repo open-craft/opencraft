@@ -62,6 +62,9 @@ DATABASES = {
 LOCAL_APPS = (
     'api',
     'instance',
+    'email_verification',
+    'userprofile',
+    'betatest',
 )
 
 INSTALLED_APPS = (
@@ -79,6 +82,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'huey.contrib.djhuey',
     'swampdragon',
+    'simple_email_confirmation',
     'debug_toolbar',
 ) + LOCAL_APPS
 
@@ -296,7 +300,11 @@ ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 
 
 # Emails ######################################################################
 
+EMAIL_BACKEND = env('EMAIL_BACKEND',
+                    default='django.core.mail.backends.console.EmailBackend')
+
 # From & subject configuration for sent emails
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='opencraft@localhost')
 SERVER_EMAIL = env('SERVER_EMAIL', default='opencraft@locahost')
 EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
 
@@ -306,6 +314,9 @@ EMAIL_PORT = env('EMAIL_PORT', default=25)
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=False)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+
+# Email confirmation
+SIMPLE_EMAIL_CONFIRMATION_AUTO_ADD = False
 
 
 # Logging #####################################################################
