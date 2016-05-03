@@ -20,6 +20,7 @@
 WORKERS = 4
 SHELL = /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
+RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
 
 
 # Parameters ##################################################################
@@ -98,6 +99,10 @@ test_unit: clean
 test_migrations_missing: clean
 	! honcho -e .env.test run ./manage.py makemigrations --dry-run --exit
 
+test_browser: clean static_external
+	@echo -e "\nRunning browser tests..."
+	honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
+
 test_integration: clean
 	@if [ -a .env.integration ] ; then \
 		echo -e "\nRunning integration tests..." ; \
@@ -107,12 +112,16 @@ test_integration: clean
 	fi
 
 test_js: clean static_external
-	cd instance/tests/js && xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
+	cd instance/tests/js && $(RUN_JS_TESTS)
+	cd betatest/tests/js && $(RUN_JS_TESTS)
 
-test_js_web: clean static_external
+test_instance_js_web: clean static_external
 	cd instance/tests/js && jasmine --host 0.0.0.0
 
-test: clean test_prospector test_unit test_migrations_missing test_js test_integration
+test_betatest_js_web: clean static_external
+	cd betatest/tests/js && jasmine --host 0.0.0.0
+
+test: clean test_prospector test_unit test_migrations_missing test_js test_browser test_integration
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean

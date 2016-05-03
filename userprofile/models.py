@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,22 +17,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+User-related models
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
-
-from instance.api.instance import SingleVMOpenEdXInstanceViewSet
-from instance.api.server import OpenStackServerViewSet
-from betatest.api import BetaTestApplicationViewSet
+from django.contrib.auth.models import User
+from django.db import models
 
 
-# Router ######################################################################
+# Models ######################################################################
 
-router = routers.DefaultRouter()
+class UserProfile(models.Model):
+    """
+    Profile information for users.
+    """
+    user = models.OneToOneField(User, related_name='profile')
+    full_name = models.CharField(max_length=255)
 
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'openedxinstance', SingleVMOpenEdXInstanceViewSet)
-router.register(r'beta/register/validate', BetaTestApplicationViewSet, base_name='register')
+    def __str__(self):
+        return self.full_name
