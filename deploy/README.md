@@ -35,7 +35,13 @@ Running the playbook
 
         ansible-galaxy install -r requirements.yml
 
-4. Prepare your server with a stock Ubuntu 16.04 image, and make sure you can SSH to it.
+4. Prepare your server with a stock Ubuntu 16.04 image, and make sure you can SSH to it.  Manually
+   install Python 2 by running
+
+        sudo apt-get update && sudo apt-get install -y python
+
+   on the target server.  (Since Ansible requires Python 2 to be present on the target machine, we
+   can't use Ansible to install Python 2.)
 
 5. Run the playbook:
 
