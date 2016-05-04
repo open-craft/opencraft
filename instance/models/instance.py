@@ -123,6 +123,8 @@ class Instance(ValidateModelMixin, models.Model):
         """ Save this Instance """
         super().save(*args, **kwargs)
         # Ensure an InstanceReference exists, and update its 'modified' field:
+        if self.ref.instance_id is None:
+            self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
         self.ref.save()  # pylint: disable=no-member
 
     @property
