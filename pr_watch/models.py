@@ -74,11 +74,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         if fork_name is None and (not watched_pr.github_organization_name or not watched_pr.github_repository_name):
             fork_name = settings.DEFAULT_FORK
         if fork_name is not None:
-            watched_pr.set_fork_name(fork_name, commit=False)
-        if not watched_pr.commit_id:
-            watched_pr.set_to_branch_tip(commit=False)
-        if not watched_pr.name:
-            watched_pr.name = watched_pr.reference_name
+            watched_pr.set_fork_name(fork_name)
 
         self._for_write = True
         watched_pr.save(force_insert=True, using=self.db)
@@ -98,11 +94,11 @@ class WatchedPullRequestQuerySet(models.QuerySet):
 
 class WatchedPullRequest(models.Model):
     """
-    List of all watched pull requests, with ID of the Instance created for that PR, if any
+    Represents a single watched pull request; holds the ID of the Instance created for that PR,
+    if any
     """
     branch_name = models.CharField(max_length=50, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
-    commit_id = models.CharField(max_length=40, validators=[sha1_validator])
     github_organization_name = models.CharField(max_length=200, db_index=True)
     github_repository_name = models.CharField(max_length=200, db_index=True)
     github_pr_url = models.URLField(blank=False)
@@ -120,9 +116,9 @@ class WatchedPullRequest(models.Model):
         """
         Short `commit_id`, limited to 7 characters like on GitHub
         """
-        if not self.commit_id:
+        if not self.instance or not self.instance.edx_platform_commit:
             return None
-        return self.commit_id[:7]
+        return self.instance.edx_platform_commit[:7]
 
     @property
     def fork_name(self):
@@ -175,13 +171,11 @@ class WatchedPullRequest(models.Model):
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def set_to_branch_tip(self, commit=True):
+    def get_branch_tip(self, commit=True):
         """
-        Set the `commit_id` to the current tip of the branch
-
-        By default, save the instance object - pass `commit=False` to not save it
+        Get the `commit_id` of the current tip of the branch
         """
-        self.logger.info('Setting instance to tip of branch %s', self.branch_name)
+        self.logger.info('Fetching commit ID of the tip of branch %s', self.branch_name)
         try:
             new_commit_id = github.get_commit_id_from_ref(
                 self.fork_name,
@@ -192,27 +186,18 @@ class WatchedPullRequest(models.Model):
                               self.branch_name)
             raise
 
-        if commit:
-            self.save()
-            self.instance.edx_platform_commit = self.commit_id
-            self.instance.save()
+        return new_commit_id
 
     def set_fork_name(self, fork_name, commit=True):
         """
         Set the organization and repository based on the GitHub fork name
-
-        By default, save the instance object - pass `commit=False` to not save it
         """
+        assert not self.github_organization_name
+        assert not self.github_repository_name
         self.logger.info('Setting fork name: %s', fork_name)
         fork_org, fork_repo = github.fork_name2tuple(fork_name)
-        if self.github_organization_name == fork_org \
-                and self.github_repository_name == fork_repo:
-            return
-
         self.github_organization_name = fork_org
         self.github_repository_name = fork_repo
-        if commit:
-            self.save()
 
     def update_instance_from_pr(self, pr):
         """
@@ -229,7 +214,7 @@ class WatchedPullRequest(models.Model):
         instance.sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
         instance.base_domain = settings.INSTANCES_BASE_DOMAIN
         instance.edx_platform_repository_url = self.repository_url
-        instance.edx_platform_commit = self.commit_id
+        instance.edx_platform_commit = self.get_branch_tip()
         instance.name = ('PR#{pr.number}: {pr.truncated_title}' +
                          ' ({pr.username}) - {i.reference_name}').format(pr=pr, i=self)
         instance.configuration_extra_settings = pr.extra_settings
