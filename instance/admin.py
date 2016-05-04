@@ -24,7 +24,9 @@ Admin for the instance app
 
 from django.contrib import admin
 
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.instance import InstanceReference
+from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.log_entry import LogEntry
 from instance.models.server import OpenStackServer
 
@@ -36,13 +38,27 @@ class LogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
 
 
 class OpenStackServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('openstack_id', 'status', 'instance', 'created', 'modified')
+    list_display = ('openstack_id', 'status', 'created', 'modified')
+    # TODO: Is there a way to link back to the owning AppServer? (efficiently)
 
 
-class SingleVMOpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class InstanceReferenceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+    list_display = ('id', 'instance', 'created', 'modified')
+
+
+class OpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('sub_domain', 'base_domain', 'name', 'created', 'modified')
+
+
+class OpenEdXAppServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+    list_display = ('id', 'owner', 'name', 'created', 'modified')
+
+    # Don't allow modifying an AppServer once created:
+    readonly_fields = OpenEdXAppServer._meta.get_all_field_names()
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
-admin.site.register(SingleVMOpenEdXInstance, SingleVMOpenEdXInstanceAdmin)
+admin.site.register(InstanceReference, InstanceReferenceAdmin)
+admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
+admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
