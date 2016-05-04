@@ -109,8 +109,8 @@ class BetaTestApplicationViewTestMixin:
         for email_address in (user.email, application.public_contact_email):
             email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
             self.assertEqual(email.is_confirmed, False)
-        self.assertEqual(len(mail.outbox), 2)
-        for verification_email in mail.outbox:
+        self.assertEqual(len(mail.outbox), 2)  # fix flaky pylint: disable=no-member,useless-suppression
+        for verification_email in mail.outbox:  # fix flaky pylint: disable=no-member,useless-suppression
             verify_url = re.search(r'https?://[^\s]+',
                                    verification_email.body).group(0)
             self.client.get(verify_url)
@@ -130,7 +130,7 @@ class BetaTestApplicationViewTestMixin:
             self.assertEqual(self.get_error_messages(response),
                              expected_errors)
         self.assertEqual(BetaTestApplication.objects.count(), original_count)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)  # fix flaky pylint: disable=no-member,useless-suppression
 
     def test_valid_application(self):
         """
