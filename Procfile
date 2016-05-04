@@ -1,4 +1,4 @@
 web: gunicorn opencraft.wsgi --log-file -
 websocket: python3 websocket.py
 worker: python3 manage.py run_huey --no-periodic
-periodic: python3 manage.py run_huey --periodic --workers=0
+periodic: python3 manage.py run_huey --workers=0
