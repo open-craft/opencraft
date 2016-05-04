@@ -25,22 +25,14 @@ Admin for the instance app
 from django.contrib import admin
 
 from instance.models.instance import SingleVMOpenEdXInstance
-from instance.models.log_entry import GeneralLogEntry, InstanceLogEntry, ServerLogEntry
+from instance.models.log_entry import LogEntry
 from instance.models.server import OpenStackServer
 
 
 # ModelAdmins #################################################################
 
-class GeneralLogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class LogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('created', 'level', 'text', 'modified')
-
-
-class InstanceLogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('obj', 'created', 'level', 'text', 'modified')
-
-
-class ServerLogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('obj', 'created', 'level', 'text', 'modified')
 
 
 class OpenStackServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
@@ -51,8 +43,6 @@ class SingleVMOpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-d
     list_display = ('sub_domain', 'base_domain', 'name', 'created', 'modified')
 
 
-admin.site.register(GeneralLogEntry, GeneralLogEntryAdmin)
-admin.site.register(InstanceLogEntry, InstanceLogEntryAdmin)
-admin.site.register(ServerLogEntry, ServerLogEntryAdmin)
+admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
 admin.site.register(SingleVMOpenEdXInstance, SingleVMOpenEdXInstanceAdmin)

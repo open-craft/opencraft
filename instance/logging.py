@@ -69,11 +69,14 @@ class DBHandler(logging.Handler):
         obj = record.__dict__.get('obj', None)
 
         if obj is None or not isinstance(obj, models.Model) or obj.pk is None:
-            log_entry_set = apps.get_model('instance', 'GeneralLogEntry').objects
+            content_type, object_id = None, None
         else:
-            log_entry_set = obj.log_entry_set
+            content_type = apps.get_model('contenttypes', 'ContentType').objects.get_for_model(obj)
+            object_id = obj.pk
 
-        log_entry = log_entry_set.create(level=record.levelname, text=self.format(record))
+        log_entry = apps.get_model('instance', 'LogEntry').objects.create(
+            level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
+        )
 
         log_event = {
             'type': 'instance_log',

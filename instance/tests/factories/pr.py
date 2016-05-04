@@ -33,7 +33,7 @@ class PRFactory(factory.Factory):
     """
     Factory for PR instances
     """
-    class Meta: #pylint: disable=missing-docstring
+    class Meta:
         model = github.PR
 
     number = factory.Sequence(int)

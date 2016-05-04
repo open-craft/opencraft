@@ -24,10 +24,12 @@ Logger models & mixins - Tests
 
 from unittest.mock import patch
 
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import override_settings
 from freezegun import freeze_time
 
-from instance.models.log_entry import GeneralLogEntry
+from instance.models.log_entry import LogEntry
 from instance.tests.base import TestCase
 from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
@@ -63,7 +65,7 @@ class LoggingTestCase(TestCase):
         """
         Check that the default log level is INFO
         """
-        log_entry = GeneralLogEntry(text='OHAI')
+        log_entry = LogEntry(text='OHAI')
         self.assertEqual(log_entry.level, 'INFO')
 
     def test_log_entries(self):
@@ -133,6 +135,108 @@ class LoggingTestCase(TestCase):
             'instance_id': self.instance.pk,
             'server_id': self.server.pk,
         })
+
+    def test_log_delete(self):
+        """
+        Check `log_entries` output for combination of instance & server logs
+        """
+        server1 = self.server
+        server2 = OpenStackServerFactory(instance=self.instance, openstack_id='vm2_id')
+
+        self.instance.logger.info('Line #1, on instance')
+        server1.logger.info('Line #2, on server 1')
+        server2.logger.info('Line #3, on server 2')
+
+        self.assertEqual(LogEntry.objects.count(), 3)
+        # Delete server 1:
+        server1_id = server1.pk
+        server1.delete()
+        # Now its log entry should be deleted:
+        entries = LogEntry.objects.order_by('pk').all().values_list('text', flat=True)
+        for entry_text in entries:
+            self.assertNotIn('Line #2', entry_text)
+        self.assertIn('Line #1, on instance', entries[0])
+        self.assertIn('Line #3, on server 2', entries[1])
+        self.assertIn(
+            'Deleted 1 log entries for deleted open stack server instance with ID {}'.format(server1_id),
+            entries[2]
+        )
+
+    def test_log_num_queries(self):
+        """
+        Check that logging to the LogEntry table doesn't do more queries than necessary.
+
+        The expected queries upon inserting a log entry are:
+        1. SELECT (1) AS "a" FROM "django_content_type" WHERE "django_content_type"."id" = {content_type_id} LIMIT 1
+        2. SELECT (1) AS "a" FROM "instance_openstackserver" WHERE "instance_openstackserver"."id" = {object_id} LIMIT 1
+        3. INSERT INTO "instance_logentry" (...)
+
+        The first two are used to validate the foreign keys. 1. is added by django, and 2. is
+        added by us since the object_id foreign key constraint is not enforced by the database.
+        """
+        with self.assertNumQueries(3):
+            self.server.logger.info('some log message')
+
+    def test_log_delete_num_queries(self):
+        """
+        Check that the LogEntry.on_post_delete handler doesn't do more queries than necessary.
+        """
+        with self.assertNumQueries(2):  # one query to delete the server; one to delete the LogEntry
+            self.server.delete()
+        log_entry = LogEntry.objects.create(text='blah')
+        with self.assertNumQueries(1):
+            log_entry.delete()
+
+    def test_str_repr(self):
+        """
+        Test the string representation of a LogEntry object
+        """
+        msg = 'We have entered a spectacular binary star system in the Kavis Alpha sector'
+        with freeze_time("2015-10-20 20:10:15"):
+            self.server.logger.info(msg)
+        log_entry = LogEntry.objects.order_by('-pk')[0]
+        self.assertEqual(
+            str(log_entry),
+            '2015-10-20 20:10:15 |     INFO | instance.models.server    | instance=my.instance,server=vm1_id | ' + msg,
+        )
+
+    def test_invalid_content_type_object_id_combo(self):
+        """
+        Test that content_type and object_id cannot be set on their own
+        """
+        text = 'We are en route to Mintaka III.'
+
+        def check_exception(exc):
+            """ Check that the given exception contains the expected message """
+            self.assertEqual(
+                exc.messages,
+                ['LogEntry content_type and object_id must both be set or both be None.'],
+            )
+
+        with self.assertRaises(ValidationError) as context:
+            LogEntry.objects.create(text=text, content_type_id=None, object_id=self.server.pk)
+        check_exception(context.exception)
+
+        content_type = ContentType.objects.get_for_model(self.server)
+        with self.assertRaises(ValidationError) as context:
+            LogEntry.objects.create(text=text, content_type_id=content_type.pk, object_id=None)
+        check_exception(context.exception)
+
+    def test_invalid_object_id(self):
+        """
+        Test that object_id validity is enforced at the application level.
+        """
+        content_type = ContentType.objects.get_for_model(self.server)
+        with self.assertRaises(ValidationError) as context:
+            LogEntry.objects.create(
+                text='We are departing the Rana system for Starbase 133.',
+                content_type=content_type,
+                object_id=987654321,  # An invalid ID
+            )
+        self.assertEqual(
+            context.exception.messages,
+            ['Object attached to LogEntry has bad content_type or primary key'],
+        )
 
     def test_log_error_entries(self):
         """

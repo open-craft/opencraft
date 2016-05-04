@@ -22,12 +22,13 @@ Instance app models - Instance
 
 # Imports #####################################################################
 
-from functools import partial
 import logging
 import string
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
 from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
@@ -37,6 +38,7 @@ from django_extensions.db.models import TimeStampedModel
 from instance.gandi import GandiAPI
 from instance.logger_adapter import InstanceLoggerAdapter
 from instance.logging import log_exception
+from instance.models.log_entry import LogEntry
 from instance.models.mixins.ansible import AnsibleInstanceMixin
 from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
 from instance.models.mixins.utilities import EmailInstanceMixin
@@ -268,65 +270,29 @@ class Instance(ValidateModelMixin, TimeStampedModel):
             self.base_domain = settings.INSTANCES_BASE_DOMAIN
         super().save(**kwargs)
 
-    @staticmethod
-    def _sort_log_entries(server_logs, instance_logs):
-        """
-        Helper method to combine the instance and server log outputs in chronological order
-        """
-        next_server_log_entry = partial(next, server_logs, None)
-        next_instance_log_entry = partial(next, instance_logs, None)
-
-        log = []
-        instance_log_entry = next_instance_log_entry()
-        server_log_entry = next_server_log_entry()
-
-        while instance_log_entry is not None and server_log_entry is not None:
-            if server_log_entry.created < instance_log_entry.created:
-                log.append(server_log_entry)
-                server_log_entry = next_server_log_entry()
-            else:
-                log.append(instance_log_entry)
-                instance_log_entry = next_instance_log_entry()
-
-        while instance_log_entry is not None:
-            log.append(instance_log_entry)
-            instance_log_entry = next_instance_log_entry()
-
-        while server_log_entry is not None:
-            log.append(server_log_entry)
-            server_log_entry = next_server_log_entry()
-
-        return log
-
     def _get_log_entries(self, level_list=None, limit=None):
         """
         Return the list of log entry instances for the instance and its current active server,
         optionally filtering by logging level. If a limit is given, only the latest records are
         returned.
+
+        Returns oldest entries first.
         """
         # TODO: Filter out log entries for which the user doesn't have view rights
-        server_log_entry_set = self._current_server.log_entry_set
+        instance_type = ContentType.objects.get_for_model(self)
+        server_type = ContentType.objects.get_by_natural_key(app_label='instance', model='openstackserver')
+        server_ids = [server.pk for server in self.server_set.all()]
+        entries = LogEntry.objects.filter(
+            (Q(content_type=instance_type) & Q(object_id=self.pk)) |
+            (Q(content_type=server_type) & Q(object_id__in=server_ids))
+        )
         if level_list:
-            server_log_entry_set = server_log_entry_set.filter(level__in=level_list)
-        server_log_entry_set = server_log_entry_set.order_by('pk')
+            entries = entries.filter(level__in=level_list)
         if limit:
-            server_log_entry_set = reversed(server_log_entry_set.reverse()[:limit])
-        else:
-            server_log_entry_set = server_log_entry_set.iterator()
-
-        instance_log_entry_set = self.log_entry_set
-        if level_list:
-            instance_log_entry_set = instance_log_entry_set.filter(level__in=level_list)
-        instance_log_entry_set = instance_log_entry_set.order_by('pk')
-        if limit:
-            instance_log_entry_set = reversed(instance_log_entry_set.reverse()[:limit])
-        else:
-            instance_log_entry_set = instance_log_entry_set.iterator()
-
-        entries = self._sort_log_entries(server_log_entry_set, instance_log_entry_set)
-        if limit:
-            return entries[-limit:]
-        return entries
+            # Apply the limit at the SQL/DB level while sorted by descending date, then reverse.
+            # Otherwise, we'd have to retrieve all rows and then apply the limit using python.
+            return reversed(list(entries[:limit]))
+        return entries.order_by('created')
 
     @property
     def log_entries(self):
