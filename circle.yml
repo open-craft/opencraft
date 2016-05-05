@@ -6,6 +6,9 @@ machine:
 dependencies:
   pre:
     - pip install --upgrade pip
+    - pip install --upgrade virtualenv
+    - sudo add-apt-repository ppa:fkrull/deadsnakes-python2.7 -y
+    - sudo apt-get update; sudo apt-get install python2.7 python2.7-dev
   override:
     - pip install -r requirements.txt
 test:
