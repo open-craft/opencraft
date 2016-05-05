@@ -39,14 +39,18 @@ def instance_factory(**kwargs):
     Callers can use keyword arguments to pass in non-default values
     for any field that is defined on the OpenEdXInstance model.
 
-    When called without any arguments, the instance that is returned
+    The only mandatory argument is `sub_domain`.
+
+    When called without any additional arguments, the instance that is returned
     will have its fields set to default values that are appropriate
     for *sandbox* instances.
 
     To create an instance with default settings that are suitable for production,
     use `production_instance_factory`.
     """
-    return OpenEdXInstance.objects.create(**kwargs)
+    assert "sub_domain" in kwargs
+    instance = OpenEdXInstance.objects.create(**kwargs)
+    return instance
 
 
 def production_instance_factory(**kwargs):
@@ -58,7 +62,9 @@ def production_instance_factory(**kwargs):
     Callers can use keyword arguments to pass in non-default values
     for any field that is defined on the OpenEdXInstance model.
 
-    When called without any arguments, the instance that is returned
+    The only mandatory argument is `sub_domain`.
+
+    When called without any additional arguments, the instance that is returned
     will have its fields set to default values that are appropriate
     for *production* instances.
 
@@ -68,7 +74,8 @@ def production_instance_factory(**kwargs):
     # NOTE: The long-term goal is to eliminate differences between sandboxes
     # and production instances, and for this function to disappear.
     # Please do not add behavior that is specific to production instances here.
-    production_instance = OpenEdXInstance.objects.create(**kwargs)
+    assert "sub_domain" in kwargs
+    production_instance = OpenEdXInstance(**kwargs)
     if "use_ephemeral_databases" not in kwargs:
         production_instance.use_ephemeral_databases = False
     if "configuration_version" not in kwargs:

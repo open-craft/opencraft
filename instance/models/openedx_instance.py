@@ -129,6 +129,22 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=64)
 
+    def set_field_defaults(self):
+        """
+        Set default values.
+        """
+        if not self.openedx_release:
+            self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
+        if not self.configuration_source_repo_url:
+            self.configuration_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
+        if not self.configuration_version:
+            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
+        if not self.edx_platform_repository_url:
+            self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
+        if not self.edx_platform_commit:
+            self.edx_platform_commit = self.openedx_release
+        super().set_field_defaults()
+
     def save(self, **kwargs):
         """
         Set default values before saving the instance.
@@ -222,22 +238,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
                 **instance_config
             )
         return app_server
-
-    def set_field_defaults(self):
-        """
-        Set default values.
-        """
-        if not self.openedx_release:
-            self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
-        if not self.configuration_source_repo_url:
-            self.configuration_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
-        if not self.configuration_version:
-            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
-        if not self.edx_platform_repository_url:
-            self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
-        if not self.edx_platform_commit:
-            self.edx_platform_commit = self.openedx_release
-        super().set_field_defaults()
 
 
 post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)
