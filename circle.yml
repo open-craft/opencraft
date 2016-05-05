@@ -1,6 +1,8 @@
 machine:
   python:
     version: 3.5.1
+  services:
+    - redis
 dependencies:
   pre:
     - pip install --upgrade pip
