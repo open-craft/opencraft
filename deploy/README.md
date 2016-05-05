@@ -24,6 +24,10 @@ Running the playbook
           DEFAULT_FORK: 'edx/edx-platform'
           SECRET_KEY: 'your-secret-key-goes-here'
 
+   Set `OPENCRAFT_OPENSTACK_SSH_KEY_FILE` to the name of the private SSH key to be used to access
+   OpenStack servers.  You must upload the corresponding public key to the OpenStack project
+   configured in OPENCRAFT_ENV_TOKENS and set OPENSTACK_SANDBOX_SSH_KEYNAME to the name of the key.
+
    See the `README.md` file in the top-level directory and `opencraft/settings.py` for further details
    on settings you want to include there.
 
