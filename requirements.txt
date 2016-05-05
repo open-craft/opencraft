@@ -15,7 +15,7 @@ debtcollector==1.3.0
 decorator==4.0.9
 dj-static==0.0.6
 Django==1.9.5
-django-angular==0.8.2
+git+https://github.com/jrief/django-angular.git@c21d7f013fa5108ba7ecc3c7a33de0251aafc604#egg=django-angular==0.8.3
 django-appconf==1.0.2
 django-compressor==2.0
 django-debug-toolbar==1.4
@@ -39,7 +39,7 @@ GitPython==2.0.0
 glob2==0.4.1
 gunicorn==19.4.5
 honcho==0.7.1
-huey==1.1.1
+git+https://github.com/open-craft/huey.git@9b503b4e337c8eb2ffeb41f2ace60c06297a0b94#egg=huey==1.1.2
 ipdb==0.9.3
 ipython==4.2.0
 ipython-genutils==0.1.0
