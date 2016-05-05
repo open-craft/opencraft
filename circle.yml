@@ -6,6 +6,13 @@ machine:
 dependencies:
   pre:
     - pip install --upgrade pip
+    - pip install --upgrade virtualenv
+    # Update python to latest 2.6.* release from the deadsnakes PPA.
+    # Ubuntu 14.04 which we currently use on CircleCI comes with 2.7.6 preinstalled,
+    # which does not support SNI. When CircleCI starts providing Ubuntu 16.04 images,
+    # this won't be needed anymore.
+    - sudo add-apt-repository ppa:fkrull/deadsnakes-python2.7 -y
+    - sudo apt-get update; sudo apt-get install python2.7 python2.7-dev
   override:
     - pip install -r requirements.txt
 test:
