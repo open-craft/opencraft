@@ -40,7 +40,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     Application form for beta testers. Creates instances of User, UserProfile,
     and BetaTestApplication models on submit.
     """
-    class Meta: #pylint: disable=missing-docstring
+    class Meta:
         model = BetaTestApplication
         exclude = ('user', 'status')
         widgets = {

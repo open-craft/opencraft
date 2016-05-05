@@ -36,7 +36,7 @@ class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
     """
     Factory for SingleVMOpenEdXInstance
     """
-    class Meta: #pylint: disable=missing-docstring
+    class Meta:
         model = SingleVMOpenEdXInstance
 
     sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))

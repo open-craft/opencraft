@@ -96,7 +96,7 @@ class OpenStackServerFactory(DjangoModelFactory):
     """
     Factory for OpenStackServer
     """
-    class Meta: #pylint: disable=missing-docstring
+    class Meta:
         model = OpenStackServer
 
     instance = factory.SubFactory(SingleVMOpenEdXInstanceFactory)

@@ -34,7 +34,7 @@ class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
     """
     Factory for SingleVMOpenEdXInstance
     """
-    class Meta: #pylint: disable=missing-docstring
+    class Meta:
         model = SingleVMOpenEdXInstance
 
     sub_domain = factory.Sequence('instance{}.test'.format)
