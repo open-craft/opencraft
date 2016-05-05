@@ -65,6 +65,9 @@ def production_instance_factory(**kwargs):
     To create an instance with default settings that are suitable for sandboxes,
     use `instance_factory`.
     """
+    # NOTE: The long-term goal is to eliminate differences between sandboxes
+    # and production instances, and for this function to disappear.
+    # Please do not add behavior that is specific to production instances here.
     production_instance = OpenEdXInstance.objects.create(**kwargs)
     if "use_ephemeral_databases" not in kwargs:
         production_instance.use_ephemeral_databases = False
