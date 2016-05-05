@@ -463,16 +463,6 @@ AppServers and their virtual machines, run:
 instance.delete()
 ```
 
-You can use the same approach for creating, reprovisioning, and deleting
-production instances, but you'll need to work with a different model:
-
-```python
-from instance.models.openedx_instance import OpenEdXProductionInstance
-from instance.tasks import provision_instance
-
-instance = SingleVMOpenEdXInstance.objects.create(...)
-```
-
 
 manage.py
 ---------

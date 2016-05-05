@@ -25,7 +25,6 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.db.models.signals import post_save
-from django.template import loader
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
@@ -130,12 +129,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=64)
 
-    def get_extra_settings(self):
-        """
-        Get configuration_extra_settings to pass to a new AppServer
-        """
-        return ""
-
     def save(self, **kwargs):
         """
         Set default values before saving the instance.
@@ -226,7 +219,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
                 # Copy the current value of each setting into the AppServer, preserving it permanently:
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
-                configuration_extra_settings=self.get_extra_settings(),
                 **instance_config
             )
         return app_server
@@ -246,36 +238,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
         super().set_field_defaults()
-
-
-class OpenEdXProductionInstance(OpenEdXInstance):
-    """
-    OpenEdXProductionInstance: An OpenEdXInstance using production settings
-    """
-
-    LATEST_RELEASE = "named-release/dogwood.rc"
-
-    def save(self, **kwargs):
-        """
-        Set default field values specific to production instances before saving.
-        """
-        # Ansible-specific settings:
-        self.configuration_version = self.LATEST_RELEASE
-        self.openedx_release = self.LATEST_RELEASE
-        # Also set edx_platform_commit in case behavior of "set_field_defaults" changes
-        self.edx_platform_commit = self.LATEST_RELEASE
-
-        # Misc settings:
-        self.use_ephemeral_databases = False
-
-        super().save(**kwargs)
-
-    def get_extra_settings(self):
-        """
-        Get configuration_extra_settings to pass to a new AppServer
-        """
-        template = loader.get_template('instance/ansible/prod-vars.yml')
-        return template.render({})
 
 
 post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)
