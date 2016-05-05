@@ -7,7 +7,7 @@
 # Our fork of security, can be synced when this is merged: https://github.com/geerlingguy/ansible-role-security/pull/16
 - name: geerlingguy.security
   src: https://github.com/open-craft/ansible-role-security
-  version: 0b495a931c3d9c73732e14811c74bc70635d6c69
+  version: origin/jbzdak/notify-mail
 
 - name: kamaln7.swapfile
   src: https://github.com/kamaln7/ansible-swapfile
