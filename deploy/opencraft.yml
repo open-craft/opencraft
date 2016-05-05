@@ -1,3 +1,10 @@
+- name: Install Python 2 on target machine
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - raw: sudo apt-get update -qq && sudo apt-get install -qq python
+
 - name: Deploy the OpenCraft Instance Manager
   hosts: all
   become: true
