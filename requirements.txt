@@ -95,7 +95,7 @@ python-neutronclient==4.2.0
 python-novaclient==4.0.0
 python-swiftclient==3.0.0
 pytz==2016.4
-PyYAML==3.11
+PyYAML==3.10
 rcssmin==1.0.6
 redis==2.10.5
 requests==2.10.0
@@ -122,6 +122,6 @@ tornado-redis==2.4.18
 traitlets==4.2.1
 unicodecsv==0.14.1
 virtualenv==15.0.1
-Werkzeug==0.11.9
+Werkzeug==0.11.1
 wrapt==1.10.8
 zxcvbn-py3==1.1
