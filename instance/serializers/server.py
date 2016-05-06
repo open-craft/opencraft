@@ -34,7 +34,6 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
     OpenStackServer API Serializer
     """
     api_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
-    instance = serializers.HyperlinkedRelatedField(view_name='api:singlevmopenedxinstance-detail', read_only=True)
 
     class Meta:
         model = OpenStackServer
@@ -42,7 +41,6 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'id',
             'api_url',
             'created',
-            'instance',
             'modified',
             'openstack_id',
             'status',

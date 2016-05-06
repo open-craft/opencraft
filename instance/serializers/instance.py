@@ -24,68 +24,84 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
-from instance.models.instance import SingleVMOpenEdXInstance
-from instance.serializers.server import OpenStackServerSerializer
-from instance.serializers.logentry import LogEntrySerializer
+from instance.models.instance import InstanceReference, Instance
+from instance.models.openedx_instance import OpenEdXInstance
+from instance.serializers.openedx_instance import OpenEdXInstanceSerializer
 
 
 # Serializers #################################################################
 
-class SingleVMOpenEdXInstanceListSerializer(serializers.ModelSerializer):
+
+class InstanceReferenceMinimalSerializer(serializers.ModelSerializer):
     """
-    SingleVMOpenEdXInstance API Serializer (list view).
+    Serializer for InstanceReference that includes only the ID and URL.
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:singlevmopenedxinstance-detail')
-    active_server_set = OpenStackServerSerializer(many=True, read_only=True)
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:instance-detail')
 
     class Meta:
-        model = SingleVMOpenEdXInstance
+        model = InstanceReference
         fields = (
             'id',
             'api_url',
-            'active_server_set',
-            'ansible_settings',
-            'base_domain',
-            'branch_name',
-            'commit_id',
-            'created',
-            'domain',
-            'email',
-            'github_base_url',
-            'github_branch_url',
-            'github_pr_number',
-            'github_pr_url',
-            'github_organization_name',
-            'modified',
-            'name',
-            'protocol',
-            'repository_url',
-            'status',
-            'studio_url',
-            'sub_domain',
-            'url',
-            'updates_feed',
         )
 
+
+class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
+    """
+    Serializer for InstanceReference that includes additional information based on the Instance
+    subclass linked to the InstanceReference.
+
+    InstanceReference is a simple class that points to all the concrete 'Instance' subclasses
+    such as OpenEdXInstance.
+    """
+
+    # summary_only: Uses less detailed serializers for related instances
+    summary_only = True
+
+    class Meta:
+        model = InstanceReference
+        fields = (
+            'id',
+            'api_url',
+            'name',
+            'created',
+            'modified',
+        )
+
+    def serialize_details(self, instance):
+        """
+        Given an object that is a subclass of Instance, serialize it.
+        """
+        if not isinstance(instance, Instance):
+            raise TypeError("InstanceReference.instance should return a subclass of Instance")
+
+        # Use the correct serializer for this type of Instance:
+        if isinstance(instance, OpenEdXInstance):
+            serializer = OpenEdXInstanceSerializer
+        else:
+            raise NotImplementedError("No serializer enabled for that Instance type.")
+
+        if self.summary_only and hasattr(serializer, 'basic_serializer'):
+            serializer = serializer.basic_serializer
+
+        return serializer(instance, context=self.context).data
+
     def to_representation(self, obj):
+        """
+        Add additional fields/data to the output
+        """
         output = super().to_representation(obj)
-        # Convert the state values from objects to strings:
-        output['status'] = obj.status.state_id
-        # Add state name and description for display purposes:
-        output['status_name'] = obj.status.name
-        output['status_description'] = obj.status.description
-        # Add info about relevant conditions related to instance status
-        output['is_steady'] = obj.status.is_steady_state
-        output['is_healthy'] = obj.status.is_healthy_state
+        output['instance_type'] = obj.instance_type.model
+        details = self.serialize_details(obj.instance)
+        # Merge instance details into the resulting dict, but never overwrite existing fields
+        for key, val in details.items():
+            output.setdefault(key, val)
         return output
 
 
-class SingleVMOpenEdXInstanceDetailSerializer(SingleVMOpenEdXInstanceListSerializer):
+class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
     """
-    SingleVMOpenEdXInstance API Serializer (detail view). Includes log entries.
+    Serializer for InstanceReference that is like InstanceReferenceBasicSerializer but includes
+    more detail.
     """
-    log_entries = LogEntrySerializer(many=True, read_only=True)
-    log_error_entries = LogEntrySerializer(many=True, read_only=True)
-
-    class Meta(SingleVMOpenEdXInstanceListSerializer.Meta):
-        fields = SingleVMOpenEdXInstanceListSerializer.Meta.fields + ('log_entries', 'log_error_entries')
+    summary_only = False

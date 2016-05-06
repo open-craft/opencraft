@@ -23,6 +23,7 @@ Instance views
 # Imports #####################################################################
 
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from instance.models.server import OpenStackServer
 from instance.serializers.server import OpenStackServerSerializer
@@ -36,3 +37,4 @@ class OpenStackServerViewSet(viewsets.ModelViewSet):
     """
     queryset = OpenStackServer.objects.all()
     serializer_class = OpenStackServerSerializer
+    permission_classes = [IsAuthenticated]
