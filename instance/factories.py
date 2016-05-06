@@ -22,13 +22,32 @@ Instance app - Factory functions for creating instances
 
 # Imports #####################################################################
 
+import logging
+
 from django.conf import settings
 from django.template import loader
 
 from instance.models.openedx_instance import OpenEdXInstance
 
 
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
+
+
 # Functions ###################################################################
+
+def _check_environment():
+    """
+    Check environment and report potential problems for production instances
+    """
+    if not settings.SWIFT_ENABLE:
+        logger.warning("Swift support is currently disabled. Adjust SWIFT_ENABLE setting.")
+    if settings.INSTANCE_MYSQL_URL is None:
+        logger.warning("URL for external MySQL database is missing. Adjust INSTANCE_MYSQL_URL setting.")
+    if settings.INSTANCE_MONGO_URL is None:
+        logger.warning("URL for external Mongo database is missing. Adjust INSTANCE_MONGO_URL setting.")
+
 
 def instance_factory(**kwargs):
     """
@@ -48,7 +67,10 @@ def instance_factory(**kwargs):
     To create an instance with default settings that are suitable for production,
     use `production_instance_factory`.
     """
+    # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
+
+    # Create instance
     instance = OpenEdXInstance.objects.create(**kwargs)
     return instance
 
@@ -74,7 +96,14 @@ def production_instance_factory(**kwargs):
     # NOTE: The long-term goal is to eliminate differences between sandboxes
     # and production instances, and for this function to disappear.
     # Please do not add behavior that is specific to production instances here.
+
+    # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
+
+    # Check environment and report potential problems
+    _check_environment()
+
+    # Create instance
     production_instance = OpenEdXInstance(**kwargs)
     if "use_ephemeral_databases" not in kwargs:
         production_instance.use_ephemeral_databases = False
