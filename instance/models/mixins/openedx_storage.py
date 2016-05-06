@@ -54,9 +54,9 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
         """
         return [self.swift_container_name]
 
-    def provision_swift(self):
+    def set_field_defaults(self):
         """
-        Set Swift credentials and create the Swift container.
+        Set default values for Swift credentials.
         """
         if settings.SWIFT_ENABLE and not self.swift_provisioned:
             # TODO: Figure out a way to use separate credentials for each instance.  Access control
@@ -67,7 +67,6 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             self.swift_openstack_tenant = settings.SWIFT_OPENSTACK_TENANT
             self.swift_openstack_auth_url = settings.SWIFT_OPENSTACK_AUTH_URL
             self.swift_openstack_region = settings.SWIFT_OPENSTACK_REGION
-        return super().provision_swift()
 
     def get_storage_settings(self):
         """

@@ -133,6 +133,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         """
         Set default values.
         """
+        # Main settings
         if not self.openedx_release:
             self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
         if not self.configuration_source_repo_url:
@@ -143,6 +144,14 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
+
+        # Database settings
+        OpenEdXDatabaseMixin.set_field_defaults(self)
+
+        # Storage settings
+        OpenEdXStorageMixin.set_field_defaults(self)
+
+        # Other settings
         super().set_field_defaults()
 
     def save(self, **kwargs):

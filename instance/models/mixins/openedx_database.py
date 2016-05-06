@@ -75,23 +75,16 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         """
         return [self.mongo_database_name, self.forum_database_name]
 
-    def provision_mysql(self):
+    def set_field_defaults(self):
         """
-        Set mysql credentials and provision the database.
+        Set default values for mysql and mongo credentials.
         """
         if not self.mysql_provisioned:
             self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
             self.mysql_pass = get_random_string(length=32)
-        return super().provision_mysql()
-
-    def provision_mongo(self):
-        """
-        Set mongo credentials and provision the database.
-        """
         if not self.mongo_provisioned:
             self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
             self.mongo_pass = get_random_string(length=32)
-        return super().provision_mongo()
 
     def get_database_settings(self):
         """
