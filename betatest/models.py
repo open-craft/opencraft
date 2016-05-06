@@ -27,7 +27,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance
 
 
 # Models ######################################################################
@@ -37,7 +37,7 @@ def validate_available_subdomain(subdomain):
     Check that the given subdomain is not already used by an existing
     instance.
     """
-    if SingleVMOpenEdXInstance.objects.filter(sub_domain=subdomain).exists():
+    if OpenEdXInstance.objects.filter(sub_domain=subdomain).exists():
         raise ValidationError(
             message='This domain is already taken.',
             code='unique',
