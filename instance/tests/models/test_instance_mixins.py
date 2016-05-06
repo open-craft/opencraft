@@ -381,9 +381,11 @@ class MySQLInstanceTestCase(TestCase):
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_database_names:
             self.assertIn(database, databases)
-            mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
-                user=self.instance.mysql_user,
+            # Pass password using MYSQ_PWD environment variable rather than the --password
+            # parameter so that mysql command doesn't print a security warning.
+            mysql_cmd = "MYSQL_PWD={password} mysql -u {user} -e 'SHOW TABLES' {db_name}".format(
                 password=self.instance.mysql_pass,
+                user=self.instance.mysql_user,
                 db_name=database,
             )
             tables = subprocess.call(mysql_cmd, shell=True)
