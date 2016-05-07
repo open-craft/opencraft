@@ -85,5 +85,8 @@ class DBHandler(logging.Handler):
         if hasattr(obj, 'event_context'):
             log_event.update(obj.event_context)
 
-        # TODO: Filter out log entries for which the user doesn't have view rights
-        publish_data('log', log_event)
+        # Send notice of entries related to any resource. Skip generic log entries that occur
+        # in debug mode, like "GET /static/img/favicon/favicon-96x96.png":
+        if content_type:
+            # TODO: Filter out log entries for which the user doesn't have view rights
+            publish_data('log', log_event)
