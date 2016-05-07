@@ -17,26 +17,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-REST Framework API - Router
+PR Watcher serializers (API representation)
 """
 
 # Imports #####################################################################
 
-from rest_framework import routers
-
-from instance.api.instance import InstanceViewSet
-from instance.api.openedx_appserver import OpenEdXAppServerViewSet
-from instance.api.server import OpenStackServerViewSet
-from betatest.api import BetaTestApplicationViewSet
-from pr_watch.api import WatchedPullRequestViewSet
+from rest_framework import serializers
+from pr_watch.models import WatchedPullRequest
 
 
-# Router ######################################################################
+# Serializers #################################################################
 
-router = routers.DefaultRouter()
 
-router.register(r'instance', InstanceViewSet, base_name='instance')
-router.register(r'openedx_appserver', OpenEdXAppServerViewSet)
-router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'beta/register/validate', BetaTestApplicationViewSet, base_name='register')
-router.register(r'pr_watch', WatchedPullRequestViewSet, base_name='pr_watch')
+class WatchedPullRequestSerializer(serializers.ModelSerializer):
+    """
+    Simple serializer for WatchedPullRequest
+    """
+    class Meta:
+        model = WatchedPullRequest
+        fields = (
+            'id',
+            'fork_name',
+            'branch_name',
+            'github_pr_number',
+            'github_pr_url',
+        )
+
+    def to_representation(self, obj):
+        """
+        Add additional fields/data to the output
+        """
+        output = super().to_representation(obj)
+        output['instance_id'] = obj.instance.ref.id  # The API must only expose InstanceReference IDs, not Instance ID
+        return output

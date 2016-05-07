@@ -42,8 +42,10 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'api_url',
             'created',
             'modified',
+            'name',
             'openstack_id',
             'status',
+            'public_ip',
         )
 
     def to_representation(self, obj):

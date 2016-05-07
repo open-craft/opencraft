@@ -1,0 +1,57 @@
+<h4>{{appserver.name}}</h4>
+
+
+<div ng-if="!appserver">
+  <p>Loading AppServer details...</p>
+</div>
+
+<accordion close-others="false" ng-if="appserver">
+
+  <accordion-group heading="Status" is-open="true">
+    <table>
+      <tbody>
+        <tr><th>Status</th><td><strong>{{appserver.status_name}}</strong> ({{appserver.status_description}})</td></tr>
+        <tr><th>Active</th><td><span ng-if="is_active">Yes</span><span ng-if="!is_active">No</span></td></tr>
+        <tr><th>Created</th><td>{{appserver.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
+        <tr><th>VM</th><td>{{appserver.server.name}}</td></tr>
+        <tr><th>VM Status</th><td>{{appserver.server.status_name}} ({{appserver.server.status_description}})</td></tr>
+        <tr><th>VM IP Address</th><td><a href="{{appserver.protocol}}://{{appserver.server.public_ip}}">{{appserver.server.public_ip}}</a></td></tr>
+      </tbody>
+    </table>
+
+    <button ng-disabled="is_active || !appserver.is_healthy"
+            tooltip="This will update the DNS entries so that this app server is used for the instance. Only one app server can be active at any time."
+            tooltip-placement="right"
+            ng-click="make_appserver_active()">
+      Make this app server active
+    </button>
+  </accordion-group>
+
+  <accordion-group heading="Configuration" is-open="true">
+    <p>This is a record of this App Server's configuration. The configuration cannot be changed. Instead, change the configuration of the Instance, and launch a new App Server.</p>
+    <table style="table-layout: fixed; width: 100%;">
+      <colgroup><col width="200px"><col></colgroup>
+      <tbody>
+        <tr><td>Email</td><td>{{appserver.email}}</td></tr>
+        <tr><td>Protocol</td><td>{{appserver.protocol}}</td></tr>
+        <tr><td>Use ephemeral databases</td><td>{{appserver.use_ephemeral_databases}}</td></tr>
+        <tr><td>GitHub admin org</td><td>{{appserver.github_admin_organization_name}}</td></tr>
+        <tr><td>configuration_source_repo_url</td><td>{{appserver.configuration_source_repo_url}}</td></tr>
+        <tr><td>configuration_version</td><td>{{appserver.configuration_version}}</td></tr>
+        <tr><td>edx_platform_repository_url</td><td>{{appserver.edx_platform_repository_url}}</td></tr>
+        <tr><td>edx_platform_commit</td><td>{{appserver.edx_platform_commit}}</td></tr>
+        <tr><td>openedx_release</td><td>{{appserver.openedx_release}}</td></tr>
+        <tr><td>configuration_extra_settings</td><td><pre>{{appserver.configuration_extra_settings}}</pre></td></tr>
+        <tr><td>configuration_database_settings</td><td><pre>{{appserver.configuration_database_settings}}</pre></td></tr>
+        <tr><td>configuration_storage_settings</td><td><pre>{{appserver.configuration_storage_settings}}</pre></td></tr>
+        <tr><td>Combined ansible vars:</td><td><pre>{{appserver.configuration_settings}}</pre></td></tr>
+      </tbody>
+    </table>
+  </accordion-group>
+
+  <accordion-group heading="Log">
+    <pre ng-if="appserver.status == 'failed'" class="error-log" ng-repeat="line in appserver.log_error_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre><br>
+    <pre class="instance-log" ng-repeat="line in appserver.log_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
+  </accordion-group>
+
+</accordion>

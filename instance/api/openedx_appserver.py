@@ -24,6 +24,7 @@ Open edX AppServer API
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status, serializers
+from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -88,3 +89,16 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             suffix = "Details"
         return "Open edX App Server {}".format(suffix)
+
+    @detail_route(methods=['post'])
+    def make_active(self, request, pk):
+        """
+        Make this AppServer the active app server for the instance.
+        """
+        app_server = self.get_object()
+        if not app_server.status.is_healthy_state:
+            return Response(
+                {"error": "Cannot make an unhealthy app server active."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        app_server.instance.set_appserver_active(app_server.pk)
+        return Response({'status': 'App server updated.'})
