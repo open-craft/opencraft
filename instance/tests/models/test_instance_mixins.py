@@ -381,12 +381,14 @@ class MySQLInstanceTestCase(TestCase):
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_database_names:
             self.assertIn(database, databases)
-            mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
+            # Pass password using MYSQ_PWD environment variable rather than the --password
+            # parameter so that mysql command doesn't print a security warning.
+            env = {'MYSQL_PWD': self.instance.mysql_pass}
+            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(
                 user=self.instance.mysql_user,
-                password=self.instance.mysql_pass,
                 db_name=database,
             )
-            tables = subprocess.call(mysql_cmd, shell=True)
+            tables = subprocess.call(mysql_cmd, shell=True, env=env)
             self.assertEqual(tables, 0)
 
     def test_provision_mysql(self):
