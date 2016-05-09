@@ -24,6 +24,7 @@ import string
 from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
+from django.db.models.signals import post_save
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
@@ -128,12 +129,14 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         Mark the AppServer with the given ID as the active one.
         """
         app_server = self.appserver_set.get(pk=appserver_id)  # Make sure the AppServer is owned by this instance
-        self.active_appserver = app_server
-        self.save()
+        self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
+        public_ip = app_server.server.public_ip
         self.logger.info('Updating DNS: LMS at %s...', self.domain)
-        gandi.set_dns_record(type='A', name=self.sub_domain, value=self.active_appserver.server.public_ip)
+        gandi.set_dns_record(type='A', name=self.sub_domain, value=public_ip)
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
+        self.active_appserver = app_server
+        self.save()
 
     @log_exception
     def spawn_appserver(self):
@@ -169,3 +172,5 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
             # finish and replace the second as the active server. We are not really worried about that for now.
             self.set_appserver_active(app_server.pk)
+
+post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)

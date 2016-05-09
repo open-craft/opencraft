@@ -26,6 +26,7 @@ from rest_framework import serializers
 
 from instance.models.instance import InstanceReference, Instance
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.serializers.logentry import LogEntrySerializer
 from instance.serializers.openedx_instance import OpenEdXInstanceSerializer
 
 
@@ -96,6 +97,9 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
         # Merge instance details into the resulting dict, but never overwrite existing fields
         for key, val in details.items():
             output.setdefault(key, val)
+        if not self.summary_only:
+            # Add log entries:
+            output['log_entries'] = [LogEntrySerializer(entry).data for entry in obj.instance.log_entries]
         return output
 
 

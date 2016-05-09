@@ -24,13 +24,16 @@ Instance app models - Open EdX Instance and AppServer models
 
 import logging
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
+from instance.models.log_entry import LogEntry
 from instance.logger_adapter import InstanceLoggerAdapter
 from .utils import ValidateModelMixin
 
@@ -127,9 +130,35 @@ class Instance(ValidateModelMixin, models.Model):
             self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
         self.ref.save()  # pylint: disable=no-member
 
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        """
+        Called when an instance is saved.
+
+        Each Instance subclass must explicitly connect() to this event in its models.py.
+        """
+        publish_data('notification', {
+            'type': 'instance_update',
+            'instance_id': instance.ref.pk,
+        })
+
     @property
     def event_context(self):
         """
         Context dictionary to include in events
         """
-        return {'instance_id': self.ref.pk}
+        return {'instance_id': self.ref.pk, 'instance_type': self.__class__.__name__}
+
+    @property
+    def log_entries(self):
+        """
+        Return the list of log entry instances for this Instance.
+
+        Does NOT include log entries of associated AppServers or Servers (VMs)
+        """
+        limit = settings.LOG_LIMIT
+
+        instance_type = ContentType.objects.get_for_model(self)
+        entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
+        # TODO: Filter out log entries for which the user doesn't have view rights
+        return reversed(list(entries[:limit]))

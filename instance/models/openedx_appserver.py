@@ -21,8 +21,10 @@ Instance app models - Open EdX AppServer models
 """
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
 from django.template import loader
 from django.utils.text import slugify
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import ansible
 from instance.logging import log_exception
@@ -259,3 +261,16 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self._status_to_configuration_failed()
             self.provision_failed_email("AppServer deploy failed: unhandled exception")
             raise
+
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        """
+        Called when an OpenEdXAppServer is saved.
+        """
+        publish_data('notification', {
+            'type': 'openedx_appserver_update',
+            'appserver_id': instance.pk,
+            'instance_id': instance.owner.pk,  # This is the ID of the InstanceReference
+        })
+
+post_save.connect(OpenEdXAppServer.on_post_save, sender=OpenEdXAppServer)

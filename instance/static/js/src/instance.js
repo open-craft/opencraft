@@ -88,7 +88,11 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
             $scope.updateInstanceList();
 
             // Init websockets
-            swampdragon.onChannelMessage($scope.handleChannelMessage);
+            swampdragon.onChannelMessage(function (channels, message) {
+                // Broadcast sends a message to this scope and all child scopes:
+                console.log('Received websocket message: ', message.data.type, message.data);
+                $scope.$broadcast('swampdragon:' + message.data.type, message.data);
+            });
             swampdragon.ready(function() {
                 swampdragon.subscribe('notifier', 'notification', null);
                 swampdragon.subscribe('notifier', 'log', null);
@@ -127,12 +131,12 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
             };
         };
 
-        $scope.handleChannelMessage = function(channels, message) {
-            console.log('Received websocket message', channels, message.data);
-            if(message.data.type === 'server_update') {
-                $scope.updateInstanceList();
-            }
-        };
+        $scope.$on("swampdragon:instance_update", function (event, data) {
+            $scope.updateInstanceList();
+        });
+        $scope.$on("swampdragon:openedx_appserver_update", function (event, data) {
+            $scope.updateInstanceList();
+        });
 
         $scope.init();
     }
@@ -171,30 +175,43 @@ app.controller("Details", ['$scope', 'instance', '$state', '$stateParams', 'Open
 
         $scope.refresh = function() {
             // Reload the instance data from the server.
+            var old_appserver_count = instance.appservers.length;
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
                 $scope.instance = instance;
+                if (instance.appservers.length > old_appserver_count) {
+                    // There is a new AppServer. If we were expecting one, it is here now.
+                    // So stop animations and re-enable the "Launch new AppServer" button.
+                    $scope.is_spawning_appserver = false;
+                }
             });
         }
 
-        $scope.provision = function(instance) {
-            console.log('Provisioning instance', instance);
-            var notification = function(response, fallback) {
-                if (response && response.data) {
-                    return response.data.status || fallback;
-                }
-                return fallback;
-            };
-            return instance.post('provision').then(function(response) {
-                _.each(instance.active_server_set, function(server) {
-                    if(server.status !== 'terminated') {
-                        server.status = 'terminating';
-                    }
-                });
-                $scope.notify(notification(response, 'Provisioning'));
-            }, function(response) {
-                $scope.notify(notification(response, 'Provisioning failed'), 'alert');
-            });
+        $scope.spawn_appserver = function() {
+            console.log('Spawning new AppServer');
+            $scope.is_spawning_appserver = true; // Disable the button
+
+            OpenCraftAPI.all("openedx_appserver").post({instance_id: $stateParams.instanceId});
+            // The API call above is an asynchronous task so it will return a 200 status immediately.
+            // When the new app server is successfully created, it will send an openedx_appserver_update
+            // notification, which will trigger $scope.refresh(), which will reset 'is_spawning_appserver'
         };
+
+        $scope.$on("swampdragon:instance_update", function (event, data) {
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+        $scope.$on("swampdragon:openedx_appserver_update", function(event, data) {
+            // If the appserver belonged to this instance, refresh the display.
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+        $scope.$on("swampdragon:object_log_line", function (event, data) {
+            if (data.instance_id == $scope.instance.id && !data.appserver_id) {
+                $scope.instance.log_entries.push(data.log_entry);
+            }
+        });
 
         $scope.init();
     }
