@@ -4,7 +4,7 @@ Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
 chardet==2.3.0
-CherryPy==3.8.2
+CherryPy==5.3.0
 cliff==2.0.0
 cmd2==0.6.8
 colorama==0.3.7
@@ -15,6 +15,7 @@ debtcollector==1.3.0
 decorator==4.0.9
 dj-static==0.0.6
 Django==1.9.6
+# Can be replaced with django-angular==0.8.3 when released to PyPI.
 git+https://github.com/jrief/django-angular.git@c21d7f013fa5108ba7ecc3c7a33de0251aafc604#egg=django-angular==0.8.3
 django-appconf==1.0.2
 django-compressor==2.0
@@ -39,6 +40,7 @@ GitPython==2.0.2
 glob2==0.4.1
 gunicorn==19.4.5
 honcho==0.7.1
+# Can be replaced with huey==1.1.2 when released to PyPI.
 git+https://github.com/coleifer/huey.git@7fb322880a16e87c659c38746e59d66c8e5f3db7#egg=huey==1.1.2
 ipdb==0.10.0
 ipython==4.2.0
@@ -80,7 +82,7 @@ prettytable==0.7.2
 prospector==0.11.7
 psycopg2==2.6.1
 ptyprocess==0.5.1
-pyflakes==1.2.1
+pyflakes==1.2.2
 pylint==1.5.5
 pylint-celery==0.3
 pylint-common==0.2.2
@@ -95,7 +97,7 @@ python-neutronclient==4.2.0
 python-novaclient==4.0.0
 python-swiftclient==3.0.0
 pytz==2016.4
-PyYAML==3.10
+PyYAML==3.11
 rcssmin==1.0.6
 redis==2.10.5
 requests==2.10.0
@@ -122,6 +124,6 @@ tornado-redis==2.4.18
 traitlets==4.2.1
 unicodecsv==0.14.1
 virtualenv==15.0.1
-Werkzeug==0.11.1
+Werkzeug==0.11.9
 wrapt==1.10.8
 zxcvbn-py3==1.1
