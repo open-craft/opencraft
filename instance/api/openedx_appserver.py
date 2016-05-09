@@ -34,7 +34,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.openedx_appserver import OpenEdXAppServerSerializer, SpawnAppServerSerializer
-from instance.tasks import provision_instance
+from instance.tasks import spawn_appserver
 
 
 # Views - API #################################################################
@@ -78,7 +78,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         if not isinstance(instance, OpenEdXInstance):
             raise serializers.ValidationError('Invalid InstanceReference ID: Not an OpenEdXInstance.')
 
-        provision_instance(instance_id)
+        spawn_appserver(instance_id)
         return Response({'status': 'Instance provisioning started'})
 
     def get_view_name(self):

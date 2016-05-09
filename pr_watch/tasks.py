@@ -29,7 +29,7 @@ from huey.contrib.djhuey import crontab, db_periodic_task
 
 from pr_watch.github import get_username_list_from_team, get_pr_list_from_username
 from pr_watch.models import WatchedPullRequest
-from instance.tasks import provision_instance
+from instance.tasks import spawn_appserver
 
 
 # Logging #####################################################################
@@ -52,4 +52,4 @@ def watch_pr():
             instance, created = WatchedPullRequest.objects.update_or_create_from_pr(pr)
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
-                provision_instance(instance.pk)
+                spawn_appserver(instance.pk, mark_active_on_success=True, num_attempts=2)

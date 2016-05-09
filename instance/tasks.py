@@ -37,12 +37,24 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @db_task()
-def provision_instance(instance_ref_id):
+def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=1):
     """
-    Run provisioning on an existing instance
-    """
-    logger.info('Retrieving instance: ID=%s', instance_ref_id)
-    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
+    Create a new AppServer for an existing instance.
 
-    logger.info('Spawning new AppServer on %s', instance)
-    instance.spawn_appserver()
+    Optionally mark the new AppServer as active when the provisioning completes.
+    Optionally retry up to 'num_attempts' times
+    """
+    for i in range(1, num_attempts + 1):
+        logger.info('Retrieving instance: ID=%s', instance_ref_id)
+        # Fetch the instance inside the loop, in case it has been updated
+        instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
+
+        instance.logger.info('Spawning new AppServer on %s, attempt %d of %d', instance, i, num_attempts)
+        result = instance.spawn_appserver()
+        if result:
+            if mark_active_on_success:
+                # If the AppServer provisioned successfully, make it the active one:
+                # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
+                # finish and replace the second as the active server. We are not really worried about that for now.
+                instance.set_appserver_active(appserver_id=result)
+            break

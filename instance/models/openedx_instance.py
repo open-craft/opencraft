@@ -141,7 +141,9 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
     @log_exception
     def spawn_appserver(self):
         """
-        Provision a new AppServer. If it completes successfully, mark it as active.
+        Provision a new AppServer.
+
+        Returns the ID of the new AppServer on success or False on failure.
         """
         # Provision external databases:
         if not self.use_ephemeral_databases:
@@ -168,9 +170,10 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             )
 
         if app_server.provision():
-            # If the AppServer provisioned successfully, make it the active one:
-            # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
-            # finish and replace the second as the active server. We are not really worried about that for now.
-            self.set_appserver_active(app_server.pk)
+            self.logger.info('Provisioned new app server, %s', app_server.name)
+            return app_server.pk
+        else:
+            self.logger.error('Failed to provision new app server')
+            return False
 
 post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)
