@@ -27,7 +27,7 @@ import logging
 import traceback
 
 from django.apps import apps
-from django.db import models
+from django.db import connection, models, ProgrammingError
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.serializers.logentry import LogEntrySerializer
@@ -74,9 +74,14 @@ class DBHandler(logging.Handler):
             content_type = apps.get_model('contenttypes', 'ContentType').objects.get_for_model(obj)
             object_id = obj.pk
 
-        log_entry = apps.get_model('instance', 'LogEntry').objects.create(
-            level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
-        )
+        try:
+            log_entry = apps.get_model('instance', 'LogEntry').objects.create(
+                level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
+            )
+        except ProgrammingError:
+            # This can occur if django tries to log something before migrations have created the log table.
+            # Make sure that is actually what happened:
+            assert 'instance_logentry' not in connection.introspection.table_names()
 
         # Send notice of entries related to any resource. Skip generic log entries that occur
         # in debug mode, like "GET /static/img/favicon/favicon-96x96.png":
