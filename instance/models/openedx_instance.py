@@ -143,7 +143,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         """
         Provision a new AppServer.
 
-        Returns the ID of the new AppServer on success or False on failure.
+        Returns the ID of the new AppServer on success or None on failure.
         """
         # Provision external databases:
         if not self.use_ephemeral_databases:
@@ -174,6 +174,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             return app_server.pk
         else:
             self.logger.error('Failed to provision new app server')
-            return False
+            return None
 
 post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)

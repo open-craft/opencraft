@@ -26,6 +26,7 @@ from rest_framework import serializers
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
+from pr_watch.models import WatchedPullRequest
 from pr_watch.serializers import WatchedPullRequestSerializer
 
 
@@ -107,5 +108,8 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         output['appservers'] = [
             AppServerBasicSerializer(appserver, context=self.context).data for appserver in obj.appserver_set.all()
         ]
-        output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data
+        try:
+            output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data
+        except WatchedPullRequest.DoesNotExist:
+            output['source_pr'] = None
         return output

@@ -287,7 +287,10 @@ class OpenStackServer(Server):
         if not self.openstack_id:
             return None
 
-        public_addr = openstack.get_server_public_address(self.os_server)
+        try:
+            public_addr = openstack.get_server_public_address(self.os_server)
+        except novaclient.exceptions.NotFound:
+            return None  # This server has been deleted.
         if not public_addr:
             return None
 

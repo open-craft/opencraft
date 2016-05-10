@@ -50,11 +50,11 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
         instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
         instance.logger.info('Spawning new AppServer on %s, attempt %d of %d', instance, i, num_attempts)
-        result = instance.spawn_appserver()
-        if result:
+        appserver_id = instance.spawn_appserver()
+        if appserver_id:
             if mark_active_on_success:
                 # If the AppServer provisioned successfully, make it the active one:
                 # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
                 # finish and replace the second as the active server. We are not really worried about that for now.
-                instance.set_appserver_active(appserver_id=result)
+                instance.set_appserver_active(appserver_id)
             break

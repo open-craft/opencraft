@@ -19,7 +19,7 @@
         <!-- Is there an app server newer than the active app server? -->
         <div class="status-icon-newest" ng-if="newer_appserver"
              ng-class="{healthy: newer_appserver.is_healthy, unhealthy: newer_appserver.is_healthy === false}"
-             tooltip="{{newer_appserver.name}} (newer then the active appserver): {{ newer_appserver.status_description }}" tooltip-placement="bottom">
+             tooltip="{{newer_appserver.name}} (newer than the active appserver): {{ newer_appserver.status_description }}" tooltip-placement="bottom">
           <i ng-attr-class="{{ newer_appserver.is_steady && (newer_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
         </div>
         <div class="status-icon-newest" ng-if="!newer_appserver" tooltip="No newer appserver" tooltip-placement="bottom">

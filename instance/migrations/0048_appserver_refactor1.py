@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations, models
 import django.db.models.deletion
 import django_extensions.db.fields
@@ -56,6 +54,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
+                'verbose_name': 'Open edX App Server',
             },
             bases=(instance.models.utils.ValidateModelMixin, models.Model, instance.models.mixins.utilities.EmailMixin),
         ),
@@ -96,6 +95,10 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Open edX Instance',
             },
             bases=(instance.models.instance.Instance, models.Model),
+        ),
+        migrations.AlterModelOptions(
+            name='openstackserver',
+            options={'verbose_name': 'OpenStack VM'},
         ),
         migrations.AddField(
             model_name='openstackserver',
