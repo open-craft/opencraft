@@ -17,29 +17,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Test factory: PR (Github pull request)
+OpenEdXAppServer model - Factories
 """
 
 # Imports #####################################################################
 
-import factory
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
-from instance import github
+# Functions ###################################################################
 
 
-# Classes #####################################################################
-
-class PRFactory(factory.Factory):
+def make_test_appserver(instance=None):
     """
-    Factory for PR instances
+    Factory method to create an OpenEdXAppServer (and OpenStackServer).
     """
-    class Meta:
-        model = github.PR
-
-    number = factory.Sequence(int)
-    source_fork_name = 'fork/repo'
-    target_fork_name = 'source/repo'
-    branch_name = 'master'
-    title = factory.Sequence('PR #{}'.format)
-    username = 'edx'
-    body = ''
+    if not instance:
+        instance = OpenEdXInstanceFactory()
+    return instance._create_owned_appserver()  # pylint: disable=no-member

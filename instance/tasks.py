@@ -41,6 +41,8 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
     """
     Create a new AppServer for an existing instance.
 
+    instance_ref_id should be the ID of an InstanceReference (instance.ref.pk)
+
     Optionally mark the new AppServer as active when the provisioning completes.
     Optionally retry up to 'num_attempts' times
     """
@@ -49,7 +51,7 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
         # Fetch the instance inside the loop, in case it has been updated
         instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
-        instance.logger.info('Spawning new AppServer on %s, attempt %d of %d', instance, i, num_attempts)
+        instance.logger.info('Spawning new AppServer, attempt %d of %d', i, num_attempts)
         appserver_id = instance.spawn_appserver()
         if appserver_id:
             if mark_active_on_success:

@@ -184,7 +184,7 @@ app.controller("Details", ['$scope', 'instance', '$state', '$stateParams', 'Open
                     $scope.is_spawning_appserver = false;
                 }
             });
-        }
+        };
 
         $scope.spawn_appserver = function() {
             console.log('Spawning new AppServer');

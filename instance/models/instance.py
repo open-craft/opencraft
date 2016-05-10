@@ -94,6 +94,9 @@ class Instance(ValidateModelMixin, models.Model):
 
         self.logger = InstanceLoggerAdapter(logger, {'obj': self})
 
+    def __str__(self):
+        return str(self.ref)
+
     @cached_property
     def ref(self):
         """ Get the InstanceReference for this Instance """
@@ -128,7 +131,20 @@ class Instance(ValidateModelMixin, models.Model):
         # Ensure an InstanceReference exists, and update its 'modified' field:
         if self.ref.instance_id is None:
             self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
-        self.ref.save()  # pylint: disable=no-member
+        self.ref.save()
+
+    # pylint: disable=no-member
+    def refresh_from_db(self, using=None, fields=None, **kwargs):
+        """
+        Reload from DB, or load related field.
+
+        We override this to ensure InstanceReference is reloaded too.
+        Otherwise, the name/created/modified properties could be out of date, even after
+        Instance.refresh_from_db() is called.
+        """
+        if fields is None:
+            self.ref.refresh_from_db()
+        super().refresh_from_db(using=using, fields=fields, **kwargs)
 
     @staticmethod
     def on_post_save(sender, instance, created, **kwargs):

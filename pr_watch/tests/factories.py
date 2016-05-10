@@ -17,33 +17,44 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+Test factory: PR (Github pull request)
 """
 
 # Imports #####################################################################
 
-import uuid
+from unittest.mock import patch
 
 import factory
-from factory.django import DjangoModelFactory
 
-from instance.models.openedx_instance import OpenEdXInstance
+from pr_watch import github
+from pr_watch.models import WatchedPullRequest
 
 
 # Classes #####################################################################
 
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class PRFactory(factory.Factory):
     """
-    Factory for OpenEdXInstance
+    Factory for PR instances
     """
     class Meta:
-        model = OpenEdXInstance
+        model = github.PR
 
-    sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))
-    name = factory.Sequence('Test Instance {}'.format)
-    openedx_release = 'named-release/cypress' # Use a known working version
-    configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration'
-    # The open-craft fork doesn't have the 'named-release/cypress' tag, so use upstream:
-    edx_platform_repository_url = 'https://github.com/edx/edx-platform.git'
-    use_ephemeral_databases = True
+    number = factory.Sequence(int)
+    source_fork_name = 'fork/repo'
+    target_fork_name = 'source/repo'
+    branch_name = 'master'
+    title = factory.Sequence('PR #{}'.format)
+    username = 'edx'
+    body = ''
+
+# Functions ###################################################################
+
+
+def make_watched_pr_and_instance(**kwargs):
+    """
+    Create a WatchedPullRequest and associated OpenEdXInstance
+    """
+    pr = PRFactory(**kwargs)
+    with patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40)):
+        instance, dummy = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+    return instance.watchedpullrequest

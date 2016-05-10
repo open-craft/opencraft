@@ -68,7 +68,10 @@ class AnsibleAppServerMixin(models.Model):
         """
         The ansible inventory (list of servers) as a string
         """
-        return '[app]\n{server_ip}'.format(server_ip=self.server.public_ip)
+        public_ip = self.server.public_ip
+        if public_ip is None:
+            raise RuntimeError("Cannot prepare to run playbooks when server has no public IP.")
+        return '[app]\n{server_ip}'.format(server_ip=public_ip)
 
     def _run_playbook(self, working_dir, playbook):
         """

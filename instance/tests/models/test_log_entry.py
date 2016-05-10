@@ -31,7 +31,8 @@ from freezegun import freeze_time
 
 from instance.models.log_entry import LogEntry
 from instance.tests.base import TestCase
-from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import OpenStackServerFactory
 
 
@@ -49,8 +50,25 @@ class LoggingTestCase(TestCase):
         Set up an instance and server to use for testing.
         """
         super().setUp()
-        self.instance = SingleVMOpenEdXInstanceFactory(sub_domain='my.instance')
-        self.server = OpenStackServerFactory(instance=self.instance, openstack_id='vm1_id')
+        self.instance = OpenEdXInstanceFactory(sub_domain='my.instance', name="Test Instance 1")
+        self.app_server = make_test_appserver(instance=self.instance)
+        self.server = self.app_server.server
+
+        # Override the VM names for consistency:
+        patcher = patch('instance.models.server.OpenStackServer.name', new='test-vm-name')
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
+        # Expected log line prefixes based on the above:
+        self.instance_prefix = 'instance.models.instance  | instance={} (Test Instance 1) | '.format(
+            self.instance.ref.pk
+        )
+        self.appserver_prefix = (
+            'instance.models.appserver | instance={} (Test Instance 1),app_server={} (AppServer 1) | '.format(
+                self.instance.ref.pk, self.app_server.pk
+            )
+        )
+        self.server_prefix = 'instance.models.server    | server=test-vm-name | '
 
     def check_log_entries(self, entries, expected):
         """
@@ -87,21 +105,23 @@ class LoggingTestCase(TestCase):
             with freeze_time(date):
                 log(text)
 
-        instance_prefix = 'instance.models.instance  | instance=my.instance | '
-        server_prefix = 'instance.models.server    | instance=my.instance,server=vm1_id | '
         expected = [
-            ("2015-08-05 18:07:00", 'INFO', instance_prefix + 'Line #1, on instance'),
-            ("2015-08-05 18:07:01", 'INFO', server_prefix + 'Line #2, on server'),
-            ("2015-08-05 18:07:03", 'INFO', instance_prefix + 'Line #4, on instance'),
-            ("2015-08-05 18:07:04", 'WARNING', instance_prefix + 'Line #5, on instance (warn)'),
-            ("2015-08-05 18:07:05", 'INFO', server_prefix + 'Line #6, on server'),
-            ("2015-08-05 18:07:06", 'CRITICAL', server_prefix + 'Line #7, exception'),
+            ("2015-08-05 18:07:00", 'INFO', self.instance_prefix + 'Line #1, on instance'),
+            ("2015-08-05 18:07:03", 'INFO', self.instance_prefix + 'Line #4, on instance'),
+            ("2015-08-05 18:07:04", 'WARNING', self.instance_prefix + 'Line #5, on instance (warn)'),
         ]
         self.check_log_entries(self.instance.log_entries, expected)
 
+        expected = [
+            ("2015-08-05 18:07:01", 'INFO', self.server_prefix + 'Line #2, on server'),
+            ("2015-08-05 18:07:05", 'INFO', self.server_prefix + 'Line #6, on server'),
+            ("2015-08-05 18:07:06", 'CRITICAL', self.server_prefix + 'Line #7, exception'),
+        ]
+        self.check_log_entries(self.app_server.log_entries, expected)
+
         # Check that the `LOG_LIMIT` setting is respected
-        with override_settings(LOG_LIMIT=3):
-            self.check_log_entries(self.instance.log_entries, expected[-3:])
+        with override_settings(LOG_LIMIT=2):
+            self.check_log_entries(self.app_server.log_entries, expected[-2:])
 
     @patch('instance.logging.publish_data')
     def test_log_publish(self, mock_publish_data):
@@ -115,10 +135,15 @@ class LoggingTestCase(TestCase):
             'log_entry': {
                 'created': '2015-09-21T21:07:00Z',
                 'level': 'INFO',
-                'text': 'instance.models.instance  | instance=my.instance | Text the client should see',
+                'text': (
+                    'instance.models.instance  | instance={} (Test Instance 1) | Text the client should see'.format(
+                        self.instance.ref.pk
+                    )
+                ),
             },
-            'type': 'instance_log',
-            'instance_id': self.instance.pk,
+            'type': 'object_log_line',
+            'instance_id': self.instance.ref.pk,
+            'instance_type': 'OpenEdXInstance',
         })
 
         with freeze_time("2015-09-21 21:07:01"):
@@ -128,11 +153,10 @@ class LoggingTestCase(TestCase):
             'log_entry': {
                 'created': '2015-09-21T21:07:01Z',
                 'level': 'INFO',
-                'text': ('instance.models.server    | instance=my.instance,server=vm1_id | Text the client '
+                'text': ('instance.models.server    | server=test-vm-name | Text the client '
                          'should also see, with unicode «ταБЬℓσ»'),
             },
-            'type': 'instance_log',
-            'instance_id': self.instance.pk,
+            'type': 'object_log_line',
             'server_id': self.server.pk,
         })
 
@@ -141,7 +165,7 @@ class LoggingTestCase(TestCase):
         Check `log_entries` output for combination of instance & server logs
         """
         server1 = self.server
-        server2 = OpenStackServerFactory(instance=self.instance, openstack_id='vm2_id')
+        server2 = OpenStackServerFactory(openstack_id='vm2_id')
 
         self.instance.logger.info('Line #1, on instance')
         server1.logger.info('Line #2, on server 1')
@@ -158,7 +182,7 @@ class LoggingTestCase(TestCase):
         self.assertIn('Line #1, on instance', entries[0])
         self.assertIn('Line #3, on server 2', entries[1])
         self.assertIn(
-            'Deleted 1 log entries for deleted open stack server instance with ID {}'.format(server1_id),
+            'Deleted 1 log entries for deleted OpenStack VM instance with ID {}'.format(server1_id),
             entries[2]
         )
 
@@ -181,8 +205,10 @@ class LoggingTestCase(TestCase):
         """
         Check that the LogEntry.on_post_delete handler doesn't do more queries than necessary.
         """
-        with self.assertNumQueries(2):  # one query to delete the server; one to delete the LogEntry
-            self.server.delete()
+        server = OpenStackServerFactory()  # Can't use self.server since deletion of it cascades to self.app_server
+        with self.assertNumQueries(3):
+            # We expect one query to check for a related appserver, one to delete the server, one to delete the LogEntry
+            server.delete()
         log_entry = LogEntry.objects.create(text='blah')
         with self.assertNumQueries(1):
             log_entry.delete()
@@ -197,7 +223,7 @@ class LoggingTestCase(TestCase):
         log_entry = LogEntry.objects.order_by('-pk')[0]
         self.assertEqual(
             str(log_entry),
-            '2015-10-20 20:10:15 |     INFO | instance.models.server    | instance=my.instance,server=vm1_id | ' + msg,
+            '2015-10-20 20:10:15 |     INFO | instance.models.server    | server=test-vm-name | ' + msg,
         )
 
     def test_invalid_content_type_object_id_combo(self):
@@ -240,41 +266,42 @@ class LoggingTestCase(TestCase):
 
     def test_log_error_entries(self):
         """
-        Check `log_error_entries` output for combination of instance & server logs
+        Check `log_error_entries` output for combination of AppServer & server logs
         """
         with freeze_time("2015-08-05 18:07:00"):
-            self.instance.logger.info('Line #1, on instance')
+            self.app_server.logger.info('Line #1, on app_server')
 
         with freeze_time("2015-08-05 18:07:01"):
-            self.instance.logger.error('Line #2, on server')
+            self.app_server.logger.error('Line #2, on app_server')
 
         with freeze_time("2015-08-05 18:07:02"):
-            self.instance.logger.debug('Line #3, on instance (debug, not published by default)')
+            self.app_server.logger.debug('Line #3, on app_server (debug, not published by default)')
 
         with freeze_time("2015-08-05 18:07:03"):
-            self.server.logger.critical('Line #4, on instance')
+            self.server.logger.critical('Line #4, on server')
 
         with freeze_time("2015-08-05 18:07:04"):
-            self.instance.logger.warn('Line #5, on instance (warn)')
+            self.app_server.logger.warn('Line #5, on app_server (warn)')
 
         with freeze_time("2015-08-05 18:07:05"):
             self.server.logger.info('Line #6, on server')
 
         with freeze_time("2015-08-05 18:07:06"):
-            self.instance.logger.critical('Line #7, exception')
+            self.app_server.logger.critical('Line #7, exception')
 
-        entries = self.instance.log_error_entries
+        self.instance.logger.critical("Instance-level errors should be excluded.")
+
+        entries = self.app_server.log_error_entries
+        self.assertEqual(len(entries), 3)
+
         self.assertEqual(entries[0].level, "ERROR")
         self.assertEqual(entries[0].created.strftime("%Y-%m-%d %H:%M:%S"), "2015-08-05 18:07:01")
-        self.assertEqual(entries[0].text,
-                         "instance.models.instance  | instance=my.instance | Line #2, on server")
+        self.assertEqual(entries[0].text, self.appserver_prefix + "Line #2, on app_server")
 
         self.assertEqual(entries[1].level, "CRITICAL")
         self.assertEqual(entries[1].created.strftime("%Y-%m-%d %H:%M:%S"), "2015-08-05 18:07:03")
-        self.assertEqual(entries[1].text,
-                         "instance.models.server    | instance=my.instance,server=vm1_id | Line #4, on instance")
+        self.assertEqual(entries[1].text, self.server_prefix + "Line #4, on server")
 
         self.assertEqual(entries[2].level, "CRITICAL")
         self.assertEqual(entries[2].created.strftime("%Y-%m-%d %H:%M:%S"), "2015-08-05 18:07:06")
-        self.assertEqual(entries[2].text,
-                         "instance.models.instance  | instance=my.instance | Line #7, exception")
+        self.assertEqual(entries[2].text, self.appserver_prefix + "Line #7, exception")

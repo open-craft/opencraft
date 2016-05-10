@@ -22,7 +22,7 @@ PR Watcher API
 
 # Imports #####################################################################
 
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import detail_route
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -54,7 +54,14 @@ class WatchedPullRequestViewSet(viewsets.ReadOnlyModelViewSet):
         # TODO: Make update_from_pr() fetch the PR, rather than us having to do it first, then
         # that method making a redundant second call to fetch the branch tip.
         pr = github.get_pr_by_number(obj.fork_name, obj.github_pr_number)
-        obj.update_instance_from_pr(pr)
+        try:
+            obj.update_instance_from_pr(pr)
+        except github.ObjectDoesNotExist:
+            # The branch has been deleted from GitHub. This exception won't be needed once the
+            # refactor mentioned above is implemented.
+            return Response(
+                {'error': 'Could not fetch updated details from GitHub.'}, status=status.HTTP_400_BAD_REQUEST
+            )
         return Response({'status': 'Instance updated.'})
 
     def get_serializer_class(self):

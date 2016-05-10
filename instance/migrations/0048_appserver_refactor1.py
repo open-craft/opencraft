@@ -29,6 +29,13 @@ class Migration(migrations.Migration):
                 'ordering': ['-created'],
             },
         ),
+        migrations.RunSQL(
+            # Since InstanceReference can support multiple types of instance, it is important that
+            # the code never assumes that OpenEdXInstance.id == InstanceReference.id. To help
+            # enforce that, we use this custom SQL to ensure that InstanceReference IDs are
+            # multiples of 10, while Instance/OpenEdXInstance IDs will behave normally:
+            ["ALTER SEQUENCE instance_instancereference_id_seq INCREMENT BY 10 RESTART WITH 10;"]
+        ),
         migrations.CreateModel(
             name='OpenEdXAppServer',
             fields=[

@@ -31,7 +31,7 @@ from instance.logging import log_exception
 from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
-from instance.models.utils import SteadyStateException, format_help_text
+from instance.models.utils import format_help_text
 from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################
@@ -167,7 +167,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         template = loader.get_template(self.CONFIGURATION_VARS_TEMPLATE)
         vars_str = template.render({
-            'instance': self,  # TODO: Rename this template var to 'appserver'
+            'appserver': self,
+            'instance': self.instance,
             # This property is needed twice in the template.  To avoid evaluating it twice (and
             # querying the Github API twice), we pass it as a context variable.
             'github_admin_username_list': self.github_admin_username_list,
@@ -204,19 +205,22 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         assert self.server.vm_not_yet_requested
         self.server.name_prefix = ('edxapp-' + slugify(self.instance.sub_domain))[:20]
         self.server.save()
-        self.server.start()
 
         def accepts_ssh_commands():
             """ Does server accept SSH commands? """
             return self.server.status.accepts_ssh_commands
 
         try:
+            self.server.start()
             self.logger.info('Waiting for server %s...', self.server)
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)
             self.server.sleep_until(accepts_ssh_commands)
-        except SteadyStateException:
+        except:  # pylint: disable=bare-except
             self._status_to_error()
+            message = 'Unable to start an OpenStack server'
+            self.logger.exception(message)
+            self.provision_failed_email(message)
             return False
 
         try:
@@ -241,10 +245,12 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
             return True
 
-        except:
+        except:  # pylint: disable=bare-except
             self._status_to_configuration_failed()
-            self.provision_failed_email("AppServer deploy failed: unhandled exception")
-            raise
+            message = "AppServer deploy failed: unhandled exception"
+            self.logger.exception(message)
+            self.provision_failed_email(message)
+            return False
 
     @staticmethod
     def on_post_save(sender, instance, created, **kwargs):

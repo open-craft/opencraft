@@ -52,4 +52,4 @@ def watch_pr():
             instance, created = WatchedPullRequest.objects.update_or_create_from_pr(pr)
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
-                spawn_appserver(instance.pk, mark_active_on_success=True, num_attempts=2)
+                spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)

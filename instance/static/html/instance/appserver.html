@@ -1,4 +1,4 @@
-<h4>{{appserver.name}}</h4>
+<h4>{{ appserver.name }}</h4>
 
 
 <div ng-if="!appserver">
@@ -12,7 +12,7 @@
       <tbody>
         <tr>
           <th>Status</th>
-          <td><strong>{{appserver.status_name}}</strong> ({{appserver.status_description}})</td>
+          <td><strong>{{ appserver.status_name }}</strong> ({{ appserver.status_description }})</td>
         </tr>
         <tr>
           <th>Active</th>
@@ -20,19 +20,19 @@
         </tr>
         <tr>
           <th>Created</th>
-          <td>{{appserver.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td>
+          <td>{{ appserver.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td>
         </tr>
         <tr>
           <th>VM</th>
-          <td>{{appserver.server.name}}</td>
+          <td>{{ appserver.server.name }}</td>
         </tr>
         <tr>
           <th>VM Status</th>
-          <td>{{appserver.server.status_name}} ({{appserver.server.status_description}})</td>
+          <td>{{ appserver.server.status_name }} ({{ appserver.server.status_description }})</td>
         </tr>
         <tr>
           <th>VM IP Address</th>
-          <td><a href="{{appserver.protocol}}://{{appserver.server.public_ip}}">{{appserver.server.public_ip}}</a></td>
+          <td><a href="{{ appserver.protocol }}://{{ appserver.server.public_ip }}">{{ appserver.server.public_ip }}</a></td>
         </tr>
       </tbody>
     </table>
@@ -52,55 +52,55 @@
       <tbody>
         <tr>
           <td>Email</td>
-          <td>{{appserver.email}}</td>
+          <td>{{ appserver.email }}</td>
         </tr>
         <tr>
           <td>Protocol</td>
-          <td>{{appserver.protocol}}</td>
+          <td>{{ appserver.protocol }}</td>
         </tr>
         <tr>
           <td>Use ephemeral databases</td>
-          <td>{{appserver.use_ephemeral_databases}}</td>
+          <td>{{ appserver.use_ephemeral_databases }}</td>
         </tr>
         <tr>
           <td>GitHub admin org</td>
-          <td>{{appserver.github_admin_organization_name}}</td>
+          <td>{{ appserver.github_admin_organization_name }}</td>
         </tr>
         <tr>
           <td>configuration_source_repo_url</td>
-          <td>{{appserver.configuration_source_repo_url}}</td>
+          <td>{{ appserver.configuration_source_repo_url }}</td>
         </tr>
         <tr>
           <td>configuration_version</td>
-          <td>{{appserver.configuration_version}}</td>
+          <td>{{ appserver.configuration_version }}</td>
         </tr>
         <tr>
           <td>edx_platform_repository_url</td>
-          <td>{{appserver.edx_platform_repository_url}}</td>
+          <td>{{ appserver.edx_platform_repository_url }}</td>
         </tr>
         <tr>
           <td>edx_platform_commit</td>
-          <td>{{appserver.edx_platform_commit}}</td>
+          <td>{{ appserver.edx_platform_commit }}</td>
         </tr>
         <tr>
           <td>openedx_release</td>
-          <td>{{appserver.openedx_release}}</td>
+          <td>{{ appserver.openedx_release }}</td>
         </tr>
         <tr>
           <td>configuration_extra_settings</td>
-          <td><pre>{{appserver.configuration_extra_settings}}</pre></td>
+          <td><pre>{{ appserver.configuration_extra_settings }}</pre></td>
         </tr>
         <tr>
           <td>configuration_database_settings</td>
-          <td><pre>{{appserver.configuration_database_settings}}</pre></td>
+          <td><pre>{{ appserver.configuration_database_settings }}</pre></td>
         </tr>
         <tr>
           <td>configuration_storage_settings</td>
-          <td><pre>{{appserver.configuration_storage_settings}}</pre></td>
+          <td><pre>{{ appserver.configuration_storage_settings }}</pre></td>
         </tr>
         <tr>
           <td>Combined ansible vars:</td>
-          <td><pre>{{appserver.configuration_settings}}</pre></td>
+          <td><pre>{{ appserver.configuration_settings }}</pre></td>
         </tr>
       </tbody>
     </table>

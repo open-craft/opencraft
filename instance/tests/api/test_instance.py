@@ -22,26 +22,20 @@ Views - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import call, patch
-
-from ddt import ddt, data
 from rest_framework import status
 
-from instance import github
-from instance.models.instance import SingleVMOpenEdXInstance, Status as InstanceStatus
 from instance.tests.api.base import APITestCase
-from instance.tests.models.factories.instance import (
-    SingleVMOpenEdXInstanceFactory,
-)
-from instance.tests.models.factories.server import OpenStackServerFactory
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 
 # Tests #######################################################################
 
-@ddt
 class InstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls
+
+    This only checks the data related to InstanceReference
+    (i.e. ID, name, created, modified, and instance_type)
     """
     # To avoid errors with `response.data` from REST framework's API client
     #pylint: disable=no-member
@@ -50,7 +44,7 @@ class InstanceAPITestCase(APITestCase):
         """
         GET - Require to be authenticated
         """
-        response = self.api_client.get('/api/v1/openedxinstance/')
+        response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
@@ -59,133 +53,53 @@ class InstanceAPITestCase(APITestCase):
         GET - Authenticated
         """
         self.api_client.login(username='user1', password='pass')
-        response = self.api_client.get('/api/v1/openedxinstance/')
+        response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.data, [])
 
-        instance = SingleVMOpenEdXInstanceFactory()
-        response = self.api_client.get('/api/v1/openedxinstance/')
+        instance = OpenEdXInstanceFactory()
+        response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        instance_data = response.data[0].items()
-        self.assertIn(('id', instance.pk), instance_data)
-        self.assertIn(('api_url', 'http://testserver/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk)),
-                      instance_data)
-        self.assertIn(('status', 'new'), instance_data)
-        self.assertIn(('base_domain', 'example.com'), instance_data)
+        self.check_serialized_instance(response.data[0], instance)
 
-    def test_get_domain(self):
+    def check_serialized_instance(self, data, instance):
         """
-        GET - Domain attributes
+        Assert that the instance data is what we expect
+        """
+        self.assertEqual(data['id'], instance.ref.pk)
+        self.assertEqual(data['api_url'], 'http://testserver/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
+        self.assertEqual(data['name'], instance.name)
+        self.assertIn('created', data)
+        self.assertIn('modified', data)
+        self.assertEqual(data['instance_type'], 'openedxinstance')
+
+    def test_get_details(self):
+        """
+        GET - Detailed attributes
         """
         self.api_client.login(username='user1', password='pass')
-        SingleVMOpenEdXInstanceFactory(sub_domain='domain.api')
-        response = self.api_client.get('/api/v1/openedxinstance/')
+        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
+        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        instance_data = response.data[0].items()
-        self.assertIn(('domain', 'domain.api.example.com'), instance_data)
-        self.assertIn(('url', 'http://domain.api.example.com/'), instance_data)
-        self.assertIn(('studio_url', 'http://studio.domain.api.example.com/'), instance_data)
-
-    @data(
-        InstanceStatus.WaitingForServer,
-        InstanceStatus.ConfiguringServer,
-    )
-    def test_provision_not_allowed(self, instance_status):
-        """
-        POST /:id/provision - Instance is waiting for server or configuring server
-        """
-        self.api_client.login(username='user1', password='pass')
-        instance = SingleVMOpenEdXInstanceFactory(status=instance_status)
-        OpenStackServerFactory(instance=instance)
-        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    @patch('instance.github.get_commit_id_from_ref')
-    def test_provision_github_branch_deleted(self, mock_get_commit_id_from_ref):
-        """
-        POST /:id/provision - GitHub returns 404 response for instance branch
-        """
-        self.api_client.login(username='user1', password='pass')
-        instance = SingleVMOpenEdXInstanceFactory()
-        mock_get_commit_id_from_ref.side_effect = github.ObjectDoesNotExist
-        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    @patch('instance.github.get_commit_id_from_ref')
-    @patch('instance.api.instance.provision_instance')
-    @data(
-        InstanceStatus.New,
-        InstanceStatus.Running,
-        InstanceStatus.Error,
-        InstanceStatus.ConfigurationFailed,
-        InstanceStatus.Terminated,
-    )
-    def test_provision(self, instance_status, mock_provision_instance, mock_get_commit_id_from_ref):
-        """
-        POST /:id/provision - Instance is in a state that allows provisioning
-        """
-        self.api_client.login(username='user1', password='pass')
-        instance = SingleVMOpenEdXInstanceFactory(
-            commit_id='0' * 40, branch_name='api-branch', fork_name='api/repo', status=instance_status
-        )
-        mock_get_commit_id_from_ref.return_value = '1' * 40
-
-        response = self.api_client.post('/api/v1/openedxinstance/{pk}/provision/'.format(pk=instance.pk))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'status': 'Instance provisioning started'})
-        self.assertEqual(mock_provision_instance.call_count, 1)
-        self.assertEqual(SingleVMOpenEdXInstance.objects.get(pk=instance.pk).commit_id, '1' * 40)
-        self.assertEqual(mock_get_commit_id_from_ref.mock_calls, [
-            call('api/repo', 'api-branch', ref_type='heads'),
-        ])
+        self.check_serialized_instance(response.data, instance)
 
     def test_get_log_entries(self):
         """
         GET - Log entries
         """
         self.api_client.login(username='user1', password='pass')
-        instance = SingleVMOpenEdXInstanceFactory(sub_domain='instance0')
-        server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
+        instance = OpenEdXInstanceFactory(name="Test!")
         instance.logger.info("info")
         instance.logger.error("error")
-        server.logger.info("info")
-        server.logger.error("error")
 
-        response = self.api_client.get('/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk))
+        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         expected_list = [
-            {'level': 'INFO', 'text': 'instance.models.instance  | instance=instance0 | info'},
-            {'level': 'ERROR', 'text': 'instance.models.instance  | instance=instance0 | error'},
-            {'level': 'INFO', 'text': 'instance.models.server    | instance=instance0,server=vm0 | info'},
-            {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
+            {'level': 'INFO', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | info'},
+            {'level': 'ERROR', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | error'},
         ]
         self.assertEqual(len(expected_list), len(response.data['log_entries']))
 
         for expected_entry, log_entry in zip(expected_list, response.data['log_entries']):
             self.assertEqual(expected_entry['level'], log_entry['level'])
-            self.assertEqual(expected_entry['text'], log_entry['text'])
-
-    def test_get_log_error_entries(self):
-        """
-        GET - Log error entries
-        """
-        self.api_client.login(username='user1', password='pass')
-        instance = SingleVMOpenEdXInstanceFactory(sub_domain='instance0')
-        server = OpenStackServerFactory(openstack_id="vm0", instance=instance)
-        instance.logger.info("info")
-        instance.logger.error("error")
-        server.logger.info("info")
-        server.logger.error("error")
-
-        response = self.api_client.get('/api/v1/openedxinstance/{pk}/'.format(pk=instance.pk))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        expected_list = [
-            {'level': 'ERROR', 'text': 'instance.models.instance  | instance=instance0 | error'},
-            {'level': 'ERROR', 'text': 'instance.models.server    | instance=instance0,server=vm0 | error'},
-        ]
-        self.assertEqual(len(expected_list), len(response.data['log_error_entries']))
-
-        for expected_entry, log_entry in zip(expected_list, response.data['log_error_entries']):
-            self.assertEqual(expected_entry['level'], log_entry['level'])
-            self.assertEqual(expected_entry['text'], log_entry['text'])
+            self.assertEqual(expected_entry['text'].format(inst_id=instance.ref.pk), log_entry['text'])

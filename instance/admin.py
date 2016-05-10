@@ -54,7 +54,7 @@ class OpenEdXAppServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstrin
     list_display = ('id', 'owner', 'name', 'created', 'modified')
 
     # Don't allow modifying an AppServer once created:
-    readonly_fields = OpenEdXAppServer._meta.get_all_field_names()
+    readonly_fields = [field.name for field in OpenEdXAppServer._meta.get_fields(include_parents=True)]
 
 
 admin.site.register(LogEntry, LogEntryAdmin)

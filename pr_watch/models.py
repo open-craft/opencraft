@@ -26,7 +26,7 @@ import logging
 
 from django.conf import settings
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import models, transaction
 
 from instance.models.openedx_instance import OpenEdXInstance
 from pr_watch import github
@@ -57,9 +57,9 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         watched_pr, created = self.get_or_create(
             fork_name=pr.fork_name,
             branch_name=pr.branch_name,
+            github_pr_url=pr.github_pr_url,
         )
         watched_pr.update_instance_from_pr(pr)
-        watched_pr.save()
         return watched_pr.instance, created
 
     def create(self, *args, **kwargs):
@@ -118,15 +118,6 @@ class WatchedPullRequest(models.Model):
         self.logger = WatchedPullRequestLoggerAdapter(logger, {'obj': self})
 
     @property
-    def commit_short_id(self):
-        """
-        Short `commit_id`, limited to 7 characters like on GitHub
-        """
-        if not self.instance or not self.instance.edx_platform_commit:
-            return None
-        return self.instance.edx_platform_commit[:7]
-
-    @property
     def fork_name(self):
         """
         Fork name (eg. 'open-craft/edx-platform')
@@ -136,9 +127,9 @@ class WatchedPullRequest(models.Model):
     @property
     def reference_name(self):
         """
-        A descriptive name for the instance, which includes meaningful attributes
+        A descriptive name for the PR, which includes meaningful attributes
         """
-        return '{0.github_organization_name}/{0.branch_name} ({0.commit_short_id})'.format(self)
+        return '{0.github_organization_name}/{0.branch_name}'.format(self)
 
     @property
     def github_base_url(self):
@@ -177,7 +168,7 @@ class WatchedPullRequest(models.Model):
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def get_branch_tip(self, commit=True):
+    def get_branch_tip(self):
         """
         Get the `commit_id` of the current tip of the branch
         """
@@ -194,7 +185,7 @@ class WatchedPullRequest(models.Model):
 
         return new_commit_id
 
-    def set_fork_name(self, fork_name, commit=True):
+    def set_fork_name(self, fork_name):
         """
         Set the organization and repository based on the GitHub fork name
         """
@@ -207,22 +198,25 @@ class WatchedPullRequest(models.Model):
 
     def update_instance_from_pr(self, pr):
         """
-        Update the sandbox instance with settings from the given pull request
+        Update/create the associated sandbox instance with settings from the given pull request.
+
+        This will not spawn a new AppServer.
+        This method will automatically save this WatchedPullRequest's 'instance' field.
         """
         # The following fields should never change:
         assert self.github_pr_url == pr.github_pr_url
         assert self.fork_name == pr.fork_name
         assert self.branch_name == pr.branch_name
         # Create an instance if necessary:
-        if not self.instance:
-            self.instance = OpenEdXInstance()
-        instance = self.instance
+        instance = self.instance or OpenEdXInstance()
         instance.sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
         instance.base_domain = settings.INSTANCES_BASE_DOMAIN
         instance.edx_platform_repository_url = self.repository_url
         instance.edx_platform_commit = self.get_branch_tip()
-        instance.name = ('PR#{pr.number}: {pr.truncated_title}' +
-                         ' ({pr.username}) - {i.reference_name}').format(pr=pr, i=self)
+        instance.name = (
+            'PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {i.reference_name} ({commit_short_id})'
+            .format(pr=pr, i=self, commit_short_id=instance.edx_platform_commit[:7])
+        )
         instance.configuration_extra_settings = pr.extra_settings
         instance.use_ephemeral_databases = pr.use_ephemeral_databases(instance.domain)
         instance.configuration_source_repo_url = pr.get_extra_setting(
@@ -231,4 +225,11 @@ class WatchedPullRequest(models.Model):
         instance.configuration_version = pr.get_extra_setting(
             'configuration_version', default=instance.configuration_version
         )
-        instance.save()
+        # Save atomically. (because if the instance gets created but self.instance failed to
+        # update, then any subsequent call to update_instance_from_pr() would try to create
+        # another instance, which would fail due to unique domain name constraints.)
+        with transaction.atomic():
+            instance.save()
+            if not self.instance:
+                self.instance = instance
+                self.save(update_fields=["instance"])  # pylint: disable=no-member

@@ -202,6 +202,14 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
                 self.server = OpenStackServer.objects.create(name_prefix="inst-{}-vm".format(self.owner_id))
         super().save(**kwargs)
 
+    def terminate_vm(self):
+        """
+        Ensure that the VM owned by this instance is terminated.
+        """
+        self.server.terminate()
+        if self.status == Status.Running:
+            self._status_to_terminated()
+
     def _get_log_entries(self, level_list=None, limit=None):
         """
         Return the list of log entry instances for this AppServer and the server it manages,

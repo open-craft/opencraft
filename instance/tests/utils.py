@@ -65,15 +65,22 @@ def patch_services(func):
                     'instance.models.server.openstack.create_server', side_effect=new_servers,
                 ),
                 mock_sleep=mock_sleep,
-                mock_set_dns_record=stack_patch('instance.models.instance.gandi.set_dns_record'),
-                mock_deploy=stack_patch('instance.models.instance.SingleVMOpenEdXInstance.deploy'),
-                mock_provision_failed_email=stack_patch(
-                    'instance.models.mixins.utilities.EmailInstanceMixin.provision_failed_email'
+                mock_set_dns_record=stack_patch('instance.models.openedx_instance.gandi.set_dns_record'),
+                mock_run_ansible_playbooks=stack_patch(
+                    'instance.models.mixins.ansible.AnsibleAppServerMixin.run_ansible_playbooks',
+                    return_value=([], 0),
                 ),
-                mock_provision_mysql=stack_patch('instance.models.instance.MySQLInstanceMixin.provision_mysql'),
-                mock_provision_mongo=stack_patch('instance.models.instance.MongoDBInstanceMixin.provision_mongo'),
+                mock_provision_failed_email=stack_patch(
+                    'instance.models.mixins.utilities.EmailMixin.provision_failed_email',
+                ),
+                mock_provision_mysql=stack_patch(
+                    'instance.models.mixins.openedx_database.MySQLInstanceMixin.provision_mysql',
+                ),
+                mock_provision_mongo=stack_patch(
+                    'instance.models.mixins.openedx_database.MongoDBInstanceMixin.provision_mongo',
+                ),
                 mock_provision_swift=stack_patch(
-                    'instance.models.instance.SwiftContainerInstanceMixin.provision_swift'
+                    'instance.models.mixins.openedx_storage.SwiftContainerInstanceMixin.provision_swift'
                 ),
             )
             return func(self, mocks, *args, **kwargs)

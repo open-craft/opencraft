@@ -59,6 +59,9 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         unique_together = ('base_domain', 'sub_domain')
         verbose_name = 'Open edX Instance'
 
+    def __str__(self):
+        return "{} ({})".format(self.name, self.domain)
+
     @property
     def domain(self):
         """
@@ -156,6 +159,25 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             self.logger.info('Provisioning Swift container...')
             self.provision_swift()
 
+        app_server = self._create_owned_appserver()
+
+        if app_server.provision():
+            self.logger.info('Provisioned new app server, %s', app_server.name)
+            return app_server.pk
+        else:
+            self.logger.error('Failed to provision new app server')
+            return None
+
+    def _create_owned_appserver(self):
+        """
+        Core internal code that actually creates the child appserver.
+
+        The only reason this is separated from the public spawn_appserver() method is so that
+        tests can use this core code as an AppServer factory.
+
+        This method should never be used directly, except in tests.
+        Use spawn_appserver() instead.
+        """
         config_fields = OpenEdXAppConfiguration.get_config_fields()
         instance_config = {field_name: getattr(self, field_name) for field_name in config_fields}
 
@@ -168,13 +190,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
                 configuration_storage_settings=self.get_storage_settings(),
                 **instance_config
             )
-
-        if app_server.provision():
-            self.logger.info('Provisioned new app server, %s', app_server.name)
-            return app_server.pk
-        else:
-            self.logger.error('Failed to provision new app server')
-            return None
+        return app_server
 
     def set_field_defaults(self):
         """

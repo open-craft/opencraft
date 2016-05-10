@@ -33,7 +33,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from betatest.models import BetaTestApplication
-from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from simple_email_confirmation.models import EmailAddress
 
 
@@ -167,7 +167,7 @@ class BetaTestApplicationViewTestMixin:
         """
         Subdomain used by an existing instance.
         """
-        SingleVMOpenEdXInstanceFactory.create(
+        OpenEdXInstanceFactory.create(
             sub_domain=self.form_data['subdomain'],
         )
         self.assert_registration_fails(self.form_data, expected_errors={

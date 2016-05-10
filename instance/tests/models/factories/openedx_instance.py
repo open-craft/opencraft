@@ -22,8 +22,6 @@ OpenEdXInstance model - Factories
 
 # Imports #####################################################################
 
-import uuid
-
 import factory
 from factory.django import DjangoModelFactory
 
@@ -39,11 +37,5 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     class Meta:
         model = OpenEdXInstance
 
-    sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))
+    sub_domain = factory.Sequence('instance{}.test'.format)
     name = factory.Sequence('Test Instance {}'.format)
-    openedx_release = 'named-release/cypress' # Use a known working version
-    configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration'
-    # The open-craft fork doesn't have the 'named-release/cypress' tag, so use upstream:
-    edx_platform_repository_url = 'https://github.com/edx/edx-platform.git'
-    use_ephemeral_databases = True
