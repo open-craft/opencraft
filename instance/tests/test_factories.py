@@ -131,9 +131,7 @@ class FactoriesTestCase(TestCase):
 
             log_entries = LogEntry.objects.all()
             self.assertEqual(len(log_entries), 3)
-            self.assertEqual(log_entries[0].level, "WARNING")
+            self.assertTrue(all(log_entry.level == "WARNING" for log_entry in log_entries))
             self.assertIn("Adjust INSTANCE_MONGO_URL setting.", log_entries[0].text)
-            self.assertEqual(log_entries[1].level, "WARNING")
             self.assertIn("Adjust INSTANCE_MYSQL_URL setting.", log_entries[1].text)
-            self.assertEqual(log_entries[2].level, "WARNING")
             self.assertIn("Adjust SWIFT_ENABLE setting.", log_entries[2].text)
