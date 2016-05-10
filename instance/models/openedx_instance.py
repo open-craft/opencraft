@@ -31,7 +31,7 @@ from instance.logging import log_exception
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
 from .instance import Instance
-from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer
+from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 
 # Constants ###################################################################
 
@@ -175,5 +175,21 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         else:
             self.logger.error('Failed to provision new app server')
             return None
+
+    def set_field_defaults(self):
+        """
+        Set default values.
+        """
+        if not self.openedx_release:
+            self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
+        if not self.configuration_source_repo_url:
+            self.configuration_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
+        if not self.configuration_version:
+            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
+        if not self.edx_platform_repository_url:
+            self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
+        if not self.edx_platform_commit:
+            self.edx_platform_commit = self.openedx_release
+        super().set_field_defaults()
 
 post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)

@@ -93,22 +93,6 @@ class OpenEdXAppConfiguration(models.Model):
         help_text="GitHub organization whose users will be given SSH access to this instance's VMs",
     )
 
-    def set_field_defaults(self):
-        """
-        Set default values.
-        """
-        if not self.openedx_release:
-            self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
-        if not self.configuration_source_repo_url:
-            self.configuration_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
-        if not self.configuration_version:
-            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
-        if not self.edx_platform_repository_url:
-            self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
-        if not self.edx_platform_commit:
-            self.edx_platform_commit = self.openedx_release
-        super().set_field_defaults()  # pylint: disable=no-member
-
     @classmethod
     def get_config_fields(cls):
         """
