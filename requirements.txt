@@ -115,7 +115,7 @@ six==1.10.0
 smmap==0.9.0
 sockjs-tornado==1.0.3
 sqlparse==0.1.19
-static3==0.6.1
+static3==0.6.2
 stevedore==1.13.0
 -e git+https://github.com/jonashagstedt/swampdragon.git@061b2b1e4a57b7aa32d2fbc0824f070a52c1e300#egg=SwampDragon
 tlslite==0.4.9
