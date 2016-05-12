@@ -82,7 +82,7 @@ prettytable==0.7.2
 prospector==0.11.7
 psycopg2==2.6.1
 ptyprocess==0.5.1
-pyflakes==1.2.2
+pyflakes==1.2.3
 pylint==1.5.5
 pylint-celery==0.3
 pylint-common==0.2.2
