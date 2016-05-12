@@ -54,7 +54,7 @@ ul.side-nav li.active {
         float: right;
         margin-left: 10px;
         margin-top: 11px;
-        border: 1px solid #ddd;
+        border: 3px solid #ddd;
         width: 26px;
         height: 26px;
         border-radius: 13px;
@@ -63,7 +63,6 @@ ul.side-nav li.active {
         text-align: center;
         &.healthy {
             border-color: #ada;
-            border-width: 3px;
         }
         &.unhealthy {
             border-color: #daa;

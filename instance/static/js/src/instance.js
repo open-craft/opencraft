@@ -33,7 +33,7 @@ app.config(function($httpProvider) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
-    // For any unmatched url, send to /
+    // For any unmatched url, send to /instances/
     $urlRouterProvider.otherwise("/instances/");
 
     // Required by Django

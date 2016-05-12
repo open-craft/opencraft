@@ -45,9 +45,9 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                     throw "This appserver is associated with another instance.";
                 }
                 $scope.appserver = appserver;
-                $scope.is_active = appserver.id == $scope.instance.active_appserver.id;
+                $scope.is_active = $scope.instance.active_appserver && (appserver.id == $scope.instance.active_appserver.id);
             });
-        }
+        };
 
         $scope.make_appserver_active = function() {
             $scope.is_active = true; // Disable the button optimistically
@@ -61,7 +61,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 $scope.refresh();
                 $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be made active.');
             });
-        }
+        };
 
         $scope.$on("swampdragon:object_log_line", function (event, data) {
             if (!$scope.appserver) {
