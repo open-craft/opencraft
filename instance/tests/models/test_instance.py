@@ -187,11 +187,12 @@ class SingleVMOpenEdXInstanceTestCase(TestCase):
         """
         mock_get_commit_id_from_ref.return_value = '9' * 40
         instance = SingleVMOpenEdXInstance.objects.create(sub_domain='create.defaults')
+        org, repo = settings.DEFAULT_FORK.split('/')
         self.assertEqual(instance.status, Instance.Status.New)
-        self.assertEqual(instance.github_organization_name, 'edx')
-        self.assertEqual(instance.github_repository_name, 'edx-platform')
+        self.assertEqual(instance.github_organization_name, org)
+        self.assertEqual(instance.github_repository_name, repo)
         self.assertEqual(instance.commit_id, '9' * 40)
-        self.assertEqual(instance.name, 'edx/master (9999999)')
+        self.assertEqual(instance.name, '{org}/{branch} (9999999)'.format(org=org, branch=instance.branch_name))
         self.assertFalse(instance.mysql_user)
         self.assertFalse(instance.mysql_pass)
         self.assertFalse(instance.mongo_user)

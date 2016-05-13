@@ -27,6 +27,7 @@ import io
 from unittest.mock import Mock, call, patch
 
 from ddt import ddt, data, unpack
+from django.conf import settings
 import novaclient
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
@@ -88,9 +89,9 @@ class OpenStackServerTestCase(TestCase):
         mock_create_server.assert_called_once_with(
             server.nova,
             AnyStringMatching(r'instance\d+\.test'),
-            {"ram": 4096, "disk": 40},
-            {"name": "Ubuntu 12.04"},
-            key_name='opencraft',
+            settings.OPENSTACK_SANDBOX_FLAVOR,
+            settings.OPENSTACK_SANDBOX_BASE_IMAGE,
+            key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
         )
 
         server = OpenStackServer.objects.get(pk=server.pk)
