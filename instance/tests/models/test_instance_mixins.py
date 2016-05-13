@@ -27,6 +27,7 @@ import subprocess
 from unittest.mock import patch, call
 
 import pymongo
+import yaml
 from django.conf import settings
 from django.core import mail as django_mail
 from django.test.utils import override_settings
@@ -84,8 +85,11 @@ class GitHubInstanceTestCase(TestCase):
         instance = SingleVMOpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
         instance.reset_ansible_settings()
         self.assertEqual(instance.github_admin_username_list, ['admin1', 'admin2'])
-        self.assertIn('COMMON_USER_INFO:\n  - name: admin1\n    github: true\n    type: admin\n'
-                      '  - name: admin2\n    github: true\n    type: admin', instance.ansible_settings)
+        ansible_settings = yaml.load(instance.ansible_settings)
+        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
+            {'name': 'admin1', 'github': True, 'type': 'admin'},
+            {'name': 'admin2', 'github': True, 'type': 'admin'},
+        ])
 
     def test_set_fork_name_commit(self):
         """
@@ -266,18 +270,19 @@ class AnsibleInstanceTestCase(TestCase):
             certs_version='test-cert-ver',
         )
         instance.reset_ansible_settings()
-        self.assertIn('EDXAPP_PLATFORM_NAME: "Vars Instance"', instance.ansible_settings)
-        self.assertIn("EDXAPP_SITE_NAME: 'vars.test.example.com", instance.ansible_settings)
-        self.assertIn("EDXAPP_CMS_SITE_NAME: 'studio.vars.test.example.com'", instance.ansible_settings)
-        self.assertIn("EDXAPP_CONTACT_EMAIL: 'vars@example.com'", instance.ansible_settings)
-        self.assertIn("edx_platform_repo: 'https://github.com/vars-org/vars-repo.git'", instance.ansible_settings)
-        self.assertIn("edx_platform_version: '{}'".format('9' * 40), instance.ansible_settings)
-        self.assertIn("edx_ansible_source_repo: 'http://example.org/config/repo'", instance.ansible_settings)
-        self.assertIn("configuration_version: 'test-config-ver'", instance.ansible_settings)
-        self.assertIn("forum_version: 'test-forum-ver'", instance.ansible_settings)
-        self.assertIn("notifier_version: 'test-notif-ver'", instance.ansible_settings)
-        self.assertIn("xqueue_version: 'test-xq-ver'", instance.ansible_settings)
-        self.assertIn("certs_version: 'test-cert-ver'", instance.ansible_settings)
+        ansible_settings = yaml.load(instance.ansible_settings)
+        self.assertEqual(ansible_settings['EDXAPP_PLATFORM_NAME'], 'Vars Instance')
+        self.assertEqual(ansible_settings['EDXAPP_SITE_NAME'], 'vars.test.example.com')
+        self.assertEqual(ansible_settings['EDXAPP_CMS_SITE_NAME'], 'studio.vars.test.example.com')
+        self.assertEqual(ansible_settings['EDXAPP_CONTACT_EMAIL'], 'vars@example.com')
+        self.assertEqual(ansible_settings['edx_platform_repo'], 'https://github.com/vars-org/vars-repo.git')
+        self.assertEqual(ansible_settings['edx_platform_version'], '9' * 40)
+        self.assertEqual(ansible_settings['edx_ansible_source_repo'], 'http://example.org/config/repo')
+        self.assertEqual(ansible_settings['configuration_version'], 'test-config-ver')
+        self.assertEqual(ansible_settings['forum_version'], 'test-forum-ver')
+        self.assertEqual(ansible_settings['notifier_version'], 'test-notif-ver')
+        self.assertEqual(ansible_settings['xqueue_version'], 'test-xq-ver')
+        self.assertEqual(ansible_settings['certs_version'], 'test-cert-ver')
 
     def test_ansible_extra_settings(self):
         """
@@ -381,12 +386,14 @@ class MySQLInstanceTestCase(TestCase):
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_database_names:
             self.assertIn(database, databases)
-            mysql_cmd = "mysql -u {user} --password={password} -e 'SHOW TABLES' {db_name}".format(
+            # Pass password using MYSQ_PWD environment variable rather than the --password
+            # parameter so that mysql command doesn't print a security warning.
+            env = {'MYSQL_PWD': self.instance.mysql_pass}
+            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(
                 user=self.instance.mysql_user,
-                password=self.instance.mysql_pass,
                 db_name=database,
             )
-            tables = subprocess.call(mysql_cmd, shell=True)
+            tables = subprocess.call(mysql_cmd, shell=True, env=env)
             self.assertEqual(tables, 0)
 
     def test_provision_mysql(self):

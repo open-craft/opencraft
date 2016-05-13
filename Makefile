@@ -104,12 +104,15 @@ test_browser: clean static_external
 	honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
 
 test_integration: clean
-	@if [ -a .env.integration ] ; then \
-		echo -e "\nRunning integration tests..." ; \
-		honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput ; \
-	else \
-		echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)" ; \
-	fi
+ifneq ($(wildcard .env.integration),)
+	echo -e "\nRunning integration tests with credentials from .env.integration file..."
+	honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput
+else ifdef OPENSTACK_USER
+	echo -e "\nRunning integration tests with credentials from environment variables..."
+	./manage.py test --pattern=integration_*.py --noinput
+else
+	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
+endif
 
 test_js: clean static_external
 	cd instance/tests/js && $(RUN_JS_TESTS)
