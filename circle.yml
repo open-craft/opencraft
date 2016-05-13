@@ -3,6 +3,13 @@ machine:
     version: 3.5.1
   services:
     - redis
+  environment:
+    DEBUG: 'true'
+    DEFAULT_FORK: 'open-craft/edx-platform'
+    INSTANCE_EPHEMERAL_DATABASES: 'false'
+    TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
+    WATCH_FORK: 'open-craft/edx-platform'
+    WATCH_ORGANIZATION: 'open-craft'
 dependencies:
   pre:
     - pip install --upgrade pip
@@ -17,6 +24,6 @@ dependencies:
     - pip install -r requirements.txt
 test:
   override:
-      - bin/run-circleci-tests:
-          timeout: 1800
-          parallel: true
+    - bin/run-circleci-tests:
+        timeout: 1800
+        parallel: true
