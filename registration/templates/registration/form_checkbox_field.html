@@ -1,0 +1,13 @@
+<div class="row">
+    <div class="large-6 large-offset-1 columns end">
+        {{ field.errors }}
+    </div>
+</div>
+<div class="row">
+    <div id="{{ field.id_for_label }}_container" class="large-1 columns">
+        {{ field }}
+    </div>
+    <div class="large-6 columns end">
+        <p class="help-text">{{ field.help_text|safe }}</p>
+    </div>
+</div>

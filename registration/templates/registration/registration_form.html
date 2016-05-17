@@ -1,0 +1,30 @@
+<form id="registration-form" name="{{ form.form_name }}" action="" method="post" ng-controller="Registration" novalidate>
+    {% csrf_token %}
+    <div class="row">
+        <div class="large-12 columns">
+            {{ form.non_field_errors }}
+        </div>
+    </div>
+    {% with row="registration/form_field.html" %}
+        {% include row with field=form.subdomain only %}
+        {% include row with field=form.instance_name only %}
+        {% include row with field=form.full_name only %}
+        {% include row with field=form.username only %}
+        {% include row with field=form.email only %}
+        {% include row with field=form.public_contact_email only %}
+        {% include row with field=form.password only %}
+        {% include row with field=form.password_confirmation only %}
+        {% include row with field=form.project_description only %}
+    {% endwith %}
+    {% with row="registration/form_checkbox_field.html" %}
+        {% include row with field=form.accept_terms only %}
+        {% include row with field=form.subscribe_to_updates only %}
+    {% endwith %}
+    <button>
+        {% if form.instance.pk %}
+            Update your details
+        {% else %}
+            Apply for the beta test
+        {% endif %}
+    </button>
+</form>

@@ -17,26 +17,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-User-related models
+Utils for registration tests
 """
 
 # Imports #####################################################################
 
 from django.contrib.auth.models import User
-from django.db import models
-from django_extensions.db.models import TimeStampedModel
-
-from instance.models.utils import ValidateModelMixin
 
 
-# Models ######################################################################
+# Classes #####################################################################
 
-class UserProfile(ValidateModelMixin, TimeStampedModel):
+class UserMixin:
     """
-    Profile information for users.
+    Provides a test user.
     """
-    user = models.OneToOneField(User, related_name='profile')
-    full_name = models.CharField(max_length=255)
+    username = 'tafkap'
+    email = 'tafkap@rip.org'
+    password = '1999'
 
-    def __str__(self):
-        return self.full_name
+    def setUp(self): # pylint: disable=invalid-name
+        """
+        Create a test user.
+        """
+        super().setUp()
+        self.user = User.objects.create_user(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+        )

@@ -56,6 +56,10 @@
 
 </head>
 <body {% block body_attr %}{% endblock body_attr %}>
+    {% block header %}
+    {% include "header.html" %}
+    {% endblock header %}
+
     {# Main content goes here #}
     {% block content %}{% endblock content %}
 

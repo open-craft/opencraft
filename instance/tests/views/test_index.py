@@ -22,6 +22,9 @@ Views - Index - Tests
 
 # Imports #####################################################################
 
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
 from instance.tests.base import WithUserTestCase
 
 
@@ -31,17 +34,21 @@ class IndexViewsTestCase(WithUserTestCase):
     """
     Test cases for views
     """
+    url = reverse('instance:index')
+    login_url = reverse(settings.LOGIN_URL)
+
     def test_index_unauthenticated(self):
         """
         Index view - Unauthenticated users go to login page
         """
-        response = self.client.get('/')
-        self.assertRedirects(response, '/admin/login/?next=/')
+        response = self.client.get(self.url)
+        self.assertRedirects(response,
+                             '{0}?next={1}'.format(self.login_url, self.url))
 
     def test_index_authenticated(self):
         """
         Index view - Authenticated
         """
         self.client.login(username='user1', password='pass')
-        response = self.client.get('/')
+        response = self.client.get(self.url)
         self.assertContains(response, 'ng-app="InstanceApp"')

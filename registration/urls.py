@@ -17,26 +17,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-User-related models
+URL Patterns for the `registration` app
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.models import User
-from django.db import models
-from django_extensions.db.models import TimeStampedModel
+from django.conf.urls import url
+from django.contrib.auth import views as auth_views
 
-from instance.models.utils import ValidateModelMixin
+from registration.forms import LoginForm
+from registration.views import BetaTestApplicationView
 
 
-# Models ######################################################################
+# URL Patterns ################################################################
 
-class UserProfile(ValidateModelMixin, TimeStampedModel):
-    """
-    Profile information for users.
-    """
-    user = models.OneToOneField(User, related_name='profile')
-    full_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.full_name
+app_name = 'registration'
+urlpatterns = [
+    url(r'^$', BetaTestApplicationView.as_view(), name='register'),
+    url(r'^login/$', auth_views.login, {'authentication_form': LoginForm}, name='login'),
+    url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
+]

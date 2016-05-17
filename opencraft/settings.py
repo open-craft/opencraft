@@ -47,7 +47,16 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default='[]')
 
 DEBUG = env.bool('DEBUG', default=False)
 
-LOGIN_URL = '/admin/login/'
+
+# Auth ########################################################################
+
+AUTHENTICATION_BACKENDS = (
+    'registration.auth_backends.ModelBackend',
+)
+
+LOGIN_URL = 'registration:login'
+LOGIN_REDIRECT_URL = 'index'
+
 
 # Database ####################################################################
 
@@ -65,7 +74,7 @@ LOCAL_APPS = (
     'email_verification',
     'pr_watch',
     'userprofile',
-    'betatest',
+    'registration',
 )
 
 INSTALLED_APPS = (

@@ -352,7 +352,7 @@ independently:
     make test_integration
 
 JS tests can be run in your browser for debugging (run `make test_instance_js_web`
-or `make test_betatest_js_web` and then go to http://localhost:8888/), or in a
+or `make test_registration_js_web` and then go to http://localhost:8888/), or in a
 CI manner via selenium and `jasmine-ci` (run `make test_js`).
 
 Note that the integration tests aren't run by default, as they require a working

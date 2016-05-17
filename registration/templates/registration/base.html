@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load compress %}
+
+{% block css %}
+{% compress css %}
+<link href="{% static "djng/css/styles.css" %}" type="text/css" rel="stylesheet"/>
+<link href="{% static "scss/registration.scss" %}" type="text/x-scss" rel="stylesheet"/>
+{% endcompress %}
+{% endblock css %}
+
+{% block head_js %}
+<script src="{% static "djng/js/django-angular.min.js" %}"></script>
+{% endblock head_js %}
