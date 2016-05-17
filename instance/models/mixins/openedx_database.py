@@ -79,12 +79,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         """
         Set default values for mysql and mongo credentials.
         """
-        if not self.mysql_provisioned:
-            self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
-            self.mysql_pass = get_random_string(length=32)
-        if not self.mongo_provisioned:
-            self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
-            self.mongo_pass = get_random_string(length=32)
+        if not self.use_ephemeral_databases:
+            if not self.mysql_provisioned:
+                self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
+                self.mysql_pass = get_random_string(length=32)
+            if not self.mongo_provisioned:
+                self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
+                self.mongo_pass = get_random_string(length=32)
 
     def get_database_settings(self):
         """

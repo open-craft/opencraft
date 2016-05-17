@@ -25,6 +25,7 @@ OpenEdXInstance model - Tests
 from unittest.mock import call, patch, Mock
 
 import ddt
+from django.conf import settings
 from django.test import override_settings
 import yaml
 
@@ -48,7 +49,6 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
     """
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
     def test_create_defaults(self):
         """
         Create an instance without specifying additional fields,
@@ -65,6 +65,25 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertFalse(instance.swift_openstack_tenant)
         self.assertFalse(instance.swift_openstack_auth_url)
         self.assertFalse(instance.swift_openstack_region)
+        self.assertEqual(instance.github_admin_organization_name, '')
+
+    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
+    def test_create_defaults_persistent_databases(self):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+        instance = OpenEdXInstance.objects.create(sub_domain='create.defaults')
+        self.assertEqual(instance.name, 'Instance')
+        self.assertTrue(instance.mysql_user)
+        self.assertTrue(instance.mysql_pass)
+        self.assertTrue(instance.mongo_user)
+        self.assertTrue(instance.mongo_pass)
+        self.assertEqual(instance.swift_openstack_user, settings.SWIFT_OPENSTACK_USER)
+        self.assertEqual(instance.swift_openstack_password, settings.SWIFT_OPENSTACK_PASSWORD)
+        self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
+        self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
+        self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
         self.assertEqual(instance.github_admin_organization_name, '')
 
     def test_id_different_from_ref_id(self):

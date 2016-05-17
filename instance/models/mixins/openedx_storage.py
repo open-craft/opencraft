@@ -58,7 +58,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
         """
         Set default values for Swift credentials.
         """
-        if settings.SWIFT_ENABLE and not self.swift_provisioned:
+        if not self.use_ephemeral_databases and settings.SWIFT_ENABLE and not self.swift_provisioned:
             # TODO: Figure out a way to use separate credentials for each instance.  Access control
             # on Swift containers is granted to users, and there doesn't seem to be a way to create
             # Keystone users in OpenStack public clouds.
