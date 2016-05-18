@@ -24,10 +24,13 @@ OpenEdXInstance model - Tests
 
 from unittest.mock import call, patch, Mock
 
+import ddt
 from django.test import override_settings
 import yaml
 
 from instance.models.appserver import Status as AppServerStatus
+from instance.models.instance import InstanceReference
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
 from instance.models.server import Server
 from instance.tests.base import TestCase
@@ -40,6 +43,7 @@ from instance.tests.utils import patch_services
 # Factory boy doesn't properly support pylint+django
 #pylint: disable=no-member
 
+@ddt.ddt
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -244,3 +248,31 @@ class OpenEdXInstanceTestCase(TestCase):
                         'EDXAPP_MONGO_USER', 'EDXAPP_MONGO_PASSWORD',
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
             self.assertTrue(ansible_vars[setting])
+
+    @ddt.data(True, False)
+    @patch_services
+    @patch('instance.models.openedx_instance.OpenEdXAppServer.terminate_vm')
+    def test_delete_instance(self, mocks, delete_by_ref, mock_terminate_vm):
+        """
+        Test that an instance can be deleted directly or by its InstanceReference, and that the
+        associated AppServers and VMs will be terminated.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=False)
+        instance_ref = instance.ref
+        appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
+
+        self.assertEqual(mock_terminate_vm.call_count, 0)
+
+        # Now delete the instance, either using InstanceReference or the OpenEdXInstance class:
+        if delete_by_ref:
+            instance_ref.delete()
+        else:
+            instance.delete()
+
+        self.assertEqual(mock_terminate_vm.call_count, 1)
+        with self.assertRaises(OpenEdXInstance.DoesNotExist):
+            OpenEdXInstance.objects.get(pk=instance.pk)
+        with self.assertRaises(InstanceReference.DoesNotExist):
+            instance_ref.refresh_from_db()
+        with self.assertRaises(OpenEdXAppServer.DoesNotExist):
+            appserver.refresh_from_db()

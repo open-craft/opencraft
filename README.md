@@ -448,11 +448,18 @@ Then use the "Launch new AppServer" button in the web UI to provision a server
 with the updated settings, and click "Activate this app server" to use the new
 server when it's ready.
 
-**To delete an instance**, ensuring that all virtual machines are terminated, run:
+**To terminate all VMs associated with an instance**, but still preserve the
+information about the AppServers and their configuration, run:
 
 ```python
 for appserver in instance.appserver_set.all():
     appserver.terminate_vm()
+```
+
+**To completely delete an instance**, which will also terminate all associated
+AppServers and their virtual machines, run:
+
+```python
 instance.delete()
 ```
 

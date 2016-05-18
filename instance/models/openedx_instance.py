@@ -141,6 +141,14 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)
 
+    def delete(self, *args, **kwargs):
+        """
+        Delete this Open edX Instance and its associated AppServers.
+        """
+        for appserver in self.appserver_set.all():
+            appserver.terminate_vm()
+        super().delete(*args, **kwargs)
+
     @property
     def appserver_set(self):
         """
