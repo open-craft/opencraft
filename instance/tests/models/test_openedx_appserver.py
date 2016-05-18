@@ -155,8 +155,7 @@ class OpenEdXAppServerTestCase(TestCase):
         with self.assertRaises(WrongStateException):
             app_server.provision()
 
-        # Double-check for various other states:
-        # Reprovisioning from steady states
+        # Double-check for various states other than New:
         invalid_from_states = (
             AppServerStatus.WaitingForServer,
             AppServerStatus.ConfiguringServer,
