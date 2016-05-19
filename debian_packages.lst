@@ -7,3 +7,4 @@ python3-pip
 redis-server
 subversion
 xvfb
+postgresql-client
