@@ -91,6 +91,10 @@ class OpenEdXAppConfiguration(models.Model):
         max_length=200, blank=True, default=settings.DEFAULT_ADMIN_ORGANIZATION,
         help_text="GitHub organization whose users will be given SSH access to this instance's VMs",
     )
+    lms_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        help_text='Instance manager users that should be copied to the instance.',
+    )
 
     @classmethod
     def get_config_fields(cls):
@@ -120,9 +124,12 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'A record of the combined (final) ansible variables passed to the configuration '
         'playbook when configuring this AppServer.'
     ))
+    lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
     CONFIGURATION_PLAYBOOK = 'edx_sandbox'
     CONFIGURATION_VARS_TEMPLATE = 'instance/ansible/vars.yml'
+    RUN_ROLE_PLAYBOOK = 'run_role'
+    LMS_USER_VARS_TEMPLATE = 'instance/ansible/lms_users.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',
@@ -141,21 +148,42 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # assert that it isn't set because if a ValidationError occurred, this method could be
         # called multiple times before this AppServer is successfully created.
         self.configuration_settings = self.create_configuration_settings()
+        self.lms_user_settings = self.create_lms_user_settings()
         super().set_field_defaults()
+
+    def default_playbook(self):
+        """
+        Return a Playbook instance for the standard configuration playbook.
+        """
+        return Playbook(
+            source_repo=self.configuration_source_repo_url,
+            requirements_path='requirements.txt',
+            playbook_path='playbooks/{}.yml'.format(self.RUN_ROLE_PLAYBOOK),
+            version=self.configuration_version,
+            variables=self.configuration_settings,
+        )
+
+    def lms_user_creation_playbook(self):
+        """
+        Return a Playbook instance for creating LMS users.
+        """
+        return Playbook(
+            source_repo=self.configuration_source_repo_url,
+            requirements_path='requirements.txt',
+            playbook_path='playbooks/{}.yml'.format(self.CONFIGURATION_PLAYBOOK),
+            version=self.configuration_version,
+            variables=self.lms_user_settings,
+        )
 
     def get_playbooks(self):
         """
         Get the ansible playbooks used to provision this AppServer
         """
-        return super().get_playbooks() + [
-            Playbook(
-                source_repo=self.configuration_source_repo_url,
-                requirements_path='requirements.txt',
-                playbook_path='playbooks/{}.yml'.format(self.CONFIGURATION_PLAYBOOK),
-                version=self.configuration_version,
-                variables=self.configuration_settings,
-            )
-        ]
+        playbooks = super().get_playbooks()
+        playbooks.append(self.default_playbook())
+        if self.lms_users.count():
+            playbooks.append(self.lms_user_creation_playbook())
+        return playbooks
 
     def create_configuration_settings(self):
         """
@@ -177,6 +205,13 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             vars_str = ansible.yaml_merge(vars_str, additional_vars)
         self.logger.debug('Vars.yml:\n%s', vars_str)
         return vars_str
+
+    def create_lms_user_settings(self):
+        """
+        Generate the settings for creating the initial LMS users.
+        """
+        template = loader.get_template(self.LMS_USER_VARS_TEMPLATE)
+        return template.render(dict(lms_users=self.lms_users.all()))
 
     @property
     def github_admin_username_list(self):
