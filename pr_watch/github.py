@@ -71,18 +71,6 @@ def fork_name2tuple(fork_name):
     return fork_name.split('/')
 
 
-def get_commit_id_from_ref(fork_name, ref_name, ref_type='heads'):
-    """
-    Get the `commit_id` currently attached to a git reference
-    """
-    url = 'https://api.github.com/repos/{fork_name}/git/refs/{ref_type}/{ref_name}'.format(
-        fork_name=fork_name,
-        ref_type=ref_type,
-        ref_name=ref_name,
-    )
-    return get_object_from_url(url)['object']['sha']
-
-
 def get_settings_from_pr_body(pr_body):
     """
     Extract a settings string from a PR description body
@@ -117,11 +105,13 @@ def get_pr_by_number(pr_target_fork_name, pr_number):
     ))
     pr_fork_name = r_pr['head']['repo']['full_name']
     pr_branch_name = r_pr['head']['ref']
+    branch_tip_hash = r_pr['head']['sha']
     pr = PR(
         pr_number,
         pr_fork_name,
         pr_target_fork_name,
         pr_branch_name,
+        pr_branch_tip_hash,
         r_pr['title'],
         r_pr['user']['login'],
         body=r_pr['body'],
@@ -171,11 +161,12 @@ class PR:
     Representation of a GitHub Pull Request
     """
     # pylint: disable=too-many-arguments
-    def __init__(self, number, source_fork_name, target_fork_name, branch_name, title, username, body=''):
+    def __init__(self, number, source_fork_name, target_fork_name, branch_name, branch_tip, title, username, body=''):
         self.number = number
         self.fork_name = source_fork_name
         self.repo_name = target_fork_name
         self.branch_name = branch_name
+        self.branch_tip_hash = branch_tip
         self.title = title
         self.username = username
         self.body = body
@@ -219,6 +210,13 @@ class PR:
         """
         return is_pr_body_requesting_ephemeral_databases(self.body, domain)
 
+    @property
+    def reference_name(self):
+        """
+        A descriptive name for the PR, which includes meaningful attributes
+        """
+        org_name, dummy = fork_name2tuple(self.fork_name)
+        return '{org_name}:{branch_name}'.format(org_name=org_name, branch_name=self.branch_name)
 
 class ObjectDoesNotExist(Exception):
     """

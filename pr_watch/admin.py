@@ -30,7 +30,7 @@ from .models import WatchedPullRequest
 # ModelAdmins #################################################################
 
 class WatchedPullRequestAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('reference_name', 'instance')
+    list_display = ('target_fork_name', 'pr_number', 'instance')
 
 
 admin.site.register(WatchedPullRequest, WatchedPullRequestAdmin)

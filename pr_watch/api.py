@@ -51,17 +51,7 @@ class WatchedPullRequestViewSet(viewsets.ReadOnlyModelViewSet):
         This will update the instance's settings, but will not provision a new AppServer.
         """
         obj = self.get_object()
-        # TODO: Make update_from_pr() fetch the PR, rather than us having to do it first, then
-        # that method making a redundant second call to fetch the branch tip.
-        pr = github.get_pr_by_number(obj.target_fork_name, obj.github_pr_number)
-        try:
-            obj.update_instance_from_pr(pr)
-        except github.ObjectDoesNotExist:
-            # The branch has been deleted from GitHub. This exception won't be needed once the
-            # refactor mentioned above is implemented.
-            return Response(
-                {'error': 'Could not fetch updated details from GitHub.'}, status=status.HTTP_400_BAD_REQUEST
-            )
+        obj.update_instance_from_pr()
         return Response({'status': 'Instance updated.'})
 
     def get_serializer_class(self):

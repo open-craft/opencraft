@@ -55,27 +55,21 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         Create or update an instance for the given pull request
         """
         watched_pr, created = self.get_or_create(
-            fork_name=pr.fork_name,
-            branch_name=pr.branch_name,
-            github_pr_url=pr.github_pr_url,
+            target_fork_name=pr.repo_name,
+            github_pr_number=pr.github_pr_number,
         )
-        watched_pr.update_instance_from_pr(pr)
+        watched_pr.update_instance_from_pr()
         return watched_pr.instance, created
 
     def create(self, *args, **kwargs):
         """
         Augmented `create()` method:
-        - Adds support for `fork_name` to allow to set both the github org & repo
-        - Sets the github org & repo to `settings.DEFAULT_FORK` if any is missing
-        - Sets the `commit_id` to the branch tip if it isn't explicitly passed as an argument
+        - Adds support for `target_fork_name` to allow to set both the github target org & repo
         """
-        fork_name = kwargs.pop('fork_name', None)
+        target_fork_name = kwargs.pop('target_fork_name', None)
+        if target_fork_name:
+            kwargs['target_org'], kwargs['target_repo'] = fork_name2tuple(target_fork_name)
         watched_pr = self.model(**kwargs)
-        if fork_name is None and (not watched_pr.github_organization_name or not watched_pr.github_repository_name):
-            fork_name = settings.DEFAULT_FORK
-        if fork_name is not None:
-            watched_pr.set_fork_name(fork_name)
-
         self._for_write = True
         watched_pr.save(force_insert=True, using=self.db)
         return watched_pr
@@ -83,11 +77,11 @@ class WatchedPullRequestQuerySet(models.QuerySet):
     def get(self, *args, **kwargs):
         """
         Augmented `get()` method:
-        - Adds support for `fork_name` to allow to query the github org & repo using a single argument
+        - Adds support for `target_fork_name` to allow to query the github org & repo using a single argument
         """
-        fork_name = kwargs.pop('fork_name', None)
-        if fork_name is not None:
-            kwargs['github_organization_name'], kwargs['github_repository_name'] = fork_name2tuple(fork_name)
+        target_fork_name = kwargs.pop('target_fork_name', None)
+        if target_fork_name is not None:
+            kwargs['target_org'], kwargs['target_repo'] = fork_name2tuple(target_fork_name)
 
         return super().get(*args, **kwargs)
 
@@ -97,18 +91,19 @@ class WatchedPullRequest(models.Model):
     Represents a single watched pull request; holds the ID of the Instance created for that PR,
     if any
     """
-    # TODO: Remove 'ref_type' ?
-    # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
-    # api (including the head commit sha hash, which does not require a separate API call as
-    # is currently used.)
-    branch_name = models.CharField(max_length=50, default='master')
-    ref_type = models.CharField(max_length=50, default='heads')
-    github_organization_name = models.CharField(max_length=200, db_index=True)
-    github_repository_name = models.CharField(max_length=200, db_index=True)
-    github_pr_url = models.URLField(blank=False)
+    target_org = models.CharField(max_length=200, blank=False, help_text=(
+        "GitHub organization name for the target repo (into which this PR will be merged)"
+    ))
+    target_repo = models.CharField(max_length=200, blank=False, help_text=(
+        "GitHub repository name for the target repo (into which this PR will be merged)"
+    ))
+    pr_number = models.IntegerField(blank=False)
     instance = models.OneToOneField('instance.OpenEdXInstance', null=True, blank=True, on_delete=models.SET_NULL)
 
     objects = WatchedPullRequestQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('target_org', 'target_repo', 'pr_number')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -116,41 +111,18 @@ class WatchedPullRequest(models.Model):
         self.logger = WatchedPullRequestLoggerAdapter(logger, {'obj': self})
 
     @property
-    def fork_name(self):
+    def target_fork_name(self):
         """
-        Fork name (eg. 'open-craft/edx-platform')
+        Target fork name (eg. 'edx/edx-platform')
         """
-        return '{0.github_organization_name}/{0.github_repository_name}'.format(self)
+        return '{0.github_target_org}/{0.github_target_repo}'.format(self)
 
     @property
-    def reference_name(self):
+    def github_pr_url(self):
         """
-        A descriptive name for the PR, which includes meaningful attributes
+        Get the PR URL.
         """
-        return '{0.github_organization_name}/{0.branch_name}'.format(self)
-
-    @property
-    def github_base_url(self):
-        """
-        Base GitHub URL of the fork (eg. 'https://github.com/open-craft/edx-platform')
-        """
-        return 'https://github.com/{0.fork_name}'.format(self)
-
-    @property
-    def github_branch_url(self):
-        """
-        GitHub URL of the branch tree
-        """
-        return '{0.github_base_url}/tree/{0.branch_name}'.format(self)
-
-    @property
-    def github_pr_number(self):
-        """
-        Get the PR number from the URL of the PR.
-        """
-        if not self.github_pr_url:
-            return None
-        return int(self.github_pr_url.split('/')[-1])
+        return 'https://github.com/{0.target_fork_name}/pull/{0.github_pr_number}'
 
     @property
     def target_fork_name(self):
@@ -176,54 +148,26 @@ class WatchedPullRequest(models.Model):
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def get_branch_tip(self):
+    def update_instance_from_pr(self):
         """
-        Get the `commit_id` of the current tip of the branch
-        """
-        self.logger.info('Fetching commit ID of the tip of branch %s', self.branch_name)
-        try:
-            new_commit_id = github.get_commit_id_from_ref(
-                self.fork_name,
-                self.branch_name,
-                ref_type=self.ref_type)
-        except github.ObjectDoesNotExist:
-            self.logger.error("Branch '%s' not found. Has it been deleted on GitHub?",
-                              self.branch_name)
-            raise
-
-        return new_commit_id
-
-    def set_fork_name(self, fork_name):
-        """
-        Set the organization and repository based on the GitHub fork name
-        """
-        assert not self.github_organization_name
-        assert not self.github_repository_name
-        self.logger.info('Setting fork name: %s', fork_name)
-        fork_org, fork_repo = github.fork_name2tuple(fork_name)
-        self.github_organization_name = fork_org
-        self.github_repository_name = fork_repo
-
-    def update_instance_from_pr(self, pr):
-        """
-        Update/create the associated sandbox instance with settings from the given pull request.
+        Update/create the associated sandbox instance with settings from this pull request.
 
         This will not spawn a new AppServer.
         This method will automatically save this WatchedPullRequest's 'instance' field.
         """
-        # The following fields should never change:
+        # Fetch the latest PR data:
+        pr = github.get_pr_by_number(self.target_fork_name, self.github_pr_number)
+        # The following should be an invariant:
         assert self.github_pr_url == pr.github_pr_url
-        assert self.fork_name == pr.fork_name
-        assert self.branch_name == pr.branch_name
         # Create an instance if necessary:
         instance = self.instance or OpenEdXInstance()
         instance.sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
         instance.base_domain = settings.INSTANCES_BASE_DOMAIN
-        instance.edx_platform_repository_url = self.repository_url
-        instance.edx_platform_commit = self.get_branch_tip()
+        instance.edx_platform_repository_url = 'https://github.com/{pr.fork_name}.git'.format(pr=pr)
+        instance.edx_platform_commit = pr.branch_tip_hash
         instance.name = (
-            'PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {i.reference_name} ({commit_short_id})'
-            .format(pr=pr, i=self, commit_short_id=instance.edx_platform_commit[:7])
+            'PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {pr.reference_name} ({commit_short_id})'
+            .format(pr=pr, commit_short_id=instance.edx_platform_commit[:7])
         )
         instance.configuration_extra_settings = pr.extra_settings
         instance.use_ephemeral_databases = pr.use_ephemeral_databases(instance.domain)

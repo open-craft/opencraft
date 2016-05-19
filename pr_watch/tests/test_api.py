@@ -120,24 +120,3 @@ class APITestCase(WithUserTestCase):
             'PR#{}: Updated Title (edx) - fork/master (6666666)'.format(watched_pr.github_pr_number)
         )
         self.assertEqual(instance.edx_platform_commit, '6' * 40)
-
-    @patch('pr_watch.github.get_commit_id_from_ref', side_effect=github.ObjectDoesNotExist)
-    @patch('pr_watch.github.get_pr_by_number')
-    def test_update_instance_branch_delete(self, mock_get_pr_by_number, mock_get_commit_id_from_ref):
-        """
-        Test what happens when we try to update an instance for a PR whose branch has been
-        deleted.
-
-        Note: Once WatchedPullRequest.update_instance_from_pr() has been refactored so that it
-        first queries GitHub for PR details (rather than accepting a PR parameter), it can get
-        the commit ID from the PR details response, rather than using get_branch_tip(), and then
-        this test won't be necessary since the PR API always contains the commit information
-        (in ["head"]["sha"]) even if the branch has been deleted.
-        """
-        self.api_client.login(username='user1', password='pass')
-
-        watched_pr = make_watched_pr_and_instance()
-        mock_get_pr_by_number.return_value = PRFactory(number=watched_pr.github_pr_number)
-        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=watched_pr.pk))
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {'error': 'Could not fetch updated details from GitHub.'})
