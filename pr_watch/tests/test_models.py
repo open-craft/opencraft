@@ -66,11 +66,12 @@ class WatchedPullRequestTestCase(TestCase):
         """
         watched_pr = WatchedPullRequest(
             github_organization_name='open-craft',
-            github_pr_url='https://github.com/edx/edx/pull/234',
+            github_pr_url='https://github.com/edx/edx-dest/pull/234',
             github_repository_name='edx',
             branch_name='test-branch',
         )
         self.assertEqual(watched_pr.fork_name, 'open-craft/edx')
+        self.assertEqual(watched_pr.target_fork_name, 'edx/edx-dest')
         self.assertEqual(watched_pr.github_base_url, 'https://github.com/open-craft/edx')
         self.assertEqual(watched_pr.github_pr_number, 234)
         self.assertEqual(watched_pr.github_branch_url, 'https://github.com/open-craft/edx/tree/test-branch')

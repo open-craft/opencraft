@@ -97,8 +97,6 @@ class WatchedPullRequest(models.Model):
     Represents a single watched pull request; holds the ID of the Instance created for that PR,
     if any
     """
-    # TODO: Store ID instead of URL, since URL and github_organization/repository_name contain
-    # redundant information.
     # TODO: Remove 'ref_type' ?
     # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
     # api (including the head commit sha hash, which does not require a separate API call as
@@ -153,6 +151,16 @@ class WatchedPullRequest(models.Model):
         if not self.github_pr_url:
             return None
         return int(self.github_pr_url.split('/')[-1])
+
+    @property
+    def target_fork_name(self):
+        """
+        Get the full name of the target repo/fork (e.g. 'edx/edx-platform')
+        """
+        # Split up a URL like https://github.com/edx/edx-platform/pull/12345678
+        org, repo, pull, dummy = self.github_pr_url.split('/')[-4:]
+        assert pull == "pull"
+        return "{}/{}".format(org, repo)
 
     @property
     def repository_url(self):
