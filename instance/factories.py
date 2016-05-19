@@ -70,8 +70,13 @@ def instance_factory(**kwargs):
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
 
+    # Ensure instance uses ephemeral databases by default,
+    # irrespective of current value of INSTANCE_EPHEMERAL_DATABASES setting
+    instance_kwargs = dict(use_ephemeral_databases=True)
+    instance_kwargs.update(kwargs)
+
     # Create instance
-    instance = OpenEdXInstance.objects.create(**kwargs)
+    instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return instance
 
 
