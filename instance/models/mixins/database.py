@@ -24,6 +24,7 @@ Instance app model mixins - Database
 
 from django.conf import settings
 from django.db import models
+from django.utils.crypto import get_random_string
 import MySQLdb as mysql
 import pymongo
 
@@ -43,6 +44,45 @@ def _get_mysql_cursor():
     return connection.cursor(), connection
 
 
+def _create_database(cursor, database):
+    """
+    Create MySQL database
+    """
+    cursor.execute('CREATE DATABASE `{0}` DEFAULT CHARACTER SET utf8'.format(database))
+
+
+def _create_user(cursor, user, password):
+    """
+    Create MySQL user identified by password
+    """
+    cursor.execute('CREATE USER %s IDENTIFIED BY %s', (user, password,))
+
+
+def _grant_privileges(cursor, database, user, privileges):
+    """
+    Grant privileges for databases to MySQL user
+    """
+    if database == "*":
+        tables = "*.*"
+    else:
+        tables = "`{0}`.*".format(database)
+    cursor.execute('GRANT %s ON {0} TO %s'.format(tables), (privileges, user,))
+
+
+def _drop_database(cursor, database):
+    """
+    Drop MySQL database
+    """
+    cursor.execute('DROP DATABASE IF EXISTS `{0}`'.format(database))
+
+
+def _drop_user(cursor, user):
+    """
+    Drop MySQL user
+    """
+    cursor.execute('DROP USER %s', (user,))
+
+
 # Classes #####################################################################
 
 class MySQLInstanceMixin(models.Model):
@@ -57,9 +97,9 @@ class MySQLInstanceMixin(models.Model):
         abstract = True
 
     @property
-    def mysql_database_names(self):
+    def mysql_databases(self):
         """
-        An iterable of database names
+        An iterable of databases
         """
         return NotImplementedError
 
@@ -69,28 +109,55 @@ class MySQLInstanceMixin(models.Model):
         """
         if settings.INSTANCE_MYSQL_URL_OBJ and not self.mysql_provisioned:
             cursor, connection = _get_mysql_cursor()
-            for database in self.mysql_database_names:
+
+            # Create migration user
+            _create_user(cursor, self.migrate_user, get_random_string(length=32))
+
+            # Create default databases and users, and grant privileges
+            for database in self.mysql_databases:
                 # We can't use the database name in a parameterized query, the
-                # driver doesn't escape it properly. Se we escape it here instead
-                database_name = connection.escape_string(database).decode()
-                cursor.execute('CREATE DATABASE `{0}` DEFAULT CHARACTER SET utf8'.format(database_name))
-                cursor.execute('CREATE USER %s IDENTIFIED BY %s', (self.mysql_user, self.mysql_pass,))
-                cursor.execute('GRANT ALL ON `{0}`.* TO %s'.format(database_name), (self.mysql_user,))
+                # driver doesn't escape it properly. So we escape it here instead
+                database_name = connection.escape_string(database["name"]).decode()
+                _create_database(cursor, database_name)
+                user = database["user"]
+                _create_user(cursor, user, get_random_string(length=32))
+                privileges = database.get("priv", "ALL")
+                _grant_privileges(cursor, database_name, user, privileges)
+                _grant_privileges(cursor, database_name, self.migrate_user, "ALL")
+                additional_users = database.get("additional_users", [])
+                for additional_user in additional_users:
+                    _grant_privileges(cursor, database_name, additional_user["name"], additional_user["priv"])
+
+            # Create read_only user with appropriate privileges
+            _create_user(cursor, self.read_only_user, get_random_string(length=32))
+            _grant_privileges(cursor, "*", self.read_only_user, "ALL")
+
+            # Create admin user with appropriate privileges
+            _create_user(cursor, self.admin_user, get_random_string(length=32))
+            _grant_privileges(cursor, "*", self.admin_user, "CREATE USER")
+
             self.mysql_provisioned = True
             self.save()
 
     def deprovision_mysql(self):
         """
-        Drop all MySQL databases.
+        Drop all MySQL databases and users.
         """
         if settings.INSTANCE_MYSQL_URL_OBJ and self.mysql_provisioned:
             cursor, connection = _get_mysql_cursor()
-            for database in self.mysql_database_names:
+
+            # Drop default databases and users
+            for database in self.mysql_databases:
                 # We can't use the database name in a parameterized query, the
-                # driver doesn't escape it properly. Se we escape it here instead
-                database_name = connection.escape_string(database).decode()
-                cursor.execute('DROP DATABASE IF EXISTS `{0}`'.format(database_name))
-            cursor.execute('DROP USER %s', (self.mysql_user,))
+                # driver doesn't escape it properly. So we escape it here instead
+                database_name = connection.escape_string(database["name"]).decode()
+                _drop_database(cursor, database_name)
+                _drop_user(cursor, database["user"])
+
+            # Drop users with global privileges
+            for user in self.global_users:
+                _drop_user(cursor, user)
+
             self.mysql_provisioned = False
             self.save()
 

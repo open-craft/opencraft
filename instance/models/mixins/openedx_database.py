@@ -48,11 +48,68 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         return self.database_name
 
     @property
-    def mysql_database_names(self):
+    def mysql_databases(self):
         """
-        List of mysql database names
+        List of mysql databases
         """
-        return [self.mysql_database_name]
+        return [
+            {
+                "name": self._get_mysql_database_name("ecommerce"),
+                "user": self._get_mysql_user_name("ecomm001"),
+            },
+            {
+                "name": self._get_mysql_database_name("dashboard"),
+                "user": self._get_mysql_user_name("rosencrantz"),
+            },
+            {
+                "name": self._get_mysql_database_name("ora"),
+                "user": self._get_mysql_user_name("ora001"),
+            },
+            {
+                "name": self._get_mysql_database_name("xqueue"),
+                "user": self._get_mysql_user_name("xqueue001"),
+            },
+            {
+                "name": self._get_mysql_database_name("edxapp"),
+                "user": self._get_mysql_user_name("edxapp001"),
+            },
+            {
+                "name": self._get_mysql_database_name("edxapp_csmh"),
+                "user": self._get_mysql_user_name("edxapp_csmh001"),
+            },
+            {
+                "name": self._get_mysql_database_name("edx_notes_api"),
+                "user": self._get_mysql_user_name("notes001"),
+                "priv": "SELECT,INSERT,UPDATE,DELETE",
+            },
+            {
+                "name": self._get_mysql_database_name("programs"),
+                "user": self._get_mysql_user_name("programs001"),
+            },
+            {
+                "name": self._get_mysql_database_name("analytics-api"),
+                "user": self._get_mysql_user_name("api001"),
+            },
+            {
+                "name": self._get_mysql_database_name("reports"),
+                "user": self._get_mysql_user_name("reports001"),
+                "priv": "SELECT",
+                "additional_users": [
+                    {
+                        "name": self._get_mysql_user_name("api001"),
+                        "priv": "SELECT",
+                    }
+                ],
+            },
+            {
+                "name": self._get_mysql_database_name("credentials"),
+                "user": self._get_mysql_user_name("credentials001"),
+            },
+            {
+                "name": self._get_mysql_database_name("discovery"),
+                "user": self._get_mysql_user_name("discov001"),
+            },
+        ]
 
     @property
     def mongo_database_name(self):
@@ -74,6 +131,46 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         List of mongo database names
         """
         return [self.mongo_database_name, self.forum_database_name]
+
+    @property
+    def migrate_user(self):
+        """
+        Name of migration user
+        """
+        return self._get_mysql_user_name("migrate")
+
+    @property
+    def read_only_user(self):
+        """
+        Name of read_only user
+        """
+        return self._get_mysql_user_name("read_only")
+
+    @property
+    def admin_user(self):
+        """
+        Name of admin user
+        """
+        return self._get_mysql_user_name("admin")
+
+    @property
+    def global_users(self):
+        """
+        List of MySQL users with global privileges (i.e., privileges spanning multiple databases)
+        """
+        return self.migrate_user, self.read_only_user, self.admin_user
+
+    def _get_mysql_database_name(self, suffix):
+        """
+        Build unique name for MySQL database using suffix
+        """
+        return "{0}_{1}".format(self.mysql_database_name, suffix)
+
+    def _get_mysql_user_name(self, suffix):
+        """
+        Build unique name for MySQL user using suffix
+        """
+        return "{0}_{1}".format(self.mysql_user, suffix)
 
     def set_field_defaults(self):
         """
