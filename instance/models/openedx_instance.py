@@ -79,14 +79,14 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
     @property
     def studio_sub_domain(self):
         """
-        Studio sub-domain name (eg. 'studio.master')
+        Studio sub-domain name (eg. 'studio-master')
         """
-        return 'studio.{}'.format(self.sub_domain)
+        return 'studio-{}'.format(self.sub_domain)
 
     @property
     def studio_domain(self):
         """
-        Studio full domain name (eg. 'studio.master.sandbox.opencraft.com')
+        Studio full domain name (eg. 'studio-master.sandbox.opencraft.com')
         """
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 

@@ -97,8 +97,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.url, 'http://sample.example.org/')
         self.assertEqual(instance.lms_preview_domain, 'preview-sample.example.org')
         self.assertEqual(instance.lms_preview_url, 'http://preview-sample.example.org/')
-        self.assertEqual(instance.studio_domain, 'studio.sample.example.org')
-        self.assertEqual(instance.studio_url, 'http://studio.sample.example.org/')
+        self.assertEqual(instance.studio_domain, 'studio-sample.example.org')
+        self.assertEqual(instance.studio_url, 'http://studio-sample.example.org/')
         self.assertEqual(str(instance), 'Sample Instance (sample.example.org)')
 
     @patch_services
@@ -150,7 +150,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call(name='test.activate', type='A', value='1.1.1.1'),
             call(name='preview-test.activate', type='CNAME', value='test.activate'),
-            call(name='studio.test.activate', type='CNAME', value='test.activate'),
+            call(name='studio-test.activate', type='CNAME', value='test.activate'),
         ])
 
     @patch_services
