@@ -19,26 +19,31 @@
 """
 Instance - Integration Tests
 """
-
 # Imports #####################################################################
 
 import os
 import time
+from unittest.mock import patch
 
 import requests
 from django.conf import settings
 
-from instance.models.instance import SingleVMOpenEdXInstance, Status as InstanceStatus
+from instance.models.appserver import Status as AppServerStatus
+from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import Status as ServerStatus
 from instance.openstack import get_swift_connection
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
-from instance.tests.integration.factories.instance import SingleVMOpenEdXInstanceFactory
-from instance.tasks import provision_instance
+from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
+from instance.tasks import spawn_appserver
 from opencraft.tests.utils import shard
 
 
 # Tests #######################################################################
+
+# Factory boy doesn't properly support pylint+django
+#pylint: disable=no-member
 
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
@@ -49,9 +54,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         Check that the given instance is up and accepting requests
         """
         instance.refresh_from_db()
-        self.assertEqual(instance.status, InstanceStatus.Running)
-        self.assertEqual(instance.server_status, ServerStatus.Ready)
-        server = instance.server_set.first()
+        self.assertIsNotNone(instance.active_appserver)
+        self.assertEqual(instance.active_appserver.status, AppServerStatus.Running)
+        self.assertEqual(instance.active_appserver.server.status, ServerStatus.Ready)
+        server = instance.active_appserver.server
         attempts = 3
         while True:
             attempts -= 1
@@ -77,13 +83,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(header['x-container-read'], '.r:*')
 
     @shard(1)
-    def test_provision_instance(self):
+    def test_spawn_appserver(self):
         """
-        Provision an instance
+        Provision an instance and spawn an AppServer
         """
-        SingleVMOpenEdXInstanceFactory(name='Integration - test_provision_instance')
-        instance = SingleVMOpenEdXInstance.objects.get()
-        provision_instance(instance.pk)
+        OpenEdXInstanceFactory(name='Integration - test_spawn_appserver')
+        instance = OpenEdXInstance.objects.get()
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
 
     @shard(2)
@@ -94,10 +100,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         if not settings.INSTANCE_MYSQL_URL or not settings.INSTANCE_MONGO_URL:
             print('External databases not configured, skipping integration test')
             return
-        SingleVMOpenEdXInstanceFactory(name='Integration - test_external_databases',
-                                       use_ephemeral_databases=False)
-        instance = SingleVMOpenEdXInstance.objects.get()
-        provision_instance(instance.pk)
+        OpenEdXInstanceFactory(name='Integration - test_external_databases', use_ephemeral_databases=False)
+        instance = OpenEdXInstance.objects.get()
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
         self.assert_instance_up(instance)
 
@@ -108,25 +113,26 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
-        SingleVMOpenEdXInstanceFactory(name='Integration - test_ansible_failure',
-                                       ansible_playbook_name='failure')
-        instance = SingleVMOpenEdXInstance.objects.get()
-        provision_instance(instance.pk)
+        instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failure')
+        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="failure"):
+            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        self.assertEqual(instance.status, InstanceStatus.ConfigurationFailed)
-        self.assertEqual(instance.server_status, ServerStatus.Ready)
+        self.assertIsNone(instance.active_appserver)
+        appserver = instance.appserver_set.last()
+        self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
+        self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
     @patch_git_checkout
     def test_ansible_failignore(self, git_checkout, git_working_dir):
         """
-        Ensure failures that are ignored doesn't reflect in the instance
+        Ensure failures that are ignored aren't reflected in the instance
         """
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
-        SingleVMOpenEdXInstanceFactory(name='Integration - test_ansible_failignore',
-                                       ansible_playbook_name='failignore')
-        instance = SingleVMOpenEdXInstance.objects.get()
-        provision_instance(instance.pk)
+        instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failignore')
+        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="failignore"):
+            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        self.assertEqual(instance.status, InstanceStatus.Running)
-        self.assertEqual(instance.server_status, ServerStatus.Ready)
+        self.assertIsNotNone(instance.active_appserver)
+        self.assertEqual(instance.active_appserver.status, AppServerStatus.Running)
+        self.assertEqual(instance.active_appserver.server.status, ServerStatus.Ready)

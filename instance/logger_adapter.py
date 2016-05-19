@@ -24,10 +24,33 @@ Instance app models - Logger Adapters
 
 import logging
 
+# Helper methods ##############################################################
+
+
+def format_instance(instance):
+    """ Given any concrete subclass of Instance, get a short ID string to put into the log """
+    if instance:
+        return 'instance={} ({!s:.15})'.format(instance.ref.pk, instance.ref.name)
+    return 'Unknown Instance'
+
+
+def format_appserver(app_server):
+    """ Given an AppServer subclass, get a short ID string to put into the log """
+    if app_server:
+        return 'app_server={} ({!s:.15})'.format(app_server.pk, app_server.name)
+    return 'Unknown AppServer'
+
+
+def format_server(server):
+    """ Given a Server subclass, get a short ID string to put into the log """
+    if server:
+        return 'server={!s:.20}'.format(server.name)
+    return 'Unknown Server'
 
 # Adapters ####################################################################
 
-class InstanceLoggerAdapter(logging.LoggerAdapter):
+
+class AppServerLoggerAdapter(logging.LoggerAdapter):
     """
     Custom LoggerAdapter for Instance objects
     Include the instance name in the output
@@ -35,11 +58,10 @@ class InstanceLoggerAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         msg, kwargs = super().process(msg, kwargs)
 
-        instance = self.extra['obj']
-        if instance.sub_domain:
-            return 'instance={} | {}'.format(instance.sub_domain, msg), kwargs
-        else:
-            return msg, kwargs
+        app_server = self.extra['obj']
+        if app_server.instance:
+            msg = '{},{} | {}'.format(format_instance(app_server.instance), format_appserver(app_server), msg)
+        return msg, kwargs
 
 
 class ServerLoggerAdapter(logging.LoggerAdapter):
@@ -51,7 +73,18 @@ class ServerLoggerAdapter(logging.LoggerAdapter):
         msg, kwargs = super().process(msg, kwargs)
 
         server = self.extra['obj']
-        if server.instance and server.instance.sub_domain:
-            return 'instance={!s:.15},server={!s:.8} | {}'.format(server.instance.sub_domain, server, msg), kwargs
-        else:
-            return msg, kwargs
+        msg = '{} | {}'.format(format_server(server), msg)
+        return msg, kwargs
+
+
+class InstanceLoggerAdapter(logging.LoggerAdapter):
+    """
+    Custom LoggerAdapter for Instance objects
+    Include the InstanceReference ID in the output
+    """
+    def process(self, msg, kwargs):
+        msg, kwargs = super().process(msg, kwargs)
+
+        instance = self.extra['obj']
+        msg = '{} | {}'.format(format_instance(instance), msg)
+        return msg, kwargs

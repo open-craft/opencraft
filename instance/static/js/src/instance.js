@@ -33,17 +33,34 @@ app.config(function($httpProvider) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
-    // For any unmatched url, send to /
-    $urlRouterProvider.otherwise("/");
+    // For any unmatched url, send to /instances/
+    $urlRouterProvider.otherwise("/instances/");
 
     // Required by Django
     RestangularProvider.setRequestSuffix('/');
 
     $stateProvider
-        .state('index', {
-            url: "/",
+        .state('instances', {
+            url: "/instances/",
+            abstract: true, // By making this abstract, 'instances.empty' gets added to the homepage as well.
             templateUrl: "/static/html/instance/index.html",
-            controller: "Index"
+            controller: "Index",
+        })
+        .state('instances.empty', {
+            url: '',
+            templateUrl: "/static/html/instance/empty.html",
+            controller: "Empty",
+        })
+        .state('instances.details', {
+            url: '{instanceId:[0-9]+}/',
+            templateUrl: "/static/html/instance/details.html",
+            controller: "Details",
+            resolve: {
+                // Load the instance before initializing this controller:
+                instance: function(OpenCraftAPI, $stateParams) {
+                    return OpenCraftAPI.one("instance", $stateParams.instanceId).get();
+                },
+            },
         });
 });
 
@@ -58,90 +75,46 @@ app.factory('OpenCraftAPI', function(Restangular) {
 
 // Controllers ////////////////////////////////////////////////////////////////
 
-app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q', '$timeout',
-    function ($scope, Restangular, OpenCraftAPI, $q, $timeout) {
+app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
+    function ($scope, $state, OpenCraftAPI, $timeout) {
 
         $scope.init = function() {
             $scope.loading = true;
             $scope.notification = null;
             $scope.selected = {};
+            $scope.state = $state;
 
+            $scope.instanceList = [];
             $scope.updateInstanceList();
 
             // Init websockets
-            swampdragon.onChannelMessage($scope.handleChannelMessage);
+            swampdragon.onChannelMessage(function (channels, message) {
+                // Broadcast sends a message to this scope and all child scopes:
+                console.log('Received websocket message: ', message.data.type, message.data);
+                $scope.$broadcast('swampdragon:' + message.data.type, message.data);
+            });
             swampdragon.ready(function() {
                 swampdragon.subscribe('notifier', 'notification', null);
                 swampdragon.subscribe('notifier', 'log', null);
             });
         };
 
-        $scope.select = function(instance) {
-            $scope.loading = true; // Display loading message
-            console.log('Selected instance', instance.id);
-
-            return OpenCraftAPI.one('openedxinstance', instance.id).get().then(function(instance) {
-                console.log('Fetched instance', instance.id);
-                $scope.selected.instance = instance;
-            }, function(response) {
-                console.log('Error from server: ', response);
-            }).finally(function () {
-                $scope.loading = false;
-            });
-        };
-
-        $scope.provision = function(instance) {
-            console.log('Provisioning instance', instance);
-            var notification = function(response, fallback) {
-                if (response && response.data) {
-                    return response.data.status || fallback;
-                }
-                return fallback;
-            };
-            return instance.post('provision').then(function(response) {
-                _.each(instance.active_server_set, function(server) {
-                    if(server.status !== 'terminated') {
-                        server.status = 'terminating';
-                    }
-                });
-                $scope.notify(notification(response, 'Provisioning'));
-            }, function(response) {
-                $scope.notify(notification(response, 'Provisioning failed'), 'alert');
-            });
-        };
-
         $scope.updateInstanceList = function() {
             $scope.loading = true; // Display loading message
 
-            return OpenCraftAPI.all("openedxinstance").getList().then(function(instanceList) {
-                console.log('Updating instance list', instanceList);
+            console.log('Updating instance list');
+            return OpenCraftAPI.all("instance").getList().then(function(instanceList) {
                 $scope.instanceList = instanceList;
 
                 if($scope.selected.instance) {
                     $scope.select($scope.selected.instance);
                 }
+                console.log('Updated instance list:', instanceList);
             }, function(response) {
                 console.log('Error from server: ', response);
             }).finally(function () {
                 $scope.loading = false;
             });
-        };
-
-        $scope.handleChannelMessage = function(channels, message) {
-            console.log('Received websocket message', channels, message.data);
-
-            if(message.data.type === 'server_update') {
-                $scope.updateInstanceList();
-            } else if(message.data.type === 'instance_log') {
-                if($scope.selected.instance && $scope.selected.instance.id === message.data.instance_id) {
-                    $scope.$apply(function(){
-                        if (message.data.log_entry.level == 'ERROR' || message.data.log_entry.level == 'CRITICAL') {
-                            $scope.selected.instance.log_error_entries.push(message.data.log_entry);
-                        }
-                        $scope.selected.instance.log_entries.push(message.data.log_entry);
-                    });
-                }
-            }
         };
 
         // Display a notification message for 10 seconds
@@ -158,8 +131,106 @@ app.controller("Index", ['$scope', 'Restangular', 'OpenCraftAPI', '$q', '$timeou
             };
         };
 
+        $scope.$on("swampdragon:instance_update", function (event, data) {
+            $scope.updateInstanceList();
+        });
+        $scope.$on("swampdragon:openedx_appserver_update", function (event, data) {
+            $scope.updateInstanceList();
+        });
+
         $scope.init();
     }
 ]);
+
+
+app.controller("Details", ['$scope', 'instance', '$state', '$stateParams', 'OpenCraftAPI',
+    function ($scope, instance, $state, $stateParams, OpenCraftAPI) {
+
+        $scope.init = function() {
+            $scope.instance = instance;
+            $scope.is_updating_from_pr = false;
+            $scope.instance_active_tabs = {};
+        };
+
+        $scope.update_from_pr = function() {
+            if ($scope.is_updating_from_pr) {
+                throw "This instance is already being updated.";
+            }
+            if (!instance.source_pr) {
+                throw "This instance is not associated with a PR.";
+            }
+            $scope.is_updating_from_pr = true; // Start animation to show that we're doing the update
+            OpenCraftAPI.one('pr_watch', instance.source_pr.id).post('update_instance').then(function () {
+                $scope.notify('Instance settings updated.');
+                $scope.is_updating_from_pr = false;
+                $scope.refresh().then(function() {
+                    // Switch to the settings tab to show the updated settings:
+                    $scope.instance_active_tabs.settings_tab = true;
+                });
+            }, function() {
+                $scope.notify('Update failed.', 'alert');
+                $scope.is_updating_from_pr = false;
+            });
+        };
+
+        $scope.refresh = function() {
+            // Reload the instance data from the server.
+            var old_appserver_count = instance.appservers.length;
+            return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
+                $scope.instance = instance;
+                if (instance.appservers.length > old_appserver_count) {
+                    // There is a new AppServer. If we were expecting one, it is here now.
+                    // So stop animations and re-enable the "Launch new AppServer" button.
+                    $scope.is_spawning_appserver = false;
+                }
+            });
+        };
+
+        $scope.spawn_appserver = function() {
+            console.log('Spawning new AppServer');
+            $scope.is_spawning_appserver = true; // Disable the button
+
+            OpenCraftAPI.all("openedx_appserver").post({instance_id: $stateParams.instanceId});
+            // The API call above is an asynchronous task so it will return a 200 status immediately.
+            // When the new app server is successfully created, it will send an openedx_appserver_update
+            // notification, which will trigger $scope.refresh(), which will reset 'is_spawning_appserver'
+        };
+
+        $scope.$on("swampdragon:instance_update", function (event, data) {
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+        $scope.$on("swampdragon:openedx_appserver_update", function(event, data) {
+            // If the appserver belonged to this instance, refresh the display.
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+        $scope.$on("swampdragon:object_log_line", function (event, data) {
+            if (data.instance_id == $scope.instance.id && !data.appserver_id) {
+                $scope.instance.log_entries.push(data.log_entry);
+            }
+        });
+
+        $scope.init();
+    }
+]);
+
+
+app.controller("Empty", function ($scope) {
+    // An important part of good UX is having a well-designed "empty state", which is what the user will first
+    // see when they open your app. Here we put a nice greeting, based on the time of day.
+    var hour = new Date().getHours();
+    if (hour > 18) {
+        $scope.greeting = "Good evening!";
+    } else if (hour > 12) {
+        $scope.greeting = "Good afternoon!";
+    } else if (hour > 4) {
+        $scope.greeting = "Good morning!";
+    } else {
+        $scope.greeting = "Working late, eh?";
+    }
+});
 
 })();

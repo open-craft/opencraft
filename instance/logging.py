@@ -27,7 +27,7 @@ import logging
 import traceback
 
 from django.apps import apps
-from django.db import models
+from django.db import connection, models, ProgrammingError
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.serializers.logentry import LogEntrySerializer
@@ -74,16 +74,24 @@ class DBHandler(logging.Handler):
             content_type = apps.get_model('contenttypes', 'ContentType').objects.get_for_model(obj)
             object_id = obj.pk
 
-        log_entry = apps.get_model('instance', 'LogEntry').objects.create(
-            level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
-        )
+        try:
+            log_entry = apps.get_model('instance', 'LogEntry').objects.create(
+                level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
+            )
+        except ProgrammingError:
+            # This can occur if django tries to log something before migrations have created the log table.
+            # Make sure that is actually what happened:
+            assert 'instance_logentry' not in connection.introspection.table_names()
 
-        log_event = {
-            'type': 'instance_log',
-            'log_entry': LogEntrySerializer(log_entry).data
-        }
-        if hasattr(obj, 'event_context'):
-            log_event.update(obj.event_context)
-
-        # TODO: Filter out log entries for which the user doesn't have view rights
-        publish_data('log', log_event)
+        # Send notice of entries related to any resource. Skip generic log entries that occur
+        # in debug mode, like "GET /static/img/favicon/favicon-96x96.png":
+        if content_type:
+            log_event = {
+                'type': 'object_log_line',
+                'log_entry': LogEntrySerializer(log_entry).data
+            }
+            if hasattr(obj, 'event_context'):
+                log_event.update(obj.event_context)
+            # TODO: Filter out log entries for which the user doesn't have view rights
+            # TODO: More targetted events - only emit events for what the user is looking at
+            publish_data('log', log_event)

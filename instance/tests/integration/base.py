@@ -22,9 +22,12 @@ Tests - Integration - Base
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 from huey.contrib import djhuey
 
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.base import TestCase
 
@@ -40,10 +43,25 @@ class IntegrationTestCase(TestCase):
         # Override the environment setting - always run task in the same process
         djhuey.HUEY.always_eager = True
 
+        # Use a reduced playbook for integration builds - it will run faster.
+        # See https://github.com/open-craft/configuration/blob/integration/playbooks/opencraft_integration.yml
+        patcher = patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new='opencraft_integration')
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
     def tearDown(self):
-        OpenStackServer.objects.terminate()
-        for instance in SingleVMOpenEdXInstance.objects.iterator():
+        for appserver in OpenEdXAppServer.objects.iterator():
+            appserver.terminate_vm()
+        for instance in OpenEdXInstance.objects.iterator():
             instance.deprovision_swift()
             instance.deprovision_mongo()
             instance.deprovision_mysql()
         super().tearDown()
+
+        # All VMs should be terminated at this point, but check just in case:
+        if OpenStackServer.objects.exclude_terminated().count():
+            OpenStackServer.objects.terminate()
+            raise AssertionError(
+                "Expected all OpenStackServers to be terminated, but some were still running. "
+                "(They have now been stopped.)"
+            )

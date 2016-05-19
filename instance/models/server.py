@@ -35,7 +35,6 @@ from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack
 from instance.logger_adapter import ServerLoggerAdapter
-from instance.models.instance import SingleVMOpenEdXInstance
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
 )
@@ -90,7 +89,7 @@ class Status(ResourceState.Enum):
         vm_available = True
 
     class Ready(ServerState):
-        """ Booted and ready to add to the application """
+        """ Booted and ready """
         state_id = 'ready'
         is_steady_state = True
         accepts_ssh_commands = True
@@ -106,7 +105,7 @@ class Status(ResourceState.Enum):
         state_id = 'unknown'
 
     class BuildFailed(ServerState):
-        """ OpenStack failed to create the server """
+        """ OpenStack failed to create the VM """
         state_id = 'failed'
         name = 'Build failed'
         is_steady_state = True
@@ -140,6 +139,8 @@ class Server(ValidateModelMixin, TimeStampedModel):
     """
     A single server VM
     """
+    name_prefix = models.SlugField(max_length=20, blank=False)
+
     Status = Status
     status = ModelResourceStateDescriptor(
         state_classes=Status.states, default_state=Status.Pending, model_field_name='_status'
@@ -161,8 +162,6 @@ class Server(ValidateModelMixin, TimeStampedModel):
         from_states=(Status.Building, Status.Booting, Status.Ready), to_state=Status.Unknown
     )
 
-    instance = models.ForeignKey(SingleVMOpenEdXInstance, related_name='server_set')
-
     objects = ServerQuerySet().as_manager()
 
     logger = ServerLoggerAdapter(logger, {})
@@ -176,14 +175,17 @@ class Server(ValidateModelMixin, TimeStampedModel):
         self.logger = ServerLoggerAdapter(logger, {'obj': self})
 
     @property
+    def name(self):
+        """ Get a name for this server (slug-friendly) """
+        assert self.id is not None
+        return "{prefix}-{num}".format(prefix=self.name_prefix, num=self.id)
+
+    @property
     def event_context(self):
         """
         Context dictionary to include in events
         """
-        return {
-            'instance_id': self.instance.pk,
-            'server_id': self.pk,
-        }
+        return {'server_id': self.pk}
 
     def sleep_until(self, condition, timeout=3600):
         """
@@ -254,6 +256,9 @@ class OpenStackServer(Server):
     """
     openstack_id = models.CharField(max_length=250, db_index=True, blank=True)
 
+    class Meta:
+        verbose_name = 'OpenStack VM'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nova = openstack.get_nova_client()
@@ -282,7 +287,10 @@ class OpenStackServer(Server):
         if not self.openstack_id:
             return None
 
-        public_addr = openstack.get_server_public_address(self.os_server)
+        try:
+            public_addr = openstack.get_server_public_address(self.os_server)
+        except novaclient.exceptions.NotFound:
+            return None  # This server has been deleted.
         if not public_addr:
             return None
 
@@ -294,6 +302,13 @@ class OpenStackServer(Server):
         Return True if this server has a VM, False otherwise
         """
         return self.status.vm_available or (self.status == Status.Building and self.openstack_id)
+
+    @property
+    def vm_not_yet_requested(self):
+        """
+        Return True if the VM has not been requested, and name_prefix can be changed.
+        """
+        return self.status == Status.Pending
 
     def update_status(self):
         """
@@ -332,7 +347,7 @@ class OpenStackServer(Server):
         try:
             os_server = openstack.create_server(
                 self.nova,
-                self.instance.sub_domain,
+                self.name,
                 settings.OPENSTACK_SANDBOX_FLAVOR,
                 settings.OPENSTACK_SANDBOX_BASE_IMAGE,
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,

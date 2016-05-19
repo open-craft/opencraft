@@ -31,22 +31,22 @@ from django.views.debug import ExceptionReporter
 
 # Classes #####################################################################
 
-class EmailInstanceMixin(object):
+class EmailMixin:
     """
-    An instance class that can send emails
+    Mixin that enables AppServer to send emails
     """
     class EmailSubject(object):
         """
         Class holding email subject constants
         """
-        PROVISION_FAILED = u"Instance {instance_name} ({instance_url}) failed to provision"
+        PROVISION_FAILED = "AppServer {name} ({instance_name}) failed to provision"
 
     class EmailBody(object):
         """
         Class holding email body constants
         """
-        PROVISION_FAILED = u"Instance {instance_name} failed to provision.\n" \
-                           u"Reason: {reason}\n"
+        PROVISION_FAILED = "AppServer {name} for Instance {instance_name} failed to provision.\n" \
+                           "Reason: {reason}\n"
 
     @staticmethod
     def _get_exc_info(default=None):
@@ -70,8 +70,8 @@ class EmailInstanceMixin(object):
             attachments.append(("provision.log", log_str, "text/plain"))
 
         self._send_email(
-            self.EmailSubject.PROVISION_FAILED.format(instance_name=self.name, instance_url=self.url),
-            self.EmailBody.PROVISION_FAILED.format(instance_name=self.name, reason=reason),
+            self.EmailSubject.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name),
+            self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
             self._get_exc_info(default=None),
             attachments=attachments
         )

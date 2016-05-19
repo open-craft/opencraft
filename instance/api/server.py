@@ -23,6 +23,7 @@ Instance views
 # Imports #####################################################################
 
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from instance.models.server import OpenStackServer
 from instance.serializers.server import OpenStackServerSerializer
@@ -30,9 +31,19 @@ from instance.serializers.server import OpenStackServerSerializer
 
 # Views #######################################################################
 
-class OpenStackServerViewSet(viewsets.ModelViewSet):
+class OpenStackServerViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    OpenStackServer API ViewSet
+    This API allows you retrieve information about OpenStackServer objects (OpenStack VMs).
     """
     queryset = OpenStackServer.objects.all()
     serializer_class = OpenStackServerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_view_name(self):
+        """
+        Get the verbose name for each view
+        """
+        suffix = self.suffix
+        if self.action == 'retrieve':
+            suffix = "Details"
+        return "OpenStack VM {}".format(suffix)

@@ -17,44 +17,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance app models - Instance
+Instance app models - Open EdX Instance and AppServer models
 """
 
 # Imports #####################################################################
 
 import logging
-import string
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q
-from django.db.backends.utils import truncate_name
-from django.template import loader
-from django.utils import timezone
-from django.utils.crypto import get_random_string
+from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
+from swampdragon.pubsub_providers.data_publisher import publish_data
 
-from instance.gandi import GandiAPI
-from instance.logger_adapter import InstanceLoggerAdapter
-from instance.logging import log_exception
 from instance.models.log_entry import LogEntry
-from instance.models.mixins.ansible import AnsibleInstanceMixin
-from instance.models.mixins.database import MongoDBInstanceMixin, MySQLInstanceMixin, SwiftContainerInstanceMixin
-from instance.models.mixins.utilities import EmailInstanceMixin
-from instance.models.mixins.version_control import GitHubInstanceMixin
-from instance.models.utils import (
-    ModelResourceStateDescriptor, ResourceState, SteadyStateException, ValidateModelMixin
-)
-
-# Constants ###################################################################
-
-PROTOCOL_CHOICES = (
-    ('http', 'HTTP - Unencrypted clear text'),
-    ('https', 'HTTPS - Encrypted'),
-)
-
-gandi = GandiAPI()
+from instance.logger_adapter import InstanceLoggerAdapter
+from .utils import ValidateModelMixin
 
 
 # Logging #####################################################################
@@ -62,143 +43,51 @@ gandi = GandiAPI()
 logger = logging.getLogger(__name__)
 
 
-# Exceptions ##################################################################
-
-class InconsistentInstanceState(Exception):
-    """
-    Indicates that the status of an instance can't be determined
-    """
-    pass
-
-
-# States ######################################################################
-
-class InstanceState(ResourceState):
-    """
-    A [finite state machine] state describing an instance.
-    """
-    # A state is "steady" if we don't expect it to change.
-    # This information can be used to:
-    # - delay execution of an operation until the target server reaches a steady state
-    # - raise an exception when trying to schedule an operation that depends on a state change
-    #   while the target server is in a steady state
-    # Steady states include:
-    # - Status.New
-    # - Status.Running
-    # - Status.ConfigurationFailed
-    # - Status.Error
-    # - Status.Terminated
-    is_steady_state = True
-
-    # An instance is healthy if it is part of a normal (expected) workflow.
-    # This information can be used to detect problems and highlight them in the UI or notify users.
-    # Healthy states include:
-    # - Status.New
-    # - Status.WaitingForServer
-    # - Status.ConfiguringServer
-    # - Status.Running
-    # - Status.Terminated
-    is_healthy_state = True
-
-
-class Status(ResourceState.Enum):
-    """
-    The states that an instance can be in.
-    """
-
-    class New(InstanceState):
-        """ Newly created """
-        state_id = 'new'
-
-    class WaitingForServer(InstanceState):
-        """ Server not yet accessible """
-        state_id = 'waiting'
-        name = 'Waiting for server'
-        is_steady_state = False
-
-    class ConfiguringServer(InstanceState):
-        """ Running Ansible playbooks on server """
-        state_id = 'configuring'
-        name = 'Configuring server'
-        is_steady_state = False
-
-    class Running(InstanceState):
-        """ Instance is up and running """
-        state_id = 'running'
-
-    class ConfigurationFailed(InstanceState):
-        """ Instance was not configured successfully (but may be partially online) """
-        state_id = 'failed'
-        name = 'Configuration failed'
-        is_healthy_state = False
-
-    class Error(InstanceState):
-        """ Instance never got up and running (something went wrong when trying to build new VM) """
-        state_id = 'error'
-        is_healthy_state = False
-
-    class Terminated(InstanceState):
-        """ Instance was running successfully and has been shut down """
-        state_id = 'terminated'
-
-
 # Models ######################################################################
 
 
-class Instance(ValidateModelMixin, TimeStampedModel):
+class InstanceReference(TimeStampedModel):
     """
-    Instance - Group of servers running an application made of multiple services
+    InstanceReference: Holds common fields and provides a list of all Instances
+
+    Has name, created, and modified fields for each Instance.
+
+    Instance is an abstract class, so having this common InstanceReference class gives us a
+    fully generic way to iterate through all instances and allow instances to be implemented
+    using a variety of different python classes and database tables.
     """
-    Status = Status
-    status = ModelResourceStateDescriptor(
-        state_classes=Status.states, default_state=Status.New, model_field_name='_status'
-    )
-    _status = models.CharField(
-        max_length=20,
-        default=status.default_state_class.state_id,
-        choices=status.model_field_choices,
-        db_index=True,
-        db_column='status',
-    )
-    # State transitions:
-    _status_to_waiting_for_server = status.transition(
-        from_states=(
-            Status.New,
-            Status.Error,
-            Status.ConfigurationFailed,
-            Status.Running,
-            Status.Terminated
-        ),
-        to_state=Status.WaitingForServer
-    )
-    _status_to_error = status.transition(
-        from_states=Status.WaitingForServer, to_state=Status.Error
-    )
-    _status_to_configuring_server = status.transition(
-        from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
-    )
-    _status_to_configuration_failed = status.transition(
-        from_states=Status.ConfiguringServer, to_state=Status.ConfigurationFailed
-    )
-    _status_to_running = status.transition(
-        from_states=Status.ConfiguringServer, to_state=Status.Running
-    )
-    _status_to_terminated = status.transition(
-        from_states=Status.Running, to_state=Status.Terminated
-    )
+    name = models.CharField(max_length=250, blank=False, default='Instance')
+    instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    instance_id = models.PositiveIntegerField()
+    instance = GenericForeignKey('instance_type', 'instance_id')
 
-    sub_domain = models.CharField(max_length=50)
-    email = models.EmailField(default='contact@example.com')
-    name = models.CharField(max_length=250)
+    class Meta:
+        ordering = ['-created']
+        unique_together = ('instance_type', 'instance_id')
 
-    base_domain = models.CharField(max_length=50, blank=True)
-    protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
+    def __str__(self):
+        return '{} #{}'.format(self.instance_type.name, self.instance_id)
 
-    last_provisioning_started = models.DateTimeField(blank=True, null=True)
+
+class Instance(ValidateModelMixin, models.Model):
+    """
+    Instance: A web application or suite of web applications.
+
+    An 'Instance' consists of an 'active' AppServer which is available at the instance's URL and
+    handles all requests from users; the instance may also own some 'terminated' AppServers that
+    are no longer used, and 'upcoming' AppServers that are used for testing before being
+    designated as 'active'.
+
+    In the future, we may add a scalable instance type, which owns a pool of active AppServers
+    that all handle requests; currently at most one AppServer is active at any time.
+    """
+    # Reverse accessor to get the 'InstanceReference' set. This is a 1:1 relation, so use the
+    # 'ref' property instead of accessing this directly. The only time to use this directly is
+    # in a query, e.g. to do .select_related('ref_set')
+    ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
 
     class Meta:
         abstract = True
-        unique_together = ('base_domain', 'sub_domain')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -206,433 +95,86 @@ class Instance(ValidateModelMixin, TimeStampedModel):
         self.logger = InstanceLoggerAdapter(logger, {'obj': self})
 
     def __str__(self):
-        return '{0.name} ({0.url})'.format(self)
+        return str(self.ref)
+
+    @cached_property
+    def ref(self):
+        """ Get the InstanceReference for this Instance """
+        try:
+            return self.ref_set.get()  # pylint: disable=no-member
+        except ObjectDoesNotExist:
+            return InstanceReference(instance=self)
 
     @property
-    def domain(self):
-        """
-        Instance domain name
-        """
-        return '{0.sub_domain}.{0.base_domain}'.format(self)
+    def name(self):
+        """ Get this instance's name, which is stored in the InstanceReference """
+        return self.ref.name
+
+    @name.setter
+    def name(self, new_name):
+        """ Change the 'name' """
+        self.ref.name = new_name
 
     @property
-    def url(self):
-        """
-        Instance URL
-        """
-        return u'{0.protocol}://{0.domain}/'.format(self)
+    def created(self):
+        """ Get this instance's created date, which is stored in the InstanceReference """
+        return self.ref.created
 
     @property
-    def active_server_set(self):
-        """
-        Returns the subset of `self.server_set` which aren't terminated
-        """
-        return self.server_set.exclude_terminated()
+    def modified(self):
+        """ Get this instance's modified date, which is stored in the InstanceReference """
+        return self.ref.modified
 
-    @property
-    def _current_server(self):
-        """
-        Current active server. Raises InconsistentInstanceState if more than
-        one exists.
-        """
-        active_server_set = self.active_server_set
-        if not active_server_set:
-            return
-        elif active_server_set.count() > 1:
-            raise InconsistentInstanceState('Multiple servers are active, which is unsupported')
-        else:
-            return active_server_set[0]
+    def save(self, *args, **kwargs):
+        """ Save this Instance """
+        super().save(*args, **kwargs)
+        # Ensure an InstanceReference exists, and update its 'modified' field:
+        if self.ref.instance_id is None:
+            self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
+        self.ref.save()
 
-    @property
-    def server_status(self):
+    # pylint: disable=no-member
+    def refresh_from_db(self, using=None, fields=None, **kwargs):
         """
-        Instance status
+        Reload from DB, or load related field.
+
+        We override this to ensure InstanceReference is reloaded too.
+        Otherwise, the name/created/modified properties could be out of date, even after
+        Instance.refresh_from_db() is called.
         """
-        server = self._current_server
-        if server:
-            return server.status
-        return None
+        if fields is None:
+            self.ref.refresh_from_db()
+        super().refresh_from_db(using=using, fields=fields, **kwargs)
+
+    @staticmethod
+    def on_post_save(sender, instance, created, **kwargs):
+        """
+        Called when an instance is saved.
+
+        Each Instance subclass must explicitly connect() to this event in its models.py.
+        """
+        publish_data('notification', {
+            'type': 'instance_update',
+            'instance_id': instance.ref.pk,
+        })
 
     @property
     def event_context(self):
         """
         Context dictionary to include in events
         """
-        return {'instance_id': self.pk}
-
-    def save(self, **kwargs):
-        """
-        Set default values before saving the instance.
-        """
-        # Set default field values from settings - using the `default` field attribute confuses
-        # automatically generated migrations, generating a new one when settings don't match
-        if not self.base_domain:
-            self.base_domain = settings.INSTANCES_BASE_DOMAIN
-        super().save(**kwargs)
-
-    def _get_log_entries(self, level_list=None, limit=None):
-        """
-        Return the list of log entry instances for the instance and its current active server,
-        optionally filtering by logging level. If a limit is given, only the latest records are
-        returned.
-
-        Returns oldest entries first.
-        """
-        # TODO: Filter out log entries for which the user doesn't have view rights
-        instance_type = ContentType.objects.get_for_model(self)
-        server_type = ContentType.objects.get_by_natural_key(app_label='instance', model='openstackserver')
-        server_ids = [server.pk for server in self.server_set.all()]
-        entries = LogEntry.objects.filter(
-            (Q(content_type=instance_type) & Q(object_id=self.pk)) |
-            (Q(content_type=server_type) & Q(object_id__in=server_ids))
-        )
-        if level_list:
-            entries = entries.filter(level__in=level_list)
-        if limit:
-            # Apply the limit at the SQL/DB level while sorted by descending date, then reverse.
-            # Otherwise, we'd have to retrieve all rows and then apply the limit using python.
-            return reversed(list(entries[:limit]))
-        return entries.order_by('created')
+        return {'instance_id': self.ref.pk, 'instance_type': self.__class__.__name__}
 
     @property
     def log_entries(self):
         """
-        Return the list of log entry instances for the instance and its current active server
-        """
-        return self._get_log_entries(limit=settings.LOG_LIMIT)
+        Return the list of log entry instances for this Instance.
 
-    @property
-    def log_error_entries(self):
+        Does NOT include log entries of associated AppServers or Servers (VMs)
         """
-        Return the list of error or critical log entry instances for the instance and its current
-        active server
-        """
-        return self._get_log_entries(level_list=['ERROR', 'CRITICAL'])
+        limit = settings.LOG_LIMIT
 
-
-# pylint: disable=too-many-instance-attributes
-class SingleVMOpenEdXInstance(MySQLInstanceMixin, MongoDBInstanceMixin, SwiftContainerInstanceMixin,
-                              AnsibleInstanceMixin, GitHubInstanceMixin, EmailInstanceMixin, Instance):
-    """
-    A single instance running a set of Open edX services
-    """
-    forum_version = models.CharField(max_length=50, default='master')
-    notifier_version = models.CharField(max_length=50, default='master')
-    xqueue_version = models.CharField(max_length=50, default='master')
-    certs_version = models.CharField(max_length=50, default='master')
-
-    s3_access_key = models.CharField(max_length=50, blank=True)
-    s3_secret_access_key = models.CharField(max_length=50, blank=True)
-    s3_bucket_name = models.CharField(max_length=50, blank=True)
-
-    use_ephemeral_databases = models.BooleanField()
-
-    ANSIBLE_SETTINGS = AnsibleInstanceMixin.ANSIBLE_SETTINGS + [
-        'ansible_s3_settings',
-        'ansible_mysql_settings',
-        'ansible_mongo_settings',
-        'ansible_swift_settings',
-    ]
-
-    class ProvisionMessages(object):
-        """
-        Class holding ProvisionMessages
-        """
-        PROVISION_EXCEPTION = u"Instance provision failed due to unhandled exception"
-        PROVISION_ERROR = u"Instance deploy method returned non-zero exit code - provision failed"
-
-    class Meta:
-        verbose_name = 'Open edX Instance'
-        ordering = ['-created']
-
-    @property
-    def default_fork(self):
-        """
-        Name of the fork to use by default, when no repository is specified
-        """
-        return settings.DEFAULT_FORK
-
-    @property
-    def ansible_s3_settings(self):
-        """
-        Ansible settings for the S3 bucket
-        """
-        if not self.s3_access_key or not self.s3_secret_access_key or not self.s3_bucket_name:
-            return ''
-
-        template = loader.get_template('instance/ansible/s3.yml')
-        return template.render({'instance': self})
-
-    @property
-    def ansible_mysql_settings(self):
-        """
-        Ansible settings for the external mysql database
-        """
-        if self.use_ephemeral_databases or not settings.INSTANCE_MYSQL_URL_OBJ:
-            return ''
-
-        template = loader.get_template('instance/ansible/mysql.yml')
-        return template.render({'user': self.mysql_user,
-                                'pass': self.mysql_pass,
-                                'host': settings.INSTANCE_MYSQL_URL_OBJ.hostname,
-                                'port': settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
-                                'database': self.mysql_database_name})
-
-    @property
-    def ansible_mongo_settings(self):
-        """
-        Ansible settings for the external mongo database
-        """
-        if self.use_ephemeral_databases or not settings.INSTANCE_MONGO_URL_OBJ:
-            return ''
-
-        template = loader.get_template('instance/ansible/mongo.yml')
-        return template.render({'user': self.mongo_user,
-                                'pass': self.mongo_pass,
-                                'host': settings.INSTANCE_MONGO_URL_OBJ.hostname,
-                                'port': settings.INSTANCE_MONGO_URL_OBJ.port or 27017,
-                                'database': self.mongo_database_name,
-                                'forum_database': self.forum_database_name})
-
-    @property
-    def ansible_swift_settings(self):
-        """
-        Ansible settings for Swift access.
-        """
-        if self.use_ephemeral_databases or not settings.SWIFT_ENABLE:
-            return ''
-
-        template = loader.get_template('instance/ansible/swift.yml')
-        return template.render({'user': self.swift_openstack_user,
-                                'password': self.swift_openstack_password,
-                                'tenant': self.swift_openstack_tenant,
-                                'auth_url': self.swift_openstack_auth_url,
-                                'region': self.swift_openstack_region})
-
-    @property
-    def studio_sub_domain(self):
-        """
-        Studio sub-domain name (eg. 'studio.master')
-        """
-        return 'studio.{}'.format(self.sub_domain)
-
-    @property
-    def studio_domain(self):
-        """
-        Studio full domain name (eg. 'studio.master.sandbox.opencraft.com')
-        """
-        return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
-
-    @property
-    def studio_url(self):
-        """
-        Studio URL
-        """
-        return u'{0.protocol}://{0.studio_domain}/'.format(self)
-
-    @property
-    def database_name(self):
-        """
-        The database name used for external databases. Escape all non-ascii characters and truncate to 64 chars, the
-        maximum for mysql
-        """
-        name = self.domain.replace('.', '_')
-        allowed = string.ascii_letters + string.digits + '_'
-        escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=64)
-
-    @property
-    def mysql_database_name(self):
-        """
-        The mysql database name for this instance
-        """
-        return self.database_name
-
-    @property
-    def mysql_database_names(self):
-        """
-        List of mysql database names
-        """
-        return [self.mysql_database_name]
-
-    @property
-    def mongo_database_name(self):
-        """
-        The name of the main external mongo database
-        """
-        return self.database_name
-
-    @property
-    def forum_database_name(self):
-        """
-        The name of the external database used for forums
-        """
-        return '{0}_forum'.format(self.database_name)
-
-    @property
-    def mongo_database_names(self):
-        """
-        List of mongo database names
-        """
-        return [self.mongo_database_name, self.forum_database_name]
-
-    @property
-    def swift_container_name(self):
-        """
-        The name of the Swift container used by the instance.
-        """
-        return self.database_name
-
-    @property
-    def swift_container_names(self):
-        """
-        The list of Swift container names to be created.
-        """
-        return [self.swift_container_name]
-
-    def save(self, **kwargs):
-        """
-        Set this instance's default field values
-        """
-        if self.use_ephemeral_databases is None:
-            self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
-        super().save(**kwargs)
-
-    def update_from_pr(self, pr):
-        """
-        Update this instance with settings from the given pull request
-        """
-        super().update_from_pr(pr)
-        self.ansible_extra_settings = pr.extra_settings
-        self.use_ephemeral_databases = pr.use_ephemeral_databases(self.domain)
-        self.ansible_source_repo_url = pr.get_extra_setting('edx_ansible_source_repo')
-        self.configuration_version = pr.get_extra_setting('configuration_version')
-
-    @log_exception
-    def provision(self):
-        """
-        Run the provisioning sequence of the instance, recreating the servers from scratch
-
-        Returns: (server, log)
-        """
-        attempt_num = 1
-        provisioned = False
-        server, logs = None, []
-
-        while attempt_num <= self.attempts and not provisioned:
-            self.logger.info(
-                'Provision attempt {attempt} of {attempts}'.format(attempt=attempt_num, attempts=self.attempts)
-            )
-            server, deploy_log, provisioned = self._provision_attempt()
-            if deploy_log is not None:  # If server fails to build, no deployment logs will be available
-                logs.extend(deploy_log)
-            attempt_num += 1
-
-        return (server, logs)
-
-    def _provision_attempt(self):
-        """
-        Runs single provisioning attempt, creating servers from scratch
-
-        Returns: (server, log)
-        """
-        self.last_provisioning_started = timezone.now()
-
-        # Instance
-        self.logger.info('Prepare for (re-)provisioning')
-        self._status_to_waiting_for_server()
-
-        # Server
-        self.logger.info('Terminate servers')
-        self.server_set.terminate()
-        self.logger.info('Start new server')
-        server = self.server_set.create()
-        server.start()
-
-        try:
-            server.sleep_until(lambda: server.status.vm_available)
-        except SteadyStateException:
-            self._status_to_error()
-            return (server, None, False)  # No deploy logs available yet; instance has not been provisioned
-
-        def accepts_ssh_commands():
-            """ Does server accept SSH commands? """
-            return server.status.accepts_ssh_commands
-
-        try:
-            # DNS
-            self.logger.info('Waiting for IP assignment on server %s...', server)
-            server.sleep_until(accepts_ssh_commands)
-            self.logger.info('Updating DNS: LMS at %s...', self.domain)
-            gandi.set_dns_record(type='A', name=self.sub_domain, value=server.public_ip)
-            self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
-            gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
-
-            # Provisioning (external databases)
-            if not self.use_ephemeral_databases:
-                self.logger.info('Provisioning MySQL database...')
-                self.provision_mysql()
-                self.logger.info('Provisioning MongoDB databases...')
-                self.provision_mongo()
-                self.logger.info('Provisioning Swift container...')
-                self.provision_swift()
-
-            # Provisioning (ansible)
-            self.logger.info('Provisioning server...')
-            self._status_to_configuring_server()
-            self.reset_ansible_settings(commit=True)
-            deploy_log, exit_code = self.deploy()
-            if exit_code != 0:
-                self.logger.info('Provisioning failed')
-                self._status_to_configuration_failed()
-                self.provision_failed_email(self.ProvisionMessages.PROVISION_ERROR, deploy_log)
-                return (server, deploy_log, False)
-
-            # Reboot
-            self.logger.info('Provisioning completed')
-            self.logger.info('Rebooting server %s...', server)
-            server.reboot()
-            server.sleep_until(accepts_ssh_commands)
-
-            # Declare instance up and running
-            self._status_to_running()
-
-            return (server, deploy_log, True)
-
-        except:
-            self.server_set.terminate()
-            self.provision_failed_email(self.ProvisionMessages.PROVISION_EXCEPTION)
-            raise
-
-    def provision_mysql(self):
-        """
-        Set mysql credentials and provision the database.
-        """
-        if not self.mysql_provisioned:
-            self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
-            self.mysql_pass = get_random_string(length=32)
-        return super().provision_mysql()
-
-    def provision_mongo(self):
-        """
-        Set mongo credentials and provision the database.
-        """
-        if not self.mongo_provisioned:
-            self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
-            self.mongo_pass = get_random_string(length=32)
-        return super().provision_mongo()
-
-    def provision_swift(self):
-        """
-        Set Swfit credentials and create the Swift container.
-        """
-        if settings.SWIFT_ENABLE and not self.swift_provisioned:
-            # TODO: Figure out a way to use separate credentials for each instance.  Access control
-            # on Swift containers is granted to users, and there doesn't seem to be a way to create
-            # Keystone users in OpenStack public clouds.
-            self.swift_openstack_user = settings.SWIFT_OPENSTACK_USER
-            self.swift_openstack_password = settings.SWIFT_OPENSTACK_PASSWORD
-            self.swift_openstack_tenant = settings.SWIFT_OPENSTACK_TENANT
-            self.swift_openstack_auth_url = settings.SWIFT_OPENSTACK_AUTH_URL
-            self.swift_openstack_region = settings.SWIFT_OPENSTACK_REGION
-        return super().provision_swift()
+        instance_type = ContentType.objects.get_for_model(self)
+        entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
+        # TODO: Filter out log entries for which the user doesn't have view rights
+        return reversed(list(entries[:limit]))

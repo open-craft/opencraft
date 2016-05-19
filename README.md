@@ -237,6 +237,21 @@ flavor:
 * `INSTANCE_MYSQL_URL` If using an external mysql database, set its url here
 * `INSTANCE_MONGO_URL` If using an external mongo database, set its url here
 
+### Open edX specific settings
+
+* `DEFAULT_OPENEDX_RELEASE` Set this to a release tag like 
+  `named-release/dogwood` to specify the default release of Open edX to use.
+  This setting becomes the default value for `edx_platform_version`,
+  `forum_version`, `notifier_version`, `xqueue_version`, and `certs_version` so
+  it should be a git branch or tag that exists in all of those repositories.
+* `DEFAULT_CONFIGURATION_REPO_URL` The repository containing the Open edX
+  Ansible scripts to use. Defaults to
+  `https://github.com/edx/configuration.git`.
+* `DEFAULT_CONFIGURATION_VERSION` The branch/tag/commit from the configuration
+  repository to use by default. Normally this does not need to be set; if it is
+  not set, the value of `DEFAULT_OPENEDX_RELEASE` will be used.
+* `DEFAULT_FORK`: The fork of `edx-platform` to use by default. Defaults to the
+  main repository, `edx/edx-platform`.
 
 Migrations
 ----------
@@ -381,47 +396,63 @@ Note: You need to match the above format exactly.
 
 ### Manual provisioning
 
-If you want to provision a sandbox outside of a GitHub pull request, you can do
+If you want to create an instance outside of a GitHub pull request, you can do
 so from the shell:
 
 ```python
-from instance.models.instance import SingleVMOpenEdXInstance
-from instance.tasks import provision_instance
+from instance.models.openedx_instance import OpenEdXInstance
 
-instance = SingleVMOpenEdXInstance.objects.create(
-    sub_domain='dogwood.sandbox',
-    name='Dogwood',
-    fork_name='edx/edx-platform',
-    branch_name='named-release/dogwood',
+instance = OpenEdXInstance.objects.create(
+    name='Dogwood sandbox',
+    sub_domain='dogwood',
+    # The rest of the parameters are all optional:
+    email='myname@opencraft.com',
+    openedx_release='named-release/dogwood',
     configuration_version='named-release/dogwood',
-    forum_version='named-release/dogwood',
-    notifier_version='named-release/dogwood',
-    xqueue_version='named-release/dogwood',
-    certs_version='named-release/dogwood',
-    ansible_source_repo_url='https://github.com/edx/configuration.git',
+    configuration_source_repo_url='https://github.com/edx/configuration.git',
+    configuration_extra_settings='',
+    use_ephemeral_databases=False,
 )
 
-instance.ansible_extra_settings = """
-# Add custom ansible settings here, as yaml
+# Optionally, set custom ansible variables/overrides:
+instance.configuration_extra_settings = """
 NGINX_ENABLE_SSL: true
 """
-
 instance.save()
-provision_instance(instance.pk)
 ```
 
-To reprovision an instance from the shell, simply run the `provision_instance`
-task again:
+Once the instance is created, use the web UI to review the instance
+configuration, then use the "Launch new AppServer" button to provision a server.
+
+Once the server is ready, select it in the UI and click "Activate this app
+server". (You can also do this in advance, during provisioning, if you want the
+DNS updated sooner and aren't concerned about the DNS pointing to a potentially
+broken server, in the case the provisioning should fail.)
+
+**To change an instance's parameters**, if that instance is not controlled by a pull
+request:
+
+First, note the instance's ID (will be in the URL of that instance in
+the web UI, or get it in the shell as `instance.ref.id`). Then, load the
+instance, make changes, and save:
 
 ```python
-instance = SingleVMOpenEdXInstance.objects.get(name__contains='...')
-provision_instance(instance.pk)
+instance = InstanceReference.objects.get(id=20).instance
+# Update settings of instance:
+instance.edx_platform_commit = 'master'
+# Save:
+instance.save()
 ```
 
-To delete an instance, ensuring that all virtual machines are terminated, run:
+Then use the "Launch new AppServer" button in the web UI to provision a server
+with the updated settings, and click "Activate this app server" to use the new
+server when it's ready.
+
+**To delete an instance**, ensuring that all virtual machines are terminated, run:
 
 ```python
-instance.server_set.terminate()
+for appserver in instance.appserver_set.all():
+    appserver.terminate_vm()
 instance.delete()
 ```
 

@@ -22,14 +22,13 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
-import textwrap
 from unittest.mock import patch
 
+import ddt
+
 from instance import tasks
-from instance.models.instance import SingleVMOpenEdXInstance
 from instance.tests.base import TestCase
-from instance.tests.factories.pr import PRFactory
-from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 
 # Tests #######################################################################
@@ -37,62 +36,71 @@ from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFact
 # Factory boy doesn't properly support pylint+django
 #pylint: disable=no-member
 
-class TasksTestCase(TestCase):
+@ddt.ddt
+class SpawnAppServerTestCase(TestCase):
     """
-    Test cases for worker tasks
+    Test cases for tasks.spawn_appserver, which wraps OpenEdXInstance.spawn_appserver()
     """
-    @patch('instance.models.instance.SingleVMOpenEdXInstance.provision', autospec=True)
-    def test_provision_sandbox_instance(self, mock_instance_provision):
-        """
-        Create sandbox instance
-        """
-        instance = SingleVMOpenEdXInstanceFactory()
-        tasks.provision_instance(instance.pk)
-        self.assertEqual(mock_instance_provision.call_count, 1)
-        self.assertEqual(mock_instance_provision.mock_calls[0][1][0].pk, instance.pk)
 
-    @patch('instance.models.mixins.version_control.github.get_commit_id_from_ref')
-    @patch('instance.tasks.provision_instance')
-    @patch('instance.tasks.get_pr_list_from_username')
-    @patch('instance.tasks.get_username_list_from_team')
-    def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
-                          mock_provision_instance, mock_get_commit_id_from_ref):
-        """
-        New PR created on the watched repo
-        """
-        ansible_extra_settings = textwrap.dedent("""\
-            WATCH: true
-            edx_ansible_source_repo: https://github.com/open-craft/configuration
-            configuration_version: named-release/elder
-        """)
-        mock_get_username_list.return_value = ['itsjeyd']
-        pr = PRFactory(
-            number=234,
-            source_fork_name='fork/repo',
-            target_fork_name='source/repo',
-            branch_name='watch-branch',
-            title='Watched PR title which is very long',
-            username='bradenmacdonald',
-            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\n{}```\r\nMore...'.format(
-                ansible_extra_settings
-            ),
-        )
-        self.assertEqual(pr.github_pr_url, 'https://github.com/source/repo/pull/234')
-        mock_get_pr_list_from_username.return_value = [pr]
-        mock_get_commit_id_from_ref.return_value = '7' * 40
+    def setUp(self):
+        patcher = patch('instance.models.openedx_instance.OpenEdXInstance.spawn_appserver', autospec=True)
+        self.addCleanup(patcher.stop)
+        self.mock_spawn_appserver = patcher.start()
+        self.mock_spawn_appserver.return_value = 10
 
-        tasks.watch_pr()
-        self.assertEqual(mock_provision_instance.call_count, 1)
-        instance = SingleVMOpenEdXInstance.objects.get(pk=mock_provision_instance.mock_calls[0][1][0])
-        self.assertEqual(instance.sub_domain, 'pr234.sandbox')
-        self.assertEqual(instance.fork_name, 'fork/repo')
-        self.assertEqual(instance.github_pr_number, 234)
-        self.assertEqual(instance.github_pr_url, 'https://github.com/source/repo/pull/234')
-        self.assertEqual(instance.github_base_url, 'https://github.com/fork/repo')
-        self.assertEqual(instance.branch_name, 'watch-branch')
-        self.assertEqual(instance.ansible_extra_settings, ansible_extra_settings)
-        self.assertEqual(instance.ansible_source_repo_url, 'https://github.com/open-craft/configuration')
-        self.assertEqual(instance.configuration_version, 'named-release/elder')
-        self.assertEqual(
-            instance.name,
-            'PR#234: Watched PR title which ... (bradenmacdonald) - fork/watch-branch (7777777)')
+        patcher = patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_active')
+        self.addCleanup(patcher.stop)
+        self.mock_set_appserver_active = patcher.start()
+
+    def test_provision_sandbox_instance(self):
+        """
+        Test the spawn_appserver() task, and that it can be used to spawn an AppServer for a new
+        instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        tasks.spawn_appserver(instance.ref.pk)
+        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        self.mock_spawn_appserver.assert_called_once_with(instance)
+        # By default we don't mark_active_on_success:
+        self.assertEqual(self.mock_set_appserver_active.call_count, 0)
+
+    @ddt.data(True, False)
+    def test_mark_active_on_success(self, provisioning_succeeds):
+        """
+        Test that we when mark_active_on_success=True, the spawn_appserver task will mark the
+        newly provisioned AppServer as active, if provisioning succeeded.
+        """
+        self.mock_spawn_appserver.return_value = 10 if provisioning_succeeds else None
+
+        instance = OpenEdXInstanceFactory()
+        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
+        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+
+        self.assertEqual(self.mock_set_appserver_active.call_count, 1 if provisioning_succeeds else 0)
+
+    def test_num_attempts(self):
+        """
+        Test that if num_attempts > 1, the spawn_appserver task will automatically re-try
+        provisioning.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        self.mock_spawn_appserver.return_value = None  # Mock provisioning failure
+        tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
+
+        self.assertEqual(self.mock_spawn_appserver.call_count, 3)
+        self.assertEqual(self.mock_set_appserver_active.call_count, 0)
+
+        self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
+        self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
+        self.assertTrue(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
+
+    def test_one_attempt_default(self):
+        """
+        Test that by default, the spawn_appserver task will not re-try provisioning.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.mock_spawn_appserver.return_value = None  # Mock provisioning failure
+        tasks.spawn_appserver(instance.ref.pk)
+        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))

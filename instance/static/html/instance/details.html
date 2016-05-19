@@ -1,0 +1,138 @@
+<h3>
+  {{ instance.name }}
+</h3>
+<div class="panel">
+  <div class="row">
+    <div class="large-10 columns">
+      <ul class="instance-description">
+        <li>LMS: <a href="{{ instance.url }}" target="_new">{{ instance.url }}</a></li>
+        <li>Studio: <a href="{{ instance.studio_url }}" target="_new">{{ instance.studio_url }}</a></li>
+      </ul>
+    </div>
+    <div class="large-2 columns">
+      <span class="status radius label"
+        ng-if="instance.active_appserver"
+        ng-class="{warning: !instance.active_appserver.is_healthy, success: instance.active_appserver.is_healthy}"
+        tooltip="{{ instance.active_appserver.status_description }}">
+        <i ng-attr-class="{{ instance.active_appserver.is_steady && (instance.active_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+        {{ instance.active_appserver.name }}: {{ instance.active_appserver.status_name }}
+      </span>
+      <span class="status radius label warning" ng-if="!instance.active_appserver">
+        No active app server
+      </span>
+    </div>
+  </div>
+</div>
+
+<tabset>
+  <tab heading="App Servers" active="instance_active_tabs.appservers_tab">
+    <div class="row">
+      <div class="large-3 columns">
+        <h4>App Servers</h4>
+        <button class="small" ng-click="spawn_appserver()" ng-disabled="is_spawning_appserver">
+          <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
+        </button>
+        <ul class="side-nav appserver-list">
+          <li ng-repeat="appserver in instance.appservers" ng-class="{'active-server': appserver.id == instance.active_appserver.id, active: appserver.id == state.params.appserverId}">
+            <a ui-sref="instances.details.openedx_appserver_details({appserverId: appserver.id})">
+              <i class="fa fa-server"></i> <span class="appserver-name">{{ appserver.name }}</span>
+              <span ng-if="appserver.id == instance.active_appserver.id">(Active)</span>
+              <ul>
+                <li>{{ appserver.status_name }}</li>
+              </ul>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="large-9 columns ui-view">
+      <!-- AppServer details appear here -->
+      </div>
+    </div>
+  </tab>
+  <tab heading="Settings" active="instance_active_tabs.settings_tab">
+    <h4>Current configuration</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ID</td><td>{{ instance.id }}</td></tr>
+        <tr><td>Name</td><td>{{ instance.name }}</td></tr>
+        <tr><td>Created</td><td>{{ instance.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
+        <tr><td>Modified</td><td>{{ instance.modified | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
+        <tr><td>Type</td><td>{{ instance.instance_type }}</td></tr>
+        <!-- The following are all specific to Open edX instances: -->
+        <tr><td>Domain</td><td>{{ instance.domain}}<br>Sub domain: {{ instance.sub_domain}}, base domain: {{ instance.base_domain }}</td></tr>
+        <tr><td>LMS URL</td><td><a href="{{ instance.url}}">{{ instance.url}}</a></td></tr>
+        <tr><td>Studio URL</td><td><a href="{{ instance.studio_url}}">{{ instance.studio_url}}</a></td></tr>
+        <tr><td>Email</td><td>{{ instance.email }}</td></tr>
+        <tr><td>Protocol</td><td>{{ instance.protocol }}</td></tr>
+        <tr><td>Use ephemeral databases</td><td>{{ instance.use_ephemeral_databases }}</td></tr>
+        <tr><td>GitHub admin org</td><td>{{ instance.github_admin_organization_name }}</td></tr>
+        <tr><td>configuration_source_repo_url</td><td>{{ instance.configuration_source_repo_url }}</td></tr>
+        <tr><td>configuration_version</td><td>{{ instance.configuration_version }}</td></tr>
+        <tr><td>edx_platform_repository_url</td><td>{{ instance.edx_platform_repository_url }}</td></tr>
+        <tr><td>edx_platform_commit</td><td>{{ instance.edx_platform_commit }}</td></tr>
+        <tr><td>openedx_release</td><td>{{ instance.openedx_release }}</td></tr>
+        <tr><td>configuration_extra_settings</td><td><pre>{{ instance.configuration_extra_settings }}</pre></td></tr>
+      </tbody>
+    </table>
+
+    <h4>Status</h4>
+    <table>
+      <tbody>
+        <tr><td>MySQL provisioned</td><td>{{ instance.mysql_provisioned }}</td></tr>
+        <tr><td>Mongo provisioned</td><td>{{ instance.mongo_provisioned }}</td></tr>
+        <tr><td>Swift provisioned</td><td>{{ instance.swift_provisioned }}</td></tr>
+      </tbody>
+    </table>
+  </tab>
+  <tab heading="Log" active="instance_active_tabs.log_tab">
+    <p>This log does not include events from each App Server or VM. Select an App Server on the "App Servers" tab to view those logs.</p>
+    <pre class="instance-log" ng-repeat="line in instance.log_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
+    <p ng-if="instance.log_entries.length == 0"><em>(There are currently no entries in this log)</em></p>
+  </tab>
+  <tab heading="Pull Request (#{{pr.github_pr_number}})" ng-if="instance.source_pr" ng-init="pr = instance.source_pr" active="instance_active_tabs.pr_tab">
+    <h4>Pull Request Details</h4>
+    <p>This instance was automatically generated for the GitHub pull request <a href="{{pr.github_pr_url}}">{{ pr.fork_name }} #{{ pr.github_pr_number }} ({{ pr.branch_name }})</a></p>
+
+    <p>If the PR has changed, you can update the instance settings based on the PR:</p>
+    <button ng-click="update_from_pr()" ng-disabled="is_updating_from_pr">
+      <i class="fa fa-refresh" ng-class="{'fa-spin': is_updating_from_pr}"></i> Update Instance Settings from PR
+    </button>
+
+    <p>Note that this just updates the instance settings. You will still have to manually spawn a new App Server in order to deploy the changes.</p>
+
+    <h4>Configuring this instance from the pull request</h4>
+
+    <p>If you want to change the configuration for an instance generated from a PR, you can add or override any of its variables by adding a "Settings" section to your PR. This ensures the information is available in a central place, for both the reviewers and the OpenCraft Instance manager. The section should use the following format:</p>
+
+    <div class="panel">
+<pre>- - -
+**Settings**
+```yaml
+[YAML: VARIABLES]
+```</pre>
+    </div>
+
+    <p>For example:</p>
+
+    <div class="panel">
+<pre>- - -
+**Settings**
+```yaml
+EDXAPP_FEATURES:
+ALLOW_HIDING_DISCUSSION_TAB: true
+```
+</pre>
+    </div>
+
+    <p>Note: You need to match the above format exactly.</p>
+  </tab>
+  <tab heading="Pull Request (n/a)" ng-if="!(instance.source_pr)">
+    <p>This instance was not created for a pull request.</p>
+  </tab>
+</tabset>

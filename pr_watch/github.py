@@ -22,8 +22,8 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
-import logging
 import functools
+import logging
 import operator
 import re
 

@@ -33,7 +33,6 @@ import novaclient
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
 from instance.tests.base import AnyStringMatching, TestCase
-from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 from instance.tests.models.factories.server import (
     OpenStackServerFactory,
     BootingOpenStackServerFactory,
@@ -88,7 +87,7 @@ class OpenStackServerTestCase(TestCase):
         server.start()
         mock_create_server.assert_called_once_with(
             server.nova,
-            AnyStringMatching(r'instance\d+\.test'),
+            AnyStringMatching(r'test-inst-\d+'),
             settings.OPENSTACK_SANDBOX_FLAVOR,
             settings.OPENSTACK_SANDBOX_BASE_IMAGE,
             key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
@@ -142,7 +141,7 @@ class OpenStackServerTestCase(TestCase):
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
-        server = OpenStackServer.objects.create(instance=SingleVMOpenEdXInstanceFactory())
+        server = OpenStackServer.objects.create(name_prefix="test-nova-error")
         self.assertTrue(server.os_server)
 
     @data(

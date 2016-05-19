@@ -25,14 +25,14 @@ FORUM_RACK_ENV: 'production'
 FORUM_SINATRA_ENV: 'production'
 
 # Emails
-EDXAPP_CONTACT_EMAIL: '{{ instance.email }}'
-EDXAPP_TECH_SUPPORT_EMAIL: '{{ instance.email }}'
-EDXAPP_BUGS_EMAIL: '{{ instance.email }}'
-EDXAPP_FEEDBACK_SUBMISSION_EMAIL: '{{ instance.email }}'
-EDXAPP_DEFAULT_FROM_EMAIL: '{{ instance.email }}'
-EDXAPP_DEFAULT_FEEDBACK_EMAIL: '{{ instance.email }}'
-EDXAPP_SERVER_EMAIL: '{{ instance.email }}'
-EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ instance.email }}'
+EDXAPP_CONTACT_EMAIL: '{{ appserver.email }}'
+EDXAPP_TECH_SUPPORT_EMAIL: '{{ appserver.email }}'
+EDXAPP_BUGS_EMAIL: '{{ appserver.email }}'
+EDXAPP_FEEDBACK_SUBMISSION_EMAIL: '{{ appserver.email }}'
+EDXAPP_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
+EDXAPP_DEFAULT_FEEDBACK_EMAIL: '{{ appserver.email }}'
+EDXAPP_SERVER_EMAIL: '{{ appserver.email }}'
+EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
 
 # Misc
 EDXAPP_TIME_ZONE: 'UTC'
@@ -44,16 +44,16 @@ SECURITY_UPDATE_ALL_PACKAGES: false
 SECURITY_UPGRADE_ON_ANSIBLE: true
 
 # Repositories URLs
-edx_ansible_source_repo: '{{ instance.ansible_source_repo_url }}'
-edx_platform_repo: '{{ instance.repository_url }}'
+edx_ansible_source_repo: '{{ appserver.configuration_source_repo_url }}'
+edx_platform_repo: '{{ appserver.edx_platform_repository_url }}'
 
 # Pin down dependencies to specific (known to be compatible) commits.
-edx_platform_version: '{{ instance.commit_id }}'
-configuration_version: '{{ instance.configuration_version }}'
-forum_version: '{{ instance.forum_version }}'
-notifier_version: '{{ instance.notifier_version }}'
-xqueue_version: '{{ instance.xqueue_version }}'
-certs_version: '{{ instance.certs_version }}'
+edx_platform_version: '{{ appserver.edx_platform_commit }}'
+configuration_version: '{{ appserver.configuration_version }}'
+forum_version: '{{ appserver.openedx_release }}'
+notifier_version: '{{ appserver.openedx_release }}'
+xqueue_version: '{{ appserver.openedx_release }}'
+certs_version: '{{ appserver.openedx_release }}'
 
 # Features
 EDXAPP_FEATURES:

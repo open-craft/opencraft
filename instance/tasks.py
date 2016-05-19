@@ -24,11 +24,9 @@ Worker tasks for instance hosting & management
 
 import logging
 
-from django.conf import settings
-from huey.contrib.djhuey import crontab, db_periodic_task, db_task
+from huey.contrib.djhuey import db_task
 
-from instance.github import get_username_list_from_team, get_pr_list_from_username
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance
 
 
 # Logging #####################################################################
@@ -39,29 +37,26 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @db_task()
-def provision_instance(instance_pk):
+def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=1):
     """
-    Run provisioning on an existing instance
+    Create a new AppServer for an existing instance.
+
+    instance_ref_id should be the ID of an InstanceReference (instance.ref.pk)
+
+    Optionally mark the new AppServer as active when the provisioning completes.
+    Optionally retry up to 'num_attempts' times
     """
-    logger.info('Retreiving instance: pk=%s', instance_pk)
-    instance = SingleVMOpenEdXInstance.objects.get(pk=instance_pk)
+    for i in range(1, num_attempts + 1):
+        logger.info('Retrieving instance: ID=%s', instance_ref_id)
+        # Fetch the instance inside the loop, in case it has been updated
+        instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
-    logger.info('Running provisioning on %s', instance)
-    instance.provision()
-
-
-@db_periodic_task(crontab(minute='*/1'))
-def watch_pr():
-    """
-    Automatically create/update sandboxes for PRs opened by members of the watched
-    organization on the watched repository
-    """
-    team_username_list = get_username_list_from_team(settings.WATCH_ORGANIZATION)
-
-    for username in team_username_list:
-        for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
-            sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
-            instance, created = SingleVMOpenEdXInstance.objects.update_or_create_from_pr(pr, sub_domain)
-            if created:
-                logger.info('New PR found, creating sandbox: %s', pr)
-                provision_instance(instance.pk)
+        instance.logger.info('Spawning new AppServer, attempt %d of %d', i, num_attempts)
+        appserver_id = instance.spawn_appserver()
+        if appserver_id:
+            if mark_active_on_success:
+                # If the AppServer provisioned successfully, make it the active one:
+                # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
+                # finish and replace the second as the active server. We are not really worried about that for now.
+                instance.set_appserver_active(appserver_id)
+            break

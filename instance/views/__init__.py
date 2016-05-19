@@ -25,29 +25,13 @@ Instance views
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from instance.models.instance import SingleVMOpenEdXInstance
-
-
-# Functions - Helpers #########################################################
-
-def get_context():
-    """
-    Commond context
-    """
-    instance_list = SingleVMOpenEdXInstance.objects.order_by('-created')
-
-    context = {
-        'instance_list': instance_list,
-    }
-
-    return context
-
 
 # Views #######################################################################
+
 
 @login_required
 def index(request):
     """
     Index view
     """
-    return render(request, 'instance/index.html', get_context())
+    return render(request, 'instance/index.html', context={})

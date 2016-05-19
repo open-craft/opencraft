@@ -14,15 +14,59 @@
     font-size: 14px;
 }
 
+ul.side-nav li.active {
+    border-left: 10px solid #008CBA;
+}
+
 .content.instance-app {
     .row {
         max-width: none;
     }
 
-    div.status-icon {
+    .side-instance-list {
+        .instance-name {
+            display: block;
+            margin-right: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    div.status-icon-active {
         float: right;
         margin-left: 10px;
         margin-top: 8px;
+        background-color: #eee;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+        line-height: 30px;
+        text-align: center;
+        &.healthy {
+            background-color: #ada;
+        }
+        &.unhealthy {
+            background-color: #daa;
+        }
+    }
+    div.status-icon-newest {
+        float: right;
+        margin-left: 10px;
+        margin-top: 11px;
+        border: 3px solid #ddd;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+        line-height: 21px;
+        font-size: 12px;
+        text-align: center;
+        &.healthy {
+            border-color: #ada;
+        }
+        &.unhealthy {
+            border-color: #daa;
+        }
     }
 
     .instance-description {
@@ -49,6 +93,35 @@
         background-color: #fcc;
         color: #800;
     }
+
+    .a-welcoming-empty-state {
+        width: 90%;
+        margin: 100px auto;
+        text-align: center;
+
+        i {
+            font-size: 30vh;
+            opacity: 0.5;
+            margin-bottom: 30px;
+        }
+    }
+
+    .appserver-list {
+        .appserver-name {
+            font-weight: bold;
+        }
+        > li li {
+            list-style-type: none;
+        }
+    }
+}
+
+button i.fa {
+    margin-right: 1em;
+}
+
+table td, table th {
+    vertical-align: top;
 }
 
 // TODO: Move to application scope

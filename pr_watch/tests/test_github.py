@@ -25,10 +25,11 @@ GitHub - Tests
 import json
 from unittest.mock import patch
 
+from django.test import TestCase
 import responses
 
-from instance import github
-from instance.tests.base import TestCase, get_raw_fixture
+from instance.tests.base import get_raw_fixture
+from pr_watch import github
 
 
 # Tests #######################################################################
@@ -153,7 +154,7 @@ class GitHubTestCase(TestCase):
             github.get_pr_by_number('edx/edx-platform', 1234567890)
 
     @responses.activate
-    @patch('instance.github.get_pr_by_number')
+    @patch('pr_watch.github.get_pr_by_number')
     def test_get_pr_list_from_username(self, mock_get_pr_by_number):
         """
         Get list of open PR for user

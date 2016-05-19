@@ -3,7 +3,22 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
-from instance.models.instance import Status as InstanceStatus
+class InstanceStatus:
+    """ Frozen copy of InstanceStatus constants at this point in the migration history """
+    class New:
+        state_id = 'new'
+    class WaitingForServer:
+        state_id = 'waiting'
+    class ConfiguringServer:
+        state_id = 'configuring'
+    class Running:
+        state_id = 'running'
+    class ConfigurationFailed:
+        state_id = 'failed'
+    class Error:
+        state_id = 'error'
+    class Terminated:
+        state_id = 'terminated'
 
 
 def get_current_server(instance):

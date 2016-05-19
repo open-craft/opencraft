@@ -17,57 +17,61 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+Instance API
 """
 
 # Imports #####################################################################
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
-from instance import github
-from instance.models.instance import Instance, SingleVMOpenEdXInstance
-from instance.serializers.instance import (
-    SingleVMOpenEdXInstanceListSerializer, SingleVMOpenEdXInstanceDetailSerializer
-)
-from instance.tasks import provision_instance
+from instance.models.instance import InstanceReference
+from instance.serializers.instance import InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer
 
 
 # Views - API #################################################################
 
-class SingleVMOpenEdXInstanceViewSet(viewsets.ModelViewSet):
+
+class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    SingleVMOpenEdXInstance API ViewSet
+    API to list and manipulate instances.
+
+    Uses InstanceReference to iterate all types of instances, and serializes them.
+
+    The fields that are returned for each instance depend on its instance_type and whether you
+    are listing all instances (returns fewer fields) or just one instance (returns all fields).
+
+    The only fields that are available for all instances, regardless of type, are the fields
+    defined on the InstanceReference class, namely:
+
+    * `id`
+    * `name`
+    * `created`
+    * `modified`
+    * `instance_type`
+
+    Note that IDs used for instances are always the ID of the InstanceReference object, which
+    may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance
+    object has its own ID which should never be used - just use its InstanceReference ID). This
+    detail is managed by the API so users of the API should not generally need to be aware of
+    it.
     """
-    queryset = SingleVMOpenEdXInstance.objects.all()
-
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
-    def provision(self, request, pk=None):
-        """
-        Start the (re-)provisioning of an instance
-        """
-        instance = self.get_object()
-        if instance.status in (Instance.Status.WaitingForServer, Instance.Status.ConfiguringServer):
-            return Response({'status': 'Instance is not ready for reprovisioning'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            instance.set_to_branch_tip()
-        except github.ObjectDoesNotExist:
-            return Response({
-                'status': ("Branch '{0}' not found."
-                           'Has it been deleted on GitHub?'.format(instance.branch_name))
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        provision_instance(pk)
-        return Response({'status': 'Instance provisioning started'})
+    queryset = InstanceReference.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         """
-        Return the list serializer for the list action, and the detail serializer otherwise.
+        Return the basic serializer for the list action, and the detailed serializer otherwise.
         """
         if self.action == 'list':
-            return SingleVMOpenEdXInstanceListSerializer
-        return SingleVMOpenEdXInstanceDetailSerializer
+            return InstanceReferenceBasicSerializer
+        return InstanceReferenceDetailedSerializer
+
+    def get_view_name(self):
+        """
+        Get the verbose name for each view
+        """
+        suffix = self.suffix
+        if self.action == 'retrieve':
+            suffix = "Details"
+        return "Instance {}".format(suffix)

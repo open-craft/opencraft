@@ -30,7 +30,6 @@ from factory.django import DjangoModelFactory
 
 from instance.models.server import OpenStackServer
 from instance.tests.base import add_fixture_to_object
-from instance.tests.models.factories.instance import SingleVMOpenEdXInstanceFactory
 
 
 # Functions ###################################################################
@@ -99,7 +98,7 @@ class OpenStackServerFactory(DjangoModelFactory):
     class Meta:
         model = OpenStackServer
 
-    instance = factory.SubFactory(SingleVMOpenEdXInstanceFactory)
+    name_prefix = 'test-inst'
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

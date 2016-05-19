@@ -1,18 +1,3 @@
-<top-bar>
-  <ul class="title-area">
-    <li class="name">
-      <h1><a href="#">OpenCraft Instance Manager</a></h1>
-    </li>
-  </ul>
-
-  <section class="top-bar-section">
-    <!-- Right Nav Section -->
-    <ul class="right">
-      <li class="active"><a href="/admin/logout/?next=/">Logout</a></li>
-    </ul>
-  </section>
-</top-bar>
-
 <div class="loading-msg round warning label" ng-if="loading">
     Loading...
 </div>
@@ -24,111 +9,39 @@
 <div class="row">
   <!-- Instances List -->
   <div class="large-3 columns">
-    <ul class="side-nav" ng-if="instanceList">
+    <ul class="side-nav side-instance-list">
       <li ng-repeat="instance in instanceList"
-          ng-class="{active: instance == selected.instance}">
-        <div class="status-icon">
-          <i ng-attr-class="{{ instance.is_steady && (instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"
-             tooltip-placement="top"
-             tooltip="{{ instance.status_description }}">
+          ng-class="{active: instance.id == state.params.instanceId}"
+          ng-init="
+              active_appserver = instance.active_appserver;
+              newer_appserver = (instance.newest_appserver && instance.newest_appserver.id != active_appserver.id ? instance.newest_appserver : null);
+          ">
+        <!-- Is there an app server newer than the active app server? -->
+        <div class="status-icon-newest" ng-if="newer_appserver"
+             ng-class="{healthy: newer_appserver.is_healthy, unhealthy: newer_appserver.is_healthy === false}"
+             tooltip="{{newer_appserver.name}} (newer than the active appserver): {{ newer_appserver.status_description }}" tooltip-placement="bottom">
+          <i ng-attr-class="{{ newer_appserver.is_steady && (newer_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+        </div>
+        <div class="status-icon-newest" ng-if="!newer_appserver" tooltip="No newer appserver" tooltip-placement="bottom">
+          <!-- placeholder indicating that there is no newer AppServer -->
+        </div>
+        <div class="status-icon-active" ng-class="{healthy: active_appserver.is_healthy, unhealthy: active_appserver.is_healthy === false}"
+             tooltip="{{ active_appserver.status_description || 'No active appserver' }}" tooltip-placement="bottom">
+          <i ng-if="active_appserver" ng-attr-class="{{ active_appserver.is_steady && (active_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}">
           </i>
         </div>
-        <a ng-click="select(instance)">{{ instance.name }}</a>
+        <a ui-sref="instances.details({instanceId:instance.id})">
+          <strong class="instance-name">{{ instance.name }}</strong>
+          {{ instance.domain }}
+        </a>
       </li>
       <li class="divider"></li>
     </ul>
   </div>
 
   <!-- Selected instance details -->
-  <div class="large-9 columns" ng-if="selected.instance">
-    <div class="row">
-      <h3>
-        {{ selected.instance.name }}
-        <span class="status radius label"
-              ng-class="{warning: !selected.instance.is_healthy, success: selected.instance.is_healthy}"
-              tooltip="{{ selected.instance.status_description }}">
-          <i ng-attr-class="{{ selected.instance.is_steady && (selected.instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
-          {{ selected.instance.status_name }}
-        </span>
-      </h3>
-      <div class="panel">
-        <div class="row">
-          <div class="large-10 columns">
-            <ul class="instance-description">
-              <li>
-                <span>LMS: <a href="{{ selected.instance.url }}" target="_new">{{ selected.instance.url }}</a></span>
-                |
-                <span>Studio: <a href="{{ selected.instance.studio_url }}" target="_new">{{ selected.instance.studio_url }}</a></span>
-              </li>
-              <li>
-                <a href="{{ selected.instance.github_branch_url }}" target="_new">{{ selected.instance.github_base_url }}</a> {{ selected.instance.branch_name }}
-                <span ng-if="selected.instance.github_pr_number">
-                  | <a href="{{ selected.instance.github_pr_url }}" target="_new">PR#{{ selected.instance.github_pr_number }}</a>
-                </span>
-              </li>
-              <li class="instance-server-list">
-                Servers:
-                <span ng-repeat="server in selected.instance.active_server_set">
-                  VM {{server.id}} ({{server.status_name}})
-                </span>
-              </li>
-            </ul>
-          </div>
-          <div class="large-2 columns">
-            <div ng-if="selected.instance.is_steady"
-                 ng-attr-class="status-icon status-{{ selected.instance.status }}">
-              <button class="button reprovision" ng-click="provision(selected.instance)">
-                Provision
-              </button>
-            </div>
-            <div ng-if="!selected.instance.is_steady"
-                 ng-attr-class="status-icon status-{{ selected.instance.status }}">
-              <img src="/static/img/running.png"
-                   tooltip-placement="bottom"
-                   tooltip="{{ selected.instance.status_description }}"
-                   alt="{{ selected.instance.status_description }}" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <tabset>
-        <tab heading="Log">
-          <pre ng-if="selected.instance.status == 'failed'" class="error-log" ng-repeat="line in select.instance.log_error_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre><br/>
-          <pre class="instance-log" ng-repeat="line in selected.instance.log_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
-        </tab>
-        <tab heading="Configuration">
-          <h4>Configuring the sandbox</h4>
-
-          <p>If you want to change the default configuration, you can add or override any of its variables by adding a "Settings" section to your PR. This ensures the information is available in a central place, for both the reviewers and the OpenCraft Instance manager. The section should use the following format:</p>
-
-          <div class="panel">
-<pre>- - -
-**Settings**
-```yaml
-[YAML: VARIABLES]
-```</pre>
-          </div>
-
-          <p>For example:</p>
-
-          <div class="panel">
-<pre>- - -
-**Settings**
-```yaml
-EDXAPP_FEATURES:
-  ALLOW_HIDING_DISCUSSION_TAB: true
-```
-</pre>
-          </div>
-
-          <p>Note: You need to match the above format exactly.</p>
-
-          <h4>Current configuration</h4>
-          <pre class="configuration">{{ selected.instance.ansible_settings }}</pre>
-        </tab>
-      </tabset>
+  <div class="large-9 columns">
+    <div ui-view>
     </div>
   </div>
 </div>

@@ -26,9 +26,6 @@ from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
 import pymongo
-from swiftclient.exceptions import ClientException as SwiftClientException
-
-from instance import openstack
 
 
 # Functions ###################################################################
@@ -137,64 +134,4 @@ class MongoDBInstanceMixin(models.Model):
                 # Dropping a non-existing database is a no-op.  Users are dropped together with the DB.
                 mongo.drop_database(database)
             self.mongo_provisioned = False
-            self.save()
-
-
-class SwiftContainerInstanceMixin(models.Model):
-    """
-    Mixin to provision Swift containers for an instance.
-    """
-    swift_openstack_user = models.CharField(max_length=32, blank=True)
-    swift_openstack_password = models.CharField(max_length=64, blank=True)
-    swift_openstack_tenant = models.CharField(max_length=32, blank=True)
-    swift_openstack_auth_url = models.URLField(blank=True)
-    swift_openstack_region = models.CharField(max_length=16, blank=True)
-    swift_provisioned = models.BooleanField(default=False)
-
-    class Meta:
-        abstract = True
-
-    @property
-    def swift_container_names(self):
-        """
-        An iterable of Swift container names.
-        """
-        return NotImplementedError
-
-    def provision_swift(self):
-        """
-        Create the Swift containers if necessary.
-        """
-        if settings.SWIFT_ENABLE and not self.swift_provisioned:
-            for container_name in self.swift_container_names:
-                openstack.create_swift_container(
-                    container_name,
-                    user=self.swift_openstack_user,
-                    password=self.swift_openstack_password,
-                    tenant=self.swift_openstack_tenant,
-                    auth_url=self.swift_openstack_auth_url,
-                    region=self.swift_openstack_region,
-                )
-            self.swift_provisioned = True
-            self.save()
-
-    def deprovision_swift(self):
-        """
-        Delete the Swift containers.
-        """
-        if settings.SWIFT_ENABLE and self.swift_provisioned:
-            for container_name in self.swift_container_names:
-                try:
-                    openstack.delete_swift_container(
-                        container_name,
-                        user=self.swift_openstack_user,
-                        password=self.swift_openstack_password,
-                        tenant=self.swift_openstack_tenant,
-                        auth_url=self.swift_openstack_auth_url,
-                        region=self.swift_openstack_region,
-                    )
-                except SwiftClientException:
-                    # If deleting a Swift container fails, we still want to continue.
-                    self.logger.exception('Could not delete Swift container "%s".', container_name)
-            self.swift_provisioned = False
             self.save()

@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-SingleVMOpenEdXInstance model - Factories
+OpenEdXInstance model - Factories
 """
 
 # Imports #####################################################################
@@ -27,28 +27,23 @@ import uuid
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.instance import SingleVMOpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance
 
 
 # Classes #####################################################################
 
-class SingleVMOpenEdXInstanceFactory(DjangoModelFactory):
+class OpenEdXInstanceFactory(DjangoModelFactory):
     """
-    Factory for SingleVMOpenEdXInstance
+    Factory for OpenEdXInstance
     """
     class Meta:
-        model = SingleVMOpenEdXInstance
+        model = OpenEdXInstance
 
     sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))
     name = factory.Sequence('Test Instance {}'.format)
-    fork_name = 'edx/edx-platform'
-    ref_type = 'tags'
-    branch_name = 'named-release/cypress' # Use a known working version
-    ansible_source_repo_url = 'https://github.com/open-craft/configuration.git'
+    openedx_release = 'named-release/cypress' # Use a known working version
+    configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
     configuration_version = 'integration'
-    ansible_playbook_name = 'opencraft_integration'
-    forum_version = 'named-release/cypress'
-    notifier_version = 'named-release/cypress'
-    xqueue_version = 'named-release/cypress'
-    certs_version = 'named-release/cypress'
+    # The open-craft fork doesn't have the 'named-release/cypress' tag, so use upstream:
+    edx_platform_repository_url = 'https://github.com/edx/edx-platform.git'
     use_ephemeral_databases = True
