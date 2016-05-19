@@ -49,6 +49,7 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
     """
+    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
         """
         Create an instance without specifying additional fields,
