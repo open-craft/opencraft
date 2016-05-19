@@ -40,6 +40,11 @@ def validate_available_subdomain(subdomain):
     Check that the given subdomain is not already used by an existing
     instance.
     """
+    if subdomain in settings.SUBDOMAIN_BLACKLIST:
+        raise ValidationError(
+            message='This domain name is not publicly available.',
+            code='blacklisted',
+        )
     if OpenEdXInstance.objects.filter(sub_domain=subdomain).exists():
         raise ValidationError(
             message='This domain is already taken.',
@@ -71,6 +76,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'have the possibility to use your own domain name.'
                    '\n\nExample: hogwarts.{0}').format(BASE_DOMAIN),
         validators=[
+            validators.MinLengthValidator(
+                3,
+                'The subdomain name must at least have 3 characters.',
+            ),
             validators.RegexValidator(
                 r'^[\w.-]+$',
                 "Please include only letters, numbers, '_', '-' and '.'",
@@ -79,6 +88,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         ],
         error_messages={
             'unique': 'This domain is already taken.',
+            'blacklisted': 'This domain name is not publicly available.',
         },
     )
     instance_name = models.CharField(
@@ -108,6 +118,11 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         max_length=255,
         choices=STATUS_CHOICES,
         default=PENDING,
+    )
+    instance = models.ForeignKey(
+        OpenEdXInstance,
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
