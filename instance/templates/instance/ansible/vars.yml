@@ -9,7 +9,7 @@ EDXAPP_CMS_NGINX_PORT: 80
 EDXAPP_SITE_NAME: '{{ instance.domain }}'
 EDXAPP_LMS_SITE_NAME: '{{ instance.domain }}'
 EDXAPP_LMS_BASE: '{{ instance.domain }}'
-EDXAPP_PREVIEW_LMS_BASE: '{{ instance.domain }}'
+EDXAPP_PREVIEW_LMS_BASE: '{{ instance.lms_preview_domain }}'
 
 EDXAPP_CMS_SITE_NAME: '{{ instance.studio_domain }}'
 EDXAPP_CMS_BASE: '{{ instance.studio_domain }}'
@@ -66,7 +66,7 @@ EDXAPP_FEATURES:
   ENABLE_PEARSON_HACK_TEST: false
   SUBDOMAIN_BRANDING: false
   SUBDOMAIN_COURSE_LISTINGS: false
-  PREVIEW_LMS_BASE: '{{ instance.domain }}'
+  PREVIEW_LMS_BASE: '{{ instance.lms_preview_domain }}'
   ENABLE_DJANGO_ADMIN_SITE: true
   ALLOW_ALL_ADVANCED_COMPONENTS: true
 

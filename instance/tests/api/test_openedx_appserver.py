@@ -176,7 +176,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'App server updated.'})
-        self.assertEqual(mock_set_dns_record.call_count, 2)  # 2 calls: 1 for LMS, 1 for Studio
+        self.assertEqual(mock_set_dns_record.call_count, 3)  # 3 calls: 1 for LMS, 1 for LMS preview, 1 for Studio
 
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver, app_server)
