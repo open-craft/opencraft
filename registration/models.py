@@ -121,6 +121,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     )
     instance = models.ForeignKey(
         OpenEdXInstance,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
