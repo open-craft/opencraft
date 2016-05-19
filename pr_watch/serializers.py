@@ -38,6 +38,7 @@ class WatchedPullRequestSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'fork_name',
+            'target_fork_name',
             'branch_name',
             'github_pr_number',
             'github_pr_url',

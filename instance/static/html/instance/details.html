@@ -97,7 +97,7 @@
   </tab>
   <tab heading="Pull Request (#{{pr.github_pr_number}})" ng-if="instance.source_pr" ng-init="pr = instance.source_pr" active="instance_active_tabs.pr_tab">
     <h4>Pull Request Details</h4>
-    <p>This instance was automatically generated for the GitHub pull request <a href="{{pr.github_pr_url}}">{{ pr.fork_name }} #{{ pr.github_pr_number }} ({{ pr.branch_name }})</a></p>
+    <p>This instance was automatically generated for the GitHub pull request <a href="{{pr.github_pr_url}}">{{ pr.target_fork_name }} #{{ pr.github_pr_number }} ({{ pr.branch_name }})</a></p>
 
     <p>If the PR has changed, you can update the instance settings based on the PR:</p>
     <button ng-click="update_from_pr()" ng-disabled="is_updating_from_pr">

@@ -53,7 +53,7 @@ class WatchedPullRequestViewSet(viewsets.ReadOnlyModelViewSet):
         obj = self.get_object()
         # TODO: Make update_from_pr() fetch the PR, rather than us having to do it first, then
         # that method making a redundant second call to fetch the branch tip.
-        pr = github.get_pr_by_number(obj.fork_name, obj.github_pr_number)
+        pr = github.get_pr_by_number(obj.target_fork_name, obj.github_pr_number)
         try:
             obj.update_instance_from_pr(pr)
         except github.ObjectDoesNotExist:

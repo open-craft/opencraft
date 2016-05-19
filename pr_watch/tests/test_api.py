@@ -75,6 +75,7 @@ class APITestCase(WithUserTestCase):
             data = data.items()
             self.assertIn(('id', watched_pr.pk), data)
             self.assertIn(('fork_name', 'fork/repo'), data)
+            self.assertIn(('target_fork_name', 'source/repo'), data)
             self.assertIn(('branch_name', 'api-test-branch'), data)
             self.assertIn(('github_pr_number', watched_pr.github_pr_number), data)
             self.assertIn(('github_pr_url', watched_pr.github_pr_url), data)
