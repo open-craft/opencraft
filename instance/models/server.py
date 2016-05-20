@@ -352,7 +352,8 @@ class OpenStackServer(Server):
                 settings.OPENSTACK_SANDBOX_BASE_IMAGE,
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
             )
-        except novaclient.exceptions.ClientException:
+        except novaclient.exceptions.ClientException as e:
+            self.logger.error('Failed to start server: %s', e)
             self._status_to_build_failed()
         else:
             self.openstack_id = os_server.id
