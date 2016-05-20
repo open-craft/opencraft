@@ -131,7 +131,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         # Escape all non-ascii characters and truncate to 64 chars, the maximum for mysql:
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=64)
+        return truncate_name(escaped, length=50)
 
     def set_field_defaults(self):
         """
