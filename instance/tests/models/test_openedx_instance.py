@@ -33,6 +33,7 @@ from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
+from instance.models.openedx_appserver import DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import Server
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -49,33 +50,16 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
     """
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
-    def test_create_defaults(self):
+    def _assert_defaults(self, instance, name="Instance"):
         """
-        Create an instance without specifying additional fields,
-        leaving it up to the create method to set them
+        Assert that default settings for instance are correct
         """
-        instance = OpenEdXInstance.objects.create(sub_domain='create.defaults')
-        self.assertEqual(instance.name, 'Instance')
-        self.assertFalse(instance.mysql_user)
-        self.assertFalse(instance.mysql_pass)
-        self.assertFalse(instance.mongo_user)
-        self.assertFalse(instance.mongo_pass)
-        self.assertFalse(instance.swift_openstack_user)
-        self.assertFalse(instance.swift_openstack_password)
-        self.assertFalse(instance.swift_openstack_tenant)
-        self.assertFalse(instance.swift_openstack_auth_url)
-        self.assertFalse(instance.swift_openstack_region)
-        self.assertEqual(instance.github_admin_organization_name, '')
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    def test_create_defaults_persistent_databases(self):
-        """
-        Create an instance without specifying additional fields,
-        leaving it up to the create method to set them
-        """
-        instance = OpenEdXInstance.objects.create(sub_domain='create.defaults')
-        self.assertEqual(instance.name, 'Instance')
+        self.assertEqual(instance.name, name)
+        self.assertEqual(instance.openedx_release, settings.DEFAULT_OPENEDX_RELEASE)
+        self.assertEqual(instance.configuration_source_repo_url, settings.DEFAULT_CONFIGURATION_REPO_URL)
+        self.assertEqual(instance.configuration_version, settings.DEFAULT_CONFIGURATION_VERSION)
+        self.assertEqual(instance.edx_platform_repository_url, DEFAULT_EDX_PLATFORM_REPO_URL)
+        self.assertEqual(instance.edx_platform_commit, settings.DEFAULT_OPENEDX_RELEASE)
         self.assertTrue(instance.mysql_user)
         self.assertTrue(instance.mysql_pass)
         self.assertTrue(instance.mongo_user)
@@ -86,6 +70,50 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
         self.assertEqual(instance.github_admin_organization_name, '')
+
+    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
+    def test_create_defaults(self):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+        instance = OpenEdXInstance.objects.create(sub_domain='sandbox.defaults')
+        self._assert_defaults(instance)
+
+    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
+    def test_create_defaults_persistent_databases(self):
+        """
+        Create an instance without specifying additional fields,
+        leaving it up to the create method to set them
+        """
+        instance = OpenEdXInstance.objects.create(sub_domain='production.defaults')
+        self._assert_defaults(instance)
+
+    def test_update_defaults(self):
+        """
+        Check that database and storage settings don't change when updating an instance's settings.
+
+        Since 'set_field_defaults' is currently only called if an instance has not been saved to the database,
+        the chances of it overriding existing values are non-existent.
+
+        But we include this test anyway to guard against regressions.
+        """
+        instance = OpenEdXInstance.objects.create(sub_domain='testing.defaults')
+        self._assert_defaults(instance)
+
+        mysql_user = instance.mysql_user
+        mysql_pass = instance.mysql_pass
+        mongo_user = instance.mongo_user
+        mongo_pass = instance.mongo_pass
+
+        instance.name = "Test Instance"
+        instance.save()
+        self._assert_defaults(instance, name=instance.name)
+
+        self.assertEqual(instance.mysql_user, mysql_user)
+        self.assertEqual(instance.mysql_pass, mysql_pass)
+        self.assertEqual(instance.mongo_user, mongo_user)
+        self.assertEqual(instance.mongo_pass, mongo_pass)
 
     def test_id_different_from_ref_id(self):
         """

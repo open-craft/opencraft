@@ -57,8 +57,14 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
     def set_field_defaults(self):
         """
         Set default values for Swift credentials.
+
+        Don't change existing values on subsequent calls.
+
+        Credentials are only used for persistent databases (cf. get_storage_settings).
+        We generate them for all instances to ensure that app servers can be spawned successfully
+        even if an instance is edited to change 'use_ephemeral_databases' from True to False.
         """
-        if not self.use_ephemeral_databases and settings.SWIFT_ENABLE and not self.swift_provisioned:
+        if settings.SWIFT_ENABLE and not self.swift_openstack_user:
             # TODO: Figure out a way to use separate credentials for each instance.  Access control
             # on Swift containers is granted to users, and there doesn't seem to be a way to create
             # Keystone users in OpenStack public clouds.

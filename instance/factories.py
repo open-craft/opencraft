@@ -27,6 +27,7 @@ import logging
 from django.conf import settings
 from django.template import loader
 
+from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -108,16 +109,18 @@ def production_instance_factory(**kwargs):
     # Check environment and report potential problems
     _check_environment()
 
+    # Gather settings
+    production_settings = loader.get_template('instance/ansible/prod-vars.yml').render({})
+    configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
+    extra_settings = ansible.yaml_merge(production_settings, configuration_extra_settings)
+    instance_kwargs = dict(
+        use_ephemeral_databases=False,
+        configuration_version=settings.LATEST_OPENEDX_RELEASE,
+        openedx_release=settings.LATEST_OPENEDX_RELEASE,
+        configuration_extra_settings=extra_settings,
+    )
+    instance_kwargs.update(kwargs)
+
     # Create instance
-    production_instance = OpenEdXInstance(**kwargs)
-    if "use_ephemeral_databases" not in kwargs:
-        production_instance.use_ephemeral_databases = False
-    if "configuration_version" not in kwargs:
-        production_instance.configuration_version = settings.LATEST_OPENEDX_RELEASE
-    if "openedx_release" not in kwargs:
-        production_instance.openedx_release = settings.LATEST_OPENEDX_RELEASE
-    if "configuration_extra_settings" not in kwargs:
-        template = loader.get_template('instance/ansible/prod-vars.yml')
-        production_instance.configuration_extra_settings = template.render({})
-    production_instance.save()
+    production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance

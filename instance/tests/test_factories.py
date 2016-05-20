@@ -25,6 +25,7 @@ Factories module - Tests
 from unittest.mock import Mock, patch
 
 from django.conf import settings
+import yaml
 
 from instance.factories import instance_factory, production_instance_factory
 from instance.models.log_entry import LogEntry
@@ -69,7 +70,9 @@ class FactoriesTestCase(TestCase):
         self.assertEqual(instance.use_ephemeral_databases, use_ephemeral_databases)
         self.assertEqual(instance.configuration_version, configuration_version)
         self.assertEqual(instance.openedx_release, openedx_release)
-        self.assertEqual(instance.configuration_extra_settings, configuration_extra_settings)
+        extra_settings = yaml.load(instance.configuration_extra_settings)
+        expected_extra_settings = yaml.load(configuration_extra_settings)
+        self.assertEqual(extra_settings, expected_extra_settings)
 
     def test_instance_factory(self):
         """
@@ -110,9 +113,22 @@ class FactoriesTestCase(TestCase):
 
         # Create instance with custom field values
         sub_domain = "production-instance-customized"
-        custom_instance = instance_factory(sub_domain=sub_domain, **self.SANDBOX_DEFAULTS)
+        custom_instance = production_instance_factory(sub_domain=sub_domain, **self.SANDBOX_DEFAULTS)
         custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
-        self._assert_field_values(custom_instance, sub_domain, **self.SANDBOX_DEFAULTS)
+        expected_settings = self.SANDBOX_DEFAULTS.copy()
+        expected_settings["configuration_extra_settings"] = self.PRODUCTION_DEFAULTS["configuration_extra_settings"]
+        self._assert_field_values(custom_instance, sub_domain, **expected_settings)
+
+        # Create instance that overrides defaults for extra settings
+        sub_domain = "production-instance-extra-settings"
+        configuration_extra_settings = """
+        EXTRA_SETTINGS: false
+        ADDITIONAL_SETTINGS: true
+        """
+        expected_settings["configuration_extra_settings"] = configuration_extra_settings
+        extra_settings_instance = production_instance_factory(sub_domain=sub_domain, **expected_settings)
+        extra_settings_instance = OpenEdXInstance.objects.get(pk=extra_settings_instance.pk)
+        self._assert_field_values(extra_settings_instance, sub_domain, **expected_settings)
 
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
