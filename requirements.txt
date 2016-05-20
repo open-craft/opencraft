@@ -10,7 +10,7 @@ cmd2==0.6.8
 colorama==0.3.7
 cookies==2.2.1
 coverage==4.0.3
-ddt==1.0.1
+ddt==1.0.2
 debtcollector==1.4.0
 decorator==4.0.9
 dj-static==0.0.6
