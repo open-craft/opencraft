@@ -48,7 +48,7 @@ def _create_database(cursor, database):
     """
     Create MySQL database
     """
-    cursor.execute('CREATE DATABASE `{0}` DEFAULT CHARACTER SET utf8'.format(database))
+    cursor.execute('CREATE DATABASE `{database}` DEFAULT CHARACTER SET utf8'.format(database=database))
 
 
 def _create_user(cursor, user, password):
@@ -65,15 +65,15 @@ def _grant_privileges(cursor, database, user, privileges):
     if database == "*":
         tables = "*.*"
     else:
-        tables = "`{0}`.*".format(database)
-    cursor.execute('GRANT %s ON {0} TO %s'.format(tables), (privileges, user,))
+        tables = "`{database}`.*".format(database=database)
+    cursor.execute('GRANT {privileges} ON {tables} TO %s'.format(privileges=privileges, tables=tables), (user,))
 
 
 def _drop_database(cursor, database):
     """
     Drop MySQL database
     """
-    cursor.execute('DROP DATABASE IF EXISTS `{0}`'.format(database))
+    cursor.execute('DROP DATABASE IF EXISTS `{database}`'.format(database=database))
 
 
 def _drop_user(cursor, user):
