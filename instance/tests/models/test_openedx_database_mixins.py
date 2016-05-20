@@ -54,25 +54,38 @@ class MySQLInstanceTestCase(TestCase):
             self.instance.deprovision_mysql()
         super().tearDown()
 
+    def _assert_privileges(self, database):
+        """
+        Assert that relevant users can access database
+        """
+        database_name = database["name"]
+        user = database["user"]
+        additional_users = [user["name"] for user in database.get("additional_users", [])]
+        global_users = [self.instance.migrate_user, self.instance.read_only_user]
+        users = [user] + additional_users + global_users
+        for user in users:
+            password = self.instance._get_mysql_pass(user)
+            # Pass password using MYSQL_PWD environment variable rather than the --password
+            # parameter so that mysql command doesn't print a security warning.
+            env = {'MYSQL_PWD': password}
+            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(user=user, db_name=database_name)
+            tables = subprocess.call(mysql_cmd, shell=True, env=env)
+            self.assertEqual(tables, 0)
+
     def check_mysql(self):
         """
-        Check that the mysql databases and user have been created, then remove them
+        Check that the mysql databases and users have been created
         """
         self.assertIs(self.instance.mysql_provisioned, True)
         self.assertTrue(self.instance.mysql_user)
         self.assertTrue(self.instance.mysql_pass)
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in self.instance.mysql_database_names:
-            self.assertIn(database, databases)
-            # Pass password using MYSQ_PWD environment variable rather than the --password
-            # parameter so that mysql command doesn't print a security warning.
-            env = {'MYSQL_PWD': self.instance.mysql_pass}
-            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(
-                user=self.instance.mysql_user,
-                db_name=database,
-            )
-            tables = subprocess.call(mysql_cmd, shell=True, env=env)
-            self.assertEqual(tables, 0)
+        for database in self.instance.mysql_databases:
+            # Check if database exists
+            database_name = database["name"]
+            self.assertIn(database_name, databases)
+            # Check if relevant users can access it
+            self._assert_privileges(database)
 
     def check_mysql_vars_not_set(self, instance):
         """
@@ -104,8 +117,8 @@ class MySQLInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in self.instance.mysql_database_names:
-            self.assertNotIn(database, databases)
+        for database in self.instance.mysql_databases:
+            self.assertNotIn(database["name"], databases)
 
     def test_provision_mysql_weird_domain(self):
         """
