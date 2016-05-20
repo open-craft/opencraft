@@ -49,8 +49,8 @@ class FactoriesTestCase(TestCase):
     }
     PRODUCTION_DEFAULTS = {
         "use_ephemeral_databases": False,
-        "configuration_version": settings.LATEST_OPENEDX_RELEASE,
-        "openedx_release": settings.LATEST_OPENEDX_RELEASE,
+        "configuration_version": settings.OPENEDX_RELEASE_STABLE_REF,
+        "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
         "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
     }
 
@@ -141,7 +141,7 @@ class FactoriesTestCase(TestCase):
             patched_settings.INSTANCE_MONGO_URL = None
 
             # Ensure that validation passes for configuration_version:
-            patched_settings.LATEST_OPENEDX_RELEASE = settings.LATEST_OPENEDX_RELEASE
+            patched_settings.OPENEDX_RELEASE_STABLE_REF = settings.OPENEDX_RELEASE_STABLE_REF
 
             production_instance_factory(sub_domain="production-instance-doomed")
 

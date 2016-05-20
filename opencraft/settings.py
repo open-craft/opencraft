@@ -295,9 +295,9 @@ DEFAULT_OPENEDX_RELEASE = env('DEFAULT_OPENEDX_RELEASE', default='master')
 # for provisioning Open edX app servers.
 DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEFAULT_OPENEDX_RELEASE)
 
-# Git tag for latest Open edX release. Used as a default refspec for
+# Git ref for stable Open edX release. Used as a default refspec for
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
-LATEST_OPENEDX_RELEASE = env('LATEST_OPENEDX_RELEASE', default='named-release/dogwood.rc')
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='named-release/dogwood.rc')
 
 # Ansible #####################################################################
 

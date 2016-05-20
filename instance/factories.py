@@ -115,8 +115,8 @@ def production_instance_factory(**kwargs):
     extra_settings = ansible.yaml_merge(production_settings, configuration_extra_settings)
     instance_kwargs = dict(
         use_ephemeral_databases=False,
-        configuration_version=settings.LATEST_OPENEDX_RELEASE,
-        openedx_release=settings.LATEST_OPENEDX_RELEASE,
+        configuration_version=settings.OPENEDX_RELEASE_STABLE_REF,
+        openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
     )
     instance_kwargs.update(kwargs)
