@@ -420,3 +420,8 @@ LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
 # Subdomain blacklist #########################################################
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
+
+# Beta test email settings ####################################################
+
+BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.com')
+BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')

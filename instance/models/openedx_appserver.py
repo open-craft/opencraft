@@ -93,7 +93,7 @@ class OpenEdXAppConfiguration(models.Model):
     )
     lms_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        help_text='Instance manager users that should be copied to the instance.',
+        help_text='Instance manager users that should be made staff users on the instance.',
     )
 
     @classmethod
@@ -148,8 +148,16 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # assert that it isn't set because if a ValidationError occurred, this method could be
         # called multiple times before this AppServer is successfully created.
         self.configuration_settings = self.create_configuration_settings()
-        self.lms_user_settings = self.create_lms_user_settings()
         super().set_field_defaults()
+
+    @AppServer.status.only_for(AppServer.Status.New)
+    def add_lms_users(self, lms_users):
+        """
+        Add local Django users to the list of LMS users to be created on the instance.
+        """
+        self.lms_users.add(*lms_users)  # pylint: disable=no-member
+        self.lms_user_settings = self.create_lms_user_settings()
+        self.save()
 
     def default_playbook(self):
         """
@@ -158,7 +166,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path='playbooks/{}.yml'.format(self.RUN_ROLE_PLAYBOOK),
+            playbook_path='playbooks/{}.yml'.format(self.CONFIGURATION_PLAYBOOK),
             version=self.configuration_version,
             variables=self.configuration_settings,
         )
@@ -170,7 +178,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path='playbooks/{}.yml'.format(self.CONFIGURATION_PLAYBOOK),
+            playbook_path='playbooks/{}.yml'.format(self.RUN_ROLE_PLAYBOOK),
             version=self.configuration_version,
             variables=self.lms_user_settings,
         )

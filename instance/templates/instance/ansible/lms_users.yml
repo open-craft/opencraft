@@ -7,7 +7,7 @@ CREATE_LMS_USERS:
     username: '{{ user.username }}'
     password: '{{ user.password }}'
     password_hash: true
-    is_staff: {{ user.is_staff }}
+    is_staff: true
 {% empty %}
   []
 {% endfor %}

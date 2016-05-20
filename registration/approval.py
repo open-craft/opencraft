@@ -31,19 +31,25 @@ from registration.models import BetaTestApplication
 
 # Settings ####################################################################
 
-BETATEST_EMAIL_SENDER = getattr(settings, 'BETATEST_EMAIL_SENDER', settings.DEFAULT_FROM_EMAIL)
-BETATEST_WELCOME_SUBJECT = getattr(
-    settings,
-    'BETATEST_WELCOME_SUBJECT',
-    'Welcome to the OpenCraft Instance Manager beta test!',
-)
-BETATEST_REJECT_SUBJECT = getattr(
-    settings,
-    'BETATEST_REJECT_SUBJECT',
-    'An update on your beta test application status for OpenCraft Instance Manager',
-)
+BETATEST_WELCOME_SUBJECT = 'Welcome to the OpenCraft Instance Manager beta test!'
+BETATEST_REJECT_SUBJECT = 'An update on your beta test application status for OpenCraft Instance Manager'
 
 # Functions ###################################################################
+
+
+def _send_mail(application, template_name, subject):
+    """Helper function to send an email to the user."""
+    template = get_template(template_name)
+    message = template.render(dict(
+        application=application,
+        signature=settings.BETATEST_EMAIL_SIGNATURE,
+    ))
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.BETATEST_EMAIL_SENDER,
+        recipient_list=(application.user.email,),
+    )
 
 
 def accept_application(application):
@@ -57,13 +63,7 @@ def accept_application(application):
     appserver = application.instance.active_appserver
     assert appserver is not None, 'The instance does not have an active AppServer yet.'
     assert appserver.status == appserver.Status.Running, 'The AppServer is not running yet.'
-    message = get_template('registration/welcome_email.txt').render({'application': application})
-    send_mail(
-        subject=BETATEST_WELCOME_SUBJECT,
-        message=message,
-        from_email=BETATEST_EMAIL_SENDER,
-        recipient_list=(application.user.email,),
-    )
+    _send_mail(application, 'registration/welcome_email.txt', BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()
 
@@ -77,12 +77,6 @@ def reject_application(application):
     if application.instance is not None:
         for appserver in application.instance.appserver_set.iterator():
             appserver.terminate_vm()
-    message = get_template('registration/reject_email.txt').render({'application': application})
-    send_mail(
-        subject=BETATEST_REJECT_SUBJECT,
-        message=message,
-        from_email=BETATEST_EMAIL_SENDER,
-        recipient_list=(application.user.email,),
-    )
+    _send_mail(application, 'registration/reject_email.txt', BETATEST_REJECT_SUBJECT)
     application.status = BetaTestApplication.REJECTED
     application.save()

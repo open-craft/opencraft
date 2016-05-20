@@ -1,13 +1,13 @@
 {% autoescape off %}
 Hi {{ application.user.profile.full_name }},
 
-we are pleased to inform you that your application to participate in the
+We are pleased to inform you that your application to participate in the
 OpenCraft Instance Manager beta test has been accepted.  Your Open edX instance
 has been provisioned and is available at
 
     {{ application.instance.url }}
 
-soon.  The Studio interface used to create course materials is available at
+The Studio interface used to create course materials is available at
 
     {{ application.instance.studio_url }}
 
@@ -22,5 +22,5 @@ problems or downtime for your instance.  We appreciate any feedback on the
 project – just reply to this email!
 
 Happy testing,
-    the OpenCraft team
+{{ signature }}
 {% endautoescape %}
