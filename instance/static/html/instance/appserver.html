@@ -7,7 +7,11 @@
 
 <accordion close-others="false" ng-if="appserver">
 
-  <accordion-group heading="Status" is-open="true">
+  <accordion-group>
+    <accordion-heading>
+      <i ng-attr-class="caret fa {{ $parent.isOpen ? 'fa-caret-down' : 'fa-caret-right' }}"></i>
+      Status
+    </accordion-heading>
     <table>
       <tbody>
         <tr>
@@ -45,7 +49,11 @@
     </button>
   </accordion-group>
 
-  <accordion-group heading="Configuration" is-open="true">
+  <accordion-group>
+    <accordion-heading>
+      <i ng-attr-class="caret fa {{ $parent.isOpen ? 'fa-caret-down' : 'fa-caret-right' }}"></i>
+      Configuration
+    </accordion-heading>
     <p>This is a record of this App Server's configuration. The configuration cannot be changed. Instead, change the configuration of the Instance, and launch a new App Server.</p>
     <table style="table-layout: fixed; width: 100%;">
       <colgroup><col width="200px"><col></colgroup>
@@ -106,7 +114,11 @@
     </table>
   </accordion-group>
 
-  <accordion-group heading="Log">
+  <accordion-group>
+    <accordion-heading>
+      <i ng-attr-class="caret fa {{ $parent.isOpen ? 'fa-caret-down' : 'fa-caret-right' }}"></i>
+      Log
+    </accordion-heading>
     <pre 
       ng-if="appserver.status == 'failed'"
       class="error-log"
