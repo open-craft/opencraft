@@ -68,6 +68,14 @@ class InstanceReference(TimeStampedModel):
     def __str__(self):
         return '{} #{}'.format(self.instance_type.name, self.instance_id)
 
+    def delete(self, *args, **kwargs):
+        """
+        Delete this InstanceReference and the associated Instance.
+        """
+        if not kwargs.pop('instance_already_deleted', False):
+            self.instance.delete(ref_already_deleted=True)
+        super().delete(*args, **kwargs)  # pylint: disable=no-member
+
 
 class Instance(ValidateModelMixin, models.Model):
     """
@@ -178,3 +186,13 @@ class Instance(ValidateModelMixin, models.Model):
         entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
         # TODO: Filter out log entries for which the user doesn't have view rights
         return reversed(list(entries[:limit]))
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete this Instance.
+
+        This will delete the InstanceReference at the same time.
+        """
+        if not kwargs.pop('ref_already_deleted', False):
+            self.ref.delete(instance_already_deleted=True)
+        super().delete(*args, **kwargs)
