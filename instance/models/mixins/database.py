@@ -24,7 +24,6 @@ Instance app model mixins - Database
 
 from django.conf import settings
 from django.db import models
-from django.utils.crypto import get_random_string
 import MySQLdb as mysql
 import pymongo
 
@@ -111,7 +110,7 @@ class MySQLInstanceMixin(models.Model):
             cursor, connection = _get_mysql_cursor()
 
             # Create migration user
-            _create_user(cursor, self.migrate_user, get_random_string(length=32))
+            _create_user(cursor, self.migrate_user, self._get_mysql_pass(self.migrate_user))
 
             # Create default databases and users, and grant privileges
             for database in self.mysql_databases:
@@ -120,7 +119,7 @@ class MySQLInstanceMixin(models.Model):
                 database_name = connection.escape_string(database["name"]).decode()
                 _create_database(cursor, database_name)
                 user = database["user"]
-                _create_user(cursor, user, get_random_string(length=32))
+                _create_user(cursor, user, self._get_mysql_pass(user))
                 privileges = database.get("priv", "ALL")
                 _grant_privileges(cursor, database_name, user, privileges)
                 _grant_privileges(cursor, database_name, self.migrate_user, "ALL")
@@ -129,11 +128,11 @@ class MySQLInstanceMixin(models.Model):
                     _grant_privileges(cursor, database_name, additional_user["name"], additional_user["priv"])
 
             # Create read_only user with appropriate privileges
-            _create_user(cursor, self.read_only_user, get_random_string(length=32))
+            _create_user(cursor, self.read_only_user, self._get_mysql_pass(self.read_only_user))
             _grant_privileges(cursor, "*", self.read_only_user, "ALL")
 
             # Create admin user with appropriate privileges
-            _create_user(cursor, self.admin_user, get_random_string(length=32))
+            _create_user(cursor, self.admin_user, self._get_mysql_pass(self.admin_user))
             _grant_privileges(cursor, "*", self.admin_user, "CREATE USER")
 
             self.mysql_provisioned = True

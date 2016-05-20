@@ -20,6 +20,7 @@
 Open edX instance database mixin
 """
 import string
+import uuid
 
 from django.conf import settings
 from django.template import loader
@@ -155,6 +156,12 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         Build unique name for MySQL user using suffix
         """
         return "{0}_{1}".format(self.mysql_user, suffix)
+
+    def _get_mysql_pass(self, user):
+        """
+        Build unique password for user, derived from MySQL password for this instance and user
+        """
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, self.mysql_pass + user))
 
     def set_field_defaults(self):
         """
