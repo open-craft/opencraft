@@ -56,5 +56,5 @@ def make_watched_pr_and_instance(**kwargs):
     """
     pr = PRFactory(**kwargs)
     with patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40)):
-        instance, dummy = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+        instance, dummy = WatchedPullRequest.objects.get_or_create_from_pr(pr)
     return instance.watchedpullrequest

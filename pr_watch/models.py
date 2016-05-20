@@ -50,16 +50,17 @@ class WatchedPullRequestQuerySet(models.QuerySet):
     Additional methods for WatchedPullRequest querysets
     Also used as the standard manager for the WatchedPullRequest model
     """
-    def update_or_create_from_pr(self, pr):
+    def get_or_create_from_pr(self, pr):
         """
-        Create or update an instance for the given pull request
+        Get or create an instance for the given pull request
         """
         watched_pr, created = self.get_or_create(
             fork_name=pr.fork_name,
             branch_name=pr.branch_name,
             github_pr_url=pr.github_pr_url,
         )
-        watched_pr.update_instance_from_pr(pr)
+        if created:
+            watched_pr.update_instance_from_pr(pr)
         return watched_pr.instance, created
 
     def create(self, *args, **kwargs):
