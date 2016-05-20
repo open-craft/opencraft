@@ -83,15 +83,39 @@ ul.side-nav li.active {
         margin-top: 12px;
     }
 
-    .configuration,
-    .instance-log,
-    .error-log {
-        font-size: 0.8em;
+    .configuration {
+        font-size: 0.75em;
         white-space: pre-wrap;
     }
-    .error-log {
-        background-color: #fcc;
-        color: #800;
+
+    .instance-log-section {
+        margin-bottom: 1.5em;
+    }
+
+    .instance-log {
+        font-size: 0.75em;
+        padding: 4px 0;
+        border-top: 1px solid #ddd;
+
+        pre {
+            white-space: pre-wrap;
+        }
+        .timestamp,
+        .log-level {
+            opacity: 0.5;
+        }
+        .log-level {
+            float: right;
+            font-size: 9px;
+        }
+
+        &.warning {
+            background-color: #ffc;
+        }
+        &.error,
+        &.critical {
+            background-color: #ffd8d8;
+        }
     }
 
     .a-welcoming-empty-state {

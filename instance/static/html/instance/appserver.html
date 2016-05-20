@@ -119,15 +119,24 @@
       <i ng-attr-class="caret fa {{ $parent.isOpen ? 'fa-caret-down' : 'fa-caret-right' }}"></i>
       Log
     </accordion-heading>
-    <pre 
-      ng-if="appserver.status == 'failed'"
-      class="error-log"
-      ng-repeat="line in appserver.log_error_entries track by $index"
-      >{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre><br>
-    <pre
-      class="instance-log"
-      ng-repeat="line in appserver.log_entries track by $index"
-      >{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
+    <div class="instance-log-section" ng-if="appserver.status == 'failed'">
+      <h6>Error Log</h6>
+      <div class="instance-log error"
+           ng-repeat="line in appserver.log_error_entries track by $index">
+        <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
+        <span class="log-level">{{ line.level }}</span>
+        <pre>{{ line.text | stripLogMeta }}</pre>
+      </div>
+    </div>
+    <div class="instance-log-section">
+      <h6 ng-if="appserver.status == 'failed'">Full Log</h6>
+      <div ng-attr-class="instance-log {{ line.level | lowercase }}"
+           ng-repeat="line in appserver.log_entries track by $index">
+        <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
+        <span class="log-level">{{ line.level }}</span>
+        <pre>{{ line.text | stripLogMeta }}</pre>
+      </div>
+    </div>
   </accordion-group>
 
 </accordion>
