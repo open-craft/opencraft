@@ -79,14 +79,14 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
     @property
     def studio_sub_domain(self):
         """
-        Studio sub-domain name (eg. 'studio.master')
+        Studio sub-domain name (eg. 'studio-master')
         """
-        return 'studio.{}'.format(self.sub_domain)
+        return 'studio-{}'.format(self.sub_domain)
 
     @property
     def studio_domain(self):
         """
-        Studio full domain name (eg. 'studio.master.sandbox.opencraft.com')
+        Studio full domain name (eg. 'studio-master.sandbox.opencraft.com')
         """
         return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
 
@@ -96,6 +96,27 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         Studio URL
         """
         return u'{0.protocol}://{0.studio_domain}/'.format(self)
+
+    @property
+    def lms_preview_sub_domain(self):
+        """
+        LMS preview sub-domain name (eg. 'preview-master')
+        """
+        return 'preview-{}'.format(self.sub_domain)
+
+    @property
+    def lms_preview_domain(self):
+        """
+        LMS preview full domain name (eg. 'preview-master.sandbox.opencraft.com')
+        """
+        return '{0.lms_preview_sub_domain}.{0.base_domain}'.format(self)
+
+    @property
+    def lms_preview_url(self):
+        """
+        LMS preview URL
+        """
+        return u'{0.protocol}://{0.lms_preview_domain}/'.format(self)
 
     @property
     def database_name(self):
@@ -136,6 +157,8 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         public_ip = app_server.server.public_ip
         self.logger.info('Updating DNS: LMS at %s...', self.domain)
         gandi.set_dns_record(type='A', name=self.sub_domain, value=public_ip)
+        self.logger.info('Updating DNS: LMS preview at %s...', self.lms_preview_domain)
+        gandi.set_dns_record(type='CNAME', name=self.lms_preview_sub_domain, value=self.sub_domain)
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
         self.active_appserver = app_server
