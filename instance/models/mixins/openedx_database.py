@@ -62,10 +62,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
                 "user": self._get_mysql_user_name("rosencrantz"),
             },
             {
-                "name": self._get_mysql_database_name("ora"),
-                "user": self._get_mysql_user_name("ora001"),
-            },
-            {
                 "name": self._get_mysql_database_name("xqueue"),
                 "user": self._get_mysql_user_name("xqueue001"),
             },
@@ -83,10 +79,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
                 "priv": "SELECT,INSERT,UPDATE,DELETE",
             },
             {
-                "name": self._get_mysql_database_name("programs"),
-                "user": self._get_mysql_user_name("programs001"),
-            },
-            {
                 "name": self._get_mysql_database_name("analytics-api"),
                 "user": self._get_mysql_user_name("api001"),
             },
@@ -100,14 +92,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
                         "priv": "SELECT",
                     }
                 ],
-            },
-            {
-                "name": self._get_mysql_database_name("credentials"),
-                "user": self._get_mysql_user_name("credentials001"),
-            },
-            {
-                "name": self._get_mysql_database_name("discovery"),
-                "user": self._get_mysql_user_name("discov001"),
             },
         ]
 
