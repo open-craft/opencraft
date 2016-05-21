@@ -28,6 +28,7 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 
 from registration.models import BetaTestApplication
+from instance.models.appserver import AppServer
 
 # Settings ####################################################################
 
@@ -62,7 +63,7 @@ def accept_application(application):
     assert application.instance is not None, 'No instance provisioned yet.'
     appserver = application.instance.active_appserver
     assert appserver is not None, 'The instance does not have an active AppServer yet.'
-    assert appserver.status == appserver.Status.Running, 'The AppServer is not running yet.'
+    assert appserver.status == AppServer.Status.Running, 'The AppServer is not running yet.'
     _send_mail(application, 'registration/welcome_email.txt', BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()

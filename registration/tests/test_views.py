@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.forms import BetaTestApplicationForm
@@ -219,6 +219,16 @@ class BetaTestApplicationViewTestMixin:
         )
         self.assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
+        })
+
+    @override_settings(SUBDOMAIN_BLACKLIST=['www'])
+    def test_blacklisted_subdomain(self):
+        """
+        Blacklisted subdomains should be rejected.
+        """
+        self.form_data['subdomain'] = 'www'
+        self.assert_registration_fails(self.form_data, expected_errors={
+            'subdomain': ['This domain name is not publicly available.'],
         })
 
     def test_instance_subdomain(self):
