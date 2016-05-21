@@ -21,7 +21,6 @@ Instance app models - Open EdX AppServer models
 """
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save
 from django.template import loader
 from django.utils.text import slugify
 from swampdragon.pubsub_providers.data_publisher import publish_data
@@ -252,15 +251,14 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.provision_failed_email(message)
             return False
 
-    @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
+    def save(self, *args, **kwargs):
         """
-        Called when an OpenEdXAppServer is saved.
+        Save this OpenEdXAppServer
         """
+        super().save(*args, **kwargs)
+        # Notify anyone monitoring for changes via swampdragon/websockets:
         publish_data('notification', {
             'type': 'openedx_appserver_update',
-            'appserver_id': instance.pk,
-            'instance_id': instance.owner.pk,  # This is the ID of the InstanceReference
+            'appserver_id': self.pk,
+            'instance_id': self.owner.pk,  # This is the ID of the InstanceReference
         })
-
-post_save.connect(OpenEdXAppServer.on_post_save, sender=OpenEdXAppServer)
