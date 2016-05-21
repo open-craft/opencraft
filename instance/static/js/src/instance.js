@@ -58,12 +58,6 @@ app.config(function($stateProvider, $urlRouterProvider, RestangularProvider, $lo
             url: '{instanceId:[0-9]+}/',
             templateUrl: "/static/html/instance/details.html",
             controller: "Details",
-            resolve: {
-                // Load the instance before initializing this controller:
-                instance: function(OpenCraftAPI, $stateParams) {
-                    return OpenCraftAPI.one("instance", $stateParams.instanceId).get();
-                },
-            },
         });
 });
 
@@ -146,24 +140,26 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
 ]);
 
 
-app.controller("Details", ['$scope', 'instance', '$state', '$stateParams', 'OpenCraftAPI',
-    function ($scope, instance, $state, $stateParams, OpenCraftAPI) {
+app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
+    function ($scope, $state, $stateParams, OpenCraftAPI) {
 
         $scope.init = function() {
-            $scope.instance = instance;
+            $scope.is_spawning_appserver = false;
             $scope.is_updating_from_pr = false;
             $scope.instance_active_tabs = {};
+            $scope.old_appserver_count = 0;
+            $scope.refresh();
         };
 
         $scope.update_from_pr = function() {
             if ($scope.is_updating_from_pr) {
                 throw "This instance is already being updated.";
             }
-            if (!instance.source_pr) {
+            if (!$scope.instance.source_pr) {
                 throw "This instance is not associated with a PR.";
             }
             $scope.is_updating_from_pr = true; // Start animation to show that we're doing the update
-            OpenCraftAPI.one('pr_watch', instance.source_pr.id).post('update_instance').then(function () {
+            OpenCraftAPI.one('pr_watch', $scope.instance.source_pr.id).post('update_instance').then(function () {
                 $scope.notify('Instance settings updated.');
                 $scope.is_updating_from_pr = false;
                 $scope.refresh().then(function() {
@@ -177,15 +173,15 @@ app.controller("Details", ['$scope', 'instance', '$state', '$stateParams', 'Open
         };
 
         $scope.refresh = function() {
-            // Reload the instance data from the server.
-            var old_appserver_count = instance.appservers.length;
+            // [Re]load the instance data from the server.
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
                 $scope.instance = instance;
-                if (instance.appservers.length > old_appserver_count) {
+                if (instance.appservers.length > $scope.old_appserver_count) {
                     // There is a new AppServer. If we were expecting one, it is here now.
                     // So stop animations and re-enable the "Launch new AppServer" button.
                     $scope.is_spawning_appserver = false;
                 }
+                $scope.old_appserver_count = instance.appservers.length;
             });
         };
 
