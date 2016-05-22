@@ -60,7 +60,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             },
             {
                 "name": self._get_mysql_database_name("dashboard"),
-                "user": self._get_mysql_user_name("rosencrantz"),
+                "user": self._get_mysql_user_name("dash001"),
             },
             {
                 "name": self._get_mysql_database_name("xqueue"),
@@ -72,7 +72,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             },
             {
                 "name": self._get_mysql_database_name("edxapp_csmh"),
-                "user": self._get_mysql_user_name("edxapp_csmh001"),
+                "user": self._get_mysql_user_name("csmh001"),
             },
             {
                 "name": self._get_mysql_database_name("edx_notes_api"),
@@ -85,7 +85,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             },
             {
                 "name": self._get_mysql_database_name("reports"),
-                "user": self._get_mysql_user_name("reports001"),
+                "user": self._get_mysql_user_name("rep001"),
                 "priv": "SELECT",
                 "additional_users": [
                     {
@@ -174,7 +174,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         even if an instance is edited to change 'use_ephemeral_databases' from True to False.
         """
         if not self.mysql_user:
-            self.mysql_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
+            self.mysql_user = get_random_string(length=6, allowed_chars=string.ascii_lowercase)
             self.mysql_pass = get_random_string(length=32)
         if not self.mongo_user:
             self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
