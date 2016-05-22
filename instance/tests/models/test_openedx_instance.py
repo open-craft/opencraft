@@ -26,6 +26,7 @@ from unittest.mock import call, patch, Mock
 
 import ddt
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.test import override_settings
 import yaml
 
@@ -245,6 +246,21 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         self.assertEqual(appserver.name, "AppServer 3")
+
+    @patch_services
+    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    def test_spawn_appserver_with_lms_users(self, mocks, mock_provision):
+        """
+        Provision an AppServer with a user added to lms_users.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        self.assertEqual(appserver.lms_users.count(), 1)
+        self.assertEqual(appserver.lms_users.get(), user)
+        self.assertTrue(appserver.lms_user_settings)
 
     @patch_services
     def test_spawn_appserver_detailed(self, mocks):

@@ -26,6 +26,7 @@ from unittest.mock import patch, Mock
 
 from ddt import ddt, data
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core import mail as django_mail
 from django.test import override_settings
 import novaclient
@@ -185,6 +186,18 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertNotIn('Vars Instance', appserver.configuration_settings)
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", appserver.configuration_settings)
 
+    def test_lms_user_settings(self):
+        """
+        Test that lms_user_settings are initialised correctly for new AppServers.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+        appserver = make_test_appserver(instance)
+        ansible_settings = yaml.load(appserver.lms_user_settings)
+        self.assertEqual(ansible_settings['role'], 'create_lms_users')
+        self.assertEqual(len(ansible_settings['CREATE_LMS_USERS']), 1)
+        self.assertEqual(ansible_settings['CREATE_LMS_USERS'][0]['username'], user.username)
 
 @ddt
 class OpenEdXAppServerStatusTestCase(TestCase):
