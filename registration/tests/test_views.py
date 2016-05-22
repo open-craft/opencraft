@@ -31,6 +31,8 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from simple_email_confirmation.signals import email_confirmed
+from factory.django import mute_signals
 
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.forms import BetaTestApplicationForm
@@ -190,6 +192,7 @@ class BetaTestApplicationViewTestMixin:
         self.assertEqual(BetaTestApplication.objects.count(), original_count)
         self.assertEqual(len(mail.outbox), 0)  # fix flaky pylint: disable=no-member,useless-suppression
 
+    @mute_signals(email_confirmed)
     def test_valid_application(self):
         """
         Test a valid beta test application.
@@ -242,6 +245,7 @@ class BetaTestApplicationViewTestMixin:
             'subdomain': ['This domain is already taken.'],
         })
 
+    @mute_signals(email_confirmed)
     def test_subdomain_with_base_domain(self):
         """
         Subdomain that includes the base domain.
