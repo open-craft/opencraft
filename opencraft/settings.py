@@ -295,6 +295,10 @@ DEFAULT_OPENEDX_RELEASE = env('DEFAULT_OPENEDX_RELEASE', default='master')
 # for provisioning Open edX app servers.
 DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEFAULT_OPENEDX_RELEASE)
 
+# Git ref for stable Open edX release. Used as a default refspec for
+# configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='named-release/dogwood.rc')
+
 # Ansible #####################################################################
 
 # Ansible requires a Python 2 interpreter

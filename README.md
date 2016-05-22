@@ -239,7 +239,7 @@ flavor:
 
 ### Open edX specific settings
 
-* `DEFAULT_OPENEDX_RELEASE` Set this to a release tag like 
+* `DEFAULT_OPENEDX_RELEASE` Set this to a release tag like
   `named-release/dogwood` to specify the default release of Open edX to use.
   This setting becomes the default value for `edx_platform_version`,
   `forum_version`, `notifier_version`, `xqueue_version`, and `certs_version` so
@@ -252,6 +252,9 @@ flavor:
   not set, the value of `DEFAULT_OPENEDX_RELEASE` will be used.
 * `DEFAULT_FORK`: The fork of `edx-platform` to use by default. Defaults to the
   main repository, `edx/edx-platform`.
+* `OPENEDX_RELEASE_STABLE_REF` Set this to a tag or branch for a stable
+  Open edX release. It is used as a default value for `configuration_version`
+  and `openedx_release` fields when creating production instances.
 
 Migrations
 ----------
@@ -397,7 +400,43 @@ Note: You need to match the above format exactly.
 ### Manual provisioning
 
 If you want to create an instance outside of a GitHub pull request, you can do
-so from the shell:
+so from the shell. There are two options:
+
+**Factory methods**
+
+OpenCraft IM provides two factory methods for creating instances:
+
+```python
+from instance.factories import instance_factory, production_instance_factory
+
+# Creating an instance with defaults appropriate for sandboxes:
+instance = instance_factory(name="Sandbox instance", sub_domain="sandbox")
+
+# Creating an instance with defaults appropriate for production:
+production_instance = production_instance_factory(name="Production instance", sub_domain="production")
+```
+
+The only mandatory keyword argument for both functions is `sub_domain`.
+You can use additional keyword arguments to pass in non-default values
+for any field that is defined on the `OpenEdXInstance` model.
+Since both functions return a newly created instance in the form of an
+`OpenEdXInstance` object, you can also customize field values later on:
+
+```python
+instance.email = 'myname@opencraft.com'
+instance.configuration_version = 'named-release/dogwood'
+instance.save()
+```
+
+If you pass custom `configuration_extra_settings` to `production_instance_factory`,
+they will be merged with the settings in [prod-vars.yml](https://github.com/open-craft/opencraft/blob/master/instance/templates/instance/ansible/prod-vars.yml).
+Settings that you pass in will take precedence over settings in prod-vars.yml,
+that is, if a variable is present in both `configuration_extra_settings` and prod-vars.yml,
+the instance manager will use the value from `configuration_extra_settings` for it.
+
+**Django API**
+
+You can also use the Django API to create an instance:
 
 ```python
 from instance.models.openedx_instance import OpenEdXInstance
