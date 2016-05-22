@@ -49,7 +49,7 @@ def watch_pr():
 
     for username in team_username_list:
         for pr in get_pr_list_from_username(username, settings.WATCH_FORK):
-            instance, created = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+            instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr)
             if created:
                 logger.info('New PR found, creating sandbox: %s', pr)
                 spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)

@@ -132,7 +132,7 @@ class WatchedPullRequestTestCase(TestCase):
         Create an instance from a pull request
         """
         pr = PRFactory()
-        instance, created = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+        instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr)
         self.assertTrue(created)
 
         watched_pr = instance.watchedpullrequest
@@ -146,13 +146,17 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
         self.assertTrue(instance.use_ephemeral_databases)
 
+        same_instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr)
+        self.assertEqual(instance, same_instance)
+        self.assertFalse(created)
+
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
     def test_create_from_pr_ephemeral_databases(self):
         """
         Instances should use ephemeral databases if requested in the PR
         """
         pr = PRFactory(body='pr123.sandbox.example.com (ephemeral databases)', number=123)
-        instance, _ = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr)
         self.assertTrue(instance.use_ephemeral_databases)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
@@ -161,5 +165,5 @@ class WatchedPullRequestTestCase(TestCase):
         Instances should use persistent databases if requested in the PR
         """
         pr = PRFactory(body='pr123.sandbox.example.com (persistent databases)', number=123)
-        instance, _ = WatchedPullRequest.objects.update_or_create_from_pr(pr)
+        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr)
         self.assertFalse(instance.use_ephemeral_databases)
