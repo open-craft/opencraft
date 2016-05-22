@@ -197,6 +197,8 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             new_settings += template.render({
                 'user': self.mysql_user,
                 'pass': self.mysql_pass,
+                'migrate_user': self.migrate_user,
+                'migrate_pass': self._get_mysql_pass(self.migrate_user),
                 'host': settings.INSTANCE_MYSQL_URL_OBJ.hostname,
                 'port': settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
                 'database': self.mysql_database_name

@@ -164,8 +164,8 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(db_vars['EDXAPP_MYSQL_HOST'], 'mysql.opencraft.com')
         self.assertEqual(db_vars['EDXAPP_MYSQL_PORT'], 3306)
         self.assertEqual(db_vars['EDXAPP_MYSQL_DB_NAME'], instance.mysql_database_name)
-        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_USER'], instance.mysql_user)
-        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_PASS'], instance.mysql_pass)
+        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_USER'], instance.migrate_user)
+        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_PASS'], instance._get_mysql_pass(instance.migrate_user))
 
     @patch_services
     @override_settings(INSTANCE_MYSQL_URL_OBJ=None)

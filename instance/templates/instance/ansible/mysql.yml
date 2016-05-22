@@ -4,5 +4,5 @@ EDXAPP_MYSQL_HOST: '{{ host }}'
 EDXAPP_MYSQL_PORT: {{ port }}
 EDXAPP_MYSQL_DB_NAME: '{{ database }}'
 
-COMMON_MYSQL_MIGRATE_USER: '{{ user }}'
-COMMON_MYSQL_MIGRATE_PASS: '{{ pass }}'
+COMMON_MYSQL_MIGRATE_USER: '{{ migrate_user }}'
+COMMON_MYSQL_MIGRATE_PASS: '{{ migrate_pass }}'
