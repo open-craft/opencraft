@@ -101,7 +101,7 @@ test_migrations_missing: clean
 
 test_browser: clean static_external
 	@echo -e "\nRunning browser tests..."
-	honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
+	xvfb-run --auto-servernum honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
 
 test_integration: clean
 ifneq ($(wildcard .env.integration),)
