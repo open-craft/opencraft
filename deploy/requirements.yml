@@ -41,4 +41,4 @@
 
 - name: opencraft
   src: https://github.com/open-craft/ansible-opencraft
-  version: 'origin/smarnach/opencraft'
+  version: v0.0.1

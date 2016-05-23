@@ -45,7 +45,9 @@ Running the playbook
 
         ansible-playbook opencraft.yml -u ubuntu --extra-vars @private.yml -i your.host.name.here,
 
-   (The trailing comma must be preserved.)
+   (The trailing comma must be preserved.). Note: you can't pass naked ip address to -i switch, long 
+   story short this will make `forward-server-mail` explode when configuring postfix. Please temporarily
+   add hostname mapping to your hosts if you need to, or just create an ansible ``hosts`` file.  
 
 After deployment, the server doesn't run the instance manager automatically.  You need to log in
 and run it manually inside a `screen` or `tmux` session:
