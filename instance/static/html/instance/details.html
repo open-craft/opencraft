@@ -92,7 +92,12 @@
   </tab>
   <tab heading="Log" active="instance_active_tabs.log_tab">
     <p>This log does not include events from each App Server or VM. Select an App Server on the "App Servers" tab to view those logs.</p>
-    <pre class="instance-log" ng-repeat="line in instance.log_entries track by $index">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }} | {{ line.level }} | {{ line.text }}</pre>
+    <div ng-attr-class="instance-log {{ line.level | lowercase }}"
+         ng-repeat="line in instance.log_entries track by $index">
+      <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
+      <span class="log-level">{{ line.level }}</span>
+      <pre>{{ line.text }}</pre>
+    </div>
     <p ng-if="instance.log_entries.length == 0"><em>(There are currently no entries in this log)</em></p>
   </tab>
   <tab heading="Pull Request (#{{pr.github_pr_number}})" ng-if="instance.source_pr" ng-init="pr = instance.source_pr" active="instance_active_tabs.pr_tab">

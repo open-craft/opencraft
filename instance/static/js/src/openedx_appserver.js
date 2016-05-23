@@ -85,5 +85,12 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
     }
 ]);
 
+// This custom filter removes the prefix from log text:
+// "instance.models.appserver | instance=60 (Instance),app_server=12 (AppServer 1) | "
+app.filter('stripLogMeta', function() {
+    return function(input) {
+      return input.split(' | ').slice(2).join(' | ');
+    };
+});
 
 })();
