@@ -38,7 +38,7 @@ futures==3.0.5
 gitdb==0.6.4
 GitPython==2.0.2
 glob2==0.4.1
-gunicorn==19.5.0
+gunicorn==19.6.0
 honcho==0.7.1
 # Can be replaced with huey==1.1.2 when released to PyPI.
 git+https://github.com/coleifer/huey.git@7fb322880a16e87c659c38746e59d66c8e5f3db7#egg=huey==1.1.2
