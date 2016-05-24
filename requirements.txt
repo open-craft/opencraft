@@ -36,7 +36,7 @@ Flask==0.10.1
 freezegun==0.3.7
 futures==3.0.5
 gitdb==0.6.4
-GitPython==2.0.2
+GitPython==2.0.3
 glob2==0.4.1
 gunicorn==19.6.0
 honcho==0.7.1
@@ -66,7 +66,7 @@ netifaces==0.10.4
 oauthlib==1.1.1
 ordereddict==1.1
 os-client-config==1.17.0
-oslo.config==3.9.0
+oslo.config==3.10.0
 oslo.i18n==3.6.0
 oslo.serialization==2.6.0
 oslo.utils==3.10.0
