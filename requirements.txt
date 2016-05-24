@@ -71,7 +71,7 @@ oslo.i18n==3.6.0
 oslo.serialization==2.6.0
 oslo.utils==3.10.0
 path.py==8.2.1
-pbr==1.9.1
+pbr==1.10.0
 pep257==0.7.0
 pep8==1.7.0
 pep8-naming==0.3.3
@@ -118,6 +118,7 @@ sqlparse==0.1.19
 static3==0.7.0
 stevedore==1.13.0
 -e git+https://github.com/jonashagstedt/swampdragon.git@061b2b1e4a57b7aa32d2fbc0824f070a52c1e300#egg=SwampDragon
+tldextract==2.0.1
 tlslite==0.4.9
 tornado==4.3
 tornado-redis==2.4.18
