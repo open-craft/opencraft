@@ -68,7 +68,7 @@ ordereddict==1.1
 os-client-config==1.17.0
 oslo.config==3.10.0
 oslo.i18n==3.6.0
-oslo.serialization==2.6.0
+oslo.serialization==2.7.0
 oslo.utils==3.10.0
 path.py==8.2.1
 pbr==1.10.0
