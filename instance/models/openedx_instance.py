@@ -25,6 +25,7 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.db.models.signals import post_save
+from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
@@ -37,8 +38,12 @@ from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAUL
 
 gandi = GandiAPI()
 
-# Models ######################################################################
+# By default, tldextract will make an http request to fetch an updated list of
+# TLDs on first invocation. Passing suffix_list_urls=None here prevents this.
+tldextract = TLDExtract(suffix_list_urls=None)
 
+
+# Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
 class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXStorageMixin):
@@ -188,12 +193,19 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         app_server = self.appserver_set.get(pk=appserver_id)  # Make sure the AppServer is owned by this instance
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
         public_ip = app_server.server.public_ip
+
         self.logger.info('Updating DNS: LMS at %s...', self.domain)
-        gandi.set_dns_record(type='A', name=self.sub_domain, value=public_ip)
+        lms_domain = tldextract(self.domain)
+        gandi.set_dns_record(type='A', name=lms_domain.subdomain, value=public_ip)
+
         self.logger.info('Updating DNS: LMS preview at %s...', self.lms_preview_domain)
-        gandi.set_dns_record(type='CNAME', name=self.lms_preview_sub_domain, value=self.sub_domain)
+        lms_preview_domain = tldextract(self.lms_preview_domain)
+        gandi.set_dns_record(type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain)
+
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
-        gandi.set_dns_record(type='CNAME', name=self.studio_sub_domain, value=self.sub_domain)
+        studio_domain = tldextract(self.studio_domain)
+        gandi.set_dns_record(type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain)
+
         self.active_appserver = app_server
         self.save()
 

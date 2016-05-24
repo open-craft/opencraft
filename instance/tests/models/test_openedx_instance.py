@@ -206,6 +206,25 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @patch_services
+    def test_set_appserver_active_base_subdomain(self, mocks):
+        """
+        Test set_appserver_active() with a base domain that includes part of a
+        subdomain. Ensure that the dns records include the part of the subdomain
+        in the base domain of the instance.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
+                                          base_domain='stage.opencraft.hosting',
+                                          use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
+        self.assertEqual(instance.active_appserver.pk, appserver_id)
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
+            call(name='test.activate.stage', type='A', value='1.1.1.1'),
+            call(name='preview-test.activate.stage', type='CNAME', value='test.activate.stage'),
+            call(name='studio-test.activate.stage', type='CNAME', value='test.activate.stage'),
+        ])
+
+    @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_names(self, mocks, mock_provision):
         """
