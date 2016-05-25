@@ -113,7 +113,7 @@ class BetaTestBrowserTestCase(BetaTestApplicationViewTestMixin,
         self.fill_form(form_data)
 
         # Wait for ajax validation to complete
-        time.sleep(1)
+        time.sleep(2)
 
         if self.form_valid():
             self.submit_form()
