@@ -78,14 +78,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         widget=forms.widgets.EmailInput(attrs={'validate-email': True}),
     )
     password = forms.CharField(
-        required=False,
         strip=False,
         widget=forms.PasswordInput,
         help_text=('Pick a password for your OpenCraft account. You will be '
                    'able to use it to login and access your account.'),
     )
     password_confirmation = forms.CharField(
-        required=False,
         strip=False,
         widget=forms.PasswordInput,
         help_text=('Please use a strong password: avoid common patterns and '
@@ -132,16 +130,30 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         related models and make non-modifiable fields read only.
         """
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            self.initial.update({
-                'full_name': self.instance.user.profile.full_name,
-                'username': self.instance.user.username,
-                'email': self.instance.user.email,
-                'accept_terms': True,
-            })
-            for name, field in self.fields.items():
-                if name not in self.can_be_modified:
-                    field.widget.attrs['readonly'] = True
+        if self.instance:
+            if hasattr(self.instance, 'user'):
+                # Populate the username and email fields and make them read only
+                for field in ('username', 'email'):
+                    self.initial[field] = getattr(self.instance.user, field)
+                    self.fields[field].widget.attrs['readonly'] = True
+
+                # Remove the password fields, the user already has a password
+                del self.fields['password']
+                del self.fields['password_confirmation']
+
+                # If the user has a profile, populate the full_name field
+                if hasattr(self.instance.user, 'profile'):
+                    self.initial['full_name'] = self.instance.user.profile.full_name
+
+            if self.instance.pk:
+                # If the user has already registered they have already accepted
+                # the terms, so the checkbox can default to checked
+                self.initial['accept_terms'] = True
+
+                # Make all non-modifiable fields read only
+                for name, field in self.fields.items():
+                    if name not in self.can_be_modified:
+                        field.widget.attrs['readonly'] = True
 
     def clean_subdomain(self):
         """
@@ -183,17 +195,11 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         Check password strength.
         """
         password = self.cleaned_data.get('password')
-        if password:
-            if password_strength(password)['score'] < 2:
-                raise forms.ValidationError(
-                    ('Please use a stronger password: avoid common patterns and '
-                     'make it long enough to be difficult to crack.'),
-                    code='invalid',
-                )
-        elif not (self.instance and self.instance.pk):
+        if password and password_strength(password)['score'] < 2:
             raise forms.ValidationError(
-                'Please provide a password.',
-                code='required',
+                ('Please use a stronger password: avoid common patterns and '
+                 'make it long enough to be difficult to crack.'),
+                code='invalid',
             )
         return password
 
@@ -227,13 +233,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         with data from the form.
         """
         application = super().save(commit=False)
-        if application.pk:
-            self.update_related(application, commit=commit)
+        if hasattr(application, 'user'):
+            self.update_user(application, commit=commit)
         else:
-            self.create_related(application, commit=commit)
+            self.create_user(application, commit=commit)
         return application
 
-    def create_related(self, application, commit=True):
+    def create_user(self, application, commit=True):
         """
         Create related User and UserProfile instance for the given
         BetaTestApplication.
@@ -255,11 +261,17 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 profile.save()
                 application.save()
 
-    def update_related(self, application, commit=True):
+    def update_user(self, application, commit=True):
         """
         Updated the UserProfile for the given application's user.
         """
-        application.user.profile.full_name = self.cleaned_data['full_name']
+        if hasattr(application.user, 'profile'):
+            application.user.profile.full_name = self.cleaned_data['full_name']
+        else:
+            application.user.profile = UserProfile(
+                full_name=self.cleaned_data['full_name'],
+                user_id=application.user.pk,
+            )
         if commit:
             with transaction.atomic():
                 application.user.profile.save()

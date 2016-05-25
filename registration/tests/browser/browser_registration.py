@@ -60,18 +60,42 @@ class BetaTestBrowserTestCase(BetaTestApplicationViewTestMixin,
             path=reverse('registration:register'),
         )
 
+    @property
+    def form(self):
+        """
+        The form on the page.
+        """
+        return self.client.find_element_by_tag_name('form')
+
+    def fill_form(self, form_data):
+        """
+        Fill in the form with the given data.
+        """
+        for field, value in form_data.items():
+            element = self.form.find_element_by_name(field)
+            if element.get_attribute('type') == 'checkbox':
+                if bool(value) != element.is_selected():
+                    element.click()
+            elif not element.get_attribute('readonly'):
+                element.clear()
+                element.send_keys(value)
+
     def form_valid(self):
         """
         Return True if the form is valid, False otherwise.
         """
         return 'ng-valid' in self.form.get_attribute('class').split()
 
-    @property
-    def form(self):
+    def submit_form(self):
         """
-        The registration form.
+        Click the submit button on the form and wait for the next page to
+        load.
         """
-        return self.client.find_element_by_id('registration-form')
+        submit = self.form.find_element_by_tag_name('button')
+        html = self.client.find_element_by_tag_name('html')
+        submit.click()
+        WebDriverWait(self.client, timeout=3) \
+            .until(expected_conditions.staleness_of(html))
 
     def _get_response_body(self, url):
         """
@@ -86,28 +110,27 @@ class BetaTestBrowserTestCase(BetaTestApplicationViewTestMixin,
         is valid.
         """
         self.client.get(self.url)
-
-        for field, value in form_data.items():
-            element = self.form.find_element_by_name(field)
-            if (element.get_attribute('type') == 'checkbox' and
-                    bool(value) != element.is_selected()):
-                element.click()
-            else:
-                element.send_keys(value)
+        self.fill_form(form_data)
 
         # Wait for ajax validation to complete
         time.sleep(1)
 
-        # If the form is valid, click the submit button and wait for the next
-        # page to load
         if self.form_valid():
-            submit = self.form.find_element_by_tag_name('button')
-            html = self.client.find_element_by_tag_name('html')
-            submit.click()
-            WebDriverWait(self.client, timeout=3) \
-                .until(expected_conditions.staleness_of(html))
+            self.submit_form()
 
         return self.client.page_source
+
+    def _login(self, **kwargs):
+        """
+        Log in with the given credentials, using the login form.
+        """
+        login_url = '{host}{path}'.format(
+            host=self.live_server_url,
+            path=reverse('registration:login'),
+        )
+        self.client.get(login_url)
+        self.fill_form(kwargs)
+        self.submit_form()
 
     def _get_error_messages(self, response):
         """

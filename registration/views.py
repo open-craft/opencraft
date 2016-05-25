@@ -32,29 +32,39 @@ from simple_email_confirmation.models import EmailAddress
 
 from email_verification import send_email_verification
 from registration.forms import BetaTestApplicationForm
+from registration.models import BetaTestApplication
 
 
 # Views #######################################################################
 
+class BetaTestApplicationMixin:
+    """
+    Mix this in to generic views to provide a beta test application for the
+    logged in user.
+    """
+    def get_object(self, *args, **kwargs):
+        """
+        Get the beta test application for the logged in user, if any.
+        """
+        if self.request.user.is_authenticated():
+            if hasattr(self.request.user, 'betatestapplication'):
+                return self.request.user.betatestapplication
+            application = BetaTestApplication()
+            application.user = self.request.user
+            return application
+        return None
+
+
 @method_decorator(
     sensitive_post_parameters('password', 'password_confirmation'), name='post'
 )
-class BetaTestApplicationView(UpdateView):
+class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
     """
     Display the beta test application form.
     """
     template_name = 'registration/registration.html'
     form_class = BetaTestApplicationForm
     success_url = reverse_lazy('registration:register')
-
-    def get_object(self, *args, **kwargs):
-        """
-        Get the beta test application for the logged in user, if any.
-        """
-        if (self.request.user.is_authenticated() and
-                hasattr(self.request.user, 'betatestapplication')):
-            return self.request.user.betatestapplication
-        return None
 
     @transaction.atomic
     def form_valid(self, form):
