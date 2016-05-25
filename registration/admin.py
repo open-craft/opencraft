@@ -17,26 +17,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-User-related models
+Admin for the registration app
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.models import User
-from django.db import models
-from django_extensions.db.models import TimeStampedModel
+from django.contrib import admin
 
-from instance.models.utils import ValidateModelMixin
+from registration.models import BetaTestApplication
 
 
-# Models ######################################################################
+# ModelAdmins #################################################################
 
-class UserProfile(ValidateModelMixin, TimeStampedModel):
-    """
-    Profile information for users.
-    """
-    user = models.OneToOneField(User, related_name='profile')
-    full_name = models.CharField(max_length=255)
+class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+    list_display = ('user', 'domain')
 
-    def __str__(self):
-        return self.full_name
+
+admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)

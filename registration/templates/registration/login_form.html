@@ -1,0 +1,13 @@
+<form id="login-form" name="{{ form.form_name }}" action="" method="post" novalidate>
+    {% csrf_token %}
+    <div class="row">
+        <div class="large-12 columns">
+            {{ form.non_field_errors }}
+        </div>
+    </div>
+    {% with row="registration/form_field.html" %}
+        {% include row with field=form.username only %}
+        {% include row with field=form.password only %}
+    {% endwith %}
+    <button>Login</button>
+</form>

@@ -116,13 +116,13 @@ endif
 
 test_js: clean static_external
 	cd instance/tests/js && $(RUN_JS_TESTS)
-	cd betatest/tests/js && $(RUN_JS_TESTS)
+	cd registration/tests/js && $(RUN_JS_TESTS)
 
 test_instance_js_web: clean static_external
 	cd instance/tests/js && jasmine --host 0.0.0.0
 
-test_betatest_js_web: clean static_external
-	cd betatest/tests/js && jasmine --host 0.0.0.0
+test_registration_js_web: clean static_external
+	cd registration/tests/js && jasmine --host 0.0.0.0
 
 test: clean test_prospector test_unit test_migrations_missing test_js test_browser test_integration
 	@echo -e "\nAll tests OK!\n"

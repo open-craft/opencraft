@@ -1,0 +1,42 @@
+{% extends "registration/base.html" %}
+{% load staticfiles %}
+
+{% block title %}Register for Beta{% endblock title %}
+
+{% block content %}
+<div class="container content" ng-app="RegistrationApp">
+    <div class="row">
+        <div class="large-12 columns">
+            <h1>Register for Beta</h1>
+            {% if form.instance.pk %}
+                <div class="alert-box success">
+                    Your application for the OpenCraft beta has been
+                    successfully sent! We will contact you after reviewing it.
+                </div>
+                {% if not form.instance.email_addresses_verified %}
+                    <div class="alert-box warning">
+                        Application status: pending email confirmation. You
+                        should receive verification emails at both of the
+                        email addresses you provided. Please click on the
+                        links in the emails to confirm your registration. Be
+                        sure to check your spam folder if you can't find them,
+                        or <a href="mailto:contact@opencraft.com">contact us</a>.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert-box info">
+                    This is the application form for the beta of the
+                    self-service hosting offered by OpenCraft. For enterprise
+                    or institutional offerings,
+                    <a href="mailto:contact@opencraft.com">contact us</a>.
+                </div>
+            {% endif %}
+            {% include "registration/registration_form.html" %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block body_js %}
+<script src="{% static "js/src/registration.js" %}"></script>
+{% endblock body_js %}

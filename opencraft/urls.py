@@ -26,18 +26,16 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
-import instance
-
 
 # URL Patterns ################################################################
 
 urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include('api.urls', namespace="api")),
-    url(r'^instance/', include('instance.urls', namespace="instance")),
-    url(r'^beta/', include('betatest.urls', namespace='beta')),
+    url(r'^api/', include('api.urls', namespace='api')),
+    url(r'^instance/', include('instance.urls', namespace='instance')),
+    url(r'^registration/', include('registration.urls', namespace='registration')),
     url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', instance.views.index),
+    url(r'^$', RedirectView.as_view(pattern_name='registration:register', permanent=False), name='index'),
 ]

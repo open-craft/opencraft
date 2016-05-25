@@ -27,7 +27,7 @@ from rest_framework import routers
 from instance.api.instance import InstanceViewSet
 from instance.api.openedx_appserver import OpenEdXAppServerViewSet
 from instance.api.server import OpenStackServerViewSet
-from betatest.api import BetaTestApplicationViewSet
+from registration.api import BetaTestApplicationViewSet
 from pr_watch.api import WatchedPullRequestViewSet
 
 
@@ -38,5 +38,5 @@ router = routers.DefaultRouter()
 router.register(r'instance', InstanceViewSet, base_name='instance')
 router.register(r'openedx_appserver', OpenEdXAppServerViewSet)
 router.register(r'openstackserver', OpenStackServerViewSet)
-router.register(r'beta/register/validate', BetaTestApplicationViewSet, base_name='register')
+router.register(r'registration/register/validate', BetaTestApplicationViewSet, base_name='register')
 router.register(r'pr_watch', WatchedPullRequestViewSet, base_name='pr_watch')

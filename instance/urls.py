@@ -29,6 +29,7 @@ from instance import views
 
 # URL Patterns ################################################################
 
+app_name = 'instance'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
 ]

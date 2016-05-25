@@ -17,26 +17,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-User-related models
+Tests for auth backends
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.models import User
-from django.db import models
-from django_extensions.db.models import TimeStampedModel
+from django.contrib.auth import authenticate
+from django.test import TestCase
 
-from instance.models.utils import ValidateModelMixin
+from registration.tests.utils import UserMixin
 
 
-# Models ######################################################################
+# Tests #######################################################################
 
-class UserProfile(ValidateModelMixin, TimeStampedModel):
+class ModelBackendTestCase(UserMixin, TestCase):
     """
-    Profile information for users.
+    Tests for the custom ModelBackend.
     """
-    user = models.OneToOneField(User, related_name='profile')
-    full_name = models.CharField(max_length=255)
+    def test_username_login(self):
+        """
+        Test that users can login with their username and password.
+        """
+        self.assertEqual(authenticate(username=self.username, password=self.password), self.user)
 
-    def __str__(self):
-        return self.full_name
+    def test_email_login(self):
+        """
+        Test that users can login with their email address and password.
+        """
+        self.assertEqual(authenticate(username=self.email, password=self.password), self.user)

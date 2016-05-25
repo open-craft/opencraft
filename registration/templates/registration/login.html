@@ -1,0 +1,19 @@
+{% extends "registration/base.html" %}
+{% load staticfiles %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+<div class="container content" ng-app="LoginApp">
+    <div class="row">
+        <div class="large-12 columns">
+            <h1>Login</h1>
+            {% include "registration/login_form.html" %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block body_js %}
+<script src="{% static "js/src/login.js" %}"></script>
+{% endblock body_js %}

@@ -17,26 +17,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-User-related models
+Registration api views
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.models import User
-from django.db import models
-from django_extensions.db.models import TimeStampedModel
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
-from instance.models.utils import ValidateModelMixin
+from registration.forms import BetaTestApplicationForm
 
 
-# Models ######################################################################
+# Views #######################################################################
 
-class UserProfile(ValidateModelMixin, TimeStampedModel):
+class BetaTestApplicationViewSet(ViewSet):
     """
-    Profile information for users.
+    ViewSet for ajax validation of the beta test registration form.
     """
-    user = models.OneToOneField(User, related_name='profile')
-    full_name = models.CharField(max_length=255)
+    permission_classes = (AllowAny,)
 
-    def __str__(self):
-        return self.full_name
+    def list(self, request): #pylint: disable=no-self-use
+        """
+        Validate the given form input, and return any errors as json.
+
+        Not really a list view, but we have to use `list` to fit into ViewSet
+        semantics so this can be part of the browsable api.
+        """
+        form = BetaTestApplicationForm(request.query_params)
+        return Response(form.errors)
