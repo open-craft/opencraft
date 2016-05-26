@@ -78,8 +78,6 @@ class BetaTestApplicationViewTestMixin:
         # Check that the application matches the submitted data
         application = BetaTestApplication.objects.get()
         self.assert_application_matches_form_data(application)
-        self.assert_user_matches_form_data(application.user)
-        self.assert_profile_matches_form_data(application.user.profile)
 
         # Test the email verification flow
         self.assert_email_verification_sent(application)
@@ -135,6 +133,8 @@ class BetaTestApplicationViewTestMixin:
                              self.form_data[application_field])
         self.assertEqual(application.subscribe_to_updates,
                          bool(self.form_data.get('subscribe_to_updates')))
+        self.assert_user_matches_form_data(application.user)
+        self.assert_profile_matches_form_data(application.user.profile)
 
     def assert_user_matches_form_data(self, user):
         """
@@ -321,6 +321,24 @@ class BetaTestApplicationViewTestMixin:
             'password_confirmation': ["The two password fields didn't match."],
         })
 
+    def test_existing_user(self):
+        """
+        Logged in user already exists but has not registered.
+        """
+        User.objects.create_user(
+            username=self.form_data['username'],
+            email=self.form_data['email'],
+            password=self.form_data['password'],
+        )
+        self._login(username=self.form_data['username'],
+                    password=self.form_data['password'])
+
+        # The password fields do not appear on the form for logged in users
+        form_data = self.form_data.copy()
+        del form_data['password']
+        del form_data['password_confirmation']
+        self.assert_registration_succeeds(form_data)
+
     def _get_response_body(self, url):
         """
         Navigate to the given url and return the response body as a string.
@@ -339,6 +357,13 @@ class BetaTestApplicationViewTestMixin:
         getter = getattr(self.client, self.request_method)
         response = getter(self.url, form_data, follow=True)
         return response.content.decode('utf-8')
+
+    def _login(self, **kwargs):
+        """
+        Log in with the given credentials. Override this method when testing using
+        something other than the django test client (e.g. selenium).
+        """
+        self.client.login(**kwargs)
 
     @staticmethod
     def _get_form_fields(response):
@@ -388,6 +413,42 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
     """
     url = reverse('registration:register')
     request_method = 'post'
+
+    def test_modify_immutable_fields(self):
+        """
+        Check that non-modifiable fields cannot be modified once a user has
+        registered.
+        """
+        self._register(self.form_data)
+        modified = self.form_data.copy()
+        modified.update({
+            'instance_name': 'Azkaban',
+            'username': 'snape',
+        })
+        self._register(modified)
+        application = BetaTestApplication.objects.get()
+        self.assert_application_matches_form_data(application)
+
+    def test_modify_user(self):
+        """
+        Check that the username and email fields cannot be modified if the user
+        already exists.
+        """
+        User.objects.create_user(
+            username=self.form_data['username'],
+            email=self.form_data['email'],
+            password=self.form_data['password'],
+        )
+        self._login(username=self.form_data['username'],
+                    password=self.form_data['password'])
+        modified = self.form_data.copy()
+        modified.update({
+            'username': 'snape',
+            'email': 'severus.snape@hogwarts.edu',
+        })
+        self._register(modified)
+        application = BetaTestApplication.objects.get()
+        self.assert_application_matches_form_data(application)
 
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
