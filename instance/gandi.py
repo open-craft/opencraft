@@ -41,7 +41,10 @@ class GandiAPI():
     """
     Gandi API proxy object
     """
+
     def __init__(self, api_url='https://rpc.gandi.net/xmlrpc/'):
+        # This is a map of domain_name => zone_id key-value pairs.
+        self._zone_id_cache = {}
         self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
@@ -62,7 +65,11 @@ class GandiAPI():
         """
         Gandi zone ID used by domain
         """
-        return self.client.domain.info(self.api_key, domain)['zone_id']
+        zone_id = self._zone_id_cache.get(domain, None)
+        if zone_id is None:
+            zone_id = self.client.domain.info(self.api_key, domain)['zone_id']
+            self._zone_id_cache[domain] = zone_id
+        return zone_id
 
     def delete_dns_record(self, zone_id, zone_version_id, record_name):
         """
