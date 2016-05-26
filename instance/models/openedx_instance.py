@@ -166,7 +166,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         # Set default field values from settings - using the `default` field attribute confuses
         # automatically generated migrations, generating a new one when settings don't match
         if not self.base_domain:
-            self.base_domain = settings.INSTANCES_BASE_DOMAIN
+            self.base_domain = settings.DEFAULT_INSTANCE_BASE_DOMAIN
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)

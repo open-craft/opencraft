@@ -256,8 +256,8 @@ SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
 
 # DNS (Gandi) #################################################################
 
-# Instances will be created as subdomains of this domain
-INSTANCES_BASE_DOMAIN = env('INSTANCES_BASE_DOMAIN')
+# Instances will be created as subdomains of this domain by default
+DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
 
 # See https://www.gandi.net/admin/api_key
 GANDI_API_KEY = env('GANDI_API_KEY')

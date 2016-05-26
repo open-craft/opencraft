@@ -102,7 +102,7 @@ OPENSTACK_TENANT='tenant-name'
 OPENSTACK_AUTH_URL='https://auth.cloud.ovh.net/v2.0'
 OPENSTACK_REGION='BHS1'
 OPENSTACK_SANDBOX_SSH_KEYNAME='keypair-name'
-INSTANCES_BASE_DOMAIN='example.com'
+DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 WATCH_ORGANIZATION='github-org'
@@ -195,7 +195,7 @@ flavor:
 
 ### DNS settings
 
-* `INSTANCES_BASE_DOMAIN` Instances are created as subdomains of this domain,
+* `DEFAULT_INSTANCE_BASE_DOMAIN` Instances are created as subdomains of this domain,
   e.g. `example.com` (required)
 * `GANDI_API_KEY` Your Gandi API key (required)
 

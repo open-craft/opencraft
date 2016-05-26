@@ -219,7 +219,7 @@ class WatchedPullRequest(models.Model):
         # Create an instance if necessary:
         instance = self.instance or OpenEdXInstance()
         instance.sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
-        instance.base_domain = settings.INSTANCES_BASE_DOMAIN
+        instance.base_domain = settings.DEFAULT_INSTANCE_BASE_DOMAIN
         instance.edx_platform_repository_url = self.repository_url
         instance.edx_platform_commit = self.get_branch_tip()
         instance.name = (
