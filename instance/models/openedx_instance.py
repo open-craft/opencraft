@@ -196,15 +196,24 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
 
         self.logger.info('Updating DNS: LMS at %s...', self.domain)
         lms_domain = tldextract(self.domain)
-        gandi.set_dns_record(type='A', name=lms_domain.subdomain, value=public_ip)
+        gandi.set_dns_record(
+            lms_domain.registered_domain,
+            type='A', name=lms_domain.subdomain, value=public_ip
+        )
 
         self.logger.info('Updating DNS: LMS preview at %s...', self.lms_preview_domain)
         lms_preview_domain = tldextract(self.lms_preview_domain)
-        gandi.set_dns_record(type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain)
+        gandi.set_dns_record(
+            lms_preview_domain.registered_domain,
+            type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain
+        )
 
         self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
         studio_domain = tldextract(self.studio_domain)
-        gandi.set_dns_record(type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain)
+        gandi.set_dns_record(
+            studio_domain.registered_domain,
+            type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain
+        )
 
         self.active_appserver = app_server
         self.save()

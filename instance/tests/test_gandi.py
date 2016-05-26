@@ -40,6 +40,11 @@ class GandiTestCase(TestCase):
 
         with patch('xmlrpc.client.ServerProxy'):
             self.api = gandi.GandiAPI()
+            self.api.client.domain.info.return_value = {
+                'fqdn': 'test.com',
+                'zone_id': 9900,
+                # .... full API response contains more fields, but we don't need them in this test.
+            }
 
     def assert_set_dns_record_calls(self, attempts=1):
         """
@@ -48,6 +53,7 @@ class GandiTestCase(TestCase):
         self.assertEqual(
             self.api.client.mock_calls,
             [
+                call.domain.info('TEST_GANDI_API_KEY', 'test.com'),
                 call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900)
             ] * attempts + [
                 call.domain.zone.record.delete('TEST_GANDI_API_KEY', 9900, 'new_zone_version', {
@@ -69,7 +75,7 @@ class GandiTestCase(TestCase):
         Set a DNS record value.
         """
         self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
-        self.api.set_dns_record(type='A', name='sub.domain', value='192.168.99.99')
+        self.api.set_dns_record('test.com', type='A', name='sub.domain', value='192.168.99.99')
         self.assert_set_dns_record_calls()
 
     @patch('time.sleep')
@@ -80,6 +86,7 @@ class GandiTestCase(TestCase):
         fault = xmlrpc.client.Fault(581091, 'Error')
         self.api.client.domain.zone.version.new.side_effect = [fault, fault, 'new_zone_version']
         self.api.set_dns_record(
+            'test.com',
             type='A', name='sub.domain', value='192.168.99.99', attempts=3, retry_delay=3
         )
         self.assert_set_dns_record_calls(attempts=3)
@@ -93,6 +100,7 @@ class GandiTestCase(TestCase):
         self.api.client.domain.zone.version.new.side_effect = xmlrpc.client.Fault(581091, 'Error')
         with self.assertRaises(xmlrpc.client.Fault):
             self.api.set_dns_record(
+                'test.com',
                 type='A', name='sub.domain', value='192.168.99.99', attempts=4, retry_delay=2
             )
         self.assertEqual(sleep.mock_calls, [call(2), call(4), call(8)])
