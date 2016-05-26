@@ -1,0 +1,15 @@
+/**
+ * UTILITIES: FONT SYSTEM
+ */
+
+.font
+{
+    @each $name, $value in $font-weight
+    {
+
+        &-#{$name}
+        {
+            font-weight: $value;
+        }
+    }
+}

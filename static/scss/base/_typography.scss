@@ -1,0 +1,177 @@
+/**
+ * TYPOGRAPHY
+ */
+
+// ROBOTO MONO
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 100;
+    src: local('Roboto Mono Thin'), local('RobotoMono-Thin'), url(/static/external/fonts/roboto-mono-thin.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Roboto Mono Light'), local('RobotoMono-Light'), url(/static/external/fonts/roboto-mono-light.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Roboto Mono'), local('RobotoMono-Regular'), url(/static/external/fonts/roboto-mono.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 500;
+    src: local('Roboto Mono Medium'), local('RobotoMono-Medium'), url(/static/external/fonts/roboto-mono-medium.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Roboto Mono Bold'), local('RobotoMono-Bold'), url(/static/external/fonts/roboto-mono-bold.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: italic;
+    font-weight: 100;
+    src: local('Roboto Mono Thin Italic'), local('RobotoMono-ThinItalic'), url(/static/external/fonts/roboto-mono-thin-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: italic;
+    font-weight: 300;
+    src: local('Roboto Mono Light Italic'), local('RobotoMono-LightItalic'), url(/static/external/fonts/roboto-mono-light-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: italic;
+    font-weight: 400;
+    src: local('Roboto Mono Italic'), local('RobotoMono-Italic'), url(/static/external/fonts/roboto-mono-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: italic;
+    font-weight: 500;
+    src: local('Roboto Mono Medium Italic'), local('RobotoMono-MediumItalic'), url(/static/external/fonts/roboto-mono-medium-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: italic;
+    font-weight: 700;
+    src: local('Roboto Mono Bold Italic'), local('RobotoMono-BoldItalic'), url(/static/external/fonts/roboto-mono-bold-italic.ttf) format('truetype');
+}
+
+// PLAYFAIR DISPLAY
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Playfair Display'), local('PlayfairDisplay-Regular'), url(/static/external/fonts/playfair-display.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Playfair Display Bold'), local('PlayfairDisplay-Bold'), url(/static/external/fonts/playfair-display-bold.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 900;
+    src: local('Playfair Display Black'), local('PlayfairDisplay-Black'), url(/static/external/fonts/playfair-display-black.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-weight: 400;
+    src: local('Playfair Display Italic'), local('PlayfairDisplay-Italic'), url(/static/external/fonts/playfair-display-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-weight: 700;
+    src: local('Playfair Display Bold Italic'), local('PlayfairDisplay-BoldItalic'), url(/static/external/fonts/playfair-display-bold-italic.ttf) format('truetype');
+}
+@font-face {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-weight: 900;
+    src: local('Playfair Display Black Italic'), local('PlayfairDisplay-BlackItalic'), url(/static/external/fonts/playfair-display-black-italic.ttf) format('truetype');
+}
+
+html
+{
+    font:
+    {
+        size: $base-font-size;
+    }
+
+    @include to('lg')
+    {
+        font:
+        {
+            size: ($base-font-size * 3/4);
+        }
+    }
+}
+
+body
+{
+    line-height: $base-line-height;
+
+    font:
+    {
+        family: $font-body-family;
+        weight: map-get($font-weight, regular);
+    }
+}
+
+h1, .h1
+{
+    font:
+    {
+        family: $font-title-family;
+        size: 1.47rem;
+        weight: map-get($font-weight, regular);
+    }
+    line-height: (70/50);
+
+    @include from('sm')
+    {
+        font-size: map-get($font-size-title, h1);
+    }
+}
+
+h2, .h2
+{
+    font:
+    {
+        family: $font-title-family;
+        size: map-get($font-size-title, h2);
+        weight: map-get($font-weight, regular);
+    }
+    line-height: (70/60);
+}
+
+h3, .h3
+{
+    font:
+    {
+        family: $font-body-family;
+        size: map-get($font-size-title, h3);
+        weight: map-get($font-weight, regular);
+    }
+}
+
+h4, .h4
+{
+    font:
+    {
+        family: $font-body-family;
+        size: map-get($font-size-title, h4);
+        weight: map-get($font-weight, regular);
+    }
+}

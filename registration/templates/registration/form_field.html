@@ -1,16 +1,17 @@
-<div class="row">
-    <div class="large-5 large-offset-2 columns end">
-        {{ field.errors }}
+{% load staticfiles %}
+<div class="page-content__inner__wrapper">
+    <div class="page-content__inner__left">
+        <div class="field field--host">
+            <label class="field-label field-label--required" for="{{ field.id_for_label }}">
+                {{ field.label }}
+            </label>
+            <div class="input--host__wrapper input--host__wrapper--{{ field.name }}">
+                {{ field }}
+            </div>
+            {{ field.errors }}
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="large-2 columns">
-        {{ field.label_tag }}
-    </div>
-    <div id="{{ field.id_for_label }}_container" class="large-5 columns">
-        {{ field }}
-    </div>
-    <div class="large-5 columns">
-        <p class="help-text">{{ field.help_text|safe }}</p>
+    <div class="page-content__inner__right">
+        <p class="color-gray-dark">{{ field.help_text|safe }}</p>
     </div>
 </div>

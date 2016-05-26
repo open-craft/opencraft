@@ -1,0 +1,253 @@
+/**
+ * UTILITIES
+ */
+
+// FONT DISPLAY
+.uppercase
+{
+    text-transform: uppercase;
+}
+
+// DISPLAY
+.display
+{
+    &-table
+    {
+        display: table;
+    }
+
+    &-table-cell
+    {
+        display: table-cell;
+
+         &.vertical-align-middle
+        {
+            vertical-align: middle;
+        }
+
+        &.vertical-align-bottom
+        {
+            vertical-align: bottom;
+        }
+    }
+
+    &-block
+    {
+        display: block;
+    }
+
+    &-none
+    {
+        display: none;
+    }
+
+    &-inline-block
+    {
+        display: inline-block;
+    }
+}
+
+.hidden-touch
+{
+    .touch &
+    {
+        display: none !important;
+    }
+}
+
+.valign-top
+{
+    vertical-align: top;
+}
+
+.valign-middle
+{
+    vertical-align: middle;
+}
+
+.valign-bottom
+{
+    vertical-align: bottom;
+}
+
+.valign
+{
+    @include from('xs')
+    {
+        &-xs
+        {
+            &-none
+            {
+                vertical-align: baseline;
+            }
+        }
+    }
+
+    @include from('sm')
+    {
+        &-sm
+        {
+            &-middle
+            {
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.overflow-hidden
+{
+    overflow: hidden;
+}
+
+.visually-hidden
+{
+    visibility: hidden;
+}
+
+.opacity-none
+{
+    opacity: 0;
+}
+
+// FLUID IMAGE
+.fluid
+{
+    display: block;
+    width: 100%;
+    height: auto;
+
+    &-max
+    {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+// CLEARFIX
+.clearfix
+{
+    &::after, &::before
+    {
+        content: "";
+        display: table;
+    }
+
+    &::after
+    {
+        clear: both;
+    }
+}
+
+// FLOAT
+.float
+{
+    &-left
+    {
+        float: left;
+    }
+
+    &-right
+    {
+        float: right;
+    }
+
+    &-none
+    {
+        float: none;
+    }
+}
+
+// POSITION
+.position
+{
+    &-fixed
+    {
+         position: fixed;
+    }
+
+    &-relative
+    {
+        position: relative;
+    }
+
+    &-absolute
+    {
+        position: absolute;
+    }
+}
+
+// MARGINS
+.no-margin
+{
+    margin: 0;
+}
+
+.no-margin
+{
+    &-xs
+    {
+        @include from('xs')
+        {
+            margin: 0;
+        }
+    }
+
+    &-sm
+    {
+        @include from('sm')
+        {
+            margin: 0;
+        }
+    }
+}
+
+.margin-center
+{
+    margin: 0 auto;
+}
+
+// BACKGROUND
+.background-cover
+{
+    background:
+    {
+        position: center;
+        size: cover;
+    }
+}
+
+// MENU
+.menu-inline
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    li
+    {
+        display: inline-block;
+    }
+}
+
+// BORDER
+// Responsive container for videos
+.embed-container
+{
+    position: relative;
+    padding-bottom: percentage(1 / (16/9));
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+
+    > iframe,
+    > object,
+    > embed
+    {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}

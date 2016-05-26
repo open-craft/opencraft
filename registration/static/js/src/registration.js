@@ -17,6 +17,21 @@
 (function() {
 'use strict';
 
+// iCheck /////////////////////////////////////////////////////////////////////
+
+// https://github.com/fronteed/iCheck/
+$(document).ready(function() {
+    $('input').icheck({
+        checkboxClass: 'checkbox',
+        hoverClass: 'checkbox--hover',
+        focusClass: 'checkbox--focus',
+        checkedClass: 'checkbox--checked',
+        activeClass: 'checkbox--active',
+        handle: 'checkbox'
+    });
+});
+
+
 // App configuration //////////////////////////////////////////////////////////
 
 var app = angular.module('RegistrationApp', ['djng.forms']);
@@ -46,23 +61,27 @@ app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope
 
     // Returns a list of all form fields.
     var getFormFields = function() {
-        return _.keys($scope.form).filter(key => !/^\$/.test(key));
+        return _.keys($scope.form).filter(function(key) {
+            return !/^\$/.test(key);
+        });
     };
 
-    // Returns a list of form field names that have been modified.
-    var getModifiedFields = function() {
-        return getFormFields().filter(key => $scope.form[key].$dirty || $scope.form[key].$message);
-    };
-
-    // Display the given error messages, making sure not to clear messages
-    // that are already displayed.
+    // Display the given error messages. Due to bugs in django-angular, we must
+    // ensure that only modified fields that have passed client-side validation
+    // and fields with a $message (i.e.  fields that have already been passed
+    // to setErrors) are passed to setErrors.
+    // https://github.com/jrief/django-angular/pull/260
     var displayErrors = function(errors) {
-        errors = _.pick(errors, getModifiedFields());
+        var fields = getFormFields().filter(function(key) {
+            var field = $scope.form[key];
+            return field.$message || (field.$dirty && field.$valid);
+        });
+        errors = _.pick(errors, fields);
         djangoForm.setErrors($scope.form, errors);
     };
 
     // Validate the registration form on the server.
-    $scope.validate = _.debounce(function() {
+    $scope.validate = function() {
         var params = {};
         getFormFields().forEach(function(key) {
             params[key] = $scope.form[key].$viewValue;
@@ -74,16 +93,16 @@ app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope
         request.error(function() {
             console.error('Failed to validate form');
         });
-    }, 500);
+    };
 
     // Trigger server-side validation.
     serverValidationFields.forEach(function(field) {
-        $scope.$watch('registration.' + field, function() {
+        $scope.$watch('registration.' + field, _.debounce(function() {
             var formField = $scope.form[field];
-            if (formField && formField.$dirty) {
+            if (formField && formField.$dirty && formField.$valid) {
                 $scope.validate();
             }
-        });
+        }, 500));
     });
 
 }]);

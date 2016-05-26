@@ -1,10 +1,18 @@
-<header>
-    <nav class="top-bar" role="navigation">
-        <ul class="title-area">
-            <li class="name"><h1><a href="{% url 'index' %}">OpenCraft</a></h1></li>
-        </ul>
-        <section class="top-bar-section">
-            <ul class="right">
+{% load staticfiles %}
+<header class="site-header row color-white">
+    <div class="small-12 medium-6 large-4 columns text-xs-center text-sm-left site-header__logo">
+        <a href="http://opencraft.com/">
+            <svg class="icon__logo icon__logo--header" role="img" alt="OpenCraft logo">
+                <use xlink:href="{% static 'img/svg/icons.svg' %}#opencraft_logo"></use>
+            </svg>
+        </a>
+        <a href="https://open.edx.org/" target="_blank">
+            <img class="site-header__page-logo" src="{% static 'img/png/opencraft_client_openedx.png' %}" alt="Open edX logo" width="149" height="31">
+        </a>
+    </div>
+    <nav class="site-header__nav text-xs-right color-white">
+        <div class="site-header__nav__container">
+            <ul>
                 {% if user.is_authenticated %}
                     <li><a href="#">{{ user.email }}</a></li>
                     <li><a href="{% url 'registration:logout' %}">Logout</a></li>
@@ -12,6 +20,6 @@
                     <li><a href="{% url 'registration:login' %}">Login</a></li>
                 {% endif %}
             </ul>
-        </section>
-    </div>
+        </div>
+    </nav>
 </header>

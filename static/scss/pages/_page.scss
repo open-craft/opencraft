@@ -1,0 +1,188 @@
+/**
+ * PAGE
+ */
+
+.page
+{
+    &.background-cyan-light-moderate
+    {
+        background:
+        {
+            image: url('#{$jpg-dir}opencraft_host_background-cyan-light-moderate_header.jpg');
+            position: center top;
+            repeat: no-repeat;
+        }
+    }
+
+    &-title
+    {
+        .icon__table
+        {
+            display: inline-block;
+            height: 4.00rem;
+            width: 6.07rem;
+            margin-right: 2.40rem;
+            fill: map-get($colors, white);
+            vertical-align: middle;
+        }
+
+        &__text
+        {
+            display: inline-block;
+            margin: 0.67em 0;
+            font:
+            {
+                family: $font-body-family;
+                size: 5.33rem;
+            }
+            color: map-get($colors, white);
+            vertical-align: middle;
+        }
+
+        &__catchline
+        {
+            line-height: 1.5;
+            margin-bottom: 10rem;
+        }
+    }
+
+    &-content
+    {
+        max-width: $psd-width;
+        margin: 5.33rem auto 0;
+
+        @include from('sm')
+        {
+            margin-bottom: 5.33rem;
+        }
+
+        &__header
+        {
+            margin-top: -10rem;
+            margin-bottom: 2rem;
+
+            & .box-alert__content
+            {
+                font:
+                {
+                    size: 1.33rem;
+                }
+                line-height: (26/20);
+
+                a
+                {
+                    border-bottom: 1px solid transparent;
+                    color: map-get($colors, cyan-light-moderate);
+
+                    .no-touch &
+                    {
+                        transition: 0.3s ease;
+                    }
+
+                    &:hover
+                    {
+                        border-color: currentColor;
+                    }
+                }
+            }
+        }
+
+        &__wrapper
+        {
+            margin-top: 3.33rem;
+
+            &__stroke
+            {
+                @extend %position-absolute;
+                @include size(1px, 100%);
+                margin: 0 auto;
+                background-color: rgba(#000, 0.05);
+            }
+        }
+
+        &__inner
+        {
+            position: relative;
+            padding-top: 4rem;
+            @extend %box-shadow;
+
+            @include from('sm')
+            {
+                border-radius: 0.33rem;
+            }
+
+            &__wrapper
+            {
+                display: table;
+                width: 100%;
+                margin-bottom: 2rem;
+                padding-left: percentage(100/ strip-unit($container-width));
+                padding-right: percentage(100/ strip-unit($container-width));
+                table-layout: fixed;
+
+                @include to('xs')
+                {
+                    display: block;
+                    width: 100%;
+                }
+
+                &:first-child
+                {
+                    margin-bottom: 0;
+
+                    @include at('xs')
+                    {
+                        margin-bottom: 3.33rem;
+                    }
+                }
+
+                &:last-child
+                {
+                    margin-top: 6.67rem;
+                }
+            }
+
+            &__right,
+            &__left
+            {
+                display: inline-block;
+                width: 100%;
+                vertical-align: baseline;
+
+                @include from('sm')
+                {
+                    display: table-cell;
+                    width: 50%;
+                    vertical-align: middle;
+                }
+            }
+
+            &__left
+            {
+                @include from('sm')
+                {
+                    padding-right: 3.33rem;
+                }
+
+                @include at('xs')
+                {
+                    .field
+                    {
+                        margin-bottom: 0;
+                    }
+                }
+            }
+
+            &__right
+            {
+                white-space: pre-line;
+
+                @include from('sm')
+                {
+                    padding-left: 2.33rem;
+                }
+            }
+        }
+    }
+}
+

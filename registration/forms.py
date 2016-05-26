@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Forms for the Instance Manager beta test
+Forms for registration/login
 """
 
 # Imports #####################################################################
@@ -34,6 +34,50 @@ from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
 
 
+# Widgets #####################################################################
+
+class InputStyleMixin:
+    """
+    Adds the required styles to input fields.
+    """
+    css_classes = 'input input--host'
+
+    def __init__(self, *args, **kwargs):
+        """
+        Set this widget's class attribute.
+        """
+        super().__init__(*args, **kwargs)
+        self.attrs.setdefault('class', self.css_classes)
+
+
+class TextInput(InputStyleMixin, forms.widgets.TextInput):
+    """
+    Adds styles to text input fields.
+    """
+
+
+class EmailInput(InputStyleMixin, forms.widgets.EmailInput):
+    """
+    Adds styles to email input fields, and enables email validation.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.attrs['validate-email'] = True
+
+
+class PasswordInput(InputStyleMixin, forms.widgets.PasswordInput):
+    """
+    Adds styles to password fields.
+    """
+
+
+class Textarea(InputStyleMixin, forms.widgets.Textarea):
+    """
+    Adds styles to textareas.
+    """
+    css_classes = 'textarea textarea--host'
+
+
 # Forms #######################################################################
 
 class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelForm):
@@ -45,9 +89,9 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         model = BetaTestApplication
         exclude = ('user', 'status', 'instance')
         widgets = {
-            'public_contact_email': forms.widgets.EmailInput(attrs={
-                'validate-email': True,
-            }),
+            'instance_name': TextInput,
+            'public_contact_email': EmailInput,
+            'project_description': Textarea,
         }
 
     # Fields that can be modified after the application has been submitted
@@ -59,11 +103,14 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
 
     full_name = forms.CharField(
         max_length=255,
+        widget=TextInput,
+        label='Your full name',
         help_text='Example: Albus Dumbledore',
     )
     username = forms.RegexField(
         regex=r'^[\w.+-]+$',
         max_length=30,
+        widget=TextInput,
         help_text=('This would also be the username of the administrator '
                    'account on the Open edX instance.'),
         error_messages={
@@ -73,25 +120,24 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         },
     )
     email = forms.EmailField(
+        widget=EmailInput,
         help_text=('This is also your account name, and where we will send '
                    'important notices.'),
-        widget=forms.widgets.EmailInput(attrs={'validate-email': True}),
     )
     password = forms.CharField(
         strip=False,
-        widget=forms.PasswordInput,
+        widget=PasswordInput,
         help_text=('Pick a password for your OpenCraft account. You will be '
                    'able to use it to login and access your account.'),
     )
     password_confirmation = forms.CharField(
         strip=False,
-        widget=forms.PasswordInput,
+        widget=PasswordInput,
         help_text=('Please use a strong password: avoid common patterns and '
                    'make it long enough to be difficult to crack.'),
     )
     accept_terms = forms.BooleanField(
         required=True,
-        label='',
         help_text=('I understand that this is a beta test, that bugs and '
                    'crashes are expected, and that the instance is provided '
                    'for free for the duration of the beta-test, without any '
@@ -116,6 +162,9 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         error_messages={
             'invalid': _subdomain_validator.message,
         },
+        widget=TextInput(attrs={
+            'class': 'input input--host input--host--subdomain text-xs-right',
+        }),
     )
 
     # Form values will be available in the angular scope under this namespace
@@ -276,6 +325,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 application.user.profile.save()
                 application.save()
 
+    def fields_with_errors(self):
+        """
+        Returns a list of fields that did not pass validation, in a
+        human-readable format.
+        """
+        return [self[field].label for field in self.errors]
+
     @property
     def _other_users(self):
         """
@@ -295,11 +351,12 @@ class LoginForm(NgFormValidationMixin, AuthenticationForm,
     username = forms.CharField(
         label='Your email or username',
         help_text='You can enter either your username or your email to login.',
+        widget=TextInput,
     )
     password = forms.CharField(
         help_text=('If you have forgotten your login details or need to reset '
                    'your password, please '
                    '<a href="mailto:contact@opencraft.com">contact us</a>.'),
         strip=False,
-        widget=forms.PasswordInput,
+        widget=PasswordInput,
     )

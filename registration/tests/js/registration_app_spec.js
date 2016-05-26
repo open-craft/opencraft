@@ -53,7 +53,7 @@ describe('RegistrationApp', function() {
         it('displays server validation', function(done) {
             var response = {username: ['This username is already taken.']};
             httpBackend.whenGET('/api/v1/registration/register/validate/').respond(response);
-            $scope.form.username = {$dirty: true};
+            $scope.form.username = {$dirty: true, $valid: true};
             $scope.validate();
             setTimeout(function() {
                 httpBackend.flush();
@@ -62,11 +62,23 @@ describe('RegistrationApp', function() {
             }, 501);
         });
 
+        it('does not set server validation errors for invalid fields', function(done) {
+            var response = {username: ['This username is already taken.']};
+            httpBackend.whenGET('/api/v1/registration/register/validate/').respond(response);
+            $scope.form.username = {$dirty: true, $valid: false};
+            $scope.validate();
+            setTimeout(function() {
+                httpBackend.flush();
+                expect(errors).toEqual({});
+                done();
+            }, 501);
+        });
+
         ['subdomain', 'username', 'email', 'password', 'password_confirmation'].forEach(function(field) {
             it('triggers server-side validation when ' + field + ' changes', function(done) {
                 spyOn($scope, 'validate');
                 $scope.registration[field] = 'changed';
-                $scope.form[field] = {$dirty: true};
+                $scope.form[field] = {$dirty: true, $valid: true};
                 $scope.$digest();
                 setTimeout(function() {
                     expect($scope.validate).toHaveBeenCalled();

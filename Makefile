@@ -46,6 +46,7 @@ clean:
 	find -name '__pycache__' -type d -delete
 	rm -rf .coverage build
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
+	find static/external -type d -empty -delete
 
 install_system_db_dependencies: apt_get_update
 	sudo -E apt-get install -y `tr -d '\r' < debian_db_packages.lst`
@@ -89,7 +90,7 @@ upgrade_dependencies:
 test_prospector: clean
 	prospector --profile opencraft
 
-test_unit: clean
+test_unit: clean static_external
 	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
 	coverage html
 	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"

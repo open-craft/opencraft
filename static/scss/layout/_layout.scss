@@ -1,0 +1,78 @@
+/**
+ * LAYOUT
+ */
+
+$overlap: 5.73rem;
+
+.container
+{
+    &__inner
+    {
+        max-width: $container-width;
+        margin: 0 auto;
+    }
+
+    &.has-overlap
+    {
+        margin-top: 17.5 + $overlap;
+    }
+
+    &__table
+    {
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+
+        @include at('xs')
+        {
+            display: block;
+        }
+
+        &__cell
+        {
+            display: table-cell;
+            padding: 4.00rem 1.33rem;
+
+            @include at('xs')
+            {
+                display: block;
+                width: 100%;
+                padding-top: 6.00rem;
+                padding-bottom: 6.00rem;
+            }
+
+            &__title
+            {
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+            }
+
+            &__text
+            {
+                margin: 3.60rem 0 4.00rem;
+                font:
+                {
+                    size: 1.13rem;
+                }
+                line-height: (28/17);
+            }
+
+            &__img
+            {
+                margin: 0;
+
+                .icon__table
+                {
+                    height: 4.13rem;
+                    width: 6.27rem;
+                    fill: map-get($colors, white);
+                }
+            }
+        }
+    }
+}
+
+.site-content
+{
+    height: 100%;
+}

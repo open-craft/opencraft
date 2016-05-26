@@ -1,0 +1,116 @@
+/**
+ * HEADER
+ */
+
+.site-header
+{
+    margin-bottom: 20rem;
+
+    &__logo
+    {
+        position: absolute;
+        top: 4.00rem;
+        left: 0;
+        z-index: 1;
+        padding-top: 1.00rem;
+
+        @include from('sm')
+        {
+            top: 0;
+            padding-left: 3.00rem;
+        }
+
+        & > a
+        {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+
+    &__page-logo
+    {
+        display: block;
+        margin: 0 auto;
+
+        @include from('sm')
+        {
+            display: inline-block;
+            margin-left: 2.33rem;
+        }
+    }
+
+    &__nav
+    {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 2;
+
+        @include from('sm')
+        {
+            padding: 2.40rem 3.00rem 2.40rem 0;
+        }
+
+        &::before
+        {
+            display: block;
+            float: right;
+            margin: 1.33rem 0;
+            padding-right: 1.67rem;
+            padding-left: 0.67rem;
+            border-left: 1px solid rgba(map-get($colors, black),0.2);
+
+            @include at('xs')
+            {
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 1;
+
+                .menu--is-open &
+                {
+                    content: "Close";
+                }
+            }
+
+            @include from('sm')
+            {
+                margin-top: 0.93rem;
+                margin-bottom: 0.93rem;
+                padding-right: 0;
+            }
+        }
+
+        &.color-white::before
+        {
+            border-left-color: rgba(#fff,0.2);
+        }
+
+        &__container
+        {
+            display: block;
+            overflow: hidden;
+
+            @include at('xs')
+            {
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background-color: map-get($colors, cyan-light-moderate);
+                color: map-get($colors, white);
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            a {
+                text-shadow: 0 0 3px map-get($colors, black);
+
+                &:hover {
+                    color: inherit;
+                }
+            }
+        }
+    }
+}

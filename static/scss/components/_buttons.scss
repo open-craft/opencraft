@@ -1,0 +1,93 @@
+/**
+ * BUTTONS
+ */
+
+%button
+{
+    display: inline-block;
+    min-width: 13.33rem;
+    padding: ((11/strip-unit($base-font-size)) * 1em) ((20/strip-unit($base-font-size)) * 1em);
+    border: 2px solid currentColor;
+    border-radius: (5/strip-unit($base-font-size)) * 1em;
+    color: inherit;
+    cursor: pointer;
+    line-height: (23/strip-unit($base-font-size));
+    outline: none;
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+.btn
+{
+    @extend %button;
+
+    &--transparent
+    {
+        background-color: transparent;
+    }
+
+    &--white
+    {
+        border-color: map-get($colors, white);
+        color: map-get($colors, white);
+
+        &:hover,
+        &:focus
+        {
+            background-color: map-get($colors, white);
+            color: currentColor;
+        }
+    }
+
+    &--cyan-light-moderate
+    {
+        border-color: map-get($colors, cyan-light-moderate);
+        color: map-get($colors, white);
+
+        &:hover,
+        &:focus
+        {
+            background-color: map-get($colors, white);
+            color: currentColor;
+        }
+    }
+
+    &--cyan-dark-moderate
+    {
+        border-color: map-get($colors, cyan-dark-moderate);
+        color: map-get($colors, white);
+
+        &:hover,
+        &:focus
+        {
+            background-color: map-get($colors, white);
+            color: currentColor;
+        }
+    }
+
+    &--cyan-very-dark-grayish
+    {
+        border-color: map-get($colors, cyan-very-dark-grayish);
+        color: map-get($colors, white);
+
+        &:hover,
+        &:focus
+        {
+            background-color: map-get($colors, white);
+            color: currentColor;
+        }
+    }
+
+    &--contact
+    {
+        display: block;
+        width: 100%;
+        background-color: transparent;
+        border-color: rgba( map-get($colors, white), 0.20);
+
+        &:focus
+        {
+            border-color: rgba(map-get($colors, white), 0.75);
+        }
+    }
+}
