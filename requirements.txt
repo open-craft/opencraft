@@ -10,13 +10,12 @@ cmd2==0.6.8
 colorama==0.3.7
 cookies==2.2.1
 coverage==4.1
-ddt==1.0.2
+ddt==1.0.3
 debtcollector==1.4.0
 decorator==4.0.9
 dj-static==0.0.6
 Django==1.9.6
-# Can be replaced with django-angular==0.8.3 when released to PyPI.
-git+https://github.com/jrief/django-angular.git@c21d7f013fa5108ba7ecc3c7a33de0251aafc604#egg=django-angular==0.8.3
+git+https://github.com/open-craft/django-angular.git@063aad2e5f3cfbd16d300db8b3fce3dbb053d7ce#egg=django-angular==0.8.3
 django-appconf==1.0.2
 django-compressor==2.0
 django-debug-toolbar==1.4
