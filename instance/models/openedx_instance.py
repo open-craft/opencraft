@@ -128,7 +128,10 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         The database name used for external databases/storages, if any.
         """
         name = self.domain.replace('.', '_')
-        # Escape all non-ascii characters and truncate to 64 chars, the maximum for mysql:
+        # Escape all non-ascii characters and truncate to 50 chars.
+        # The maximum length for the name of a MySQL database is 64 characters.
+        # But since we add suffixes to database_name to generate unique database names
+        # for different services (e.g. xqueue) we don't want to use the maximum length here.
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=50)

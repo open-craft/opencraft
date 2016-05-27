@@ -19,8 +19,9 @@
 """
 Open edX instance database mixin
 """
+import hashlib
+import hmac
 import string
-import uuid
 
 from django.conf import settings
 from django.template import loader
@@ -56,40 +57,40 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         return [
             {
                 "name": self._get_mysql_database_name("ecommerce"),
-                "user": self._get_mysql_user_name("ecomm001"),
+                "user": self._get_mysql_user_name("ecommerce"),
             },
             {
                 "name": self._get_mysql_database_name("dashboard"),
-                "user": self._get_mysql_user_name("dash001"),
+                "user": self._get_mysql_user_name("dashboard"),
             },
             {
                 "name": self._get_mysql_database_name("xqueue"),
-                "user": self._get_mysql_user_name("xqueue001"),
+                "user": self._get_mysql_user_name("xqueue"),
             },
             {
                 "name": self._get_mysql_database_name("edxapp"),
-                "user": self._get_mysql_user_name("edxapp001"),
+                "user": self._get_mysql_user_name("edxapp"),
             },
             {
                 "name": self._get_mysql_database_name("edxapp_csmh"),
-                "user": self._get_mysql_user_name("csmh001"),
+                "user": self._get_mysql_user_name("csmh"),
             },
             {
                 "name": self._get_mysql_database_name("edx_notes_api"),
-                "user": self._get_mysql_user_name("notes001"),
+                "user": self._get_mysql_user_name("notes"),
                 "priv": "SELECT,INSERT,UPDATE,DELETE",
             },
             {
                 "name": self._get_mysql_database_name("analytics-api"),
-                "user": self._get_mysql_user_name("api001"),
+                "user": self._get_mysql_user_name("api"),
             },
             {
                 "name": self._get_mysql_database_name("reports"),
-                "user": self._get_mysql_user_name("rep001"),
+                "user": self._get_mysql_user_name("reports"),
                 "priv": "SELECT",
                 "additional_users": [
                     {
-                        "name": self._get_mysql_user_name("api001"),
+                        "name": self._get_mysql_user_name("api"),
                         "priv": "SELECT",
                     }
                 ],
@@ -147,21 +148,43 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
 
     def _get_mysql_database_name(self, suffix):
         """
-        Build unique name for MySQL database using suffix
+        Build unique name for MySQL database using suffix.
+
+        To generate a unique name, this method adds an underscore and the specified suffix
+        to the database_name of this instance.
+
+        database_name can be up to 50 characters long.
+        The maximum length for the name of a MySQL database is 64 characters.
+        To ensure that the generated name does not exceed that length,
+        suffix should not consist of more than 13 characters.
         """
-        return "{0}_{1}".format(self.mysql_database_name, suffix)
+        mysql_database_name = "{0}_{1}".format(self.mysql_database_name, suffix)
+        assert len(mysql_database_name) <= 64
+        return mysql_database_name
 
     def _get_mysql_user_name(self, suffix):
         """
-        Build unique name for MySQL user using suffix
+        Build unique name for MySQL user using suffix.
+
+        To generate a unique name, this method adds an underscore and the specified suffix
+        to the mysql_user of this instance.
+
+        mysql_user is 6 characters long.
+        To ensure that the generated name does not exceed that length,
+        suffix must not consist of more than 9 characters.
         """
-        return "{0}_{1}".format(self.mysql_user, suffix)
+        mysql_user_name = "{0}_{1}".format(self.mysql_user, suffix)
+        assert len(mysql_user_name) <= 16
+        return mysql_user_name
 
     def _get_mysql_pass(self, user):
         """
-        Build unique password for user, derived from MySQL password for this instance and user
+        Build unique password for user, derived from MySQL password for this instance and user.
         """
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, self.mysql_pass + user))
+        encoding = "utf-8"
+        key = bytes(source=self.mysql_pass, encoding=encoding)
+        msg = bytes(source=user, encoding=encoding)
+        return hmac.new(key, msg=msg, digestmod=hashlib.sha256).hexdigest()
 
     def set_field_defaults(self):
         """
@@ -172,6 +195,10 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         Credentials are only used for persistent databases (cf. get_database_settings).
         We generate them for all instances to ensure that app servers can be spawned successfully
         even if an instance is edited to change 'use_ephemeral_databases' from True to False.
+
+        Note that the maximum length for the name of a MySQL user is 16 characters.
+        But since we add suffixes to mysql_user to generate unique user names
+        for different services (e.g. xqueue) we don't want to use the maximum length here.
         """
         if not self.mysql_user:
             self.mysql_user = get_random_string(length=6, allowed_chars=string.ascii_lowercase)

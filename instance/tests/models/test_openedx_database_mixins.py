@@ -101,6 +101,40 @@ class MySQLInstanceTestCase(TestCase):
                     'COMMON_MYSQL_MIGRATE_PASS'):
             self.assertNotIn(var, db_vars_str)
 
+    def test__get_mysql_database_name(self):
+        """
+        Test that _get_mysql_database_name correctly builds database names.
+        """
+        self.instance = OpenEdXInstanceFactory()
+
+        # Database name should be a combination of database_name and custom suffix
+        suffix = "test"
+        database_name = self.instance._get_mysql_database_name(suffix)
+        expected_database_name = "{0}_{1}".format(self.instance.database_name, suffix)
+        self.assertEqual(database_name, expected_database_name)
+
+        # Using suffix that exceeds maximum length should raise an error
+        suffix = "long-long-long-long-long-long-long-long-long-long-long-long-suffix"
+        with self.assertRaises(AssertionError):
+            self.instance._get_mysql_database_name(suffix)
+
+    def test__get_mysql_user_name(self):
+        """
+        Test that _get_mysql_user_name correctly builds user names.
+        """
+        self.instance = OpenEdXInstanceFactory()
+
+        # User name should be a combination of mysql_user and custom suffix
+        suffix = "test"
+        user_name = self.instance._get_mysql_user_name(suffix)
+        expected_user_name = "{0}_{1}".format(self.instance.mysql_user, suffix)
+        self.assertEqual(user_name, expected_user_name)
+
+        # Using suffix that exceeds maximum length should raise an error
+        suffix = "long-long-long-suffix"
+        with self.assertRaises(AssertionError):
+            self.instance._get_mysql_user_name(suffix)
+
     def test_provision_mysql(self):
         """
         Provision mysql database

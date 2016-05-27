@@ -22,6 +22,8 @@ Instance app model mixins - Database
 
 # Imports #####################################################################
 
+import inspect
+
 from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
@@ -29,6 +31,28 @@ import pymongo
 
 
 # Functions ###################################################################
+
+def database_name_escaped(func):
+    """
+    Decorator for functions that require name of MySQL database to be escaped.
+
+    Escaping is necessary if a function uses the database name in a parameterized query;
+    the driver doesn't escape it properly.
+    """
+    def wrapper(*args, **kwargs):
+        """ Escape database name, then call func """
+        signature = inspect.signature(func)
+        bound_arguments = signature.bind(*args, **kwargs)
+        # Obtain connection from cursor passed to func.
+        # This allows us to simplify the signature of func (we don't have to add a "connection" parameter).
+        # Note that cursor.connection is a weakref,
+        # so we have to call it to obtain the connection object that it references:
+        connection = bound_arguments.arguments["cursor"].connection()
+        database = bound_arguments.arguments["database"]
+        bound_arguments.arguments["database"] = connection.escape_string(database).decode()
+        func(*bound_arguments.args, **bound_arguments.kwargs)
+    return wrapper
+
 
 def _get_mysql_cursor():
     """
@@ -40,9 +64,10 @@ def _get_mysql_cursor():
         passwd=settings.INSTANCE_MYSQL_URL_OBJ.password or '',
         port=settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
     )
-    return connection.cursor(), connection
+    return connection.cursor()
 
 
+@database_name_escaped
 def _create_database(cursor, database):
     """
     Create MySQL database
@@ -68,6 +93,7 @@ def _grant_privileges(cursor, database, user, privileges):
     cursor.execute('GRANT {privileges} ON {tables} TO %s'.format(privileges=privileges, tables=tables), (user,))
 
 
+@database_name_escaped
 def _drop_database(cursor, database):
     """
     Drop MySQL database
@@ -107,16 +133,14 @@ class MySQLInstanceMixin(models.Model):
         Create mysql user and databases
         """
         if settings.INSTANCE_MYSQL_URL_OBJ and not self.mysql_provisioned:
-            cursor, connection = _get_mysql_cursor()
+            cursor = _get_mysql_cursor()
 
             # Create migration user
             _create_user(cursor, self.migrate_user, self._get_mysql_pass(self.migrate_user))
 
             # Create default databases and users, and grant privileges
             for database in self.mysql_databases:
-                # We can't use the database name in a parameterized query, the
-                # driver doesn't escape it properly. So we escape it here instead
-                database_name = connection.escape_string(database["name"]).decode()
+                database_name = database["name"]
                 _create_database(cursor, database_name)
                 user = database["user"]
                 _create_user(cursor, user, self._get_mysql_pass(user))
@@ -143,13 +167,11 @@ class MySQLInstanceMixin(models.Model):
         Drop all MySQL databases and users.
         """
         if settings.INSTANCE_MYSQL_URL_OBJ and self.mysql_provisioned:
-            cursor, connection = _get_mysql_cursor()
+            cursor = _get_mysql_cursor()
 
             # Drop default databases and users
             for database in self.mysql_databases:
-                # We can't use the database name in a parameterized query, the
-                # driver doesn't escape it properly. So we escape it here instead
-                database_name = connection.escape_string(database["name"]).decode()
+                database_name = database["name"]
                 _drop_database(cursor, database_name)
                 _drop_user(cursor, database["user"])
 
