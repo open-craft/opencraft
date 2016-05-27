@@ -247,7 +247,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         user = User(
             username=self.cleaned_data['username'],
             email=self.cleaned_data['email'],
-            is_active=False,
         )
         user.set_password(self.cleaned_data['password'])
         profile = UserProfile(
@@ -304,10 +303,3 @@ class LoginForm(NgFormValidationMixin, AuthenticationForm,
         strip=False,
         widget=forms.PasswordInput,
     )
-
-    def confirm_login_allowed(self, user):
-        """
-        The default AuthenticationForm rejects inactive users. We would like to
-        allow users that have registered but have not yet been approved to log
-        in, so we override this method to make it a noop.
-        """
