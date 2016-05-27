@@ -93,8 +93,8 @@ class BetaTestApplicationViewTestMixin:
         display the correct data for the registered user.
         """
         response_body = re.sub(r'\s+', ' ', response)
-        self.assertIn('Your application for the OpenCraft beta has been '
-                      'successfully sent', response_body)
+        self.assertIn('Thank you for applying for the OpenCraft beta',
+                      response_body)
         self.assertIn('pending email confirmation', response_body)
         form_fields = {name: field
                        for name, field in self._get_form_fields(response).items()
