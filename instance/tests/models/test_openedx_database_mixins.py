@@ -270,7 +270,7 @@ class MySQLInstanceTestCase(TestCase):
         expected_host = "mysql.opencraft.com"
         expected_port = 3306
 
-        def make_flat_group_info(var_names=None, database=None, include_general_settings=True):
+        def make_flat_group_info(var_names=None, database=None, include_port=True):
             """ Return dict containing info for a flat group of variables """
             group_info = {}
             if var_names:
@@ -279,9 +279,9 @@ class MySQLInstanceTestCase(TestCase):
             name = instance._get_mysql_database_name(database["name"])
             user = instance._get_mysql_user_name(database["user"])
             password = instance._get_mysql_pass(user)
-            values = [name, user, password]
-            if include_general_settings:
-                values += [expected_host, expected_port]
+            values = [name, user, password, expected_host]
+            if include_port:
+                values.append(expected_port)
             group_info["values"] = values
             return group_info
 
@@ -323,9 +323,9 @@ class MySQLInstanceTestCase(TestCase):
             "XQUEUE_MYSQL_": make_flat_group_info(database={"name": "xqueue", "user": "xqueue"}),
             "EDXAPP_MYSQL_CSMH_": make_flat_group_info(database={"name": "edxapp_csmh", "user": "edxapp"}),
             "EDX_NOTES_API_MYSQL_": make_flat_group_info(
-                var_names=["DB_NAME", "DB_USER", "DB_PASS"],
+                var_names=["DB_NAME", "DB_USER", "DB_PASS", "HOST"],
                 database={"name": "edx_notes_api", "user": "notes"},
-                include_general_settings=False
+                include_port=False
             ),
             "ECOMMERCE_": make_nested_group_info(
                 ["DEFAULT_DB_NAME", "DATABASES"],

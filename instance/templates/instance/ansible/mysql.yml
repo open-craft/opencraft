@@ -47,6 +47,7 @@ EDXAPP_MYSQL_CSMH_PORT: {{ port }}
 EDX_NOTES_API_MYSQL_DB_NAME: '{{ edx_notes_api_database }}'
 EDX_NOTES_API_MYSQL_DB_USER: '{{ edx_notes_api_user }}'
 EDX_NOTES_API_MYSQL_DB_PASS: '{{ edx_notes_api_pass }}'
+EDX_NOTES_API_MYSQL_HOST: '{{ host }}'
 
 # analytics_api
 ANALYTICS_API_DEFAULT_DB_NAME: '{{ analytics_api_database }}'
