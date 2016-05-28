@@ -78,7 +78,6 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
         $scope.init = function() {
             $scope.loading = true;
             $scope.notification = null;
-            $scope.selected = {};
             $scope.state = $state;
 
             $scope.instanceList = [];
@@ -102,10 +101,6 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
             console.log('Updating instance list');
             return OpenCraftAPI.all("instance").getList().then(function(instanceList) {
                 $scope.instanceList = instanceList;
-
-                if($scope.selected.instance) {
-                    $scope.select($scope.selected.instance);
-                }
                 console.log('Updated instance list:', instanceList);
             }, function(response) {
                 console.log('Error from server: ', response);

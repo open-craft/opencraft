@@ -44,6 +44,9 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 if (appserver.instance.id != $stateParams.instanceId) {
                     throw "This appserver is associated with another instance.";
                 }
+                if (typeof appserver.log_error_entries === "undefined") {
+                    appserver.log_error_entries = [];  // This field is not always present.
+                }
                 $scope.appserver = appserver;
                 $scope.is_active = $scope.instance.active_appserver && (appserver.id == $scope.instance.active_appserver.id);
             });
@@ -59,7 +62,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 $scope.notify($scope.appserver.name + ' is now active. The DNS changes may take a while to propagate.');
             }, function() {
                 $scope.refresh();
-                $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be made active.');
+                $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be made active.', 'alert');
             });
         };
 

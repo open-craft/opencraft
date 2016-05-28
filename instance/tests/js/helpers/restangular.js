@@ -33,7 +33,7 @@ jasmine.sanitizeRestangularOne = function(item) {
                   "doPUT", "doDELETE", "doGETLIST", "addRestangularMethod", "getRestangularUrl",
                   "getRequestedUrl", "clone", "reqParams", "withHttpConfig", "plain",
                   "restangularized", "several", "oneUrl", "allUrl", "fromServer",
-                  "getParentList", "save");
+                  "getParentList", "save", "singleOne");
 };
 
 
