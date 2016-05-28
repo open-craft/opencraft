@@ -23,18 +23,11 @@ Instance app model mixins - Database
 # Imports #####################################################################
 
 import inspect
-from warnings import filterwarnings
 
 from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
 import pymongo
-
-
-# Warnings ####################################################################
-
-filterwarnings("ignore", category=mysql.Warning, module=__name__, message="User .+ already exists.")
-filterwarnings("ignore", category=mysql.Warning, module=__name__, message="User .+ does not exist.")
 
 
 # Functions ###################################################################
@@ -84,9 +77,14 @@ def _create_database(cursor, database):
 
 def _create_user(cursor, user, password):
     """
-    Create MySQL user identified by password
+    Create MySQL user identified by password if it doesn't exist
     """
-    cursor.execute('CREATE USER IF NOT EXISTS %s IDENTIFIED BY %s', (user, password,))
+    # Newer versions of MySQL support "CREATE USER IF NOT EXISTS"
+    # but at this point we can't be sure that all target hosts run one of these,
+    # so we need to use a different approach for now:
+    user_exists = cursor.execute("SELECT 1 FROM mysql.user WHERE user = %s", (user,))
+    if not user_exists:
+        cursor.execute('CREATE USER %s IDENTIFIED BY %s', (user, password,))
 
 
 def _grant_privileges(cursor, database, user, privileges):
@@ -110,9 +108,14 @@ def _drop_database(cursor, database):
 
 def _drop_user(cursor, user):
     """
-    Drop MySQL user
+    Drop MySQL user if it exists
     """
-    cursor.execute('DROP USER IF EXISTS %s', (user,))
+    # Newer versions of MySQL support "DROP USER IF EXISTS"
+    # but at this point we can't be sure that all target hosts run one of these,
+    # so we need to use a different approach for now:
+    user_exists = cursor.execute("SELECT 1 FROM mysql.user WHERE user = %s", (user,))
+    if user_exists:
+        cursor.execute('DROP USER %s', (user,))
 
 
 # Classes #####################################################################
