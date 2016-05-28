@@ -321,16 +321,26 @@ class OpenEdXInstanceTestCase(TestCase):
     @ddt.data(True, False)
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.terminate_vm')
-    def test_delete_instance(self, mocks, delete_by_ref, mock_terminate_vm):
+    @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
+    @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
+    @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
+    def test_delete_instance(
+            self, mocks, delete_by_ref,
+            mock_deprovision_swift, mock_deprovision_mongo, mock_deprovision_mysql, mock_terminate_vm
+    ):
         """
-        Test that an instance can be deleted directly or by its InstanceReference, and that the
-        associated AppServers and VMs will be terminated.
+        Test that an instance can be deleted directly or by its InstanceReference,
+        that the associated AppServers and VMs will be terminated,
+        and that external databases and storage will be deprovisioned.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=True)
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 
-        self.assertEqual(mock_terminate_vm.call_count, 0)
+        for mocked_method in (
+                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
+        ):
+            self.assertEqual(mocked_method.call_count, 0)
 
         # Now delete the instance, either using InstanceReference or the OpenEdXInstance class:
         if delete_by_ref:
@@ -338,7 +348,11 @@ class OpenEdXInstanceTestCase(TestCase):
         else:
             instance.delete()
 
-        self.assertEqual(mock_terminate_vm.call_count, 1)
+        for mocked_method in (
+                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
+        ):
+            self.assertEqual(mocked_method.call_count, 1)
+
         with self.assertRaises(OpenEdXInstance.DoesNotExist):
             OpenEdXInstance.objects.get(pk=instance.pk)
         with self.assertRaises(InstanceReference.DoesNotExist):

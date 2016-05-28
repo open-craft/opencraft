@@ -175,10 +175,13 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
 
     def delete(self, *args, **kwargs):
         """
-        Delete this Open edX Instance and its associated AppServers.
+        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
         """
         for appserver in self.appserver_set.all():
             appserver.terminate_vm()
+        self.deprovision_mysql()
+        self.deprovision_mongo()
+        self.deprovision_swift()
         super().delete(*args, **kwargs)
 
     @property
