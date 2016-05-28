@@ -123,7 +123,7 @@ tornado==4.3
 tornado-redis==2.4.18
 traitlets==4.2.1
 unicodecsv==0.14.1
-virtualenv==15.0.1
+virtualenv==15.0.2
 Werkzeug==0.11.10
 wrapt==1.10.8
 zxcvbn-py3==1.1
