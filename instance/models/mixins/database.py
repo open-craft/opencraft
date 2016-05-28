@@ -23,11 +23,18 @@ Instance app model mixins - Database
 # Imports #####################################################################
 
 import inspect
+from warnings import filterwarnings
 
 from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
 import pymongo
+
+
+# Warnings ####################################################################
+
+filterwarnings("ignore", category=mysql.Warning, module=__name__, message="User .+ already exists.")
+filterwarnings("ignore", category=mysql.Warning, module=__name__, message="User .+ does not exist.")
 
 
 # Functions ###################################################################
@@ -79,7 +86,7 @@ def _create_user(cursor, user, password):
     """
     Create MySQL user identified by password
     """
-    cursor.execute('CREATE USER %s IDENTIFIED BY %s', (user, password,))
+    cursor.execute('CREATE USER IF NOT EXISTS %s IDENTIFIED BY %s', (user, password,))
 
 
 def _grant_privileges(cursor, database, user, privileges):
@@ -105,7 +112,7 @@ def _drop_user(cursor, user):
     """
     Drop MySQL user
     """
-    cursor.execute('DROP USER %s', (user,))
+    cursor.execute('DROP USER IF EXISTS %s', (user,))
 
 
 # Classes #####################################################################

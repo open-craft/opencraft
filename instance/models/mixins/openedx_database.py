@@ -28,6 +28,7 @@ from django.template import loader
 from django.utils.crypto import get_random_string
 
 from .database import MySQLInstanceMixin, MongoDBInstanceMixin
+from .utilities import remove_prefix
 
 
 # Classes #####################################################################
@@ -73,7 +74,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             },
             {
                 "name": self._get_mysql_database_name("edxapp_csmh"),
-                "user": self._get_mysql_user_name("csmh"),
+                "user": self._get_mysql_user_name("edxapp"),
             },
             {
                 "name": self._get_mysql_database_name("edx_notes_api"),
@@ -81,7 +82,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
                 "priv": "SELECT,INSERT,UPDATE,DELETE",
             },
             {
-                "name": self._get_mysql_database_name("analytics-api"),
+                "name": self._get_mysql_database_name("analytics_api"),
                 "user": self._get_mysql_user_name("api"),
             },
             {
@@ -186,6 +187,32 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         msg = bytes(source=user, encoding=encoding)
         return hmac.new(key, msg=msg, digestmod=hashlib.sha256).hexdigest()
 
+    def _get_database_suffix(self, name):
+        """
+        Return suffix that differentiates database identified by name from databases for other services.
+        """
+        return remove_prefix(self.mysql_database_name, name)
+
+    def _get_template_vars(self, database):
+        """
+        Return dict mapping template variables to appropriate values for database.
+        """
+        database_name = database["name"]
+        user = database["user"]
+
+        def generate_var_name(var):
+            """
+            Generate appropriate name for template variable using suffix of database_name.
+            """
+            database_suffix = self._get_database_suffix(database_name)
+            return "{database_suffix}_{var}".format(database_suffix=database_suffix, var=var)
+
+        return {
+            generate_var_name("database"): database_name,
+            generate_var_name("user"): user,
+            generate_var_name("pass"): self._get_mysql_pass(user),
+        }
+
     def set_field_defaults(self):
         """
         Set default values for mysql and mongo credentials.
@@ -221,15 +248,21 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         # MySQL:
         if settings.INSTANCE_MYSQL_URL_OBJ:
             template = loader.get_template('instance/ansible/mysql.yml')
-            new_settings += template.render({
-                'user': self.mysql_user,
-                'pass': self.mysql_pass,
-                'migrate_user': self.migrate_user,
-                'migrate_pass': self._get_mysql_pass(self.migrate_user),
+            context = {
+                # General settings
                 'host': settings.INSTANCE_MYSQL_URL_OBJ.hostname,
                 'port': settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
-                'database': self.mysql_database_name
-            })
+                # Common users
+                'migrate_user': self.migrate_user,
+                'migrate_pass': self._get_mysql_pass(self.migrate_user),
+                'read_only_user': self.read_only_user,
+                'read_only_pass': self._get_mysql_pass(self.read_only_user),
+                'admin_user': self.admin_user,
+                'admin_pass': self._get_mysql_pass(self.admin_user),
+            }
+            for database in self.mysql_databases:
+                context.update(self._get_template_vars(database))
+            new_settings += template.render(context)
 
         # MongoDB:
         if settings.INSTANCE_MONGO_URL_OBJ:

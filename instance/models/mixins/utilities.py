@@ -29,6 +29,16 @@ from django.core.mail.message import EmailMultiAlternatives
 from django.views.debug import ExceptionReporter
 
 
+# Functions ###################################################################
+
+def remove_prefix(prefix, string):
+    """
+    Chop off prefix from name and return result.
+    """
+    prefix = "{prefix}_".format(prefix=prefix)
+    return string[len(prefix):]
+
+
 # Classes #####################################################################
 
 class EmailMixin:
