@@ -33,15 +33,15 @@ app.config(function($httpProvider) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
-    // For any unmatched url, send to /instances/
-    $urlRouterProvider.otherwise("/instances/");
+    // For any unmatched url, send to /
+    $urlRouterProvider.otherwise('/');
 
     // Required by Django
     RestangularProvider.setRequestSuffix('/');
 
     $stateProvider
         .state('instances', {
-            url: "/instances/",
+            url: "/",
             abstract: true, // By making this abstract, 'instances.empty' gets added to the homepage as well.
             templateUrl: "/static/html/instance/index.html",
             controller: "Index",
