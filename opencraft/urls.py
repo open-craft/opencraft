@@ -26,6 +26,8 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 
+from opencraft import views
+
 
 # URL Patterns ################################################################
 
@@ -37,5 +39,5 @@ urlpatterns = [
     url(r'^registration/', include('registration.urls', namespace='registration')),
     url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', RedirectView.as_view(pattern_name='registration:register', permanent=False), name='index'),
+    url(r'^$', views.index, name='index'),
 ]
