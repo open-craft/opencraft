@@ -35,7 +35,7 @@ Flask==0.11
 freezegun==0.3.7
 futures==3.0.5
 gitdb==0.6.4
-GitPython==2.0.3
+GitPython==2.0.4
 glob2==0.4.1
 gunicorn==19.6.0
 honcho==0.7.1
