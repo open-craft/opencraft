@@ -31,14 +31,14 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from simple_email_confirmation.signals import email_confirmed
 from factory.django import mute_signals
+from simple_email_confirmation.models import EmailAddress
+from simple_email_confirmation.signals import email_confirmed
 
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.forms import BetaTestApplicationForm
 from registration.models import BetaTestApplication
 from registration.tests.utils import UserMixin
-from simple_email_confirmation.models import EmailAddress
 
 
 # Tests #######################################################################
@@ -67,7 +67,7 @@ class BetaTestApplicationViewTestMixin:
             'subscribe_to_updates': False,
         }
 
-    def assert_registration_succeeds(self, form_data):
+    def _assert_registration_succeeds(self, form_data):
         """
         Assert that the given application form data creates new user, profile
         and registration instances, sends email verification messages, and
@@ -75,21 +75,21 @@ class BetaTestApplicationViewTestMixin:
         """
         # Fill in the form and submit the registration
         response = self._register(form_data)
-        self.assert_success_response(response)
+        self._assert_success_response(response)
 
         # Check that the application matches the submitted data
         application = BetaTestApplication.objects.get()
-        self.assert_application_matches_form_data(application)
+        self._assert_application_matches_form_data(application)
 
         # Test the email verification flow
-        self.assert_email_verification_sent(application)
+        self._assert_email_verification_sent(application)
         for verification_email in mail.outbox:  # fix flaky pylint: disable=no-member,useless-suppression
             verify_url = re.search(r'https?://[^\s]+',
                                    verification_email.body).group(0)
             self.client.get(verify_url)
-        self.assert_email_addresses_verified(application)
+        self._assert_email_addresses_verified(application)
 
-    def assert_success_response(self, response):
+    def _assert_success_response(self, response):
         """
         Assert that a success message is displayed and that the form fields
         display the correct data for the registered user.
@@ -123,7 +123,7 @@ class BetaTestApplicationViewTestMixin:
                         '{0} should be read only'.format(name)
                     )
 
-    def assert_application_matches_form_data(self, application):
+    def _assert_application_matches_form_data(self, application):
         """
         Assert that the application instance matches the form data.
         """
@@ -135,10 +135,10 @@ class BetaTestApplicationViewTestMixin:
                              self.form_data[application_field])
         self.assertEqual(application.subscribe_to_updates,
                          bool(self.form_data.get('subscribe_to_updates')))
-        self.assert_user_matches_form_data(application.user)
-        self.assert_profile_matches_form_data(application.user.profile)
+        self._assert_user_matches_form_data(application.user)
+        self._assert_profile_matches_form_data(application.user.profile)
 
-    def assert_user_matches_form_data(self, user):
+    def _assert_user_matches_form_data(self, user):
         """
         Assert that the registered user matches the form data.
         """
@@ -147,13 +147,13 @@ class BetaTestApplicationViewTestMixin:
                              self.form_data[user_field])
         self.assertTrue(user.check_password(self.form_data['password']))
 
-    def assert_profile_matches_form_data(self, profile):
+    def _assert_profile_matches_form_data(self, profile):
         """
         Assert that the registered user's profile matches the form data.
         """
         self.assertEqual(profile.full_name, self.form_data['full_name'])
 
-    def assert_email_verification_sent(self, application):
+    def _assert_email_verification_sent(self, application):
         """
         Assert that verification emails were sent to the email addresses given
         on the beta application.
@@ -165,7 +165,7 @@ class BetaTestApplicationViewTestMixin:
             email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
             self.assertIs(email.is_confirmed, False)
 
-    def assert_email_addresses_verified(self, application):
+    def _assert_email_addresses_verified(self, application):
         """
         Assert that the email addresses given on the beta application have
         been verified.
@@ -178,7 +178,7 @@ class BetaTestApplicationViewTestMixin:
         self.assertNotIn('pending email confirmation',
                          re.sub(r'\s+', ' ', response))
 
-    def assert_registration_fails(self, form_data, expected_errors=None):
+    def _assert_registration_fails(self, form_data, expected_errors=None):
         """
         Assert that the given application form data does not create new user,
         profile and registration instances, or send email verification
@@ -197,14 +197,14 @@ class BetaTestApplicationViewTestMixin:
         """
         Test a valid beta test application.
         """
-        self.assert_registration_succeeds(self.form_data)
+        self._assert_registration_succeeds(self.form_data)
 
     def test_invalid_subdomain(self):
         """
         Invalid characters in the subdomain.
         """
         self.form_data['subdomain'] = 'hogwarts?'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ["Please include only letters, numbers, '_', '-' "
                           "and '.'"],
         })
@@ -220,7 +220,7 @@ class BetaTestApplicationViewTestMixin:
             project_description='test',
             user=User.objects.create(username='test'), #pylint: disable=no-member
         )
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
         })
 
@@ -230,7 +230,7 @@ class BetaTestApplicationViewTestMixin:
         Blacklisted subdomains should be rejected.
         """
         self.form_data['subdomain'] = 'www'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain name is not publicly available.'],
         })
 
@@ -241,7 +241,7 @@ class BetaTestApplicationViewTestMixin:
         OpenEdXInstanceFactory.create(
             sub_domain=self.form_data['subdomain'],
         )
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
         })
 
@@ -252,14 +252,14 @@ class BetaTestApplicationViewTestMixin:
         """
         form_data = self.form_data.copy()
         form_data['subdomain'] += '.' + BetaTestApplication.BASE_DOMAIN
-        self.assert_registration_succeeds(form_data)
+        self._assert_registration_succeeds(form_data)
 
     def test_invalid_username(self):
         """
         Invalid characters in the username.
         """
         self.form_data['username'] = 'albus@dumbledore'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'username': ['Usernames may contain only letters, numbers, and '
                          './+/-/_ characters.'],
         })
@@ -275,7 +275,7 @@ class BetaTestApplicationViewTestMixin:
             project_description='test',
             user=User.objects.create(username=self.form_data['username']), #pylint: disable=no-member
         )
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'username': ['This username is already taken.'],
         })
 
@@ -284,7 +284,7 @@ class BetaTestApplicationViewTestMixin:
         Invalid email address.
         """
         self.form_data['email'] = 'albus'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'email': ['Enter a valid email address.'],
         })
 
@@ -300,7 +300,7 @@ class BetaTestApplicationViewTestMixin:
             user=User.objects.create(username='test', #pylint: disable=no-member
                                      email=self.form_data['email']),
         )
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'email': ['This email address is already registered.'],
         })
 
@@ -309,7 +309,7 @@ class BetaTestApplicationViewTestMixin:
         Invalid public contact email address.
         """
         self.form_data['public_contact_email'] = 'hogwarts'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'public_contact_email': ['Enter a valid email address.'],
         })
 
@@ -320,7 +320,7 @@ class BetaTestApplicationViewTestMixin:
         for password in ('password', 'qwerty', 'Hogwarts'):
             self.form_data['password'] = password
             self.form_data['password_confirmation'] = password
-            self.assert_registration_fails(self.form_data, expected_errors={
+            self._assert_registration_fails(self.form_data, expected_errors={
                 'password': ['Please use a stronger password: avoid common '
                              'patterns and make it long enough to be '
                              'difficult to crack.'],
@@ -331,7 +331,7 @@ class BetaTestApplicationViewTestMixin:
         Password confirmation does not match password.
         """
         self.form_data['password_confirmation'] = 'slytherin'
-        self.assert_registration_fails(self.form_data, expected_errors={
+        self._assert_registration_fails(self.form_data, expected_errors={
             'password_confirmation': ["The two password fields didn't match."],
         })
 
@@ -351,7 +351,7 @@ class BetaTestApplicationViewTestMixin:
         form_data = self.form_data.copy()
         del form_data['password']
         del form_data['password_confirmation']
-        self.assert_registration_succeeds(form_data)
+        self._assert_registration_succeeds(form_data)
 
     def _get_response_body(self, url):
         """
@@ -441,7 +441,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         })
         self._register(modified)
         application = BetaTestApplication.objects.get()
-        self.assert_application_matches_form_data(application)
+        self._assert_application_matches_form_data(application)
 
     def test_modify_user(self):
         """
@@ -462,7 +462,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         })
         self._register(modified)
         application = BetaTestApplication.objects.get()
-        self.assert_application_matches_form_data(application)
+        self._assert_application_matches_form_data(application)
 
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
@@ -473,7 +473,7 @@ class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
     url = reverse('api:register-list')
     request_method = 'get'
 
-    def assert_registration_succeeds(self, form_data):
+    def _assert_registration_succeeds(self, form_data):
         """
         Check that validating a valid application does not return any errors.
         """

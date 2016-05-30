@@ -192,12 +192,13 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
-        instance.lms_users.add(user)
+        instance.lms_users.add(user)  # pylint: disable=no-member
         appserver = make_test_appserver(instance)
         ansible_settings = yaml.load(appserver.lms_user_settings)
         self.assertEqual(ansible_settings['role'], 'create_lms_users')
         self.assertEqual(len(ansible_settings['CREATE_LMS_USERS']), 1)
         self.assertEqual(ansible_settings['CREATE_LMS_USERS'][0]['username'], user.username)
+
 
 @ddt
 class OpenEdXAppServerStatusTestCase(TestCase):
