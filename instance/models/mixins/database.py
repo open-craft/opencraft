@@ -145,8 +145,9 @@ class MySQLInstanceMixin(models.Model):
         if settings.INSTANCE_MYSQL_URL_OBJ and not self.mysql_provisioned:
             cursor = _get_mysql_cursor()
 
-            # Create migration user
+            # Create migration and read_only users
             _create_user(cursor, self.migrate_user, self._get_mysql_pass(self.migrate_user))
+            _create_user(cursor, self.read_only_user, self._get_mysql_pass(self.read_only_user))
 
             # Create default databases and users, and grant privileges
             for database in self.mysql_databases:
@@ -157,13 +158,10 @@ class MySQLInstanceMixin(models.Model):
                 privileges = database.get("priv", "ALL")
                 _grant_privileges(cursor, database_name, user, privileges)
                 _grant_privileges(cursor, database_name, self.migrate_user, "ALL")
+                _grant_privileges(cursor, database_name, self.read_only_user, "ALL")
                 additional_users = database.get("additional_users", [])
                 for additional_user in additional_users:
                     _grant_privileges(cursor, database_name, additional_user["name"], additional_user["priv"])
-
-            # Create read_only user with appropriate privileges
-            _create_user(cursor, self.read_only_user, self._get_mysql_pass(self.read_only_user))
-            _grant_privileges(cursor, "*", self.read_only_user, "ALL")
 
             # Create admin user with appropriate privileges
             _create_user(cursor, self.admin_user, self._get_mysql_pass(self.admin_user))
