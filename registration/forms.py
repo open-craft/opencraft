@@ -43,7 +43,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     """
     class Meta:
         model = BetaTestApplication
-        exclude = ('user', 'status')
+        exclude = ('user', 'status', 'instance')
         widgets = {
             'public_contact_email': forms.widgets.EmailInput(attrs={
                 'validate-email': True,

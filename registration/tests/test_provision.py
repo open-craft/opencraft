@@ -42,6 +42,8 @@ class ApprovalTestCase(TestCase):
         application = BetaTestApplication.objects.create(
             user=user,
             subdomain='test',
+            instance_name='Test instance',
+            project_description='Test instance creation.',
             public_contact_email=user.email,
         )
         EmailAddress.objects.create_unconfirmed(user.email, user)

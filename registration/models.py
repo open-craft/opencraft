@@ -45,11 +45,6 @@ def validate_available_subdomain(subdomain):
             message='This domain name is not publicly available.',
             code='blacklisted',
         )
-    if OpenEdXInstance.objects.filter(sub_domain=subdomain).exists():
-        raise ValidationError(
-            message='This domain is already taken.',
-            code='unique',
-        )
 
 
 class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
@@ -146,3 +141,19 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             email__in=email_addresses
         )
         return verified.count() == len(email_addresses)
+
+    def clean(self):
+        """
+        Verify that the subdomain has already been taken by any running instance.
+
+        We can't do this in a regular validator, since we have to allow the subdomain of the
+        instance associated with this application.
+        """
+        if self.instance is not None and self.subdomain == self.instance.sub_domain:
+            return
+        if OpenEdXInstance.objects.filter(sub_domain=self.subdomain).exists():
+            subdomain_error = ValidationError(
+                message='This domain is already taken.',
+                code='unique',
+            )
+            raise ValidationError({'subdomain': [subdomain_error]})
