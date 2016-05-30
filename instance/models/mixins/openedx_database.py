@@ -28,7 +28,6 @@ from django.template import loader
 from django.utils.crypto import get_random_string
 
 from .database import MySQLInstanceMixin, MongoDBInstanceMixin
-from .utilities import remove_prefix
 
 
 # Classes #####################################################################
@@ -171,6 +170,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         to the mysql_user of this instance.
 
         mysql_user is 6 characters long.
+        The maximum length of usernames in MySQL is 16 characters.
         To ensure that the generated name does not exceed that length,
         suffix must not consist of more than 9 characters.
         """
@@ -191,7 +191,8 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         """
         Return suffix that differentiates database identified by name from databases for other services.
         """
-        return remove_prefix(self.mysql_database_name, name)
+        prefix = "{prefix}_".format(prefix=self.mysql_database_name)
+        return name[len(prefix):]
 
     def _get_template_vars(self, database):
         """

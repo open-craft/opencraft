@@ -23,7 +23,6 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
-from unittest.mock import patch
 from urllib.parse import urlparse
 
 import pymongo
@@ -188,13 +187,6 @@ class MySQLInstanceTestCase(TestCase):
         suffix = "test"
         database_name = self.instance._get_mysql_database_name(suffix)
         self.assertEqual(self.instance._get_database_suffix(database_name), suffix)
-
-        with patch(
-            "instance.models.mixins.openedx_database.remove_prefix", return_value="dummy"
-        ) as patched_remove_prefix:
-            suffix = self.instance._get_database_suffix(database_name)
-            self.assertEqual(suffix, patched_remove_prefix.return_value)
-            patched_remove_prefix.assert_called_once_with(self.instance.mysql_database_name, database_name)
 
     def test__get_template_vars(self):
         """
