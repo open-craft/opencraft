@@ -41,7 +41,10 @@ class GandiAPI():
     """
     Gandi API proxy object
     """
+
     def __init__(self, api_url='https://rpc.gandi.net/xmlrpc/'):
+        # This is a map of domain_name => zone_id key-value pairs.
+        self._zone_id_cache = {}
         self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
@@ -52,50 +55,55 @@ class GandiAPI():
         return settings.GANDI_API_KEY
 
     @property
-    def zone_id(self):
-        """
-        Gandi Zone ID of the domain
-        """
-        return settings.GANDI_ZONE_ID
-
-    @property
     def client_zone(self):
         """
         Client domain zone API endpoint
         """
         return self.client.domain.zone
 
-    def delete_dns_record(self, zone_version_id, record_name):
+    def get_zone_id(self, domain):
+        """
+        Gandi zone ID used by domain
+        """
+        zone_id = self._zone_id_cache.get(domain, None)
+        if zone_id is None:
+            zone_id = self.client.domain.info(self.api_key, domain)['zone_id']
+            self._zone_id_cache[domain] = zone_id
+        return zone_id
+
+    def delete_dns_record(self, zone_id, zone_version_id, record_name):
         """
         Delete a record from a version of the domain
         """
-        self.client_zone.record.delete(self.api_key, self.zone_id, zone_version_id, {
+        self.client_zone.record.delete(self.api_key, zone_id, zone_version_id, {
             'type': ['A', 'CNAME'],
             'name': record_name,
         })
 
-    def add_dns_record(self, zone_version_id, record):
+    def add_dns_record(self, zone_id, zone_version_id, record):
         """
         Add a DNS record to a version of the domain
         """
-        return self.client_zone.record.add(self.api_key, self.zone_id, zone_version_id, record)
+        return self.client_zone.record.add(self.api_key, zone_id, zone_version_id, record)
 
-    def create_new_zone_version(self):
+    def create_new_zone_version(self, zone_id):
         """
         Create a new version of the domain, based on the current version
         Returns the `version_id` of the version
         """
-        return self.client_zone.version.new(self.api_key, self.zone_id)
+        return self.client_zone.version.new(self.api_key, zone_id)
 
-    def set_zone_version(self, zone_version_id):
+    def set_zone_version(self, zone_id, zone_version_id):
         """
         Get a version of the domain per id
         """
-        return self.client_zone.version.set(self.api_key, self.zone_id, zone_version_id)
+        return self.client_zone.version.set(self.api_key, zone_id, zone_version_id)
 
-    def set_dns_record(self, attempts=4, retry_delay=1, **record):
+    def set_dns_record(self, domain, attempts=4, retry_delay=1, **record):
         """
         Set a DNS record - Automatically create a new version, update with the change & activate
+        This method takes the mandatory `domain` parameter to be able to support multiple domains,
+        handled by the same Gandi account
         """
         if 'ttl' not in record.keys():
             record['ttl'] = 1200
@@ -104,10 +112,11 @@ class GandiAPI():
             for i in range(1, attempts + 1):
                 try:
                     logger.info('Setting DNS record: %s (attempt %d out of %d)', record, i, attempts)
-                    new_zone_version = self.create_new_zone_version()
-                    self.delete_dns_record(new_zone_version, record['name'])
-                    returned_record = self.add_dns_record(new_zone_version, record)
-                    self.set_zone_version(new_zone_version)
+                    zone_id = self.get_zone_id(domain)
+                    new_zone_version = self.create_new_zone_version(zone_id)
+                    self.delete_dns_record(zone_id, new_zone_version, record['name'])
+                    returned_record = self.add_dns_record(zone_id, new_zone_version, record)
+                    self.set_zone_version(zone_id, new_zone_version)
                     break
                 except xmlrpc.client.Fault:
                     if i == attempts:

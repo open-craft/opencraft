@@ -195,14 +195,16 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test set_appserver_active()
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
+                                          base_domain='opencraft.com',
+                                          use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
         self.assertEqual(instance.active_appserver.pk, appserver_id)
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call(name='test.activate', type='A', value='1.1.1.1'),
-            call(name='preview-test.activate', type='CNAME', value='test.activate'),
-            call(name='studio-test.activate', type='CNAME', value='test.activate'),
+            call('opencraft.com', name='test.activate', type='A', value='1.1.1.1'),
+            call('opencraft.com', name='preview-test.activate', type='CNAME', value='test.activate'),
+            call('opencraft.com', name='studio-test.activate', type='CNAME', value='test.activate'),
         ])
 
     @patch_services
@@ -219,9 +221,9 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.set_appserver_active(appserver_id)
         self.assertEqual(instance.active_appserver.pk, appserver_id)
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call(name='test.activate.stage', type='A', value='1.1.1.1'),
-            call(name='preview-test.activate.stage', type='CNAME', value='test.activate.stage'),
-            call(name='studio-test.activate.stage', type='CNAME', value='test.activate.stage'),
+            call('opencraft.hosting', name='test.activate.stage', type='A', value='1.1.1.1'),
+            call('opencraft.hosting', name='preview-test.activate.stage', type='CNAME', value='test.activate.stage'),
+            call('opencraft.hosting', name='studio-test.activate.stage', type='CNAME', value='test.activate.stage'),
         ])
 
     @patch_services

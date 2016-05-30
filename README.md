@@ -102,8 +102,7 @@ OPENSTACK_TENANT='tenant-name'
 OPENSTACK_AUTH_URL='https://auth.cloud.ovh.net/v2.0'
 OPENSTACK_REGION='BHS1'
 OPENSTACK_SANDBOX_SSH_KEYNAME='keypair-name'
-INSTANCES_BASE_DOMAIN='example.com'
-GANDI_ZONE_ID='123456789'
+DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 WATCH_ORGANIZATION='github-org'
@@ -196,17 +195,8 @@ flavor:
 
 ### DNS settings
 
-* `INSTANCES_BASE_DOMAIN` Instances are created as subdomains of this domain,
+* `DEFAULT_INSTANCE_BASE_DOMAIN` Instances are created as subdomains of this domain,
   e.g. `example.com` (required)
-* `GANDI_ZONE_ID` The instance manager uses
-  [gandi.net](https://www.gandi.net/domain/zones) to set up DNS for sandboxes.
-  This should be set to the zone attached to the domain set at
-  `INSTANCES_BASE_DOMAIN` (required). To find it:
-  1. Login on your domain at [Gandi](https://www.gandi.net/)
-  2. Go to -> Services > Domains > [yourdomain].com > Zone files > Edit the zone
-  3. Get id from URL, eg. 00000000 for
-     https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
-     Needs to be an integer, not a string.
 * `GANDI_API_KEY` Your Gandi API key (required)
 
 ### GitHub settings

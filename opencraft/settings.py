@@ -256,16 +256,8 @@ SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
 
 # DNS (Gandi) #################################################################
 
-# Instances will be created as subdomains of this domain
-INSTANCES_BASE_DOMAIN = env('INSTANCES_BASE_DOMAIN')
-
-# The zone attached to the `INSTANCES_BASE_DOMAIN` in Gandi
-# Get it from the URL when editing the domain zone
-# 1) Login on your domain at Gandi
-# 2) Go to -> Services > Domains > [yourdomain].com > Zone files > Edit the zone
-# 3) Get id from URL, eg. 00000000 for https://www.gandi.net/admin/domain/zone/00000000/2/edit?fromDomain=3889
-# Needs to be an integer, not a string.
-GANDI_ZONE_ID = env.int('GANDI_ZONE_ID')
+# Instances will be created as subdomains of this domain by default
+DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
 
 # See https://www.gandi.net/admin/api_key
 GANDI_API_KEY = env('GANDI_API_KEY')

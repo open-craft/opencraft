@@ -40,36 +40,54 @@ class GandiTestCase(TestCase):
 
         with patch('xmlrpc.client.ServerProxy'):
             self.api = gandi.GandiAPI()
+            self.api.client.domain.info.return_value = {
+                'fqdn': 'test.com',
+                'zone_id': 9900,
+                # .... full API response contains more fields, but we don't need them in this test.
+            }
 
     def assert_set_dns_record_calls(self, attempts=1):
         """
         Verify Gandi API calls for setting a DNS record value.
         """
+        domain_info_call = call.domain.info('TEST_GANDI_API_KEY', 'test.com')
+        create_new_zone_version_call = call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900)
+        delete_old_record_call = call.domain.zone.record.delete(
+            'TEST_GANDI_API_KEY', 9900, 'new_zone_version',
+            {'type': ['A', 'CNAME'], 'name': 'sub.domain'}
+        )
+        create_new_record_call = call.domain.zone.record.add(
+            'TEST_GANDI_API_KEY', 9900, 'new_zone_version',
+            {'value': '192.168.99.99', 'ttl': 1200, 'type': 'A', 'name': 'sub.domain'}
+        )
+        set_new_zone_version_call = call.domain.zone.version.set('TEST_GANDI_API_KEY', 9900, 'new_zone_version')
+
         self.assertEqual(
             self.api.client.mock_calls,
-            [
-                call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900)
-            ] * attempts + [
-                call.domain.zone.record.delete('TEST_GANDI_API_KEY', 9900, 'new_zone_version', {
-                    'type': ['A', 'CNAME'],
-                    'name': 'sub.domain',
-                }),
-                call.domain.zone.record.add('TEST_GANDI_API_KEY', 9900, 'new_zone_version', {
-                    'value': '192.168.99.99',
-                    'ttl': 1200,
-                    'type': 'A',
-                    'name': 'sub.domain',
-                }),
-                call.domain.zone.version.set('TEST_GANDI_API_KEY', 9900, 'new_zone_version')
-            ]
+            [domain_info_call] +
+            [create_new_zone_version_call] * attempts +
+            [delete_old_record_call, create_new_record_call, set_new_zone_version_call]
         )
+
+    def test_get_zone_id(self):
+        """
+        Gets zone_id for the requested FQDN.
+        The zone_id is cached in memory after retreived for the first time.
+        """
+        zone_id = self.api.get_zone_id('test.com')
+        self.assertEqual(zone_id, 9900)
+        self.assertEqual(self.api.client.domain.info.call_count, 1)
+        zone_id = self.api.get_zone_id('test.com')
+        self.assertEqual(zone_id, 9900)
+        # Cached zone_id value was used; no additional call to the API was made.
+        self.assertEqual(self.api.client.domain.info.call_count, 1)
 
     def test_set_dns_record(self):
         """
         Set a DNS record value.
         """
         self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
-        self.api.set_dns_record(type='A', name='sub.domain', value='192.168.99.99')
+        self.api.set_dns_record('test.com', type='A', name='sub.domain', value='192.168.99.99')
         self.assert_set_dns_record_calls()
 
     @patch('time.sleep')
@@ -80,6 +98,7 @@ class GandiTestCase(TestCase):
         fault = xmlrpc.client.Fault(581091, 'Error')
         self.api.client.domain.zone.version.new.side_effect = [fault, fault, 'new_zone_version']
         self.api.set_dns_record(
+            'test.com',
             type='A', name='sub.domain', value='192.168.99.99', attempts=3, retry_delay=3
         )
         self.assert_set_dns_record_calls(attempts=3)
@@ -93,6 +112,7 @@ class GandiTestCase(TestCase):
         self.api.client.domain.zone.version.new.side_effect = xmlrpc.client.Fault(581091, 'Error')
         with self.assertRaises(xmlrpc.client.Fault):
             self.api.set_dns_record(
+                'test.com',
                 type='A', name='sub.domain', value='192.168.99.99', attempts=4, retry_delay=2
             )
         self.assertEqual(sleep.mock_calls, [call(2), call(4), call(8)])

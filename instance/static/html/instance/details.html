@@ -33,7 +33,9 @@
           <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
         </button>
         <ul class="side-nav appserver-list">
-          <li ng-repeat="appserver in instance.appservers" ng-class="{'active-server': appserver.id == instance.active_appserver.id, active: appserver.id == state.params.appserverId}">
+          <li ng-repeat="appserver in instance.appservers | orderBy: 'id'"
+              ng-class="{'active-server': appserver.id == instance.active_appserver.id,
+                         active: appserver.id == state.params.appserverId}">
             <a ui-sref="instances.details.openedx_appserver_details({appserverId: appserver.id})">
               <i class="fa fa-server"></i> <span class="appserver-name">{{ appserver.name }}</span>
               <span ng-if="appserver.id == instance.active_appserver.id">(Active)</span>
