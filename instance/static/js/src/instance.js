@@ -32,9 +32,12 @@ app.config(function($httpProvider) {
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 });
 
-app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
+app.config(function($stateProvider, $urlRouterProvider, RestangularProvider, $locationProvider) {
     // For any unmatched url, send to /
     $urlRouterProvider.otherwise('/');
+
+    // Use History.pushState instead of hash/fragment URLs
+    $locationProvider.html5Mode(true);
 
     // Required by Django
     RestangularProvider.setRequestSuffix('/');

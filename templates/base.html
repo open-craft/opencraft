@@ -10,6 +10,9 @@
     <title>{% block title %}{% endblock title %} - OpenCraft -</title>
     {% endblock base_title %}
 
+    {# Base for relative urls #}
+    <base href="{% block base %}{% endblock base %}"/>
+
     {# Base Foundation CSS #}
     {% block foundation_css %}
     {% compress css %}
