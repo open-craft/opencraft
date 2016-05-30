@@ -7,31 +7,44 @@
 <div class="container content" ng-app="RegistrationApp">
     <div class="row">
         <div class="large-12 columns">
-            <h1>Register for Beta</h1>
-            {% if form.instance.pk %}
-                <div class="alert-box success">
-                    Your application for the OpenCraft beta has been
-                    successfully sent! We will contact you after reviewing it.
-                </div>
-                {% if not form.instance.email_addresses_verified %}
-                    <div class="alert-box warning">
-                        Application status: pending email confirmation. You
-                        should receive verification emails at both of the
-                        email addresses you provided. Please click on the
-                        links in the emails to confirm your registration. Be
-                        sure to check your spam folder if you can't find them,
-                        or <a href="mailto:contact@opencraft.com">contact us</a>.
+            {% with application=form.instance %}
+                <h1>Register for Beta</h1>
+                {% if application.pk %}
+                    {% if application.status == 'pending' %}
+                        <div class="alert-box info">
+                            Thank you for applying for the OpenCraft beta. We
+                            will contact you shortly.
+                        </div>
+                    {% elif application.status == 'accepted' %}
+                        <div class="alert-box success">
+                            Thank you for applying for the OpenCraft beta.
+                            Your application has been accepted!
+                        </div>
+                    {% elif application.status == 'rejected' %}
+                        <div class="alert-box alert">
+                            Sorry, your application has been rejected.
+                        </div>
+                    {% endif %}
+                    {% if not application.email_addresses_verified %}
+                        <div class="alert-box warning">
+                            Application status: pending email confirmation. You
+                            should receive verification emails at both of the
+                            email addresses you provided. Please click on the
+                            links in the emails to confirm your registration. Be
+                            sure to check your spam folder if you can't find them,
+                            or <a href="mailto:contact@opencraft.com">contact us</a>.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert-box info">
+                        This is the application form for the beta of the
+                        self-service hosting offered by OpenCraft. For enterprise
+                        or institutional offerings,
+                        <a href="mailto:contact@opencraft.com">contact us</a>.
                     </div>
                 {% endif %}
-            {% else %}
-                <div class="alert-box info">
-                    This is the application form for the beta of the
-                    self-service hosting offered by OpenCraft. For enterprise
-                    or institutional offerings,
-                    <a href="mailto:contact@opencraft.com">contact us</a>.
-                </div>
-            {% endif %}
-            {% include "registration/registration_form.html" %}
+                {% include "registration/registration_form.html" %}
+            {% endwith %}
         </div>
     </div>
 </div>
