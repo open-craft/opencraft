@@ -253,6 +253,15 @@ SWIFT_OPENSTACK_TENANT = env('SWIFT_OPENSTACK_TENANT', default=OPENSTACK_TENANT)
 SWIFT_OPENSTACK_AUTH_URL = env('SWIFT_OPENSTACK_AUTH_URL', default=OPENSTACK_AUTH_URL)
 SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
 
+BACKUP_SWIFT_ENABLED = env.bool('BACKUP_SWIFT_ENABLED', default=False)
+
+if BACKUP_SWIFT_ENABLED:
+
+    BACKUP_SWIFT_TARGET = env('BACKUP_SWIFT_TARGET', '/var/www/opencraft/swift-data-backup')
+    BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env('BACKUP_SWIFT_TARSNAP_KEY_LOCATION', '/var/www/opencraft/tarsnap.key')
+    BACKUP_SWIFT_TARSNAP_CACHE_LOCATION = env('BACKUP_SWIFT_TARSNAP_KEY_LOCATION', '/var/cache/tarsnap')
+    # Current date will be appended to the archive name:
+    BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', 'im-swift-backup')
 
 # DNS (Gandi) #################################################################
 

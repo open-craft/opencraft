@@ -21,8 +21,9 @@ OpenStack - Helper functions
 """
 
 # Imports #####################################################################
-
+import contextlib
 import logging
+from collections import namedtuple, defaultdict
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
@@ -33,9 +34,14 @@ from instance.utils import get_requests_retry
 
 
 # Logging #####################################################################
+from swiftclient.service import SwiftService
 
 logger = logging.getLogger(__name__)
 
+
+# Data objects ################################################################
+
+FailedContainer = namedtuple('FailedContainer', ['name', 'number_of_failures'])
 
 # Functions ###################################################################
 
@@ -115,6 +121,54 @@ def get_swift_connection(
         tenant_name=tenant,
         authurl=auth_url,
         os_options=dict(region_name=region),
+    )
+
+
+def swift_service(
+        user=settings.SWIFT_OPENSTACK_USER,
+        password=settings.SWIFT_OPENSTACK_PASSWORD,
+        tenant=settings.SWIFT_OPENSTACK_TENANT,
+        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL,
+        region=settings.SWIFT_OPENSTACK_REGION):
+    """
+    Creates a swift service.
+
+    TODO: Rewrite rest of functions using swift_service rather than swift connection.
+    """
+
+    return SwiftService(options=dict(
+        auth_version='2',
+        user=user,
+        key=password,
+        tenant_name=tenant,
+        authurl=auth_url,
+        os_options=dict(region_name=region),
+    ))
+
+
+def download_swift_account(download_target, **kwargs):
+    """
+    :param str download_target: Directory to download to
+    :param dict kwargs: Auth parameters passed to `swift_service`.
+    :return: List of FailedContainer objects. If all list is emtpy all
+             containers backed up successfully.
+    """
+
+    errors = defaultdict(default_factory= lambda: 0)
+
+    with swift_service(**kwargs) as service:
+        downloader = service.download(options={
+            'yes_all': True,  # Download whole account
+            'skip_identical': True,  # Check file checksum locally and if the same don't download,
+            'out_directory': download_target  # Set folder where to download
+        })
+        for file_download_result in downloader:
+            if not file_download_result['success']:
+                errors[file_download_result['container']]+=1
+
+    return sorted(
+        FailedContainer(name, number_of_failures)
+        for name, number_of_failures in errors.items()
     )
 
 
