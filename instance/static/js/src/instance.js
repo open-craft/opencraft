@@ -32,16 +32,19 @@ app.config(function($httpProvider) {
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 });
 
-app.config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
-    // For any unmatched url, send to /instances/
-    $urlRouterProvider.otherwise("/instances/");
+app.config(function($stateProvider, $urlRouterProvider, RestangularProvider, $locationProvider) {
+    // For any unmatched url, send to /
+    $urlRouterProvider.otherwise('/');
+
+    // Use History.pushState instead of hash/fragment URLs
+    $locationProvider.html5Mode(true);
 
     // Required by Django
     RestangularProvider.setRequestSuffix('/');
 
     $stateProvider
         .state('instances', {
-            url: "/instances/",
+            url: "/",
             abstract: true, // By making this abstract, 'instances.empty' gets added to the homepage as well.
             templateUrl: "/static/html/instance/index.html",
             controller: "Index",

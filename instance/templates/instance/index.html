@@ -5,6 +5,9 @@
 
 {% block title %}Instances{% endblock %}
 
+{# Needed for angular's pushState to work #}
+{% block base %}{% url 'instance:index' %}{% endblock base %}
+
 {% block css %}
 {% compress css %}
 <link href="{% static "scss/instance.scss" %}" type="text/x-scss" rel="stylesheet"/>
