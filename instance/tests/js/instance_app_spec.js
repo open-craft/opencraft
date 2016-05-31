@@ -20,49 +20,80 @@
 // Tests //////////////////////////////////////////////////////////////////////
 
 describe('Instance app', function () {
-    var httpBackend,
-        indexController,
+    var $controller,
+        httpBackend,
         instanceList,
-        instanceDetail,
         OpenCraftAPI,
-        $scope;
+        rootScope,
+        $timeout;
+
+    function flushHttpBackend() {
+        // Convenience method since httpBackend.flush() seems to generate calls
+        // to $timeout which also need to be flushed.
+        httpBackend.flush();
+        $timeout.flush();
+    };
 
     beforeEach(function() {
-        window.swampdragon = {
-            onChannelMessage: jasmine.createSpy(),
-            ready: jasmine.createSpy()
-        };
         angular.mock.module('restangular');
         angular.mock.module('InstanceApp');
-    });
-
-    describe('Index controller', function() {
-        /* TEMPORARILY comment out the Jasmine tests - to be corrected in next commit or PR.
-        beforeEach(inject(function($controller, _$httpBackend_, $rootScope, _OpenCraftAPI_) {
-            $scope = $rootScope.$new();
+        inject(function(_$controller_, _$httpBackend_, $rootScope, _$timeout_, _OpenCraftAPI_) {
+            $controller = _$controller_;
+            rootScope = $rootScope.$new();
             httpBackend = _$httpBackend_;
+            $timeout = _$timeout_;
             OpenCraftAPI = _OpenCraftAPI_;
-
-            // Models
-            instanceList = jasmine.loadFixture('api/instances_list.json');
-            instanceDetail = jasmine.loadFixture('api/instance_detail.json');
-            httpBackend.whenGET('/api/v1/openedxinstance/').respond(instanceList);
-            httpBackend.whenGET('/api/v1/openedxinstance/2/').respond(instanceDetail);
-
-            indexController = $controller('Index', {$scope: $scope, OpenCraftAPI: OpenCraftAPI});
-            httpBackend.flush(); // Clear calls from the controller init
-        }));
-
-        afterEach(function () {
-            httpBackend.verifyNoOutstandingExpectation();
-            httpBackend.verifyNoOutstandingRequest();
         });
 
-        describe('$scope.select', function() {
-            it('select the instance', function() {
-                $scope.select({id: 2});
-                httpBackend.flush();
-                expect($scope.selected.instance.domain).toEqual('tmp.sandbox.opencraft.com');
+        window.swampdragon = {
+            onChannelMessage: jasmine.createSpy().and.callFake(function(handler) {
+                window.swampdragon.sendChannelMessage = function(data) {
+                    handler(/* channels = */ undefined, /* message = */ {data: data});
+                };
+            }),
+            sendChannelMessage: undefined,
+            ready: jasmine.createSpy()
+        };
+
+        // Models
+        instanceList = jasmine.loadFixture('api/instances_list.json');
+        httpBackend.whenGET('/api/v1/instance/').respond(instanceList);
+
+        // Templates
+        const templatePattern = /\/static\/html\/instance\/(.+)/;
+        httpBackend.whenGET(templatePattern).respond(function(method, url, data) {
+            const templateName = url.match(templatePattern)[1];
+            const templateHTML = jasmine.loadTemplate(templateName);
+            return [200, templateHTML];
+        });
+
+        // Instance controller
+        const indexController = $controller('Index', {$scope: rootScope});
+        flushHttpBackend(); // Clear calls from the controller init
+    });
+
+    afterEach(function () {
+        httpBackend.verifyNoOutstandingExpectation();
+        httpBackend.verifyNoOutstandingRequest();
+        $timeout.verifyNoPendingTasks();
+    });
+
+
+    describe('Index controller', function() {
+        var $scope;
+        beforeEach(function() {
+            $scope = rootScope;
+        });
+        describe('$scope.init', function() {
+            it('broadcasts swampdragon events to the current scope and all child scopes', function() {
+                expect(swampdragon.onChannelMessage).toHaveBeenCalled();
+
+                // Register a new event handler:
+                const handler = jasmine.createSpy('Mock event handler');
+                $scope.$on("swampdragon:test_event", handler);
+                // Send a test message and make sure the registered handler gets called:
+                swampdragon.sendChannelMessage({type: "test_event", otherVal: 42});
+                expect(handler).toHaveBeenCalledWith(jasmine.any(Object), {type: "test_event", otherVal: 42});
             });
         });
 
@@ -75,99 +106,337 @@ describe('Instance app', function () {
                 expect($scope.loading).not.toBeTruthy();
                 $scope.updateInstanceList();
                 expect($scope.loading).toBeTruthy();
-                httpBackend.flush();
+                flushHttpBackend(); // Clear timeouts created by httpBackend
                 expect($scope.loading).not.toBeTruthy();
             });
-
-            it('updates the selected instance when updating the list', function() {
-                instanceDetail.domain = 'old.example.com';
-                $scope.select($scope.instanceList[0]);
-                httpBackend.flush();
-                expect($scope.selected.instance.domain).toEqual('old.example.com');
-
-                instanceDetail.domain = 'tmp.sandbox.opencraft.com';
-                $scope.updateInstanceList();
-                httpBackend.flush();
-                expect($scope.selected.instance.domain).toEqual('tmp.sandbox.opencraft.com');
-            });
         });
 
-        describe('$scope.provision', function() {
-            it('notifies backend and changes status to terminating', function() {
-                var instance = $scope.instanceList[0];
-                expect(instance.active_server_set[0].status).toEqual('ready');
-                httpBackend.expectPOST('/api/v1/openedxinstance/2/provision/').respond('');
-                $scope.provision(instance);
-                httpBackend.flush();
-                expect($scope.notification.message).toEqual('Provisioning');
-                expect(instance.active_server_set[0].status).toEqual('terminating');
+        describe('swampdragon events', function() {
+            beforeEach(function() {
+                spyOn($scope, 'updateInstanceList');
             });
-
-            it('displays errors on 4xx response', function() {
-                var instance = $scope.instanceList[0],
-                    beforeStatus = instance.active_server_set[0].status;
-                httpBackend
-                    .expectPOST('/api/v1/openedxinstance/2/provision/')
-                    .respond(403, {status: 'FAIL'});
-                $scope.provision(instance);
-                httpBackend.flush();
-                expect($scope.notification.message).toEqual('FAIL');
-                expect(instance.active_server_set[0].status).toEqual(beforeStatus);
-            });
-        });
-
-        describe('$scope.handleChannelMessage', function() {
-            it('server_update', function() {
-                $scope.updateInstanceList = jasmine.createSpy();
-                $scope.handleChannelMessage('notifier', {data: {type: 'server_update'}});
+            it('update the instance list whenever an instance is updated', function() {
+                swampdragon.sendChannelMessage({type: "instance_update"});
                 expect($scope.updateInstanceList).toHaveBeenCalled();
             });
-
-            it('instance_log', function() {
-                $scope.select($scope.instanceList[0]);
-                httpBackend.flush();
-                var log_entry = {
-                    level: 'INFO',
-                    created: new Date(2015, 10, 4, 10, 45, 0),
-                    text: '### Added via websocket ###'
-                };
-                expect($scope.selected.instance.log_entries).not.toContain(log_entry);
-                $scope.handleChannelMessage('notifier', {data: {
-                    type: 'instance_log',
-                    instance_id: 2,
-                    log_entry: log_entry
-                }});
-                expect($scope.selected.instance.log_entries).toContain(log_entry);
+            it('update the instance list whenever an AppServer is updated', function() {
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update"});
+                expect($scope.updateInstanceList).toHaveBeenCalled();
             });
-
-            it('errors', function() {
-                $scope.select($scope.instanceList[0]);
-                httpBackend.flush();
-                var log_entry_error = {
-                    level: 'ERROR',
-                    created: new Date(2015, 10, 4, 10, 45, 0),
-                    text: '### Added via websocket ###'
-                };
-                $scope.handleChannelMessage('notifier', {data: {
-                    type: 'instance_log',
-                    instance_id: 2,
-                    log_entry: log_entry_error
-                }});
-                var log_entry_info = {
-                    level: 'INFO',
-                    created: new Date(2015, 10, 4, 10, 45, 0),
-                    text: '### Added via websocket ###'
-                };
-                $scope.handleChannelMessage('notifier', {data: {
-                    type: 'instance_log',
-                    instance_id: 2,
-                    log_entry: log_entry_info
-                }});
-                expect($scope.selected.instance.log_error_entries).toContain(log_entry_error);
-                expect($scope.selected.instance.log_error_entries).not.toContain(log_entry_info);
+            it('do not update the instance list for other changes', function() {
+                swampdragon.sendChannelMessage({type: "other_update"});
+                expect($scope.updateInstanceList).not.toHaveBeenCalled();
             });
         });
-        */
+
+        describe('$scope.notify', function() {
+            it('can be called to show temporary notifications', function() {
+                expect($scope.notification).toBe(null);
+                $scope.notify('Update failed.', 'alert');
+                expect($scope.notification.message).toEqual('Update failed.');
+                expect($scope.notification.type).toEqual('alert');
+                $timeout.flush();
+                expect($scope.notification).toBe(null);
+            });
+        });
+    });
+
+
+    describe('Instance Details controller', function() {
+        var $scope,
+            instanceDetail;
+
+        beforeEach(function() {
+            // Models
+            instanceDetail = jasmine.loadFixture('api/instance_detail.json');
+            httpBackend.whenGET('/api/v1/instance/50/').respond(instanceDetail);
+
+            $scope = rootScope.$new();
+            const detailsController = $controller('Details', {$scope: $scope, $stateParams: {instanceId: 50}});
+            flushHttpBackend(); // Clear calls from the controller init
+        });
+
+        describe('$scope.refresh', function() {
+            it('loads the instance details from the API on init', function() {
+                expect(jasmine.sanitizeRestangularOne($scope.instance)).toEqual(instanceDetail);
+            });
+        });
+
+        describe('swampdragon event handlers', function() {
+            beforeEach(function() {
+                spyOn(rootScope, 'updateInstanceList'); // Mock this out to avoid its HTTP requests
+                spyOn($scope, 'refresh');
+                spyOn($scope.instance.log_entries, 'push');
+            });
+            it('update the instance details whenever the instance is updated', function() {
+                swampdragon.sendChannelMessage({type: "instance_update", instance_id: 400});
+                expect($scope.refresh).not.toHaveBeenCalled();
+                swampdragon.sendChannelMessage({type: "instance_update", instance_id: instanceDetail.id});
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the instance list whenever one of the instance's AppServers are updated", function() {
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", instance_id: 400});
+                expect($scope.refresh).not.toHaveBeenCalled();
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", instance_id: instanceDetail.id});
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the instance's log entries", function() {
+                const logEntry = {created: new Date(), level: "INFO", text: "A long time ago"};
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    instance_id: instanceDetail.id,
+                    log_entry: logEntry,
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instance.log_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the instance's log entries for other instance logs", function() {
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    instance_id: 400,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instance.log_entries.push).not.toHaveBeenCalled();
+            });
+            it("do not update the instance's log entries for AppServer logs", function() {
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    instance_id: instanceDetail.id,
+                    appserver_id: 15,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instance.log_entries.push).not.toHaveBeenCalled();
+            });
+            it('do not update the instance details for other changes', function() {
+                swampdragon.sendChannelMessage({type: "other_update"});
+                expect($scope.refresh).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('$scope.spawn_appserver', function() {
+            it('will spawn an appserver and set is_spawning_appserver=true until the appserver is ready', function() {
+                expect($scope.is_spawning_appserver).toBe(false);
+                httpBackend.expectPOST('/api/v1/openedx_appserver/', {instance_id: instanceDetail.id}).respond('');
+                // Note: The API call above is an asynchronous task so it will return a 200 status immediately.
+                $scope.spawn_appserver();
+                expect($scope.is_spawning_appserver).toBe(true);
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(true);
+
+                // Mock an unrelated update to an older AppServer, which should have no effect on is_spawning_appserver:
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", instance_id: instanceDetail.id});
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(true);
+                // Now, mock the result of successfully spawning an AppServer:
+                const mockAppServer = {"id": 8, };
+                instanceDetail.newest_appserver = mockAppServer;
+                instanceDetail.appservers.push(mockAppServer);
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", instance_id: instanceDetail.id});
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(false);
+            });
+        });
+
+        describe('$scope.update_from_pr', function() {
+            beforeEach(function() {
+                spyOn(rootScope, 'notify');
+                spyOn($scope, 'refresh').and.callThrough();
+            });
+            it('throws an exception if the instance is already updating from a PR', function() {
+                expect($scope.is_updating_from_pr).toBe(false);
+                $scope.is_updating_from_pr = true;
+                expect($scope.update_from_pr).toThrow();
+            });
+            it('throws an exception if the instance is not associated with a PR', function() {
+                delete $scope.instance.source_pr;
+                expect($scope.is_updating_from_pr).toBe(false);
+                expect($scope.update_from_pr).toThrow();
+            });
+            it('uses the API to update the instance settings from the PR', function() {
+                expect($scope.is_updating_from_pr).toBe(false);
+                expect($scope.instance_active_tabs.settings_tab).toBe(undefined);
+                expect($scope.notify).not.toHaveBeenCalled();
+
+                httpBackend.expectPOST('/api/v1/pr_watch/' + instanceDetail.source_pr.id + '/update_instance/').respond('');
+                $scope.update_from_pr();
+                expect($scope.is_updating_from_pr).toBe(true);
+                expect($scope.refresh).not.toHaveBeenCalled();
+                flushHttpBackend();
+                expect($scope.is_updating_from_pr).toBe(false);
+                expect($scope.notify).toHaveBeenCalledWith('Instance settings updated.');
+                // Then the code should call refresh(), then switch to the "Settings" tab after the refresh completes:
+                expect($scope.refresh).toHaveBeenCalled();
+                expect($scope.instance_active_tabs.settings_tab).toBe(true);
+            });
+            it('shows an error message when unable to update the instance settings from the PR', function() {
+                expect($scope.is_updating_from_pr).toBe(false);
+                expect($scope.notify).not.toHaveBeenCalled();
+                httpBackend.expectPOST('/api/v1/pr_watch/' + instanceDetail.source_pr.id + '/update_instance/').respond(500, '');
+                $scope.update_from_pr();
+                expect($scope.is_updating_from_pr).toBe(true);
+                flushHttpBackend();
+                expect($scope.is_updating_from_pr).toBe(false);
+                expect($scope.notify).toHaveBeenCalledWith('Update failed.', 'alert');
+                expect($scope.refresh).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+
+    describe('OpenEdXAppServerDetails controller', function() {
+        var $scope,
+            parentScope,
+            appServerDetail;
+
+        beforeEach(function() {
+            // Models
+            appServerDetail = jasmine.loadFixture('api/appserver_detail.json');
+            httpBackend.whenGET('/api/v1/openedx_appserver/8/').respond(appServerDetail);
+
+            // Mock the parent scope (instance details)
+            parentScope = rootScope.$new(); // Scope for the Instance "Details" controller
+            parentScope.instance = jasmine.loadFixture('api/instance_detail.json');
+            inject(function($q) {
+                // Mock tthe instance refresh() method and make sure to return a promise.
+                parentScope.refresh = jasmine.createSpy('Instance refresh method').and.returnValue($q.when({}));
+            });
+
+            // Create the controller and its scope:
+            $scope = parentScope.$new();
+            const stateParams = {
+                instanceId: 50,
+                appserverId: 8,
+            }
+            $controller('OpenEdXAppServerDetails', {$scope: $scope, $stateParams: stateParams});
+            flushHttpBackend(); // Clear calls from the controller init
+        });
+
+        describe('$scope.refresh', function() {
+            it('loads the AppServer details from the API on init', function() {
+                // If django-rest-framework's serializers have dropped the empty 'log_error_entries'
+                // field, it should have been added back (so that we can call .push() on it):
+                if (!appServerDetail.log_error_entries) {
+                    appServerDetail.log_error_entries = [];
+                }
+                expect(jasmine.sanitizeRestangularOne($scope.appserver)).toEqual(appServerDetail);
+            });
+            it('sets is_active correctly', function() {
+                expect($scope.is_active).toBe(true); // Based on the fixture, AppServer 8 is active
+
+                parentScope.instance.active_appserver = null;
+                $scope.refresh();
+                flushHttpBackend();
+                expect($scope.is_active).toBeFalsy();
+
+                parentScope.instance.active_appserver = {id: 404};
+                $scope.refresh();
+                flushHttpBackend();
+                expect($scope.is_active).toBeFalsy();
+            });
+        });
+
+        describe('$scope.make_appserver_active', function() {
+            it('will make an API call to make the AppServer active, then refresh the view', function() {
+                parentScope.instance.active_appserver = null;
+                $scope.refresh();
+                spyOn(rootScope, 'notify');
+                spyOn($scope, 'refresh');
+                httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_active/').respond('');
+                $scope.make_appserver_active();
+                flushHttpBackend();
+                expect(parentScope.refresh).toHaveBeenCalled();
+                expect($scope.refresh).toHaveBeenCalled();
+                expect(rootScope.notify).toHaveBeenCalledWith('AppServer 2 is now active. The DNS changes may take a while to propagate.');
+            });
+            it('displays a notification if the AppServer failed to activate', function() {
+                parentScope.instance.active_appserver = null;
+                $scope.refresh();
+                spyOn(rootScope, 'notify');
+                spyOn($scope, 'refresh');
+                httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_active/').respond(500, '');
+                $scope.make_appserver_active();
+                flushHttpBackend();
+                expect(parentScope.refresh).not.toHaveBeenCalled();
+                expect($scope.refresh).toHaveBeenCalled();
+                expect(rootScope.notify).toHaveBeenCalledWith('An error occurred. AppServer 2 could not be made active.', 'alert');
+            });
+        });
+
+        describe('swampdragon event handlers', function() {
+            beforeEach(function() {
+                spyOn(rootScope, 'updateInstanceList'); // Mock this out to avoid its HTTP requests
+                spyOn($scope, 'refresh');
+                spyOn($scope.appserver.log_entries, 'push');
+                spyOn($scope.appserver.log_error_entries, 'push');
+            });
+            it('update the AppServer details whenever the AppServer is updated', function() {
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", appserver_id: 404});
+                expect($scope.refresh).not.toHaveBeenCalled();
+                swampdragon.sendChannelMessage({type: "openedx_appserver_update", appserver_id: appServerDetail.id});
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new AppServer logs", function() {
+                const logEntry = {created: new Date(), level: "INFO", text: "A long time ago"};
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    appserver_id: appServerDetail.id,
+                    log_entry: logEntry,
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new AppServer error logs", function() {
+                const logEntry = {created: new Date(), level: "ERROR", text: "Something went wrong"};
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    appserver_id: appServerDetail.id,
+                    log_entry: logEntry,
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserver.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the AppServer's log entries for other AppServer logs", function() {
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    appserver_id: 404,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new VM error logs", function() {
+                const logEntry = {created: new Date(), level: "ERROR", text: "Something went wrong on the server"};
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    server_id: appServerDetail.server.id,
+                    log_entry: logEntry,
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserver.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the AppServer's log entries for other VM logs", function() {
+                swampdragon.sendChannelMessage({
+                    type: "object_log_line",
+                    server_id: 404,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                });
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it('do not update the AppServer or log entries details for other changes', function() {
+                swampdragon.sendChannelMessage({type: "other_update"});
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+            });
+        });
     });
 });
 

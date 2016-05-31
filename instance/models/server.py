@@ -28,7 +28,6 @@ import time
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import post_save
 from django_extensions.db.models import TimeStampedModel
 import novaclient
 from swampdragon.pubsub_providers.data_publisher import publish_data
@@ -232,12 +231,11 @@ class Server(ValidateModelMixin, TimeStampedModel):
             "Aborting with a status of {status}.".format(minutes=timeout / 60, status=self.status.name)
         )
 
-    @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
+    def save(self, *args, **kwargs):
         """
-        Called when an instance is saved
+        Save this Server
         """
-        self = instance
+        super().save(*args, **kwargs)
         publish_data('notification', {
             'type': 'server_update',
             'server_pk': self.pk,
@@ -396,5 +394,3 @@ class OpenStackServer(Server):
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
-
-post_save.connect(OpenStackServer.on_post_save, sender=OpenStackServer)

@@ -1,0 +1,53 @@
+{
+    "id": 8,
+    "api_url": "http://localhost:5000/api/v1/openedx_appserver/8/",
+    "name": "AppServer 2",
+    "status": "running",
+    "status_name": "Running",
+    "status_description": "App server is up and running",
+    "is_steady": true,
+    "is_healthy": true,
+    "created": "2016-05-19T03:33:25.248Z",
+    "modified": "2016-05-19T03:33:25.248Z",
+    "email": "contact@example.com",
+    "protocol": "http",
+    "configuration_source_repo_url": "https://github.com/open-craft/configuration.git",
+    "configuration_version": "git-branch-name",
+    "configuration_extra_settings": "EDXAPP_FEATURES:\n  ALLOW_ALL_ADVANCED_COMPONENTS: True\nedxapp_worker_default_stopwaitsecs: 1200\n",
+    "edx_platform_repository_url": "https://github.com/open-craft/edx-platform.git",
+    "edx_platform_commit": "073e9c56a8093691dea782c8b727d839260833b1",
+    "openedx_release": "master",
+    "use_ephemeral_databases": true,
+    "github_admin_organization_name": "open-craft",
+    "configuration_database_settings": "",
+    "configuration_storage_settings": "",
+    "configuration_settings": "COMMON_HOSTNAME: pr12338.sandbox.example.com\nCOMMON_SECURITY_UPDATES: true\nCOMMON_USER_INFO:\n- {github: true, name: open-craft, type: admin}\nCOMMON_VHOST_ROLE_NAME: openstack\nEDXAPP_BUGS_EMAIL: contact@example.com\nEDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: contact@example.com\nEDXAPP_CMS_BASE: studio.pr12338.sandbox.example.com\nEDXAPP_CMS_NGINX_PORT: 80\nEDXAPP_CMS_SITE_NAME: studio.pr12338.sandbox.example.com\nEDXAPP_CONTACT_EMAIL: contact@example.com\nEDXAPP_DEFAULT_FEEDBACK_EMAIL: contact@example.com\nEDXAPP_DEFAULT_FROM_EMAIL: contact@example.com\nEDXAPP_FEATURES: {ALLOW_ALL_ADVANCED_COMPONENTS: true, AUTH_USE_OPENID: false, ENABLE_DISCUSSION_SERVICE: true,\n  ENABLE_DJANGO_ADMIN_SITE: true, ENABLE_INSTRUCTOR_ANALYTICS: true, ENABLE_INSTRUCTOR_EMAIL: true,\n  ENABLE_PEARSON_HACK_TEST: false, PREVIEW_LMS_BASE: pr12338.sandbox.example.com,\n  REQUIRE_COURSE_EMAIL_AUTH: false, SUBDOMAIN_BRANDING: false, SUBDOMAIN_COURSE_LISTINGS: false,\n  USE_MICROSITES: false}\nEDXAPP_FEEDBACK_SUBMISSION_EMAIL: contact@example.com\nEDXAPP_LMS_BASE: pr12338.sandbox.example.com\nEDXAPP_LMS_NGINX_PORT: 80\nEDXAPP_LMS_PREVIEW_NGINX_PORT: 80\nEDXAPP_LMS_SITE_NAME: pr12338.sandbox.example.com\nEDXAPP_PLATFORM_NAME: 'PR#12338: WIP Sandbox for DnDv2 (pomegranited) - open-craft/jill/sandbox-dndv2\n  (073e9c5)'\nEDXAPP_PREVIEW_LMS_BASE: pr12338.sandbox.example.com\nEDXAPP_SERVER_EMAIL: contact@example.com\nEDXAPP_SETTINGS: openstack\nEDXAPP_SITE_NAME: pr12338.sandbox.example.com\nEDXAPP_TECH_SUPPORT_EMAIL: contact@example.com\nEDXAPP_TIME_ZONE: UTC\nFORUM_RACK_ENV: production\nFORUM_SINATRA_ENV: production\nSECURITY_UNATTENDED_UPGRADES: true\nSECURITY_UPDATE_ALL_PACKAGES: false\nSECURITY_UPGRADE_ON_ANSIBLE: true\nXQUEUE_SETTINGS: openstack_settings\ncerts_version: master\nconfiguration_version: git-branch-name\nedx_ansible_source_repo: https://github.com/open-craft/configuration.git\nedx_platform_repo: https://github.com/open-craft/edx-platform.git\nedx_platform_version: f3b33ef14f7b771a93f4f7d54c396c97dd0daa88\nedxapp_worker_default_stopwaitsecs: 1200\nforum_version: master\nnotifier_version: master\nxqueue_version: master\n",
+    "instance": {
+        "id": 50,
+        "api_url": "http://localhost:5000/api/v1/instance/50/"
+    },
+    "server": {
+        "id": 18,
+        "api_url": "http://localhost:5000/api/v1/openstackserver/18/",
+        "created": "2016-05-19T03:33:24.351037Z",
+        "modified": "2016-05-19T03:33:27.536501Z",
+        "name": "edxapp-pr12338sandbo-18",
+        "openstack_id": "89898989-1234-1234-1234-abcdef012345",
+        "status": "ready",
+        "public_ip": "192.0.2.3",
+        "status_name": "Ready",
+        "status_description": "Booted and ready"
+    },
+    "log_entries": [
+        {
+            "level": "INFO",
+            "text": "instance.models.appserver | instance=50 (PR#12338: WIP S),app_server=8 (AppServer 2) | Starting provisioning",
+            "created": "2016-05-19T03:33:25.272824Z"
+        },
+        {
+            "level": "INFO",
+            "text": "instance.models.server    | server=edxapp-pr12338sandbo | Starting server (status=Pending [pending])...",
+            "created": "2016-05-19T03:33:25.336898Z"
+        }
+    ]
+}

@@ -1,6 +1,10 @@
-<h3>
+<h3 ng-if="!instance">
+  Loading Instance details... <i class="fa fa-refresh fa-spin" aria-hidden="true"></i>
+</h3>
+<h3 ng-if="instance">
   {{ instance.name }}
 </h3>
+
 <div class="panel">
   <div class="row">
     <div class="large-10 columns">

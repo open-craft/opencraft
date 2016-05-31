@@ -76,6 +76,19 @@ class InstanceReference(TimeStampedModel):
             self.instance.delete(ref_already_deleted=True)
         super().delete(*args, **kwargs)  # pylint: disable=no-member
 
+    def save(self, *args, **kwargs):
+        """
+        Save this InstanceReference
+
+        This also gets called whenever the Instance subclass has changed.
+        """
+        super().save(*args, **kwargs)
+        # Notify anyone monitoring for changes via swampdragon/websockets:
+        publish_data('notification', {
+            'type': 'instance_update',
+            'instance_id': self.pk,
+        })
+
 
 class Instance(ValidateModelMixin, models.Model):
     """
@@ -153,18 +166,6 @@ class Instance(ValidateModelMixin, models.Model):
         if fields is None:
             self.ref.refresh_from_db()
         super().refresh_from_db(using=using, fields=fields, **kwargs)
-
-    @staticmethod
-    def on_post_save(sender, instance, created, **kwargs):
-        """
-        Called when an instance is saved.
-
-        Each Instance subclass must explicitly connect() to this event in its models.py.
-        """
-        publish_data('notification', {
-            'type': 'instance_update',
-            'instance_id': instance.ref.pk,
-        })
 
     @property
     def event_context(self):

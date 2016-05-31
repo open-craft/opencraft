@@ -24,7 +24,6 @@ import string
 from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
-from django.db.models.signals import post_save
 from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
@@ -268,6 +267,3 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
                 **instance_config
             )
         return app_server
-
-
-post_save.connect(Instance.on_post_save, sender=OpenEdXInstance)
