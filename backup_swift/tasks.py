@@ -31,8 +31,7 @@ def do_backup_swift():
     )
 
     if tarsnap_errors:
-        error_report += '\n'
-        error_report += tarsnap_errors
+        error_report += "Error while running tarsnap"
 
     if error_report:
         mail_admins("Error when backing up swift containers", error_report)
