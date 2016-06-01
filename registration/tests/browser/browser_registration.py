@@ -29,6 +29,7 @@ import time
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -44,7 +45,11 @@ class BetaTestBrowserTestCase(BetaTestApplicationViewTestMixin,
     """
     def setUp(self):
         super().setUp()
-        self.client = webdriver.Firefox()
+        try:
+            self.client = webdriver.Firefox()
+        except WebDriverException:
+            time.sleep(1)
+            self.client = webdriver.Firefox()
 
     def tearDown(self):
         self.client.quit()
