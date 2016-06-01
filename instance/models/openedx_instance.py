@@ -128,10 +128,13 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         The database name used for external databases/storages, if any.
         """
         name = self.domain.replace('.', '_')
-        # Escape all non-ascii characters and truncate to 64 chars, the maximum for mysql:
+        # Escape all non-ascii characters and truncate to 50 chars.
+        # The maximum length for the name of a MySQL database is 64 characters.
+        # But since we add suffixes to database_name to generate unique database names
+        # for different services (e.g. xqueue) we don't want to use the maximum length here.
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
-        return truncate_name(escaped, length=64)
+        return truncate_name(escaped, length=50)
 
     def set_field_defaults(self):
         """
@@ -172,10 +175,13 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
 
     def delete(self, *args, **kwargs):
         """
-        Delete this Open edX Instance and its associated AppServers.
+        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
         """
         for appserver in self.appserver_set.all():
             appserver.terminate_vm()
+        self.deprovision_mysql()
+        self.deprovision_mongo()
+        self.deprovision_swift()
         super().delete(*args, **kwargs)
 
     @property

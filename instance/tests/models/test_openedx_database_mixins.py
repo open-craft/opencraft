@@ -54,25 +54,38 @@ class MySQLInstanceTestCase(TestCase):
             self.instance.deprovision_mysql()
         super().tearDown()
 
+    def _assert_privileges(self, database):
+        """
+        Assert that relevant users can access database
+        """
+        database_name = database["name"]
+        user = database["user"]
+        additional_users = [user["name"] for user in database.get("additional_users", [])]
+        global_users = [self.instance.migrate_user, self.instance.read_only_user]
+        users = [user] + additional_users + global_users
+        for user in users:
+            password = self.instance._get_mysql_pass(user)
+            # Pass password using MYSQL_PWD environment variable rather than the --password
+            # parameter so that mysql command doesn't print a security warning.
+            env = {'MYSQL_PWD': password}
+            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(user=user, db_name=database_name)
+            tables = subprocess.call(mysql_cmd, shell=True, env=env)
+            self.assertEqual(tables, 0)
+
     def check_mysql(self):
         """
-        Check that the mysql databases and user have been created, then remove them
+        Check that the mysql databases and users have been created
         """
         self.assertIs(self.instance.mysql_provisioned, True)
         self.assertTrue(self.instance.mysql_user)
         self.assertTrue(self.instance.mysql_pass)
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in self.instance.mysql_database_names:
-            self.assertIn(database, databases)
-            # Pass password using MYSQ_PWD environment variable rather than the --password
-            # parameter so that mysql command doesn't print a security warning.
-            env = {'MYSQL_PWD': self.instance.mysql_pass}
-            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(
-                user=self.instance.mysql_user,
-                db_name=database,
-            )
-            tables = subprocess.call(mysql_cmd, shell=True, env=env)
-            self.assertEqual(tables, 0)
+        for database in self.instance.mysql_databases:
+            # Check if database exists
+            database_name = database["name"]
+            self.assertIn(database_name, databases)
+            # Check if relevant users can access it
+            self._assert_privileges(database)
 
     def check_mysql_vars_not_set(self, instance):
         """
@@ -87,6 +100,111 @@ class MySQLInstanceTestCase(TestCase):
                     'COMMON_MYSQL_MIGRATE_USER',
                     'COMMON_MYSQL_MIGRATE_PASS'):
             self.assertNotIn(var, db_vars_str)
+
+    def check_common_users(self, instance, db_vars):
+        """
+        Check that instance settings contain correct information about common users.
+        """
+        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_USER'], instance.migrate_user)
+        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_PASS'], instance._get_mysql_pass(instance.migrate_user))
+        self.assertEqual(db_vars['COMMON_MYSQL_READ_ONLY_USER'], instance.read_only_user)
+        self.assertEqual(db_vars['COMMON_MYSQL_READ_ONLY_PASS'], instance._get_mysql_pass(instance.read_only_user))
+        self.assertEqual(db_vars['COMMON_MYSQL_ADMIN_USER'], instance.admin_user)
+        self.assertEqual(db_vars['COMMON_MYSQL_ADMIN_PASS'], instance._get_mysql_pass(instance.admin_user))
+
+    def check_vars(self, instance, db_vars, prefix, var_names=None, values=None):
+        """
+        Check that instance settings contain correct values for vars that start with prefix.
+        """
+        if var_names is None:
+            var_names = ["DB_NAME", "USER", "PASSWORD", "HOST", "PORT"]
+        instance_settings = zip(var_names, values)
+        for var_name, value in instance_settings:
+            var_name = prefix + var_name
+            self.assertEqual(db_vars[var_name], value)
+
+    def test__get_mysql_database_name(self):
+        """
+        Test that _get_mysql_database_name correctly builds database names.
+        """
+        self.instance = OpenEdXInstanceFactory()
+
+        # Database name should be a combination of database_name and custom suffix
+        suffix = "test"
+        database_name = self.instance._get_mysql_database_name(suffix)
+        expected_database_name = "{0}_{1}".format(self.instance.database_name, suffix)
+        self.assertEqual(database_name, expected_database_name)
+
+        # Using suffix that exceeds maximum length should raise an error
+        suffix = "long-long-long-long-long-long-long-long-long-long-long-long-suffix"
+        with self.assertRaises(AssertionError):
+            self.instance._get_mysql_database_name(suffix)
+
+    def test__get_mysql_user_name(self):
+        """
+        Test that _get_mysql_user_name correctly builds user names.
+        """
+        self.instance = OpenEdXInstanceFactory()
+
+        # User name should be a combination of mysql_user and custom suffix
+        suffix = "test"
+        user_name = self.instance._get_mysql_user_name(suffix)
+        expected_user_name = "{0}_{1}".format(self.instance.mysql_user, suffix)
+        self.assertEqual(user_name, expected_user_name)
+
+        # Using suffix that exceeds maximum length should raise an error
+        suffix = "long-long-long-suffix"
+        with self.assertRaises(AssertionError):
+            self.instance._get_mysql_user_name(suffix)
+
+    def test__get_mysql_pass(self):
+        """
+        Test behavior of _get_mysql_pass.
+
+        It should:
+
+        - generate passwords of appropriate length
+        - generate different passwords for different users
+        - behave deterministically, i.e., return the same password for a given user
+          every time it is called with that user
+        """
+        self.instance = OpenEdXInstanceFactory()
+        user1 = "user1"
+        pass1 = self.instance._get_mysql_pass(user1)
+        user2 = "user2"
+        pass2 = self.instance._get_mysql_pass(user2)
+        self.assertEqual(len(pass1), 64)
+        self.assertEqual(len(pass2), 64)
+        self.assertFalse(pass1 == pass2)
+        self.assertEqual(pass1, self.instance._get_mysql_pass(user1))
+        self.assertEqual(pass2, self.instance._get_mysql_pass(user2))
+
+    def test__get_database_suffix(self):
+        """
+        Test that _get_database_suffix returns correct suffix for a given database.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        suffix = "test"
+        database_name = self.instance._get_mysql_database_name(suffix)
+        self.assertEqual(self.instance._get_database_suffix(database_name), suffix)
+
+    def test__get_template_vars(self):
+        """
+        Test that _get_template_vars returns correct settings for a given database.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        suffix = "test-db"
+        database = {
+            "name": self.instance._get_mysql_database_name(suffix),
+            "user": self.instance._get_mysql_user_name(suffix),
+        }
+        template_vars = self.instance._get_template_vars(database)
+        expected_template_vars = {
+            "{}_database".format(suffix): database["name"],
+            "{}_user".format(suffix): database["user"],
+            "{}_pass".format(suffix): self.instance._get_mysql_pass(database["user"])
+        }
+        self.assertEqual(template_vars, expected_template_vars)
 
     def test_provision_mysql(self):
         """
@@ -104,8 +222,8 @@ class MySQLInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in self.instance.mysql_database_names:
-            self.assertNotIn(database, databases)
+        for database in self.instance.mysql_databases:
+            self.assertNotIn(database["name"], databases)
 
     def test_provision_mysql_weird_domain(self):
         """
@@ -138,21 +256,91 @@ class MySQLInstanceTestCase(TestCase):
     @override_settings(INSTANCE_MYSQL_URL_OBJ=urlparse('mysql://user:pass@mysql.opencraft.com'))
     def test_ansible_settings_mysql(self, mocks):
         """
-        Add mysql ansible vars if INSTANCE_MYSQL_URL is set and not using ephemeral databases
+        Test that get_database_settings produces correct settings for MySQL databases
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mysql()
+        expected_host = "mysql.opencraft.com"
+        expected_port = 3306
 
+        def make_flat_group_info(var_names=None, database=None, include_port=True):
+            """ Return dict containing info for a flat group of variables """
+            group_info = {}
+            if var_names:
+                group_info["vars"] = var_names
+            # Compute and insert values
+            name = instance._get_mysql_database_name(database["name"])
+            user = instance._get_mysql_user_name(database["user"])
+            password = instance._get_mysql_pass(user)
+            values = [name, user, password, expected_host]
+            if include_port:
+                values.append(expected_port)
+            group_info["values"] = values
+            return group_info
+
+        def make_nested_group_info(var_names, databases):
+            """ Return dict containing info for a nested group of variables """
+            group_info = {
+                "vars": var_names
+            }
+            # Compute and insert values
+            for database in databases:
+                database["name"] = instance._get_mysql_database_name(database["name"])
+                database["user"] = instance._get_mysql_user_name(database["user"])
+                database["password"] = instance._get_mysql_pass(database["user"])
+            values = [database["name"] for database in databases]
+            values.append({
+                database.get("id", "default"): dict(
+                    ENGINE='django.db.backends.mysql',
+                    NAME=database["name"],
+                    USER=database["user"],
+                    PASSWORD=database["password"],
+                    HOST=expected_host,
+                    PORT=expected_port,
+                    **database.get("additional_settings", {}),
+                )
+                for database in databases
+            })
+            group_info["values"] = values
+            return group_info
+
+        # Load instance settings
         db_vars = yaml.load(instance.get_database_settings())
-        self.assertGreater(len(instance.mysql_user), 5)
-        self.assertGreater(len(instance.mysql_pass), 10)
-        self.assertEqual(db_vars['EDXAPP_MYSQL_USER'], instance.mysql_user)
-        self.assertEqual(db_vars['EDXAPP_MYSQL_PASSWORD'], instance.mysql_pass)
-        self.assertEqual(db_vars['EDXAPP_MYSQL_HOST'], 'mysql.opencraft.com')
-        self.assertEqual(db_vars['EDXAPP_MYSQL_PORT'], 3306)
-        self.assertEqual(db_vars['EDXAPP_MYSQL_DB_NAME'], instance.mysql_database_name)
-        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_USER'], instance.mysql_user)
-        self.assertEqual(db_vars['COMMON_MYSQL_MIGRATE_PASS'], instance.mysql_pass)
+
+        # Check instance settings for common users
+        self.check_common_users(instance, db_vars)
+
+        # Check service-specific instance settings
+        var_groups = {
+            "EDXAPP_MYSQL_": make_flat_group_info(database={"name": "edxapp", "user": "edxapp"}),
+            "XQUEUE_MYSQL_": make_flat_group_info(database={"name": "xqueue", "user": "xqueue"}),
+            "EDXAPP_MYSQL_CSMH_": make_flat_group_info(database={"name": "edxapp_csmh", "user": "edxapp"}),
+            "EDX_NOTES_API_MYSQL_": make_flat_group_info(
+                var_names=["DB_NAME", "DB_USER", "DB_PASS", "HOST"],
+                database={"name": "edx_notes_api", "user": "notes"},
+                include_port=False
+            ),
+            "ECOMMERCE_": make_nested_group_info(
+                ["DEFAULT_DB_NAME", "DATABASES"],
+                [{"name": "ecommerce", "user": "ecommerce", "additional_settings": {
+                    "ATOMIC_REQUESTS": True,
+                    "CONN_MAX_AGE": 60,
+                }}]
+            ),
+            "INSIGHTS_": make_nested_group_info(
+                ["DATABASE_NAME", "DATABASES"],
+                [{"name": "dashboard", "user": "dashboard"}]
+            ),
+            "ANALYTICS_API_": make_nested_group_info(
+                ["DEFAULT_DB_NAME", "REPORTS_DB_NAME", "DATABASES"],
+                [{"name": "analytics_api", "user": "api"}, {"id": "reports", "name": "reports", "user": "reports"}]
+            ),
+        }
+        for group_prefix, group_info in var_groups.items():
+            values = group_info["values"]
+            if "vars" in group_info:
+                self.check_vars(instance, db_vars, group_prefix, var_names=group_info["vars"], values=values)
+            else:
+                self.check_vars(instance, db_vars, group_prefix, values=values)
 
     @patch_services
     @override_settings(INSTANCE_MYSQL_URL_OBJ=None)
