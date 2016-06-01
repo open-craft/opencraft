@@ -75,6 +75,7 @@ LOCAL_APPS = (
     'pr_watch',
     'userprofile',
     'registration',
+    'backup_swift'
 )
 
 INSTALLED_APPS = (
@@ -257,11 +258,13 @@ BACKUP_SWIFT_ENABLED = env.bool('BACKUP_SWIFT_ENABLED', default=False)
 
 if BACKUP_SWIFT_ENABLED:
 
-    BACKUP_SWIFT_TARGET = env('BACKUP_SWIFT_TARGET', '/var/www/opencraft/swift-data-backup')
-    BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env('BACKUP_SWIFT_TARSNAP_KEY_LOCATION', '/var/www/opencraft/tarsnap.key')
-    BACKUP_SWIFT_TARSNAP_CACHE_LOCATION = env('BACKUP_SWIFT_TARSNAP_KEY_LOCATION', '/var/cache/tarsnap')
+    BACKUP_SWIFT_TARGET = env('BACKUP_SWIFT_TARGET', default='/var/cache/swift-data-backup')
+    BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env(
+        'BACKUP_SWIFT_TARSNAP_KEY_LOCATION', default='/var/www/opencraft/tarsnap.key')
+    BACKUP_SWIFT_TARSNAP_CACHE_LOCATION = env('BACKUP_SWIFT_TARSNAP_CACHE_LOCATION', default='/var/cache/tarsnap')
     # Current date will be appended to the archive name:
-    BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', 'im-swift-backup')
+    BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
+    BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
 # DNS (Gandi) #################################################################
 

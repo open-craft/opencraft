@@ -138,11 +138,11 @@ def swift_service(
 
     return SwiftService(options=dict(
         auth_version='2',
-        user=user,
-        key=password,
-        tenant_name=tenant,
-        authurl=auth_url,
-        os_options=dict(region_name=region),
+        os_username=user,
+        os_password=password,
+        os_tenant_name=tenant,
+        os_auth_url=auth_url,
+        os_region_name=region,
     ))
 
 
@@ -154,7 +154,7 @@ def download_swift_account(download_target, **kwargs):
              containers backed up successfully.
     """
 
-    errors = defaultdict(default_factory= lambda: 0)
+    errors = defaultdict(lambda: 0)
 
     with swift_service(**kwargs) as service:
         downloader = service.download(options={
@@ -163,6 +163,7 @@ def download_swift_account(download_target, **kwargs):
             'out_directory': download_target  # Set folder where to download
         })
         for file_download_result in downloader:
+            print(file_download_result)
             if not file_download_result['success']:
                 errors[file_download_result['container']]+=1
 
