@@ -452,3 +452,13 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
 BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.com')
 BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
+
+
+# Monitoring ##################################################################
+
+# Set this to a new relic license key to enable instance monitoring
+NEWRELIC_LICENSE_KEY = env('NEWRELIC_LICENSE_KEY', default=None)
+
+# A new relic admin user's API key, used to set up availability monitoring
+# with Synthetics
+NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)

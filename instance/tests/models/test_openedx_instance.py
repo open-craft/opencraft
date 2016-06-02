@@ -191,6 +191,23 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
 
+    @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
+    @patch_services
+    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    def test_newrelic_configuration(self, mocks, mock_provision):
+        """
+        Check that newrelic ansible vars are set correctly
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.newrelic', use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], True)
+        self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC_APP'], True)
+        self.assertEqual(configuration_vars['COMMON_ENVIRONMENT'], 'opencraft')
+        self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], 'test.newrelic')
+        self.assertEqual(configuration_vars['NEWRELIC_LICENSE_KEY'], 'newrelic-key')
+
     @patch_services
     def test_set_appserver_active(self, mocks):
         """

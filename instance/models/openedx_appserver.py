@@ -207,6 +207,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             # This property is needed twice in the template.  To avoid evaluating it twice (and
             # querying the Github API twice), we pass it as a context variable.
             'github_admin_username_list': self.github_admin_username_list,
+            'newrelic_license_key': settings.NEWRELIC_LICENSE_KEY,
         })
         for attr_name in self.CONFIGURATION_EXTRA_FIELDS:
             additional_vars = getattr(self, attr_name)
