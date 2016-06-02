@@ -68,9 +68,8 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'protocol',
             'use_ephemeral_databases',
             'github_admin_organization_name',
-            'sub_domain',
-            'base_domain',
             'active_appserver',
+            'internal_lms_domain',
             'url',
             'studio_url',
 

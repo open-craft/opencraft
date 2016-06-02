@@ -71,9 +71,9 @@
         <tr><td>Modified</td><td>{{ instance.modified | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
         <tr><td>Type</td><td>{{ instance.instance_type }}</td></tr>
         <!-- The following are all specific to Open edX instances: -->
-        <tr><td>Domain</td><td>{{ instance.domain}}<br>Sub domain: {{ instance.sub_domain}}, base domain: {{ instance.base_domain }}</td></tr>
         <tr><td>LMS URL</td><td><a href="{{ instance.url}}">{{ instance.url}}</a></td></tr>
         <tr><td>Studio URL</td><td><a href="{{ instance.studio_url}}">{{ instance.studio_url}}</a></td></tr>
+        <tr><td>Internal domain</td><td>{{ instance.internal_lms_domain }}</td></tr>
         <tr><td>Email</td><td>{{ instance.email }}</td></tr>
         <tr><td>Protocol</td><td>{{ instance.protocol }}</td></tr>
         <tr><td>Use ephemeral databases</td><td>{{ instance.use_ephemeral_databases }}</td></tr>

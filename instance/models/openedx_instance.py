@@ -57,6 +57,16 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
     sub_domain = models.CharField(max_length=50)
     base_domain = models.CharField(max_length=50, blank=True)
 
+    # Internal domains are controlled by us and their DNS records are automatically set to point to
+    # the current active appserver.
+    # External domains on the other hand are controlled by the customer and are optional.
+    # Wee use external domains when displaying links in the UI, and we use them in ansible vars when
+    # provisioning appservers.
+    # When external domain setting is not blank, we fallback to the corresponding internal domain.
+    external_lms_domain = models.CharField(max_length=100, blank=True)
+    external_lms_preview_domain = models.CharField(max_length=100, blank=True)
+    external_studio_domain = models.CharField(max_length=100, blank=True)
+
     active_appserver = models.OneToOneField(
         OpenEdXAppServer, null=True, blank=True, on_delete=models.SET_NULL, related_name='+',
     )
@@ -69,58 +79,80 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         return "{} ({})".format(self.name, self.domain)
 
     @property
-    def domain(self):
+    def internal_lms_domain(self):
         """
-        Instance domain name
+        Instance internal LMS domain name (eg. 'master.sandbox.opencraft.com').
         """
         return '{0.sub_domain}.{0.base_domain}'.format(self)
 
     @property
-    def url(self):
+    def internal_lms_preview_domain(self):
         """
-        LMS URL
+        Instance internal LMS preview domain name (eg. 'preview-master.sandbox.opencraft.com').
         """
-        return u'{0.protocol}://{0.domain}/'.format(self)
+        return 'preview-{0.sub_domain}.{0.base_domain}'.format(self)
 
     @property
-    def studio_sub_domain(self):
+    def internal_studio_domain(self):
         """
-        Studio sub-domain name (eg. 'studio-master')
+        Instance internal Studio domain name (eg. 'studio-master.sandbox.opencraft.com').
         """
-        return 'studio-{}'.format(self.sub_domain)
+        return 'studio-{0.sub_domain}.{0.base_domain}'.format(self)
 
     @property
-    def studio_domain(self):
+    def domain(self):
         """
-        Studio full domain name (eg. 'studio-master.sandbox.opencraft.com')
-        """
-        return '{0.studio_sub_domain}.{0.base_domain}'.format(self)
+        LMS domain name.
 
-    @property
-    def studio_url(self):
+        Returns external domain if present, otherwise falls back to internal domain.
         """
-        Studio URL
-        """
-        return u'{0.protocol}://{0.studio_domain}/'.format(self)
-
-    @property
-    def lms_preview_sub_domain(self):
-        """
-        LMS preview sub-domain name (eg. 'preview-master')
-        """
-        return 'preview-{}'.format(self.sub_domain)
+        if self.external_lms_domain:
+            return self.external_lms_domain
+        else:
+            return self.internal_lms_domain
 
     @property
     def lms_preview_domain(self):
         """
-        LMS preview full domain name (eg. 'preview-master.sandbox.opencraft.com')
+        LMS preview domain name.
+
+        Returns external preview domain if present, otherwise falls back to internal preview domain.
         """
-        return '{0.lms_preview_sub_domain}.{0.base_domain}'.format(self)
+        if self.external_lms_preview_domain:
+            return self.external_lms_preview_domain
+        else:
+            return self.internal_lms_preview_domain
+
+    @property
+    def studio_domain(self):
+        """
+        Studio domain name.
+
+        Returns external studio domain if present, otherwise falls back to internal studio domain.
+        """
+        if self.external_studio_domain:
+            return self.external_studio_domain
+        else:
+            return self.internal_studio_domain
+
+    @property
+    def url(self):
+        """
+        LMS URL.
+        """
+        return u'{0.protocol}://{0.domain}/'.format(self)
+
+    @property
+    def studio_url(self):
+        """
+        Studio URL.
+        """
+        return u'{0.protocol}://{0.studio_domain}/'.format(self)
 
     @property
     def lms_preview_url(self):
         """
-        LMS preview URL
+        LMS preview URL.
         """
         return u'{0.protocol}://{0.lms_preview_domain}/'.format(self)
 
@@ -129,7 +161,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         """
         The database name used for external databases/storages, if any.
         """
-        name = self.domain.replace('.', '_')
+        name = self.internal_lms_domain.replace('.', '_')
         # Escape all non-ascii characters and truncate to 50 chars.
         # The maximum length for the name of a MySQL database is 64 characters.
         # But since we add suffixes to database_name to generate unique database names
@@ -202,22 +234,22 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
         public_ip = app_server.server.public_ip
 
-        self.logger.info('Updating DNS: LMS at %s...', self.domain)
-        lms_domain = tldextract(self.domain)
+        self.logger.info('Updating DNS: LMS at %s...', self.internal_lms_domain)
+        lms_domain = tldextract(self.internal_lms_domain)
         gandi.set_dns_record(
             lms_domain.registered_domain,
             type='A', name=lms_domain.subdomain, value=public_ip
         )
 
-        self.logger.info('Updating DNS: LMS preview at %s...', self.lms_preview_domain)
-        lms_preview_domain = tldextract(self.lms_preview_domain)
+        self.logger.info('Updating DNS: LMS preview at %s...', self.internal_lms_preview_domain)
+        lms_preview_domain = tldextract(self.internal_lms_preview_domain)
         gandi.set_dns_record(
             lms_preview_domain.registered_domain,
             type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain
         )
 
-        self.logger.info('Updating DNS: Studio at %s...', self.studio_domain)
-        studio_domain = tldextract(self.studio_domain)
+        self.logger.info('Updating DNS: Studio at %s...', self.internal_studio_domain)
+        studio_domain = tldextract(self.internal_studio_domain)
         gandi.set_dns_record(
             studio_domain.registered_domain,
             type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain
