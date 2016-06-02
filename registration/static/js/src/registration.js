@@ -47,15 +47,15 @@ app.config(function($httpProvider) {
 
 app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope, $http, djangoForm) {
 
+    // Reference to this controller.
+    var reg = this;
+
     // These fields will be validated on the server via ajax:
     // - Unique checks can only be done on the server.
-    // - Password strength is validated on the server as the python and js
-    //   versions of zxcvbn do not always give the same result.
     var serverValidationFields = [
         'subdomain',
         'username',
         'email',
-        'password',
         'password_confirmation'
     ];
 
@@ -64,6 +64,67 @@ app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope
         return _.keys($scope.form).filter(function(key) {
             return !/^\$/.test(key);
         });
+    };
+
+    // Returns current password or undefined:
+    // If an existing user accesses the registration form, password fields are not displayed.
+    var getPassword = function() {
+        var passwordField = $scope.form.password;
+        if (passwordField) {
+            return passwordField.$viewValue;
+        }
+        return '';
+    };
+
+    // Returns the result of validating current password using zxcvbn.
+    var validatePassword = function() {
+        var password = getPassword();
+        if (password) {
+            var result = zxcvbn(password);
+            // Update password strength field
+            document.getElementById('id_password_strength').value = result.score;
+            return result;
+        }
+        return {};
+    };
+
+    // Returns list of suggestions extracted from password validation result.
+    var compileSuggestions = function(validationResult) {
+        var suggestions = validationResult.feedback.suggestions,
+            warning = validationResult.feedback.warning;
+        if (warning) {
+            suggestions.push(warning);
+        }
+        if (_.isEmpty(suggestions)) {
+            // zxcvbn did not produce any feedback for current password,
+            // so fall back on generic error message
+            suggestions.push(
+                'Please use a stronger password: avoid common patterns ' +
+                    'and make it long enough to be difficult to crack.'
+            );
+        }
+        return suggestions;
+    };
+
+    // Makes sure each suggestion ends with period.
+    var formatSuggestions = function(suggestions) {
+        return _.map(suggestions, function(suggestion) {
+            if (!suggestion.endsWith('.')) {
+                return suggestion + '.';
+            }
+            return suggestion;
+        });
+    };
+
+    // Returns feedback from password validation.
+    reg.getValidationFeedback = function() {
+        var validationResult = validatePassword();
+        if (validationResult && validationResult.score < 2) {
+            var suggestions = formatSuggestions(compileSuggestions(validationResult));
+            // Concatenate suggestions to ensure that all of them are displayed
+            return [suggestions.join(" ")];
+        }
+        return [];
     };
 
     // Display the given error messages. Due to bugs in django-angular, we must
@@ -80,12 +141,23 @@ app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope
         djangoForm.setErrors($scope.form, errors);
     };
 
+    // Validate password strength
+    $scope.$watch('registration.password', function() {
+        var validationFeedback = reg.getValidationFeedback();
+        if (validationFeedback) {
+            displayErrors({ password: validationFeedback });
+        }
+    });
+
     // Validate the registration form on the server.
     $scope.validate = function() {
         var params = {};
         getFormFields().forEach(function(key) {
             params[key] = $scope.form[key].$viewValue;
         });
+        // Ensure that server doesn't validate password strength;
+        // it should only do this when user submits the form.
+        delete params.password_strength;
         var request = $http.get('/api/v1/registration/register/validate/', {
             params: params
         });

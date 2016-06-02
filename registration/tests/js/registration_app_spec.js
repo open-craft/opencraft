@@ -22,7 +22,8 @@
 describe('RegistrationApp', function() {
     var $scope,
         httpBackend,
-        errors;
+        errors,
+        controller;
 
     beforeEach(function() {
         angular.mock.module('RegistrationApp');
@@ -35,7 +36,7 @@ describe('RegistrationApp', function() {
             $scope.registration = {};
             httpBackend = $httpBackend;
             errors = {};
-            $controller('Registration', {
+            controller = $controller('Registration as reg', {
                 $scope: $scope,
                 djangoForm: {
                     setErrors: function(form, err) {
@@ -74,7 +75,18 @@ describe('RegistrationApp', function() {
             }, 501);
         });
 
-        ['subdomain', 'username', 'email', 'password', 'password_confirmation'].forEach(function(field) {
+        it('triggers client-side validation when password field changes', function(done) {
+            spyOn($scope.reg, 'getValidationFeedback');
+            $scope.registration.password = 'changed';
+            $scope.form.password = {$dirty: true};
+            $scope.$digest();
+            setTimeout(function() {
+                expect($scope.reg.getValidationFeedback).toHaveBeenCalled();
+                done();
+            }, 501);
+        });
+
+        ['subdomain', 'username', 'email', 'password_confirmation'].forEach(function(field) {
             it('triggers server-side validation when ' + field + ' changes', function(done) {
                 spyOn($scope, 'validate');
                 $scope.registration[field] = 'changed';

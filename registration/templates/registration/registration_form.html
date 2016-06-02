@@ -35,6 +35,9 @@
             {% include row with field=form.accept_terms %}
             {% include row with field=form.subscribe_to_updates %}
         {% endwith %}
+        {% with field=form.password_strength %}
+            {{ field }}
+        {% endwith %}
         <div class="page-content__wrapper__stroke hidden-xs"></div>
     </div>
 
