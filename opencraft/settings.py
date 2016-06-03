@@ -270,6 +270,8 @@ if BACKUP_SWIFT_ENABLED:
 
 # Instances will be created as subdomains of this domain by default
 DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
+DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='studio-')
+DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', default='preview-')
 
 # See https://www.gandi.net/admin/api_key
 GANDI_API_KEY = env('GANDI_API_KEY')

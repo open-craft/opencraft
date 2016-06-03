@@ -28,7 +28,7 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 
-from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
 from pr_watch import github
 from pr_watch.github import fork_name2tuple
 from pr_watch.logger_adapter import WatchedPullRequestLoggerAdapter
@@ -218,8 +218,7 @@ class WatchedPullRequest(models.Model):
         assert self.branch_name == pr.branch_name
         # Create an instance if necessary:
         instance = self.instance or OpenEdXInstance()
-        instance.sub_domain = 'pr{number}.sandbox'.format(number=pr.number)
-        instance.base_domain = settings.DEFAULT_INSTANCE_BASE_DOMAIN
+        instance.internal_lms_domain = generate_internal_lms_domain('pr{number}.sandbox'.format(number=pr.number))
         instance.edx_platform_repository_url = self.repository_url
         instance.edx_platform_commit = self.get_branch_tip()
         instance.name = (

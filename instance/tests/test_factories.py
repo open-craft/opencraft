@@ -66,7 +66,9 @@ class FactoriesTestCase(TestCase):
         """
         Assert that field values of `instance` match expected values
         """
-        self.assertEqual(instance.sub_domain, sub_domain)
+        self.assertEqual(instance.internal_lms_domain, '{}.example.com'.format(sub_domain))
+        self.assertEqual(instance.internal_lms_preview_domain, 'preview-{}.example.com'.format(sub_domain))
+        self.assertEqual(instance.internal_studio_domain, 'studio-{}.example.com'.format(sub_domain))
         self.assertEqual(instance.use_ephemeral_databases, use_ephemeral_databases)
         self.assertEqual(instance.configuration_version, configuration_version)
         self.assertEqual(instance.openedx_release, openedx_release)

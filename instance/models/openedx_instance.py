@@ -43,6 +43,16 @@ gandi = GandiAPI()
 tldextract = TLDExtract(suffix_list_urls=None)
 
 
+# Functions ###################################################################
+
+def generate_internal_lms_domain(sub_domain):
+    """
+    Generates value for internal_lms_domain field from the supplied sub_domain and the
+    DEFAULT_INSTANCE_BASE_DOMAIN setting.
+    """
+    return '{}.{}'.format(sub_domain, settings.DEFAULT_INSTANCE_BASE_DOMAIN)
+
+
 # Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
@@ -54,15 +64,21 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
     """
 
     # Most settings/fields are inherited from OpenEdXAppConfiguration
-    sub_domain = models.CharField(max_length=50)
-    base_domain = models.CharField(max_length=50, blank=True)
 
-    # Internal domains are controlled by us and their DNS records are automatically set to point to
-    # the current active appserver.
-    # External domains on the other hand are controlled by the customer and are optional.
-    # Wee use external domains when displaying links in the UI, and we use them in ansible vars when
-    # provisioning appservers.
-    # When external domain setting is not blank, we fallback to the corresponding internal domain.
+    # Internal domains are controlled by us and their DNS records are automatically set to point to the current active
+    # appserver. They are generated from a unique prefix (given as 'sub_domain' in instance factories) and the value of
+    # DEFAULT_INSTANCE_BASE_DOMAIN at instance creation time. They cannot be blank and are normally never changed after
+    # the instance is created.
+    # External domains on the other hand are controlled by the customer and are optional. We use external domains in
+    # preference to internal domains when displaying links to the instance in the UI and when passing domain-related
+    # settings to Ansible vars when provisioning appservers.
+    # The `domain`, `lms_preview_domain`, and `studio_domain` properties below are useful if you need to access
+    # corresponding domains regardless of whether an instance uses external domains or not (they return the external
+    # domain if set, and fall back to the corresponding internal domain otherwise).
+    internal_lms_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_lms_preview_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_studio_domain = models.CharField(max_length=100, blank=False, unique=True)
+
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
@@ -72,32 +88,26 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
     )
 
     class Meta:
-        unique_together = ('base_domain', 'sub_domain')
         verbose_name = 'Open edX Instance'
+
+    def __init__(self, *args, **kwargs):
+        """
+        OpenEdXInstance constructor.
+
+        The constructor is overridden to optionally accept a 'sub_domain' parameter instead of a full
+        value for 'internal_lms_domain'. When 'sub_domain' is provided, the 'internal_lms_domain' field is automatically
+        generated from from the value of 'sub_domain' and the DEFAULT_INSTANCE_BASE_DOMAIN setting.
+        """
+        if 'sub_domain' in kwargs:
+            # Copy kwargs so we can mutate them.
+            kwargs = kwargs.copy()
+            sub_domain = kwargs.pop('sub_domain')
+            if 'internal_lms_domain' not in kwargs:
+                kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         return "{} ({})".format(self.name, self.domain)
-
-    @property
-    def internal_lms_domain(self):
-        """
-        Instance internal LMS domain name (eg. 'master.sandbox.opencraft.com').
-        """
-        return '{0.sub_domain}.{0.base_domain}'.format(self)
-
-    @property
-    def internal_lms_preview_domain(self):
-        """
-        Instance internal LMS preview domain name (eg. 'preview-master.sandbox.opencraft.com').
-        """
-        return 'preview-{0.sub_domain}.{0.base_domain}'.format(self)
-
-    @property
-    def internal_studio_domain(self):
-        """
-        Instance internal Studio domain name (eg. 'studio-master.sandbox.opencraft.com').
-        """
-        return 'studio-{0.sub_domain}.{0.base_domain}'.format(self)
 
     @property
     def domain(self):
@@ -201,8 +211,10 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         """
         # Set default field values from settings - using the `default` field attribute confuses
         # automatically generated migrations, generating a new one when settings don't match
-        if not self.base_domain:
-            self.base_domain = settings.DEFAULT_INSTANCE_BASE_DOMAIN
+        if not self.internal_lms_preview_domain:
+            self.internal_lms_preview_domain = settings.DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX + self.internal_lms_domain
+        if not self.internal_studio_domain:
+            self.internal_studio_domain = settings.DEFAULT_STUDIO_DOMAIN_PREFIX + self.internal_lms_domain
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)

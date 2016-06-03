@@ -141,9 +141,8 @@ class OpenEdXInstanceTestCase(TestCase):
         Domain and URL attributes
         """
         instance = OpenEdXInstanceFactory(
-            base_domain='example.org', sub_domain='sample', name='Sample Instance'
+            internal_lms_domain='sample.example.org', name='Sample Instance'
         )
-        # Internal domains are constructed from sub_domain and base_domain.
         internal_lms_domain = 'sample.example.org'
         internal_lms_preview_domain = 'preview-sample.example.org'
         internal_studio_domain = 'studio-sample.example.org'
@@ -238,7 +237,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], True)
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC_APP'], True)
         self.assertEqual(configuration_vars['COMMON_ENVIRONMENT'], 'opencraft')
-        self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], 'test.newrelic')
+        self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], instance.internal_lms_domain)
         self.assertEqual(configuration_vars['NEWRELIC_LICENSE_KEY'], 'newrelic-key')
 
     @patch_services
@@ -268,8 +267,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test set_appserver_active()
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
-                                          base_domain='opencraft.com',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.com',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
@@ -286,8 +284,7 @@ class OpenEdXInstanceTestCase(TestCase):
         Test set_appserver_active() with custom external domains.
         Ensure that the DNS records are only created for the internal domains.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
-                                          base_domain='opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.hosting',
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
@@ -308,8 +305,7 @@ class OpenEdXInstanceTestCase(TestCase):
         subdomain. Ensure that the dns records include the part of the subdomain
         in the base domain of the instance.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
-                                          base_domain='stage.opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.stage.opencraft.hosting',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
