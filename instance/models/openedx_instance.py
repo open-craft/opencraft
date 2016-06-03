@@ -272,4 +272,5 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
                 configuration_storage_settings=self.get_storage_settings(),
                 **instance_config
             )
+            app_server.add_lms_users(self.lms_users.all())
         return app_server

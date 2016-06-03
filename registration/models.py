@@ -40,10 +40,10 @@ def validate_available_subdomain(subdomain):
     Check that the given subdomain is not already used by an existing
     instance.
     """
-    if OpenEdXInstance.objects.filter(sub_domain=subdomain).exists():
+    if subdomain in settings.SUBDOMAIN_BLACKLIST:
         raise ValidationError(
-            message='This domain is already taken.',
-            code='unique',
+            message='This domain name is not publicly available.',
+            code='blacklisted',
         )
 
 
@@ -71,6 +71,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'have the possibility to use your own domain name.'
                    '\n\nExample: hogwarts.{0}').format(BASE_DOMAIN),
         validators=[
+            validators.MinLengthValidator(
+                3,
+                'The subdomain name must at least have 3 characters.',
+            ),
             validators.RegexValidator(
                 r'^[\w.-]+$',
                 "Please include only letters, numbers, '_', '-' and '.'",
@@ -79,6 +83,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         ],
         error_messages={
             'unique': 'This domain is already taken.',
+            'blacklisted': 'This domain name is not publicly available.',
         },
     )
     instance_name = models.CharField(
@@ -109,6 +114,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         choices=STATUS_CHOICES,
         default=PENDING,
     )
+    instance = models.ForeignKey(
+        OpenEdXInstance,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.domain
@@ -130,3 +141,19 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             email__in=email_addresses
         )
         return verified.count() == len(email_addresses)
+
+    def clean(self):
+        """
+        Verify that the subdomain has already been taken by any running instance.
+
+        We can't do this in a regular validator, since we have to allow the subdomain of the
+        instance associated with this application.
+        """
+        if self.instance is not None and self.subdomain == self.instance.sub_domain:
+            return
+        if OpenEdXInstance.objects.filter(sub_domain=self.subdomain).exists():
+            subdomain_error = ValidationError(
+                message='This domain is already taken.',
+                code='unique',
+            )
+            raise ValidationError({'subdomain': [subdomain_error]})

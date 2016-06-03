@@ -16,6 +16,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""App for the user registration."""
+"""Application config for the registration app."""
 
-default_app_config = 'registration.apps.RegistrationAppConfig'
+from django.apps import AppConfig
+
+
+class RegistrationAppConfig(AppConfig):
+    """Application config for the registration app."""
+    name = 'registration'
+
+    def ready(self):
+        # Connect signal handler for automatic provisioning
+        from . import provision

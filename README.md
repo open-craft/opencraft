@@ -184,6 +184,10 @@ flavor:
   process. Use in development only (default: False)
 * `LOGGING_ROTATE_MAX_KBYTES`: The max size of each log file (in KB, default: 10MB)
 * `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
+* `SUBDOMAIN_BLACKLIST`: A comma-separated list of subdomains that are to be
+  rejected when registering new instances
+* `BETATEST_EMAIL_SENDER`: Sender of the emails related to the beta test
+* `BETATEST_EMAIL_SIGNATURE`: The email signature to be used for beta test emails
 
 ### OpenStack credentials
 
