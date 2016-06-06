@@ -312,6 +312,16 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEF
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
 OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='named-release/dogwood.rc')
 
+# The edx-platform repository used by default for production instances
+STABLE_EDX_PLATFORM_REPO_URL = env(
+    'STABLE_EDX_PLATFORM_REPO_URL', default='https://github.com/{}.git'.format(DEFAULT_FORK)
+)
+
+# The configuration repository used by default for production instances
+STABLE_CONFIGURATION_REPO_URL = env(
+    'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
+)
+
 # Ansible #####################################################################
 
 # Ansible requires a Python 2 interpreter

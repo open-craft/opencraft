@@ -115,6 +115,8 @@ def production_instance_factory(**kwargs):
     extra_settings = ansible.yaml_merge(production_settings, configuration_extra_settings)
     instance_kwargs = dict(
         use_ephemeral_databases=False,
+        edx_platform_repository_url=settings.STABLE_EDX_PLATFORM_REPO_URL,
+        configuration_source_repo_url=settings.STABLE_CONFIGURATION_REPO_URL,
         configuration_version=settings.OPENEDX_RELEASE_STABLE_REF,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
