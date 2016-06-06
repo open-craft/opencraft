@@ -1,5 +1,5 @@
 appdirs==1.4.0
-astroid==1.4.5
+astroid==1.4.6
 Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
