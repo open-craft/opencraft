@@ -75,6 +75,7 @@ LOCAL_APPS = (
     'pr_watch',
     'userprofile',
     'registration',
+    'backup_swift'
 )
 
 INSTALLED_APPS = (
@@ -253,6 +254,17 @@ SWIFT_OPENSTACK_TENANT = env('SWIFT_OPENSTACK_TENANT', default=OPENSTACK_TENANT)
 SWIFT_OPENSTACK_AUTH_URL = env('SWIFT_OPENSTACK_AUTH_URL', default=OPENSTACK_AUTH_URL)
 SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
 
+BACKUP_SWIFT_ENABLED = env.bool('BACKUP_SWIFT_ENABLED', default=False)
+
+if BACKUP_SWIFT_ENABLED:
+
+    BACKUP_SWIFT_TARGET = env('BACKUP_SWIFT_TARGET', default='/var/cache/swift-data-backup')
+    BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env(
+        'BACKUP_SWIFT_TARSNAP_KEY_LOCATION', default='/var/www/opencraft/tarsnap.key')
+    BACKUP_SWIFT_TARSNAP_CACHE_LOCATION = env('BACKUP_SWIFT_TARSNAP_CACHE_LOCATION', default='/var/cache/tarsnap')
+    # Current date will be appended to the archive name:
+    BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
+    BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
 # DNS (Gandi) #################################################################
 
@@ -387,6 +399,11 @@ LOGGING = {
             'handlers': HANDLERS,
             'propagate': False,
             'level': 'DEBUG',
+        },
+        'requests.packages.urllib3': {
+            'handlers': HANDLERS,
+            'propagate': False,
+            'level': 'WARNING',
         }
     }
 }

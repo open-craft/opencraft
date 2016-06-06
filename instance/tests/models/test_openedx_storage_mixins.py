@@ -83,12 +83,11 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(instance.get_storage_settings(), '')
 
 
-@patch('instance.openstack.SwiftConnection')
 class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
     """
-    def check_swift(self, instance, mock_swift_connection):
+    def check_swift(self, instance, create_swift_container):
         """
         Verify Swift settings on the instance and the number of calls to the Swift API.
         """
@@ -98,33 +97,47 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
         self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
+
+        def make_call(container_name):
+            """A helper method to prepare mock.call."""
+            return call(
+                container_name,
+                user=instance.swift_openstack_user,
+                password=instance.swift_openstack_password,
+                tenant=instance.swift_openstack_tenant,
+                auth_url=instance.swift_openstack_auth_url,
+                region=instance.swift_openstack_region,
+            )
+
         self.assertCountEqual(
-            [call(c, headers={'X-Container-Read': '.r:*'}) for c in instance.swift_container_names],
-            mock_swift_connection.return_value.put_container.call_args_list,
+            [make_call(container) for container in instance.swift_container_names],
+            create_swift_container.call_args_list,
         )
 
-    def test_provision_swift(self, mock_swift_connection):
+    @patch('instance.openstack.create_swift_container')
+    def test_provision_swift(self, create_swift_container):
         """
         Test provisioning Swift containers, and that they are provisioned only once.
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.provision_swift()
-        self.check_swift(instance, mock_swift_connection)
+        self.check_swift(instance, create_swift_container)
 
         # Provision again without resetting the mock.  The assertCountEqual assertion will verify
         # that the container isn't provisioned again.
         instance.provision_swift()
-        self.check_swift(instance, mock_swift_connection)
+        self.check_swift(instance, create_swift_container)
 
+    @patch('instance.openstack.create_swift_container')
     @override_settings(SWIFT_ENABLE=False)
-    def test_swift_disabled(self, mock_swift_connection):
+    def test_swift_disabled(self, create_swift_container):
         """
         Verify disabling Swift provisioning works.
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         instance.provision_swift()
         self.assertIs(instance.swift_provisioned, False)
-        self.assertFalse(mock_swift_connection.called)
+        self.assertFalse(create_swift_container.called)
 
     def check_ansible_settings(self, appserver, expected=True):
         """
@@ -144,7 +157,7 @@ class SwiftContainerInstanceTestCase(TestCase):
             else:
                 self.assertNotIn(ansible_var, ansible_vars)
 
-    def test_ansible_settings_swift(self, mock_swift_connection):
+    def test_ansible_settings_swift(self):
         """
         Verify Swift Ansible configuration when Swift is enabled.
         """
@@ -153,7 +166,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.check_ansible_settings(appserver)
 
     @override_settings(SWIFT_ENABLE=False)
-    def test_ansible_settings_swift_disabled(self, mock_swift_connection):
+    def test_ansible_settings_swift_disabled(self):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
         """
@@ -161,7 +174,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver, expected=False)
 
-    def test_ansible_settings_swift_ephemeral(self, mock_swift_connection):
+    def test_ansible_settings_swift_ephemeral(self):
         """
         Verify Swift Ansible configuration is not included when using ephemeral databases.
         """

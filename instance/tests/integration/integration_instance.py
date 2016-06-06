@@ -32,7 +32,7 @@ from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import Status as ServerStatus
-from instance.openstack import get_swift_connection
+from instance.openstack import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
@@ -78,9 +78,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         if not settings.SWIFT_ENABLE:
             return
-        connection = get_swift_connection()
-        header = connection.head_container(instance.swift_container_name)
-        self.assertEqual(header['x-container-read'], '.r:*')
+
+        stat_result = stat_container(instance.swift_container_name)
+        self.assertEqual(stat_result.read_acl, '.r:*')
 
     @shard(1)
     def test_spawn_appserver(self):

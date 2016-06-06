@@ -21,23 +21,27 @@ OpenStack - Helper functions
 """
 
 # Imports #####################################################################
-
 import logging
+from collections import namedtuple, defaultdict
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
 import requests
-from swiftclient.client import Connection as SwiftConnection
+from swiftclient.service import SwiftService
 
 from instance.utils import get_requests_retry
-
 
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
 
+# Data objects ################################################################
+
+FailedContainer = namedtuple('FailedContainer', ['name', 'number_of_failures'])
+StatContainer = namedtuple('StatContainer', ['read_acl', 'write_acl', 'bytes'])
 
 # Functions ###################################################################
+
 
 def get_nova_client(api_version=2):
     """
@@ -99,22 +103,71 @@ def get_server_public_address(server):
     return first_address
 
 
-def get_swift_connection(
+def swift_service(
         user=settings.SWIFT_OPENSTACK_USER,
         password=settings.SWIFT_OPENSTACK_PASSWORD,
         tenant=settings.SWIFT_OPENSTACK_TENANT,
         auth_url=settings.SWIFT_OPENSTACK_AUTH_URL,
         region=settings.SWIFT_OPENSTACK_REGION):
     """
-    Create a new Swift client connection.
+    Creates a swift service.
     """
-    return SwiftConnection(
+
+    return SwiftService(options=dict(
         auth_version='2',
-        user=user,
-        key=password,
-        tenant_name=tenant,
-        authurl=auth_url,
-        os_options=dict(region_name=region),
+        os_username=user,
+        os_password=password,
+        os_tenant_name=tenant,
+        os_auth_url=auth_url,
+        os_region_name=region,
+    ))
+
+
+def stat_container(container_name, **kwargs):
+    """
+    Stat a container.
+    :param str container_name:  name of the container
+    :param dict kwargs: passed to swift_service
+    :rtype: StatContainer
+    """
+    with swift_service(**kwargs) as service:
+        stat_result = service.stat(container_name)
+        stat_response = dict(stat_result['items'])
+        return StatContainer(
+            read_acl=stat_response['Read ACL'],
+            write_acl=stat_response['Write ACL'],
+            bytes=stat_response['Bytes']
+        )
+
+
+def download_swift_account(download_target, **kwargs):
+    """
+    :param str download_target: Directory to download to
+    :param dict kwargs: Auth parameters passed to `swift_service`.
+    :return: List of FailedContainer objects. If all list is emtpy all
+             containers backed up successfully.
+    """
+
+    errors = defaultdict(lambda: 0)
+
+    with swift_service(**kwargs) as service:
+        downloader = service.download(options={
+            'yes_all': True,  # Download whole account
+            'skip_identical': True,  # Check file checksum locally and if the same don't download,
+            'out_directory': download_target  # Set folder where to download
+        })
+        for file_download_result in downloader:
+            if not file_download_result['success']:
+
+                # For some reason Swift treats file not modified as an error
+                if file_download_result['response_dict']['status'] == 304:
+                    continue
+
+                errors[file_download_result['container']] += 1
+
+    return sorted(
+        FailedContainer(name, number_of_failures)
+        for name, number_of_failures in errors.items()
     )
 
 
@@ -122,16 +175,16 @@ def create_swift_container(container_name, **kwargs):
     """
     Create a Swift container with publicly readable objects (given the URL).
     """
-    connection = get_swift_connection(**kwargs)
-    connection.put_container(
-        container_name,
-        headers={'X-Container-Read': '.r:*'},  # Allow public read access given the URL.
-    )
+    with swift_service(**kwargs) as service:
+        service.post(container_name, options={'read_acl': '.r:*'})
 
 
 def delete_swift_container(container_name, **kwargs):
     """
     Delete a Swift container.
     """
-    connection = get_swift_connection(**kwargs)
-    connection.delete_container(container_name)
+    with swift_service(**kwargs) as service:
+        # Service delete may yield arbitrary large amount of results,
+        # and since it yields we should read all results.
+        for result in service.delete(container_name):  # pylint: disable=unused-variable
+            pass
