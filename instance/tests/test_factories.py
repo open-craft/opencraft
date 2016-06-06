@@ -140,8 +140,10 @@ class FactoriesTestCase(TestCase):
             patched_settings.INSTANCE_MYSQL_URL = None
             patched_settings.INSTANCE_MONGO_URL = None
 
-            # Ensure that validation passes for configuration_version:
+            # Copy required settings over to the mock settings
             patched_settings.OPENEDX_RELEASE_STABLE_REF = settings.OPENEDX_RELEASE_STABLE_REF
+            patched_settings.STABLE_EDX_PLATFORM_REPO_URL = settings.STABLE_EDX_PLATFORM_REPO_URL
+            patched_settings.STABLE_CONFIGURATION_REPO_URL = settings.STABLE_CONFIGURATION_REPO_URL
 
             production_instance_factory(sub_domain="production-instance-doomed")
 
