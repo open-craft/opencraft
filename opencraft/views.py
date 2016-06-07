@@ -17,24 +17,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+OpenCraft views
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.views.generic.base import RedirectView
+from django.core.urlresolvers import reverse
 
-from .decorators import instance_manager_required
+from instance.models.instance import InstanceReference
 
 
 # Views #######################################################################
 
-
-@login_required
-@instance_manager_required(redirect_to='registration:register')
-def index(request):
+class IndexView(RedirectView):
     """
     Index view
     """
-    return render(request, 'instance/index.html', context={})
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        """
+        Redirect instance manager users to the instance list, and anyone else to the registration form
+        """
+        user = self.request.user
+        if InstanceReference.can_manage(user):
+            return reverse('instance:index')
+        else:
+            return reverse('registration:register')

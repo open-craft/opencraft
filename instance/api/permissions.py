@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,24 +17,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Instance views
+Instance API permissions
 """
 
 # Imports #####################################################################
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from rest_framework.permissions import BasePermission
 
-from .decorators import instance_manager_required
-
-
-# Views #######################################################################
+from instance.models.instance import InstanceReference
 
 
-@login_required
-@instance_manager_required(redirect_to='registration:register')
-def index(request):
-    """
-    Index view
-    """
-    return render(request, 'instance/index.html', context={})
+# Permissions #################################################################
+
+class ApiInstanceManagerPermission(BasePermission):
+    """Restricts API access to instance manager users"""
+
+    def has_permission(self, request, view):
+        """Return True if user is an instance manager"""
+        return InstanceReference.can_manage(request.user)

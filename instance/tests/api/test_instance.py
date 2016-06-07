@@ -22,6 +22,7 @@ Views - Tests
 
 # Imports #####################################################################
 
+import ddt
 from rest_framework import status
 
 from instance.tests.api.base import APITestCase
@@ -30,6 +31,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 
 # Tests #######################################################################
 
+@ddt.ddt
 class InstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls
@@ -45,18 +47,48 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
+    @ddt.data(
+        'user1', 'user2',
+    )
+    def test_get_permission_denied(self, username):
+        """
+        GET - basic and staff users denied access
+        """
+        self.api_client.login(username=username, password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
+
     def test_get_authenticated(self):
         """
-        GET - Authenticated
+        GET - Authenticated - instance manager users allowed access
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
 
         instance = OpenEdXInstanceFactory()
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data[0], instance)
+
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_get_details_permission_denied(self, username, message):
+        """
+        GET - Detailed attributes - anonymous, basic, and staff users denied access
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
+        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
 
     def check_serialized_instance(self, data, instance):
         """
@@ -73,7 +105,7 @@ class InstanceAPITestCase(APITestCase):
         """
         GET - Detailed attributes
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -83,7 +115,7 @@ class InstanceAPITestCase(APITestCase):
         """
         GET - Log entries
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(name="Test!")
         instance.logger.info("info")
         instance.logger.error("error")

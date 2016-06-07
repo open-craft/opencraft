@@ -185,7 +185,7 @@ GRAPPELLI_SWITCH_USER = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissions',
+        'instance.api.permissions.ApiInstanceManagerPermission',
     ],
 }
 

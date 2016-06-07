@@ -22,6 +22,7 @@ Views - Tests
 
 # Imports #####################################################################
 
+import ddt
 from django.conf import settings
 from rest_framework import status
 
@@ -32,15 +33,16 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 
 # Tests #######################################################################
 
+@ddt.ddt
 class OpenEdXInstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls. Checks data that is specific to OpenEdXInstance
     """
     def test_get_authenticated(self):
         """
-        GET - Authenticated
+        GET - Authenticated - instance manager user is allowed access
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.data, [])
 
@@ -57,7 +59,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         """
         GET - Detailed attributes
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(sub_domain='domain.api')
         app_server = make_test_appserver(instance)
         instance.active_appserver = app_server  # Outside of tests, use set_appserver_active() instead
@@ -93,7 +95,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         Test the verbose name set by get_view_name(), which appears when the API is accessed
         in a web browser.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/', HTTP_ACCEPT="text/html")
         self.assertIn("Instance List", str(response.content))
 
