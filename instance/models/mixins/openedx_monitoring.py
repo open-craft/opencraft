@@ -39,7 +39,10 @@ class OpenEdXMonitoringMixin:
         Enable monitoring on this instance.
         """
         if not settings.NEWRELIC_ADMIN_USER_API_KEY:
+            self.logger.warning('Skipping monitoring setup, '
+                                'NEWRELIC_ADMIN_USER_API_KEY not set')
             return
+        self.logger.info('Setting up New Relic Synthetics monitors')
 
         # Delete existing monitors if they don't monitor this instance's
         # public urls
@@ -66,6 +69,7 @@ class OpenEdXMonitoringMixin:
         """
         Disable monitoring on this instance.
         """
+        self.logger.info('Removing New Relic Synthetics monitors')
         for monitor in self.new_relic_availability_monitors.all():
             monitor.delete()
 
