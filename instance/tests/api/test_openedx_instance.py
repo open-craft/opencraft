@@ -36,9 +36,6 @@ class OpenEdXInstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls. Checks data that is specific to OpenEdXInstance
     """
-    # To avoid errors with `response.data` from REST framework's API client
-    #pylint: disable=no-member
-
     def test_get_authenticated(self):
         """
         GET - Authenticated

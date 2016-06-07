@@ -47,8 +47,8 @@ class OpenEdXMonitoringTestCase(TestCase):
         Check that monitoring is enabled when an appserver is activated.
         """
         instance = OpenEdXInstanceFactory()
-        appserver_id = instance.spawn_appserver()  # pylint: disable=no-member
-        instance.set_appserver_active(appserver_id)  # pylint: disable=no-member
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
         self.assertEqual(mock_enable_monitoring.call_count, 1)
 
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -57,7 +57,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         Check that monitoring is disabled when an appserver is deleted.
         """
         instance = OpenEdXInstanceFactory()
-        instance.delete()  # pylint: disable=no-member
+        instance.delete()
         self.assertEqual(mock_disable_monitoring.call_count, 1)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
@@ -71,17 +71,17 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.get_synthetics_monitors.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
         instance = OpenEdXInstanceFactory()
-        instance.enable_monitoring()  # pylint: disable=no-member
+        instance.enable_monitoring()
 
         # Check that the monitors have been created
         mock_newrelic.delete_synthetics_monitor.assert_not_called()
         mock_newrelic.create_synthetics_monitor.assert_has_calls([
-            call(instance.url),  # pylint: disable=no-member
-            call(instance.studio_url),  # pylint: disable=no-member
-            call(instance.lms_preview_url),  # pylint: disable=no-member
+            call(instance.url),
+            call(instance.studio_url),
+            call(instance.lms_preview_url),
         ], any_order=True)
         self.assertCountEqual(
-            instance.new_relic_availability_monitors.values_list('pk', flat=True),  # pylint: disable=no-member
+            instance.new_relic_availability_monitors.values_list('pk', flat=True),
             monitor_ids
         )
 
@@ -100,14 +100,14 @@ class OpenEdXMonitoringTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         existing_monitors = [
-            instance.new_relic_availability_monitors.create(pk=str(uuid4()))  # pylint: disable=no-member
+            instance.new_relic_availability_monitors.create(pk=str(uuid4()))
             for i in range(2)
         ]
         mock_newrelic.get_synthetics_monitors.return_value = [
             # This monitor is fine, keep it
             {
                 'id': existing_monitors[0].pk,
-                'uri': instance.url,  # pylint: disable=no-member
+                'uri': instance.url,
             },
             # This monitor is for an old url, delete it
             {
@@ -117,17 +117,17 @@ class OpenEdXMonitoringTestCase(TestCase):
         ]
         new_ids = [str(uuid4()) for i in range(2)]
         mock_newrelic.create_synthetics_monitor.side_effect = new_ids
-        instance.enable_monitoring()  # pylint: disable=no-member
+        instance.enable_monitoring()
 
         # Check that the old monitor has been deleted and that new monitors
         # have been created
         mock_newrelic.delete_synthetics_monitor.assert_called_once_with(existing_monitors[1].pk)
         mock_newrelic.create_synthetics_monitor.assert_has_calls([
-            call(instance.studio_url),  # pylint: disable=no-member
-            call(instance.lms_preview_url),  # pylint: disable=no-member
+            call(instance.studio_url),
+            call(instance.lms_preview_url),
         ], any_order=True)
         self.assertCountEqual(
-            instance.new_relic_availability_monitors.values_list('pk', flat=True),  # pylint: disable=no-member
+            instance.new_relic_availability_monitors.values_list('pk', flat=True),
             [existing_monitors[0].pk] + new_ids
         )
 
@@ -140,8 +140,8 @@ class OpenEdXMonitoringTestCase(TestCase):
         monitor_ids = [str(uuid4()) for i in range(3)]
         instance = OpenEdXInstanceFactory()
         for monitor_id in monitor_ids:
-            instance.new_relic_availability_monitors.create(pk=monitor_id)  # pylint: disable=no-member
-        instance.disable_monitoring()  # pylint: disable=no-member
+            instance.new_relic_availability_monitors.create(pk=monitor_id)
+        instance.disable_monitoring()
         mock_newrelic.delete_synthetics_monitor.assert_has_calls([
             call(monitor_id) for monitor_id in monitor_ids
         ], any_order=True)

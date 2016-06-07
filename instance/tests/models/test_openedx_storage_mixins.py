@@ -35,8 +35,6 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 
 # Tests #######################################################################
 
-#pylint: disable=no-member
-
 class OpenEdXStorageMixinTestCase(TestCase):
     """
     Tests for OpenEdXStorageMixin

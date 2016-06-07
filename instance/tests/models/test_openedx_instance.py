@@ -43,9 +43,6 @@ from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
-# Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member
-
 @ddt.ddt
 class OpenEdXInstanceTestCase(TestCase):
     """
