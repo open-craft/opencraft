@@ -12,7 +12,7 @@ cookies==2.2.1
 coverage==4.1
 ddt==1.1.0
 debtcollector==1.4.0
-decorator==4.0.9
+decorator==4.0.10
 dj-static==0.0.6
 Django==1.9.7
 git+https://github.com/open-craft/django-angular.git@063aad2e5f3cfbd16d300db8b3fce3dbb053d7ce#egg=django-angular==0.8.3
