@@ -38,9 +38,6 @@ from instance.tests.models.factories.server import OpenStackServerFactory
 
 # Tests #######################################################################
 
-# Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member
-
 class LoggingTestCase(TestCase):
     """
     Test cases for logging

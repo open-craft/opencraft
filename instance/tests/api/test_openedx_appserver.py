@@ -37,9 +37,6 @@ class OpenEdXAppServerAPITestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls
     """
-    # To avoid errors with `response.data` from REST framework's API client
-    #pylint: disable=no-member
-
     def test_get_unauthenticated(self):
         """
         GET - Require to be authenticated

@@ -28,9 +28,10 @@ from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
-from .mixins.openedx_database import OpenEdXDatabaseMixin
-from .mixins.openedx_storage import OpenEdXStorageMixin
 from .instance import Instance
+from .mixins.openedx_database import OpenEdXDatabaseMixin
+from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
+from .mixins.openedx_storage import OpenEdXStorageMixin
 from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 
 # Constants ###################################################################
@@ -45,7 +46,8 @@ tldextract = TLDExtract(suffix_list_urls=None)
 # Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXStorageMixin):
+class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
+                      OpenEdXMonitoringMixin, OpenEdXStorageMixin):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -177,6 +179,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
         """
         Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
         """
+        self.disable_monitoring()
         for appserver in self.appserver_set.all():
             appserver.terminate_vm()
         self.deprovision_mysql()
@@ -222,6 +225,8 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin, O
 
         self.active_appserver = app_server
         self.save()
+
+        self.enable_monitoring()
 
     @log_exception
     def spawn_appserver(self):

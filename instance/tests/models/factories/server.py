@@ -120,8 +120,7 @@ class OpenStackServerFactory(DjangoModelFactory):
         if 'status' in kwargs:
             kwargs['_status'] = kwargs.pop('status').state_id
         if hasattr(cls, '_status') and '_status' not in kwargs:
-            #TODO: why is no-member disabled?
-            kwargs['_status'] = cls._status  # pylint: disable=no-member
+            kwargs['_status'] = cls._status
         return kwargs
 
 

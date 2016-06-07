@@ -78,3 +78,10 @@ COMMON_USER_INFO:{% for github_username in github_admin_username_list %}
 
 # Workers
 EDXAPP_WORKER_DEFAULT_STOPWAITSECS: 1200
+
+# Monitoring
+COMMON_ENABLE_NEWRELIC: {% if newrelic_license_key %}true{% else %}false{% endif %}
+COMMON_ENABLE_NEWRELIC_APP: {% if newrelic_license_key %}true{% else %}false{% endif %}
+COMMON_ENVIRONMENT: opencraft
+COMMON_DEPLOYMENT: '{{ instance.sub_domain }}'
+NEWRELIC_LICENSE_KEY: '{{ newrelic_license_key|default:"" }}'

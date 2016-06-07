@@ -67,7 +67,7 @@ class TasksTestCase(TestCase):
             ),
         )
         pr_url = 'https://github.com/source/repo/pull/234'
-        self.assertEqual(pr.github_pr_url, pr_url)  # pylint: disable=no-member
+        self.assertEqual(pr.github_pr_url, pr_url)
         mock_get_pr_list_from_username.return_value = [pr]
         mock_get_commit_id_from_ref.return_value = '7' * 40
 

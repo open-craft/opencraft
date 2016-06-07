@@ -33,9 +33,6 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 
 # Tests #######################################################################
 
-# Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member
-
 @ddt.ddt
 class SpawnAppServerTestCase(TestCase):
     """

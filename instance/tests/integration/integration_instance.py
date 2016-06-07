@@ -42,9 +42,6 @@ from opencraft.tests.utils import shard
 
 # Tests #######################################################################
 
-# Factory boy doesn't properly support pylint+django
-#pylint: disable=no-member
-
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks

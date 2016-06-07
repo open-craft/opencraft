@@ -37,9 +37,6 @@ class InstanceAPITestCase(APITestCase):
     This only checks the data related to InstanceReference
     (i.e. ID, name, created, modified, and instance_type)
     """
-    # To avoid errors with `response.data` from REST framework's API client
-    #pylint: disable=no-member
-
     def test_get_unauthenticated(self):
         """
         GET - Require to be authenticated

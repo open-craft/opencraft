@@ -27,7 +27,7 @@ import os.path
 import re
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase as DjangoTestCase
+from django.test import TestCase as DjangoTestCase
 
 
 # Functions ###################################################################
@@ -96,8 +96,6 @@ class WithUserTestCase(DjangoTestCase):
     """
     def setUp(self):
         super().setUp()
-
-        self.client = Client()
 
         self.user1 = User.objects.create_user('user1', 'user1@example.com', 'pass')
         self.user1.save()

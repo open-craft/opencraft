@@ -60,9 +60,6 @@ class OpenStackServerTestCase(TestCase):
     """
     Test cases for OpenStackServer models
     """
-    # Factory boy doesn't properly support pylint+django
-    #pylint: disable=no-member
-
     def test_new_server(self):
         """
         New OpenStackServer object
@@ -414,9 +411,6 @@ class OpenStackServerStatusTestCase(TestCase):
     """
     Test cases for status switching in OpenStackServer models
     """
-    # Factory boy doesn't properly support pylint+django
-    #pylint: disable=no-member
-
     def _assert_status_conditions(self, server, is_steady_state=False, accepts_ssh_commands=False, vm_available=False):
         """
         Assert that status conditions for server hold as specified

@@ -38,9 +38,6 @@ from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
-#pylint: disable=no-member
-
-
 class MySQLInstanceTestCase(TestCase):
     """
     Test cases for MySQLInstanceMixin and OpenEdXDatabaseMixin

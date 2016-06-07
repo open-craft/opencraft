@@ -33,4 +33,4 @@ def make_test_appserver(instance=None):
     """
     if not instance:
         instance = OpenEdXInstanceFactory()
-    return instance._create_owned_appserver()  # pylint: disable=no-member
+    return instance._create_owned_appserver()
