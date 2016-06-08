@@ -205,13 +205,21 @@ flavor:
 
 ### GitHub settings
 
-* `GITHUB_ACCESS_TOKEN` Your GirHub access token (required). Get it from
+* `GITHUB_ACCESS_TOKEN` Your GitHub access token (required). Get it from
   https://github.com/settings/tokens
 * `WATCH_ORGANIZATION` The organization to watch (required). The instance
   manager will automatically set up sandboxes for pull requests made by members
   of this organization.
 * `WATCH_FORK` Sandboxes are created for pull requests made against this fork
   (default: `edx/edx-platform`)
+
+### New Relic settings
+
+* `NEWRELIC_LICENSE_KEY` Your New Relic license key. If set, New Relic server
+  and application monitoring will be enabled.
+* `NEWRELIC_ADMIN_USER_API_KEY` An API key for a New Relic admin user. If set,
+  Synthetics availability monitoring will be enabled. Downtime alerts are sent
+  to the email addresses in `ADMINS`.
 
 ### Sandbox settings
 
