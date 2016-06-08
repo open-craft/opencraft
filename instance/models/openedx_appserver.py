@@ -246,7 +246,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # Start by requesting a new server/VM:
         self._status_to_waiting_for_server()
         assert self.server.vm_not_yet_requested
-        self.server.name_prefix = ('edxapp-' + slugify(self.instance.sub_domain))[:20]
+        self.server.name_prefix = ('edxapp-' + slugify(self.instance.lms_preview_domain))[:20]
         self.server.save()
 
         def accepts_ssh_commands():

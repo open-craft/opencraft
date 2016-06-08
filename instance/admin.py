@@ -47,7 +47,7 @@ class InstanceReferenceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstri
 
 
 class OpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('sub_domain', 'base_domain', 'name', 'created', 'modified')
+    list_display = ('internal_lms_domain', 'name', 'created', 'modified')
 
 
 class OpenEdXAppServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring

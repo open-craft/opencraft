@@ -27,7 +27,7 @@ import uuid
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
 
 
 # Classes #####################################################################
@@ -39,7 +39,17 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     class Meta:
         model = OpenEdXInstance
 
-    sub_domain = factory.LazyAttribute(lambda o: '{}.integration'.format(str(uuid.uuid4())[:8]))
+    @classmethod
+    def create(cls, *args, **kwargs):
+        # OpenEdXInstance constructor accepts either a 'sub_domain' or 'instance_lms_domain' value. Only generate a
+        # random value for 'internal_lms_domain' if neither 'sub_domain' nor 'internal_lms_domain' are provided.
+        if 'sub_domain' not in kwargs and 'internal_lms_domain' not in kwargs:
+            kwargs = kwargs.copy()
+            random_id = str(uuid.uuid4())[:8]
+            sub_domain = '{}.integration'.format(random_id)
+            kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
+        return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
+
     name = factory.Sequence('Test Instance {}'.format)
     openedx_release = 'named-release/cypress' # Use a known working version
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'

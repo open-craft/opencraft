@@ -141,15 +141,50 @@ class OpenEdXInstanceTestCase(TestCase):
         Domain and URL attributes
         """
         instance = OpenEdXInstanceFactory(
-            base_domain='example.org', sub_domain='sample', name='Sample Instance'
+            internal_lms_domain='sample.example.org', name='Sample Instance'
         )
-        self.assertEqual(instance.domain, 'sample.example.org')
-        self.assertEqual(instance.url, 'http://sample.example.org/')
-        self.assertEqual(instance.lms_preview_domain, 'preview-sample.example.org')
-        self.assertEqual(instance.lms_preview_url, 'http://preview-sample.example.org/')
-        self.assertEqual(instance.studio_domain, 'studio-sample.example.org')
-        self.assertEqual(instance.studio_url, 'http://studio-sample.example.org/')
+        internal_lms_domain = 'sample.example.org'
+        internal_lms_preview_domain = 'preview-sample.example.org'
+        internal_studio_domain = 'studio-sample.example.org'
+        self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
+        self.assertEqual(instance.internal_lms_preview_domain, internal_lms_preview_domain)
+        self.assertEqual(instance.internal_studio_domain, internal_studio_domain)
+        # External domains are empty by default.
+        self.assertEqual(instance.external_lms_domain, '')
+        self.assertEqual(instance.external_lms_preview_domain, '')
+        self.assertEqual(instance.external_studio_domain, '')
+        # When external domain is empty, main domains/URLs equal internal domains.
+        self.assertEqual(instance.domain, internal_lms_domain)
+        self.assertEqual(instance.lms_preview_domain, internal_lms_preview_domain)
+        self.assertEqual(instance.studio_domain, internal_studio_domain)
+        self.assertEqual(instance.url, 'http://{}/'.format(internal_lms_domain))
+        self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(internal_lms_preview_domain))
+        self.assertEqual(instance.studio_url, 'http://{}/'.format(internal_studio_domain))
         self.assertEqual(str(instance), 'Sample Instance (sample.example.org)')
+        # External domains take precedence over internal domains.
+        external_lms_domain = 'external.domain.com'
+        external_lms_preview_domain = 'lms-preview.external.domain.com'
+        external_studio_domain = 'external-studio.domain.com'
+        instance.external_lms_domain = external_lms_domain
+        instance.external_lms_preview_domain = external_lms_preview_domain
+        instance.external_studio_domain = external_studio_domain
+        # Internal domains are still the same.
+        self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
+        self.assertEqual(instance.internal_lms_preview_domain, internal_lms_preview_domain)
+        self.assertEqual(instance.internal_studio_domain, internal_studio_domain)
+        # Default domains will now equal external domains.
+        self.assertEqual(instance.domain, external_lms_domain)
+        self.assertEqual(instance.lms_preview_domain, external_lms_preview_domain)
+        self.assertEqual(instance.studio_domain, external_studio_domain)
+        self.assertEqual(instance.url, 'http://{}/'.format(external_lms_domain))
+        self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(external_lms_preview_domain))
+        self.assertEqual(instance.studio_url, 'http://{}/'.format(external_studio_domain))
+        self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
+        # URLs respect the protocol setting.
+        instance.protocol = 'https'
+        self.assertEqual(instance.url, 'https://{}/'.format(external_lms_domain))
+        self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(external_lms_preview_domain))
+        self.assertEqual(instance.studio_url, 'https://{}/'.format(external_studio_domain))
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
@@ -202,16 +237,37 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], True)
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC_APP'], True)
         self.assertEqual(configuration_vars['COMMON_ENVIRONMENT'], 'opencraft')
-        self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], 'test.newrelic')
+        self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], instance.internal_lms_domain)
         self.assertEqual(configuration_vars['NEWRELIC_LICENSE_KEY'], 'newrelic-key')
+
+    @patch_services
+    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    def test_spawn_appserver_with_external_domains(self, mocks, mock_provision):
+        """
+        Test that relevant configuration variables use external domains when provisioning a new app server.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.spawn',
+            use_ephemeral_databases=True,
+            external_lms_domain='lms.external.com',
+            external_lms_preview_domain='lmspreview.external.com',
+            external_studio_domain='cms.external.com'
+        )
+
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], instance.external_lms_domain)
+        self.assertEqual(configuration_vars['EDXAPP_LMS_BASE'], instance.external_lms_domain)
+        self.assertEqual(configuration_vars['EDXAPP_PREVIEW_LMS_BASE'], instance.external_lms_preview_domain)
+        self.assertEqual(configuration_vars['EDXAPP_CMS_BASE'], instance.external_studio_domain)
 
     @patch_services
     def test_set_appserver_active(self, mocks):
         """
         Test set_appserver_active()
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
-                                          base_domain='opencraft.com',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.com',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
@@ -223,14 +279,33 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @patch_services
+    def test_set_appserver_active_external_domain(self, mocks):
+        """
+        Test set_appserver_active() with custom external domains.
+        Ensure that the DNS records are only created for the internal domains.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.hosting',
+                                          external_lms_domain='courses.myexternal.org',
+                                          external_lms_preview_domain='preview.myexternal.org',
+                                          external_studio_domain='studio.myexternal.org',
+                                          use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
+        self.assertEqual(instance.active_appserver.pk, appserver_id)
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
+            call('opencraft.hosting', name='test.activate', type='A', value='1.1.1.1'),
+            call('opencraft.hosting', name='preview-test.activate', type='CNAME', value='test.activate'),
+            call('opencraft.hosting', name='studio-test.activate', type='CNAME', value='test.activate'),
+        ])
+
+    @patch_services
     def test_set_appserver_active_base_subdomain(self, mocks):
         """
         Test set_appserver_active() with a base domain that includes part of a
         subdomain. Ensure that the dns records include the part of the subdomain
         in the base domain of the instance.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.activate',
-                                          base_domain='stage.opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.stage.opencraft.hosting',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)

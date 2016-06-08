@@ -201,6 +201,10 @@ flavor:
 
 * `DEFAULT_INSTANCE_BASE_DOMAIN` Instances are created as subdomains of this domain,
   e.g. `example.com` (required)
+* `DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX` String to prepend to internal LMS domain when
+  generating the LMS preview domain (default: `"preview-"`)
+* `DEFAULT_STUDIO_DOMAIN_PREFIX` String to prepend to internal LMS domain when
+  generating the Studio domain (default: `"studio-"`)
 * `GANDI_API_KEY` Your Gandi API key (required)
 
 ### GitHub settings

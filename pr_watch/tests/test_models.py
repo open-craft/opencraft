@@ -123,7 +123,12 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.branch_name, 'new-tag')
         self.assertEqual(instance.ref_type, 'tag')
 
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
+    @override_settings(
+        INSTANCE_EPHEMERAL_DATABASES=True,
+        DEFAULT_INSTANCE_BASE_DOMAIN='basedomain.com',
+        DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX='lms-preview.',
+        DEFAULT_STUDIO_DOMAIN_PREFIX='studio-'
+    )
     def test_create_from_pr(self):
         """
         Create an instance from a pull request
@@ -138,7 +143,10 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(watched_pr.fork_name, pr.fork_name)
         self.assertEqual(watched_pr.branch_name, pr.branch_name)
 
-        self.assertEqual(instance.sub_domain, 'pr{}.sandbox'.format(pr.number))
+        internal_lms_domain = 'pr{}.sandbox.basedomain.com'.format(pr.number)
+        self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
+        self.assertEqual(instance.internal_lms_preview_domain, 'lms-preview.{}'.format(internal_lms_domain))
+        self.assertEqual(instance.internal_studio_domain, 'studio-{}'.format(internal_lms_domain))
         self.assertRegex(instance.name, r'^PR')
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
         self.assertTrue(instance.use_ephemeral_databases)

@@ -29,7 +29,7 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
-from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
 from instance.models.utils import ValidateModelMixin
 
 
@@ -37,8 +37,7 @@ from instance.models.utils import ValidateModelMixin
 
 def validate_available_subdomain(subdomain):
     """
-    Check that the given subdomain is not already used by an existing
-    instance.
+    Check that the given subdomain is not blacklisted.
     """
     if subdomain in settings.SUBDOMAIN_BLACKLIST:
         raise ValidationError(
@@ -144,14 +143,15 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
     def clean(self):
         """
-        Verify that the subdomain has already been taken by any running instance.
+        Verify that the subdomain has not already been taken by any running instance.
 
         We can't do this in a regular validator, since we have to allow the subdomain of the
         instance associated with this application.
         """
-        if self.instance is not None and self.subdomain == self.instance.sub_domain:
+        generated_domain = generate_internal_lms_domain(self.subdomain)
+        if self.instance is not None and self.instance.internal_lms_domain == generated_domain:
             return
-        if OpenEdXInstance.objects.filter(sub_domain=self.subdomain).exists():
+        if OpenEdXInstance.objects.filter(internal_lms_domain=generated_domain).exists():
             subdomain_error = ValidationError(
                 message='This domain is already taken.',
                 code='unique',

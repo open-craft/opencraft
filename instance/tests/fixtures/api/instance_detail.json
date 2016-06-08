@@ -10,8 +10,7 @@
     "protocol": "http",
     "use_ephemeral_databases": true,
     "github_admin_organization_name": "open-craft",
-    "sub_domain": "pr12338.sandbox",
-    "base_domain": "example.com",
+    "internal_lms_domain": "pr12338.sandbox.example.com",
     "active_appserver": {
         "id": 8,
         "api_url": "http://localhost:5000/api/v1/openedx_appserver/8/",

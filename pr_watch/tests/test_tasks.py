@@ -25,7 +25,7 @@ Worker tasks - Tests
 import textwrap
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from instance.models.openedx_instance import OpenEdXInstance
 from pr_watch import tasks
@@ -44,6 +44,7 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.tasks.spawn_appserver')
     @patch('pr_watch.tasks.get_pr_list_from_username')
     @patch('pr_watch.tasks.get_username_list_from_team')
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
                           mock_spawn_appserver, mock_get_commit_id_from_ref):
         """
@@ -75,7 +76,9 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_spawn_appserver.call_count, 1)
         new_instance_ref_id = mock_spawn_appserver.mock_calls[0][1][0]
         instance = OpenEdXInstance.objects.get(ref_set__pk=new_instance_ref_id)
-        self.assertEqual(instance.sub_domain, 'pr234.sandbox')
+        self.assertEqual(instance.internal_lms_domain, 'pr234.sandbox.awesome.hosting.org')
+        self.assertEqual(instance.internal_lms_preview_domain, 'preview-pr234.sandbox.awesome.hosting.org')
+        self.assertEqual(instance.internal_studio_domain, 'studio-pr234.sandbox.awesome.hosting.org')
         self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
         self.assertEqual(instance.edx_platform_commit, '7' * 40)
         self.assertEqual(instance.openedx_release, 'master')

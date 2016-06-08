@@ -228,9 +228,9 @@ class MySQLInstanceTestCase(TestCase):
         """
         sub_domain = 'really.really.really.really.long.subdomain'
         base_domain = 'this-is-a-really-long-unusual-domain-แปลกมาก.com'
+        internal_lms_domain = '{}.{}'.format(sub_domain, base_domain)
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               sub_domain=sub_domain,
-                                               base_domain=base_domain)
+                                               internal_lms_domain=internal_lms_domain)
         self.instance.provision_mysql()
         self.check_mysql()
 
