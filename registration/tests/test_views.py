@@ -62,6 +62,7 @@ class BetaTestApplicationViewTestMixin:
             'email': 'albus.dumbledore@hogwarts.edu',
             'public_contact_email': 'support@hogwarts.edu',
             'password': 'gryffindor',
+            'password_strength': 3,
             'password_confirmation': 'gryffindor',
             'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
@@ -103,6 +104,7 @@ class BetaTestApplicationViewTestMixin:
         form_fields = {name: field
                        for name, field in self._get_form_fields(response).items()
                        if name not in {'password',
+                                       'password_strength',
                                        'password_confirmation',
                                        'csrfmiddlewaretoken'}}
         form_values = {name: field['value']
@@ -110,6 +112,7 @@ class BetaTestApplicationViewTestMixin:
         expected_values = {name: value
                            for name, value in self.form_data.items()
                            if name not in {'password',
+                                           'password_strength',
                                            'password_confirmation'}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
@@ -317,9 +320,11 @@ class BetaTestApplicationViewTestMixin:
         """
         Password not strong enough.
         """
-        for password in ('password', 'qwerty', 'Hogwarts'):
+        passwords = {'password': 0, 'qwerty': 0, 'Hogwarts': 1}
+        for password, password_strength in passwords.items():
             self.form_data['password'] = password
             self.form_data['password_confirmation'] = password
+            self.form_data['password_strength'] = password_strength
             self._assert_registration_fails(self.form_data, expected_errors={
                 'password': ['Please use a stronger password: avoid common '
                              'patterns and make it long enough to be '
@@ -350,6 +355,7 @@ class BetaTestApplicationViewTestMixin:
         # The password fields do not appear on the form for logged in users
         form_data = self.form_data.copy()
         del form_data['password']
+        del form_data['password_strength']
         del form_data['password_confirmation']
         self._assert_registration_succeeds(form_data)
 

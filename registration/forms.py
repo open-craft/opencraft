@@ -22,16 +22,22 @@ Forms for registration/login
 
 # Imports #####################################################################
 
+import logging
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.text import capfirst
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
-from zxcvbn import password_strength
 
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Widgets #####################################################################
@@ -124,6 +130,9 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         help_text=('This is also your account name, and where we will send '
                    'important notices.'),
     )
+    password_strength = forms.IntegerField(
+        widget=forms.HiddenInput,
+    )
     password = forms.CharField(
         strip=False,
         widget=PasswordInput,
@@ -188,6 +197,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
 
                 # Remove the password fields, the user already has a password
                 del self.fields['password']
+                del self.fields['password_strength']
                 del self.fields['password_confirmation']
 
                 # If the user has a profile, populate the full_name field
@@ -239,12 +249,32 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             )
         return email
 
+    def clean_password_strength(self):
+        """
+        Check that client submitted password strength, and that value is in expected range.
+
+        If there are issues, produce appropriate warnings but don't raise ValidationError
+        (we don't want to display validation errors for this field to users).
+        """
+        password_strength = self.cleaned_data.get('password_strength')
+        if password_strength is None:
+            logger.warning('Did not receive password strength from client.')
+        elif password_strength not in range(5):
+            logger.warning(
+                'Received suspicious value for password strength. '
+                'Value should be in range [0, 4]. Observed value: {password_strength}',
+                **{'password_strength': password_strength}
+            )
+            password_strength = None
+        return password_strength
+
     def clean_password(self):
         """
-        Check password strength.
+        Using score computed on the client, check that password is reasonably strong.
         """
         password = self.cleaned_data.get('password')
-        if password and password_strength(password)['score'] < 2:
+        password_strength = self.cleaned_data.get('password_strength')
+        if password and password_strength is not None and password_strength < 2:
             raise forms.ValidationError(
                 ('Please use a stronger password: avoid common patterns and '
                  'make it long enough to be difficult to crack.'),

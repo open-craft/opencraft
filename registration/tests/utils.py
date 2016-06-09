@@ -73,7 +73,7 @@ class BrowserTestMixin:
             if element.get_attribute('type') == 'checkbox':
                 if bool(value) != element.is_selected():
                     element.click()
-            elif not element.get_attribute('readonly'):
+            elif not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
                 element.send_keys(value)
 
