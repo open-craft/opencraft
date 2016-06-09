@@ -126,4 +126,3 @@ unicodecsv==0.14.1
 virtualenv==15.0.2
 Werkzeug==0.11.10
 wrapt==1.10.8
-zxcvbn-py3==1.1
