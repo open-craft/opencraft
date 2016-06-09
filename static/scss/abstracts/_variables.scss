@@ -1,0 +1,83 @@
+/**
+ * VARIABLES
+ */
+
+// To use var from map: map-get($map, $key)
+// COLORS
+$colors: (
+    black: #1c1c1c,
+    white: #fcfbf9,
+
+    // CYAN
+    cyan-moderate: #5fb6d0,
+    cyan-light-moderate: #62b6ce,
+    cyan-very-dark-grayish: #3d4b4e,
+    cyan-very-dark-desaturated: #24454f,
+    cyan-very-very-dark-desaturated: #203d45,
+    cyan-grayish: #a5cbd7,
+    cyan-dark-moderate: #47899c,
+    cyan-slightly-desaturated: #8bb3be,
+    cyan-strong: #22a9d0,
+
+    // GRAY
+    gray: #b3b3b3,
+    gray-very-light: #ececec,
+    gray-dark: #818181,
+    gray-very-dark: #616161,
+
+    // Brands colors
+    facebook: #3b5998,
+    twitter: #55acee,
+    instagram: #3f729b,
+    linkedin: #0077b5,
+
+    red: #ff0000,
+    green: #12cf7a,
+);
+
+// FONT
+$font-body-family: "Circular", sans-serif;
+$font-title-family: "Playfair Display", serif;
+$font-watermark-family: "Roboto Mono";
+$base-font-size: 16px;
+$base-line-height: 26/16;
+
+$font-weight:
+(
+    extralight: 100,
+    light: 300,
+    book: 300,
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+    extrabold: 800,
+    extrablack: 900
+);
+
+$font-size-title:
+(
+    h1: 3.33rem,
+    h2: 4.00rem,
+    h3: 2.00rem,
+    h4: 1.67rem
+);
+
+// LAYOUT
+
+$psd-width: 1600px;
+$container-width: 1200px;
+
+// MISCELLANEOUS
+$fonts-dir: "/static/fonts/";
+$img-dir: "/static/img/";
+$svg-dir: "/static/img/svg/";
+$jpg-dir: "/static/img/jpg/";
+$png-dir: "/static/img/png/";
+
+// RESPONSIVE
+
+// Breakpoint slicer https://github.com/lolmaus/breakpoint-slicer
+$slicer-breakpoints: 0 768px 992px 1200px 1400px;
+$slicer-breakpoint-names: 'xs' 'sm' 'md' 'lg' 'hd';
+$slicer-anti-overlap-corrections: -1px;

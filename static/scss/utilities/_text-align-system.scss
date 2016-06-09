@@ -1,0 +1,108 @@
+// RESPONSIVE TEXT ALIGN
+.text
+{
+    &-xs
+    {
+        &-left
+        {
+            @include from('xs')
+            {
+                text-align: left;
+            }
+        }
+
+        &-center
+        {
+            @include from('xs')
+            {
+                text-align: center;
+            }
+        }
+
+        &-right
+        {
+            @include from('xs')
+            {
+                text-align: right;
+            }
+        }
+    }
+    &-sm
+    {
+        &-left
+        {
+            @include from('sm')
+            {
+                text-align: left;
+            }
+        }
+
+        &-center
+        {
+            @include from('sm')
+            {
+                text-align: center;
+            }
+        }
+
+        &-right
+        {
+            @include from('sm')
+            {
+                text-align: right;
+            }
+        }
+    }
+    &-md
+    {
+        &-left
+        {
+            @include from('md')
+            {
+                text-align: left;
+            }
+        }
+
+        &-center
+        {
+            @include from('md')
+            {
+                text-align: center;
+            }
+        }
+
+        &-right
+        {
+            @include from('md')
+            {
+                text-align: right;
+            }
+        }
+    }
+    &-lg
+    {
+        &-left
+        {
+            @include from('lg')
+            {
+                text-align: left;
+            }
+        }
+
+        &-center
+        {
+            @include from('lg')
+            {
+                text-align: center;
+            }
+        }
+
+        &-right
+        {
+            @include from('lg')
+            {
+                text-align: right;
+            }
+        }
+    }
+}

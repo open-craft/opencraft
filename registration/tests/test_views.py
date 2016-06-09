@@ -53,6 +53,7 @@ class BetaTestApplicationViewTestMixin:
         """
         Initialize the test case with some valid data.
         """
+        super().setUp()
         self.form_data = {
             'subdomain': 'hogwarts',
             'instance_name': 'Hogwarts',

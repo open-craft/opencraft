@@ -1,0 +1,35 @@
+/**
+ * BASE: WEBFONTS
+ */
+
+// FONTS DECLARATION
+
+// 100    $extralight   Extra Light or Ultra Light
+// 200    $light        Light or Thin
+// 300    $book         Book or Demi
+// 400    $regular      Normal or Regular
+// 500    $medium       Medium
+// 600    $semibold     Semibold, Demibold
+// 700    $bold         Bold
+// 800    $extrabold    Black, Extra Bold or Heavy
+// 900    $extrablack   Extra Black, Fat, Poster or Ultra Black
+
+// .eot         IE9 Compat Modes
+// .eot?#iefix  IE6-IE8
+// .woff        Modern Browsers
+// .ttf         Safari, Android, iOS
+// .svg         Legacy iOS
+
+// CIRCULAR
+// Book
+@font-face
+{
+    font-family: 'Circular';
+    src: url('#{$fonts-dir}circular/circularstd-book.eot');
+    src: url('#{$fonts-dir}circular/circularstd-book.eot?#iefix') format('embedded-opentype'),
+         url('#{$fonts-dir}circular/circularstd-book.woff') format('woff'),
+         url('#{$fonts-dir}circular/circularstd-book.ttf') format('truetype'),
+         url('#{$fonts-dir}circular/circularstd-book.svg#NeutrafaceDisplay-Thin') format('svg');
+    font-weight: map-get($font-weight, regular);
+    font-style: normal;
+}

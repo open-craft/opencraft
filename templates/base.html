@@ -25,7 +25,11 @@
     <link rel="stylesheet" href='{% static "external/css/font-awesome.min.css" %}'/>
 
     {# Custom CSS #}
-    {% block css %}{% endblock css %}
+    {% block css %}
+    {% compress css %}
+    <link href="{% static "scss/global.scss" %}" type="text/x-scss" rel="stylesheet"/>
+    {% endcompress %}
+    {% endblock css %}
 
     {# Underscore #}
     {% block underscore_js %}
@@ -58,13 +62,21 @@
     {% endblock favicon %}
 
 </head>
-<body {% block body_attr %}{% endblock body_attr %}>
+<body {% block body_attr %}class="page page-id-8 page-template-default background-cyan-light-moderate is-ready"{% endblock body_attr %}>
+    {# Page header #}
     {% block header %}
     {% include "header.html" %}
     {% endblock header %}
 
-    {# Main content goes here #}
-    {% block content %}{% endblock content %}
+    <main class="site-content">
+        {# Main content goes here #}
+        {% block content %}{% endblock content %}
+    </main>
+
+    {# Page footer #}
+    {% block footer %}
+    {% include "footer.html" %}
+    {% endblock footer %}
 
     {# jQuery #}
     {% block jquery_js %}

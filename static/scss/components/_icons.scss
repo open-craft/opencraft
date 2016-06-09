@@ -1,0 +1,17 @@
+/**
+ * ICONS
+ */
+
+.icon
+{
+    &__logo
+    {
+        @include size(100%);
+        fill: map-get($colors, white);
+
+        &--header
+        {
+            @include size(128px, 124px);
+        }
+    }
+}

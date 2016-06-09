@@ -1,0 +1,51 @@
+/**
+ * GLOBAL
+ */
+
+// http://sass-guidelin.es/#the-7-1-pattern
+// 
+
+
+// EXTERNAL DEPENDENCIES
+@import '../external/scss/breakpoint';
+@import '../external/scss/breakpoint-slicer';
+
+// ABSTRACTS
+@import 'abstracts/variables';
+
+// FONTS
+@import 'base/webfonts';
+
+// ABSTRACTS
+@import 'abstracts/mixins';
+@import 'abstracts/functions';
+@import 'abstracts/placeholders';
+
+// BASE
+@import 'base/base';
+@import 'base/reset';
+@import 'base/typography';
+
+// UTILITIES
+@import 'utilities/utilities';
+@import 'utilities/color-system';
+@import 'utilities/font-system';
+@import 'utilities/size-system';
+@import 'utilities/text-align-system';
+
+// COMPONENTS
+@import 'components/buttons';
+@import 'components/forms';
+@import 'components/icons';
+@import 'components/components';
+
+// LAYOUT
+@import 'layout/header';
+@import 'layout/layout';
+@import 'layout/footer';
+
+// PAGES
+@import 'pages/page';
+
+// DJANGO-ANGULAR
+@import 'djng';

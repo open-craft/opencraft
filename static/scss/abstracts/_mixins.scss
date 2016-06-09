@@ -1,0 +1,19 @@
+/**
+ * MIXINS
+ */
+
+// SIZING SHORTCUTS
+@mixin size($width, $height: $width)
+{
+    width: $width;
+    height: $height;
+}
+
+// Set letter-spacing with unitless value from Photoshop.
+// @param $value
+@mixin letter-spacing($value)
+{
+    // if value is unitless, divided it by 1000 and set unit
+    // as em to get Photoshop equivalent
+    letter-spacing: if(unitless($value), ($value/1000 * 1em), $value);
+}

@@ -17,13 +17,16 @@
 
 # Files #######################################################################
 
-all: js_external css_external fonts_external
+all: js_external css_external scss_external fonts_external
  
 js_external:
 	$(MAKE) -C js
 
 css_external:
 	$(MAKE) -C css
+
+scss_external:
+	$(MAKE) -C scss
 
 fonts_external:
 	$(MAKE) -C fonts

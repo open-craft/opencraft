@@ -22,10 +22,84 @@ Utils for registration tests
 
 # Imports #####################################################################
 
+import time
+
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 # Classes #####################################################################
+
+class BrowserTestMixin:
+    """
+    Runs tests with a real browser. Provides helper methods for filling in
+    forms. Mix this in with LiveServerTestCase.
+    """
+    def setUp(self): # pylint: disable=invalid-name
+        """
+        Start firefox.
+        """
+        super().setUp()
+        try:
+            self.client = webdriver.Firefox()
+        except WebDriverException:
+            time.sleep(1)
+            self.client = webdriver.Firefox()
+
+    def tearDown(self): # pylint: disable=invalid-name
+        """
+        Close firefox.
+        """
+        self.client.quit()
+        super().tearDown()
+
+    @property
+    def form(self):
+        """
+        The form on the page.
+        """
+        return self.client.find_element_by_tag_name('form')
+
+    def fill_form(self, form_data):
+        """
+        Fill in the form with the given data.
+        """
+        for field, value in form_data.items():
+            element = self.form.find_element_by_name(field)
+            if element.get_attribute('type') == 'checkbox':
+                if bool(value) != element.is_selected():
+                    element.click()
+            elif not element.get_attribute('readonly'):
+                element.clear()
+                element.send_keys(value)
+
+    def submit_form(self):
+        """
+        Click the submit button on the form and wait for the next page to
+        load.
+        """
+        submit = self.form.find_element_by_tag_name('button')
+        html = self.client.find_element_by_tag_name('html')
+        submit.click()
+        WebDriverWait(self.client, timeout=3) \
+            .until(expected_conditions.staleness_of(html))
+
+    def _login(self, **kwargs):
+        """
+        Log in with the given credentials, using the login form.
+        """
+        login_url = '{host}{path}'.format(
+            host=self.live_server_url,
+            path=reverse('registration:login'),
+        )
+        self.client.get(login_url)
+        self.fill_form(kwargs)
+        self.submit_form()
+
 
 class UserMixin:
     """

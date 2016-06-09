@@ -1,0 +1,72 @@
+/**
+ * FOOTER
+ */
+
+.site-footer
+{
+    font-size: 0.75rem;
+
+    &__container
+    {
+        padding: 1.67rem;
+
+        @include from('md')
+        {
+            display: table;
+            width: 100%;
+        }
+
+        @include at('md')
+        {
+            padding-left: 4.67rem;
+            padding-right: 4.67rem;
+        }
+
+        @include from('lg')
+        {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    .icon__logo--footer
+    {
+        display: block;
+        @include size(8.20rem, 4.13rem);
+        margin: 0 auto 2.53rem;
+
+        @include from('md')
+        {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 2.53rem;
+            margin-bottom: 0;
+            margin-left: 0;
+        }
+    }
+
+    &__logo,
+    &__copyright
+    {
+        padding: 1.33rem 0;
+
+        @include from('md')
+        {
+            display: table-cell;
+            vertical-align: middle;
+        }
+    }
+
+    &__copyright
+    {
+        @include from('md')
+        {
+            padding: 5.7em 0;
+        }
+
+        p
+        {
+            margin: 0;
+        }
+    }
+}

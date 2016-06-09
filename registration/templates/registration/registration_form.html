@@ -1,30 +1,51 @@
-<form id="registration-form" name="{{ form.form_name }}" action="" method="post" ng-controller="Registration" novalidate>
+<form id="registration-form" name="{{ form.form_name }}" action="#form" method="post" ng-controller="Registration" novalidate>
+
     {% csrf_token %}
-    <div class="row">
-        <div class="large-12 columns">
-            {{ form.non_field_errors }}
+
+    {% if form.errors %}
+    <div class="page-content__inner__wrapper">
+        <div class="box-alert background-red color-white clearfix">
+            <div class="box-alert__content">
+                Please check the following fields for errors:
+                <ul>
+                    {% for field in form.fields_with_errors %}
+                        <li class="invalid">{{ field }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
-    {% with row="registration/form_field.html" %}
-        {% include row with field=form.subdomain only %}
-        {% include row with field=form.instance_name only %}
-        {% include row with field=form.full_name only %}
-        {% include row with field=form.username only %}
-        {% include row with field=form.email only %}
-        {% include row with field=form.public_contact_email only %}
-        {% include row with field=form.password only %}
-        {% include row with field=form.password_confirmation only %}
-        {% include row with field=form.project_description only %}
-    {% endwith %}
-    {% with row="registration/form_checkbox_field.html" %}
-        {% include row with field=form.accept_terms only %}
-        {% include row with field=form.subscribe_to_updates only %}
-    {% endwith %}
-    <button>
-        {% if form.instance.pk %}
+    {% endif %}
+
+    <div class="page-content__wrapper position-relative">
+        {% with row="registration/form_field.html" %}
+            {% include row with field=form.subdomain %}
+            {% include row with field=form.instance_name %}
+            {% include row with field=form.full_name %}
+            {% include row with field=form.email %}
+            {% include row with field=form.public_contact_email %}
+            {% include row with field=form.username %}
+            {% if form.password %}
+                {% include row with field=form.password %}
+                {% include row with field=form.password_confirmation %}
+            {% endif %}
+            {% include row with field=form.project_description %}
+        {% endwith %}
+        {% with row="registration/form_checkbox_field.html" %}
+            {% include row with field=form.accept_terms %}
+            {% include row with field=form.subscribe_to_updates %}
+        {% endwith %}
+        <div class="page-content__wrapper__stroke hidden-xs"></div>
+    </div>
+
+    <div class="page-content__inner__wrapper color-cyan-light-moderate text-xs-center">
+        <button type="submit" class="btn btn--cyan-light-moderate color-white background-cyan-light-moderate">
+            {% if form.instance.pk %}
             Update your details
-        {% else %}
+            {% else %}
             Apply for the beta test
-        {% endif %}
-    </button>
+            {% endif %}
+        </button>
+    </div>
+
 </form>

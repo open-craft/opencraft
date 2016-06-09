@@ -1,0 +1,4 @@
+# Used to host downloaded copies of scss requirements
+*
+!.gitignore
+!Makefile

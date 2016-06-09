@@ -103,7 +103,6 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     )
     subscribe_to_updates = models.BooleanField(
         default=False,
-        verbose_name='',  # Hide the label
         help_text=('I want OpenCraft to keep me updated about the progress '
                    'of the beta test, and occasionally send me an email '
                    'about it.'),

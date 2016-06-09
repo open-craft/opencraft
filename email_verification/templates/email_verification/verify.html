@@ -3,12 +3,14 @@
 {% block title %}Verify email address{% endblock %}
 
 {% block content %}
-<div class="container content">
-    {% if expired %}
-    Your email verification link has expired. Please
-    <a href="mailto:contact@opencraft.com">contact us</a>.
-    {% else %}
-    Thank you for verifying your email address ({{ email }}).
-    {% endif %}
+<div class="row">
+    <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
+        {% if expired %}
+        Your email verification link has expired. Please
+        <a href="mailto:contact@opencraft.com">contact us</a>.
+        {% else %}
+        Thank you for verifying your email address ({{ email }}).
+        {% endif %}
+    </div>
 </div>
 {% endblock content %}
