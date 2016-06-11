@@ -64,6 +64,9 @@ class InstanceReference(TimeStampedModel):
     class Meta:
         ordering = ['-created']
         unique_together = ('instance_type', 'instance_id')
+        permissions = (
+            ("manage_all", "Can manage all instances."),
+        )
 
     def __str__(self):
         return '{} #{}'.format(self.instance_type.name, self.instance_id)
@@ -88,6 +91,14 @@ class InstanceReference(TimeStampedModel):
             'type': 'instance_update',
             'instance_id': self.pk,
         })
+
+    @classmethod
+    def can_manage(cls, user):
+        """
+        Returns true if the user has "instance.manage_all" permission
+        """
+        permission = '{}.{}'.format(cls._meta.app_label, "manage_all")
+        return user.has_perm(permission)
 
 
 class Instance(ValidateModelMixin, models.Model):

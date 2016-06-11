@@ -26,7 +26,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
@@ -45,7 +44,6 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
     API to list and manipulate Open edX AppServers.
     """
     queryset = OpenEdXAppServer.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         """

@@ -23,7 +23,6 @@ Instance API
 # Imports #####################################################################
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 
 from instance.models.instance import InstanceReference
 from instance.serializers.instance import InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer
@@ -57,7 +56,6 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     it.
     """
     queryset = InstanceReference.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         """

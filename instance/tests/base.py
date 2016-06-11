@@ -26,8 +26,11 @@ import json
 import os.path
 import re
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase as DjangoTestCase
+
+from ..models.instance import InstanceReference
 
 
 # Functions ###################################################################
@@ -97,5 +100,19 @@ class WithUserTestCase(DjangoTestCase):
     def setUp(self):
         super().setUp()
 
+        # User1 is a basic user (no extra privileges)
         self.user1 = User.objects.create_user('user1', 'user1@example.com', 'pass')
         self.user1.save()
+
+        # User2 is a Staff member
+        self.user2 = User.objects.create_user('user2', 'user2@example.com', 'pass')
+        self.user2.is_staff = True
+        self.user2.save()
+
+        # User3 has InstanceManager privileges
+        self.user3 = User.objects.create_user('user3', 'user3@example.com', 'pass')
+        content_type = ContentType.objects.get_for_model(InstanceReference)
+        permission = Permission.objects.get(  # pylint: disable=no-member
+            content_type=content_type, codename='manage_all')
+        self.user3.user_permissions.add(permission)
+        self.user3.save()

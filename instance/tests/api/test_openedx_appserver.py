@@ -23,6 +23,7 @@ Views - Tests
 # Imports #####################################################################
 
 from unittest.mock import patch
+import ddt
 
 from rest_framework import status
 
@@ -33,6 +34,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 
 # Tests #######################################################################
 
+@ddt.ddt
 class OpenEdXAppServerAPITestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls
@@ -45,12 +47,25 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
+    @ddt.data(
+        'user1', 'user2',
+    )
+    def test_get_permission_denied(self, username):
+        """
+        GET - basic and staff users denied access
+        """
+        self.api_client.login(username=username, password='pass')
+        response = self.api_client.get('/api/v1/openedx_appserver/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
+
     def test_get_authenticated(self):
         """
-        GET - Authenticated
+        GET - Authenticated - instance manager users allowed access
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/openedx_appserver/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
 
         app_server = make_test_appserver()
@@ -78,11 +93,28 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertNotIn('log_entries', response.data[0])
         self.assertNotIn('log_error_entries', response.data[0])
 
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_get_details_permission_denied(self, username, message):
+        """
+        GET - Detailed attributes - anonymous, basic, and staff users denied access
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+        app_server = make_test_appserver()
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
     def test_get_details(self):
         """
-        GET - Detailed attributes
+        GET - Detailed attributes - instance manager allowed access
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         app_server = make_test_appserver()
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -119,7 +151,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         Test the verbose name set by get_view_name(), which appears when the API is accessed
         in a web browser.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/openedx_appserver/', HTTP_ACCEPT="text/html")
         self.assertIn("Open edX App Server List", str(response.content))
 
@@ -137,7 +169,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         This can be done at any time; there are no restrictions on when a new AppServer can be
         spawned.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertEqual(instance.active_appserver, None)
@@ -165,7 +197,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         "WaitingForServer", etc. are all considered healthy states, so the AppServer does not
         necessarily have to be fully provisioned and online.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
         app_server = make_test_appserver(instance)
         self.assertEqual(instance.active_appserver, None)
@@ -182,7 +214,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         """
         GET - Log entries
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(name="Log Tester Instance")
         app_server = make_test_appserver(instance)
         server = app_server.server
@@ -240,7 +272,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         """
         GET - Log error entries
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(name="Log Tester Instance")
         app_server = make_test_appserver(instance)
         server = app_server.server

@@ -36,6 +36,7 @@ class IndexViewsTestCase(WithUserTestCase):
     """
     url = reverse('instance:index')
     login_url = reverse(settings.LOGIN_URL)
+    register_url = reverse('registration:register')
 
     def test_index_unauthenticated(self):
         """
@@ -45,10 +46,26 @@ class IndexViewsTestCase(WithUserTestCase):
         self.assertRedirects(response,
                              '{0}?next={1}'.format(self.login_url, self.url))
 
-    def test_index_authenticated(self):
+    def test_index_authenticated_basic_user(self):
         """
-        Index view - Authenticated
+        Index view - Authenticated, unprivileged user
         """
         self.client.login(username='user1', password='pass')
+        response = self.client.get(self.url)
+        self.assertRedirects(response, self.register_url)
+
+    def test_index_authenticated_staff(self):
+        """
+        Index view - Authenticated, staff user
+        """
+        self.client.login(username='user2', password='pass')
+        response = self.client.get(self.url)
+        self.assertRedirects(response, self.register_url)
+
+    def test_index_authenticated_instance_manager(self):
+        """
+        Index view - Authenticated, instance manager user
+        """
+        self.client.login(username='user3', password='pass')
         response = self.client.get(self.url)
         self.assertContains(response, 'ng-app="InstanceApp"')
