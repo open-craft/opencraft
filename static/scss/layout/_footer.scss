@@ -8,8 +8,6 @@
 
     &__container
     {
-        padding: 1.67rem;
-
         @include from('md')
         {
             display: table;
@@ -20,12 +18,6 @@
         {
             padding-left: 4.67rem;
             padding-right: 4.67rem;
-        }
-
-        @include from('lg')
-        {
-            padding-left: 0;
-            padding-right: 0;
         }
     }
 
