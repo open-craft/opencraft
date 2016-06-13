@@ -4,6 +4,25 @@ set -e
 
 make install_system_dependencies
 
+# Try to get Redis up and running before launching tests.
+# In the past, individual tests from our unit test suite would sometimes fail with a "ConnectionRefusedError"
+# that was caused by Redis being unavailable in the container running the tests.
+# The solution below is based on suggestions from the following support thread:
+# https://discuss.circleci.com/t/redis-server-problems-unable-to-connect-localhost-6379/4040
+ATTEMPTS=0
+until bash -c "sudo service redis-server status"; do
+    if [ $ATTEMPTS -lt 300 ]
+    then
+        >&2 echo "Redis not running, trying to kick start it"
+        bash -c "sudo service redis-server start"
+        sleep 1
+        ATTEMPTS=$((ATTEMPTS+1))
+    else
+        >&2 echo "Redis is not running, so tests that depend on it will fail. Aborting."
+        exit 1
+    fi
+done
+
 case $CIRCLE_NODE_INDEX in
     0)
         make test
