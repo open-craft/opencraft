@@ -89,11 +89,15 @@ class BrowserTestMixin:
         Click the submit button on the form and wait for the next page to
         load.
         """
-        submit = self.form.find_element_by_tag_name('button')
         html = self.client.find_element_by_tag_name('html')
+        submit = self.form.find_element_by_tag_name('button')
         submit.click()
+        # Wait for page to start reloading.
         WebDriverWait(self.client, timeout=3) \
             .until(expected_conditions.staleness_of(html))
+        # Wait for page to finish reloading.
+        WebDriverWait(self.client, timeout=20) \
+            .until(lambda driver: driver.execute_script("return document.readyState;") == "complete")
 
     def _login(self, **kwargs):
         """
