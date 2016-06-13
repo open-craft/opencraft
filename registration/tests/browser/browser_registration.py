@@ -51,12 +51,6 @@ class BetaTestBrowserTestCase(BrowserTestMixin,
             path=reverse('registration:register'),
         )
 
-    def form_valid(self):
-        """
-        Return True if the form is valid, False otherwise.
-        """
-        return 'ng-valid' in self.form.get_attribute('class').split()
-
     def _get_response_body(self, url):
         """
         Navigate to the given url and return the page body as a string.
@@ -66,8 +60,7 @@ class BetaTestBrowserTestCase(BrowserTestMixin,
 
     def _register(self, form_data):
         """
-        Fill in the registration form and click the submit button, if the form
-        is valid.
+        Fill in the registration form and click the submit button.
         """
         self.client.get(self.url)
         self.fill_form(form_data)
@@ -75,8 +68,7 @@ class BetaTestBrowserTestCase(BrowserTestMixin,
         # Wait for ajax validation to complete
         time.sleep(2)
 
-        if self.form_valid():
-            self.submit_form()
+        self.submit_form()
 
         return self.client.page_source
 
