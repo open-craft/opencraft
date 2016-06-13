@@ -27,6 +27,7 @@ import json
 import re
 
 from bs4 import BeautifulSoup
+from ddt import ddt, data, unpack
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
@@ -43,6 +44,7 @@ from registration.tests.utils import UserMixin
 
 # Tests #######################################################################
 
+@ddt
 class BetaTestApplicationViewTestMixin:
     """
     Tests for beta test applications.
@@ -316,20 +318,24 @@ class BetaTestApplicationViewTestMixin:
             'public_contact_email': ['Enter a valid email address.'],
         })
 
-    def test_weak_password(self):
+    @data(
+        ('password', 0),
+        ('querty', 0),
+        ('Hogwarts', 1),
+    )
+    @unpack
+    def test_weak_password(self, password, password_strength):
         """
         Password not strong enough.
         """
-        passwords = {'password': 0, 'qwerty': 0, 'Hogwarts': 1}
-        for password, password_strength in passwords.items():
-            self.form_data['password'] = password
-            self.form_data['password_confirmation'] = password
-            self.form_data['password_strength'] = password_strength
-            self._assert_registration_fails(self.form_data, expected_errors={
-                'password': ['Please use a stronger password: avoid common '
-                             'patterns and make it long enough to be '
-                             'difficult to crack.'],
-            })
+        self.form_data['password'] = password
+        self.form_data['password_confirmation'] = password
+        self.form_data['password_strength'] = password_strength
+        self._assert_registration_fails(self.form_data, expected_errors={
+            'password': ['Please use a stronger password: avoid common '
+                         'patterns and make it long enough to be '
+                         'difficult to crack.'],
+        })
 
     def test_password_mismatch(self):
         """
