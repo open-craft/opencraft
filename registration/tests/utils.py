@@ -28,6 +28,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -73,20 +74,30 @@ class BrowserTestMixin:
             if element.get_attribute('type') == 'checkbox':
                 if bool(value) != element.is_selected():
                     element.click()
+                    # Before moving on, make sure checkbox state (checked/unchecked) corresponds to desired value
+                    WebDriverWait(self.client, timeout=5) \
+                        .until(expected_conditions.element_selection_state_to_be(element, value))
             elif not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
                 element.send_keys(value)
+                # Before moving on, make sure input field contains desired text
+                WebDriverWait(self.client, timeout=5) \
+                    .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
 
     def submit_form(self):
         """
         Click the submit button on the form and wait for the next page to
         load.
         """
-        submit = self.form.find_element_by_tag_name('button')
         html = self.client.find_element_by_tag_name('html')
+        submit = self.form.find_element_by_tag_name('button')
         submit.click()
+        # Wait for page to start reloading.
         WebDriverWait(self.client, timeout=3) \
             .until(expected_conditions.staleness_of(html))
+        # Wait for page to finish reloading.
+        WebDriverWait(self.client, timeout=20) \
+            .until(lambda driver: driver.execute_script("return document.readyState;") == "complete")
 
     def _login(self, **kwargs):
         """
