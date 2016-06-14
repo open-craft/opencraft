@@ -19,6 +19,7 @@
 """
 Open edX Instance models
 """
+import re
 import string
 
 from django.conf import settings
@@ -144,6 +145,21 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             return self.external_studio_domain
         else:
             return self.internal_studio_domain
+
+    @property
+    def studio_domain_nginx_regex(self):
+        """
+        Regex that matches either the internal or the external Studio URL.
+
+        This is exclusively meant for the Ansible variable CMS_HOSTNAME to configure the nginx
+        server_name regex to match the Studio domains.
+        """
+        if self.external_studio_domain:
+            domains = [self.external_studio_domain, self.internal_studio_domain]
+        else:
+            domains = [self.internal_studio_domain]
+        choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
+        return '~^({})$'.format(choices)
 
     @property
     def url(self):
