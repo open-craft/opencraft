@@ -13,6 +13,7 @@ EDXAPP_PREVIEW_LMS_BASE: '{{ instance.lms_preview_domain }}'
 
 EDXAPP_CMS_SITE_NAME: '{{ instance.studio_domain }}'
 EDXAPP_CMS_BASE: '{{ instance.studio_domain }}'
+CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
 
 # Enable OpenStack settings to be able to use Swift.  These three variables are ignored in versions
 # of the configuration repo that don't have the openstack role yet, so it's safe to include them.

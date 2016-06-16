@@ -157,6 +157,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.domain, internal_lms_domain)
         self.assertEqual(instance.lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.studio_domain, internal_studio_domain)
+        self.assertEqual(instance.studio_domain_nginx_regex, r'~^(studio\-sample\.example\.org)$')
         self.assertEqual(instance.url, 'http://{}/'.format(internal_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(internal_lms_preview_domain))
         self.assertEqual(instance.studio_url, 'http://{}/'.format(internal_studio_domain))
@@ -176,6 +177,10 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.domain, external_lms_domain)
         self.assertEqual(instance.lms_preview_domain, external_lms_preview_domain)
         self.assertEqual(instance.studio_domain, external_studio_domain)
+        self.assertEqual(
+            instance.studio_domain_nginx_regex,
+            r'~^(external\-studio\.domain\.com|studio\-sample\.example\.org)$'
+        )
         self.assertEqual(instance.url, 'http://{}/'.format(external_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(external_lms_preview_domain))
         self.assertEqual(instance.studio_url, 'http://{}/'.format(external_studio_domain))
