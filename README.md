@@ -176,11 +176,11 @@ flavor:
 
 ### Application settings
 
-* `DEBUG` Turn on debug mode. Use in development only (default: False)
-* `SECRET_KEY` Set this to something unique and keep it secret (required)
-* `DATABASE_URL` Your database, e.g. `postgres://localhost/opencraft` (required)
-* `REDIS_URL` (default: `redis://localhost:6379/`)
-* `HUEY_ALWAYS_EAGER` Set to True to run huey tasks synchronously, in the web
+* `DEBUG`: Turn on debug mode. Use in development only (default: False)
+* `SECRET_KEY`: Set this to something unique and keep it secret (required)
+* `DATABASE_URL`: Your database, e.g. `postgres://localhost/opencraft` (required)
+* `REDIS_URL`: (default: `redis://localhost:6379/`)
+* `HUEY_ALWAYS_EAGER`: Set to True to run huey tasks synchronously, in the web
   process. Use in development only (default: False)
 * `LOGGING_ROTATE_MAX_KBYTES`: The max size of each log file (in KB, default: 10MB)
 * `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
@@ -191,74 +191,88 @@ flavor:
 
 ### OpenStack credentials
 
-* `OPENSTACK_USER` Your openstack username (required)
-* `OPENSTACK_PASSWORD` Your openstack password (required)
-* `OPENSTACK_TENANT` Your openstack tenant name (required)
-* `OPENSTACK_AUTH_URL` Your openstack auth url (required)
-* `OPENSTACK_REGION` The openstack region to deploy sandboxes in (required)
+* `OPENSTACK_USER`: Your openstack username (required)
+* `OPENSTACK_PASSWORD`: Your openstack password (required)
+* `OPENSTACK_TENANT`: Your openstack tenant name (required)
+* `OPENSTACK_AUTH_URL`: Your openstack auth url (required)
+* `OPENSTACK_REGION`: The openstack region to deploy sandboxes in (required)
 
 ### DNS settings
 
-* `DEFAULT_INSTANCE_BASE_DOMAIN` Instances are created as subdomains of this domain,
+* `DEFAULT_INSTANCE_BASE_DOMAIN`: Instances are created as subdomains of this domain,
   e.g. `example.com` (required)
-* `DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX` String to prepend to internal LMS domain when
+* `DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
   generating the LMS preview domain (default: `"preview-"`)
-* `DEFAULT_STUDIO_DOMAIN_PREFIX` String to prepend to internal LMS domain when
+* `DEFAULT_STUDIO_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
   generating the Studio domain (default: `"studio-"`)
-* `GANDI_API_KEY` Your Gandi API key (required)
+* `GANDI_API_KEY`: Your Gandi API key (required)
 
 ### GitHub settings
 
-* `GITHUB_ACCESS_TOKEN` Your GitHub access token (required). Get it from
+* `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens
-* `WATCH_ORGANIZATION` The organization to watch (required). The instance
+* `WATCH_ORGANIZATION`: The organization to watch (required). The instance
   manager will automatically set up sandboxes for pull requests made by members
   of this organization.
-* `WATCH_FORK` Sandboxes are created for pull requests made against this fork
+* `WATCH_FORK`: Sandboxes are created for pull requests made against this fork
   (default: `edx/edx-platform`)
 
 ### New Relic settings
 
-* `NEWRELIC_LICENSE_KEY` Your New Relic license key. If set, New Relic server
+* `NEWRELIC_LICENSE_KEY`: Your New Relic license key. If set, New Relic server
   and application monitoring will be enabled.
-* `NEWRELIC_ADMIN_USER_API_KEY` An API key for a New Relic admin user. If set,
+* `NEWRELIC_ADMIN_USER_API_KEY`: An API key for a New Relic admin user. If set,
   Synthetics availability monitoring will be enabled. Downtime alerts are sent
   to the email addresses in `ADMINS`.
 
 ### Sandbox settings
 
-* `OPENSTACK_SANDBOX_FLAVOR` A json string specifying the instance flavor to use
+* `OPENSTACK_SANDBOX_FLAVOR`: A json string specifying the instance flavor to use
   (default: `{"ram": 4096, "disk": 40}`)
-* `OPENSTACK_SANDBOX_BASE_IMAGE` A json string specifying the base image to use
+* `OPENSTACK_SANDBOX_BASE_IMAGE`: A json string specifying the base image to use
   (default: `{"name": "Ubuntu 12.04"}`)
-* `OPENSTACK_SANDBOX_SSH_KEYNAME` The name of the default ssh key pair used to
+* `OPENSTACK_SANDBOX_SSH_KEYNAME`: The name of the default ssh key pair used to
   connect to sandbox instances (default: `opencraft`). This key pair should be
   [registered with OpenStack](http://docs.openstack.org/user-guide/cli_nova_configure_access_security_for_instances.html)
   first, and should be the default ssh key for the user the instance manager
   runs as.
-* `OPENSTACK_SANDBOX_SSH_USERNAME` The user to run ansible playbooks as when
+* `OPENSTACK_SANDBOX_SSH_USERNAME`: The user to run ansible playbooks as when
   provisioning the sandbox (default: `ubuntu`)
-* `INSTANCE_EPHEMERAL_DATABASES` By default, instances use local mysql and mongo
+* `INSTANCE_EPHEMERAL_DATABASES`: By default, instances use local mysql and mongo
   databases. Set this to False to use external databases instead (default: True)
-* `INSTANCE_MYSQL_URL` If using an external mysql database, set its url here
-* `INSTANCE_MONGO_URL` If using an external mongo database, set its url here
+* `INSTANCE_MYSQL_URL`: If using an external mysql database, set its url here
+* `INSTANCE_MONGO_URL`: If using an external mongo database, set its url here
+
+### External SMTP service settings
+
+If you want to use an external SMTP service for sending email from app servers,
+set the following configuration variables:
+
+* `INSTANCE_SMTP_RELAY_HOST`: External SMTP host
+* `INSTANCE_SMTP_RELAY_PORT`: External SMTP port
+* `INSTANCE_SMTP_RELAY_USERNAME`: External SMTP provider username
+* `INSTANCE_SMTP_RELAY_PASSWORD`: External SMTP provider password
+* `INSTANCE_SMTP_RELAY_SENDER_DOMAIN`: When using external SMTP provider, email
+  From addresses are rewritten to use the specified sender domain, which should
+  be accepted by the external SMTP host. Defaults to the value of
+  `DEFAULT_INSTANCE_BASE_DOMAIN`: setting.
 
 ### Open edX specific settings
 
-* `DEFAULT_OPENEDX_RELEASE` Set this to a release tag like
+* `DEFAULT_OPENEDX_RELEASE`: Set this to a release tag like
   `named-release/dogwood` to specify the default release of Open edX to use.
   This setting becomes the default value for `edx_platform_version`,
   `forum_version`, `notifier_version`, `xqueue_version`, and `certs_version` so
   it should be a git branch or tag that exists in all of those repositories.
-* `DEFAULT_CONFIGURATION_REPO_URL` The repository containing the Open edX
+* `DEFAULT_CONFIGURATION_REPO_URL`: The repository containing the Open edX
   Ansible scripts to use. Defaults to
   `https://github.com/edx/configuration.git`.
-* `DEFAULT_CONFIGURATION_VERSION` The branch/tag/commit from the configuration
+* `DEFAULT_CONFIGURATION_VERSION`: The branch/tag/commit from the configuration
   repository to use by default. Normally this does not need to be set; if it is
   not set, the value of `DEFAULT_OPENEDX_RELEASE` will be used.
 * `DEFAULT_FORK`: The fork of `edx-platform` to use by default. Defaults to the
   main repository, `edx/edx-platform`.
-* `OPENEDX_RELEASE_STABLE_REF` Set this to a tag or branch for a stable
+* `OPENEDX_RELEASE_STABLE_REF`: Set this to a tag or branch for a stable
   Open edX release. It is used as a default value for `configuration_version`
   and `openedx_release` fields when creating production instances.
 

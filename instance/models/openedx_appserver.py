@@ -204,9 +204,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         vars_str = template.render({
             'appserver': self,
             'instance': self.instance,
-            # This property is needed twice in the template.  To avoid evaluating it twice (and
-            # querying the Github API twice), we pass it as a context variable.
-            'github_admin_username_list': self.github_admin_username_list,
             'newrelic_license_key': settings.NEWRELIC_LICENSE_KEY,
         })
         for attr_name in self.CONFIGURATION_EXTRA_FIELDS:
@@ -221,6 +218,23 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         template = loader.get_template(self.LMS_USER_VARS_TEMPLATE)
         return template.render(dict(lms_users=self.lms_users.all()))
+
+    @property
+    def smtp_relay_settings(self):
+        """
+        If external SMTP relay is configured, return a dictionary of settings to be consumed by postfix_queue role.
+        If external SMTP relay is not configured, return None.
+        """
+        if settings.INSTANCE_SMTP_RELAY_HOST:
+            return {
+                'host': settings.INSTANCE_SMTP_RELAY_HOST,
+                'port': settings.INSTANCE_SMTP_RELAY_PORT,
+                'username': settings.INSTANCE_SMTP_RELAY_USERNAME,
+                'password': settings.INSTANCE_SMTP_RELAY_PASSWORD,
+                'sender_address': '{}@{}'.format(self.instance.domain, settings.INSTANCE_SMTP_RELAY_SENDER_DOMAIN),
+            }
+        else:
+            return None
 
     @property
     def github_admin_username_list(self):
