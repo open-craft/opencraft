@@ -106,11 +106,14 @@ EDXAPP_FEATURES:
   # INDIVIDUAL_DUE_DATES: true
   # MILESTONES_APP: true
 
-{% if github_admin_username_list %}# Users
-COMMON_USER_INFO:{% for github_username in github_admin_username_list %}
+{% with github_username_list=appserver.github_admin_username_list %}
+{% if github_username_list %}# Users
+COMMON_USER_INFO:{% for github_username in github_username_list %}
   - name: {{ github_username }}
     github: true
-    type: admin{% endfor %}{% endif %}
+    type: admin{% endfor %}
+{% endif %}
+{% endwith %}
 
 # Workers
 EDXAPP_WORKER_DEFAULT_STOPWAITSECS: 1200
@@ -119,3 +122,17 @@ EDXAPP_WORKER_DEFAULT_STOPWAITSECS: 1200
 COMMON_ENABLE_NEWRELIC: {% if newrelic_license_key %}true{% else %}false{% endif %}
 COMMON_ENABLE_NEWRELIC_APP: {% if newrelic_license_key %}true{% else %}false{% endif %}
 NEWRELIC_LICENSE_KEY: '{{ newrelic_license_key|default:"" }}'
+
+{% with smtp_relay_settings=appserver.smtp_relay_settings %}
+{% if smtp_relay_settings %}# Relay email through external SMTP provider.
+POSTFIX_QUEUE_EXTERNAL_SMTP_HOST: '{{ smtp_relay_settings.host }}'
+POSTFIX_QUEUE_EXTERNAL_SMTP_PORT: '{{ smtp_relay_settings.port }}'
+POSTFIX_QUEUE_EXTERNAL_SMTP_USER: '{{ smtp_relay_settings.username }}'
+POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD: '{{ smtp_relay_settings.password }}'
+# The following two settings ensure that original From address is copied into the Reply-To header,
+# after which the original From address is replaced with an address constructed from instance domain
+# and the INSTANCE_SMTP_RELAY_SENDER_DOMAIN setting, for example: lms.myinstance.org@opencraft.hosting.
+POSTFIX_QUEUE_HEADER_CHECKS: '/^From:(.*)$/   PREPEND Reply-To:$1'
+POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ appserver.email }}  {{ smtp_relay_settings.sender_address }}'
+{% endif %}
+{% endwith %}

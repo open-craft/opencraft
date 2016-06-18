@@ -446,6 +446,13 @@ INSTANCE_MONGO_URL_OBJ = urlparse(INSTANCE_MONGO_URL) if INSTANCE_MONGO_URL else
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
 
+# When configured, email sent from instances is relayed via external SMTP provider.
+INSTANCE_SMTP_RELAY_HOST = env('INSTANCE_SMTP_RELAY_HOST', default=None)
+INSTANCE_SMTP_RELAY_PORT = env.int('INSTANCE_SMTP_RELAY_PORT', default=587)
+INSTANCE_SMTP_RELAY_USERNAME = env('INSTANCE_SMTP_RELAY_USERNAME', default='')
+INSTANCE_SMTP_RELAY_PASSWORD = env('INSTANCE_SMTP_RELAY_PASSWORD', default='')
+INSTANCE_SMTP_RELAY_SENDER_DOMAIN = env('INSTANCE_SMTP_RELAY_SENDER_DOMAIN', default=DEFAULT_INSTANCE_BASE_DOMAIN)
+
 # Subdomain blacklist #########################################################
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])

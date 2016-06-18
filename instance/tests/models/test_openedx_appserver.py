@@ -199,6 +199,50 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(len(ansible_settings['CREATE_LMS_USERS']), 1)
         self.assertEqual(ansible_settings['CREATE_LMS_USERS'][0]['username'], user.username)
 
+    @override_settings(
+        INSTANCE_SMTP_RELAY_HOST='smtp.myhost.com',
+        INSTANCE_SMTP_RELAY_PORT=2525,
+        INSTANCE_SMTP_RELAY_USERNAME='smtpuser',
+        INSTANCE_SMTP_RELAY_PASSWORD='smtppass',
+        INSTANCE_SMTP_RELAY_SENDER_DOMAIN='opencraft.hosting'
+    )
+    def test_postfix_queue_settings_present(self):
+        """
+        Check that ansible vars for postfix_queue role are set correctly.
+        """
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.postfix.queue',
+            use_ephemeral_databases=True,
+            email='test.postfix@myinstance.org',
+            external_lms_domain='lms.myinstance.org'
+        )
+        appserver = make_test_appserver(instance)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_HOST'], 'smtp.myhost.com')
+        self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_PORT'], '2525')
+        self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_USER'], 'smtpuser')
+        self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD'], 'smtppass')
+        self.assertEqual(configuration_vars['POSTFIX_QUEUE_HEADER_CHECKS'], '/^From:(.*)$/   PREPEND Reply-To:$1')
+        self.assertEqual(
+            configuration_vars['POSTFIX_QUEUE_SENDER_CANONICAL_MAPS'],
+            'test.postfix@myinstance.org  lms.myinstance.org@opencraft.hosting'
+        )
+
+    @override_settings(INSTANCE_SMTP_RELAY_HOST=None)
+    def test_postfix_queue_settings_absent(self):
+        """
+        Check that ansible vars for postfix_queue role are not present when SMTP relay host is not configured.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue', use_ephemeral_databases=True)
+        appserver = make_test_appserver(instance)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_HOST', configuration_vars)
+        self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_PORT', configuration_vars)
+        self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_USER', configuration_vars)
+        self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD', configuration_vars)
+        self.assertNotIn('POSTFIX_QUEUE_HEADER_CHECKS', configuration_vars)
+        self.assertNotIn('POSTFIX_QUEUE_SENDER_CANONICAL_MAPS', configuration_vars)
+
 
 @ddt
 class OpenEdXAppServerStatusTestCase(TestCase):
