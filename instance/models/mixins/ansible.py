@@ -51,6 +51,7 @@ class AnsibleAppServerMixin(models.Model):
     ansible_groups = (
         'rabbitmq',
         'elasticsearch',
+        'postfix_queue',
         'worker',
         'web',
         'forum',
