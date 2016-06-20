@@ -5,7 +5,7 @@ backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
 chardet==2.3.0
 CherryPy==6.0.1
-cliff==2.0.0
+cliff==2.1.0
 cmd2==0.6.8
 colorama==0.3.7
 cookies==2.2.1
@@ -78,14 +78,14 @@ pexpect==4.1.0
 pickleshare==0.7.2
 positional==1.1.0
 prettytable==0.7.2
-prospector==0.11.7
+prospector==0.12
 psycopg2==2.6.1
 ptyprocess==0.5.1
 pyflakes==1.2.3
 pylint==1.5.6
 pylint-celery==0.3
 pylint-common==0.2.2
-pylint-django==0.7.1
+pylint-django==0.7.2
 pylint-flask==0.3
 pylint-plugin-utils==0.2.3
 pymongo==3.2.2
@@ -93,7 +93,7 @@ pyparsing==2.1.5
 python-dateutil==2.5.3
 python-keystoneclient==3.1.0
 python-neutronclient==4.2.0
-python-novaclient==4.0.0
+python-novaclient==4.1.0
 python-swiftclient==3.0.0
 pytz==2016.4
 PyYAML==3.11
