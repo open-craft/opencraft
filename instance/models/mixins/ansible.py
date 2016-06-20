@@ -48,6 +48,17 @@ class AnsibleAppServerMixin(models.Model):
     """
     An AppServer that relies on Ansible to deploy its services
     """
+    ansible_groups = (
+        'rabbitmq',
+        'elasticsearch',
+        'worker',
+        'web',
+        'forum',
+        'notifier',
+        'xqueue',
+        'certs',
+    )
+
     class Meta:
         abstract = True
 
@@ -71,7 +82,8 @@ class AnsibleAppServerMixin(models.Model):
         public_ip = self.server.public_ip
         if public_ip is None:
             raise RuntimeError("Cannot prepare to run playbooks when server has no public IP.")
-        return '[app]\n{server_ip}'.format(server_ip=public_ip)
+        return '\n'.join('[{group}]\n{server_ip}'.format(group=group, server_ip=public_ip)
+                         for group in self.ansible_groups)
 
     def _run_playbook(self, working_dir, playbook):
         """

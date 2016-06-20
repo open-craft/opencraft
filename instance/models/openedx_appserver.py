@@ -126,7 +126,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
-    CONFIGURATION_PLAYBOOK = 'edx_sandbox'
+    CONFIGURATION_PLAYBOOK = 'edx_production'
     CONFIGURATION_VARS_TEMPLATE = 'instance/ansible/vars.yml'
     RUN_ROLE_PLAYBOOK = 'run_role'
     LMS_USER_VARS_TEMPLATE = 'instance/ansible/lms_users.yml'

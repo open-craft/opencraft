@@ -21,6 +21,15 @@ EDXAPP_CMS_SITE_NAME: '{{ instance.studio_domain }}'
 EDXAPP_CMS_BASE: '{{ instance.studio_domain }}'
 CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
 
+EDXAPP_CELERY_BROKER_HOSTNAME: ''
+EDXAPP_COMMENTS_SERVICE_URL: 'http://localhost:18080'
+EDXAPP_ECOMMERCE_API_URL: 'http://localhost:8002/api/v2'
+EDXAPP_ECOMMERCE_PUBLIC_URL_ROOT: 'http://localhost:8002'
+EDXAPP_ELASTIC_SEARCH_CONFIG:
+  - host: 'localhost'
+    port: 9200
+EDXAPP_XQUEUE_URL: 'http://localhost:18040'
+
 # Nginx
 {% if instance.protocol == 'https' %}
 NGINX_ENABLE_SSL: true

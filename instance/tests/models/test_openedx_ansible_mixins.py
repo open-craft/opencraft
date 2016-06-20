@@ -23,6 +23,7 @@ OpenEdXAppServer Ansible Mixin - Tests
 # Imports #####################################################################
 
 import os
+from configparser import ConfigParser
 from unittest.mock import patch, call, Mock
 
 from instance.models.mixins.ansible import Playbook
@@ -48,7 +49,10 @@ class AnsibleAppServerTestCase(TestCase):
 
         appserver = make_test_appserver()
         appserver.provision()  # This is when the server gets created
-        self.assertEqual(appserver.inventory_str, '[app]\n192.168.100.200')
+        inventory = ConfigParser(allow_no_value=True)
+        inventory.read_string(appserver.inventory_str)
+        for group in appserver.ansible_groups:
+            self.assertEqual(inventory[group].keys(), {'192.168.100.200'})
 
     @patch_services
     def test_inventory_str_no_server(self, mocks):
@@ -79,7 +83,7 @@ class AnsibleAppServerTestCase(TestCase):
             inventory_str=mock_inventory,
             vars_str=appserver.configuration_settings,
             playbook_path='{}/playbooks'.format(working_dir),
-            playbook_name='edx_sandbox.yml',
+            playbook_name='edx_production.yml',
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 
