@@ -48,6 +48,7 @@ COMMON_VHOST_ROLE_NAME: 'openstack'
 # Forum environment settings
 FORUM_RACK_ENV: 'production'
 FORUM_SINATRA_ENV: 'production'
+FORUM_ELASTICSEARCH_HOST: 'localhost'
 
 # Emails
 EDXAPP_CONTACT_EMAIL: '{{ appserver.email }}'
