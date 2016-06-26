@@ -73,7 +73,7 @@ path.py==8.2.1
 pbr==1.10.0
 pep257==0.7.0
 pep8==1.7.0
-pep8-naming==0.4.0
+pep8-naming==0.4.1
 pexpect==4.1.0
 pickleshare==0.7.2
 positional==1.1.0
