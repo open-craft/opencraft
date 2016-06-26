@@ -76,7 +76,7 @@ pep8==1.7.0
 pep8-naming==0.4.1
 pexpect==4.1.0
 pickleshare==0.7.2
-positional==1.1.0
+positional==1.1.1
 prettytable==0.7.2
 prospector==0.12
 psycopg2==2.6.1
