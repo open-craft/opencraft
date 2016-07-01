@@ -121,7 +121,7 @@ tldextract==2.0.1
 tlslite==0.4.9
 tornado==4.3
 tornado-redis==2.4.18
-traitlets==4.2.1
+traitlets==4.2.2
 unicodecsv==0.14.1
 virtualenv==15.0.2
 Werkzeug==0.11.10
