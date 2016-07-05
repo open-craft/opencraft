@@ -424,7 +424,7 @@ if 'file' in HANDLERS:
     LOGGING['handlers']['file'] = {
         'level': 'DEBUG',
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': 'log/main.log',
+        'filename': 'log/im.{}.log'.format(env('HONCHO_PROCESS_NAME', default='main')),
         'maxBytes': LOGGING_ROTATE_MAX_KBYTES * 1024,
         'backupCount': LOGGING_ROTATE_MAX_FILES,
         'formatter': 'verbose'
