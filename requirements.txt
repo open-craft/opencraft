@@ -1,5 +1,5 @@
 appdirs==1.4.0
-astroid==1.4.6
+astroid==1.4.7
 Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
@@ -82,7 +82,7 @@ prospector==0.12
 psycopg2==2.6.2
 ptyprocess==0.5.1
 pyflakes==1.2.3
-pylint==1.5.6
+pylint==1.6.0
 pylint-celery==0.3
 pylint-common==0.2.2
 pylint-django==0.7.2
