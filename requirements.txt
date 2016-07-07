@@ -79,7 +79,7 @@ pickleshare==0.7.2
 positional==1.1.1
 prettytable==0.7.2
 prospector==0.12
-psycopg2==2.6.1
+psycopg2==2.6.2
 ptyprocess==0.5.1
 pyflakes==1.2.3
 pylint==1.5.6
