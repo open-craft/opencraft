@@ -38,9 +38,9 @@ gitdb==0.6.4
 GitPython==2.0.0
 glob2==0.4.1
 gunicorn==19.4.5
-honcho==0.7.1
-# Can be replaced with huey==1.1.2 when released to PyPI.
-git+https://github.com/coleifer/huey.git@7fb322880a16e87c659c38746e59d66c8e5f3db7#egg=huey==1.1.2
+# Using patched honcho that includes: https://github.com/nickstenning/honcho/pull/179
+git+https://github.com/open-craft/honcho.git@00c8f0d6c55ba1e9ec18470e942e47b07617099a#egg=honcho==0.7.2
+huey==1.1.2
 ipdb==0.9.3
 ipython==4.2.0
 ipython-genutils==0.1.0
