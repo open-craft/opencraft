@@ -27,7 +27,7 @@ django-libsass==0.7
 django-redis==4.4.3
 -e git+https://github.com/kcsry/django-simple-email-confirmation.git@2df833cb3736264aac46f661c48bc2abdcbaa18f#egg=django-simple-email-confirmation
 django-zurb-foundation==5.5.0
-djangorestframework==3.3.3
+djangorestframework==3.4.0
 dodgy==0.1.9
 factory-boy==2.7.0
 fake-factory==0.5.9
@@ -68,7 +68,7 @@ os-client-config==1.18.0
 oslo.config==3.13.0
 oslo.i18n==3.8.0
 oslo.serialization==2.11.0
-oslo.utils==3.15.0
+oslo.utils==3.16.0
 path.py==8.2.1
 pbr==1.10.0
 pep257==0.7.0
