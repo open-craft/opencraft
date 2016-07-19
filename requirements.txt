@@ -4,7 +4,7 @@ Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
 chardet==2.3.0
-CherryPy==6.1.1
+CherryPy==6.2.0
 cliff==2.1.0
 cmd2==0.6.8
 colorama==0.3.7
