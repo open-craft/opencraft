@@ -87,7 +87,7 @@ pylint-celery==0.3
 pylint-common==0.2.2
 pylint-django==0.7.2
 pylint-flask==0.3
-pylint-plugin-utils==0.2.3
+pylint-plugin-utils==0.2.4
 pymongo==3.3.0
 pyparsing==2.1.5
 python-dateutil==2.5.3
