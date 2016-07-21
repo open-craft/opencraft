@@ -40,7 +40,7 @@ glob2==0.4.1
 gunicorn==19.6.0
 # Using patched honcho that includes: https://github.com/nickstenning/honcho/pull/179
 git+https://github.com/open-craft/honcho.git@00c8f0d6c55ba1e9ec18470e942e47b07617099a#egg=honcho==0.7.2
-huey==1.1.2
+huey==1.2.0
 ipdb==0.10.1
 ipython==5.0.0
 ipython-genutils==0.1.0
