@@ -119,7 +119,7 @@ stevedore==1.16.0
 -e git+https://github.com/jonashagstedt/swampdragon.git@061b2b1e4a57b7aa32d2fbc0824f070a52c1e300#egg=SwampDragon
 tldextract==2.0.1
 tlslite==0.4.9
-tornado==4.4
+tornado==4.4.1
 tornado-redis==2.4.18
 traitlets==4.2.2
 unicodecsv==0.14.1
