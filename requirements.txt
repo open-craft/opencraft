@@ -49,7 +49,7 @@ itsdangerous==0.24
 jasmine==2.4.0
 jasmine-core==2.4.0
 Jinja2==2.8
-jira==1.0.3
+jira==1.0.7
 keystoneauth1==2.9.0
 lazy-object-proxy==1.2.2
 libsass==0.11.1
