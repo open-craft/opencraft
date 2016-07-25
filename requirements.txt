@@ -24,7 +24,7 @@ django-extensions==1.6.7
 django-filter==0.13.0
 django-grappelli==2.8.1
 django-libsass==0.7
-django-redis==4.4.3
+django-redis==4.4.4
 -e git+https://github.com/kcsry/django-simple-email-confirmation.git@2df833cb3736264aac46f661c48bc2abdcbaa18f#egg=django-simple-email-confirmation
 django-zurb-foundation==5.5.0
 djangorestframework==3.4.0
