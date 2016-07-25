@@ -94,8 +94,10 @@ INSTALLED_APPS = (
     'huey.contrib.djhuey',
     'swampdragon',
     'simple_email_confirmation',
-    'debug_toolbar',
 ) + LOCAL_APPS
+
+if DEBUG:
+    INSTALLED_APPS += ('debug_toolbar',)
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
