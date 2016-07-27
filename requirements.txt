@@ -1,5 +1,5 @@
 appdirs==1.4.0
-astroid==1.4.7
+astroid==1.4.8
 Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.5.0
@@ -9,7 +9,7 @@ cliff==2.1.0
 cmd2==0.6.8
 colorama==0.3.7
 cookies==2.2.1
-coverage==4.1
+coverage==4.2
 ddt==1.1.0
 debtcollector==1.6.0
 decorator==4.0.10
