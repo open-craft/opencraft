@@ -2,7 +2,7 @@ appdirs==1.4.0
 astroid==1.4.8
 Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
-beautifulsoup4==4.5.0
+beautifulsoup4==4.5.1
 chardet==2.3.0
 CherryPy==7.1.0
 cliff==2.1.0
