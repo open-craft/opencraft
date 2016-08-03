@@ -78,7 +78,7 @@ pexpect==4.2.0
 pickleshare==0.7.3
 positional==1.1.1
 prettytable==0.7.2
-prospector==0.12
+prospector==0.12.1
 psycopg2==2.6.2
 ptyprocess==0.5.1
 pyflakes==1.2.3
