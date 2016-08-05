@@ -195,9 +195,9 @@ class OpenEdXAppServerTestCase(TestCase):
         instance.lms_users.add(user)
         appserver = make_test_appserver(instance)
         ansible_settings = yaml.load(appserver.lms_user_settings)
-        self.assertEqual(ansible_settings['role'], 'create_lms_users')
-        self.assertEqual(len(ansible_settings['CREATE_LMS_USERS']), 1)
-        self.assertEqual(ansible_settings['CREATE_LMS_USERS'][0]['username'], user.username)
+        self.assertEqual(len(ansible_settings['django_users']), 1)
+        self.assertEqual(ansible_settings['django_users'][0]['username'], user.username)
+        self.assertEqual(ansible_settings['django_groups'], [])
 
     @override_settings(
         INSTANCE_SMTP_RELAY_HOST='smtp.myhost.com',

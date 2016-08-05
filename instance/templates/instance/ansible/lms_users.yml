@@ -1,13 +1,12 @@
-role: create_lms_users
-
-CREATE_LMS_USERS:
+django_users:
 {% for user in lms_users %}
   - email: '{{ user.email }}'
-    name: '{{ user.profile.full_name }}'
     username: '{{ user.username }}'
-    password: '{{ user.password }}'
-    password_hash: true
-    is_staff: true
+    initial_password_hash: '{{ user.password }}'
+    staff: true
+    superuser: true
 {% empty %}
   []
 {% endfor %}
+
+django_groups: []

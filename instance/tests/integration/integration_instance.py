@@ -111,7 +111,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
         instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failure')
-        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="failure"):
+        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failure.yml"):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         self.assertIsNone(instance.active_appserver)
@@ -127,7 +127,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
         instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failignore')
-        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="failignore"):
+        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failignore.yml"):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         self.assertIsNotNone(instance.active_appserver)
