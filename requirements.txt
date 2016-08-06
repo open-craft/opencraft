@@ -27,7 +27,7 @@ django-libsass==0.7
 django-redis==4.4.4
 -e git+https://github.com/kcsry/django-simple-email-confirmation.git@2df833cb3736264aac46f661c48bc2abdcbaa18f#egg=django-simple-email-confirmation
 django-zurb-foundation==5.5.0
-djangorestframework==3.4.1
+djangorestframework==3.4.3
 dodgy==0.1.9
 factory-boy==2.7.0
 fake-factory==0.5.10
@@ -50,7 +50,7 @@ jasmine==2.4.0
 jasmine-core==2.4.0
 Jinja2==2.8
 jira==1.0.7
-keystoneauth1==2.10.0
+keystoneauth1==2.11.0
 lazy-object-proxy==1.2.2
 libsass==0.11.1
 logilab-common==1.2.2
@@ -64,7 +64,7 @@ netaddr==0.7.18
 netifaces==0.10.4
 oauthlib==1.1.2
 ordereddict==1.1
-os-client-config==1.19.0
+os-client-config==1.19.1
 oslo.config==3.14.0
 oslo.i18n==3.8.0
 oslo.serialization==2.12.0
@@ -123,6 +123,6 @@ tornado==4.4.1
 tornado-redis==2.4.18
 traitlets==4.2.2
 unicodecsv==0.14.1
-virtualenv==15.0.2
+virtualenv==15.0.3
 Werkzeug==0.11.10
 wrapt==1.10.8
