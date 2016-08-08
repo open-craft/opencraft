@@ -126,9 +126,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
-    CONFIGURATION_PLAYBOOK = 'edx_sandbox'
+    CONFIGURATION_PLAYBOOK = 'playbooks/edx_sandbox.yml'
     CONFIGURATION_VARS_TEMPLATE = 'instance/ansible/vars.yml'
-    RUN_ROLE_PLAYBOOK = 'run_role'
+    MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
     LMS_USER_VARS_TEMPLATE = 'instance/ansible/lms_users.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
@@ -166,7 +166,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path='playbooks/{}.yml'.format(self.CONFIGURATION_PLAYBOOK),
+            playbook_path=self.CONFIGURATION_PLAYBOOK,
             version=self.configuration_version,
             variables=self.configuration_settings,
         )
@@ -178,7 +178,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path='playbooks/{}.yml'.format(self.RUN_ROLE_PLAYBOOK),
+            playbook_path=self.MANAGE_USERS_PLAYBOOK,
             version=self.configuration_version,
             variables=self.lms_user_settings,
         )

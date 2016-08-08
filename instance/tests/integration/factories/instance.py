@@ -55,5 +55,5 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
     configuration_version = 'integration'
     # The open-craft fork doesn't have the 'named-release/cypress' tag, so use upstream:
-    edx_platform_repository_url = 'https://github.com/edx/edx-platform.git'
+    edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
     use_ephemeral_databases = True
