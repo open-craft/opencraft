@@ -23,6 +23,7 @@ from django.conf import settings
 from django.db import models
 from django.template import loader
 from django.utils.text import slugify
+from django_extensions.db.fields.json import JSONField
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import ansible
@@ -87,9 +88,18 @@ class OpenEdXAppConfiguration(models.Model):
 
     # Misc settings:
     use_ephemeral_databases = models.BooleanField()
-    github_admin_organization_name = models.CharField(
-        max_length=200, blank=True, default=settings.DEFAULT_ADMIN_ORGANIZATION,
-        help_text="GitHub organization whose users will be given SSH access to this instance's VMs",
+    github_admin_organizations = JSONField(
+        max_length=256,
+        blank=True,
+        default=[],
+        help_text='A list of Github organizations; the members of the "Owners" team in these '
+        "organizations be given SSH admin access to this instance's VMs.",
+    )
+    github_admin_users = JSONField(
+        max_length=256,
+        blank=True,
+        default=[],
+        help_text="A list of Github users who will be given SSH admin access to this instance's VMs.",
     )
     lms_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -144,6 +154,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Set default values.
         """
+        if not self.github_admin_organizations and settings.DEFAULT_ADMIN_ORGANIZATION:
+            self.github_admin_organizations = [settings.DEFAULT_ADMIN_ORGANIZATION]
         # Always override configuration_settings - it's not meant to be manually set. We can't
         # assert that it isn't set because if a ValidationError occurred, this method could be
         # called multiple times before this AppServer is successfully created.
@@ -241,12 +253,14 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Returns the github usernames of this instance admins
 
-        Admins are the members of the default team of the `github_admin_organization_name` org
+        Admins are all users listed in github_admin_users and the members of the default team of the
+        organizations in github_admin_organizations.
         """
-        if self.github_admin_organization_name:
-            return get_username_list_from_team(self.github_admin_organization_name)
-        else:
-            return []
+        admin_users = []
+        for org in self.github_admin_organizations:
+            admin_users += get_username_list_from_team(org)
+        admin_users += self.github_admin_users
+        return admin_users
 
     @log_exception
     @AppServer.status.only_for(AppServer.Status.New)
