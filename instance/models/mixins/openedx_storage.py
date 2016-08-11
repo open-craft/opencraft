@@ -84,21 +84,19 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             return ''
 
         new_settings = ''
-
-        # S3:
         if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
+            # S3
             template = loader.get_template('instance/ansible/s3.yml')
             new_settings += template.render({'instance': self})
-
-        # SWIFT:
-        if settings.SWIFT_ENABLE:
+        elif settings.SWIFT_ENABLE:
+            # Only enable Swift if S3 isn't configured
             template = loader.get_template('instance/ansible/swift.yml')
             new_settings += template.render({
                 'user': self.swift_openstack_user,
                 'password': self.swift_openstack_password,
                 'tenant': self.swift_openstack_tenant,
                 'auth_url': self.swift_openstack_auth_url,
-                'region': self.swift_openstack_region
+                'region': self.swift_openstack_region,
+                'container_name': self.swift_container_name,
             })
-
         return new_settings
