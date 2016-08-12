@@ -122,23 +122,30 @@ class OpenEdXAppServerTestCase(TestCase):
         By default, no admin should be configured
         """
         appserver = make_test_appserver()
-        self.assertEqual(appserver.github_admin_organization_name, '')
+        self.assertEqual(appserver.github_admin_organizations, [])
+        self.assertEqual(appserver.github_admin_users, [])
         self.assertEqual(appserver.github_admin_username_list, [])
         self.assertNotIn('COMMON_USER_INFO', appserver.configuration_settings)
 
     @patch('instance.models.openedx_appserver.get_username_list_from_team')
-    def test_github_admin_username_list_with_org_set(self, mock_get_username_list):
+    def test_github_admin_username_list(self, mock_get_username_list):
         """
-        When an admin org is set, its members should be included in the ansible conf
+        When Github admin users are set, they should end up in the Ansible configuration.
         """
-        mock_get_username_list.return_value = ['admin1', 'admin2']
-        instance = OpenEdXInstanceFactory(github_admin_organization_name='test-admin-org')
+        mock_get_username_list.side_effect = {
+            'test-org1': ['jane', 'joey'],
+            'test-org2': ['jess', 'jack'],
+        }.get
+        instance = OpenEdXInstanceFactory(
+            github_admin_organizations=['test-org1', 'test-org2'],
+            github_admin_users=['jean', 'john'],
+        )
+        all_names = ['jane', 'joey', 'jess', 'jack', 'jean', 'john']
         appserver = make_test_appserver(instance)
-        self.assertEqual(appserver.github_admin_username_list, ['admin1', 'admin2'])
+        self.assertEqual(appserver.github_admin_username_list, all_names)
         ansible_settings = yaml.load(appserver.configuration_settings)
         self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': 'admin1', 'github': True, 'type': 'admin'},
-            {'name': 'admin2', 'github': True, 'type': 'admin'},
+            {'name': name, 'github': True, 'type': 'admin'} for name in all_names
         ])
 
     @patch_services

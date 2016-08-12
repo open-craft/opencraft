@@ -67,7 +67,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
         self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
-        self.assertEqual(instance.github_admin_organization_name, '')
+        self.assertEqual(instance.github_admin_organizations, [])
+        self.assertEqual(instance.github_admin_users, [])
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
