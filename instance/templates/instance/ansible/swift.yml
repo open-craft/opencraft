@@ -14,3 +14,13 @@ EDXAPP_SWIFT_REGION_NAME: '{{ region }}'
 EDXAPP_GRADE_STORAGE_CLASS: 'swift.storage.SwiftStorage'
 EDXAPP_GRADE_STORAGE_KWARGS:
   name_prefix: 'grades-download/'
+
+XQUEUE_SETTINGS: 'openstack_settings'
+XQUEUE_SWIFT_USERNAME: '{{ user }}'
+XQUEUE_SWIFT_KEY: '{{ password }}'
+XQUEUE_SWIFT_TENANT_NAME: '{{ tenant }}'
+XQUEUE_SWIFT_AUTH_URL: '{{ auth_url }}'
+XQUEUE_SWIFT_AUTH_VERSION: '2'
+XQUEUE_SWIFT_REGION_NAME: '{{ region }}'
+XQUEUE_UPLOAD_BUCKET: '{{ container_name }}'
+XQUEUE_UPLOAD_PATH_PREFIX: 'xqueue'
