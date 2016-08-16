@@ -10,8 +10,6 @@ machine:
     TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
     WATCH_FORK: 'open-craft/edx-platform'
     WATCH_ORGANIZATION: 'open-craft'
-    # Integration configuration branch doesn't support Swift at present
-    SWIFT_ENABLE: false
 dependencies:
   pre:
     - pip install --upgrade pip
