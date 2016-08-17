@@ -99,7 +99,7 @@ pytz==2016.6.1
 PyYAML==3.11
 rcssmin==1.0.6
 redis==2.10.5
-requests==2.11.0
+requests==2.11.1
 requests-oauthlib==0.6.2
 requests-toolbelt==0.7.0
 requestsexceptions==1.1.3
