@@ -25,6 +25,13 @@ CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
 {% if instance.protocol == 'https' %}
 NGINX_ENABLE_SSL: true
 NGINX_REDIRECT_TO_HTTPS: true
+LETS_ENCRYPT_DOMAINS: 
+  - "{{ instance.internal_lms_domain }}"
+  - "{{ instance.external_lms_domain }}"
+  - "{{ instance.internal_lms_preview_domain }}"
+  - "{{ instance.external_lms_preview_domain }}"
+  - "{{ instance.internal_studio_domain }}"
+  - "{{ instance.external_studio_domain }}"
 {% else %}
 NGINX_ENABLE_SSL: false
 NGINX_REDIRECT_TO_HTTPS: false
