@@ -64,7 +64,7 @@ netaddr==0.7.18
 netifaces==0.10.4
 oauthlib==1.1.2
 ordereddict==1.1
-os-client-config==1.19.1
+os-client-config==1.20.0
 oslo.config==3.16.0
 oslo.i18n==3.9.0
 oslo.serialization==2.13.0
