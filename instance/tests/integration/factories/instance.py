@@ -51,9 +51,15 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
-    openedx_release = 'named-release/cypress' # Use a known working version
+    use_ephemeral_databases = True
+
+    # Versions to use for the integration tests.  The field "openedx_release" must be a commit name
+    # that is valid for the forums, notifier, xqueue and certs, so usually only an official release
+    # or a release candidate tag will work.  We point both the edx-platform and the configuration
+    # versions to the branch "integration" in our own forks.  These branches are based on the
+    # corresponding openedx_release versions from upstream, but can contain custom modifications.
+    openedx_release = 'open-release/eucalyptus.1rc2'
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
     configuration_version = 'integration'
-    # The open-craft fork doesn't have the 'named-release/cypress' tag, so use upstream:
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
-    use_ephemeral_databases = True
+    edx_platform_commit = 'integration'
