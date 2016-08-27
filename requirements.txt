@@ -86,7 +86,7 @@ pylint==1.6.4
 pylint-celery==0.3
 pylint-common==0.2.2
 pylint-django==0.7.2
-pylint-flask==0.3
+pylint-flask==0.4
 pylint-plugin-utils==0.2.4
 pymongo==3.3.0
 pyparsing==2.1.8
