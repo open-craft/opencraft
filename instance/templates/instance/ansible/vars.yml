@@ -30,12 +30,6 @@ NGINX_ENABLE_SSL: false
 NGINX_REDIRECT_TO_HTTPS: false
 {% endif %}
 
-# Enable OpenStack settings to be able to use Swift.  These three variables are ignored in versions
-# of the configuration repo that don't have the openstack role yet, so it's safe to include them.
-EDXAPP_SETTINGS: 'openstack'
-XQUEUE_SETTINGS: 'openstack_settings'
-COMMON_VHOST_ROLE_NAME: 'openstack'
-
 # Forum environment settings
 FORUM_RACK_ENV: 'production'
 FORUM_SINATRA_ENV: 'production'
