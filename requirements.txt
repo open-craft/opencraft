@@ -96,7 +96,7 @@ python-neutronclient==5.1.0
 python-novaclient==5.1.0
 python-swiftclient==3.0.0
 pytz==2016.6.1
-PyYAML==3.11
+PyYAML==3.12
 rcssmin==1.0.6
 redis==2.10.5
 requests==2.11.1
