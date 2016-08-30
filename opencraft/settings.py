@@ -320,11 +320,13 @@ OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='named-re
 STABLE_EDX_PLATFORM_REPO_URL = env(
     'STABLE_EDX_PLATFORM_REPO_URL', default='https://github.com/{}.git'.format(DEFAULT_FORK)
 )
+STABLE_EDX_PLATFORM_COMMIT = env('STABLE_EDX_PLATFORM_COMMIT', default=OPENEDX_RELEASE_STABLE_REF)
 
 # The configuration repository used by default for production instances
 STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
+STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default=OPENEDX_RELEASE_STABLE_REF)
 
 # Ansible #####################################################################
 
