@@ -137,18 +137,13 @@ class FactoriesTestCase(TestCase):
             production_instance_factory()
 
         # Calling factory with settings that are problematic for production instances should produce warnings
-        with patch("instance.factories.settings") as patched_settings:
-            patched_settings.SWIFT_ENABLE = False
-            patched_settings.INSTANCE_MYSQL_URL = None
-            patched_settings.INSTANCE_MONGO_URL = None
-
-            # Copy required settings over to the mock settings
-            patched_settings.OPENEDX_RELEASE_STABLE_REF = settings.OPENEDX_RELEASE_STABLE_REF
-            patched_settings.STABLE_EDX_PLATFORM_REPO_URL = settings.STABLE_EDX_PLATFORM_REPO_URL
-            patched_settings.STABLE_CONFIGURATION_REPO_URL = settings.STABLE_CONFIGURATION_REPO_URL
-
+        with patch.multiple(
+            "instance.factories.settings",
+            SWIFT_ENABLE=False,
+            INSTANCE_MYSQL_URL=None,
+            INSTANCE_MONGO_URL=None,
+        ):
             production_instance_factory(sub_domain="production-instance-doomed")
-
             log_entries = LogEntry.objects.all()
             self.assertEqual(len(log_entries), 3)
             self.assertTrue(all(log_entry.level == "WARNING" for log_entry in log_entries))

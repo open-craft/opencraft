@@ -272,9 +272,17 @@ set the following configuration variables:
   not set, the value of `DEFAULT_OPENEDX_RELEASE` will be used.
 * `DEFAULT_FORK`: The fork of `edx-platform` to use by default. Defaults to the
   main repository, `edx/edx-platform`.
-* `OPENEDX_RELEASE_STABLE_REF`: Set this to a tag or branch for a stable
-  Open edX release. It is used as a default value for `configuration_version`
-  and `openedx_release` fields when creating production instances.
+* `OPENEDX_RELEASE_STABLE_REF`: Set this to a tag or branch for a stable Open
+  edX release. It is used as a default value for the `openedx_release` field
+  when creating production instances.
+* `STABLE_EDX_PLATFORM_REPO_URL`: The edx-platform repo used by default for
+  production instances.
+* `STABLE_EDX_PLATFORM_COMMIT`: The edx-platform commit ref used by default for
+  production instances.  Defaults to OPENEDX_RELEASE_STABLE_REF.
+* `STABLE_CONFIGURATION_REPO_URL`: The configuration repo used by default for
+  production instances.
+* `STABLE_CONFIGURATION_VERSION`: The configuration commit ref used by default
+  for production instances.  Defaults to OPENEDX_RELEASE_STABLE_REF.
 
 Migrations
 ----------

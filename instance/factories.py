@@ -116,8 +116,9 @@ def production_instance_factory(**kwargs):
     instance_kwargs = dict(
         use_ephemeral_databases=False,
         edx_platform_repository_url=settings.STABLE_EDX_PLATFORM_REPO_URL,
+        edx_platform_commit=settings.STABLE_EDX_PLATFORM_COMMIT,
         configuration_source_repo_url=settings.STABLE_CONFIGURATION_REPO_URL,
-        configuration_version=settings.OPENEDX_RELEASE_STABLE_REF,
+        configuration_version=settings.STABLE_CONFIGURATION_VERSION,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
     )
