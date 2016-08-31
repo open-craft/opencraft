@@ -124,5 +124,5 @@ tornado-redis==2.4.18
 traitlets==4.2.2
 unicodecsv==0.14.1
 virtualenv==15.0.3
-Werkzeug==0.11.10
+Werkzeug==0.11.11
 wrapt==1.10.8
