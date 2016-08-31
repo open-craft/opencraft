@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Helper function to upgrade production instances from Dogwood to Eucalyptus.
+Helper functions to upgrade production instances from Dogwood to Eucalyptus.
 """
 
 import logging
@@ -49,8 +49,6 @@ def upgrade_to_eucalyptus(instances):
         instance.configuration_version = "opencraft-release/eucalyptus.1"
         instance.openedx_release = "open-release/eucalyptus.1"
         instance.save()
-        for appserver in instance.appserver_set.iterator():
-            appserver.terminate_vm()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
 
 
