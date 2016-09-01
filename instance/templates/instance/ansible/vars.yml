@@ -64,6 +64,8 @@ forum_version: '{{ appserver.openedx_release }}'
 notifier_version: '{{ appserver.openedx_release }}'
 xqueue_version: '{{ appserver.openedx_release }}'
 certs_version: '{{ appserver.openedx_release }}'
+ANALYTICS_API_VERSION: '{{ appserver.openedx_release }}'
+INSIGHTS_VERSION: '{{ appserver.openedx_release }}'
 
 # Misc
 EDXAPP_LANG: 'en_US.UTF-8'
