@@ -14,7 +14,7 @@ ddt==1.1.0
 debtcollector==1.8.0
 decorator==4.0.10
 dj-static==0.0.6
-Django==1.10
+Django==1.10.1
 git+https://github.com/open-craft/django-angular.git@5f3e54f909b925eecb59dc4dd73b6e9fe27e9558#egg=django-angular==0.8.3
 django-appconf==1.0.2
 django-compressor==2.1
