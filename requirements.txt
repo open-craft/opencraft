@@ -89,7 +89,7 @@ pylint-django==0.7.2
 pylint-flask==0.5
 pylint-plugin-utils==0.2.4
 pymongo==3.3.0
-pyparsing==2.1.8
+pyparsing==2.1.9
 python-dateutil==2.5.3
 python-keystoneclient==3.5.0
 python-neutronclient==6.0.0
