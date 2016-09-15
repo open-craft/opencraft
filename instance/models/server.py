@@ -322,7 +322,8 @@ class OpenStackServer(Server):
             os_server = self.os_server
         except Exception:
             self.logger.debug('Could not reach the OpenStack API')
-            self._status_to_unknown()
+            if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending):
+                self._status_to_unknown()
             return self.status
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
 

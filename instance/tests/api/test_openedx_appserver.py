@@ -250,7 +250,6 @@ class OpenEdXAppServerAPITestCase(APITestCase):
                 'text': 'instance.models.server    | server={server_name} | error',
             },
         ]
-
         self.check_log_list(
             expected_list, response.data['log_entries'],
             inst_id=instance.ref.id, as_id=app_server.pk, server_name=server.name,
