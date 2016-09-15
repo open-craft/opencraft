@@ -154,7 +154,9 @@ class Server(ValidateModelMixin, TimeStampedModel):
     # State transitions:
     _status_to_building = status.transition(from_states=Status.Pending, to_state=Status.Building)
     _status_to_build_failed = status.transition(from_states=Status.Building, to_state=Status.BuildFailed)
-    _status_to_booting = status.transition(from_states=(Status.Building, Status.Ready, Status.Unknown), to_state=Status.Booting)
+    _status_to_booting = status.transition(
+        from_states=(Status.Building, Status.Ready, Status.Unknown), to_state=Status.Booting
+    )
     _status_to_ready = status.transition(from_states=(Status.Booting, Status.Unknown), to_state=Status.Ready)
     _status_to_terminated = status.transition(to_state=Status.Terminated)
     _status_to_unknown = status.transition(
@@ -287,7 +289,7 @@ class OpenStackServer(Server):
 
         try:
             public_addr = openstack.get_server_public_address(self.os_server)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             return None  # Could not determine an IP based on the OS API
         if not public_addr:
             return None
@@ -320,7 +322,7 @@ class OpenStackServer(Server):
             return self.status
         try:
             os_server = self.os_server
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             self.logger.debug('Could not reach the OpenStack API')
             if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending):
                 self._status_to_unknown()
