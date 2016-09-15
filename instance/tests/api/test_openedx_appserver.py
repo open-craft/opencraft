@@ -142,7 +142,9 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         server_data = response.data['server'].items()
         self.assertIn(('id', app_server.server.pk), server_data)
         self.assertIn(('public_ip', None), server_data)
-        self.assertIn(('status', 'pending'), server_data)
+        # The API call will try to start the server, which will fail, since we're
+        # not actually talking to an OpenStack instance when unit tests are running
+        self.assertIn(('status', 'failed'), server_data)
         self.assertIn('log_entries', response.data)
         self.assertIn('log_error_entries', response.data)
 
@@ -249,6 +251,16 @@ class OpenEdXAppServerAPITestCase(APITestCase):
                 'level': 'ERROR',
                 'text': 'instance.models.server    | server={server_name} | error',
             },
+            {
+                'level': 'INFO',
+                'text': 'instance.models.server    | server={server_name} |'
+                        ' Starting server (status=Pending [pending])...'
+            },
+            {
+                'level': 'ERROR',
+                'text': 'instance.models.server    | server={server_name} |'
+                        ' Failed to start server: Not found (HTTP 404)'
+            },
         ]
         self.check_log_list(
             expected_list, response.data['log_entries'],
@@ -294,6 +306,11 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             {
                 'level': 'ERROR',
                 'text': 'instance.models.server    | server={server_name} | error',
+            },
+            {
+                'level': 'ERROR',
+                'text': 'instance.models.server    | server={server_name} |'
+                        ' Failed to start server: Not found (HTTP 404)'
             },
         ]
         self.check_log_list(

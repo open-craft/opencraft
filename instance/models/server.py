@@ -30,6 +30,7 @@ from django.db import models
 from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 import novaclient
+import requests
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack
@@ -289,7 +290,7 @@ class OpenStackServer(Server):
 
         try:
             public_addr = openstack.get_server_public_address(self.os_server)
-        except Exception:  # pylint: disable=broad-except
+        except (requests.RequestException, novaclient.exceptions.ClientException):
             return None  # Could not determine an IP based on the OS API
         if not public_addr:
             return None
@@ -322,7 +323,7 @@ class OpenStackServer(Server):
             return self.status
         try:
             os_server = self.os_server
-        except Exception:  # pylint: disable=broad-except
+        except (requests.RequestException, novaclient.exceptions.ClientException):
             self.logger.debug('Could not reach the OpenStack API')
             if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending):
                 self._status_to_unknown()

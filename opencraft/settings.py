@@ -466,11 +466,6 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.com')
 BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
 
-# Determine whether to update server status whenever there's an API call requesting it
-
-UPDATE_OPENSTACK_SERVER_STATUS_ON_API_CALL = env.bool('UPDATE_OPENSTACK_SERVER_STATUS_ON_API_CALL', default=True)
-
-
 # Monitoring ##################################################################
 
 # Set this to a new relic license key to enable instance monitoring

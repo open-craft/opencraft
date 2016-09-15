@@ -22,7 +22,6 @@ Server serializers (API representation)
 
 # Imports #####################################################################
 
-from django.conf import settings
 from rest_framework import serializers
 
 from instance.models.server import OpenStackServer
@@ -51,8 +50,7 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         # Make sure we have an up-to-date representation of the server
-        if settings.UPDATE_OPENSTACK_SERVER_STATUS_ON_API_CALL:
-            obj.update_status()
+        obj.update_status()
         output = super().to_representation(obj)
         # Convert the state values from objects to strings:
         output['status'] = obj.status.state_id
