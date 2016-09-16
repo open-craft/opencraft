@@ -250,6 +250,15 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertNotIn('POSTFIX_QUEUE_HEADER_CHECKS', configuration_vars)
         self.assertNotIn('POSTFIX_QUEUE_SENDER_CANONICAL_MAPS', configuration_vars)
 
+    def test_youtube_api_key_unset(self):
+        """
+        Check that EDXAPP_YOUTUBE_API_KEY is set to None by default.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey', use_ephemeral_databases=True)
+        appserver = make_test_appserver(instance)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
+
 
 @ddt
 class OpenEdXAppServerStatusTestCase(TestCase):
