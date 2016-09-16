@@ -53,6 +53,10 @@ SECURITY_UPGRADE_ON_ANSIBLE: true
 # OAuth
 EDXAPP_OAUTH_ENFORCE_SECURE: '{{ NGINX_REDIRECT_TO_HTTPS }}'
 
+# Set YouTube API key to null to avoid YouTube XHR errors.
+# Can be overridden in extra settings with a valid API key.
+EDXAPP_YOUTUBE_API_KEY: !!null
+
 # Repositories URLs
 edx_ansible_source_repo: '{{ appserver.configuration_source_repo_url }}'
 edx_platform_repo: '{{ appserver.edx_platform_repository_url }}'
