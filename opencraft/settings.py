@@ -466,6 +466,7 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.com')
 BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
 
+
 # Monitoring ##################################################################
 
 # Set this to a new relic license key to enable instance monitoring

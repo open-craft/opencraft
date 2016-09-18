@@ -432,6 +432,22 @@ class OpenStackServerStatusTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Building)
         self._assert_status_conditions(server)
 
+        server._status_to_unknown()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        self._assert_status_conditions(server)
+
+        server._status_to_building()
+        self.assertEqual(server.status, ServerStatus.Building)
+        self._assert_status_conditions(server)
+
+        server._status_to_booting()
+        self.assertEqual(server.status, ServerStatus.Booting)
+        self._assert_status_conditions(server, vm_available=True)
+
+        server._status_to_unknown()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        self._assert_status_conditions(server)
+
         server._status_to_booting()
         self.assertEqual(server.status, ServerStatus.Booting)
         self._assert_status_conditions(server, vm_available=True)
@@ -461,11 +477,17 @@ class OpenStackServerStatusTestCase(TestCase):
     @data(
         {
             'name': '_status_to_building',
-            'from_states': [ServerStatus.Pending],
+            'from_states': [
+                ServerStatus.Pending,
+                ServerStatus.Unknown
+            ],
         },
         {
             'name': '_status_to_build_failed',
-            'from_states': [ServerStatus.Building],
+            'from_states': [
+                ServerStatus.Building,
+                ServerStatus.Unknown
+            ],
         },
         {
             'name': '_status_to_booting',

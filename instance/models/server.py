@@ -153,8 +153,8 @@ class Server(ValidateModelMixin, TimeStampedModel):
         db_column='status',
     )
     # State transitions:
-    _status_to_building = status.transition(from_states=Status.Pending, to_state=Status.Building)
-    _status_to_build_failed = status.transition(from_states=Status.Building, to_state=Status.BuildFailed)
+    _status_to_building = status.transition(from_states=(Status.Pending, Status.Unknown), to_state=Status.Building)
+    _status_to_build_failed = status.transition(from_states=(Status.Building, Status.Unknown), to_state=Status.BuildFailed)
     _status_to_booting = status.transition(
         from_states=(Status.Building, Status.Ready, Status.Unknown), to_state=Status.Booting
     )
@@ -325,10 +325,15 @@ class OpenStackServer(Server):
             os_server = self.os_server
         except (requests.RequestException, novaclient.exceptions.ClientException):
             self.logger.debug('Could not reach the OpenStack API')
-            if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending):
+            if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending, Status.Unknown):
                 self._status_to_unknown()
             return self.status
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
+
+        if self.status == Status.Unknown:
+            if os_server.status in ('INITIALIZED', 'BUILDING'):
+                # OpenStack has multiple API versions; INITIALIZED is current; BUILDING was used in the past
+                self.status_to_building()
 
         if self.status in (Status.Building, Status.Unknown):
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
