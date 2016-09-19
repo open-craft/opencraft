@@ -333,7 +333,7 @@ class OpenStackServer(Server):
         if self.status == Status.Unknown:
             if os_server.status in ('INITIALIZED', 'BUILDING'):
                 # OpenStack has multiple API versions; INITIALIZED is current; BUILDING was used in the past
-                self.status_to_building()
+                self._status_to_building()
 
         if self.status in (Status.Building, Status.Unknown):
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
