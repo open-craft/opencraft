@@ -154,7 +154,9 @@ class Server(ValidateModelMixin, TimeStampedModel):
     )
     # State transitions:
     _status_to_building = status.transition(from_states=(Status.Pending, Status.Unknown), to_state=Status.Building)
-    _status_to_build_failed = status.transition(from_states=(Status.Building, Status.Unknown), to_state=Status.BuildFailed)
+    _status_to_build_failed = status.transition(
+        from_states=(Status.Building, Status.Unknown), to_state=Status.BuildFailed
+    )
     _status_to_booting = status.transition(
         from_states=(Status.Building, Status.Ready, Status.Unknown), to_state=Status.Booting
     )
