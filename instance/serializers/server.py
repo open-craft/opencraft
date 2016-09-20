@@ -49,6 +49,8 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, obj):
+        # Make sure we have an up-to-date representation of the server
+        obj.update_status()
         output = super().to_representation(obj)
         # Convert the state values from objects to strings:
         output['status'] = obj.status.state_id

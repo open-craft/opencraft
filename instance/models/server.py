@@ -30,6 +30,7 @@ from django.db import models
 from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 import novaclient
+import requests
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack
@@ -152,10 +153,14 @@ class Server(ValidateModelMixin, TimeStampedModel):
         db_column='status',
     )
     # State transitions:
-    _status_to_building = status.transition(from_states=Status.Pending, to_state=Status.Building)
-    _status_to_build_failed = status.transition(from_states=Status.Building, to_state=Status.BuildFailed)
-    _status_to_booting = status.transition(from_states=(Status.Building, Status.Ready), to_state=Status.Booting)
-    _status_to_ready = status.transition(from_states=Status.Booting, to_state=Status.Ready)
+    _status_to_building = status.transition(from_states=(Status.Pending, Status.Unknown), to_state=Status.Building)
+    _status_to_build_failed = status.transition(
+        from_states=(Status.Building, Status.Unknown), to_state=Status.BuildFailed
+    )
+    _status_to_booting = status.transition(
+        from_states=(Status.Building, Status.Ready, Status.Unknown), to_state=Status.Booting
+    )
+    _status_to_ready = status.transition(from_states=(Status.Booting, Status.Unknown), to_state=Status.Ready)
     _status_to_terminated = status.transition(to_state=Status.Terminated)
     _status_to_unknown = status.transition(
         from_states=(Status.Building, Status.Booting, Status.Ready), to_state=Status.Unknown
@@ -287,8 +292,8 @@ class OpenStackServer(Server):
 
         try:
             public_addr = openstack.get_server_public_address(self.os_server)
-        except novaclient.exceptions.NotFound:
-            return None  # This server has been deleted.
+        except (requests.RequestException, novaclient.exceptions.ClientException):
+            return None  # Could not determine an IP based on the OS API
         if not public_addr:
             return None
 
@@ -316,18 +321,28 @@ class OpenStackServer(Server):
 
         # First check if it makes sense to update the current status.
         # This is not the case if we can not interact with the server:
-        if self.status == Status.BuildFailed:
+        if self.status in (Status.BuildFailed, Status.Terminated):
             return self.status
-
-        os_server = self.os_server
+        try:
+            os_server = self.os_server
+        except (requests.RequestException, novaclient.exceptions.ClientException):
+            self.logger.debug('Could not reach the OpenStack API')
+            if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending, Status.Unknown):
+                self._status_to_unknown()
+            return self.status
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
 
-        if self.status == Status.Building:
+        if self.status == Status.Unknown:
+            if os_server.status in ('INITIALIZED', 'BUILDING'):
+                # OpenStack has multiple API versions; INITIALIZED is current; BUILDING was used in the past
+                self._status_to_building()
+
+        if self.status in (Status.Building, Status.Unknown):
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._status_to_booting()
 
-        elif self.status == Status.Booting and self.public_ip and is_port_open(self.public_ip, 22):
+        if self.status in (Status.Booting, Status.Unknown) and self.public_ip and is_port_open(self.public_ip, 22):
             self._status_to_ready()
 
         return self.status

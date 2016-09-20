@@ -432,9 +432,33 @@ class OpenStackServerStatusTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Building)
         self._assert_status_conditions(server)
 
+        server._status_to_unknown()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        self._assert_status_conditions(server)
+
+        server._status_to_building()
+        self.assertEqual(server.status, ServerStatus.Building)
+        self._assert_status_conditions(server)
+
         server._status_to_booting()
         self.assertEqual(server.status, ServerStatus.Booting)
         self._assert_status_conditions(server, vm_available=True)
+
+        server._status_to_unknown()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        self._assert_status_conditions(server)
+
+        server._status_to_booting()
+        self.assertEqual(server.status, ServerStatus.Booting)
+        self._assert_status_conditions(server, vm_available=True)
+
+        server._status_to_ready()
+        self.assertEqual(server.status, ServerStatus.Ready)
+        self._assert_status_conditions(server, is_steady_state=True, accepts_ssh_commands=True, vm_available=True)
+
+        server._status_to_unknown()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        self._assert_status_conditions(server)
 
         server._status_to_ready()
         self.assertEqual(server.status, ServerStatus.Ready)
@@ -453,22 +477,32 @@ class OpenStackServerStatusTestCase(TestCase):
     @data(
         {
             'name': '_status_to_building',
-            'from_states': [ServerStatus.Pending],
+            'from_states': [
+                ServerStatus.Pending,
+                ServerStatus.Unknown
+            ],
         },
         {
             'name': '_status_to_build_failed',
-            'from_states': [ServerStatus.Building],
+            'from_states': [
+                ServerStatus.Building,
+                ServerStatus.Unknown
+            ],
         },
         {
             'name': '_status_to_booting',
             'from_states': [
                 ServerStatus.Building,
                 ServerStatus.Ready,
+                ServerStatus.Unknown,
             ],
         },
         {
             'name': '_status_to_ready',
-            'from_states': [ServerStatus.Booting],
+            'from_states': [
+                ServerStatus.Booting,
+                ServerStatus.Unknown
+            ],
         },
         {
             'name': '_status_to_terminated',
@@ -480,6 +514,7 @@ class OpenStackServerStatusTestCase(TestCase):
                 ServerStatus.Building,
                 ServerStatus.Booting,
                 ServerStatus.Ready,
+                ServerStatus.Unknown,
             ],
         },
     )
