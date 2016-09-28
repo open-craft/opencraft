@@ -94,7 +94,7 @@ test_unit: clean static_external
 	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
 	coverage html
 	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
-	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 95%\n" && exit 2)
+	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 94%\n" && exit 2)
 
 # Check whether migrations need to be generated
 test_migrations_missing: clean
