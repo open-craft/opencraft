@@ -313,6 +313,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         if app_server.provision():
             self.logger.info('Provisioned new app server, %s', app_server.name)
             self.successfully_provisioned = True
+            self.save()
             return app_server.pk
         else:
             self.logger.error('Failed to provision new app server')
@@ -351,4 +352,3 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         an appserver (read: database) for this instance in the past.
         """
         return not self.successfully_provisioned or self.use_ephemeral_databases
-
