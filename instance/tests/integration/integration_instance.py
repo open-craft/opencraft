@@ -88,6 +88,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
+        self.assertTrue(instance.successfully_provisioned)
+        self.assertTrue(instance.require_user_creation_success())
 
     @shard(2)
     def test_external_databases(self):
@@ -102,6 +104,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
         self.assert_instance_up(instance)
+        self.assertTrue(instance.successfully_provisioned)
+        self.assertFalse(instance.require_user_creation_success())
 
     @patch_git_checkout
     def test_ansible_failure(self, git_checkout, git_working_dir):

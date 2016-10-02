@@ -236,7 +236,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                 # non-ephemeral databases and have successfully provisioned any
                 # appservers for this instance in the past; we assume we got it
                 # right the first time and don't worry about errors.
-                ignore_creation_errors=self.instance.require_user_creation_success()
+                ignore_creation_errors=not self.instance.require_user_creation_success()
             )
         )
 
