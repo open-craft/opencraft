@@ -88,6 +88,8 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         OpenEdXAppServer, null=True, blank=True, on_delete=models.SET_NULL, related_name='+',
     )
 
+    successfully_provisioned = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = 'Open edX Instance'
 
@@ -310,6 +312,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
 
         if app_server.provision():
             self.logger.info('Provisioned new app server, %s', app_server.name)
+            self.successfully_provisioned = True
             return app_server.pk
         else:
             self.logger.error('Failed to provision new app server')
@@ -339,3 +342,13 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             )
             app_server.add_lms_users(self.lms_users.all())
         return app_server
+
+    def require_user_creation_success(self):
+        """
+        When provisioning users, we don't want to force incompatible changes (e.g., in email)
+        if we've previously provisioned a database with the variables we were interested in initially.
+        This method returns false if a) we're using non-ephemeral databases and b) we've provisioned
+        an appserver (read: database) for this instance in the past.
+        """
+        return not self.successfully_provisioned or self.use_ephemeral_databases
+
