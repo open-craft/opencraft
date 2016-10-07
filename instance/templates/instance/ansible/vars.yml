@@ -133,6 +133,6 @@ POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD: '{{ smtp_relay_settings.password }}'
 # after which the original From address is replaced with an address constructed from instance domain
 # and the INSTANCE_SMTP_RELAY_SENDER_DOMAIN setting, for example: lms.myinstance.org@opencraft.hosting.
 POSTFIX_QUEUE_HEADER_CHECKS: '/^From:(.*)$/   PREPEND Reply-To:$1'
-POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ appserver.email }}  {{ smtp_relay_settings.sender_address }}'
+POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  {{ smtp_relay_settings.rewritten_address }}'
 {% endif %}
 {% endwith %}

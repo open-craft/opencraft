@@ -232,7 +232,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(configuration_vars['POSTFIX_QUEUE_HEADER_CHECKS'], '/^From:(.*)$/   PREPEND Reply-To:$1')
         self.assertEqual(
             configuration_vars['POSTFIX_QUEUE_SENDER_CANONICAL_MAPS'],
-            'test.postfix@myinstance.org  lms.myinstance.org@opencraft.hosting'
+            '@myinstance.org  lms.myinstance.org@opencraft.hosting'
         )
 
     @override_settings(INSTANCE_SMTP_RELAY_HOST=None)
