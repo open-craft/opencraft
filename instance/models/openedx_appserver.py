@@ -229,7 +229,16 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         Generate the settings for creating the initial LMS users.
         """
         template = loader.get_template(self.LMS_USER_VARS_TEMPLATE)
-        return template.render(dict(lms_users=self.lms_users.all()))
+        return template.render(
+            dict(
+                lms_users=self.lms_users.all(),
+                # We do not require users to be created successfully if we're using
+                # non-ephemeral databases and have successfully provisioned any
+                # appservers for this instance in the past; we assume we got it
+                # right the first time and don't worry about errors.
+                ignore_creation_errors=not self.instance.require_user_creation_success()
+            )
+        )
 
     @property
     def smtp_relay_settings(self):

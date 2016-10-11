@@ -10,3 +10,4 @@ django_users:
 {% endfor %}
 
 django_groups: []
+ignore_user_creation_errors: '{{ ignore_creation_errors }}'
