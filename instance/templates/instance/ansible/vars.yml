@@ -44,6 +44,13 @@ EDXAPP_DEFAULT_FEEDBACK_EMAIL: '{{ appserver.email }}'
 EDXAPP_SERVER_EMAIL: '{{ appserver.email }}'
 EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
 
+EDXAPP_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
+EDXAPP_EMAIL_HOST: 'localhost'
+EDXAPP_EMAIL_PORT: 25
+EDXAPP_EMAIL_HOST_USER: ''
+EDXAPP_EMAIL_HOST_PASSWORD: ''
+EDXAPP_EMAIL_USE_TLS: false
+
 # Security updates
 COMMON_SECURITY_UPDATES: true
 SECURITY_UNATTENDED_UPGRADES: true
@@ -51,11 +58,28 @@ SECURITY_UPDATE_ALL_PACKAGES: false
 SECURITY_UPGRADE_ON_ANSIBLE: true
 
 # OAuth
-EDXAPP_OAUTH_ENFORCE_SECURE: '{{ NGINX_REDIRECT_TO_HTTPS }}'
+{% if instance.protocol == 'https' %}
+EDXAPP_OAUTH_ENFORCE_SECURE: true
+{% else %}
+EDXAPP_OAUTH_ENFORCE_SECURE: false
+{% endif %}
 
 # Set YouTube API key to null to avoid YouTube XHR errors.
 # Can be overridden in extra settings with a valid API key.
 EDXAPP_YOUTUBE_API_KEY: !!null
+
+# Notifier (forum digest notifications)
+NOTIFIER_DIGEST_TASK_INTERVAL: '1440'  # 1440 minutes == 24 hours
+NOTIFIER_DIGEST_EMAIL_SENDER: '{{ appserver.email }}'
+NOTIFIER_LMS_URL_BASE: '{{ instance.protocol }}://{{ instance.domain }}'
+NOTIFIER_LOGO_IMAGE_URL: '{{ instance.protocol }}://{{ instance.domain }}/static/images/logo.png'
+
+NOTIFIER_EMAIL_BACKEND: 'smtp'
+NOTIFIER_EMAIL_HOST: 'localhost'
+NOTIFIER_EMAIL_PORT: 25
+NOTIFIER_EMAIL_USER: ''
+NOTIFIER_EMAIL_PASS: ''
+NOTIFIER_EMAIL_USE_TLS: false
 
 # Repositories URLs
 edx_ansible_source_repo: '{{ appserver.configuration_source_repo_url }}'
@@ -65,9 +89,9 @@ edx_platform_repo: '{{ appserver.edx_platform_repository_url }}'
 edx_platform_version: '{{ appserver.edx_platform_commit }}'
 configuration_version: '{{ appserver.configuration_version }}'
 forum_version: '{{ appserver.openedx_release }}'
-notifier_version: '{{ appserver.openedx_release }}'
 xqueue_version: '{{ appserver.openedx_release }}'
 certs_version: '{{ appserver.openedx_release }}'
+NOTIFIER_VERSION: '{{ appserver.openedx_release }}'
 ANALYTICS_API_VERSION: '{{ appserver.openedx_release }}'
 INSIGHTS_VERSION: '{{ appserver.openedx_release }}'
 
@@ -87,6 +111,8 @@ EDXAPP_FEATURES:
   CERTIFICATES_HTML_VIEW: true
   ENABLE_COMBINED_LOGIN_REGISTRATION: true
   ENABLE_DISCUSSION_SERVICE: true
+  ENABLE_DISCUSSION_HOME_PANEL: true
+  ENABLE_DISCUSSION_EMAIL_DIGEST: true
   ENABLE_DJANGO_ADMIN_SITE: true
   ENABLE_INSTRUCTOR_ANALYTICS: true
   ENABLE_INSTRUCTOR_EMAIL: true
@@ -133,6 +159,6 @@ POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD: '{{ smtp_relay_settings.password }}'
 # after which the original From address is replaced with an address constructed from instance domain
 # and the INSTANCE_SMTP_RELAY_SENDER_DOMAIN setting, for example: lms.myinstance.org@opencraft.hosting.
 POSTFIX_QUEUE_HEADER_CHECKS: '/^From:(.*)$/   PREPEND Reply-To:$1'
-POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ appserver.email }}  {{ smtp_relay_settings.sender_address }}'
+POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  {{ smtp_relay_settings.rewritten_address }}'
 {% endif %}
 {% endwith %}

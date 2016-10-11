@@ -252,7 +252,11 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                 'port': settings.INSTANCE_SMTP_RELAY_PORT,
                 'username': settings.INSTANCE_SMTP_RELAY_USERNAME,
                 'password': settings.INSTANCE_SMTP_RELAY_PASSWORD,
-                'sender_address': '{}@{}'.format(self.instance.domain, settings.INSTANCE_SMTP_RELAY_SENDER_DOMAIN),
+                # edX sometimes constructs course-specific email addresses by prefixing the course slug.
+                # (for example: info@example.com -> DemoX-info@example.com).
+                # In order to properly rewrite all emails sent from edX, use a wildcard "@domain.com" source address.
+                'source_address': '@{}'.format(self.email.split('@')[-1]),
+                'rewritten_address': '{}@{}'.format(self.instance.domain, settings.INSTANCE_SMTP_RELAY_SENDER_DOMAIN),
             }
         else:
             return None
