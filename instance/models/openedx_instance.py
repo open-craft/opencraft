@@ -29,6 +29,7 @@ from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
+from instance.models.appserver import Status
 from .instance import Instance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
@@ -197,6 +198,25 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=50)
+
+    @property
+    def shut_down(self):
+        """
+        Return True if this instance has been shut down, else False.
+
+        An instance has been shut down if all of its app servers have been terminated,
+        and monitoring has been turned off.
+
+        If an instance has no app servers, we assume that it has *not* been shut down.
+        This ensures that the GUI lists newly created instances without app servers.
+        """
+        if self.appserver_set.count() == 0:
+            return False
+        all_appservers_terminated = all(
+            appserver.status == Status.Terminated for appserver in self.appserver_set.all()
+        )
+        monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
+        return all_appservers_terminated and monitoring_turned_off
 
     def set_field_defaults(self):
         """

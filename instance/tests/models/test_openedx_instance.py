@@ -23,6 +23,7 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 from unittest.mock import call, patch, Mock
+from uuid import uuid4
 
 import ddt
 from django.conf import settings
@@ -37,6 +38,7 @@ from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfigur
 from instance.models.openedx_appserver import DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import Server
 from instance.tests.base import TestCase
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
 
@@ -470,3 +472,79 @@ class OpenEdXInstanceTestCase(TestCase):
             instance_ref.refresh_from_db()
         with self.assertRaises(OpenEdXAppServer.DoesNotExist):
             appserver.refresh_from_db()
+
+    @staticmethod
+    def _set_appserver_terminated(appserver):
+        """
+        Transition `appserver` to Status.Terminated.
+        """
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+        appserver._status_to_terminated()
+
+    @staticmethod
+    def _set_appserver_running(appserver):
+        """
+        Transition `appserver` to Status.Running.
+        """
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+
+    def _create_appserver(self, instance, status):
+        """
+        Return appserver for `instance` that has `status`.
+        """
+        appserver = make_test_appserver(instance)
+        if status == AppServerStatus.Running:
+            self._set_appserver_running(appserver)
+        elif status == AppServerStatus.Terminated:
+            self._set_appserver_terminated(appserver)
+        return appserver
+
+    def _create_running_appserver(self, instance):
+        """
+        Return running app server for `instance` that has `status` AppServerStatus.Running.
+        """
+        return self._create_appserver(instance, AppServerStatus.Running)
+
+    def _create_terminated_appserver(self, instance):
+        """
+        Return running app server for `instance` that has `status` AppServerStatus.ConfigurationFailed.
+        """
+        return self._create_appserver(instance, AppServerStatus.Terminated)
+
+    @ddt.data(
+        (0, 0, False, False),  # No app servers, monitoring disabled
+        (0, 0, True, False),  # No app servers, monitoring enabled
+        (3, 0, False, False),  # Some running app servers, no terminated app servers, monitoring disabled
+        (3, 0, True, False),  # Some running app servers, no terminated app servers, monitoring enabled
+        (3, 3, False, False),  # Some running app servers, some terminated app servers, monitoring disabled
+        (3, 3, True, False),  # Some running app servers, some terminated app servers, monitoring enabled
+        (0, 3, False, True),  # No running app servers, some terminated app servers, monitoring disabled
+        (0, 3, True, False),  # No running app servers, some terminated app servers, monitoring enabled
+    )
+    @ddt.unpack
+    @patch('instance.models.mixins.openedx_monitoring.newrelic')
+    def test_shut_down(
+            self, num_running_appservers, num_terminated_appservers, monitoring_enabled, expected_result, mock_newrelic
+    ):
+        """
+        Test that `shut_down` property correctly reports whether an instance has been shut down.
+
+        An instance has been shut down if all of its app servers have been terminated,
+        and monitoring has been turned off.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        for dummy in range(num_running_appservers):
+            self._create_running_appserver(instance)
+        for dummy in range(num_terminated_appservers):
+            self._create_terminated_appserver(instance)
+
+        if monitoring_enabled:
+            monitor_id = str(uuid4())
+            instance.new_relic_availability_monitors.create(pk=monitor_id)
+
+        self.assertEqual(instance.shut_down, expected_result)

@@ -6,6 +6,7 @@
     "modified": "2016-05-20T07:46:01.033134Z",
     "instance_type": "openedxinstance",
     "domain": "pr12338.sandbox.example.com",
+    "shut_down": false,
     "email": "contact@example.com",
     "protocol": "http",
     "use_ephemeral_databases": true,
