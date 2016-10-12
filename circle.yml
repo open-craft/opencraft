@@ -27,3 +27,5 @@ test:
     - bin/run-circleci-tests:
         timeout: 1800
         parallel: true
+  post:
+    - make test_integration_cleanup

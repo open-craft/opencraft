@@ -115,6 +115,17 @@ else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
 endif
 
+test_integration_cleanup: clean
+ifneq ($(wildcard .env.integration),)
+	echo -e "\nRunning integration test cleanup script with credentials from .env.integration file..."
+	honcho -e .env.integration run bin/integration-cleanup
+else ifdef OPENSTACK_USER
+	echo -e "\nRunning integration test cleanup script with credentials from environment variables..."
+	bin/integration-cleanup
+else
+	echo -e "\nIntegration test cleanup script skipped (create a '.env.integration' file to run them)"
+endif
+
 test_js: clean static_external
 	cd instance/tests/js && $(RUN_JS_TESTS)
 	cd registration/tests/js && $(RUN_JS_TESTS)

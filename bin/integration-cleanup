@@ -1,0 +1,67 @@
+#!/bin/bash
+
+set -e
+
+
+# Age tolerance threshold for running instances (in seconds); defaults to 4 hours.
+#   Override in CircleCI by defining INSTANCE_AGE_THRESHOLD for .env.integration.
+AGE_THRESHOLD=${INSTANCE_AGE_THRESHOLD:-"14400"}
+
+# Export the OpenStack environment variables to be used by the Nova CLI.
+export OS_USERNAME=$OPENSTACK_USER
+export OS_PASSWORD=$OPENSTACK_PASSWORD
+export OS_TENANT_NAME=$OPENSTACK_TENANT
+export OS_AUTH_URL=$OPENSTACK_AUTH_URL
+
+echo "Querying Nova for list of running integration test instances..."
+
+# Get the list of potential instances to terminate.
+# Returns a table of instances with four columns:
+#   The instance ID, key pair, creation date, and name.
+INSTANCE_LIST=$(nova list --fields=key_name,created,name --status=ACTIVE | grep circleci | sed 's/|//g')
+
+# Use a string length check here. We can't use `wc -l` to check because INSTANCE_LIST will always have
+# at least one newline.
+if [ ${#INSTANCE_LIST} -eq 0 ]
+then
+    echo "No active instances returned, nothing to clean up. Quitting."
+    exit
+fi
+
+INSTANCE_LIST_SIZE=$(echo "$INSTANCE_LIST" | wc -l)
+
+echo "Number of active instances returned: $INSTANCE_LIST_SIZE"
+
+function parse_iso8601 {
+    # Converts an iso8601 date to Unix EPOCH time.
+    # http://unix.stackexchange.com/a/107755
+    date -d "$(echo $1 | sed 's/T/ /')" +%s
+}
+
+echo "$INSTANCE_LIST" | while read -r INSTANCE_ID INSTANCE_KEY INSTANCE_CREATED_DATE INSTANCE_NAME
+do
+    INSTANCE_CREATED=$(parse_iso8601 "$INSTANCE_CREATED_DATE")
+
+    echo "Checking instance $INSTANCE_NAME..."
+    echo "  > id=$INSTANCE_ID, key_name=$INSTANCE_KEY, created=$INSTANCE_CREATED_DATE ($INSTANCE_CREATED)"
+
+    # Double-check to make sure that the instance is using the circleci keypair.
+    if [ $INSTANCE_KEY != 'circleci' ]
+    then
+        echo "  > SKIPPING: Instance keypair name $INSTANCE_KEY != 'circleci'!"
+        continue
+    fi
+
+    INSTANCE_AGE=$(($(date +%s)-INSTANCE_CREATED))
+
+    # Don't terminate if the instance age is less than the time threshold.
+    if [ $INSTANCE_AGE -lt $AGE_THRESHOLD ]
+    then
+        echo "  > SKIPPING: Instance is only $INSTANCE_AGE seconds old (age threshold is $AGE_THRESHOLD seconds)."
+        continue
+    fi
+
+    echo "  > TERMINATING instance (age: $INSTANCE_AGE seconds, age threshold: $AGE_THRESHOLD seconds)..."
+
+    time nova delete "$INSTANCE_ID"
+done

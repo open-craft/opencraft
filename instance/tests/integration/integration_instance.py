@@ -27,6 +27,7 @@ from unittest.mock import patch
 
 import requests
 from django.conf import settings
+from django.test import override_settings
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -42,6 +43,9 @@ from opencraft.tests.utils import shard
 
 # Tests #######################################################################
 
+@override_settings(
+    DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX='integ-',
+)
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks

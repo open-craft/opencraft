@@ -422,6 +422,22 @@ your development environment is likely a good starting point:
     cp .env .env.integration
 
 
+There is also a cleanup routine intended for use by CI services to check for and
+clean up any dangling OpenStack VMs past a certain age threshold. While it isn't
+necessary in the usual case, old integration tests that were killed without cleanup
+can be cleaned up after four hours by running the make target:
+
+    make test_integration_cleanup
+
+The age threshold for the cleanup script defaults to four hours, but this can be
+adjusted by setting `INSTANCE_AGE_THRESHOLD` to a number (in seconds) in the
+`.env.integration` file.
+
+Note that, if executing locally and with the same environment as Circle CI, setting
+the `INSTANCE_AGE_THRESHOLD` to a number too low may result in interrupted
+integration test builds on Circle CI.
+
+
 Debug
 -----
 
