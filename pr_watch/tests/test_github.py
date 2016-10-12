@@ -22,6 +22,7 @@ GitHub - Tests
 
 # Imports #####################################################################
 
+from datetime import datetime
 import json
 from unittest.mock import patch
 
@@ -114,6 +115,22 @@ class GitHubTestCase(TestCase):
         self.assertIsNone(github.is_pr_body_requesting_ephemeral_databases(pr_body, domain))
 
     @responses.activate
+    def test_get_pr_info_by_number(self):
+        """
+        Get all available information about PR by PR number
+        """
+        pr_fixture = get_raw_fixture('github/api_pr.json')
+        responses.add(
+            responses.GET, 'https://api.github.com/repos/edx/edx-platform/pulls/8474',
+            body=pr_fixture,
+            content_type='application/json; charset=utf8',
+            status=200
+        )
+        pr_info = github.get_pr_info_by_number('edx/edx-platform', 8474)
+        expected_pr_info = json.loads(pr_fixture)
+        self.assertEqual(pr_info, expected_pr_info)
+
+    @responses.activate
     def test_get_pr_by_number(self):
         """
         Get PR object for existing PR number
@@ -122,7 +139,8 @@ class GitHubTestCase(TestCase):
             responses.GET, 'https://api.github.com/repos/edx/edx-platform/pulls/8474',
             body=get_raw_fixture('github/api_pr.json'),
             content_type='application/json; charset=utf8',
-            status=200)
+            status=200
+        )
 
         pr = github.get_pr_by_number('edx/edx-platform', 8474)
         self.assertEqual(
@@ -208,3 +226,16 @@ class GitHubTestCase(TestCase):
 
         with self.assertRaises(KeyError, msg='non-existent'):
             github.get_username_list_from_team('open-craft', team_name='non-existent')
+
+    def test_parse_date(self):
+        """
+        Parse string representing date in ISO 8601 format (as returned by GitHub).
+        """
+        date = github.parse_date("2016-10-11T15:10:30Z")
+        self.assertIsInstance(date, datetime)
+        self.assertEqual(date.year, 2016)
+        self.assertEqual(date.month, 10)
+        self.assertEqual(date.day, 11)
+        self.assertEqual(date.hour, 15)
+        self.assertEqual(date.minute, 10)
+        self.assertEqual(date.second, 30)

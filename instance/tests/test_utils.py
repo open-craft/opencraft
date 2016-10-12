@@ -22,12 +22,13 @@ Utils module - Tests
 
 # Imports #####################################################################
 
+from datetime import datetime
 import itertools
 import subprocess
 from unittest.mock import patch
 
 from instance.tests.base import TestCase
-from instance.utils import poll_streams, _line_timeout_generator
+from instance.utils import sufficient_time_passed, poll_streams, _line_timeout_generator
 
 
 # Tests #######################################################################
@@ -79,3 +80,26 @@ class UtilsTestCase(TestCase):
         for actual, expected in zip(timeout, [3, 3, 3, 3, 3, 3]):
             self.assertEqual(actual, expected)
         self.assertFalse(mock_time.called)
+
+    def test_sufficient_time_passed(self):
+        """
+        Test helper function for checking if sufficient time passed between two dates.
+        """
+        date = datetime(2016, 9, 25, 8, 20, 5)
+        reference_date = datetime(2016, 10, 11, 15, 10, 30)
+
+        # Delta between dates greater than expected delta (actual delta: 16 days)
+        result = sufficient_time_passed(date, reference_date, 5)
+        self.assertTrue(result)
+        # Delta between dates equal to expected delta
+        result = sufficient_time_passed(date, reference_date, 16)
+        self.assertTrue(result)
+        # Delta between dates less than expected delta (actual delta: 16 days)
+        result = sufficient_time_passed(date, reference_date, 20)
+        self.assertFalse(result)
+        # Negative delta (reference date follows date), delta between dates greater than expected delta
+        result = sufficient_time_passed(reference_date, date, 5)
+        self.assertFalse(result)
+        # Negative delta (reference date follows date), delta between dates less than expected delta
+        result = sufficient_time_passed(reference_date, date, 20)
+        self.assertFalse(result)

@@ -22,11 +22,14 @@ Worker tasks for instance hosting & management
 
 # Imports #####################################################################
 
+from datetime import datetime
 import logging
 
-from huey.contrib.djhuey import db_task
+from huey.contrib.djhuey import crontab, db_task, db_periodic_task
 
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.utils import sufficient_time_passed
+from pr_watch import github
 
 
 # Logging #####################################################################
@@ -60,3 +63,51 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
                 # finish and replace the second as the active server. We are not really worried about that for now.
                 instance.set_appserver_active(appserver_id)
             break
+
+
+@db_task()
+def shut_down_instances():
+    """
+    Shut down instances whose PRs got merged (more than) one week ago.
+
+    Terminate all app servers belonging to these instances, and disable monitoring.
+    """
+    for instance in OpenEdXInstance.objects.filter(watchedpullrequest__isnull=False):
+        pr = github.get_pr_info_by_number(
+            instance.watchedpullrequest.target_fork_name,
+            instance.watchedpullrequest.github_pr_number
+        )
+        if pr['state'] == 'closed':
+            closed_at = github.parse_date(pr['closed_at'])
+            now = datetime.now()
+            if sufficient_time_passed(closed_at, now, 7):
+                instance.disable_monitoring()
+                for appserver in instance.appserver_set.all():
+                    appserver.terminate_vm()
+
+
+@db_task()
+def terminate_obsolete_appservers():
+    """
+    Terminate app servers that were created (more than) two days before the currently-active app server
+    of each individual instance.
+
+    Do nothing for instances that don't have an active app server.
+    """
+    for instance in OpenEdXInstance.objects.all():
+        active_appserver = instance.active_appserver
+        if active_appserver:
+            for appserver in instance.appserver_set.all():
+                if sufficient_time_passed(appserver.created, active_appserver.created, 2):
+                    appserver.terminate_vm()
+
+
+@db_periodic_task(crontab(day='*/1', hour='1', minute='0'))
+def clean_up():
+    """
+    Clean up obsolete VMs.
+
+    This task runs once per day.
+    """
+    shut_down_instances()
+    terminate_obsolete_appservers()
