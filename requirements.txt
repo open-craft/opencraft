@@ -40,7 +40,8 @@ glob2==0.4.1
 gunicorn==19.4.5
 # Using patched honcho that includes: https://github.com/nickstenning/honcho/pull/179
 git+https://github.com/open-craft/honcho.git@00c8f0d6c55ba1e9ec18470e942e47b07617099a#egg=honcho==0.7.2
-huey==1.1.2
+# Using modified huey until https://github.com/coleifer/huey/pull/189 is merged.
+git+https://github.com/open-craft/huey.git@2a67490287864fbffb51598be9e79fb3b6b85756#egg=huey==1.2.1
 ipdb==0.9.3
 ipython==4.2.0
 ipython-genutils==0.1.0
