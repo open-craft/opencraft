@@ -477,3 +477,11 @@ NEWRELIC_LICENSE_KEY = env('NEWRELIC_LICENSE_KEY', default=None)
 # A new relic admin user's API key, used to set up availability monitoring
 # with Synthetics
 NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
+
+
+# Load balancing ##############################################################
+
+LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
+LOAD_BALANCER_CONF_DIR = env('LOAD_BALANCER_CONF_DIR', default='/etc/haproxy/conf.d')
+LOAD_BALANCER_BACKENDS_DIR = env('LOAD_BALANCER_BACKENDS_DIR', default='/etc/haproxy/backends')
+PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)

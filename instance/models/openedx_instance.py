@@ -25,6 +25,7 @@ import string
 from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
+from django.template import loader
 from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
@@ -33,6 +34,7 @@ from instance.models.appserver import Status as AppServerStatus
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
+from .load_balancer import LoadBalancingServer, select_load_balancing_server
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
@@ -88,6 +90,8 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
 
+    load_balancing_server = models.ForeignKey(LoadBalancingServer, null=True, blank=True, on_delete=models.PROTECT)
+
     active_appserver = models.OneToOneField(
         OpenEdXAppServer, null=True, blank=True, on_delete=models.SET_NULL, related_name='+',
     )
@@ -106,8 +110,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         generated from from the value of 'sub_domain' and the DEFAULT_INSTANCE_BASE_DOMAIN setting.
         """
         if 'sub_domain' in kwargs:
-            # Copy kwargs so we can mutate them.
-            kwargs = kwargs.copy()
             sub_domain = kwargs.pop('sub_domain')
             if 'internal_lms_domain' not in kwargs:
                 kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
@@ -288,6 +290,65 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         self.deprovision_swift()
         super().delete(*args, **kwargs)
 
+    def set_dns_records(self):
+        """
+        Create CNAME records for the domain names of this instance pointing to the load balancer.
+        """
+        load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
+
+        self.logger.info('Updating DNS: LMS at %s...', self.internal_lms_domain)
+        lms_domain = tldextract(self.internal_lms_domain)
+        gandi.set_dns_record(
+            lms_domain.registered_domain,
+            type='CNAME', name=lms_domain.subdomain, value=load_balancer_domain
+        )
+
+        self.logger.info('Updating DNS: LMS preview at %s...', self.internal_lms_preview_domain)
+        lms_preview_domain = tldextract(self.internal_lms_preview_domain)
+        gandi.set_dns_record(
+            lms_preview_domain.registered_domain,
+            type='CNAME', name=lms_preview_domain.subdomain, value=load_balancer_domain
+        )
+
+        self.logger.info('Updating DNS: Studio at %s...', self.internal_studio_domain)
+        studio_domain = tldextract(self.internal_studio_domain)
+        gandi.set_dns_record(
+            studio_domain.registered_domain,
+            type='CNAME', name=studio_domain.subdomain, value=load_balancer_domain
+        )
+
+    def get_load_balancer_configuration(self):
+        """
+        Return the haproxy configuration fragment and backend map for this instance.
+        """
+        if self.active_appserver:
+            backend_name = "be-{}".format(self.active_appserver.server.name)
+            server_name = "appserver-{}".format(self.pk)
+            ip_address = self.active_appserver.server.public_ip
+        else:
+            backend_name = "be-preliminary-page-{}".format(self.pk)
+            server_name = "preliminary-page"
+            ip_address = settings.PRELIMINARY_PAGE_SERVER_IP
+        template = loader.get_template("instance/haproxy/backend.conf")
+        if ip_address is not None:
+            config = template.render(dict(
+                domain=self.domain,
+                backend_name=backend_name,
+                server_name=server_name,
+                ip_address=ip_address,
+            ))
+        else:
+            # No active appserver and PRELIMINARY_PAGE_SERVER_IP not set, so there is no backend
+            # we can configure.  Simply return an empty configuration in this case.
+            self.logger.info("PRELIMINARY_PAGE_SERVER_IP is unset, so not configuring a preliminary backend.")
+            return "", ""
+        domain_names = [
+            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
+        ]
+        backend_map = "\n".join(" ".join([domain, backend_name]) for domain in domain_names if domain)
+        return backend_map, config
+
     @property
     def appserver_set(self):
         """
@@ -301,33 +362,19 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         """
         app_server = self.appserver_set.get(pk=appserver_id)  # Make sure the AppServer is owned by this instance
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
-        public_ip = app_server.server.public_ip
-
-        self.logger.info('Updating DNS: LMS at %s...', self.internal_lms_domain)
-        lms_domain = tldextract(self.internal_lms_domain)
-        gandi.set_dns_record(
-            lms_domain.registered_domain,
-            type='A', name=lms_domain.subdomain, value=public_ip
-        )
-
-        self.logger.info('Updating DNS: LMS preview at %s...', self.internal_lms_preview_domain)
-        lms_preview_domain = tldextract(self.internal_lms_preview_domain)
-        gandi.set_dns_record(
-            lms_preview_domain.registered_domain,
-            type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain
-        )
-
-        self.logger.info('Updating DNS: Studio at %s...', self.internal_studio_domain)
-        studio_domain = tldextract(self.internal_studio_domain)
-        gandi.set_dns_record(
-            studio_domain.registered_domain,
-            type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain
-        )
-
         self.active_appserver = app_server
         self.save()
-
+        self.load_balancing_server.reconfigure()
         self.enable_monitoring()
+
+    def set_appserver_inactive(self):
+        """
+        Reset the active AppServer to None.  Called when the active appserver is terminated.
+        """
+        self.disable_monitoring()
+        self.active_appserver = None
+        self.save()
+        self.load_balancing_server.reconfigure()
 
     @log_exception
     def spawn_appserver(self):
@@ -336,6 +383,11 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
 
         Returns the ID of the new AppServer on success or None on failure.
         """
+        if not self.load_balancing_server:
+            self.load_balancing_server = select_load_balancing_server()
+            self.set_dns_records()
+            self.load_balancing_server.reconfigure()
+
         # Provision external databases:
         if not self.use_ephemeral_databases:
             # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
