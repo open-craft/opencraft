@@ -34,7 +34,7 @@ from django_extensions.db.models import TimeStampedModel
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.models.log_entry import LogEntry
-from instance.logger_adapter import InstanceLoggerAdapter
+from instance.logging import ModelLoggerAdapter
 from .utils import ValidateModelMixin
 
 
@@ -123,8 +123,7 @@ class Instance(ValidateModelMixin, models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.logger = InstanceLoggerAdapter(logger, {'obj': self})
+        self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
     def __str__(self):
         return str(self.ref)
@@ -184,6 +183,18 @@ class Instance(ValidateModelMixin, models.Model):
         Context dictionary to include in events
         """
         return {'instance_id': self.ref.pk, 'instance_type': self.__class__.__name__}
+
+    def get_log_message_annotation(self):
+        """
+        Get annotation for log message for this instance.
+        """
+        return 'instance={} ({!s:.15})'.format(self.ref.pk, self.ref.name)
+
+    def format_log_message(self, msg):
+        """
+        Format a log line for this instance.
+        """
+        return '{} | {}'.format(self.get_log_message_annotation(), msg)
 
     @property
     def log_entries(self):

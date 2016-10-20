@@ -95,3 +95,17 @@ class DBHandler(logging.Handler):
             # TODO: Filter out log entries for which the user doesn't have view rights
             # TODO: More targetted events - only emit events for what the user is looking at
             publish_data('log', log_event)
+
+
+class ModelLoggerAdapter(logging.LoggerAdapter):
+    """
+    Custom LoggerAdapter for model instances.
+
+    The model instance must be included under the key "obj" when constructing the logger
+    adpater.  The adapter includes information on the associated model instance by calling
+    the format_log_message() method on the instance.
+    """
+    def process(self, msg, kwargs):
+        msg, kwargs = super().process(msg, kwargs)
+        msg = self.extra['obj'].format_log_message(msg)
+        return msg, kwargs

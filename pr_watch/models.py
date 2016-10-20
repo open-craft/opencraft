@@ -28,10 +28,10 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 
+from instance.logging import ModelLoggerAdapter
 from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
 from pr_watch import github
 from pr_watch.github import fork_name2tuple
-from pr_watch.logger_adapter import WatchedPullRequestLoggerAdapter
 
 
 # Logging #####################################################################
@@ -113,8 +113,7 @@ class WatchedPullRequest(models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.logger = WatchedPullRequestLoggerAdapter(logger, {'obj': self})
+        self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
     @property
     def fork_name(self):
@@ -176,6 +175,14 @@ class WatchedPullRequest(models.Model):
         RSS/Atom feed of commits made on the repository/branch
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
+
+    def format_log_message(self, msg):
+        """
+        Format a log message for this PR.
+        """
+        if self.instance:
+            return "{} | {}".format(self.instance.get_log_message_annotation(), msg)
+        return msg
 
     def get_branch_tip(self):
         """
