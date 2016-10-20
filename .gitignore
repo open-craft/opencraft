@@ -68,3 +68,6 @@ target/
 
 # Vagrant
 .vagrant/
+
+# Ansible
+*.retry

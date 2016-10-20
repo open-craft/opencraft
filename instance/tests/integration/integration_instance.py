@@ -27,6 +27,8 @@ from unittest.mock import patch
 
 import requests
 from django.conf import settings
+from django.core.management import call_command
+from django.utils.six import StringIO
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -106,6 +108,32 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_instance_up(instance)
         self.assertTrue(instance.successfully_provisioned)
         self.assertFalse(instance.require_user_creation_success())
+
+    @shard(3)
+    def test_activity_csv(self):
+        """
+        Run the activity_csv management command against a live instance.
+        """
+        OpenEdXInstanceFactory(name='Integration - test_spawn_appserver')
+        instance = OpenEdXInstance.objects.get()
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        self.assert_instance_up(instance)
+        self.assertTrue(instance.successfully_provisioned)
+        self.assertTrue(instance.require_user_creation_success())
+
+        out = StringIO()
+        call_command('activity_csv', stdout=out)
+
+        out_lines = out.getvalue().split('\r\n')
+
+        # The output should look similar to this when one instance is launched:
+        #
+        #   Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)
+        #   149.202.188.116,"['brandon@opencraft.com', 'x@bdero.me']",4,7,1,0
+
+        self.assertEqual('Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)', out_lines[0])
+        # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
+        self.assertEqual(len(out_lines), 3)
 
     @patch_git_checkout
     def test_ansible_failure(self, git_checkout, git_working_dir):

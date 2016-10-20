@@ -591,6 +591,14 @@ Or run any command using the application environment:
 
     honcho run ./manage.py <command>
 
+### Available commands
+
+**`activity_csv`**: Collect and produce a CSV containing usage information from
+all *active app servers*. The CSV will be printed to `stdout` by default, but an
+output file can be specified by using the `--out` flag.
+
+    make manage "activity_csv --out activity_report.csv"
+
 
 Databases
 ---------

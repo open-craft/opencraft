@@ -37,6 +37,8 @@ import environ
 env = environ.Env()
 root = environ.Path(os.path.dirname(__file__), os.pardir)
 
+SITE_ROOT = root()
+
 
 # Security ####################################################################
 

@@ -2,6 +2,7 @@
 branch = True
 omit =
     /*/migrations/*
+    /playbooks/collect_activity/stats.py
 
 [html]
 directory = build/coverage
