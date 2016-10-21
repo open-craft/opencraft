@@ -478,7 +478,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @staticmethod
     def _set_appserver_terminated(appserver):
         """
-        Transition `appserver` to Status.Terminated.
+        Transition `appserver` to AppServerStatus.Terminated.
         """
         appserver._status_to_waiting_for_server()
         appserver._status_to_configuring_server()
@@ -488,7 +488,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @staticmethod
     def _set_appserver_running(appserver):
         """
-        Transition `appserver` to Status.Running.
+        Transition `appserver` to AppServerStatus.Running.
         """
         appserver._status_to_waiting_for_server()
         appserver._status_to_configuring_server()
@@ -497,21 +497,39 @@ class OpenEdXInstanceTestCase(TestCase):
     @staticmethod
     def _set_appserver_configuration_failed(appserver):
         """
-        Transition `appserver` to Status.ConfigurationFailed.
+        Transition `appserver` to AppServerStatus.ConfigurationFailed.
         """
         appserver._status_to_waiting_for_server()
         appserver._status_to_configuring_server()
         appserver._status_to_configuration_failed()
 
+    @staticmethod
+    def _set_server_ready(server):
+        """
+        Transition `server` to Status.Ready.
+        """
+        server._status_to_building()
+        server._status_to_booting()
+        server._status_to_ready()
+
+    @staticmethod
+    def _set_server_terminated(server):
+        """
+        Transition `server` to Status.Terminated.
+
+        Note that servers are allowed to transition to ServerStatus.Terminated from any state,
+        so it is not necessary to transition to another status first.
+        """
+        server._status_to_terminated()
+
     def _create_appserver(self, instance, status, created=None):
         """
         Return appserver for `instance` that has `status`, and (optionally) was `created` on a specific date.
 
-        Note that there is no need to set the status of the VM (OpenStackServer)
-        that is associated with the app server to something other than ServerStatus.Pending:
+        Note that this method does not set the status of the VM (OpenStackServer)
+        that is associated with the app server.
 
-        Servers are allowed to transition to ServerStatus.Terminated from any state,
-        and this class does not test functionality for terminating servers itself.
+        Client code is expected to take care of that itself (if necessary).
         """
         appserver = make_test_appserver(instance)
         if created:
@@ -532,7 +550,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         return self._create_appserver(instance, AppServerStatus.Running, created)
 
-    def _create_failed_appserver(self, instance, created=None):
+    def _create_failed_appserver(self, instance, created=None, with_running_server=False):
         """
         Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed,
         and (optionally) was `created` on a specific date.
@@ -565,19 +583,49 @@ class OpenEdXInstanceTestCase(TestCase):
             self.assertEqual(server.status, expected_server_status)
 
     @ddt.data(
-        (0, 0, False, False),  # No app servers, monitoring disabled
-        (0, 0, True, False),  # No app servers, monitoring enabled
-        (3, 0, False, False),  # Some running app servers, no terminated app servers, monitoring disabled
-        (3, 0, True, False),  # Some running app servers, no terminated app servers, monitoring enabled
-        (3, 3, False, False),  # Some running app servers, some terminated app servers, monitoring disabled
-        (3, 3, True, False),  # Some running app servers, some terminated app servers, monitoring enabled
-        (0, 3, False, True),  # No running app servers, some terminated app servers, monitoring disabled
-        (0, 3, True, False),  # No running app servers, some terminated app servers, monitoring enabled
+        # No app servers; monitoring disabled
+        (0, 0, 0, False, False),
+        # No app servers; monitoring enabled
+        (0, 0, 0, True, False),
+        # No running, no terminated, and some failed app servers with VM ready; monitoring disabled
+        (0, 0, 3, False, False),
+        # No running, no terminated, and some failed app servers with VM ready; monitoring enabled
+        (0, 0, 3, True, False),
+        # No running, some terminated, and no failed app servers with VM ready; monitoring disabled
+        (0, 3, 0, False, True),
+        # No running, some terminated, and no failed app servers with VM ready; monitoring enabled
+        (0, 3, 0, True, False),
+        # No running, some terminated, and some failed app servers with VM ready; monitoring disabled
+        (0, 3, 3, False, False),
+        # No running, some terminated, and some failed app servers with VM ready; monitoring enabled
+        (0, 3, 3, True, False),
+        # Some running, no terminated, and no failed app servers with VM ready; monitoring disabled
+        (3, 0, 0, False, False),
+        # Some running, no terminated, and no failed app servers with VM ready; monitoring enabled
+        (3, 0, 0, True, False),
+        # Some running, some terminated, and no failed app servers with VM ready; monitoring disabled
+        (3, 3, 0, False, False),
+        # Some running, some terminated, and no failed app servers with VM ready; monitoring enabled
+        (3, 3, 0, True, False),
+        # Some running, no terminated, and some failed app servers with VM ready; monitoring disabled
+        (3, 0, 3, False, False),
+        # Some running, no terminated, and some failed app servers with VM ready; monitoring enabled
+        (3, 0, 3, True, False),
+        # Some running, some terminated, and some failed app servers with VM ready; monitoring disabled
+        (3, 3, 3, False, False),
+        # Some running, some terminated, and some failed app servers with VM ready; monitoring enabled
+        (3, 3, 3, True, False),
     )
     @ddt.unpack
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
     def test_shutdown(
-            self, num_running_appservers, num_terminated_appservers, monitoring_enabled, expected_result, mock_newrelic
+            self,
+            num_running_appservers,
+            num_terminated_appservers,
+            num_failed_appservers_vm_ready,
+            monitoring_enabled,
+            expected_result,
+            mock_newrelic
     ):
         """
         Test that `shutdown` property correctly reports whether an instance has been shut down.
@@ -591,6 +639,18 @@ class OpenEdXInstanceTestCase(TestCase):
             self._create_running_appserver(instance)
         for dummy in range(num_terminated_appservers):
             self._create_terminated_appserver(instance)
+        failed_appservers = [
+            self._create_failed_appserver(instance) for dummy in range(num_terminated_appservers)
+        ]
+        for failed_appserver in failed_appservers:
+            self._set_server_terminated(failed_appserver.server)
+
+        if num_failed_appservers_vm_ready:
+            failed_appservers_vm_ready = [
+                self._create_failed_appserver(instance) for dummy in range(num_terminated_appservers)
+            ]
+            for failed_appserver in failed_appservers_vm_ready:
+                self._set_server_ready(failed_appserver.server)
 
         if monitoring_enabled:
             monitor_id = str(uuid4())

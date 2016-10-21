@@ -29,7 +29,8 @@ from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
-from instance.models.appserver import Status
+from instance.models.appserver import Status as AppServerStatus
+from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
@@ -214,7 +215,10 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         if self.appserver_set.count() == 0:
             return False
         all_appservers_terminated = all(
-            appserver.status == Status.Terminated for appserver in self.appserver_set.all()
+            appserver.status == AppServerStatus.Terminated or
+            (appserver.status == AppServerStatus.ConfigurationFailed and
+             appserver.server.status == ServerStatus.Terminated)
+            for appserver in self.appserver_set.all()
         )
         monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
         return all_appservers_terminated and monitoring_turned_off
