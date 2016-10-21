@@ -385,8 +385,12 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         """
         if not self.load_balancing_server:
             self.load_balancing_server = select_load_balancing_server()
-            self.set_dns_records()
             self.load_balancing_server.reconfigure()
+
+        # We unconditionally set the DNS records here, though this would only be strictly needed
+        # when the first AppServer is spawned.  However, there is no easy way to tell whether the
+        # DNS records have already been successfully set, and it doesn't hurt to alway do it.
+        self.set_dns_records()
 
         # Provision external databases:
         if not self.use_ephemeral_databases:
