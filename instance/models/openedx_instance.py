@@ -30,6 +30,7 @@ from tldextract import TLDExtract
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
 from instance.models.appserver import Status
+from instance.utils import sufficient_time_passed
 from .instance import Instance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
@@ -200,7 +201,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         return truncate_name(escaped, length=50)
 
     @property
-    def shut_down(self):
+    def shutdown(self):
         """
         Return True if this instance has been shut down, else False.
 
@@ -372,3 +373,29 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         an appserver (read: database) for this instance in the past.
         """
         return not self.successfully_provisioned or self.use_ephemeral_databases
+
+    def terminate_obsolete_appservers(self, days=2):
+        """
+        Terminate app servers that were created (more than) `days`
+        before the currently-active app server of this instance.
+
+        Do nothing if this instance doesn't have an active app server.
+        """
+        active_appserver = self.active_appserver
+        if active_appserver:
+            for appserver in self.appserver_set.all():
+                if sufficient_time_passed(appserver.created, active_appserver.created, days):
+                    appserver.terminate_vm()
+
+    def shut_down(self):
+        """
+        Shut down this instance.
+
+        This process consists of two steps:
+
+        1) Disable New Relic monitors.
+        2) Terminate all app servers belonging to this instance.
+        """
+        self.disable_monitoring()
+        for appserver in self.appserver_set.all():
+            appserver.terminate_vm()

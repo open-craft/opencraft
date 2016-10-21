@@ -41,7 +41,7 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         model = OpenEdXInstance
         fields = (
             'domain',
-            'shut_down',
+            'shutdown',
         )
 
     def to_representation(self, obj):

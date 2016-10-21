@@ -22,6 +22,7 @@ OpenEdXInstance model - Tests
 
 # Imports #####################################################################
 
+from datetime import timedelta
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
 
@@ -29,6 +30,7 @@ import ddt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import override_settings
+from django.utils import timezone
 import yaml
 
 from instance.models.appserver import Status as AppServerStatus
@@ -36,7 +38,7 @@ from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
 from instance.models.openedx_appserver import DEFAULT_EDX_PLATFORM_REPO_URL
-from instance.models.server import Server
+from instance.models.server import OpenStackServer, Server, Status as ServerStatus
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -492,28 +494,75 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver._status_to_configuring_server()
         appserver._status_to_running()
 
-    def _create_appserver(self, instance, status):
+    @staticmethod
+    def _set_appserver_configuration_failed(appserver):
         """
-        Return appserver for `instance` that has `status`.
+        Transition `appserver` to Status.ConfigurationFailed.
+        """
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_configuration_failed()
+
+    def _create_appserver(self, instance, status, created=None):
+        """
+        Return appserver for `instance` that has `status`, and (optionally) was `created` on a specific date.
+
+        Note that there is no need to set the status of the VM (OpenStackServer)
+        that is associated with the app server to something other than ServerStatus.Pending:
+
+        Servers are allowed to transition to ServerStatus.Terminated from any state,
+        and this class does not test functionality for terminating servers itself.
         """
         appserver = make_test_appserver(instance)
+        if created:
+            appserver.created = created
+            appserver.save()
         if status == AppServerStatus.Running:
             self._set_appserver_running(appserver)
+        if status == AppServerStatus.ConfigurationFailed:
+            self._set_appserver_configuration_failed(appserver)
         elif status == AppServerStatus.Terminated:
             self._set_appserver_terminated(appserver)
         return appserver
 
-    def _create_running_appserver(self, instance):
+    def _create_running_appserver(self, instance, created=None):
         """
-        Return running app server for `instance` that has `status` AppServerStatus.Running.
+        Return app server for `instance` that has `status` AppServerStatus.Running,
+        and (optionally) was `created` on a specific date.
         """
-        return self._create_appserver(instance, AppServerStatus.Running)
+        return self._create_appserver(instance, AppServerStatus.Running, created)
 
-    def _create_terminated_appserver(self, instance):
+    def _create_failed_appserver(self, instance, created=None):
         """
-        Return running app server for `instance` that has `status` AppServerStatus.ConfigurationFailed.
+        Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed,
+        and (optionally) was `created` on a specific date.
         """
-        return self._create_appserver(instance, AppServerStatus.Terminated)
+        return self._create_appserver(instance, AppServerStatus.ConfigurationFailed, created)
+
+    def _create_terminated_appserver(self, instance, created=None):
+        """
+        Return app server for `instance` that has `status` AppServerStatus.Terminated,
+        and (optionally) was `created` on a specific date.
+        """
+        return self._create_appserver(instance, AppServerStatus.Terminated, created)
+
+    def _assert_status(self, appservers):
+        """
+        Assert that status of app servers in `appservers` matches expected status.
+
+        Assumes that `appservers` is an iterable of tuples of the following form:
+
+            (<appserver>, <expected status>, <expected server status>)
+
+        where <expected status> is the expected AppServerStatus of <appserver>,
+        and <expected server status> is the expected ServerStatus of the OpenStackServer associated with <appserver>.
+        """
+        for appserver, expected_status, expected_server_status in appservers:
+            appserver.refresh_from_db()
+            self.assertEqual(appserver.status, expected_status)
+            # Status of appserver.server is still stale after refresh_from_db, so reload server manually:
+            server = OpenStackServer.objects.get(id=appserver.server.pk)
+            self.assertEqual(server.status, expected_server_status)
 
     @ddt.data(
         (0, 0, False, False),  # No app servers, monitoring disabled
@@ -527,11 +576,11 @@ class OpenEdXInstanceTestCase(TestCase):
     )
     @ddt.unpack
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_shut_down(
+    def test_shutdown(
             self, num_running_appservers, num_terminated_appservers, monitoring_enabled, expected_result, mock_newrelic
     ):
         """
-        Test that `shut_down` property correctly reports whether an instance has been shut down.
+        Test that `shutdown` property correctly reports whether an instance has been shut down.
 
         An instance has been shut down if all of its app servers have been terminated,
         and monitoring has been turned off.
@@ -547,4 +596,139 @@ class OpenEdXInstanceTestCase(TestCase):
             monitor_id = str(uuid4())
             instance.new_relic_availability_monitors.create(pk=monitor_id)
 
-        self.assertEqual(instance.shut_down, expected_result)
+        self.assertEqual(instance.shutdown, expected_result)
+
+    @patch('instance.models.openedx_instance.OpenEdXMonitoringMixin.disable_monitoring')
+    def test_shut_down(self, mock_disable_monitoring):
+        """
+        Test that `shut_down` method terminates all app servers belonging to an instance
+        and disables monitoring.
+        """
+        instance = OpenEdXInstanceFactory()
+        reference_date = timezone.now()
+
+        # Create app servers
+        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=5))
+        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=5))
+
+        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=1))
+        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=1))
+
+        active_appserver = self._create_running_appserver(instance, reference_date)
+
+        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=3))
+        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=3))
+
+        # Set single app server active
+        instance.active_appserver = active_appserver
+        instance.save()
+
+        # Shut down instance
+        instance.shut_down()
+
+        # Check status of running app servers
+        self._assert_status([
+            (obsolete_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (recent_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (active_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (newer_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+        ])
+
+        # Check status of failed app servers:
+        # AppServerStatus.Terminated is reserved for instances that were running successfully at some point,
+        # so app servers with AppServerStatus.ConfigurationFailed will still have that status
+        # after `shut_down` calls `terminate_vm` on them.
+        # However, the VM (OpenStackServer) that an app server is associated with
+        # *should* have ServerStatus.Terminated if the app server was old enough to be terminated.
+        self._assert_status([
+            (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+        ])
+
+        # Check if instance disabled monitoring
+        self.assertEqual(mock_disable_monitoring.call_count, 1)
+
+    @ddt.data(2, 5, 10)
+    def test_terminate_obsolete_appservers(self, days):
+        """
+        Test that `terminate_obsolete_appservers` correctly identifies and terminates app servers
+        that were created (more than) `days` before the currently-active app server of the parent instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        reference_date = timezone.now()
+
+        # Create app servers
+        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=days + 1))
+        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=days + 1))
+
+        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=days - 1))
+        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=days - 1))
+
+        active_appserver = self._create_running_appserver(instance, reference_date)
+
+        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=days))
+        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=days))
+
+        # Set single app server active
+        instance.active_appserver = active_appserver
+        instance.save()
+
+        # Terminate app servers
+        instance.terminate_obsolete_appservers(days=days)
+
+        # Check status of running app servers
+        self._assert_status([
+            (obsolete_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (recent_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (active_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (newer_appserver, AppServerStatus.Running, ServerStatus.Pending),
+        ])
+
+        # Check status of failed app servers:
+        # AppServerStatus.Terminated is reserved for instances that were running successfully at some point,
+        # so app servers with AppServerStatus.ConfigurationFailed will still have that status
+        # after `terminate_obsolete_appservers` calls `terminate_vm` on them.
+        # However, the VM (OpenStackServer) that an app server is associated with
+        # *should* have ServerStatus.Terminated if the app server was old enough to be terminated.
+        self._assert_status([
+            (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+        ])
+
+    def test_terminate_obsolete_appservers_no_active(self):
+        """
+        Test that `terminate_obsolete_appservers` does not terminate any app servers
+        if an instance does not have an active app server.
+        """
+        instance = OpenEdXInstanceFactory()
+        reference_date = timezone.now()
+
+        # Create app servers
+        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=5))
+        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=5))
+
+        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=1))
+        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=1))
+
+        appserver = self._create_running_appserver(instance, reference_date)
+        appserver_failed = self._create_failed_appserver(instance, reference_date)
+
+        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=3))
+        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=3))
+
+        # Terminate app servers
+        instance.terminate_obsolete_appservers()
+
+        # Check status of app servers (should be unchanged)
+        self._assert_status([
+            (obsolete_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (recent_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (newer_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+        ])
