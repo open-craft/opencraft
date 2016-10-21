@@ -188,11 +188,11 @@ class Server(ValidateModelMixin, TimeStampedModel):
         """
         return {'server_id': self.pk}
 
-    def format_log_message(self, msg):
+    def get_log_message_annotation(self):
         """
-        Format a log line for this server.
+        Format a log line annotation for this server.
         """
-        return 'server={!s:.20} | {}'.format(self.name, msg)
+        return 'server={!s:.20}'.format(self.name)
 
     def sleep_until(self, condition, timeout=3600):
         """

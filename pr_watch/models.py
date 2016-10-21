@@ -176,13 +176,13 @@ class WatchedPullRequest(models.Model):
         """
         return '{0.github_base_url}/commits/{0.branch_name}.atom'.format(self)
 
-    def format_log_message(self, msg):
+    def get_log_message_annotation(self):
         """
-        Format a log message for this PR.
+        Format a log message annotation for this PR.
         """
         if self.instance:
-            return "{} | {}".format(self.instance.get_log_message_annotation(), msg)
-        return msg
+            return self.instance.get_log_message_annotation()
+        return None
 
     def get_branch_tip(self):
         """

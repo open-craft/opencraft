@@ -51,12 +51,12 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         super().__init__(*args, **kwargs)
         self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
-    def format_log_message(self, msg):
-        """Format log messages for the load-balancing server."""
-        return "load_balancer={} ({!s:.15}) | {}".format(self.pk, self.domain, msg)
+    def get_log_message_annotation(self):
+        """Annotate log messages for the load-balancing server."""
+        return "load_balancer={} ({!s:.15})".format(self.pk, self.domain)
 
     def get_configuration(self):
-        """Collect the backend maps and configuration fragments from all assoicated instances."""
+        """Collect the backend maps and configuration fragments from all associated instances."""
         backend_map = []
         backend_conf = []
         for instance in self.openedxinstance_set.iterator():

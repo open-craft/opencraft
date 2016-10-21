@@ -107,5 +107,8 @@ class ModelLoggerAdapter(logging.LoggerAdapter):
     """
     def process(self, msg, kwargs):
         msg, kwargs = super().process(msg, kwargs)
-        msg = self.extra['obj'].format_log_message(msg)
-        return msg, kwargs
+        annotation = self.extra['obj'].get_log_message_annotation()
+        if annotation:
+            return "{} | {}".format(annotation, msg), kwargs
+        else:
+            return msg, kwargs

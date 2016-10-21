@@ -190,12 +190,6 @@ class Instance(ValidateModelMixin, models.Model):
         """
         return 'instance={} ({!s:.15})'.format(self.ref.pk, self.ref.name)
 
-    def format_log_message(self, msg):
-        """
-        Format a log line for this instance.
-        """
-        return '{} | {}'.format(self.get_log_message_annotation(), msg)
-
     @property
     def log_entries(self):
         """

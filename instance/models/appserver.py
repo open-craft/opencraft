@@ -173,15 +173,13 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     def __str__(self):
         return self.name
 
-    def format_log_message(self, msg):
+    def get_log_message_annotation(self):
         """
-        Format a log line for this AppServer.
+        Format a log line annotation for this AppServer.
         """
-        if self.instance:
-            return '{},app_server={} ({!s:.15}) | {}'.format(
-                self.instance.get_log_message_annotation(), self.pk, self.name, msg
-            )
-        return msg
+        return '{},app_server={} ({!s:.15})'.format(
+            self.instance.get_log_message_annotation(), self.pk, self.name
+        )
 
     @property
     def instance(self):
