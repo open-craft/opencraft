@@ -35,6 +35,22 @@ from .utils import ValidateModelMixin
 logger = logging.getLogger(__name__)
 
 
+def run_ssh_script(server, username, script, sudo=True):
+    """Run a script via SSH on the given server."""
+    if sudo:
+        command = "sudo sh"
+    else:
+        command = "sh"
+    subprocess.run(
+        ["ssh", "-T", "-o", "PasswordAuthentication=no", "-l", username, server, command],
+        input=script.encode(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=settings.ANSIBLE_LINE_TIMEOUT,
+        check=True,
+    )
+
+
 class LoadBalancingServer(ValidateModelMixin, models.Model):
     """A model representing a configured load-balancing server."""
 
@@ -95,14 +111,7 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
         config_script = self.get_config_script()
         try:
-            subprocess.run(
-                ["ssh", "-T", "-o", "PasswordAuthentication=no", "-l", self.ssh_username, self.domain, "sudo sh"],
-                input=config_script.encode(),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=settings.ANSIBLE_LINE_TIMEOUT,
-                check=True,
-            )
+            run_ssh_script(self.domain, self.ssh_username, config_script)
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
             self.logger.error(
                 "Reconfiguring the load balancer failed.  Stderr of ssh process:\n%s",

@@ -23,6 +23,7 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
+import re
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
 import re
@@ -224,8 +225,14 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
         self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
-        # And DNS should never be changed from spawn_appserver() alone:
-        self.assertEqual(mocks.mock_set_dns_record.call_count, 0)
+
+        self.assertEqual(mocks.mock_set_dns_record.call_count, 3)  # Three domains: LMS, LMS preview, Studio
+        lb_domain = instance.load_balancing_server.domain + "."
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
+            call('example.com', name='test.spawn', type='CNAME', value=lb_domain),
+            call('example.com', name='preview-test.spawn', type='CNAME', value=lb_domain),
+            call('example.com', name='studio-test.spawn', type='CNAME', value=lb_domain),
+        ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
         self.assertEqual(appserver.name, "AppServer 1")
@@ -291,48 +298,40 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
         self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.com', name='test.activate', type='A', value='1.1.1.1'),
-            call('opencraft.com', name='preview-test.activate', type='CNAME', value='test.activate'),
-            call('opencraft.com', name='studio-test.activate', type='CNAME', value='test.activate'),
+        self.assertEqual(mocks.mock_run_ssh_script.call_count, 1)
+
+    @patch('instance.models.openedx_instance.gandi.set_dns_record')
+    def test_set_dns_records(self, mock_set_dns_record):
+        """
+        Test set_dns_records() without external domains.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com',
+                                          use_ephemeral_databases=True)
+        instance.set_dns_records()
+        lb_domain = instance.load_balancing_server.domain + "."
+        self.assertEqual(mock_set_dns_record.mock_calls, [
+            call('opencraft.com', name='test.dns', type='CNAME', value=lb_domain),
+            call('opencraft.com', name='preview-test.dns', type='CNAME', value=lb_domain),
+            call('opencraft.com', name='studio-test.dns', type='CNAME', value=lb_domain),
         ])
 
-    @patch_services
-    def test_set_appserver_active_external_domain(self, mocks):
+    @patch('instance.models.openedx_instance.gandi.set_dns_record')
+    def test_set_dns_records_external_domain(self, mock_set_dns_record):
         """
-        Test set_appserver_active() with custom external domains.
+        Test set_dns_records() with custom external domains.
         Ensure that the DNS records are only created for the internal domains.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.hosting',
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           use_ephemeral_databases=True)
-        appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
-        self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.activate', type='A', value='1.1.1.1'),
-            call('opencraft.hosting', name='preview-test.activate', type='CNAME', value='test.activate'),
-            call('opencraft.hosting', name='studio-test.activate', type='CNAME', value='test.activate'),
-        ])
-
-    @patch_services
-    def test_set_appserver_active_base_subdomain(self, mocks):
-        """
-        Test set_appserver_active() with a base domain that includes part of a
-        subdomain. Ensure that the dns records include the part of the subdomain
-        in the base domain of the instance.
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.stage.opencraft.hosting',
-                                          use_ephemeral_databases=True)
-        appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
-        self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.activate.stage', type='A', value='1.1.1.1'),
-            call('opencraft.hosting', name='preview-test.activate.stage', type='CNAME', value='test.activate.stage'),
-            call('opencraft.hosting', name='studio-test.activate.stage', type='CNAME', value='test.activate.stage'),
+        instance.set_dns_records()
+        lb_domain = instance.load_balancing_server.domain + "."
+        self.assertEqual(mock_set_dns_record.mock_calls, [
+            call('opencraft.hosting', name='test.dns', type='CNAME', value=lb_domain),
+            call('opencraft.hosting', name='preview-test.dns', type='CNAME', value=lb_domain),
+            call('opencraft.hosting', name='studio-test.dns', type='CNAME', value=lb_domain),
         ])
 
     @patch_services
@@ -441,6 +440,65 @@ class OpenEdXInstanceTestCase(TestCase):
                         'EDXAPP_MONGO_USER', 'EDXAPP_MONGO_PASSWORD',
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
             self.assertTrue(ansible_vars[setting])
+
+    def check_load_balancer_configuration(self, backend_map, config, domain_names, ip_address):
+        """
+        Verify the load balancer configuration given in backend_map and config.
+        """
+        self.assertRegex(config, r"\b{}:80\b".format(ip_address))
+        backend = re.search(r"backend (\S*)", config).group(1)
+        self.assertCountEqual(
+            backend_map.splitlines(False),
+            ["{} {}".format(domain, backend) for domain in domain_names]
+        )
+
+    @patch_services
+    def test_get_load_balancer_configuration(self, mocks):
+        """
+        Test that the load balancer configuration gets generated correctly.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer', use_ephemeral_databases=True)
+        domain_names = [
+            "test.load_balancer.example.com",
+            "preview-test.load_balancer.example.com",
+            "studio-test.load_balancer.example.com",
+        ]
+
+        # Test configuration for preliminary page
+        backend_map, config = instance.get_load_balancer_configuration()
+        self.check_load_balancer_configuration(
+            backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
+        )
+
+        # Test configuration for active appserver
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
+        backend_map, config = instance.get_load_balancer_configuration()
+        self.check_load_balancer_configuration(
+            backend_map, config, domain_names, instance.active_appserver.server.public_ip
+        )
+
+    def test_get_load_balancer_config_ext_domains(self):
+        """
+        Test the load balancer configuration when external domains are set.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.load_balancer.opencraft.hosting',
+                                          external_lms_domain='courses.myexternal.org',
+                                          external_lms_preview_domain='preview.myexternal.org',
+                                          external_studio_domain='studio.myexternal.org',
+                                          use_ephemeral_databases=True)
+        domain_names = [
+            'test.load_balancer.opencraft.hosting',
+            'preview-test.load_balancer.opencraft.hosting',
+            'studio-test.load_balancer.opencraft.hosting',
+            'courses.myexternal.org',
+            'preview.myexternal.org',
+            'studio.myexternal.org',
+        ]
+        backend_map, config = instance.get_load_balancer_configuration()
+        self.check_load_balancer_configuration(
+            backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
+        )
 
     @ddt.data(True, False)
     @patch_services

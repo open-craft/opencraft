@@ -329,19 +329,18 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             backend_name = "be-preliminary-page-{}".format(self.pk)
             server_name = "preliminary-page"
             ip_address = settings.PRELIMINARY_PAGE_SERVER_IP
-        template = loader.get_template("instance/haproxy/backend.conf")
-        if ip_address is not None:
-            config = template.render(dict(
-                domain=self.domain,
-                backend_name=backend_name,
-                server_name=server_name,
-                ip_address=ip_address,
-            ))
-        else:
+        if not ip_address:
             # No active appserver and PRELIMINARY_PAGE_SERVER_IP not set, so there is no backend
             # we can configure.  Simply return an empty configuration in this case.
             self.logger.info("PRELIMINARY_PAGE_SERVER_IP is unset, so not configuring a preliminary backend.")
             return "", ""
+        template = loader.get_template("instance/haproxy/backend.conf")
+        config = template.render(dict(
+            domain=self.domain,
+            backend_name=backend_name,
+            server_name=server_name,
+            ip_address=ip_address,
+        ))
         domain_names = [
             self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
             self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,

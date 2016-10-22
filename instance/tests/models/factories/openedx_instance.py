@@ -27,7 +27,9 @@ import uuid
 import factory
 from factory.django import DjangoModelFactory
 
+from instance.models.load_balancer import LoadBalancingServer, select_load_balancing_server
 from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
+from .load_balancer import LoadBalancingServerFactory
 
 
 # Classes #####################################################################
@@ -51,3 +53,13 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
+
+    @factory.lazy_attribute
+    def load_balancing_server(self):  # pylint: disable=no-self-use
+        """
+        Assign a load-balancing server.  Create one if none exists yet.
+        """
+        try:
+            return select_load_balancing_server()
+        except LoadBalancingServer.DoesNotExist:
+            return LoadBalancingServerFactory()
