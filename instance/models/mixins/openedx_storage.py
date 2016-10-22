@@ -73,6 +73,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             self.swift_openstack_tenant = settings.SWIFT_OPENSTACK_TENANT
             self.swift_openstack_auth_url = settings.SWIFT_OPENSTACK_AUTH_URL
             self.swift_openstack_region = settings.SWIFT_OPENSTACK_REGION
+        super().set_field_defaults()
 
     def get_storage_settings(self):
         """

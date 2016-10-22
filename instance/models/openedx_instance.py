@@ -63,8 +63,8 @@ def generate_internal_lms_domain(sub_domain):
 # Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
-                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin):
+class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMonitoringMixin,
+                      OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -251,17 +251,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
-
-        # Database settings
-        OpenEdXDatabaseMixin.set_field_defaults(self)
-
-        # Storage settings
-        OpenEdXStorageMixin.set_field_defaults(self)
-
-        # Generate secret base key
-        SecretKeyInstanceMixin.set_random_key(self)
-
-        # Other settings
         super().set_field_defaults()
 
     def save(self, **kwargs):

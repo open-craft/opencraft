@@ -234,6 +234,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         if not self.mongo_user:
             self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
             self.mongo_pass = get_random_string(length=32)
+        super().set_field_defaults()
 
     def get_database_settings(self):
         """
