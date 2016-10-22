@@ -32,4 +32,4 @@ class LoadBalancingServerFactory(factory.django.DjangoModelFactory):
         model = LoadBalancingServer
 
     domain = factory.Sequence('haproxy-{}.fake.domain'.format)
-    ssh_username = "ububtu"
+    ssh_username = "ubuntu"

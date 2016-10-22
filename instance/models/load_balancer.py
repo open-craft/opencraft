@@ -25,6 +25,7 @@ import random
 import subprocess
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.template import loader
 
@@ -67,6 +68,9 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = ModelLoggerAdapter(logger, {'obj': self})
+
+    def __str__(self):
+        return self.domain
 
     def get_log_message_annotation(self):
         """Annotate log messages for the load-balancing server."""
@@ -127,6 +131,27 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
             raise
 
 
+def _create_default_load_balancing_server():
+    """Create the default load balancing server configured in the Django settings, if any."""
+    if settings.DEFAULT_LOAD_BALANCING_SERVER:
+        ssh_username, unused, domain = settings.DEFAULT_LOAD_BALANCING_SERVER.partition("@")
+        if not ssh_username or not domain:
+            raise ImproperlyConfigured(
+                "DEFAULT_LOAD_BALANCING_SERVER must have the form ssh_username@domain.name."
+            )
+        logger.info("Creating LoadBalancingServer %s", domain)
+        server, created = LoadBalancingServer.objects.get_or_create(
+            domain=domain,
+            defaults=dict(ssh_username=ssh_username),
+        )
+        if not created and server.ssh_username != ssh_username:
+            logger.warning(
+                "The SSH username of LoadBalancingServer %s in database does not match the "
+                "username in Django settings@ %s vs %s",
+                domain, server.ssh_username, ssh_username
+            )
+
+
 def select_load_balancing_server():
     """Select a load-balancing server for a new instance.
 
@@ -134,6 +159,8 @@ def select_load_balancing_server():
     random.  If no load-balancing server accepts new backends, LoadBalancingServer.DoesNotExist
     is raised.
     """
+    _create_default_load_balancing_server()
+
     # The set of servers might change between retrieving the server count and retrieving the random
     # server, so we make this atomic.
     with transaction.atomic():

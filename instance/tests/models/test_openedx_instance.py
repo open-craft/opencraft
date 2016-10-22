@@ -227,7 +227,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
 
         self.assertEqual(mocks.mock_set_dns_record.call_count, 3)  # Three domains: LMS, LMS preview, Studio
-        lb_domain = instance.load_balancing_server.domain + "."
+        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call('example.com', name='test.spawn', type='CNAME', value=lb_domain),
             call('example.com', name='preview-test.spawn', type='CNAME', value=lb_domain),
@@ -308,7 +308,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com',
                                           use_ephemeral_databases=True)
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."
+        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
         self.assertEqual(mock_set_dns_record.mock_calls, [
             call('opencraft.com', name='test.dns', type='CNAME', value=lb_domain),
             call('opencraft.com', name='preview-test.dns', type='CNAME', value=lb_domain),
@@ -327,7 +327,7 @@ class OpenEdXInstanceTestCase(TestCase):
                                           external_studio_domain='studio.myexternal.org',
                                           use_ephemeral_databases=True)
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."
+        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
         self.assertEqual(mock_set_dns_record.mock_calls, [
             call('opencraft.hosting', name='test.dns', type='CNAME', value=lb_domain),
             call('opencraft.hosting', name='preview-test.dns', type='CNAME', value=lb_domain),

@@ -481,6 +481,10 @@ NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 
 # Load balancing ##############################################################
 
+# The load-balancing server given in the form ssh_username@server.domain will be created
+# in the database if it does not exist yet.
+DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=None)
+
 LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
 LOAD_BALANCER_CONF_DIR = env('LOAD_BALANCER_CONF_DIR', default='/etc/haproxy/conf.d')
 LOAD_BALANCER_BACKENDS_DIR = env('LOAD_BALANCER_BACKENDS_DIR', default='/etc/haproxy/backends')
