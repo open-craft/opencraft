@@ -29,6 +29,7 @@ from django.db import models, transaction
 from django.template import loader
 
 from instance.logging import ModelLoggerAdapter
+from .instance import Instance
 from .utils import ValidateModelMixin
 
 
@@ -71,11 +72,17 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         """Annotate log messages for the load-balancing server."""
         return "load_balancer={} ({!s:.15})".format(self.pk, self.domain)
 
+    def get_instances(self):
+        """Yield all instances configured to use this load balancer."""
+        for field in self._meta.get_fields():
+            if field.one_to_many and issubclass(field.related_model, Instance):
+                yield from getattr(self, field.get_accessor_name()).iterator()
+
     def get_configuration(self):
         """Collect the backend maps and configuration fragments from all associated instances."""
         backend_map = []
         backend_conf = []
-        for instance in self.openedxinstance_set.iterator():
+        for instance in self.get_instances():
             map_entries, conf = instance.get_load_balancer_configuration()
             backend_map.append(map_entries)
             backend_conf.append(conf)
