@@ -197,6 +197,22 @@ flavor:
 * `OPENSTACK_AUTH_URL`: Your openstack auth url (required)
 * `OPENSTACK_REGION`: The openstack region to deploy sandboxes in (required)
 
+### Load balancer settings
+* `DEFAULT_LOAD_BALANCING_SERVER`: The load-balancing server to be used in the
+  form `ssh_username@domain.name`.  The server will be represented as an
+  instance of the LoadBalancingServer model in the database.  It is possible to
+  create multiple instances of that model.  This setting exists mainly to make
+  it easier to add a load-balancing server in testing and development
+  environments.
+* `LOAD_BALANCER_FRAGMENT_NAME_PREFIX`: A prefix prepended to the filename of
+  the configuration fragments added to the load balancer.  This serves mainly
+  the purpose of making the fragments easier to recognise, and it should be set
+  to a value identifying the instance manager installation.
+* `PRELIMINARY_PAGE_SERVER_IP`: The IP address requests will be relayed to by
+  the load balancer when no AppServer is active (e.g. during the deployment of
+  the first AppServer.)  This can point to a static page informing the user that
+  the instance is currently being deployed.
+
 ### DNS settings
 
 * `DEFAULT_INSTANCE_BASE_DOMAIN`: Instances are created as subdomains of this domain,
