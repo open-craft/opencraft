@@ -113,4 +113,8 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data
         except WatchedPullRequest.DoesNotExist:
             output['source_pr'] = None
+        if obj.load_balancing_server:
+            output['load_balancing_server'] = obj.load_balancing_server.domain
+        else:
+            output['load_balancing_server'] = None
         return output
