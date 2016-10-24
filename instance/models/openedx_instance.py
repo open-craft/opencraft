@@ -202,23 +202,33 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         return truncate_name(escaped, length=50)
 
     @property
-    def shutdown(self):
+    def is_shut_down(self):
         """
         Return True if this instance has been shut down, else False.
 
-        An instance has been shut down if all of its app servers have been terminated,
-        and monitoring has been turned off.
+        An instance has been shut down if monitoring has been turned off
+        and each of its app servers has either been terminated
+        or failed to provision and the corresponding VM has since been terminated.
 
         If an instance has no app servers, we assume that it has *not* been shut down.
         This ensures that the GUI lists newly created instances without app servers.
         """
         if self.appserver_set.count() == 0:
             return False
+
+        def appserver_is_shut_down(appserver):
+            """
+            Return True if `appserver` has been terminated
+            or if it failed to provision and the corresponding VM has since been terminated.
+            """
+            if appserver.status == AppServerStatus.Terminated:
+                return True
+            configuration_failed = appserver.status == AppServerStatus.ConfigurationFailed
+            vm_terminated = appserver.server.status == ServerStatus.Terminated
+            return configuration_failed and vm_terminated
+
         all_appservers_terminated = all(
-            appserver.status == AppServerStatus.Terminated or
-            (appserver.status == AppServerStatus.ConfigurationFailed and
-             appserver.server.status == ServerStatus.Terminated)
-            for appserver in self.appserver_set.all()
+            appserver_is_shut_down(appserver) for appserver in self.appserver_set.all()
         )
         monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
         return all_appservers_terminated and monitoring_turned_off

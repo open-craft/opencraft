@@ -7,7 +7,7 @@
         "modified": "2016-05-20T07:46:01.033134Z",
         "instance_type": "openedxinstance",
         "domain": "pr12338.sandbox.example.com",
-        "shutdown": false,
+        "is_shut_down": false,
         "appserver_count": 2,
         "active_appserver": {
             "id": 8,
@@ -42,7 +42,7 @@
         "modified": "2016-05-20T07:46:00.524334Z",
         "instance_type": "openedxinstance",
         "domain": "pr12340.sandbox.example.com",
-        "shutdown": false,
+        "is_shut_down": false,
         "appserver_count": 1,
         "active_appserver": null,
         "newest_appserver": {

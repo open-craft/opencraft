@@ -126,10 +126,10 @@ class CleanUpTestCase(TestCase):
         self.assertEqual(mock_terminate_appservers.call_count, 5)
 
     @ddt.data(
-        {'pr_state': 'closed', 'pr_days_since_closed': 4, 'instance_shutdown': False},
-        {'pr_state': 'closed', 'pr_days_since_closed': 7, 'instance_shutdown': True},
-        {'pr_state': 'closed', 'pr_days_since_closed': 10, 'instance_shutdown': True},
-        {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_shutdown': False},
+        {'pr_state': 'closed', 'pr_days_since_closed': 4, 'instance_is_shut_down': False},
+        {'pr_state': 'closed', 'pr_days_since_closed': 7, 'instance_is_shut_down': True},
+        {'pr_state': 'closed', 'pr_days_since_closed': 10, 'instance_is_shut_down': True},
+        {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_is_shut_down': False},
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
     def test_shut_down_instances(self, data, mock_shut_down):
@@ -159,7 +159,7 @@ class CleanUpTestCase(TestCase):
             tasks.shut_down_instances()
 
             # Check if task tried to shut down instances
-            if data['instance_shutdown']:
+            if data['instance_is_shut_down']:
                 self.assertEqual(mock_shut_down.call_count, 5)
             else:
                 self.assertEqual(mock_shut_down.call_count, 0)

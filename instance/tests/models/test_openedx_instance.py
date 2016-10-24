@@ -618,7 +618,7 @@ class OpenEdXInstanceTestCase(TestCase):
     )
     @ddt.unpack
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_shutdown(
+    def test_is_shut_down(
             self,
             num_running_appservers,
             num_terminated_appservers,
@@ -628,10 +628,14 @@ class OpenEdXInstanceTestCase(TestCase):
             mock_newrelic
     ):
         """
-        Test that `shutdown` property correctly reports whether an instance has been shut down.
+        Test that `is_shut_down` property correctly reports whether an instance has been shut down.
 
-        An instance has been shut down if all of its app servers have been terminated,
-        and monitoring has been turned off.
+        An instance has been shut down if monitoring has been turned off
+        and each of its app servers has either been terminated
+        or failed to provision and the corresponding VM has since been terminated.
+
+        If an instance has no app servers, we assume that it has *not* been shut down.
+        This ensures that the GUI lists newly created instances without app servers.
         """
         instance = OpenEdXInstanceFactory()
 
@@ -656,7 +660,7 @@ class OpenEdXInstanceTestCase(TestCase):
             monitor_id = str(uuid4())
             instance.new_relic_availability_monitors.create(pk=monitor_id)
 
-        self.assertEqual(instance.shutdown, expected_result)
+        self.assertEqual(instance.is_shut_down, expected_result)
 
     @patch('instance.models.openedx_instance.OpenEdXMonitoringMixin.disable_monitoring')
     def test_shut_down(self, mock_disable_monitoring):
