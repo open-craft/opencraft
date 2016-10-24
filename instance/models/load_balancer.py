@@ -30,8 +30,8 @@ from django.db import models, transaction
 from django.template import loader
 
 from instance.logging import ModelLoggerAdapter
-from .instance import Instance
-from .utils import ValidateModelMixin
+from instance.models.instance import Instance
+from instance.models.utils import ValidateModelMixin
 
 
 logger = logging.getLogger(__name__)
