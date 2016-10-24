@@ -53,12 +53,14 @@ class IntegrationTestCase(TestCase):
     def tearDown(self):
         # Trigger clean-up operations for load-balancers and instances.  To avoid reconfiguring the
         # load balancing server multiple time, we first remove the configured load balancer from all
-        # instances, the delete the load balancers, the delete the instances.
+        # instances, then delete the load balancers, then delete the instances.
         for instance in OpenEdXInstance.objects.iterator():
             instance.load_balancing_server = None
             instance.save()
-        LoadBalancingServer.objects.delete()  # pylint: disable=no-member
-        OpenEdXInstance.objects.delete()
+        for load_balancer in LoadBalancingServer.objects.iterator():  # pylint: disable=no-member
+            load_balancer.delete()
+        for instance in OpenEdXInstance.objects.iterator():
+            instance.delete()
 
         super().tearDown()
 

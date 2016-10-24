@@ -311,7 +311,8 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.disable_monitoring()
         self.active_appserver = None
         self.save()
-        self.load_balancing_server.reconfigure()
+        if self.load_balancing_server is not None:
+            self.load_balancing_server.reconfigure()
 
     @log_exception
     def spawn_appserver(self):
