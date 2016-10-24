@@ -23,7 +23,6 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
-import re
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
 import re
@@ -445,12 +444,9 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Verify the load balancer configuration given in backend_map and config.
         """
-        self.assertRegex(config, r"\b{}:80\b".format(ip_address))
-        backend = re.search(r"backend (\S*)", config).group(1)
-        self.assertCountEqual(
-            backend_map.splitlines(False),
-            ["{} {}".format(domain, backend) for domain in domain_names]
-        )
+        [(backend, config_str)] = config
+        self.assertRegex(config_str, r"\bserver\b.*\b{}:80\b".format(ip_address))
+        self.assertCountEqual(backend_map, [(domain, backend) for domain in domain_names])
 
     @patch_services
     def test_get_load_balancer_configuration(self, mocks):

@@ -312,7 +312,7 @@ class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMoni
         """
         if self.active_appserver:
             backend_name = "be-{}".format(self.active_appserver.server.name)
-            server_name = "appserver-{}".format(self.pk)
+            server_name = "appserver-{}".format(self.active_appserver.pk)
             ip_address = self.active_appserver.server.public_ip
         else:
             backend_name = "be-preliminary-page-{}".format(self.pk)
@@ -326,7 +326,6 @@ class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMoni
         template = loader.get_template("instance/haproxy/backend.conf")
         config = template.render(dict(
             domain=self.domain,
-            backend_name=backend_name,
             server_name=server_name,
             ip_address=ip_address,
         ))
@@ -334,8 +333,8 @@ class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMoni
             self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
             self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
         ]
-        backend_map = "\n".join(" ".join([domain, backend_name]) for domain in domain_names if domain)
-        return backend_map, config
+        backend_map = [(domain, backend_name) for domain in domain_names if domain]
+        return backend_map, [(backend_name, config)]
 
     @property
     def appserver_set(self):

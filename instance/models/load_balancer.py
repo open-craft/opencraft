@@ -122,6 +122,14 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         super().__init__(*args, **kwargs)
         self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
+    def set_field_defaults(self):
+        if not self.fragment_name_postfix:
+            # Set a unique fragment_name_postfix to avoid clashes between multiple instance
+            # managers sharing the same load balancer.
+            bits = self._meta.get_field("fragment_name_postfix").max_length * 4
+            self.fragment_name_postfix = format(random.getrandbits(bits), "x")
+        super().set_field_defaults()
+
     def __str__(self):
         return self.domain
 
@@ -142,34 +150,31 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
     def get_configuration(self):
         """
         Collect the backend maps and configuration fragments from all associated instances.
+
+        This function also appends fragment_name_postfix to all backend names to avoid name clashes
+        between multiple instance managers using the same load balancer (e.g. for the integration
+        tests).
         """
         backend_map = []
         backend_conf = []
         for instance in self.get_instances():
-            map_entries, conf = instance.get_load_balancer_configuration()
-            backend_map.append(map_entries)
-            backend_conf.append(conf)
-        return "\n\n".join(backend_map), "\n\n".join(backend_conf)
-
-    def get_fragment_name(self):
-        """
-        Return the base name to use for the haproxy configuration files.
-
-        This should be unique for each instance of the instance manager, so that different
-        instance managers can share a load balancing server.
-        """
-        if not self.fragment_name_postfix:
-            bits = self._meta.get_field("fragment_name_postfix").max_length * 4
-            self.fragment_name_postfix = format(random.getrandbits(bits), "x")
-            self.save()
-        return settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
+            map_entries, conf_entries = instance.get_load_balancer_configuration()
+            backend_map.extend(
+                " ".join([domain, backend + self.fragment_name_postfix])
+                for domain, backend in map_entries
+            )
+            backend_conf.extend(
+                "backend {}\n{}\n".format(backend + self.fragment_name_postfix, conf)
+                for backend, conf in conf_entries
+            )
+        return "\n".join(backend_map), "\n".join(backend_conf)
 
     def get_config_script(self):
         """
-        Render the configuration script to be executed on the loader balancer.
+        Render the configuration script to be executed on the load balancer.
         """
         backend_map, backend_conf = self.get_configuration()
-        fragment_name = self.get_fragment_name()
+        fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
         template = loader.get_template("instance/haproxy/conf.sh")
         return template.render(dict(
             settings=settings,

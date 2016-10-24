@@ -19,11 +19,22 @@
 """
 LoadBalancingServer model - tests
 """
-
-from django.conf import settings
+import re
+from unittest.mock import patch, Mock
 
 from instance.tests.base import TestCase
 from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
+
+
+def _make_mock_instance(domains, ip_address, backend_name):
+    """
+    Create a mock instance
+    """
+    instance = Mock()
+    map_entries = [(domain, backend_name) for domain in domains]
+    conf_entries = [(backend_name, "    server test-server {}:80".format(ip_address))]
+    instance.get_load_balancer_configuration.return_value = map_entries, conf_entries
+    return instance
 
 
 class LoadBalancingServerTest(TestCase):
@@ -31,12 +42,35 @@ class LoadBalancingServerTest(TestCase):
     Test cases for the LoadBalancingServer model.
     """
 
-    def test_get_fragment_name(self):
-        """Test fragment name generation is sane."""
+    def test_get_configuration(self):
+        """
+        Test that the configuration gets rendered correctly.
+        """
         load_balancer = LoadBalancingServerFactory()
-        fragment_name = load_balancer.get_fragment_name()
-        self.assertEqual(
-            fragment_name,
-            settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + load_balancer.fragment_name_postfix
-        )
-        self.assertEqual(fragment_name, load_balancer.get_fragment_name())
+        mock_instances = [
+            _make_mock_instance(
+                ["test1.lb.opencraft.hosting", "test2.lb.opencraft.hosting"],
+                "1.2.3.4",
+                "first-backend",
+            ),
+            _make_mock_instance(
+                ["test3.lb.opencraft.hosting"],
+                "5.6.7.8",
+                "second-backend",
+            ),
+        ]
+        with patch.object(load_balancer, "get_instances", return_value=mock_instances):
+            backend_map, backend_conf = load_balancer.get_configuration()
+            self.assertCountEqual(
+                [line for line in backend_map.splitlines(False) if line],
+                [
+                    "test1.lb.opencraft.hosting first-backend" + load_balancer.fragment_name_postfix,
+                    "test2.lb.opencraft.hosting first-backend" + load_balancer.fragment_name_postfix,
+                    "test3.lb.opencraft.hosting second-backend" + load_balancer.fragment_name_postfix,
+                ],
+            )
+            backends = [match.group(1) for match in re.finditer(r"^backend (\S*)", backend_conf, re.MULTILINE)]
+            self.assertCountEqual(backends, [
+                "first-backend" + load_balancer.fragment_name_postfix,
+                "second-backend" + load_balancer.fragment_name_postfix,
+            ])
