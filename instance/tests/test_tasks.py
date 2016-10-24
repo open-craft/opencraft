@@ -22,13 +22,16 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
+from datetime import timedelta
 from unittest.mock import patch
 
 import ddt
+from django.utils import timezone
 
 from instance import tasks
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from pr_watch.tests.factories import make_watched_pr_and_instance
 
 
 # Tests #######################################################################
@@ -101,3 +104,86 @@ class SpawnAppServerTestCase(TestCase):
         tasks.spawn_appserver(instance.ref.pk)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))
+
+
+@ddt.ddt
+class CleanUpTestCase(TestCase):
+    """
+    Test cases for clean up tasks
+    """
+
+    @patch('instance.models.openedx_instance.OpenEdXInstance.terminate_obsolete_appservers')
+    def test_terminate_obsolete_appservers(self, mock_terminate_appservers):
+        """
+        Test that `terminate_obsolete_appservers_all_instances`
+        calls `terminate_obsolete_appservers` on all existing instances.
+        """
+        for dummy in range(5):
+            OpenEdXInstanceFactory()
+
+        tasks.terminate_obsolete_appservers_all_instances()
+
+        self.assertEqual(mock_terminate_appservers.call_count, 5)
+
+    @ddt.data(
+        {'pr_state': 'closed', 'pr_days_since_closed': 4, 'instance_is_shut_down': False},
+        {'pr_state': 'closed', 'pr_days_since_closed': 7, 'instance_is_shut_down': True},
+        {'pr_state': 'closed', 'pr_days_since_closed': 10, 'instance_is_shut_down': True},
+        {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_is_shut_down': False},
+    )
+    @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
+    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_shut_down):
+        """
+        Test that `shut_down_obsolete_pr_sandboxes` correctly identifies and shuts down instances
+        whose PRs got merged (more than) one week ago.
+        """
+        reference_date = timezone.now()
+
+        # Create PRs and instances
+        for dummy in range(5):
+            make_watched_pr_and_instance()
+
+        # Calculate date when PR was closed
+        pr_state = data['pr_state']
+        if pr_state == 'closed':
+            pr_closed_date = reference_date - timedelta(days=data['pr_days_since_closed'])
+            closed_at = pr_closed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        else:
+            closed_at = None
+
+        with patch(
+            'pr_watch.github.get_pr_info_by_number',
+            return_value={'state': pr_state, 'closed_at': closed_at},
+        ):
+            # Run task
+            tasks.shut_down_obsolete_pr_sandboxes()
+
+            # Check if task tried to shut down instances
+            if data['instance_is_shut_down']:
+                self.assertEqual(mock_shut_down.call_count, 5)
+            else:
+                self.assertEqual(mock_shut_down.call_count, 0)
+
+    @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
+    def test_shut_down_obsolete_pr_sandboxes_no_pr(self, mock_shut_down):
+        """
+        Test that `shut_down_obsolete_pr_sandboxes` does not shut down instances
+        that are not associated with a PR.
+        """
+        for dummy in range(5):
+            OpenEdXInstanceFactory()
+
+        tasks.shut_down_obsolete_pr_sandboxes()
+
+        self.assertEqual(mock_shut_down.call_count, 0)
+
+    @patch('instance.tasks.terminate_obsolete_appservers_all_instances')
+    @patch('instance.tasks.shut_down_obsolete_pr_sandboxes')
+    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):  # pylint: disable=no-self-use
+        """
+        Test that `clean_up` task spawns `shut_down_obsolete_pr_sandboxes` and
+        `terminate_obsolete_appservers_all_instances` tasks.
+        """
+        tasks.clean_up()
+        mock_shut_down_sandboxes.assert_called_once_with()
+        mock_terminate_appservers.assert_called_once_with()

@@ -29,6 +29,9 @@ from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
+from instance.models.appserver import Status as AppServerStatus
+from instance.models.server import Status as ServerStatus
+from instance.utils import sufficient_time_passed
 from .instance import Instance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
@@ -198,6 +201,38 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=50)
 
+    @property
+    def is_shut_down(self):
+        """
+        Return True if this instance has been shut down, else False.
+
+        An instance has been shut down if monitoring has been turned off
+        and each of its app servers has either been terminated
+        or failed to provision and the corresponding VM has since been terminated.
+
+        If an instance has no app servers, we assume that it has *not* been shut down.
+        This ensures that the GUI lists newly created instances without app servers.
+        """
+        if self.appserver_set.count() == 0:
+            return False
+
+        def appserver_is_shut_down(appserver):
+            """
+            Return True if `appserver` has been terminated
+            or if it failed to provision and the corresponding VM has since been terminated.
+            """
+            if appserver.status == AppServerStatus.Terminated:
+                return True
+            configuration_failed = appserver.status == AppServerStatus.ConfigurationFailed
+            vm_terminated = appserver.server.status == ServerStatus.Terminated
+            return configuration_failed and vm_terminated
+
+        all_appservers_terminated = all(
+            appserver_is_shut_down(appserver) for appserver in self.appserver_set.all()
+        )
+        monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
+        return all_appservers_terminated and monitoring_turned_off
+
     def set_field_defaults(self):
         """
         Set default values.
@@ -352,3 +387,29 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         an appserver (read: database) for this instance in the past.
         """
         return not self.successfully_provisioned or self.use_ephemeral_databases
+
+    def terminate_obsolete_appservers(self, days=2):
+        """
+        Terminate app servers that were created (more than) `days`
+        before the currently-active app server of this instance.
+
+        Do nothing if this instance doesn't have an active app server.
+        """
+        active_appserver = self.active_appserver
+        if active_appserver:
+            for appserver in self.appserver_set.all():
+                if sufficient_time_passed(appserver.created, active_appserver.created, days):
+                    appserver.terminate_vm()
+
+    def shut_down(self):
+        """
+        Shut down this instance.
+
+        This process consists of two steps:
+
+        1) Disable New Relic monitors.
+        2) Terminate all app servers belonging to this instance.
+        """
+        self.disable_monitoring()
+        for appserver in self.appserver_set.all():
+            appserver.terminate_vm()

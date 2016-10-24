@@ -124,3 +124,11 @@ def poll_streams(*files, line_timeout=None, global_timeout=None):
                 yield (key.fileobj, line)
             else:
                 selector.unregister(key.fileobj)
+
+
+def sufficient_time_passed(date, reference_date, expected_days_since):
+    """
+    Check if delta between `date` and `reference_date` is greater than or equal to `expected_days_since`.
+    """
+    days_since = (reference_date - date).days
+    return days_since >= expected_days_since

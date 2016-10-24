@@ -22,6 +22,7 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
+from datetime import datetime
 import functools
 import logging
 import operator
@@ -107,14 +108,21 @@ def is_pr_body_requesting_ephemeral_databases(pr_body, domain):
     return None
 
 
+def get_pr_info_by_number(pr_target_fork_name, pr_number):
+    """
+    Return dict containing all available information about PR identified by `pr_target_fork_name` and `pr_number`.
+    """
+    return get_object_from_url('https://api.github.com/repos/{pr_target_fork_name}/pulls/{pr_number}'.format(
+        pr_target_fork_name=pr_target_fork_name,
+        pr_number=pr_number,
+    ))
+
+
 def get_pr_by_number(pr_target_fork_name, pr_number):
     """
     Returns a PR object based on the reponse
     """
-    r_pr = get_object_from_url('https://api.github.com/repos/{pr_target_fork_name}/pulls/{pr_number}'.format(
-        pr_target_fork_name=pr_target_fork_name,
-        pr_number=pr_number,
-    ))
+    r_pr = get_pr_info_by_number(pr_target_fork_name, pr_number)
     pr_fork_name = r_pr['head']['repo']['full_name']
     pr_branch_name = r_pr['head']['ref']
     pr = PR(
@@ -162,6 +170,15 @@ def get_username_list_from_team(organization_name, team_name='Owners'):
     team = get_team_from_organization(organization_name, team_name)
     url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
     return [user_dict['login'] for user_dict in get_object_from_url(url)]
+
+
+def parse_date(date):
+    """
+    Create datetime object from `date`.
+
+    GitHub API returns dates in ISO 8601 format.
+    """
+    return datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
 
 
 # Classes #####################################################################
