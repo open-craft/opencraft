@@ -30,7 +30,6 @@ from django.db import models, transaction
 from django.template import loader
 
 from instance.logging import ModelLoggerAdapter
-from instance.models.instance import Instance
 from instance.models.utils import ValidateModelMixin
 
 
@@ -143,8 +142,11 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         """
         Yield all instances configured to use this load balancer.
         """
+        # Local import due to avoid problems with circular dependencies.
+        from instance.models.mixins.load_balanced import LoadBalancedInstance
+
         for field in self._meta.get_fields():
-            if field.one_to_many and issubclass(field.related_model, Instance):
+            if field.one_to_many and issubclass(field.related_model, LoadBalancedInstance):
                 yield from getattr(self, field.get_accessor_name()).iterator()
 
     def get_configuration(self):

@@ -35,6 +35,7 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
+from .mixins.load_balanced import LoadBalancedInstance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
@@ -63,8 +64,8 @@ def generate_internal_lms_domain(sub_domain):
 # Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMonitoringMixin,
-                      OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
+class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
+                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -89,8 +90,6 @@ class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMoni
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
-
-    load_balancing_server = models.ForeignKey(LoadBalancingServer, null=True, blank=True, on_delete=models.PROTECT)
 
     active_appserver = models.OneToOneField(
         OpenEdXAppServer, null=True, blank=True, on_delete=models.SET_NULL, related_name='+',
