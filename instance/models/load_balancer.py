@@ -53,8 +53,54 @@ def run_ssh_script(server, username, script, sudo=True):
     )
 
 
+class LoadBalancingServerManager(models.Manager):
+    """Custom manager for the LoadBalancingServer model."""
+
+    def _create_default(self):
+        """Create the default load balancing server configured in the Django settings, if any."""
+        if settings.DEFAULT_LOAD_BALANCING_SERVER:
+            ssh_username, unused, domain = settings.DEFAULT_LOAD_BALANCING_SERVER.partition("@")
+            if not ssh_username or not domain:
+                raise ImproperlyConfigured(
+                    "DEFAULT_LOAD_BALANCING_SERVER must have the form ssh_username@domain.name."
+                )
+            logger.info("Creating LoadBalancingServer %s", domain)
+            server, created = self.get_or_create(  # pylint: disable=no-member
+                domain=domain,
+                defaults=dict(ssh_username=ssh_username),
+            )
+            if not created and server.ssh_username != ssh_username:
+                logger.warning(
+                    "The SSH username of LoadBalancingServer %s in database does not match the "
+                    "username in Django settings@ %s vs %s",
+                    domain, server.ssh_username, ssh_username
+                )
+
+    def select_random(self):
+        """Select a load-balancing server for a new instance.
+
+        The current implementation selects one of the load balancers that accept new backends at
+        random.  If no load-balancing server accepts new backends, LoadBalancingServer.DoesNotExist
+        is raised.
+        """
+        self._create_default()
+
+        # The set of servers might change between retrieving the server count and retrieving the random
+        # server, so we make this atomic.
+        with transaction.atomic():
+            servers = self.filter(accepts_new_backends=True)  # pylint: disable=no-member
+            count = servers.count()
+            if not count:
+                raise self.model.DoesNotExist(  # pylint: disable=no-member
+                    "No configured LoadBalancingServer accepts new backends."
+                )
+            return servers[random.randrange(count)]
+
+
 class LoadBalancingServer(ValidateModelMixin, models.Model):
     """A model representing a configured load-balancing server."""
+
+    objects = LoadBalancingServerManager()
 
     domain = models.CharField(max_length=100, unique=True)
     # The username used to ssh into the server
@@ -129,45 +175,3 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
                 exc.stderr,
             )
             raise
-
-
-def _create_default_load_balancing_server():
-    """Create the default load balancing server configured in the Django settings, if any."""
-    if settings.DEFAULT_LOAD_BALANCING_SERVER:
-        ssh_username, unused, domain = settings.DEFAULT_LOAD_BALANCING_SERVER.partition("@")
-        if not ssh_username or not domain:
-            raise ImproperlyConfigured(
-                "DEFAULT_LOAD_BALANCING_SERVER must have the form ssh_username@domain.name."
-            )
-        logger.info("Creating LoadBalancingServer %s", domain)
-        server, created = LoadBalancingServer.objects.get_or_create(
-            domain=domain,
-            defaults=dict(ssh_username=ssh_username),
-        )
-        if not created and server.ssh_username != ssh_username:
-            logger.warning(
-                "The SSH username of LoadBalancingServer %s in database does not match the "
-                "username in Django settings@ %s vs %s",
-                domain, server.ssh_username, ssh_username
-            )
-
-
-def select_load_balancing_server():
-    """Select a load-balancing server for a new instance.
-
-    The current implementation selects one of the load balancers that accept new backends at
-    random.  If no load-balancing server accepts new backends, LoadBalancingServer.DoesNotExist
-    is raised.
-    """
-    _create_default_load_balancing_server()
-
-    # The set of servers might change between retrieving the server count and retrieving the random
-    # server, so we make this atomic.
-    with transaction.atomic():
-        servers = LoadBalancingServer.objects.filter(accepts_new_backends=True)
-        count = servers.count()
-        if not count:
-            raise LoadBalancingServer.DoesNotExist(
-                "No configured LoadBalancingServer accepts new backends."
-            )
-        return servers[random.randrange(count)]

@@ -31,7 +31,7 @@ from tldextract import TLDExtract
 from instance.gandi import GandiAPI
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
-from instance.models.load_balancer import LoadBalancingServer, select_load_balancing_server
+from instance.models.load_balancer import LoadBalancingServer
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
@@ -372,7 +372,8 @@ class OpenEdXInstance(OpenEdXAppConfiguration, OpenEdXDatabaseMixin, OpenEdXMoni
         Returns the ID of the new AppServer on success or None on failure.
         """
         if not self.load_balancing_server:
-            self.load_balancing_server = select_load_balancing_server()
+            self.load_balancing_server = LoadBalancingServer.objects.select_random()
+            self.save()
             self.load_balancing_server.reconfigure()
 
         # We unconditionally set the DNS records here, though this would only be strictly needed
