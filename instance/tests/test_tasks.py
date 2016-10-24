@@ -132,9 +132,9 @@ class CleanUpTestCase(TestCase):
         {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_is_shut_down': False},
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
-    def test_shut_down_instances(self, data, mock_shut_down):
+    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_shut_down):
         """
-        Test that `shut_down_instances` correctly identifies and shuts down instances
+        Test that `shut_down_obsolete_pr_sandboxes` correctly identifies and shuts down instances
         whose PRs got merged (more than) one week ago.
         """
         reference_date = timezone.now()
@@ -156,7 +156,7 @@ class CleanUpTestCase(TestCase):
             return_value={'state': pr_state, 'closed_at': closed_at},
         ):
             # Run task
-            tasks.shut_down_instances()
+            tasks.shut_down_obsolete_pr_sandboxes()
 
             # Check if task tried to shut down instances
             if data['instance_is_shut_down']:
@@ -165,24 +165,25 @@ class CleanUpTestCase(TestCase):
                 self.assertEqual(mock_shut_down.call_count, 0)
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
-    def test_shut_down_instances_no_pr(self, mock_shut_down):
+    def test_shut_down_obsolete_pr_sandboxes_no_pr(self, mock_shut_down):
         """
-        Test that `shut_down_instances` does not shut down instances
+        Test that `shut_down_obsolete_pr_sandboxes` does not shut down instances
         that are not associated with a PR.
         """
         for dummy in range(5):
             OpenEdXInstanceFactory()
 
-        tasks.shut_down_instances()
+        tasks.shut_down_obsolete_pr_sandboxes()
 
         self.assertEqual(mock_shut_down.call_count, 0)
 
     @patch('instance.tasks.terminate_obsolete_appservers_all_instances')
-    @patch('instance.tasks.shut_down_instances')
-    def test_clean_up_task(self, mock_shut_down_instances, mock_terminate_appservers):  # pylint: disable=no-self-use
+    @patch('instance.tasks.shut_down_obsolete_pr_sandboxes')
+    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):  # pylint: disable=no-self-use
         """
-        Test that `clean_up` task spawns `shut_down_instances` and `terminate_obsolete_appservers_all_instances` tasks.
+        Test that `clean_up` task spawns `shut_down_obsolete_pr_sandboxes` and
+        `terminate_obsolete_appservers_all_instances` tasks.
         """
         tasks.clean_up()
-        mock_shut_down_instances.assert_called_once_with()
+        mock_shut_down_sandboxes.assert_called_once_with()
         mock_terminate_appservers.assert_called_once_with()

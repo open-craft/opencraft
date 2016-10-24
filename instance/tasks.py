@@ -66,7 +66,7 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
 
 
 @db_task()
-def shut_down_instances():
+def shut_down_obsolete_pr_sandboxes():
     """
     Shut down instances whose PRs got merged (more than) one week ago.
     """
@@ -98,5 +98,5 @@ def clean_up():
 
     This task runs once per day.
     """
-    shut_down_instances()
+    shut_down_obsolete_pr_sandboxes()
     terminate_obsolete_appservers_all_instances()
