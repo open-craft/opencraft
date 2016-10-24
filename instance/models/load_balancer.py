@@ -38,7 +38,9 @@ logger = logging.getLogger(__name__)
 
 
 def run_ssh_script(server, username, script, sudo=True):
-    """Run a script via SSH on the given server."""
+    """
+    Run a script via SSH on the given server.
+    """
     if sudo:
         command = "sudo sh"
     else:
@@ -54,10 +56,13 @@ def run_ssh_script(server, username, script, sudo=True):
 
 
 class LoadBalancingServerManager(models.Manager):
-    """Custom manager for the LoadBalancingServer model."""
-
+    """
+    Custom manager for the LoadBalancingServer model.
+    """
     def _create_default(self):
-        """Create the default load balancing server configured in the Django settings, if any."""
+        """
+        Create the default load balancing server configured in the Django settings, if any.
+        """
         if settings.DEFAULT_LOAD_BALANCING_SERVER:
             ssh_username, unused, domain = settings.DEFAULT_LOAD_BALANCING_SERVER.partition("@")
             if not ssh_username or not domain:
@@ -77,7 +82,8 @@ class LoadBalancingServerManager(models.Manager):
                 )
 
     def select_random(self):
-        """Select a load-balancing server for a new instance.
+        """
+        Select a load-balancing server for a new instance.
 
         The current implementation selects one of the load balancers that accept new backends at
         random.  If no load-balancing server accepts new backends, LoadBalancingServer.DoesNotExist
@@ -98,8 +104,9 @@ class LoadBalancingServerManager(models.Manager):
 
 
 class LoadBalancingServer(ValidateModelMixin, models.Model):
-    """A model representing a configured load-balancing server."""
-
+    """
+    A model representing a configured load-balancing server.
+    """
     objects = LoadBalancingServerManager()
 
     domain = models.CharField(max_length=100, unique=True)
@@ -119,17 +126,23 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         return self.domain
 
     def get_log_message_annotation(self):
-        """Annotate log messages for the load-balancing server."""
+        """
+        Annotate log messages for the load-balancing server.
+        """
         return "load_balancer={} ({!s:.15})".format(self.pk, self.domain)
 
     def get_instances(self):
-        """Yield all instances configured to use this load balancer."""
+        """
+        Yield all instances configured to use this load balancer.
+        """
         for field in self._meta.get_fields():
             if field.one_to_many and issubclass(field.related_model, Instance):
                 yield from getattr(self, field.get_accessor_name()).iterator()
 
     def get_configuration(self):
-        """Collect the backend maps and configuration fragments from all associated instances."""
+        """
+        Collect the backend maps and configuration fragments from all associated instances.
+        """
         backend_map = []
         backend_conf = []
         for instance in self.get_instances():
@@ -139,7 +152,8 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         return "\n\n".join(backend_map), "\n\n".join(backend_conf)
 
     def get_fragment_name(self):
-        """Return the base name to use for the haproxy configuration files.
+        """
+        Return the base name to use for the haproxy configuration files.
 
         This should be unique for each instance of the instance manager, so that different
         instance managers can share a load balancing server.
@@ -151,7 +165,9 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         return settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
 
     def get_config_script(self):
-        """Render the configuration script to be executed on the loader balancer."""
+        """
+        Render the configuration script to be executed on the loader balancer.
+        """
         backend_map, backend_conf = self.get_configuration()
         fragment_name = self.get_fragment_name()
         template = loader.get_template("instance/haproxy/conf.sh")
@@ -164,7 +180,9 @@ class LoadBalancingServer(ValidateModelMixin, models.Model):
         ))
 
     def reconfigure(self):
-        """Regenerate the configuration fragments on the load-balancing server."""
+        """
+        Regenerate the configuration fragments on the load-balancing server.
+        """
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
         config_script = self.get_config_script()
         try:
