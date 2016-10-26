@@ -68,6 +68,10 @@ EDXAPP_OAUTH_ENFORCE_SECURE: false
 # Can be overridden in extra settings with a valid API key.
 EDXAPP_YOUTUBE_API_KEY: !!null
 
+# Set analytics url to an empty string to hide links to Insights on instructor dashboard.
+# For installations that include analytics, this should be set to the base Insights URL.
+EDXAPP_ANALYTICS_DASHBOARD_URL: ''
+
 # Notifier (forum digest notifications)
 NOTIFIER_DIGEST_TASK_INTERVAL: '1440'  # 1440 minutes == 24 hours
 NOTIFIER_DIGEST_EMAIL_SENDER: '{{ appserver.email }}'
