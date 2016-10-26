@@ -8,8 +8,8 @@ EDXAPP_AUTH_EXTRA:
 
 XQUEUE_AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
 XQUEUE_AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
-XQUEUE_S3_BUCKET: '{{ instance.s3_bucket_name }}'
-XQUEUE_S3_PATH_PREFIX: 'xqueue'
+XQUEUE_UPLOAD_BUCKET: '{{ instance.s3_bucket_name }}'
+XQUEUE_UPLOAD_PATH_PREFIX: 'xqueue'
 
 EDXAPP_GRADE_STORAGE_TYPE: 's3'
 EDXAPP_GRADE_BUCKET: '{{ instance.s3_bucket_name }}'

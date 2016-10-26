@@ -53,7 +53,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
 
         self.assertEqual(parsed_vars['XQUEUE_AWS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['XQUEUE_AWS_SECRET_ACCESS_KEY'], 'test-s3-secret-access-key')
-        self.assertEqual(parsed_vars['XQUEUE_S3_BUCKET'], 'test-s3-bucket-name')
+        self.assertEqual(parsed_vars['XQUEUE_UPLOAD_BUCKET'], 'test-s3-bucket-name')
 
         self.assertEqual(parsed_vars['COMMON_OBJECT_STORE_LOG_SYNC'], True)
         self.assertEqual(parsed_vars['COMMON_OBJECT_STORE_LOG_SYNC_BUCKET'], 'test-s3-bucket-name')
