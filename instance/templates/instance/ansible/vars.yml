@@ -21,6 +21,10 @@ EDXAPP_CMS_SITE_NAME: '{{ instance.studio_domain }}'
 EDXAPP_CMS_BASE: '{{ instance.studio_domain }}'
 CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
 
+# Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
+# We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
+EDXAPP_SESSION_COOKIE_DOMAIN: ''
+
 # Nginx
 {% if instance.protocol == 'https' %}
 NGINX_ENABLE_SSL: true
@@ -29,6 +33,20 @@ NGINX_REDIRECT_TO_HTTPS: true
 NGINX_ENABLE_SSL: false
 NGINX_REDIRECT_TO_HTTPS: false
 {% endif %}
+
+# SSL certificates
+# Paths are relative to the location of the playbook file!
+# We don't need this in OC IM where SSL is handled by the load balancer.
+# NGINX_SSL_CERTIFICATE: '{{ playbook_dir }}/../../relative/path/to/ssl-cert.pem'
+# NGINX_SSL_KEY: '{{ playbook_dir }}/../../relative/path/to/ssl-key.key'
+
+# Nginx redirects (optional)
+# This example redirects non-www to www version of myinstance.org.
+# nginx_redirects:
+#   no_www_to_www:
+#     server_names: ['myinstance.org']
+#     redirect_destination: 'https://www.myinstance.org'
+#     ssl: true
 
 # Forum environment settings
 FORUM_RACK_ENV: 'production'
@@ -43,6 +61,7 @@ EDXAPP_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
 EDXAPP_DEFAULT_FEEDBACK_EMAIL: '{{ appserver.email }}'
 EDXAPP_SERVER_EMAIL: '{{ appserver.email }}'
 EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
+ECOMMERCE_OSCAR_FROM_EMAIL: '{{ appserver.email }}'
 
 EDXAPP_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
 EDXAPP_EMAIL_HOST: 'localhost'
@@ -98,6 +117,7 @@ certs_version: '{{ appserver.openedx_release }}'
 NOTIFIER_VERSION: '{{ appserver.openedx_release }}'
 ANALYTICS_API_VERSION: '{{ appserver.openedx_release }}'
 INSIGHTS_VERSION: '{{ appserver.openedx_release }}'
+ECOMMERCE_VERSION: '{{ appserver.openedx_release }}'
 
 # Misc
 EDXAPP_LANG: 'en_US.UTF-8'
@@ -166,3 +186,42 @@ POSTFIX_QUEUE_HEADER_CHECKS: '/^From:(.*)$/   PREPEND Reply-To:$1'
 POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  {{ smtp_relay_settings.rewritten_address }}'
 {% endif %}
 {% endwith %}
+
+# Ecommerce
+SANDBOX_ENABLE_ECOMMERCE: false  # set to true to enable ecommerce
+ECOMMERCE_ECOMMERCE_URL_ROOT: '{{ instance.protocol }}://{{ instance.domain }}:18130'
+ECOMMERCE_SUPPORT_URL: '{{ instance.protocol }}://{{ instance.domain }}'
+ECOMMERCE_LMS_URL_ROOT: '{{ instance.domain }}'
+ECOMMERCE_PLATFORM_NAME: "{{ EDXAPP_PLATFORM_NAME }}"
+# Set your own ECOMMERCE_PAYMENT_PROCESSOR_CONFIG, or update the variables for the appropriate processor:
+# * CyberSource
+ECOMMERCE_CYBERSOURCE_PROFILE_ID: 'SET-ME-PLEASE'
+ECOMMERCE_CYBERSOURCE_MERCHANT_ID: 'SET-ME-PLEASE'
+ECOMMERCE_CYBERSOURCE_ACCESS_KEY: 'SET-ME-PLEASE'
+ECOMMERCE_CYBERSOURCE_SECRET_KEY: 'SET-ME-PLEASE'
+ECOMMERCE_CYBERSOURCE_TRANSACTION_KEY: 'SET-ME-PLEASE'
+ECOMMERCE_CYBERSOURCE_PAYMENT_PAGE_URL: 'https://set-me-please'
+ECOMMERCE_CYBERSOURCE_RECEIPT_PAGE_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/receipt/'
+ECOMMERCE_CYBERSOURCE_CANCEL_PAGE_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/'
+ECOMMERCE_CYBERSOURCE_SOAP_API_URL: 'https://set-me-please'
+# * PayPal
+ECOMMERCE_PAYPAL_MODE: 'SET-ME-PLEASE'
+ECOMMERCE_PAYPAL_CLIENT_ID: 'SET-ME-PLEASE'
+ECOMMERCE_PAYPAL_CLIENT_SECRET: 'SET-ME-PLEASE'
+ECOMMERCE_PAYPAL_RECEIPT_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/receipt/'
+ECOMMERCE_PAYPAL_CANCEL_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/'
+ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/error/'
+
+# Comprehensive theming
+# EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
+# EDXAPP_COMPREHENSIVE_THEME_DIRS:
+#   - '/edx/app/edxapp/themes'
+# EDXAPP_DEFAULT_SITE_THEME: 'my-theme-name'
+# edxapp_theme_name: '{{ EDXAPP_DEFAULT_SITE_THEME }}'
+# edxapp_theme_source_repo: 'https://github.com/open-craft/my-comprehensive-theme.git'
+# edxapp_theme_version: 'master'
+
+# Custom requirements.
+# Include only if there are custom requirements, e.g.
+# EDXAPP_EXTRA_REQUIREMENTS:
+#   - name: git+https://github.com/open-craft/xblock-leaderboard.git@61f831ba9b1ff899b40df3ea13111f6ffdd44859#egg=xblock-leaderboard
