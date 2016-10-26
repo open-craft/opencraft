@@ -46,12 +46,19 @@ class OpenEdXStorageMixinTestCase(TestCase):
         parsed_vars = yaml.load(yaml_vars_string)
         self.assertEqual(parsed_vars['AWS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['AWS_SECRET_ACCESS_KEY'], 'test-s3-secret-access-key')
+
         self.assertEqual(parsed_vars['EDXAPP_AUTH_EXTRA'], {'AWS_STORAGE_BUCKET_NAME': 'test-s3-bucket-name'})
         self.assertEqual(parsed_vars['EDXAPP_AWS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['EDXAPP_AWS_SECRET_ACCESS_KEY'], 'test-s3-secret-access-key')
+
         self.assertEqual(parsed_vars['XQUEUE_AWS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['XQUEUE_AWS_SECRET_ACCESS_KEY'], 'test-s3-secret-access-key')
         self.assertEqual(parsed_vars['XQUEUE_S3_BUCKET'], 'test-s3-bucket-name')
+
+        self.assertEqual(parsed_vars['COMMON_OBJECT_STORE_LOG_SYNC'], True)
+        self.assertEqual(parsed_vars['COMMON_OBJECT_STORE_LOG_SYNC_BUCKET'], 'test-s3-bucket-name')
+        self.assertEqual(parsed_vars['AWS_S3_LOGS_ACCESS_KEY_ID'], 'test-s3-access-key')
+        self.assertEqual(parsed_vars['AWS_S3_LOGS_SECRET_KEY'], 'test-s3-secret-access-key')
 
     def test_ansible_s3_settings(self):
         """
@@ -141,17 +148,35 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Verify the Ansible settings.
         """
+        instance = appserver.instance
         expected_settings = {
-            'EDXAPP_SWIFT_USERNAME': 'swift_openstack_user',
-            'EDXAPP_SWIFT_KEY': 'swift_openstack_password',
-            'EDXAPP_SWIFT_TENANT_NAME': 'swift_openstack_tenant',
-            'EDXAPP_SWIFT_AUTH_URL': 'swift_openstack_auth_url',
-            'EDXAPP_SWIFT_REGION_NAME': 'swift_openstack_region',
+            'EDXAPP_DEFAULT_FILE_STORAGE': 'swift.storage.SwiftStorage',
+            'EDXAPP_SWIFT_USERNAME': instance.swift_openstack_user,
+            'EDXAPP_SWIFT_KEY': instance.swift_openstack_password,
+            'EDXAPP_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
+            'EDXAPP_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
+            'EDXAPP_SWIFT_REGION_NAME': instance.swift_openstack_region,
+            'EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME': instance.swift_container_name,
+
+            'XQUEUE_SWIFT_USERNAME': instance.swift_openstack_user,
+            'XQUEUE_SWIFT_KEY': instance.swift_openstack_password,
+            'XQUEUE_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
+            'XQUEUE_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
+            'XQUEUE_SWIFT_REGION_NAME': instance.swift_openstack_region,
+            'XQUEUE_UPLOAD_BUCKET': instance.swift_container_name,
+
+            'COMMON_OBJECT_STORE_LOG_SYNC': 'true',
+            'SWIFT_LOG_SYNC_USERNAME': instance.swift_openstack_user,
+            'SWIFT_LOG_SYNC_PASSWORD': instance.swift_openstack_password,
+            'SWIFT_LOG_SYNC_TENANT_NAME': instance.swift_openstack_tenant,
+            'SWIFT_LOG_SYNC_AUTH_URL': instance.swift_openstack_auth_url,
+            'SWIFT_LOG_SYNC_REGION_NAME': instance.swift_openstack_region,
+            'COMMON_OBJECT_STORE_LOG_SYNC_BUCKET': instance.swift_container_name,
         }
         ansible_vars = appserver.configuration_settings
-        for ansible_var, attribute in expected_settings.items():
+        for ansible_var, value in expected_settings.items():
             if expected:
-                self.assertIn('{}: {}'.format(ansible_var, getattr(appserver.instance, attribute)), ansible_vars)
+                self.assertIn('{}: {}'.format(ansible_var, value), ansible_vars)
             else:
                 self.assertNotIn(ansible_var, ansible_vars)
 
