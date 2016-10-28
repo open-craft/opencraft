@@ -35,7 +35,7 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
-from .mixins.load_balanced import LoadBalancedInstance
+from .mixins.load_balanced import LoadBalancedInstance, get_preliminary_page_config
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
@@ -309,29 +309,21 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         Return the haproxy configuration fragment and backend map for this instance.
         """
-        if self.active_appserver:
-            backend_name = "be-{}".format(self.active_appserver.server.name)
-            server_name = "appserver-{}".format(self.active_appserver.pk)
-            ip_address = self.active_appserver.server.public_ip
-        else:
-            backend_name = "be-preliminary-page-{}".format(self.pk)
-            server_name = "preliminary-page"
-            ip_address = settings.PRELIMINARY_PAGE_SERVER_IP
-        if not ip_address:
-            # No active appserver and PRELIMINARY_PAGE_SERVER_IP not set, so there is no backend
-            # we can configure.  Simply return an empty configuration in this case.
-            self.logger.info("PRELIMINARY_PAGE_SERVER_IP is unset, so not configuring a preliminary backend.")
-            return "", ""
-        template = loader.get_template("instance/haproxy/backend.conf")
+        domain_names = [
+            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
+        ]
+        if not self.active_appserver:
+            return get_preliminary_page_config(self.ref.pk, domain_names)
+        backend_name = "be-{}".format(self.active_appserver.server.name)
+        server_name = "appserver-{}".format(self.active_appserver.pk)
+        ip_address = self.active_appserver.server.public_ip
+        template = loader.get_template("instance/haproxy/openedx.conf")
         config = template.render(dict(
             domain=self.domain,
             server_name=server_name,
             ip_address=ip_address,
         ))
-        domain_names = [
-            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
-            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
-        ]
         backend_map = [(domain, backend_name) for domain in domain_names if domain]
         return backend_map, [(backend_name, config)]
 

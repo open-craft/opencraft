@@ -28,6 +28,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.template import loader
+from django_extensions.db.models import TimeStampedModel
 
 from instance.logging import ModelLoggerAdapter
 from instance.models.utils import ValidateModelMixin
@@ -102,7 +103,7 @@ class LoadBalancingServerManager(models.Manager):
             return servers[random.randrange(count)]
 
 
-class LoadBalancingServer(ValidateModelMixin, models.Model):
+class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
     """
     A model representing a configured load-balancing server.
     """

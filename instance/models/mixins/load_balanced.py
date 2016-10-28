@@ -23,8 +23,21 @@ Instance app model mixins - load balancing
 # Imports #####################################################################
 
 from django.db import models
+from django.conf import settings
 
 from instance.models.load_balancer import LoadBalancingServer
+
+
+# Functions ###################################################################
+
+def get_preliminary_page_config(primary_key, domain_names):
+    """Return a load balancer configuration for the preliminary page."""
+    if not settings.PRELIMINARY_PAGE_SERVER_IP:
+        return [], []
+    backend_name = "be-preliminary-page-{}".format(primary_key)
+    config = "    server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP)
+    backend_map = [(domain, backend_name) for domain in domain_names if domain]
+    return backend_map, [(backend_name, config)]
 
 
 # Classes #####################################################################
