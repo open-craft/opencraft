@@ -20,6 +20,7 @@
 Integration tests - helper functions.
 """
 
+import pathlib
 import time
 
 import requests
@@ -31,10 +32,11 @@ def check_url_accessible(url, attempts=3, delay=15):
 
     Raises an exception if there is an HTTP error.
     """
+    ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
     while True:
         attempts -= 1
         try:
-            requests.get(url).raise_for_status()
+            requests.get(url, verify=ca_path).raise_for_status()
             break
         except Exception:  # pylint: disable=broad-except
             if not attempts:
