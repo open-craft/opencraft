@@ -32,6 +32,8 @@ import yaml
 
 from django.conf import settings
 
+from instance.utils import poll_streams
+
 
 # Logging #####################################################################
 
@@ -161,3 +163,45 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
             shell=True,
             env=env,
         )
+
+
+def capture_playbook_output(
+        requirements_path, inventory_str, vars_str, playbook_path, username='root', logger_=None, collect_logs=False
+):
+    """
+    Convenience wrapper for run_playbook() that captures the output of the playbook run.
+    """
+    with run_playbook(
+        requirements_path=requirements_path,
+        inventory_str=inventory_str,
+        vars_str=vars_str,
+        playbook_path=os.path.dirname(playbook_path),
+        playbook_name=os.path.basename(playbook_path),
+        username=username,
+    ) as process:
+        try:
+            log_line_generator = poll_streams(
+                process.stdout,
+                process.stderr,
+                line_timeout=settings.ANSIBLE_LINE_TIMEOUT,
+                global_timeout=settings.ANSIBLE_GLOBAL_TIMEOUT,
+            )
+            log_lines = []
+            for f, line in log_line_generator:
+                line = line.decode('utf-8').rstrip()
+                if logger_ is not None:
+                    if f == process.stdout:
+                        logger_.info(line)
+                    elif f == process.stderr:
+                        logger_.error(line)
+                if collect_logs:
+                    log_lines.append(line)
+        except TimeoutError:
+            if logger_ is not None:
+                logger_.error('Playbook run timed out.  Terminating the Ansible process.')
+            process.terminate()
+        process.wait()
+        if collect_logs:
+            return log_lines, process.returncode
+        else:
+            return process.returncode

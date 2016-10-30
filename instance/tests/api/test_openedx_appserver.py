@@ -191,8 +191,8 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
 
-    @patch('instance.models.load_balancer.run_ssh_script')
-    def test_make_active(self, mock_run_ssh_script):
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    def test_make_active(self, mock_run_playbook):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - Make this OpenEdXAppServer active
         for its given instance.
@@ -209,7 +209,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'App server updated.'})
-        self.assertEqual(mock_run_ssh_script.call_count, 1)
+        self.assertEqual(mock_run_playbook.call_count, 1)
 
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver, app_server)

@@ -60,11 +60,11 @@ class AnsibleAppServerTestCase(TestCase):
             self.assertEqual(appserver.inventory_str, '[app]\n')
         self.assertEqual(str(context.exception), "Cannot prepare to run playbooks when server has no public IP.")
 
-    @patch('instance.models.mixins.ansible.poll_streams')
+    @patch('instance.ansible.poll_streams')
+    @patch('instance.ansible.run_playbook')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.inventory_str')
-    @patch('instance.models.mixins.ansible.ansible.run_playbook')
     @patch('instance.models.mixins.ansible.open_repository')
-    def test_provisioning(self, mock_open_repo, mock_run_playbook, mock_inventory, mock_poll_streams):
+    def test_provisioning(self, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams):
         """
         Test instance provisioning
         """

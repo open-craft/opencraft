@@ -30,7 +30,6 @@ from django.db import models
 
 from instance import ansible
 from instance.repo import open_repository
-from instance.utils import poll_streams
 
 
 # Classes #####################################################################
@@ -77,36 +76,15 @@ class AnsibleAppServerMixin(models.Model):
         """
         Run a playbook against the AppServer's VM
         """
-        playbook_path = os.path.join(working_dir, playbook.playbook_path)
-
-        log_lines = []
-        with ansible.run_playbook(
+        return ansible.capture_playbook_output(
             requirements_path=os.path.join(working_dir, playbook.requirements_path),
             inventory_str=self.inventory_str,
             vars_str=playbook.variables,
-            playbook_path=os.path.dirname(playbook_path),
-            playbook_name=os.path.basename(playbook_path),
+            playbook_path=os.path.join(working_dir, playbook.playbook_path),
             username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-        ) as process:
-            try:
-                log_line_generator = poll_streams(
-                    process.stdout,
-                    process.stderr,
-                    line_timeout=settings.ANSIBLE_LINE_TIMEOUT,
-                    global_timeout=settings.ANSIBLE_GLOBAL_TIMEOUT,
-                )
-                for f, line in log_line_generator:
-                    line = line.decode('utf-8').rstrip()
-                    if f == process.stdout:
-                        self.logger.info(line)
-                    elif f == process.stderr:
-                        self.logger.error(line)
-                    log_lines.append(line)
-            except TimeoutError:
-                self.logger.error('Playbook run timed out.  Terminating the Ansible process.')
-                process.terminate()
-            process.wait()
-            return log_lines, process.returncode
+            logger_=self.logger,
+            collect_logs=True,
+        )
 
     def run_ansible_playbooks(self):
         """
@@ -121,7 +99,6 @@ class AnsibleAppServerMixin(models.Model):
                 if returncode != 0:
                     self.logger.error('Playbook failed for AppServer %s', self)
                     break
-
-        if returncode == 0:
+        else:
             self.logger.info('Playbooks completed for AppServer %s', self)
         return (log, returncode)

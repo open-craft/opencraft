@@ -297,7 +297,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
         self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_run_ssh_script.call_count, 1)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
 
     @patch('instance.models.openedx_instance.gandi.set_dns_record')
     def test_set_dns_records(self, mock_set_dns_record):

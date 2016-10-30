@@ -20,39 +20,21 @@
 Definition of the Load balancing server model.
 """
 import logging
-import os
+import pathlib
 import random
-import subprocess
+import textwrap
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
-from django.template import loader
 from django_extensions.db.models import TimeStampedModel
 
+from instance import ansible
 from instance.logging import ModelLoggerAdapter
 from instance.models.utils import ValidateModelMixin
 
 
 logger = logging.getLogger(__name__)
-
-
-def run_ssh_script(server, username, script, sudo=True):
-    """
-    Run a script via SSH on the given server.
-    """
-    if sudo:
-        command = "sudo sh"
-    else:
-        command = "sh"
-    subprocess.run(
-        ["ssh", "-T", "-o", "PasswordAuthentication=no", "-l", username, server, command],
-        input=script.encode(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=settings.ANSIBLE_LINE_TIMEOUT,
-        check=True,
-    )
 
 
 class LoadBalancingServerManager(models.Manager):
@@ -101,6 +83,10 @@ class LoadBalancingServerManager(models.Manager):
                     "No configured LoadBalancingServer accepts new backends."
                 )
             return servers[random.randrange(count)]
+
+
+class ReconfigurationFailed(Exception):
+    """Exception indicating that reconfiguring the load balancer failed."""
 
 
 class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
@@ -172,32 +158,46 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             )
         return "\n".join(backend_map), "\n".join(backend_conf)
 
-    def get_config_script(self):
+    def get_ansible_vars(self):
         """
         Render the configuration script to be executed on the load balancer.
         """
         backend_map, backend_conf = self.get_configuration()
         fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
-        template = loader.get_template("instance/haproxy/conf.sh")
-        return template.render(dict(
-            settings=settings,
-            conf_filename=os.path.join(settings.LOAD_BALANCER_CONF_DIR, fragment_name),
-            backend_conf=backend_conf,
-            backend_filename=os.path.join(settings.LOAD_BALANCER_BACKENDS_DIR, fragment_name),
-            backend_map=backend_map,
-        ))
+        return (
+            "FRAGMENT_NAME: {fragment_name}\n"
+            "BACKEND_CONFIG_FRAGMENT: |\n"
+            "{backend_conf}\n"
+            "BACKEND_MAP_FRAGMENT: |\n"
+            "{backend_map}\n"
+        ).format(
+            fragment_name=fragment_name,
+            backend_conf=textwrap.indent(backend_conf, "  "),
+            backend_map=textwrap.indent(backend_map, "  "),
+        )
+
+    def run_playbook(self, ansible_vars):
+        """
+        Run the playbook to perform the server reconfiguration.
+
+        This is factored out into a separate method so it can be mocked out in the tests.
+        """
+        playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
+        returncode = ansible.capture_playbook_output(
+            requirements_path=str(playbook_path.parent / "requirements.txt"),
+            inventory_str=self.domain,
+            vars_str=ansible_vars,
+            playbook_path=str(playbook_path),
+            username=self.ssh_username,
+            logger_=self.logger,
+        )
+        if returncode != 0:
+            self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
+            raise ReconfigurationFailed
 
     def reconfigure(self):
         """
         Regenerate the configuration fragments on the load-balancing server.
         """
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
-        config_script = self.get_config_script()
-        try:
-            run_ssh_script(self.domain, self.ssh_username, config_script)
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            self.logger.error(
-                "Reconfiguring the load balancer failed.  Stderr of ssh process:\n%s",
-                exc.stderr,
-            )
-            raise
+        self.run_playbook(self.get_ansible_vars())
