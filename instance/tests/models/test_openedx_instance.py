@@ -25,6 +25,7 @@ OpenEdXInstance model - Tests
 from datetime import timedelta
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
+import re
 
 import ddt
 from django.conf import settings
@@ -32,6 +33,7 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
 import yaml
+import six
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
@@ -52,6 +54,7 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
     """
+    # pylint: disable=too-many-public-methods
     def _assert_defaults(self, instance, name="Instance"):
         """
         Assert that default settings for instance are correct
@@ -73,6 +76,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
         self.assertEqual(instance.github_admin_organizations, [])
         self.assertEqual(instance.github_admin_users, [])
+        self.assertNotEqual(instance.secret_key_b64encoded, '')
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
@@ -108,6 +112,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mysql_pass = instance.mysql_pass
         mongo_user = instance.mongo_user
         mongo_pass = instance.mongo_pass
+        secret_key = instance.secret_key_b64encoded
 
         instance.name = "Test Instance"
         instance.save()
@@ -117,6 +122,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.mysql_pass, mysql_pass)
         self.assertEqual(instance.mongo_user, mongo_user)
         self.assertEqual(instance.mongo_pass, mongo_pass)
+        self.assertEqual(instance.secret_key_b64encoded, secret_key)
 
     def test_id_different_from_ref_id(self):
         """
@@ -796,3 +802,39 @@ class OpenEdXInstanceTestCase(TestCase):
             (newer_appserver, AppServerStatus.Running, ServerStatus.Pending),
             (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
         ])
+
+    def test_secret_key_creation(self):
+        """
+        Test that we can reliably produce derived secret keys for an instance with a particular
+        existing secret key.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.secret_key_b64encoded = 'esFyh7kbvbMQiYhRx9fISJw9gkcSCStGAfOWaPu9cfc6/tMu'
+        instance.save()
+
+        provider = instance.get_key_provider()
+
+        self.assertEqual(provider.THIS_IS_A_TEST, '95652a974218e2efc44f99feb6f2ab89a263746688ff428ca2c898ae44111f58')
+        self.assertEqual(provider.OTHER_TEST, '820b455b1f0e30b75ec0514ab172c588223b010de3beacce3cd27217adc7fe60')
+        self.assertEqual(provider.SUPER_SECRET, '21b5271f21ee6dacfde05cd97e20739f0e73dc8a43408ef14b657bfbf718e2b4')
+
+    @patch_services
+    def test_do_not_create_insecure_secret_keys(self, mocks):
+        """
+        Test that if we have a brand-new instance with no appservers, we refuse to create insecure
+        keys for those appservers if we don't have a secure secret key for the instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.secret_key_b64encoded = ''
+        instance.save()
+
+        expected_error_string = re.escape(
+            'Attempted to create key provider for instance {}, but no key present.'.format(
+                instance
+            )
+        )
+
+        # Six provides a compatibility method for assertRaisesRegex, since the method
+        # is named differently between Py2k and Py3k.
+        with six.assertRaisesRegex(self, ValueError, expected_error_string):
+            instance.spawn_appserver()

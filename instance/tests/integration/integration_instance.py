@@ -39,6 +39,7 @@ from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tasks import spawn_appserver
+from instance.models.mixins.secret_keys import SecretKeyProvider
 from opencraft.tests.utils import shard
 
 
@@ -48,6 +49,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks
     """
+    EXPECTED_SECRET_KEYS = (
+        'ANALYTICS_API_SECRET_KEY',
+        'EDXAPP_EDXAPP_SECRET_KEY',
+        'FORUM_API_KEY',
+    )
+
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
@@ -81,6 +88,15 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         stat_result = stat_container(instance.swift_container_name)
         self.assertEqual(stat_result.read_acl, '.r:*')
 
+    def assert_secret_keys(self, instance, appserver):
+        """
+        Verify that the appserver's configuration includes expected secret keys.
+        """
+        instance_key = instance.secret_key_b64encoded
+        key_generator = SecretKeyProvider(instance_key)
+        for expected_key in self.EXPECTED_SECRET_KEYS:
+            self.assertIn(getattr(key_generator, expected_key), appserver.configuration_settings)
+
     @shard(1)
     def test_spawn_appserver(self):
         """
@@ -92,6 +108,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_instance_up(instance)
         self.assertTrue(instance.successfully_provisioned)
         self.assertTrue(instance.require_user_creation_success())
+        for appserver in instance.appserver_set.all():
+            self.assert_secret_keys(instance, appserver)
 
     @shard(2)
     def test_external_databases(self):
@@ -108,6 +126,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_instance_up(instance)
         self.assertTrue(instance.successfully_provisioned)
         self.assertFalse(instance.require_user_creation_success())
+        for appserver in instance.appserver_set.all():
+            self.assert_secret_keys(instance, appserver)
 
     @shard(3)
     def test_activity_csv(self):

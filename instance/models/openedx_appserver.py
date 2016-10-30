@@ -130,6 +130,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     """
     configuration_database_settings = models.TextField(blank=True, help_text="YAML vars for database configuration")
     configuration_storage_settings = models.TextField(blank=True, help_text="YAML vars for storage configuration")
+    configuration_secret_keys = models.TextField(blank=True, help_text="YAML vars for secret keys")
     configuration_settings = models.TextField(blank=False, help_text=(
         'A record of the combined (final) ansible variables passed to the configuration '
         'playbook when configuring this AppServer.'
@@ -145,6 +146,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_database_settings',
         'configuration_storage_settings',
         'configuration_extra_settings',
+        'configuration_secret_keys',
     ]
 
     class Meta:
