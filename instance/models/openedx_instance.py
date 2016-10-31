@@ -36,6 +36,7 @@ from .instance import Instance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
+from .mixins.secret_keys import SecretKeyInstanceMixin
 from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 
 # Constants ###################################################################
@@ -61,7 +62,7 @@ def generate_internal_lms_domain(sub_domain):
 
 # pylint: disable=too-many-instance-attributes
 class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
-                      OpenEdXMonitoringMixin, OpenEdXStorageMixin):
+                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -255,6 +256,9 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         # Storage settings
         OpenEdXStorageMixin.set_field_defaults(self)
 
+        # Generate secret base key
+        SecretKeyInstanceMixin.set_random_key(self)
+
         # Other settings
         super().set_field_defaults()
 
@@ -374,6 +378,7 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
                 # Copy the current value of each setting into the AppServer, preserving it permanently:
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
+                configuration_secret_keys=self.get_secret_key_settings(),
                 **instance_config
             )
             app_server.add_lms_users(self.lms_users.all())
