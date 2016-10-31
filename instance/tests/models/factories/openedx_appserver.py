@@ -22,6 +22,7 @@ OpenEdXAppServer model - Factories
 
 # Imports #####################################################################
 
+from instance.models.load_balancer import LoadBalancingServer
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 # Functions ###################################################################
@@ -33,4 +34,7 @@ def make_test_appserver(instance=None):
     """
     if not instance:
         instance = OpenEdXInstanceFactory()
+    if not instance.load_balancing_server:
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
     return instance._create_owned_appserver()

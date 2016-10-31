@@ -24,6 +24,10 @@ Load-balanced instance mixin - tests
 
 from unittest.mock import patch, call
 
+from django.test import override_settings
+
+from instance.models.load_balancer import LoadBalancingServer
+from instance.models.mixins.load_balanced import LoadBalancedInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
@@ -42,8 +46,10 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com',
                                           use_ephemeral_databases=True)
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
+        lb_domain = instance.load_balancing_server.domain + "."
         self.assertEqual(mock_set_dns_record.mock_calls, [
             call('opencraft.com', name='test.dns', type='CNAME', value=lb_domain),
             call('opencraft.com', name='preview-test.dns', type='CNAME', value=lb_domain),
@@ -61,10 +67,28 @@ class LoadBalancedInstanceTestCase(TestCase):
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           use_ephemeral_databases=True)
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
+        lb_domain = instance.load_balancing_server.domain + "."
         self.assertEqual(mock_set_dns_record.mock_calls, [
             call('opencraft.hosting', name='test.dns', type='CNAME', value=lb_domain),
             call('opencraft.hosting', name='preview-test.dns', type='CNAME', value=lb_domain),
             call('opencraft.hosting', name='studio-test.dns', type='CNAME', value=lb_domain),
         ])
+
+    def test_domains(self):
+        """
+        Test the get_managed_domains() and get_load_balanced_domains() methods (for test coverage only).
+        """
+        self.assertEqual(LoadBalancedInstance.get_managed_domains(None), [])
+        self.assertEqual(LoadBalancedInstance.get_load_balanced_domains(None), [])
+
+    @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
+    def test_preliminary_page_not_configured(self):
+        """
+        Test that get_preliminary_page_config() returns an empty configuration if
+        PRELIMINARY_PAGE_SERVER_IP is not set.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.get_preliminary_page_config(instance.ref.pk), ([], []))

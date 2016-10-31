@@ -68,17 +68,19 @@ class LoadBalancedInstance(models.Model):
         """
         load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
         for domain in self.get_managed_domains():
-            self.logger.info('Updating DNS: %s...', domain)  # pylint: disable=no-member
+            self.logger.info("Updating DNS: %s...", domain)  # pylint: disable=no-member
             domain_parts = tldextract(domain)
             gandi.set_dns_record(
                 domain_parts.registered_domain,
-                type='CNAME',
+                type="CNAME",
                 name=domain_parts.subdomain,
                 value=load_balancer_domain,
             )
 
     def get_preliminary_page_config(self, primary_key):
-        """Return a load balancer configuration for the preliminary page."""
+        """
+        Return a load balancer configuration for the preliminary page.
+        """
         if not settings.PRELIMINARY_PAGE_SERVER_IP:
             return [], []
         backend_name = "be-preliminary-page-{}".format(primary_key)

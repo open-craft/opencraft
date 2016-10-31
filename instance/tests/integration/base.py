@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 from huey.contrib import djhuey
 
+from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
@@ -56,6 +57,8 @@ class IntegrationTestCase(TestCase):
             instance.deprovision_swift()
             instance.deprovision_mongo()
             instance.deprovision_mysql()
+        for load_balancer in LoadBalancingServer.objects.iterator():  # pylint: disable=no-member
+            load_balancer.deconfigure()
         super().tearDown()
 
         # All VMs should be terminated at this point, but check just in case:

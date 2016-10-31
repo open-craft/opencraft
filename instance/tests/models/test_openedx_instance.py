@@ -226,7 +226,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
 
         self.assertEqual(mocks.mock_set_dns_record.call_count, 3)  # Three domains: LMS, LMS preview, Studio
-        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
+        lb_domain = instance.load_balancing_server.domain + "."
         self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
             call('example.com', name='test.spawn', type='CNAME', value=lb_domain),
             call('example.com', name='preview-test.spawn', type='CNAME', value=lb_domain),
@@ -296,8 +296,13 @@ class OpenEdXInstanceTestCase(TestCase):
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
+        instance.refresh_from_db()
         self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
+        instance.set_appserver_inactive()
+        instance.refresh_from_db()
+        self.assertIsNone(instance.active_appserver)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
@@ -406,7 +411,7 @@ class OpenEdXInstanceTestCase(TestCase):
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
             self.assertTrue(ansible_vars[setting])
 
-    def check_load_balancer_configuration(self, backend_map, config, domain_names, ip_address):
+    def _check_load_balancer_configuration(self, backend_map, config, domain_names, ip_address):
         """
         Verify the load balancer configuration given in backend_map and config.
         """
@@ -428,7 +433,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()
-        self.check_load_balancer_configuration(
+        self._check_load_balancer_configuration(
             backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
         )
 
@@ -436,7 +441,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
         backend_map, config = instance.get_load_balancer_configuration()
-        self.check_load_balancer_configuration(
+        self._check_load_balancer_configuration(
             backend_map, config, domain_names, instance.active_appserver.server.public_ip
         )
 
@@ -458,7 +463,7 @@ class OpenEdXInstanceTestCase(TestCase):
             'studio.myexternal.org',
         ]
         backend_map, config = instance.get_load_balancer_configuration()
-        self.check_load_balancer_configuration(
+        self._check_load_balancer_configuration(
             backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
         )
 

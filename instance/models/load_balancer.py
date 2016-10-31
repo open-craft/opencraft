@@ -201,3 +201,12 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         """
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
         self.run_playbook(self.get_ansible_vars())
+
+    def deconfigure(self):
+        """
+        Remove the configuration fragment from the load-balancing server.
+        """
+        fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
+        self.run_playbook(
+            "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
+        )

@@ -22,6 +22,10 @@ LoadBalancingServer model - tests
 import re
 from unittest.mock import patch, Mock
 
+from django.core.exceptions import ImproperlyConfigured
+from django.test import override_settings
+
+from instance.models.load_balancer import LoadBalancingServer, ReconfigurationFailed
 from instance.tests.base import TestCase
 from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
 
@@ -37,40 +41,105 @@ def _make_mock_instance(domains, ip_address, backend_name):
     return instance
 
 
+def mock_instances():
+    """
+    Patch out the get_instances() method.
+    """
+    instances = [
+        _make_mock_instance(
+            ["test1.lb.opencraft.hosting", "test2.lb.opencraft.hosting"],
+            "1.2.3.4",
+            "first-backend",
+        ),
+        _make_mock_instance(
+            ["test3.lb.opencraft.hosting"],
+            "5.6.7.8",
+            "second-backend",
+        ),
+    ]
+    return patch(
+        "instance.models.load_balancer.LoadBalancingServer.get_instances",
+        return_value=instances,
+    )
+
+
 class LoadBalancingServerTest(TestCase):
     """
     Test cases for the LoadBalancingServer model.
     """
+    def setUp(self):
+        self.load_balancer = LoadBalancingServerFactory()
 
     def test_get_configuration(self):
         """
         Test that the configuration gets rendered correctly.
         """
-        load_balancer = LoadBalancingServerFactory()
-        mock_instances = [
-            _make_mock_instance(
-                ["test1.lb.opencraft.hosting", "test2.lb.opencraft.hosting"],
-                "1.2.3.4",
-                "first-backend",
-            ),
-            _make_mock_instance(
-                ["test3.lb.opencraft.hosting"],
-                "5.6.7.8",
-                "second-backend",
-            ),
-        ]
-        with patch.object(load_balancer, "get_instances", return_value=mock_instances):
-            backend_map, backend_conf = load_balancer.get_configuration()
+        with mock_instances():
+            backend_map, backend_conf = self.load_balancer.get_configuration()
             self.assertCountEqual(
                 [line for line in backend_map.splitlines(False) if line],
                 [
-                    "test1.lb.opencraft.hosting first-backend" + load_balancer.fragment_name_postfix,
-                    "test2.lb.opencraft.hosting first-backend" + load_balancer.fragment_name_postfix,
-                    "test3.lb.opencraft.hosting second-backend" + load_balancer.fragment_name_postfix,
+                    "test1.lb.opencraft.hosting first-backend" + self.load_balancer.fragment_name_postfix,
+                    "test2.lb.opencraft.hosting first-backend" + self.load_balancer.fragment_name_postfix,
+                    "test3.lb.opencraft.hosting second-backend" + self.load_balancer.fragment_name_postfix,
                 ],
             )
             backends = [match.group(1) for match in re.finditer(r"^backend (\S*)", backend_conf, re.MULTILINE)]
             self.assertCountEqual(backends, [
-                "first-backend" + load_balancer.fragment_name_postfix,
-                "second-backend" + load_balancer.fragment_name_postfix,
+                "first-backend" + self.load_balancer.fragment_name_postfix,
+                "second-backend" + self.load_balancer.fragment_name_postfix,
             ])
+
+    @patch("instance.ansible.poll_streams")
+    @patch("instance.ansible.run_playbook")
+    def test_reconfigure(self, mock_run_playbook, mock_poll_streams):
+        """
+        Test that the reconfigure() method triggers a playbook run.
+        """
+        mock_run_playbook.return_value.__enter__.return_value.returncode = 0
+        with mock_instances():
+            self.load_balancer.reconfigure()
+            self.assertEqual(mock_run_playbook.call_count, 1)
+
+    @patch("instance.ansible.poll_streams")
+    @patch("instance.ansible.run_playbook")
+    def test_reconfigure_fails(self, mock_run_playbook, mock_poll_streams):
+        """
+        Test that the reconfigure() method raises an exception if the playbook fails.
+        """
+        mock_run_playbook.return_value.__enter__.return_value.returncode = 1
+        with mock_instances(), self.assertRaises(ReconfigurationFailed):
+            self.load_balancer.reconfigure()
+
+    @patch("instance.ansible.poll_streams")
+    @patch("instance.ansible.run_playbook")
+    def test_deconfigure(self, mock_run_playbook, mock_poll_streams):
+        """
+        Test that the deconfigure() method triggers a playbook run.
+        """
+        mock_run_playbook.return_value.__enter__.return_value.returncode = 0
+        with mock_instances():
+            self.load_balancer.deconfigure()
+            self.assertEqual(mock_run_playbook.call_count, 1)
+
+
+class LoadBalancingServerManager(TestCase):
+    """
+    Tests for LoadBalancingServerManager.
+    """
+    @override_settings(DEFAULT_LOAD_BALANCING_SERVER=None)
+    def test_no_load_balancer_available(self):
+        """
+        Test that get_random() raises an exception when no load balancers are available.
+        """
+        with self.assertRaises(LoadBalancingServer.DoesNotExist):
+            LoadBalancingServer.objects.select_random()
+
+    @override_settings(DEFAULT_LOAD_BALANCING_SERVER="domain.without.username")
+    def test_invalid_default_load_balancer(self):
+        """
+        Verify that an exception gets raised when the username is missing from the setting for the
+        default load balancing server.
+        """
+        with self.assertRaises(ImproperlyConfigured):
+            LoadBalancingServer.objects.select_random()

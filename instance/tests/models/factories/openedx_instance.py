@@ -27,7 +27,6 @@ import uuid
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
 
 
@@ -52,4 +51,3 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
-    load_balancing_server = factory.LazyFunction(LoadBalancingServer.objects.select_random)
