@@ -164,7 +164,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn("Open edX App Server Details", str(response.content))
 
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
-    @patch('instance.models.openedx_instance.gandi.set_dns_record')
+    @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
     def test_spawn_appserver(self, mock_set_dns_record, mock_provision):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.

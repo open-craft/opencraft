@@ -26,29 +26,19 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.template import loader
-from tldextract import TLDExtract
 
-from instance.gandi import GandiAPI
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 from .instance import Instance
-from .mixins.load_balanced import LoadBalancedInstance, get_preliminary_page_config
+from .mixins.load_balanced import LoadBalancedInstance
 from .mixins.openedx_database import OpenEdXDatabaseMixin
 from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from .mixins.openedx_storage import OpenEdXStorageMixin
 from .mixins.secret_keys import SecretKeyInstanceMixin
 from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
-
-# Constants ###################################################################
-
-gandi = GandiAPI()
-
-# By default, tldextract will make an http request to fetch an updated list of
-# TLDs on first invocation. Passing suffix_list_urls=None here prevents this.
-tldextract = TLDExtract(suffix_list_urls=None)
 
 
 # Functions ###################################################################
@@ -152,6 +142,18 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             return self.external_studio_domain
         else:
             return self.internal_studio_domain
+
+    def get_load_balanced_domains(self):
+        domain_names = [
+            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
+        ]
+        return [name for name in domain_names if name]
+
+    def get_managed_domains(self):
+        return [
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain
+        ]
 
     @property
     def studio_domain_nginx_regex(self):
@@ -278,43 +280,12 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.deprovision_swift()
         super().delete(*args, **kwargs)
 
-    def set_dns_records(self):
-        """
-        Create CNAME records for the domain names of this instance pointing to the load balancer.
-        """
-        load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
-
-        self.logger.info('Updating DNS: LMS at %s...', self.internal_lms_domain)
-        lms_domain = tldextract(self.internal_lms_domain)
-        gandi.set_dns_record(
-            lms_domain.registered_domain,
-            type='CNAME', name=lms_domain.subdomain, value=load_balancer_domain
-        )
-
-        self.logger.info('Updating DNS: LMS preview at %s...', self.internal_lms_preview_domain)
-        lms_preview_domain = tldextract(self.internal_lms_preview_domain)
-        gandi.set_dns_record(
-            lms_preview_domain.registered_domain,
-            type='CNAME', name=lms_preview_domain.subdomain, value=load_balancer_domain
-        )
-
-        self.logger.info('Updating DNS: Studio at %s...', self.internal_studio_domain)
-        studio_domain = tldextract(self.internal_studio_domain)
-        gandi.set_dns_record(
-            studio_domain.registered_domain,
-            type='CNAME', name=studio_domain.subdomain, value=load_balancer_domain
-        )
-
     def get_load_balancer_configuration(self):
         """
         Return the haproxy configuration fragment and backend map for this instance.
         """
-        domain_names = [
-            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
-            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
-        ]
         if not self.active_appserver:
-            return get_preliminary_page_config(self.ref.pk, domain_names)
+            return self.get_preliminary_page_config(self.ref.pk)
         backend_name = "be-{}".format(self.active_appserver.server.name)
         server_name = "appserver-{}".format(self.active_appserver.pk)
         ip_address = self.active_appserver.server.public_ip
@@ -324,7 +295,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             server_name=server_name,
             ip_address=ip_address,
         ))
-        backend_map = [(domain, backend_name) for domain in domain_names if domain]
+        backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
         return backend_map, [(backend_name, config)]
 
     @property

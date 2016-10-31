@@ -52,7 +52,7 @@ from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
-@ddt.ddt  # pylint: disable=too-many-public-methods
+@ddt.ddt
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -298,40 +298,6 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.set_appserver_active(appserver_id)
         self.assertEqual(instance.active_appserver.pk, appserver_id)
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
-
-    @patch('instance.models.openedx_instance.gandi.set_dns_record')
-    def test_set_dns_records(self, mock_set_dns_record):
-        """
-        Test set_dns_records() without external domains.
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com',
-                                          use_ephemeral_databases=True)
-        instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
-        self.assertEqual(mock_set_dns_record.mock_calls, [
-            call('opencraft.com', name='test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.com', name='preview-test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.com', name='studio-test.dns', type='CNAME', value=lb_domain),
-        ])
-
-    @patch('instance.models.openedx_instance.gandi.set_dns_record')
-    def test_set_dns_records_external_domain(self, mock_set_dns_record):
-        """
-        Test set_dns_records() with custom external domains.
-        Ensure that the DNS records are only created for the internal domains.
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.hosting',
-                                          external_lms_domain='courses.myexternal.org',
-                                          external_lms_preview_domain='preview.myexternal.org',
-                                          external_studio_domain='studio.myexternal.org',
-                                          use_ephemeral_databases=True)
-        instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."  # pylint: disable=no-member
-        self.assertEqual(mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.hosting', name='preview-test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.hosting', name='studio-test.dns', type='CNAME', value=lb_domain),
-        ])
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)

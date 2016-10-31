@@ -24,20 +24,19 @@ Instance app model mixins - load balancing
 
 from django.db import models
 from django.conf import settings
+from tldextract import TLDExtract
 
+from instance.gandi import GandiAPI
 from instance.models.load_balancer import LoadBalancingServer
 
 
-# Functions ###################################################################
+# Constants ###################################################################
 
-def get_preliminary_page_config(primary_key, domain_names):
-    """Return a load balancer configuration for the preliminary page."""
-    if not settings.PRELIMINARY_PAGE_SERVER_IP:
-        return [], []
-    backend_name = "be-preliminary-page-{}".format(primary_key)
-    config = "    server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP)
-    backend_map = [(domain, backend_name) for domain in domain_names if domain]
-    return backend_map, [(backend_name, config)]
+gandi = GandiAPI()
+
+# By default, tldextract will make an http request to fetch an updated list of
+# TLDs on first invocation. Passing suffix_list_urls=None here prevents this.
+tldextract = TLDExtract(suffix_list_urls=None)
 
 
 # Classes #####################################################################
@@ -50,3 +49,39 @@ class LoadBalancedInstance(models.Model):
 
     class Meta:
         abstract = True
+
+    def get_load_balanced_domains(self):  # pylint: disable=no-self-use
+        """
+        Return an iterable of domains that should be handled by the load balancer.
+        """
+        return []
+
+    def get_managed_domains(self):  # pylint: disable=no-self-use
+        """
+        Return an iterable of domains that we  manage DNS entries for.
+        """
+        return []
+
+    def set_dns_records(self):
+        """
+        Create CNAME records for the domain names of this instance pointing to the load balancer.
+        """
+        load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
+        for domain in self.get_managed_domains():
+            self.logger.info('Updating DNS: %s...', domain)  # pylint: disable=no-member
+            domain_parts = tldextract(domain)
+            gandi.set_dns_record(
+                domain_parts.registered_domain,
+                type='CNAME',
+                name=domain_parts.subdomain,
+                value=load_balancer_domain,
+            )
+
+    def get_preliminary_page_config(self, primary_key):
+        """Return a load balancer configuration for the preliminary page."""
+        if not settings.PRELIMINARY_PAGE_SERVER_IP:
+            return [], []
+        backend_name = "be-preliminary-page-{}".format(primary_key)
+        config = "    server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP)
+        backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
+        return backend_map, [(backend_name, config)]
