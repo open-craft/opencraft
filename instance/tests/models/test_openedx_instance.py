@@ -52,7 +52,7 @@ from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
-@ddt.ddt
+@ddt.ddt  # pylint: disable=too-many-public-methods
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
