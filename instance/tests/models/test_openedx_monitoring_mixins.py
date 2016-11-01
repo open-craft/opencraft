@@ -26,7 +26,10 @@ from unittest.mock import call, patch
 from uuid import uuid4
 
 from django.test import override_settings
+import requests
+import responses
 
+from instance import newrelic
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
@@ -145,3 +148,29 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.delete_synthetics_monitor.assert_has_calls([
             call(monitor_id) for monitor_id in monitor_ids
         ], any_order=True)
+
+    @responses.activate
+    def test_disable_monitoring_monitors_not_found(self):
+        """
+        Test that the `disable_monitoring` method removes any New Relic
+        Synthetics monitors for this instance, even if the actual monitors no longer exist.
+        """
+        monitor_ids = [str(uuid4()) for i in range(3)]
+        instance = OpenEdXInstanceFactory()
+
+        for monitor_id in monitor_ids:
+            instance.new_relic_availability_monitors.create(pk=monitor_id)
+            responses.add(
+                responses.DELETE,
+                '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
+                status=requests.codes.not_found  # pylint: disable=no-member
+            )
+
+        # Precondition
+        self.assertEqual(instance.new_relic_availability_monitors.count(), 3)
+
+        # Disable monitoring
+        instance.disable_monitoring()
+
+        # Instance should no longer have any monitors associated with it
+        self.assertEqual(instance.new_relic_availability_monitors.count(), 0)

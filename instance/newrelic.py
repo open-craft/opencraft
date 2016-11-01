@@ -87,11 +87,20 @@ def add_synthetics_email_alerts(monitor_id, emails):
 def delete_synthetics_monitor(monitor_id):
     """
     Delete the Synthetics monitor with the given id.
+
+    If the monitor can't be found (DELETE request comes back with 404),
+    treat it as if it has already been deleted; do not raise an exception in that case.
     """
     url = '{0}/monitors/{1}'.format(SYNTHETICS_API_URL, monitor_id)
     logger.info('DELETE %s', url)
-    r = requests.delete(url, headers=_request_headers())
-    r.raise_for_status()
+    try:
+        r = requests.delete(url, headers=_request_headers())
+        r.raise_for_status()
+    except requests.exceptions.HTTPError:
+        if r.status_code == requests.codes.not_found:  # pylint: disable=no-member
+            logger.info('Monitor for %s has already been deleted. Proceeding.')
+        else:
+            raise
 
 
 def _request_headers():

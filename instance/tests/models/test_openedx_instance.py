@@ -32,9 +32,12 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
+import requests
+import responses
 import yaml
 import six
 
+from instance import newrelic
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -718,6 +721,41 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Check if instance disabled monitoring
         self.assertEqual(mock_disable_monitoring.call_count, 1)
+
+    @responses.activate
+    def test_shut_down_monitors_not_found(self):
+        """
+        Test that instance `is_shut_down` after calling `shut_down` on it,
+        even if monitors associated with it no longer exist.
+        """
+        monitor_ids = [str(uuid4()) for i in range(3)]
+        instance = OpenEdXInstanceFactory()
+        appserver = self._create_running_appserver(instance)
+
+        for monitor_id in monitor_ids:
+            instance.new_relic_availability_monitors.create(pk=monitor_id)
+            responses.add(
+                responses.DELETE,
+                '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
+                status=requests.codes.not_found  # pylint: disable=no-member
+            )
+
+        # Preconditions
+        self.assertEqual(instance.new_relic_availability_monitors.count(), 3)
+        self.assertFalse(instance.is_shut_down)
+
+        # Shut down instance
+        instance.shut_down()
+
+        # Instance should
+        # - no longer have any monitors associated with it
+        # - no longer have any running app servers
+        # - be considered "shut down"
+        self.assertEqual(instance.new_relic_availability_monitors.count(), 0)
+        self._assert_status([
+            (appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+        ])
+        self.assertTrue(instance.is_shut_down)
 
     @ddt.data(2, 5, 10)
     def test_terminate_obsolete_appservers(self, days):

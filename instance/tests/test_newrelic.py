@@ -25,6 +25,7 @@ New Relic - Tests
 import json
 
 from django.test import override_settings
+import requests
 import responses
 
 from instance import newrelic
@@ -148,3 +149,32 @@ class NewRelicTestCase(TestCase):
         self.assertEqual(len(responses.calls), 1)
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+
+    def test_delete_synthetics_monitor_exceptions(self):
+        """
+        Check that the delete_synthetics_monitor function behaves correctly if DELETE request unsuccessful.
+
+        We expect the function *not* to raise an exception if the monitor to delete
+        can not be found (i.e., if the DELETE request comes back with a 404).
+
+        In all other cases the function should raise an exception.
+        """
+        monitor_id = '2085b3d6-3689-4847-97cc-f7c91d86cd1d'
+
+        client_errors = [status_code for status_code in requests.status_codes._codes if 400 <= status_code < 500]
+        server_errors = [status_code for status_code in requests.status_codes._codes if 500 <= status_code < 600]
+
+        for error in client_errors + server_errors:
+            with responses.RequestsMock() as mock_responses:
+                mock_responses.add(responses.DELETE,
+                                   '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL,
+                                                             monitor_id),
+                                   status=error)
+                try:
+                    newrelic.delete_synthetics_monitor(monitor_id)
+                except requests.exceptions.HTTPError:
+                    if error == requests.codes.not_found:  # pylint: disable=no-member
+                        self.fail('Should not raise an exception for {} response.'.format(error))
+                else:
+                    if not error == requests.codes.not_found:  # pylint: disable=no-member
+                        self.fail('Should raise an exception for {} response.'.format(error))
