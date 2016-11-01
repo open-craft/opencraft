@@ -151,7 +151,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         #   Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)
         #   149.202.188.116,"['brandon@opencraft.com', 'x@bdero.me']",4,7,1,0
 
-        self.assertEqual('Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)', out_lines[0])
+        self.assertEqual(
+            '"Appserver IP","Internal LMS Domain","Name","Contact Email","Unique Hits","Total Users","Total Courses",'
+            '"Age (Days)"',
+            out_lines[0]
+        )
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
