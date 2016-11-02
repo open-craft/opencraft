@@ -17,38 +17,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXInstance model - Factories
+Factories for DatabaseServer models.
 """
 
 # Imports #####################################################################
 
-import uuid
-
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
+from instance.models.database_server import MySQLServer, MongoDBServer
 
 
 # Classes #####################################################################
 
-# pylint: disable=too-many-instance-attributes
-class OpenEdXInstanceFactory(DjangoModelFactory):
+class MySQLServerFactory(DjangoModelFactory):
     """
-    Factory for OpenEdXInstance
+    Factory for the MySQLServer model.
     """
     class Meta:
-        model = OpenEdXInstance
+        model = MySQLServer
 
-    @classmethod
-    def create(cls, *args, **kwargs):
-        # OpenEdXInstance constructor accepts either a 'sub_domain' or 'instance_lms_domain' value. Only generate a
-        # random value for 'internal_lms_domain' if neither 'sub_domain' nor 'internal_lms_domain' are provided.
-        if 'sub_domain' not in kwargs and 'internal_lms_domain' not in kwargs:
-            kwargs = kwargs.copy()
-            random_id = str(uuid.uuid4())[:8]
-            sub_domain = 'instance{}.test'.format(random_id)
-            kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
-        return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
+    hostname = factory.Sequence('mysql-server-{}'.format)
 
-    name = factory.Sequence('Test Instance {}'.format)
+
+class MongoDBServerFactory(DjangoModelFactory):
+    """
+    Factory for the MongoDBServer model.
+    """
+    class Meta:
+        model = MongoDBServer
+
+    hostname = factory.Sequence('mongodb-server-{}'.format)

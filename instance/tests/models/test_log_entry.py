@@ -161,6 +161,10 @@ class LoggingTestCase(TestCase):
         """
         Check `log_entries` output for combination of instance & server logs
         """
+        # Clear out existing log entries to make sure we're starting with a clean slate:
+        for log_entry in LogEntry.objects.all():
+            log_entry.delete()
+
         server1 = self.server
         server2 = OpenStackServerFactory(openstack_id='vm2_id')
 

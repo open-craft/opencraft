@@ -24,6 +24,7 @@ Admin for the instance app
 
 from django.contrib import admin
 
+from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.instance import InstanceReference
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -33,28 +34,36 @@ from instance.models.server import OpenStackServer
 
 # ModelAdmins #################################################################
 
-class LogEntryAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class LogEntryAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('created', 'level', 'text', 'modified')
 
 
-class OpenStackServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class OpenStackServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('openstack_id', 'status', 'created', 'modified')
     # TODO: Is there a way to link back to the owning AppServer? (efficiently)
 
 
-class InstanceReferenceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class InstanceReferenceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('id', 'instance', 'created', 'modified')
 
 
-class OpenEdXInstanceAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('internal_lms_domain', 'name', 'created', 'modified')
 
 
-class OpenEdXAppServerAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class OpenEdXAppServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('id', 'owner', 'name', 'created', 'modified')
 
     # Don't allow modifying an AppServer once created:
     readonly_fields = [field.name for field in OpenEdXAppServer._meta.get_fields(include_parents=True)]
+
+
+class MySQLServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('hostname', 'port', 'username', 'password')
+
+
+class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('hostname', 'port', 'username', 'password')
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
@@ -62,3 +71,5 @@ admin.site.register(OpenStackServer, OpenStackServerAdmin)
 admin.site.register(InstanceReference, InstanceReferenceAdmin)
 admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
 admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
+admin.site.register(MySQLServer, MySQLServerAdmin)
+admin.site.register(MongoDBServer, MongoDBServerAdmin)

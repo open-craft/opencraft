@@ -23,10 +23,10 @@ import hashlib
 import hmac
 import string
 
-from django.conf import settings
 from django.template import loader
 from django.utils.crypto import get_random_string
 
+from instance.models.database_server import MySQLServer, MongoDBServer
 from .database import MySQLInstanceMixin, MongoDBInstanceMixin
 
 
@@ -216,7 +216,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
 
     def set_field_defaults(self):
         """
-        Set default values for mysql and mongo credentials.
+        Set default values for database servers, as well as mysql and mongo credentials.
 
         Don't change existing values on subsequent calls.
 
@@ -228,6 +228,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         But since we add suffixes to mysql_user to generate unique user names
         for different services (e.g. xqueue) we don't want to use the maximum length here.
         """
+        # Associate this instance with a MySQLServer and a MongoDBServer
+        if not self.mysql_server:
+            self.mysql_server = MySQLServer.objects.select_random()
+        if not self.mongodb_server:
+            self.mongodb_server = MongoDBServer.objects.select_random()
+
+        # Generate unique credentials for MySQL and MongoDB databases
         if not self.mysql_user:
             self.mysql_user = get_random_string(length=6, allowed_chars=string.ascii_lowercase)
             self.mysql_pass = get_random_string(length=32)
@@ -248,12 +255,12 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         new_settings = ''
 
         # MySQL:
-        if settings.INSTANCE_MYSQL_URL_OBJ:
+        if self.mysql_server:
             template = loader.get_template('instance/ansible/mysql.yml')
             context = {
                 # General settings
-                'host': settings.INSTANCE_MYSQL_URL_OBJ.hostname,
-                'port': settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
+                'host': self.mysql_server.hostname,
+                'port': self.mysql_server.port,
                 # Common users
                 'migrate_user': self.migrate_user,
                 'migrate_pass': self._get_mysql_pass(self.migrate_user),
@@ -267,13 +274,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
             new_settings += template.render(context)
 
         # MongoDB:
-        if settings.INSTANCE_MONGO_URL_OBJ:
+        if self.mongodb_server:
             template = loader.get_template('instance/ansible/mongo.yml')
             new_settings += template.render({
                 'user': self.mongo_user,
                 'pass': self.mongo_pass,
-                'host': settings.INSTANCE_MONGO_URL_OBJ.hostname,
-                'port': settings.INSTANCE_MONGO_URL_OBJ.port or 27017,
+                'host': self.mongodb_server.hostname,
+                'port': self.mongodb_server.port,
                 'database': self.mongo_database_name,
                 'forum_database': self.forum_database_name
             })
