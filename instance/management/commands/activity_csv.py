@@ -55,7 +55,7 @@ class Command(BaseCommand):
             help='Path to the output file of the new CSV. Leave blank to use stdout.'
         )
 
-    def handle(self, *args, **options):  # pylint: disable=too-many-locals
+    def handle(self, *args, **options):
         # Determine the stream to be used for outputting the CSV.
         if options['out'] is None:
             out = self.stdout
@@ -68,6 +68,9 @@ class Command(BaseCommand):
                 ))
                 sys.exit(1)
 
+        self.activity_csv(out)
+
+    def activity_csv(self, out):  # pylint: disable=too-many-locals,missing-docstring
         # Produce a mapping of public IPs (of active app servers) to parent instances.
         active_appservers = {
             instance.active_appserver.server.public_ip: instance for instance in OpenEdXInstance.objects.all()
@@ -119,10 +122,14 @@ class Command(BaseCommand):
             data = ConfigParser()
             data.read(filenames)
 
-            for public_ip in data.sections():
-                section = data[public_ip]
-                instance = active_appservers[public_ip]
+            for public_ip in active_appservers.keys():
+                try:
+                    section = data[public_ip]
+                except KeyError:
+                    # Fill in stats for any instaces that failed with "N/A"
+                    section = {'hits': 'N/A', 'users': 'N/A', 'courses': 'N/A'}
 
+                instance = active_appservers[public_ip]
                 instance_age = datetime.now(instance.created.tzinfo) - instance.created
 
                 try:
