@@ -176,6 +176,7 @@ class LoggingTestCase(TestCase):
         entries = LogEntry.objects.order_by('pk').all().values_list('text', flat=True)
         for entry_text in entries:
             self.assertNotIn('Line #2', entry_text)
+        self.assertIn('Creating LoadBalancingServer', entries[0])
         self.assertIn('Line #1, on instance', entries[1])
         self.assertIn('Line #3, on server 2', entries[2])
         self.assertIn(
