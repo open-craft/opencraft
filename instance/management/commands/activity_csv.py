@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
         self.activity_csv(out)
 
-    def activity_csv(self, out):  # pylint: disable=too-many-locals,missing-docstring
+    def activity_csv(self, out):  # pylint: disable=missing-docstring
         # Produce a mapping of public IPs (of active app servers) to parent instances.
         active_appservers = {
             instance.active_appserver.server.public_ip: instance for instance in OpenEdXInstance.objects.all()
