@@ -29,16 +29,16 @@ from django.template import loader
 
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
+from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
+from instance.models.mixins.load_balanced import LoadBalancedInstance
+from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
+from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
+from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
+from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
+from instance.models.openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
-from .instance import Instance
-from .mixins.load_balanced import LoadBalancedInstance
-from .mixins.openedx_database import OpenEdXDatabaseMixin
-from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
-from .mixins.openedx_storage import OpenEdXStorageMixin
-from .mixins.secret_keys import SecretKeyInstanceMixin
-from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 
 
 # Functions ###################################################################
