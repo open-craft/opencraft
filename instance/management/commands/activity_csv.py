@@ -34,6 +34,7 @@ from django.core.management.base import BaseCommand
 from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import poll_streams
+from registration.models import BetaTestApplication
 
 
 # Classes #####################################################################
@@ -54,7 +55,7 @@ class Command(BaseCommand):
             help='Path to the output file of the new CSV. Leave blank to use stdout.'
         )
 
-    def handle(self, *args, **options):  # pylint: disable=too-many-locals
+    def handle(self, *args, **options):
         # Determine the stream to be used for outputting the CSV.
         if options['out'] is None:
             out = self.stdout
@@ -67,6 +68,9 @@ class Command(BaseCommand):
                 ))
                 sys.exit(1)
 
+        self.activity_csv(out)
+
+    def activity_csv(self, out):  # pylint: disable=too-many-locals,missing-docstring
         # Produce a mapping of public IPs (of active app servers) to parent instances.
         active_appservers = {
             instance.active_appserver.server.public_ip: instance for instance in OpenEdXInstance.objects.all()
@@ -108,24 +112,33 @@ class Command(BaseCommand):
                     self.stderr.write(self.style.SUCCESS(line))  # pylint: disable=no-member
                 process.wait()
 
-            csv_writer = csv.writer(out)
-            csv_writer.writerow(
-                ['Appserver IP', 'Owner Emails', 'Unique Hits', 'Total Users', 'Total Courses', 'Age (Days)']
-            )
+            csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
+            csv_writer.writerow([
+                'Appserver IP', 'Internal LMS Domain', 'Name', 'Contact Email', 'Unique Hits', 'Total Users',
+                'Total Courses', 'Age (Days)'
+            ])
 
             filenames = [os.path.join(playbook_output_dir, f) for f in os.listdir(playbook_output_dir)]
             data = ConfigParser()
             data.read(filenames)
 
-            for public_ip in data.sections():
-                section = data[public_ip]
-                instance = active_appservers[public_ip]
+            for public_ip in active_appservers.keys():
+                try:
+                    section = data[public_ip]
+                except KeyError:
+                    # Fill in stats for any instaces that failed with "N/A"
+                    section = {'hits': 'N/A', 'users': 'N/A', 'courses': 'N/A'}
 
+                instance = active_appservers[public_ip]
                 instance_age = datetime.now(instance.created.tzinfo) - instance.created
 
-                emails = [user.email for user in instance.lms_users.all()]
+                try:
+                    email = instance.betatestapplication_set.get().user.email
+                except BetaTestApplication.DoesNotExist:
+                    email = 'N/A'
+
                 csv_writer.writerow([
-                    public_ip, emails,
+                    public_ip, instance.internal_lms_domain, instance.ref.name, email,
                     section['hits'], section['users'], section['courses'],
                     instance_age.days
                 ])

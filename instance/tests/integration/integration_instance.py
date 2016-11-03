@@ -27,6 +27,7 @@ from unittest.mock import patch
 
 import requests
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.utils.six import StringIO
 
@@ -41,6 +42,7 @@ from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tasks import spawn_appserver
 from instance.models.mixins.secret_keys import SecretKeyProvider
 from opencraft.tests.utils import shard
+from registration.models import BetaTestApplication
 
 
 # Tests #######################################################################
@@ -141,6 +143,19 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(instance.successfully_provisioned)
         self.assertTrue(instance.require_user_creation_success())
 
+        user = User.objects.create_user('betatestuser', 'betatest@example.com')
+
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='betatestdomain',
+            instance_name='betatestinstance',
+            public_contact_email='publicemail@example.com',
+            project_description='I want to beta test OpenCraft IM',
+            status=BetaTestApplication.ACCEPTED,
+            instance=instance,
+        )
+
+        # Run the management command and collect the CSV from stdout.
         out = StringIO()
         call_command('activity_csv', stdout=out)
 
@@ -148,10 +163,19 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         # The output should look similar to this when one instance is launched:
         #
-        #   Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)
-        #   149.202.188.116,"['brandon@opencraft.com', 'x@bdero.me']",4,7,1,0
+        #   "Appserver IP","Internal LMS Domain","Name","Contact Email","Unique Hits","Total Users","Total Courses",
+        #     "Age (Days)"
+        #   "213.32.77.49","test.example.com","Instance","betatest@example.com","87","6","1",1
 
-        self.assertEqual('Appserver IP,Owner Emails,Unique Hits,Total Users,Total Courses,Age (Days)', out_lines[0])
+        self.assertEqual(
+            '"Appserver IP","Internal LMS Domain","Name","Contact Email","Unique Hits","Total Users","Total Courses",'
+            '"Age (Days)"',
+            out_lines[0]
+        )
+        self.assertIn('"Integration - test_spawn_appserver"', out_lines[1])
+        self.assertIn('"betatest@example.com"', out_lines[1])
+        self.assertNotIn('N/A', out_lines[1])
+
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
