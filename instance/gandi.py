@@ -99,23 +99,19 @@ class GandiAPI():
         """
         return self.client_zone.version.set(self.api_key, zone_id, zone_version_id)
 
-    def set_dns_record(self, domain, attempts=4, retry_delay=1, **record):
+    def _dns_operation(self, callback, domain, log_msg, attempts=4, retry_delay=1):
         """
-        Set a DNS record - Automatically create a new version, update with the change & activate
-        This method takes the mandatory `domain` parameter to be able to support multiple domains,
-        handled by the same Gandi account
+        Encapsulate logic that is common to high-level DNS operations: grab the global lock, get the
+        zone_id for a domain, create a new zone version, activate the zone version after successful
+        update, and retry the whole procedure multiple times if necessary.
         """
-        if 'ttl' not in record.keys():
-            record['ttl'] = 1200
-
         with cache.lock('gandi_set_dns_record'): # Only do one DNS update at a time
             for i in range(1, attempts + 1):
                 try:
-                    logger.info('Setting DNS record: %s (attempt %d out of %d)', record, i, attempts)
+                    logger.info('%s (attempt %d out of %d)', log_msg, i, attempts)
                     zone_id = self.get_zone_id(domain)
                     new_zone_version = self.create_new_zone_version(zone_id)
-                    self.delete_dns_record(zone_id, new_zone_version, record['name'])
-                    returned_record = self.add_dns_record(zone_id, new_zone_version, record)
+                    result = callback(zone_id, new_zone_version)
                     self.set_zone_version(zone_id, new_zone_version)
                     break
                 except xmlrpc.client.Fault:
@@ -123,4 +119,41 @@ class GandiAPI():
                         raise
                     time.sleep(retry_delay)
                     retry_delay *= 2
-        return returned_record
+        return result
+
+    def set_dns_record(self, domain, **record):
+        """
+        Set a DNS record. This method takes the mandatory `domain` parameter to be able to support
+        multiple domains, handled by the same Gandi account.
+        """
+        if 'ttl' not in record.keys():
+            record['ttl'] = 1200
+
+        def set_dns_record_callback(zone_id, zone_version):
+            """
+            Callback to be passed to _dns_operation().
+            """
+            self.delete_dns_record(zone_id, zone_version, record['name'])
+            return self.add_dns_record(zone_id, zone_version, record)
+
+        self._dns_operation(
+            callback=set_dns_record_callback,
+            domain=domain,
+            log_msg='Setting DNS record: {}'.format(record),
+        )
+
+    def remove_dns_record(self, domain, name):
+        """
+        Remove the given name for the domain.
+        """
+        def remove_dns_record_callback(zone_id, zone_version):
+            """
+            Callback to be passed to _dns_operation().
+            """
+            self.delete_dns_record(zone_id, zone_version, name)
+
+        self._dns_operation(
+            callback=remove_dns_record_callback,
+            domain=domain,
+            log_msg='Deleting DNS record: {}'.format(name),
+        )

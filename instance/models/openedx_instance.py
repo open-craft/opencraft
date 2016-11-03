@@ -268,18 +268,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)
 
-    def delete(self, *args, **kwargs):
-        """
-        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
-        """
-        self.disable_monitoring()
-        for appserver in self.appserver_set.all():
-            appserver.terminate_vm()
-        self.deprovision_mysql()
-        self.deprovision_mongo()
-        self.deprovision_swift()
-        super().delete(*args, **kwargs)
-
     def get_load_balancer_configuration(self):
         """
         Return the haproxy configuration fragment and backend map for this instance.
@@ -415,12 +403,25 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     def shut_down(self):
         """
         Shut down this instance.
-
-        This process consists of two steps:
-
-        1) Disable New Relic monitors.
-        2) Terminate all app servers belonging to this instance.
         """
-        self.disable_monitoring()
-        for appserver in self.appserver_set.all():
+        self.remove_dns_records()
+        if self.load_balancing_server is not None:
+            load_balancer = self.load_balancing_server
+            self.load_balancing_server = None
+            self.save()
+            if self.active_appserver is None:
+                # If an appserver is active, reconfiguring the load_balancer happens
+                # implicitly when terminate_vm() is called further down.
+                load_balancer.reconfigure()
+        for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
+        """
+        self.shut_down()
+        self.deprovision_mysql()
+        self.deprovision_mongo()
+        self.deprovision_swift()
+        super().delete(*args, **kwargs)

@@ -210,3 +210,10 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         self.run_playbook(
             "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
         )
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete the LoadBalancingServer from the database.
+        """
+        self.deconfigure()
+        super().delete(*args, **kwargs)  # pylint: disable=no-member

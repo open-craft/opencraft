@@ -469,27 +469,23 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @ddt.data(True, False)
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.terminate_vm')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
     @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
     @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
     @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
-    def test_delete_instance(
-            self, mocks, delete_by_ref,
-            mock_deprovision_swift, mock_deprovision_mongo, mock_deprovision_mysql, mock_terminate_vm
-    ):
+    def test_delete_instance(self, mocks, delete_by_ref, *mock_methods):
         """
-        Test that an instance can be deleted directly or by its InstanceReference,
-        that the associated AppServers and VMs will be terminated,
-        and that external databases and storage will be deprovisioned.
+        Test that an instance can be deleted directly or by its InstanceReference.
         """
         instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=True)
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
-            self.assertEqual(mocked_method.call_count, 0)
+        for method in mock_methods:
+            self.assertEqual(
+                method.call_count, 0,
+                '{} should not have been called'.format(method._mock_name)
+            )
 
         # Now delete the instance, either using InstanceReference or the OpenEdXInstance class:
         if delete_by_ref:
@@ -497,10 +493,11 @@ class OpenEdXInstanceTestCase(TestCase):
         else:
             instance.delete()
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
-            self.assertEqual(mocked_method.call_count, 1)
+        for method in mock_methods:
+            self.assertEqual(
+                method.call_count, 1,
+                '{} should have been called exactly once'.format(method._mock_name)
+            )
 
         with self.assertRaises(OpenEdXInstance.DoesNotExist):
             OpenEdXInstance.objects.get(pk=instance.pk)
@@ -696,8 +693,9 @@ class OpenEdXInstanceTestCase(TestCase):
 
         self.assertEqual(instance.is_shut_down, expected_result)
 
-    @patch('instance.models.openedx_instance.OpenEdXMonitoringMixin.disable_monitoring')
-    def test_shut_down(self, mock_disable_monitoring):
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_inactive')
+    def test_shut_down(self, mock_set_appserver_inactive, mock_remove_dns_records):
         """
         Test that `shut_down` method terminates all app servers belonging to an instance
         and disables monitoring.
@@ -720,9 +718,16 @@ class OpenEdXInstanceTestCase(TestCase):
         # Set single app server active
         instance.active_appserver = active_appserver
         instance.save()
+        active_appserver.instance.refresh_from_db()
+
+        self.assertEqual(mock_set_appserver_inactive.call_count, 0)
+        self.assertEqual(mock_remove_dns_records.call_count, 0)
 
         # Shut down instance
         instance.shut_down()
+
+        self.assertEqual(mock_set_appserver_inactive.call_count, 1)
+        self.assertEqual(mock_remove_dns_records.call_count, 1)
 
         # Check status of running app servers
         self._assert_status([
@@ -744,11 +749,10 @@ class OpenEdXInstanceTestCase(TestCase):
             (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
 
-        # Check if instance disabled monitoring
-        self.assertEqual(mock_disable_monitoring.call_count, 1)
-
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @responses.activate
-    def test_shut_down_monitors_not_found(self):
+    def test_shut_down_monitors_not_found(self, *mock_methods):
         """
         Test that instance `is_shut_down` after calling `shut_down` on it,
         even if monitors associated with it no longer exist.
@@ -756,6 +760,9 @@ class OpenEdXInstanceTestCase(TestCase):
         monitor_ids = [str(uuid4()) for i in range(3)]
         instance = OpenEdXInstanceFactory()
         appserver = self._create_running_appserver(instance)
+        instance.active_appserver = appserver
+        instance.save()
+        appserver.instance.refresh_from_db()
 
         for monitor_id in monitor_ids:
             instance.new_relic_availability_monitors.create(pk=monitor_id)
