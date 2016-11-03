@@ -68,7 +68,6 @@ class LoadBalancedInstance(models.Model):
         """
         load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
         for domain in self.get_managed_domains():
-            self.logger.info("Updating DNS: %s...", domain)  # pylint: disable=no-member
             domain_parts = tldextract(domain)
             gandi.set_dns_record(
                 domain_parts.registered_domain,
@@ -76,6 +75,14 @@ class LoadBalancedInstance(models.Model):
                 name=domain_parts.subdomain,
                 value=load_balancer_domain,
             )
+
+    def remove_dns_records(self):
+        """
+        Delete the DNS records for this instance.
+        """
+        for domain in self.get_managed_domains():
+            domain_parts = tldextract(domain)
+            gandi.remove_dns_record(domain_parts.registered_domain, domain_parts.subdomain)
 
     def get_preliminary_page_config(self, primary_key):
         """

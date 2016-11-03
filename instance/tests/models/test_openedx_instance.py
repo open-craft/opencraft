@@ -473,9 +473,9 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
     @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
     @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     def test_delete_instance(
-            self, mocks, delete_by_ref,
-            mock_deprovision_swift, mock_deprovision_mongo, mock_deprovision_mysql, mock_terminate_vm
+            self, mocks, delete_by_ref, mock_remove_dns_record, *mocked_methods
     ):
         """
         Test that an instance can be deleted directly or by its InstanceReference,
@@ -486,9 +486,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
+        for mocked_method in mocked_methods:
             self.assertEqual(mocked_method.call_count, 0)
 
         # Now delete the instance, either using InstanceReference or the OpenEdXInstance class:
@@ -497,9 +495,7 @@ class OpenEdXInstanceTestCase(TestCase):
         else:
             instance.delete()
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
+        for mocked_method in mocked_methods:
             self.assertEqual(mocked_method.call_count, 1)
 
         with self.assertRaises(OpenEdXInstance.DoesNotExist):

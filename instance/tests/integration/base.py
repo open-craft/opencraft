@@ -51,14 +51,15 @@ class IntegrationTestCase(TestCase):
         patcher.start()
 
     def tearDown(self):
-        for appserver in OpenEdXAppServer.objects.iterator():
-            appserver.terminate_vm()
+        # Trigger clean-up operations for load-balancers and instances.  To avoid reconfiguring the
+        # load balancing server multiple time, we first remove the configured load balancer from all
+        # instances, the delete the load balancers, the delete the instances.
         for instance in OpenEdXInstance.objects.iterator():
-            instance.deprovision_swift()
-            instance.deprovision_mongo()
-            instance.deprovision_mysql()
-        for load_balancer in LoadBalancingServer.objects.iterator():  # pylint: disable=no-member
-            load_balancer.deconfigure()
+            instance.load_balancing_server = None
+            instance.save()
+        LoadBalancingServer.objects.delete()  # pylint: disable=no-member
+        OpenEdXInstance.objects.delete()
+
         super().tearDown()
 
         # All VMs should be terminated at this point, but check just in case:
