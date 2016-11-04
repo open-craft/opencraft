@@ -331,6 +331,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.load_balancing_server = LoadBalancingServer.objects.select_random()
             self.save()
             self.load_balancing_server.reconfigure()
+            self.load_balancing_server.reconfigure()
 
         # We unconditionally set the DNS records here, though this would only be strictly needed
         # when the first AppServer is spawned.  However, there is no easy way to tell whether the
@@ -347,6 +348,8 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.provision_mongo()
             self.logger.info('Provisioning Swift container...')
             self.provision_swift()
+            self.logger.info('Provisioning RabbitMQ vhost...')
+            self.provision_rabbitmq()
 
         app_server = self._create_owned_appserver()
 
@@ -423,5 +426,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.deprovision_mysql()
         self.deprovision_mongo()
         self.deprovision_swift()
+        self.deprovision_rabbitmq()
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()

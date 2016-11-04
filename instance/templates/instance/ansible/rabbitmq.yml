@@ -1,0 +1,9 @@
+XQUEUE_RABBITMQ_USER: '{{ xqueue_user }}'
+XQUEUE_RABBITMQ_PASS: '{{ xqueue_pass }}'
+XQUEUE_RABBITMQ_VHOST: '{{ vhost }}'
+XQUEUE_RABBITMQ_HOSTNAME: '{{ host }}'
+
+EDXAPP_CELERY_USER: '{{ celery_user }}'
+EDXAPP_CELERY_PASSWORD: '{{ celery_pass }}'
+EDXAPP_CELERY_BROKER_VHOST: '{{ vhost }}'
+EDXAPP_CELERY_BROKER_HOSTNAME: '{{ host }}'

@@ -28,11 +28,13 @@ from django.template import loader
 from django.utils.crypto import get_random_string
 
 from .database import MySQLInstanceMixin, MongoDBInstanceMixin
+from .rabbitmq import RabbitMQInstanceMixin
+from instance.models.rabbitmq import RabbitMQUser
 
 
 # Classes #####################################################################
 
-class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
+class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
     OpenEdX Instance uses (when not using ephemeral databases)
@@ -216,7 +218,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
 
     def set_field_defaults(self):
         """
-        Set default values for mysql and mongo credentials.
+        Set default values for mysql, mongo, and rabbitmq credentials.
 
         Don't change existing values on subsequent calls.
 
@@ -234,6 +236,19 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
         if not self.mongo_user:
             self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
             self.mongo_pass = get_random_string(length=32)
+        if not self.rabbitmq_vhost:
+            def new_rabbitmq_user():
+                return RabbitMQUser.objects.create(
+                    username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
+                    password=get_random_string(length=64)
+                )
+
+            self.rabbitmq_vhost = '/{id}'.format(
+                id=get_random_string(length=14, allowed_chars=string.ascii_lowercase)
+            )
+            self.rabbitmq_provider_user = new_rabbitmq_user()
+            self.rabbitmq_consumer_user = new_rabbitmq_user()
+
         super().set_field_defaults()
 
     def get_database_settings(self):
@@ -276,6 +291,18 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin):
                 'port': settings.INSTANCE_MONGO_URL_OBJ.port or 27017,
                 'database': self.mongo_database_name,
                 'forum_database': self.forum_database_name
+            })
+
+        # RabbitMQ:
+        if settings.RABBITMQ_ENABLE:
+            template = loader.get_template('instance/ansible/rabbitmq.yml')
+            new_settings += template.render({
+                'vhost': self.rabbitmq_vhost,
+                'host': settings.INSTANCE_RABBITMQ_HOST,
+                'xqueue_user': self.rabbitmq_provider_user.username,
+                'xqueue_pass': self.rabbitmq_provider_user.password,
+                'celery_user': self.rabbitmq_consumer_user.username,
+                'celery_pass': self.rabbitmq_consumer_user.password,
             })
 
         return new_settings
