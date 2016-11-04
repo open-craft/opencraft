@@ -486,6 +486,11 @@ INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=
 DEFAULT_INSTANCE_MYSQL_URL = env('DEFAULT_INSTANCE_MYSQL_URL', default=None)
 DEFAULT_INSTANCE_MONGO_URL = env('DEFAULT_INSTANCE_MONGO_URL', default=None)
 
+# The RabbitMQ host must be accessible from both OpenCraft IM as well as well as any instances using it.
+INSTANCE_RABBITMQ_HOST = env('INSTANCE_RABBITMQ_HOST', default=None)
+INSTANCE_RABBITMQ_PORT = env('INSTANCE_RABBITMQ_PORT', default=5671)
+INSTANCE_RABBITMQ_SSH_USERNAME = env('INSTANCE_RABBITMQ_SSH_USERNAME', default='ubuntu')
+
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
 
