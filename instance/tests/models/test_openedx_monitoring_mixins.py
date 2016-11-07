@@ -54,15 +54,6 @@ class OpenEdXMonitoringTestCase(TestCase):
         instance.set_appserver_active(appserver_id)
         self.assertEqual(mock_enable_monitoring.call_count, 1)
 
-    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
-    def test_delete(self, mock_disable_monitoring):
-        """
-        Check that monitoring is disabled when an appserver is deleted.
-        """
-        instance = OpenEdXInstanceFactory()
-        instance.delete()
-        self.assertEqual(mock_disable_monitoring.call_count, 1)
-
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
     def test_enable_monitoring(self, mock_newrelic):
         """

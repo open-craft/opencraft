@@ -477,3 +477,13 @@ NEWRELIC_LICENSE_KEY = env('NEWRELIC_LICENSE_KEY', default=None)
 # A new relic admin user's API key, used to set up availability monitoring
 # with Synthetics
 NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
+
+
+# Load balancing ##############################################################
+
+# The load-balancing server given in the form ssh_username@server.domain will be created
+# in the database if it does not exist yet.
+DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=None)
+
+LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
+PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)

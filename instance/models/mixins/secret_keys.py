@@ -70,6 +70,13 @@ class SecretKeyInstanceMixin(models.Model):
     class Meta:
         abstract = True
 
+    def set_field_defaults(self):
+        """
+        Set default values.
+        """
+        self.set_random_key()
+        super().set_field_defaults()
+
     def set_random_key(self):
         """
         Generates a random seed for this instance to use when creating

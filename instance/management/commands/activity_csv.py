@@ -33,11 +33,11 @@ from django.core.management.base import BaseCommand
 
 from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.utils import poll_streams
 from registration.models import BetaTestApplication
 
 
 # Classes #####################################################################
+
 
 class Command(BaseCommand):
     """
@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
         self.activity_csv(out)
 
-    def activity_csv(self, out):  # pylint: disable=too-many-locals,missing-docstring
+    def activity_csv(self, out):  # pylint: disable=missing-docstring
         # Produce a mapping of public IPs (of active app servers) to parent instances.
         active_appservers = {
             instance.active_appserver.server.public_ip: instance for instance in OpenEdXInstance.objects.all()
@@ -89,28 +89,25 @@ class Command(BaseCommand):
             inventory = '[apps]\n{servers}'.format(servers='\n'.join(active_appservers.keys()))
             playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_activity/collect_activity.yml')
 
+            def log_line(line):
+                """Helper to pass to capture_playbook_output()."""
+                self.stderr.write(self.style.SUCCESS(line))  # pylint: disable=no-member
+            log_line.info = log_line
+            log_line.error = log_line
+
             # Launch the collect_activity playbook, which places a set of files into the `playbook_output_dir`
             # on this host.
-            with ansible.run_playbook(
+            ansible.capture_playbook_output(
                 requirements_path=os.path.join(os.path.dirname(playbook_path), 'requirements.txt'),
                 inventory_str=inventory,
                 vars_str=(
                     'local_output_dir: {output_dir}\n'
                     'remote_output_filename: /tmp/activity_report'
                 ).format(output_dir=playbook_output_dir),
-                playbook_path=os.path.dirname(playbook_path),
-                playbook_name=os.path.basename(playbook_path),
+                playbook_path=playbook_path,
                 username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
-            ) as process:
-                log_line_generator = poll_streams(
-                    process.stdout,
-                    process.stderr,
-                )
-                for _, line in log_line_generator:
-                    line = line.decode('utf-8').rstrip()
-                    # Forward all lines from both channels to stderr. stdout is optionally used for the CSV output.
-                    self.stderr.write(self.style.SUCCESS(line))  # pylint: disable=no-member
-                process.wait()
+                logger_=log_line,
+            )
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
             csv_writer.writerow([

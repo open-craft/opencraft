@@ -17,24 +17,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenEdXAppServer model - Factories
+Factory for the LoadBalancingServer model.
 """
 
-# Imports #####################################################################
+import factory.django
 
 from instance.models.load_balancer import LoadBalancingServer
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-
-# Functions ###################################################################
 
 
-def make_test_appserver(instance=None):
-    """
-    Factory method to create an OpenEdXAppServer (and OpenStackServer).
-    """
-    if not instance:
-        instance = OpenEdXInstanceFactory()
-    if not instance.load_balancing_server:
-        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
-        instance.save()
-    return instance._create_owned_appserver()
+class LoadBalancingServerFactory(factory.django.DjangoModelFactory):
+    """Factory for the LoadBalancingServer model."""
+
+    class Meta:
+        model = LoadBalancingServer
+
+    domain = factory.Sequence('haproxy-{}.fake.domain'.format)
+    ssh_username = "ubuntu"

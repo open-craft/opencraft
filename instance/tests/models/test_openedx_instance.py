@@ -224,8 +224,14 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
         self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
-        # And DNS should never be changed from spawn_appserver() alone:
-        self.assertEqual(mocks.mock_set_dns_record.call_count, 0)
+
+        self.assertEqual(mocks.mock_set_dns_record.call_count, 3)  # Three domains: LMS, LMS preview, Studio
+        lb_domain = instance.load_balancing_server.domain + "."
+        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
+            call('example.com', name='test.spawn', type='CNAME', value=lb_domain),
+            call('example.com', name='preview-test.spawn', type='CNAME', value=lb_domain),
+            call('example.com', name='studio-test.spawn', type='CNAME', value=lb_domain),
+        ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
         self.assertEqual(appserver.name, "AppServer 1")
@@ -290,50 +296,13 @@ class OpenEdXInstanceTestCase(TestCase):
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)
+        instance.refresh_from_db()
         self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.com', name='test.activate', type='A', value='1.1.1.1'),
-            call('opencraft.com', name='preview-test.activate', type='CNAME', value='test.activate'),
-            call('opencraft.com', name='studio-test.activate', type='CNAME', value='test.activate'),
-        ])
-
-    @patch_services
-    def test_set_appserver_active_external_domain(self, mocks):
-        """
-        Test set_appserver_active() with custom external domains.
-        Ensure that the DNS records are only created for the internal domains.
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.hosting',
-                                          external_lms_domain='courses.myexternal.org',
-                                          external_lms_preview_domain='preview.myexternal.org',
-                                          external_studio_domain='studio.myexternal.org',
-                                          use_ephemeral_databases=True)
-        appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
-        self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.activate', type='A', value='1.1.1.1'),
-            call('opencraft.hosting', name='preview-test.activate', type='CNAME', value='test.activate'),
-            call('opencraft.hosting', name='studio-test.activate', type='CNAME', value='test.activate'),
-        ])
-
-    @patch_services
-    def test_set_appserver_active_base_subdomain(self, mocks):
-        """
-        Test set_appserver_active() with a base domain that includes part of a
-        subdomain. Ensure that the dns records include the part of the subdomain
-        in the base domain of the instance.
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.stage.opencraft.hosting',
-                                          use_ephemeral_databases=True)
-        appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
-        self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.activate.stage', type='A', value='1.1.1.1'),
-            call('opencraft.hosting', name='preview-test.activate.stage', type='CNAME', value='test.activate.stage'),
-            call('opencraft.hosting', name='studio-test.activate.stage', type='CNAME', value='test.activate.stage'),
-        ])
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
+        instance.set_appserver_inactive()
+        instance.refresh_from_db()
+        self.assertIsNone(instance.active_appserver)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
@@ -442,29 +411,81 @@ class OpenEdXInstanceTestCase(TestCase):
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
             self.assertTrue(ansible_vars[setting])
 
+    def _check_load_balancer_configuration(self, backend_map, config, domain_names, ip_address):
+        """
+        Verify the load balancer configuration given in backend_map and config.
+        """
+        [(backend, config_str)] = config
+        self.assertRegex(config_str, r"\bserver\b.*\b{}:80\b".format(ip_address))
+        self.assertCountEqual(backend_map, [(domain, backend) for domain in domain_names])
+
+    @patch_services
+    def test_get_load_balancer_configuration(self, mocks):
+        """
+        Test that the load balancer configuration gets generated correctly.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer', use_ephemeral_databases=True)
+        domain_names = [
+            "test.load_balancer.example.com",
+            "preview-test.load_balancer.example.com",
+            "studio-test.load_balancer.example.com",
+        ]
+
+        # Test configuration for preliminary page
+        backend_map, config = instance.get_load_balancer_configuration()
+        self._check_load_balancer_configuration(
+            backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
+        )
+
+        # Test configuration for active appserver
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
+        backend_map, config = instance.get_load_balancer_configuration()
+        self._check_load_balancer_configuration(
+            backend_map, config, domain_names, instance.active_appserver.server.public_ip
+        )
+
+    def test_get_load_balancer_config_ext_domains(self):
+        """
+        Test the load balancer configuration when external domains are set.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.load_balancer.opencraft.hosting',
+                                          external_lms_domain='courses.myexternal.org',
+                                          external_lms_preview_domain='preview.myexternal.org',
+                                          external_studio_domain='studio.myexternal.org',
+                                          use_ephemeral_databases=True)
+        domain_names = [
+            'test.load_balancer.opencraft.hosting',
+            'preview-test.load_balancer.opencraft.hosting',
+            'studio-test.load_balancer.opencraft.hosting',
+            'courses.myexternal.org',
+            'preview.myexternal.org',
+            'studio.myexternal.org',
+        ]
+        backend_map, config = instance.get_load_balancer_configuration()
+        self._check_load_balancer_configuration(
+            backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
+        )
+
     @ddt.data(True, False)
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.terminate_vm')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
     @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
     @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
     @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
-    def test_delete_instance(
-            self, mocks, delete_by_ref,
-            mock_deprovision_swift, mock_deprovision_mongo, mock_deprovision_mysql, mock_terminate_vm
-    ):
+    def test_delete_instance(self, mocks, delete_by_ref, *mock_methods):
         """
-        Test that an instance can be deleted directly or by its InstanceReference,
-        that the associated AppServers and VMs will be terminated,
-        and that external databases and storage will be deprovisioned.
+        Test that an instance can be deleted directly or by its InstanceReference.
         """
         instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=True)
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
-            self.assertEqual(mocked_method.call_count, 0)
+        for method in mock_methods:
+            self.assertEqual(
+                method.call_count, 0,
+                '{} should not have been called'.format(method._mock_name)
+            )
 
         # Now delete the instance, either using InstanceReference or the OpenEdXInstance class:
         if delete_by_ref:
@@ -472,10 +493,11 @@ class OpenEdXInstanceTestCase(TestCase):
         else:
             instance.delete()
 
-        for mocked_method in (
-                mock_terminate_vm, mock_deprovision_mysql, mock_deprovision_mongo, mock_deprovision_swift
-        ):
-            self.assertEqual(mocked_method.call_count, 1)
+        for method in mock_methods:
+            self.assertEqual(
+                method.call_count, 1,
+                '{} should have been called exactly once'.format(method._mock_name)
+            )
 
         with self.assertRaises(OpenEdXInstance.DoesNotExist):
             OpenEdXInstance.objects.get(pk=instance.pk)
@@ -671,8 +693,10 @@ class OpenEdXInstanceTestCase(TestCase):
 
         self.assertEqual(instance.is_shut_down, expected_result)
 
-    @patch('instance.models.openedx_instance.OpenEdXMonitoringMixin.disable_monitoring')
-    def test_shut_down(self, mock_disable_monitoring):
+    @ddt.data(True, False)
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_inactive')
+    def test_shut_down(self, unset_load_balancer, mock_set_appserver_inactive, mock_remove_dns_records):
         """
         Test that `shut_down` method terminates all app servers belonging to an instance
         and disables monitoring.
@@ -694,10 +718,19 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Set single app server active
         instance.active_appserver = active_appserver
+        if unset_load_balancer:
+            instance.load_balancing_server = None
         instance.save()
+        active_appserver.instance.refresh_from_db()
+
+        self.assertEqual(mock_set_appserver_inactive.call_count, 0)
+        self.assertEqual(mock_remove_dns_records.call_count, 0)
 
         # Shut down instance
         instance.shut_down()
+
+        self.assertEqual(mock_set_appserver_inactive.call_count, 1)
+        self.assertEqual(mock_remove_dns_records.call_count, 1)
 
         # Check status of running app servers
         self._assert_status([
@@ -719,11 +752,10 @@ class OpenEdXInstanceTestCase(TestCase):
             (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
 
-        # Check if instance disabled monitoring
-        self.assertEqual(mock_disable_monitoring.call_count, 1)
-
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @responses.activate
-    def test_shut_down_monitors_not_found(self):
+    def test_shut_down_monitors_not_found(self, *mock_methods):
         """
         Test that instance `is_shut_down` after calling `shut_down` on it,
         even if monitors associated with it no longer exist.
@@ -731,6 +763,9 @@ class OpenEdXInstanceTestCase(TestCase):
         monitor_ids = [str(uuid4()) for i in range(3)]
         instance = OpenEdXInstanceFactory()
         appserver = self._create_running_appserver(instance)
+        instance.active_appserver = appserver
+        instance.save()
+        appserver.instance.refresh_from_db()
 
         for monitor_id in monitor_ids:
             instance.new_relic_availability_monitors.create(pk=monitor_id)

@@ -164,7 +164,9 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn("Open edX App Server Details", str(response.content))
 
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver(self, mock_provision):
+    @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
+    @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
+    def test_spawn_appserver(self, mock_run_playbook, mock_set_dns_record, mock_provision):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
 
@@ -180,6 +182,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
+        self.assertEqual(mock_set_dns_record.call_count, 3)  # 3 calls: 1 for LMS, 1 for LMS preview, 1 for Studio
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)
@@ -189,8 +192,8 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
 
-    @patch('instance.models.openedx_instance.gandi.set_dns_record')
-    def test_make_active(self, mock_set_dns_record):
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    def test_make_active(self, mock_run_playbook):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - Make this OpenEdXAppServer active
         for its given instance.
@@ -207,7 +210,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'App server updated.'})
-        self.assertEqual(mock_set_dns_record.call_count, 3)  # 3 calls: 1 for LMS, 1 for LMS preview, 1 for Studio
+        self.assertEqual(mock_run_playbook.call_count, 1)
 
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver, app_server)

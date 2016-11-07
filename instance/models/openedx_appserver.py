@@ -338,6 +338,11 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.provision_failed_email(message)
             return False
 
+    def terminate_vm(self):
+        if self.pk == self.instance.active_appserver_id:
+            self.instance.set_appserver_inactive()
+        super().terminate_vm()
+
     def save(self, *args, **kwargs):
         """
         Save this OpenEdXAppServer

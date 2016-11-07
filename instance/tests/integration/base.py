@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 from huey.contrib import djhuey
 
+from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
@@ -50,12 +51,17 @@ class IntegrationTestCase(TestCase):
         patcher.start()
 
     def tearDown(self):
-        for appserver in OpenEdXAppServer.objects.iterator():
-            appserver.terminate_vm()
+        # Trigger clean-up operations for load-balancers and instances.  To avoid reconfiguring the
+        # load balancing server multiple time, we first remove the configured load balancer from all
+        # instances, then delete the load balancers, then delete the instances.
         for instance in OpenEdXInstance.objects.iterator():
-            instance.deprovision_swift()
-            instance.deprovision_mongo()
-            instance.deprovision_mysql()
+            instance.load_balancing_server = None
+            instance.save()
+        for load_balancer in LoadBalancingServer.objects.iterator():  # pylint: disable=no-member
+            load_balancer.delete()
+        for instance in OpenEdXInstance.objects.iterator():
+            instance.delete()
+
         super().tearDown()
 
         # All VMs should be terminated at this point, but check just in case:

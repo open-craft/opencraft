@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,26 +17,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-PR Watch app - Logger Adapters
+Integration tests - helper functions.
 """
 
-# Imports #####################################################################
+import pathlib
+import time
 
-import logging
-
-from instance.logger_adapter import format_instance
-
-# Adapters ####################################################################
+import requests
 
 
-class WatchedPullRequestLoggerAdapter(logging.LoggerAdapter):
+def check_url_accessible(url, attempts=3, delay=15):
     """
-    Custom LoggerAdapter for WatchedPullRequest objects
-    Include the InstanceReference ID in the output
-    """
-    def process(self, msg, kwargs):
-        msg, kwargs = super().process(msg, kwargs)
+    Check that the given URL is accessible and returns a success status code.
 
-        watched_pr = self.extra['obj']
-        msg = '{} | {}'.format(format_instance(watched_pr.instance), msg)
-        return msg, kwargs
+    Raises an exception if there is an HTTP error.
+    """
+    ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
+    while True:
+        attempts -= 1
+        try:
+            requests.get(url, verify=ca_path).raise_for_status()
+            break
+        except Exception:  # pylint: disable=broad-except
+            if not attempts:
+                raise
+        time.sleep(delay)

@@ -65,7 +65,7 @@ def patch_services(func):
                     'instance.models.server.openstack.create_server', side_effect=new_servers,
                 ),
                 mock_sleep=mock_sleep,
-                mock_set_dns_record=stack_patch('instance.models.openedx_instance.gandi.set_dns_record'),
+                mock_set_dns_record=stack_patch('instance.models.mixins.load_balanced.gandi.set_dns_record'),
                 mock_run_ansible_playbooks=stack_patch(
                     'instance.models.mixins.ansible.AnsibleAppServerMixin.run_ansible_playbooks',
                     return_value=([], 0),
@@ -81,6 +81,9 @@ def patch_services(func):
                 ),
                 mock_provision_swift=stack_patch(
                     'instance.models.mixins.openedx_storage.SwiftContainerInstanceMixin.provision_swift'
+                ),
+                mock_load_balancer_run_playbook=stack_patch(
+                    'instance.models.load_balancer.LoadBalancingServer.run_playbook'
                 ),
             )
             return func(self, mocks, *args, **kwargs)

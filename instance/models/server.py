@@ -34,7 +34,7 @@ import requests
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack
-from instance.logger_adapter import ServerLoggerAdapter
+from instance.logging import ModelLoggerAdapter
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
 )
@@ -168,15 +168,12 @@ class Server(ValidateModelMixin, TimeStampedModel):
 
     objects = ServerQuerySet().as_manager()
 
-    logger = ServerLoggerAdapter(logger, {})
-
     class Meta:
         abstract = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.logger = ServerLoggerAdapter(logger, {'obj': self})
+        self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
     @property
     def name(self):
@@ -190,6 +187,12 @@ class Server(ValidateModelMixin, TimeStampedModel):
         Context dictionary to include in events
         """
         return {'server_id': self.pk}
+
+    def get_log_message_annotation(self):
+        """
+        Format a log line annotation for this server.
+        """
+        return 'server={!s:.20}'.format(self.name)
 
     def sleep_until(self, condition, timeout=3600):
         """

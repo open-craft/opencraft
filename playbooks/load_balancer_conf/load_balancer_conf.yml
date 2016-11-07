@@ -1,0 +1,43 @@
+---
+# Playbook to reconfigure a load-balancing server deployed using the Ansible role
+# https://github.com/open-craft/ansible-load-balancer.git
+
+- hosts: all
+  become: True
+  vars:
+    FRAGMENT_NAME: "a-unique-fragment-name"
+    BACKEND_CONFIG_FRAGMENT: null
+    BACKEND_MAP_FRAGMENT: null
+    REMOVE_FRAGMENT: False
+    tmp_conf_file: "/tmp/haproxy-conf-{{ FRAGMENT_NAME }}"
+    tmp_map_file: "/tmp/haproxy-map-{{ FRAGMENT_NAME }}"
+  tasks:
+    # Tasks to add or change a fragment
+    - name: copy load-balancer configuration fragment to the server
+      copy:
+        content: "{{ BACKEND_CONFIG_FRAGMENT }}"
+        dest: "{{ tmp_conf_file }}"
+      when: not REMOVE_FRAGMENT
+    - name: copy load-balancer backend map fragment to the server
+      copy:
+        content: "{{ BACKEND_MAP_FRAGMENT }}"
+        dest: "{{ tmp_map_file }}"
+      when: not REMOVE_FRAGMENT
+    - name: apply the new configuration
+      command: >
+        haproxy-config apply "{{ FRAGMENT_NAME }}" "{{ tmp_conf_file }}" "{{ tmp_map_file }}"
+      when: not REMOVE_FRAGMENT
+    - name: clean up temporary files
+      file:
+        dest: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ tmp_conf_file }}"
+        - "{{ tmp_map_file }}"
+      when: not REMOVE_FRAGMENT
+
+    # Task to remove a fragment
+    - name: remove the configuration fragment
+      command: >
+        haproxy-config remove "{{ FRAGMENT_NAME }}"
+      when: REMOVE_FRAGMENT

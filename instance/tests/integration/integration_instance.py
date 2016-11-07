@@ -22,10 +22,8 @@ Instance - Integration Tests
 # Imports #####################################################################
 
 import os
-import time
 from unittest.mock import patch
 
-import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
@@ -39,6 +37,7 @@ from instance.openstack import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
+from instance.tests.integration.utils import check_url_accessible
 from instance.tasks import spawn_appserver
 from instance.models.mixins.secret_keys import SecretKeyProvider
 from opencraft.tests.utils import shard
@@ -66,23 +65,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(instance.active_appserver.status, AppServerStatus.Running)
         self.assertEqual(instance.active_appserver.server.status, ServerStatus.Ready)
         server = instance.active_appserver.server
-        attempts = 3
-        while True:
-            attempts -= 1
-            try:
-                requests.get('http://{0}'.format(server.public_ip)).raise_for_status()
-                break
-            except Exception:  # pylint: disable=broad-except
-                if not attempts:
-                    raise
-            time.sleep(15)
+        check_url_accessible('http://{0}/'.format(server.public_ip))
+        for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
+            check_url_accessible(url)
 
     def assert_swift_container_provisioned(self, instance):
         """
         Verify the Swift container for the instance has been provisioned successfully.
-
-        This is done here because we can't test provisioning Swift locally.  We also delete the
-        container after the check.
         """
         if not settings.SWIFT_ENABLE:
             return

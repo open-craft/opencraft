@@ -25,27 +25,20 @@ import string
 from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
-from tldextract import TLDExtract
+from django.template import loader
 
-from instance.gandi import GandiAPI
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
+from instance.models.instance import Instance
+from instance.models.load_balancer import LoadBalancingServer
+from instance.models.mixins.load_balanced import LoadBalancedInstance
+from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
+from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
+from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
+from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
+from instance.models.openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
-from .instance import Instance
-from .mixins.openedx_database import OpenEdXDatabaseMixin
-from .mixins.openedx_monitoring import OpenEdXMonitoringMixin
-from .mixins.openedx_storage import OpenEdXStorageMixin
-from .mixins.secret_keys import SecretKeyInstanceMixin
-from .openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
-
-# Constants ###################################################################
-
-gandi = GandiAPI()
-
-# By default, tldextract will make an http request to fetch an updated list of
-# TLDs on first invocation. Passing suffix_list_urls=None here prevents this.
-tldextract = TLDExtract(suffix_list_urls=None)
 
 
 # Functions ###################################################################
@@ -61,8 +54,8 @@ def generate_internal_lms_domain(sub_domain):
 # Models ######################################################################
 
 # pylint: disable=too-many-instance-attributes
-class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
-                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin):
+class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
+                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -106,8 +99,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         generated from from the value of 'sub_domain' and the DEFAULT_INSTANCE_BASE_DOMAIN setting.
         """
         if 'sub_domain' in kwargs:
-            # Copy kwargs so we can mutate them.
-            kwargs = kwargs.copy()
             sub_domain = kwargs.pop('sub_domain')
             if 'internal_lms_domain' not in kwargs:
                 kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
@@ -151,6 +142,18 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             return self.external_studio_domain
         else:
             return self.internal_studio_domain
+
+    def get_load_balanced_domains(self):
+        domain_names = [
+            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
+        ]
+        return [name for name in domain_names if name]
+
+    def get_managed_domains(self):
+        return [
+            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain
+        ]
 
     @property
     def studio_domain_nginx_regex(self):
@@ -249,17 +252,6 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
-
-        # Database settings
-        OpenEdXDatabaseMixin.set_field_defaults(self)
-
-        # Storage settings
-        OpenEdXStorageMixin.set_field_defaults(self)
-
-        # Generate secret base key
-        SecretKeyInstanceMixin.set_random_key(self)
-
-        # Other settings
         super().set_field_defaults()
 
     def save(self, **kwargs):
@@ -276,17 +268,23 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)
 
-    def delete(self, *args, **kwargs):
+    def get_load_balancer_configuration(self):
         """
-        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
+        Return the haproxy configuration fragment and backend map for this instance.
         """
-        self.disable_monitoring()
-        for appserver in self.appserver_set.all():
-            appserver.terminate_vm()
-        self.deprovision_mysql()
-        self.deprovision_mongo()
-        self.deprovision_swift()
-        super().delete(*args, **kwargs)
+        if not self.active_appserver:
+            return self.get_preliminary_page_config(self.ref.pk)
+        backend_name = "be-{}".format(self.active_appserver.server.name)
+        server_name = "appserver-{}".format(self.active_appserver.pk)
+        ip_address = self.active_appserver.server.public_ip
+        template = loader.get_template("instance/haproxy/openedx.conf")
+        config = template.render(dict(
+            domain=self.domain,
+            server_name=server_name,
+            ip_address=ip_address,
+        ))
+        backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
+        return backend_map, [(backend_name, config)]
 
     @property
     def appserver_set(self):
@@ -301,33 +299,20 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
         """
         app_server = self.appserver_set.get(pk=appserver_id)  # Make sure the AppServer is owned by this instance
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
-        public_ip = app_server.server.public_ip
-
-        self.logger.info('Updating DNS: LMS at %s...', self.internal_lms_domain)
-        lms_domain = tldextract(self.internal_lms_domain)
-        gandi.set_dns_record(
-            lms_domain.registered_domain,
-            type='A', name=lms_domain.subdomain, value=public_ip
-        )
-
-        self.logger.info('Updating DNS: LMS preview at %s...', self.internal_lms_preview_domain)
-        lms_preview_domain = tldextract(self.internal_lms_preview_domain)
-        gandi.set_dns_record(
-            lms_preview_domain.registered_domain,
-            type='CNAME', name=lms_preview_domain.subdomain, value=lms_domain.subdomain
-        )
-
-        self.logger.info('Updating DNS: Studio at %s...', self.internal_studio_domain)
-        studio_domain = tldextract(self.internal_studio_domain)
-        gandi.set_dns_record(
-            studio_domain.registered_domain,
-            type='CNAME', name=studio_domain.subdomain, value=lms_domain.subdomain
-        )
-
         self.active_appserver = app_server
         self.save()
-
+        self.load_balancing_server.reconfigure()
         self.enable_monitoring()
+
+    def set_appserver_inactive(self):
+        """
+        Reset the active AppServer to None.  Called when the active appserver is terminated.
+        """
+        self.disable_monitoring()
+        self.active_appserver = None
+        self.save()
+        if self.load_balancing_server is not None:
+            self.load_balancing_server.reconfigure()
 
     @log_exception
     def spawn_appserver(self):
@@ -336,6 +321,16 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
 
         Returns the ID of the new AppServer on success or None on failure.
         """
+        if not self.load_balancing_server:
+            self.load_balancing_server = LoadBalancingServer.objects.select_random()
+            self.save()
+            self.load_balancing_server.reconfigure()
+
+        # We unconditionally set the DNS records here, though this would only be strictly needed
+        # when the first AppServer is spawned.  However, there is no easy way to tell whether the
+        # DNS records have already been successfully set, and it doesn't hurt to alway do it.
+        self.set_dns_records()
+
         # Provision external databases:
         if not self.use_ephemeral_databases:
             # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
@@ -409,12 +404,25 @@ class OpenEdXInstance(Instance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
     def shut_down(self):
         """
         Shut down this instance.
-
-        This process consists of two steps:
-
-        1) Disable New Relic monitors.
-        2) Terminate all app servers belonging to this instance.
         """
-        self.disable_monitoring()
-        for appserver in self.appserver_set.all():
+        self.remove_dns_records()
+        if self.load_balancing_server is not None:
+            load_balancer = self.load_balancing_server
+            self.load_balancing_server = None
+            self.save()
+            if self.active_appserver is None:
+                # If an appserver is active, reconfiguring the load_balancer happens
+                # implicitly when terminate_vm() is called further down.
+                load_balancer.reconfigure()
+        for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
+        """
+        self.shut_down()
+        self.deprovision_mysql()
+        self.deprovision_mongo()
+        self.deprovision_swift()
+        super().delete(*args, **kwargs)

@@ -30,7 +30,7 @@ from django.db import models
 from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 
-from instance.logger_adapter import AppServerLoggerAdapter
+from instance.logging import ModelLoggerAdapter
 from .instance import InstanceReference
 from .log_entry import LogEntry
 from .server import OpenStackServer
@@ -168,11 +168,18 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.logger = AppServerLoggerAdapter(logger, {'obj': self})
+        self.logger = ModelLoggerAdapter(logger, {'obj': self})
 
     def __str__(self):
         return self.name
+
+    def get_log_message_annotation(self):
+        """
+        Format a log line annotation for this AppServer.
+        """
+        return '{},app_server={} ({!s:.15})'.format(
+            self.instance.get_log_message_annotation(), self.pk, self.name
+        )
 
     @property
     def instance(self):
