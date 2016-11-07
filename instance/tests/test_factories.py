@@ -136,17 +136,48 @@ class FactoriesTestCase(TestCase):
         with self.assertRaises(AssertionError):
             production_instance_factory()
 
-        # Calling factory with settings that are problematic for production instances should produce warnings
-        with patch.multiple(
-            "instance.factories.settings",
-            SWIFT_ENABLE=False,
-            INSTANCE_MYSQL_URL=None,
-            INSTANCE_MONGO_URL=None,
+    def test_production_instance_factory_no_databases(self):
+        """
+        Test that calling `production_instance_factory` with settings that are problematic
+        for production instances produces warnings and does not create production instance.
+        """
+        for setting, value, warning in (
+                (
+                    'SWIFT_ENABLE',
+                    False,
+                    'Swift support is currently disabled. Adjust SWIFT_ENABLE setting.',
+                ),
+                (
+                    'DEFAULT_INSTANCE_MYSQL_URL',
+                    None,
+                    (
+                        "No MySQL servers configured, and default URL for external MySQL database is missing."
+                        "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
+                    ),
+                ),
+                (
+                    'DEFAULT_INSTANCE_MONGO_URL',
+                    None,
+                    (
+                        "No MongoDB servers configured, and default URL for external MongoDB database is missing."
+                        "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
+                    ),
+                ),
         ):
-            production_instance_factory(sub_domain="production-instance-doomed")
-            log_entries = LogEntry.objects.all()
-            self.assertEqual(len(log_entries), 3)
-            self.assertTrue(all(log_entry.level == "WARNING" for log_entry in log_entries))
-            self.assertIn("Adjust INSTANCE_MONGO_URL setting.", log_entries[0].text)
-            self.assertIn("Adjust INSTANCE_MYSQL_URL setting.", log_entries[1].text)
-            self.assertIn("Adjust SWIFT_ENABLE setting.", log_entries[2].text)
+            with patch("instance.factories.settings") as patched_settings:
+                setattr(patched_settings, setting, value)
+                sub_domain = "production-instance-doomed"
+                production_instance_factory(sub_domain=sub_domain)
+                log_entries = LogEntry.objects.all()
+                general_entry = log_entries[0]
+                setting_entry = log_entries[1]
+                for log_entry in (general_entry, setting_entry):
+                    self.assertEqual(log_entry.level, "WARNING")
+                self.assertIn(
+                    "Environment not ready. Please fix the problems above, then try again. Aborting.",
+                    general_entry.text
+                )
+                self.assertIn(warning, setting_entry.text)
+                self.assertFalse(
+                    OpenEdXInstance.objects.filter(internal_lms_domain__startswith=sub_domain).exists()
+                )

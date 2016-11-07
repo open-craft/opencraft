@@ -256,8 +256,18 @@ flavor:
   provisioning the sandbox (default: `ubuntu`)
 * `INSTANCE_EPHEMERAL_DATABASES`: By default, instances use local mysql and mongo
   databases. Set this to False to use external databases instead (default: True)
-* `INSTANCE_MYSQL_URL`: If using an external mysql database, set its url here
-* `INSTANCE_MONGO_URL`: If using an external mongo database, set its url here
+* `DEFAULT_INSTANCE_MYSQL_URL`: The external MySQL database server to be used
+  by instances configured not to use ephemeral databases. The database server
+  will be represented as an instance of the `MySQLServer` model in the database.
+  It is possible to create multiple instances of that model. This setting
+  exists mainly to make it easier to add a MySQL database server in testing
+  and development environments.
+* `DEFAULT_INSTANCE_MONGO_URL`: The external MongoDB database server to be used
+  by instances configured not to use ephemeral databases. The database server
+  will be represented as an instance of the `MongoDBServer` model in the database.
+  It is possible to create multiple instances of that model. This setting
+  exists mainly to make it easier to add a MongoDB database server in testing
+  and development environments.
 
 ### External SMTP service settings
 
@@ -619,15 +629,84 @@ output file can be specified by using the `--out` flag.
 Databases
 ---------
 
-By default, sandboxes will use local, ephemeral databases that are destroyed
-when the sandbox is reprovisioned. If you want to reuse databases, change the
-`INSTANCE_EPHEMERAL_DATABASES` setting to False, set up external mysql and mongo
-databases and update the `INSTANCE_MYSQL_URL` and `INSTANCE_MONGO_URL` settings
-to point to these databases.
+By default, instances will use local, ephemeral databases that are destroyed
+when app servers belonging to an instance are terminated. If you want to use
+external databases that can be used by any app server belonging to an instance,
+follow these steps:
 
-When provisioning a sandbox from the GitHub pull request, you can override the
-default by including `(ephemeral databases)` or `(persistent databases)` on the
-same line as the sandbox domain in the pull request description. For example:
+1. Change the `INSTANCE_EPHEMERAL_DATABASES` setting to False. Note that this is
+   only necessary if you want instances to use persistent databases by default.
+   If you only want a specific instance to use persistent databases, simply set
+   the value of the `use_ephemeral_databases` field to `True` and save the instance
+   (cf. below).
+
+2. Set up external mysql and mongo databases, making a note of hostname
+   and authentication information (username, password) for each one of them.
+
+3. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
+   to URLs that point to the MySQL and MongoDB servers created in the previous step:
+
+   ```
+   DEFAULT_INSTANCE_MYSQL_URL='mysql://<user>:<password>@<hostname>:<port>'
+   DEFAULT_INSTANCE_MONGO_URL='mongodb://<user>:<password>@<hostname>:<port>'
+   ```
+
+   Note that:
+
+   * `<user>` must have necessary permissions to create databases and users,
+     and to grant privileges on the MySQL/MongoDB server.
+
+   * `<hostname>` can be an IP address.
+
+   * `<port>` is optional. It defaults to `3306` for MySQL databases,
+     and to `27017` for MongoDB databases.
+
+   The next time you create an instance, the instance manager will automatically
+   create a `MySQLServer` and a `MongoDBServer` using the values of the
+   `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL` settings
+   and assign it to the instance.
+
+   **Alternatively**, you can skip setting `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
+   and create `MySQLServer` and `MongoDBServer` objects yourself via the shell or via the Django admin.
+
+   ```python
+   from instance.models.database_server import MySQLServer, MongoDBServer
+
+   MySQLServer.objects.create(
+       hostname='<hostname>',
+       user='<username>',
+       password='<password>',
+       port=<port>,
+   )
+
+   MongoDBServer.objects.create(
+       hostname='<hostname>',
+       user='<username>',
+       password='<password>',
+       port=<port>,
+   )
+   ```
+
+   You can create as many `MySQLServer` and `MongoDBServer` objects as you like.
+   If there are multiple servers of a given type to choose from, the instance manager
+   will randomly select and assign one of them when you create a new instance.
+
+When the instance manager provisions an app server for an instance that uses persistent databases,
+it will automatically add the necessary settings on the associated external database server
+to enable the app server to read and store application data. It will also add any information
+that is necessary for connecting to the database server to the app server configuration.
+
+Each instance controls its own set of databases on the external database servers,
+so it is fine for multiple instances to use the same MySQL and MongoDB database servers.
+Set up multiple database servers if the instance manager controls a large number of instances,
+or if individual instances receive a large amount of traffic.
+
+### Controlling persistence settings from PRs
+
+When provisioning an instance from a GitHub pull request, you can override the
+default behavior (as specified by `INSTANCE_EPHEMERAL_DATABASES`) by including
+`(ephemeral databases)` or `(persistent databases)` on the same line
+as the instance domain in the pull request description. For example:
 
     This pull request adds reticulating splines to the LMS.
 

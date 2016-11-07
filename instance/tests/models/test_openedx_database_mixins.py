@@ -23,13 +23,15 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
-from urllib.parse import urlparse
 
 import pymongo
 import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
+from instance.models.database_server import (
+    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
+)
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -203,6 +205,15 @@ class MySQLInstanceTestCase(TestCase):
         }
         self.assertEqual(template_vars, expected_template_vars)
 
+    @override_settings(DEFAULT_INSTANCE_MYSQL_URL=None)
+    def test_create_instance_no_default_mysql_url(self):
+        """
+        Test that creating an instance with persistent databases raises an exception
+        if DEFAULT_INSTANCE_MYSQL_URL not set.
+        """
+        with self.assertRaises(MySQLServer.DoesNotExist):
+            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+
     def test_provision_mysql(self):
         """
         Provision mysql database
@@ -210,17 +221,6 @@ class MySQLInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mysql()
         self.check_mysql()
-
-    @override_settings(INSTANCE_MYSQL_URL_OBJ=None)
-    def test_provision_mysql_no_url(self):
-        """
-        Don't provision a mysql database if INSTANCE_MYSQL_URL is not set
-        """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        self.instance.provision_mysql()
-        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
-        for database in self.instance.mysql_databases:
-            self.assertNotIn(database["name"], databases)
 
     def test_provision_mysql_weird_domain(self):
         """
@@ -249,15 +249,27 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(self.instance.mysql_pass, mysql_pass)
         self.check_mysql()
 
+    def test_provision_mysql_no_mysql_server(self):
+        """
+        Don't provision a mysql database if instance has no MySQL server
+        """
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.mysql_server = None
+        self.instance.save()
+        self.instance.provision_mysql()
+        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
+        for database in self.instance.mysql_databases:
+            self.assertNotIn(database["name"], databases)
+
     @patch_services
-    @override_settings(INSTANCE_MYSQL_URL_OBJ=urlparse('mysql://user:pass@mysql.opencraft.com'))
+    @override_settings(DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@mysql.opencraft.com')
     def test_ansible_settings_mysql(self, mocks):
         """
         Test that get_database_settings produces correct settings for MySQL databases
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         expected_host = "mysql.opencraft.com"
-        expected_port = 3306
+        expected_port = MYSQL_SERVER_DEFAULT_PORT
 
         def make_flat_group_info(var_names=None, database=None, include_port=True):
             """ Return dict containing info for a flat group of variables """
@@ -265,9 +277,9 @@ class MySQLInstanceTestCase(TestCase):
             if var_names:
                 group_info["vars"] = var_names
             # Compute and insert values
-            name = instance._get_mysql_database_name(database["name"])
-            user = instance._get_mysql_user_name(database["user"])
-            password = instance._get_mysql_pass(user)
+            name = self.instance._get_mysql_database_name(database["name"])
+            user = self.instance._get_mysql_user_name(database["user"])
+            password = self.instance._get_mysql_pass(user)
             values = [name, user, password, expected_host]
             if include_port:
                 values.append(expected_port)
@@ -281,9 +293,9 @@ class MySQLInstanceTestCase(TestCase):
             }
             # Compute and insert values
             for database in databases:
-                database["name"] = instance._get_mysql_database_name(database["name"])
-                database["user"] = instance._get_mysql_user_name(database["user"])
-                database["password"] = instance._get_mysql_pass(database["user"])
+                database["name"] = self.instance._get_mysql_database_name(database["name"])
+                database["user"] = self.instance._get_mysql_user_name(database["user"])
+                database["password"] = self.instance._get_mysql_pass(database["user"])
             values = [database["name"] for database in databases]
             values.append({
                 database.get("id", "default"): dict(
@@ -301,10 +313,10 @@ class MySQLInstanceTestCase(TestCase):
             return group_info
 
         # Load instance settings
-        db_vars = yaml.load(instance.get_database_settings())
+        db_vars = yaml.load(self.instance.get_database_settings())
 
         # Check instance settings for common users
-        self.check_common_users(instance, db_vars)
+        self.check_common_users(self.instance, db_vars)
 
         # Check service-specific instance settings
         var_groups = {
@@ -335,29 +347,26 @@ class MySQLInstanceTestCase(TestCase):
         for group_prefix, group_info in var_groups.items():
             values = group_info["values"]
             if "vars" in group_info:
-                self.check_vars(instance, db_vars, group_prefix, var_names=group_info["vars"], values=values)
+                self.check_vars(self.instance, db_vars, group_prefix, var_names=group_info["vars"], values=values)
             else:
-                self.check_vars(instance, db_vars, group_prefix, values=values)
+                self.check_vars(self.instance, db_vars, group_prefix, values=values)
 
-    @patch_services
-    @override_settings(INSTANCE_MYSQL_URL_OBJ=None)
-    def test_ansible_settings_mysql_not_set(self, mocks):
+    def test_ansible_settings_no_mysql_server(self):
         """
-        Don't add mysql ansible vars if INSTANCE_MYSQL_URL is not set
+        Don't add mysql ansible vars if instance has no MySQL server
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.provision_mysql()
-        self.check_mysql_vars_not_set(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.mysql_server = None
+        self.instance.save()
+        self.check_mysql_vars_not_set(self.instance)
 
-    @patch_services
-    @override_settings(INSTANCE_MYSQL_URL_OBJ=urlparse('mysql://user:pass@mysql.opencraft.com'))
-    def test_ansible_settings_mysql_ephemeral(self, mocks):
+    @override_settings(DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@mysql.opencraft.com')
+    def test_ansible_settings_mysql_ephemeral(self):
         """
         Don't add mysql ansible vars for ephemeral databases
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        instance.provision_mysql()
-        self.check_mysql_vars_not_set(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        self.check_mysql_vars_not_set(self.instance)
 
 
 class MongoDBInstanceTestCase(TestCase):
@@ -377,7 +386,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Check that the instance mongo user has access to the external mongo database
         """
-        mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
+        mongo = pymongo.MongoClient(settings.DEFAULT_INSTANCE_MONGO_URL)
         for database in self.instance.mongo_database_names:
             self.assertTrue(mongo[database].authenticate(self.instance.mongo_user, self.instance.mongo_pass))
 
@@ -397,6 +406,15 @@ class MongoDBInstanceTestCase(TestCase):
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, appserver.configuration_settings)
 
+    @override_settings(DEFAULT_INSTANCE_MONGO_URL=None)
+    def test_create_instance_no_default_mongo_url(self):
+        """
+        Test that creating an instance with persistent databases raises an exception
+        if DEFAULT_INSTANCE_MONGO_URL not set.
+        """
+        with self.assertRaises(MongoDBServer.DoesNotExist):
+            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+
     def test_provision_mongo(self):
         """
         Provision mongo databases
@@ -404,18 +422,6 @@ class MongoDBInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         self.instance.provision_mongo()
         self.check_mongo()
-
-    def test_provision_mongo_no_url(self):
-        """
-        Don't provision any mongo databases if INSTANCE_MONGO_URL is not set
-        """
-        mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
-        with override_settings(INSTANCE_MONGO_URL=None):
-            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-            self.instance.provision_mongo()
-            databases = mongo.database_names()
-            for database in self.instance.mongo_database_names:
-                self.assertNotIn(database, databases)
 
     def test_provision_mongo_again(self):
         """
@@ -432,39 +438,53 @@ class MongoDBInstanceTestCase(TestCase):
         self.assertEqual(self.instance.mongo_pass, mongo_pass)
         self.check_mongo()
 
-    @override_settings(INSTANCE_MONGO_URL_OBJ=urlparse('mongodb://user:pass@mongo.opencraft.com'))
+    def test_provision_mongo_no_mongodb_server(self):
+        """
+        Don't provision a mongo database if instance has no MongoDB server
+        """
+        mongo = pymongo.MongoClient(settings.DEFAULT_INSTANCE_MONGO_URL)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.mongodb_server = None
+        self.instance.save()
+        self.instance.provision_mongo()
+        databases = mongo.database_names()
+        for database in self.instance.mongo_database_names:
+            self.assertNotIn(database, databases)
+
+    @override_settings(DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@mongo.opencraft.com')
     def test_ansible_settings_mongo(self):
         """
-        Add mongo ansible vars if INSTANCE_MONGO_URL is set
+        Add mongo ansible vars if instance has a MongoDB server
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        appserver = make_test_appserver(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        appserver = make_test_appserver(self.instance)
         ansible_vars = appserver.configuration_settings
-        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(instance.mongo_user), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(instance.mongo_pass), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
         self.assertIn('EDXAPP_MONGO_HOSTS: [mongo.opencraft.com]', ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PORT: 27017', ansible_vars)
-        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(instance.mongo_database_name), ansible_vars)
-        self.assertIn('FORUM_MONGO_USER: {0}'.format(instance.mongo_user), ansible_vars)
-        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(instance.mongo_pass), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
+        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
         self.assertIn('FORUM_MONGO_HOSTS: [mongo.opencraft.com]', ansible_vars)
-        self.assertIn('FORUM_MONGO_PORT: 27017', ansible_vars)
-        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(instance.forum_database_name), ansible_vars)
+        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 
-    @override_settings(INSTANCE_MONGO_URL_OBJ=None)
-    def test_ansible_settings_mongo_not_set(self):
+    def test_ansible_settings_no_mongo_server(self):
         """
-        Don't add mongo ansible vars if INSTANCE_MONGO_URL is not set
+        Don't add mongo ansible vars if instance has no MongoDB server
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        appserver = make_test_appserver(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance.mongodb_server = None
+        self.instance.save()
+        appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
 
-    @override_settings(INSTANCE_MONGO_URL_OBJ=urlparse('mongodb://user:pass@mongo.opencraft.com'))
+    @override_settings(DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@mongo.opencraft.com')
     def test_ansible_settings_mongo_ephemeral(self):
         """
-        Don't add mongo ansible vars if INSTANCE_MONGO_URL is not set
+        Don't add mysql ansible vars for ephemeral databases
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        appserver = make_test_appserver(instance)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)

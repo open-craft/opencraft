@@ -107,7 +107,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Ensure that the instance can connect to external databases
         """
-        if not settings.INSTANCE_MYSQL_URL or not settings.INSTANCE_MONGO_URL:
+        if not settings.DEFAULT_INSTANCE_MYSQL_URL or not settings.DEFAULT_INSTANCE_MONGO_URL:
             print('External databases not configured, skipping integration test')
             return
         OpenEdXInstanceFactory(name='Integration - test_external_databases', use_ephemeral_databases=False)

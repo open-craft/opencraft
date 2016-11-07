@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Open edX Instance models
+Instance app models - Open edX Instance models
 """
 import re
 import string

@@ -68,6 +68,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.configuration_version, settings.DEFAULT_CONFIGURATION_VERSION)
         self.assertEqual(instance.edx_platform_repository_url, DEFAULT_EDX_PLATFORM_REPO_URL)
         self.assertEqual(instance.edx_platform_commit, settings.DEFAULT_OPENEDX_RELEASE)
+        self.assertTrue(instance.mysql_server)
+        self.assertTrue(instance.mongodb_server)
         self.assertTrue(instance.mysql_user)
         self.assertTrue(instance.mysql_pass)
         self.assertTrue(instance.mongo_user)
@@ -111,6 +113,8 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstance.objects.create(sub_domain='testing.defaults')
         self._assert_defaults(instance)
 
+        mysql_server = instance.mysql_server
+        mongodb_server = instance.mongodb_server
         mysql_user = instance.mysql_user
         mysql_pass = instance.mysql_pass
         mongo_user = instance.mongo_user
@@ -119,8 +123,11 @@ class OpenEdXInstanceTestCase(TestCase):
 
         instance.name = "Test Instance"
         instance.save()
+        instance.refresh_from_db()
         self._assert_defaults(instance, name=instance.name)
 
+        self.assertEqual(instance.mysql_server.pk, mysql_server.pk)
+        self.assertEqual(instance.mongodb_server.pk, mongodb_server.pk)
         self.assertEqual(instance.mysql_user, mysql_user)
         self.assertEqual(instance.mysql_pass, mysql_pass)
         self.assertEqual(instance.mongo_user, mongo_user)

@@ -24,10 +24,11 @@ Instance app model mixins - Database
 
 import inspect
 
-from django.conf import settings
 from django.db import models
 import MySQLdb as mysql
 import pymongo
+
+from instance.models.database_server import MySQLServer, MongoDBServer
 
 
 # Functions ###################################################################
@@ -54,15 +55,15 @@ def database_name_escaped(func):
     return wrapper
 
 
-def _get_mysql_cursor():
+def _get_mysql_cursor(mysql_server):
     """
     Get a database cursor.
     """
     connection = mysql.connect(
-        host=settings.INSTANCE_MYSQL_URL_OBJ.hostname,
-        user=settings.INSTANCE_MYSQL_URL_OBJ.username,
-        passwd=settings.INSTANCE_MYSQL_URL_OBJ.password or '',
-        port=settings.INSTANCE_MYSQL_URL_OBJ.port or 3306,
+        host=mysql_server.hostname,
+        user=mysql_server.username,
+        passwd=mysql_server.password,
+        port=mysql_server.port,
     )
     return connection.cursor()
 
@@ -124,6 +125,10 @@ class MySQLInstanceMixin(models.Model):
     """
     An instance that uses mysql databases
     """
+    mysql_server = models.ForeignKey(
+        MySQLServer, null=True, blank=True, on_delete=models.PROTECT
+    )
+
     mysql_user = models.CharField(max_length=16, blank=True)  # 16 chars is mysql maximum
     mysql_pass = models.CharField(max_length=32, blank=True)
     mysql_provisioned = models.BooleanField(default=False)
@@ -142,8 +147,8 @@ class MySQLInstanceMixin(models.Model):
         """
         Create mysql user and databases
         """
-        if settings.INSTANCE_MYSQL_URL_OBJ and not self.mysql_provisioned:
-            cursor = _get_mysql_cursor()
+        if self.mysql_server and not self.mysql_provisioned:
+            cursor = _get_mysql_cursor(self.mysql_server)
 
             # Create migration and read_only users
             _create_user(cursor, self.migrate_user, self._get_mysql_pass(self.migrate_user))
@@ -174,8 +179,8 @@ class MySQLInstanceMixin(models.Model):
         """
         Drop all MySQL databases and users.
         """
-        if settings.INSTANCE_MYSQL_URL_OBJ and self.mysql_provisioned:
-            cursor = _get_mysql_cursor()
+        if self.mysql_server and self.mysql_provisioned:
+            cursor = _get_mysql_cursor(self.mysql_server)
 
             # Drop default databases and users
             for database in self.mysql_databases:
@@ -195,6 +200,10 @@ class MongoDBInstanceMixin(models.Model):
     """
     An instance that uses mongo databases
     """
+    mongodb_server = models.ForeignKey(
+        MongoDBServer, null=True, blank=True, on_delete=models.PROTECT
+    )
+
     mongo_user = models.CharField(max_length=16, blank=True)
     mongo_pass = models.CharField(max_length=32, blank=True)
     mongo_provisioned = models.BooleanField(default=False)
@@ -213,8 +222,8 @@ class MongoDBInstanceMixin(models.Model):
         """
         Create mongo user and databases
         """
-        if settings.INSTANCE_MONGO_URL and not self.mongo_provisioned:
-            mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
+        if self.mongodb_server and not self.mongo_provisioned:
+            mongo = pymongo.MongoClient(self.mongodb_server.url)
             for database in self.mongo_database_names:
                 mongo[database].add_user(self.mongo_user, self.mongo_pass)
             self.mongo_provisioned = True
@@ -224,8 +233,8 @@ class MongoDBInstanceMixin(models.Model):
         """
         Drop Mongo databases.
         """
-        if settings.INSTANCE_MONGO_URL and self.mongo_provisioned:
-            mongo = pymongo.MongoClient(settings.INSTANCE_MONGO_URL)
+        if self.mongodb_server and self.mongo_provisioned:
+            mongo = pymongo.MongoClient(self.mongodb_server.url)
             for database in self.mongo_database_names:
                 # Dropping a non-existing database is a no-op.  Users are dropped together with the DB.
                 mongo.drop_database(database)

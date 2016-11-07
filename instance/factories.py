@@ -28,6 +28,7 @@ from django.conf import settings
 from django.template import loader
 
 from instance import ansible
+from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -44,10 +45,20 @@ def _check_environment():
     """
     if not settings.SWIFT_ENABLE:
         logger.warning("Swift support is currently disabled. Adjust SWIFT_ENABLE setting.")
-    if settings.INSTANCE_MYSQL_URL is None:
-        logger.warning("URL for external MySQL database is missing. Adjust INSTANCE_MYSQL_URL setting.")
-    if settings.INSTANCE_MONGO_URL is None:
-        logger.warning("URL for external Mongo database is missing. Adjust INSTANCE_MONGO_URL setting.")
+        return
+    if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:  # pylint: disable=no-member
+        logger.warning(
+            "No MySQL servers configured, and default URL for external MySQL database is missing."
+            "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
+        )
+        return
+    if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:  # pylint: disable=no-member
+        logger.warning(
+            "No MongoDB servers configured, and default URL for external MongoDB database is missing."
+            "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
+        )
+        return
+    return True
 
 
 def instance_factory(**kwargs):
@@ -107,7 +118,11 @@ def production_instance_factory(**kwargs):
     assert "sub_domain" in kwargs
 
     # Check environment and report potential problems
-    _check_environment()
+    environment_ready = _check_environment()
+
+    if not environment_ready:
+        logger.warning("Environment not ready. Please fix the problems above, then try again. Aborting.")
+        return
 
     # Gather settings
     production_settings = loader.get_template('instance/ansible/prod-vars.yml').render({})
