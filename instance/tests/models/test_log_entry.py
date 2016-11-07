@@ -172,7 +172,7 @@ class LoggingTestCase(TestCase):
         server1.logger.info('Line #2, on server 1')
         server2.logger.info('Line #3, on server 2')
 
-        self.assertEqual(LogEntry.objects.count(), 4)
+        self.assertEqual(LogEntry.objects.count(), 3)
         # Delete server 1:
         server1_id = server1.pk
         server1.delete()
@@ -180,12 +180,11 @@ class LoggingTestCase(TestCase):
         entries = LogEntry.objects.order_by('pk').all().values_list('text', flat=True)
         for entry_text in entries:
             self.assertNotIn('Line #2', entry_text)
-        self.assertIn('Creating LoadBalancingServer', entries[0])
-        self.assertIn('Line #1, on instance', entries[1])
-        self.assertIn('Line #3, on server 2', entries[2])
+        self.assertIn('Line #1, on instance', entries[0])
+        self.assertIn('Line #3, on server 2', entries[1])
         self.assertIn(
             'Deleted 1 log entries for deleted OpenStack VM instance with ID {}'.format(server1_id),
-            entries[3]
+            entries[2]
         )
 
     def test_log_num_queries(self):
