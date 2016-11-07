@@ -25,6 +25,8 @@ OpenEdXAppServer Ansible Mixin - Tests
 import os
 from unittest.mock import patch, call, Mock
 
+import ddt
+
 from instance.models.mixins.ansible import Playbook
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -34,6 +36,7 @@ from instance.tests.utils import patch_services
 # Tests #######################################################################
 
 
+@ddt.ddt
 class AnsibleAppServerTestCase(TestCase):
     """
     Test cases for AnsibleAppServerMixin models
@@ -60,17 +63,20 @@ class AnsibleAppServerTestCase(TestCase):
             self.assertEqual(appserver.inventory_str, '[app]\n')
         self.assertEqual(str(context.exception), "Cannot prepare to run playbooks when server has no public IP.")
 
+    @ddt.data(0, 1)
     @patch('instance.ansible.poll_streams')
     @patch('instance.ansible.run_playbook')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.inventory_str')
     @patch('instance.models.mixins.ansible.open_repository')
-    def test_provisioning(self, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams):
+    def test_provisioning(
+            self, playbook_returncode, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams):
         """
         Test instance provisioning
         """
         appserver = make_test_appserver()
         working_dir = '/cloned/configuration-repo/path'
         mock_open_repo.return_value.__enter__.return_value.working_dir = working_dir
+        mock_run_playbook.return_value.__enter__.return_value.returncode = playbook_returncode
 
         appserver.run_ansible_playbooks()
 

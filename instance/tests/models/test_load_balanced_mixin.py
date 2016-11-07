@@ -77,6 +77,19 @@ class LoadBalancedInstanceTestCase(TestCase):
             call('opencraft.hosting', name='studio-test.dns', type='CNAME', value=lb_domain),
         ])
 
+    @patch('instance.models.mixins.load_balanced.gandi.remove_dns_record')
+    def test_remove_dns_records(self, mock_remove_dns_record):
+        """
+        Test remove_dns_records().
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com')
+        instance.remove_dns_records()
+        self.assertEqual(mock_remove_dns_record.mock_calls, [
+            call('opencraft.com', 'test.dns'),
+            call('opencraft.com', 'preview-test.dns'),
+            call('opencraft.com', 'studio-test.dns'),
+        ])
+
     def test_domains(self):
         """
         Test the get_managed_domains() and get_load_balanced_domains() methods (for test coverage only).

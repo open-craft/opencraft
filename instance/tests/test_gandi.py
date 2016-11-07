@@ -116,3 +116,19 @@ class GandiTestCase(TestCase):
                 type='A', name='sub.domain', value='192.168.99.99'
             )
         self.assertEqual(sleep.mock_calls, [call(1), call(2), call(4)])
+
+    def test_remove_dns_record(self):
+        """
+        Test remove_dns_record().
+        """
+        self.api.client.domain.zone.version.new.return_value = 'new_zone_version'
+        self.api.remove_dns_record('test.com', 'sub.domain')
+        self.assertEqual(self.api.client.mock_calls, [
+            call.domain.info('TEST_GANDI_API_KEY', 'test.com'),
+            call.domain.zone.version.new('TEST_GANDI_API_KEY', 9900),
+            call.domain.zone.record.delete(
+                'TEST_GANDI_API_KEY', 9900, 'new_zone_version',
+                {'type': ['A', 'CNAME'], 'name': 'sub.domain'}
+            ),
+            call.domain.zone.version.set('TEST_GANDI_API_KEY', 9900, 'new_zone_version'),
+        ])

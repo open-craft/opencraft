@@ -693,9 +693,10 @@ class OpenEdXInstanceTestCase(TestCase):
 
         self.assertEqual(instance.is_shut_down, expected_result)
 
+    @ddt.data(True, False)
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_inactive')
-    def test_shut_down(self, mock_set_appserver_inactive, mock_remove_dns_records):
+    def test_shut_down(self, unset_load_balancer, mock_set_appserver_inactive, mock_remove_dns_records):
         """
         Test that `shut_down` method terminates all app servers belonging to an instance
         and disables monitoring.
@@ -717,6 +718,8 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Set single app server active
         instance.active_appserver = active_appserver
+        if unset_load_balancer:
+            instance.load_balancing_server = None
         instance.save()
         active_appserver.instance.refresh_from_db()
 

@@ -100,6 +100,8 @@ class LoadBalancingServerTest(TestCase):
         with mock_instances():
             self.load_balancer.reconfigure()
             self.assertEqual(mock_run_playbook.call_count, 1)
+            self.load_balancer.delete()
+            self.assertEqual(mock_run_playbook.call_count, 2)
 
     @patch("instance.ansible.poll_streams")
     @patch("instance.ansible.run_playbook")

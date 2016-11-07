@@ -28,7 +28,7 @@ import subprocess
 from unittest.mock import patch
 
 from instance.tests.base import TestCase
-from instance.utils import sufficient_time_passed, poll_streams, _line_timeout_generator
+from instance.utils import sufficient_time_passed, poll_streams, _line_timeout_generator, to_json
 
 
 # Tests #######################################################################
@@ -103,3 +103,29 @@ class UtilsTestCase(TestCase):
         # Negative delta (reference date follows date), delta between dates less than expected delta
         result = sufficient_time_passed(reference_date, date, 20)
         self.assertFalse(result)
+
+    def test_to_json(self):
+        """
+        Test the to_json() helper function.
+        """
+        class Serializable:
+            """
+            A test class with a toJSON() method.
+            """
+            def toJSON(self):  # nopep8 pylint: disable=invalid-name
+                """
+                Fake JSON serialization.
+                """
+                return vars(self)
+
+        class NonSerializable:
+            """
+            A test class without a toJSON() method.
+            """
+        serializable = Serializable()
+        self.assertEqual(to_json(serializable), '{}')
+        non_serializable = NonSerializable()
+        non_serializable.attr = 42  # pylint: disable=attribute-defined-outside-init
+        self.assertEqual(to_json(non_serializable), '{\n    "attr": 42\n}')
+        serializable.attr = non_serializable  # pylint: disable=attribute-defined-outside-init
+        self.assertEqual(to_json(serializable), '{\n    "attr": "%s"\n}' % (non_serializable,))
