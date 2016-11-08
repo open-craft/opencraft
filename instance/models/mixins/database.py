@@ -46,9 +46,7 @@ def database_name_escaped(func):
         bound_arguments = signature.bind(*args, **kwargs)
         # Obtain connection from cursor passed to func.
         # This allows us to simplify the signature of func (we don't have to add a "connection" parameter).
-        # Note that cursor.connection is a weakref,
-        # so we have to call it to obtain the connection object that it references:
-        connection = bound_arguments.arguments["cursor"].connection()
+        connection = bound_arguments.arguments["cursor"].connection
         database = bound_arguments.arguments["database"]
         bound_arguments.arguments["database"] = connection.escape_string(database).decode()
         func(*bound_arguments.args, **bound_arguments.kwargs)
