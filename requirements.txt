@@ -105,7 +105,7 @@ python-neutronclient==6.0.0
 python-novaclient==6.0.0
 python-swiftclient==3.1.0
 pytz==2016.7
-PyYAML==3.12
+PyYAML==3.10
 rcssmin==1.0.6
 redis==2.10.5
 requests==2.11.1
@@ -117,7 +117,7 @@ requirements-detector==0.5.2
 responses==0.5.1
 rfc3986==0.4.1
 rjsmin==1.0.12
-selenium==3.0.1
+selenium==2.53.6
 setoptconf==0.2.0
 simplegeneric==0.8.1
 simplejson==3.10.0
@@ -137,5 +137,5 @@ traitlets==4.3.1
 unicodecsv==0.14.1
 virtualenv==15.0.3
 wcwidth==0.1.7
-Werkzeug==0.11.11
+Werkzeug==0.11.1
 wrapt==1.10.8
