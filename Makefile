@@ -98,7 +98,7 @@ test_unit: clean static_external
 
 # Check whether migrations need to be generated
 test_migrations_missing: clean
-	! honcho -e .env.test run ./manage.py makemigrations --dry-run --exit
+	honcho -e .env.test run ./manage.py makemigrations --dry-run --check
 
 test_browser: clean static_external
 	@echo -e "\nRunning browser tests..."
