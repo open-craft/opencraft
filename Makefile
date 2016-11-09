@@ -98,6 +98,7 @@ test_unit: clean static_external
 
 # Check whether migrations need to be generated
 test_migrations_missing: clean
+	(psql -lqt | cut -d \| -f 1 | grep -qw opencraft) || (createdb --encoding utf-8 --template template0 opencraft)
 	honcho -e .env.test run ./manage.py makemigrations --dry-run --check
 
 test_browser: clean static_external
