@@ -25,6 +25,7 @@ using the variable name passed to `env()` below
 
 # Imports #####################################################################
 
+import json
 import logging
 import os
 from urllib.parse import urlparse
@@ -45,7 +46,7 @@ SITE_ROOT = root()
 # Keep the secret key used in production secret
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default='[]')
+ALLOWED_HOSTS = json.loads(env.json('ALLOWED_HOSTS', default='[]'))
 
 DEBUG = env.bool('DEBUG', default=False)
 
