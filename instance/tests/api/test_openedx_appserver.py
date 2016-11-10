@@ -148,21 +148,6 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn('log_entries', response.data)
         self.assertIn('log_error_entries', response.data)
 
-    def test_view_name(self):
-        """
-        Test the verbose name set by get_view_name(), which appears when the API is accessed
-        in a web browser.
-        """
-        self.api_client.login(username='user3', password='pass')
-        response = self.api_client.get('/api/v1/openedx_appserver/', HTTP_ACCEPT="text/html")
-        self.assertIn("Open edX App Server List", str(response.content))
-
-        app_server_id = make_test_appserver().pk
-        response = self.api_client.get(
-            '/api/v1/openedx_appserver/{pk}/'.format(pk=app_server_id), HTTP_ACCEPT="text/html"
-        )
-        self.assertIn("Open edX App Server Details", str(response.content))
-
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')

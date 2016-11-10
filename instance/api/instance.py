@@ -64,20 +64,3 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return InstanceReferenceBasicSerializer
         return InstanceReferenceDetailedSerializer
-
-    def get_view_name(self):
-        """
-        Get the verbose name for each view
-        """
-        suffix = self.suffix
-        # DRF will only set the `.action` attribute on a view in the context of a request.
-        # In recent versions of DRF, the `get_breadcrumbs` function instantiates a view
-        # and calls `get_view_name` on it outside of the context of a request,
-        # cf. https://github.com/tomchristie/django-rest-framework/pull/3273.
-        # In that case, `.action` is not set on the view, so referencing it directly
-        # (via `self.action`) inside this method will fail with an `AttributeError`.
-        # We guard against that here by using `getattr` to retrieve the value
-        # of the `action` field.
-        if getattr(self, 'action', None) == 'retrieve':
-            suffix = "Details"
-        return "Instance {}".format(suffix)

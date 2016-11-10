@@ -38,12 +38,3 @@ class OpenStackServerViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = OpenStackServer.objects.all()
     serializer_class = OpenStackServerSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_view_name(self):
-        """
-        Get the verbose name for each view
-        """
-        suffix = self.suffix
-        if self.action == 'retrieve':
-            suffix = "Details"
-        return "OpenStack VM {}".format(suffix)
