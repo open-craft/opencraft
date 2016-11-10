@@ -96,9 +96,9 @@ test_unit: clean static_external
 	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 94%\n" && exit 2)
 
-# Check whether migrations need to be generated
+# Check whether migrations need to be generated, creating "opencraft" database first if it doesn't exist
 test_migrations_missing: clean
-	(psql -lqt | cut -d \| -f 1 | grep -qw opencraft) || (createdb --encoding utf-8 --template template0 opencraft)
+	createdb --encoding utf-8 --template template0 opencraft 2> /dev/null || true
 	honcho -e .env.test run ./manage.py makemigrations --dry-run --check
 
 test_browser: clean static_external
