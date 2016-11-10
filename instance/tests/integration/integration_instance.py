@@ -23,11 +23,14 @@ Instance - Integration Tests
 
 import os
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.utils.six import StringIO
+import MySQLdb as mysql
+import pymongo
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -88,6 +91,48 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         for expected_key in self.EXPECTED_SECRET_KEYS:
             self.assertIn(getattr(key_generator, expected_key), appserver.configuration_settings)
 
+    def assert_mysql_db_provisioned(self, instance):
+        """
+        Verify that the MySQL database for the instance has been provisioned and can be
+        connected to with the credentials the instance provides.
+        """
+        mysql_url_obj = urlparse(settings.DEFAULT_INSTANCE_MYSQL_URL)
+        for database in instance.mysql_databases:
+            connection = mysql.connect(
+                host=mysql_url_obj.hostname,
+                user=database['user'],
+                passwd=instance._get_mysql_pass(database['user']),
+                port=mysql_url_obj.port or 3306,
+            )
+            database_name = connection.escape_string(database['name']).decode()
+            cur = connection.cursor()
+            result = cur.execute(
+                "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = %s",
+                (database_name,),
+            )
+            self.assertEqual(result, 1)
+
+    def assert_mongo_db_provisioned(self, instance):
+        """
+        Verify that the databases ostensibly created by the provisioning process actually were.
+        """
+        mongo_url_obj = urlparse(settings.DEFAULT_INSTANCE_MONGO_URL)
+        for db_name in instance.mongo_database_names:
+            mongo = pymongo.MongoClient(
+                host=mongo_url_obj.hostname,
+                port=mongo_url_obj.port or 27017
+            )
+            # Verify that we can log into a particular database, using the instance's saved
+            # mongo username and password
+            db = getattr(mongo, db_name)
+            # Successful authentication will return True; failure will raise an exception.
+            result = db.authenticate(
+                name=instance.mongo_user,
+                password=instance.mongo_pass,
+            )
+            self.assertTrue(result)
+            db.logout()
+
     @shard(1)
     def test_spawn_appserver(self):
         """
@@ -119,6 +164,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertFalse(instance.require_user_creation_success())
         for appserver in instance.appserver_set.all():
             self.assert_secret_keys(instance, appserver)
+        self.assert_mysql_db_provisioned(instance)
+        self.assert_mongo_db_provisioned(instance)
 
     @shard(3)
     def test_activity_csv(self):

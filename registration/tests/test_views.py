@@ -25,6 +25,7 @@ Tests for the registration views
 from collections import defaultdict
 import json
 import re
+from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from ddt import ddt, data, unpack
@@ -32,9 +33,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from factory.django import mute_signals
 from simple_email_confirmation.models import EmailAddress
-from simple_email_confirmation.signals import email_confirmed
 
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.forms import BetaTestApplicationForm
@@ -71,7 +70,6 @@ class BetaTestApplicationViewTestMixin:
             'subscribe_to_updates': False,
         }
 
-    @mute_signals(email_confirmed)
     def _assert_registration_succeeds(self, form_data):
         """
         Assert that the given application form data creates new user, profile
@@ -88,10 +86,15 @@ class BetaTestApplicationViewTestMixin:
 
         # Test the email verification flow
         self._assert_email_verification_sent(application)
-        for verification_email in mail.outbox:  # fix flaky pylint: disable=no-member,useless-suppression
-            verify_url = re.search(r'https?://[^\s]+',
-                                   verification_email.body).group(0)
-            self.client.get(verify_url)
+        with patch('registration.provision._provision_instance', autospec=True) as mock_handler:
+            expected_call_count = 0
+            for verification_email in mail.outbox:  # fix flaky pylint: disable=no-member,useless-suppression
+                verify_url = re.search(r'https?://[^\s]+',
+                                       verification_email.body).group(0)
+                self.client.get(verify_url)
+                expected_call_count += 1
+            # Check to make sure we called _provision_instance when emails were verified.
+            self.assertEqual(mock_handler.call_count, expected_call_count)
         self._assert_email_addresses_verified(application)
 
     def _assert_success_response(self, response):

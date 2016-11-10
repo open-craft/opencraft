@@ -41,6 +41,15 @@ logger = logging.getLogger(__name__)
 
 @receiver(email_confirmed)
 def provision_instance(sender, **kwargs):
+    """
+    Provision a new instance once all email addresses of a user are confirmed.
+    This method wraps _provision_instance so that we can mock it out more easily
+    for testing purposes.
+    """
+    _provision_instance(sender, **kwargs)
+
+
+def _provision_instance(sender, **kwargs):
     """Provision a new instance once all email addresses of a user are confirmed."""
     user = sender
     if not all(email.is_confirmed for email in user.email_address_set.iterator()):

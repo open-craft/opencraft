@@ -23,6 +23,7 @@ Login browser tests
 # Imports #####################################################################
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core.urlresolvers import reverse
 
 from registration.tests.utils import BrowserTestMixin, UserMixin
 
@@ -48,3 +49,21 @@ class LoginBrowserTestCase(BrowserTestMixin, UserMixin,
         self.fill_form({'username': self.username})
         self.assertIn('Please enter a correct username and password',
                       self.form.text)
+
+    def test_valid_credentials(self):
+        """
+        Check that we're logged in successfully when entering correct credentials.
+        """
+        self._login(
+            username=self.username,
+            password=self.password
+        )
+        # Check that after logging in, we're directed to the registration URL (shared
+        # between registration and updating details)
+        self.assertEqual(
+            self.client.current_url,
+            '{host}{path}'.format(
+                host=self.live_server_url,
+                path=reverse('registration:register'),
+            ),
+        )
