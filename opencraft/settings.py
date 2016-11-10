@@ -98,7 +98,7 @@ INSTALLED_APPS = (
     'simple_email_confirmation',
 ) + LOCAL_APPS
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -110,7 +110,7 @@ MIDDLEWARE_CLASSES = (
 
 if DEBUG:
     INSTALLED_APPS += ('debug_toolbar',)
-    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
 ROOT_URLCONF = 'opencraft.urls'
 
