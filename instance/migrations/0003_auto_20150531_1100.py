@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', default=django.utils.timezone.now, editable=False, blank=True)),
                 ('text', models.TextField()),
                 ('level', models.CharField(max_length=5, db_index=True, default='info', choices=[('debug', 'Debug'), ('info', 'Info'), ('warn', 'Warning'), ('error', 'Error'), ('exception', 'Exception')])),
-                ('instance', models.ForeignKey(related_name='logentry_set', to='instance.OpenEdXInstance')),
+                ('instance', models.ForeignKey(related_name='logentry_set', to='instance.OpenEdXInstance', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', default=django.utils.timezone.now, editable=False, blank=True)),
                 ('text', models.TextField()),
                 ('level', models.CharField(max_length=5, db_index=True, default='info', choices=[('debug', 'Debug'), ('info', 'Info'), ('warn', 'Warning'), ('error', 'Error'), ('exception', 'Exception')])),
-                ('server', models.ForeignKey(related_name='logentry_set', to='instance.OpenStackServer')),
+                ('server', models.ForeignKey(related_name='logentry_set', to='instance.OpenStackServer', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,

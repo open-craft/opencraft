@@ -46,7 +46,7 @@ class BetaTestApplicationMixin:
         """
         Get the beta test application for the logged in user, if any.
         """
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             if hasattr(self.request.user, 'betatestapplication'):
                 return self.request.user.betatestapplication
             application = BetaTestApplication()
@@ -73,7 +73,7 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
         the user's email address and the given public contact email.
         """
         response = super().form_valid(form)
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             user = self.request.user
         else:
             user = authenticate(username=form.cleaned_data['username'],

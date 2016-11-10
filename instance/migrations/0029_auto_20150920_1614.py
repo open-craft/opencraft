@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import django.db.models.deletion
 
 
 def level_uppercase(apps, schema_editor):
@@ -33,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='instancelogentry',
             name='obj',
-            field=models.ForeignKey(to='instance.OpenEdXInstance', related_name='log_entry_set'),
+            field=models.ForeignKey(to='instance.OpenEdXInstance', related_name='log_entry_set', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterField(
             model_name='serverlogentry',
@@ -43,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='serverlogentry',
             name='obj',
-            field=models.ForeignKey(to='instance.OpenStackServer', related_name='log_entry_set'),
+            field=models.ForeignKey(to='instance.OpenStackServer', related_name='log_entry_set', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.RunPython(level_uppercase),
     ]

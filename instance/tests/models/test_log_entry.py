@@ -93,7 +93,7 @@ class LoggingTestCase(TestCase):
             ("2015-08-05 18:07:02", self.instance.logger.debug,
              'Line #3, on instance (debug, not published by default)'),
             ("2015-08-05 18:07:03", self.instance.logger.info, 'Line #4, on instance'),
-            ("2015-08-05 18:07:04", self.instance.logger.warn, 'Line #5, on instance (warn)'),
+            ("2015-08-05 18:07:04", self.instance.logger.warning, 'Line #5, on instance (warn)'),
             ("2015-08-05 18:07:05", self.server.logger.info, 'Line #6, on server'),
             ("2015-08-05 18:07:06", self.server.logger.critical, 'Line #7, exception'),
         ]
@@ -282,7 +282,7 @@ class LoggingTestCase(TestCase):
             self.server.logger.critical('Line #4, on server')
 
         with freeze_time("2015-08-05 18:07:04"):
-            self.app_server.logger.warn('Line #5, on app_server (warn)')
+            self.app_server.logger.warning('Line #5, on app_server (warning)')
 
         with freeze_time("2015-08-05 18:07:05"):
             self.server.logger.info('Line #6, on server')

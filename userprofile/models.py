@@ -35,7 +35,7 @@ class UserProfile(ValidateModelMixin, TimeStampedModel):
     """
     Profile information for users.
     """
-    user = models.OneToOneField(User, related_name='profile')
+    user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
 
     def __str__(self):

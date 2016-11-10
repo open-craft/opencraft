@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django.db.models.deletion
 import django_extensions.db.fields
 import instance.models.utils
 
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', auto_now=True)),
                 ('text', models.TextField(blank=True)),
                 ('level', models.CharField(db_index=True, choices=[('DEBUG', 'Debug'), ('INFO', 'Info'), ('WARNING', 'Warning'), ('ERROR', 'Error'), ('CRITICAL', 'Critical')], default='INFO', max_length=9)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType', related_name='+', null=True, blank=True)),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', related_name='+', null=True, blank=True, on_delete=django.db.models.deletion.CASCADE)),
                 ('object_id', models.PositiveIntegerField(null=True, blank=True)),
             ],
             options={

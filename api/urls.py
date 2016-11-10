@@ -30,6 +30,7 @@ from api.router import router
 
 # URL Patterns ################################################################
 
+app_name = 'api'
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='v1/', permanent=False), name='index'),
     url(r'^v1/', include(router.urls)),

@@ -61,7 +61,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         (REJECTED, 'Rejected'),
     )
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     subdomain = models.CharField(
         max_length=255,
         unique=True,
