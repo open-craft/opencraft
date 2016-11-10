@@ -149,7 +149,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         for instance in self.get_instances():
             map_entries, conf_entries = instance.get_load_balancer_configuration()
             backend_map.extend(
-                " ".join([domain, backend + self.fragment_name_postfix])
+                " ".join([domain.lower(), backend + self.fragment_name_postfix])
                 for domain, backend in map_entries
             )
             backend_conf.extend(
