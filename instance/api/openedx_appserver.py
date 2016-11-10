@@ -33,7 +33,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.openedx_appserver import OpenEdXAppServerSerializer, SpawnAppServerSerializer
-from instance.tasks import spawn_appserver
+from instance.tasks import set_appserver_active, spawn_appserver
 
 
 # Views - API #################################################################
@@ -98,5 +98,5 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(
                 {"error": "Cannot make an unhealthy app server active."}, status=status.HTTP_400_BAD_REQUEST
             )
-        app_server.instance.set_appserver_active(app_server.pk)
-        return Response({'status': 'App server updated.'})
+        set_appserver_active(app_server.pk)
+        return Response({'status': 'App server activation initiated.'})
