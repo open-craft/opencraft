@@ -11,7 +11,7 @@ import instance.models.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0062_load_balancer'),
+        ('instance', '0068_security_groups'),
     ]
 
     operations = [

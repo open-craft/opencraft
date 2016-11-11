@@ -270,6 +270,12 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
+# RabbitMQ ####################################################################
+
+RABBITMQ_API_URL = env('RABBITMQ_API_URL', default='https://rabbitmq-dev.opencraft.hosting:15671')
+RABBITMQ_ADMIN_USERNAME = env('RABBITMQ_ADMIN_USERNAME', default='admin')
+RABBITMQ_ADMIN_PASSWORD = env('RABBITMQ_ADMIN_PASSWORD', default='changeme')
+
 # DNS (Gandi) #################################################################
 
 # See https://www.gandi.net/admin/api_key
@@ -487,9 +493,8 @@ DEFAULT_INSTANCE_MYSQL_URL = env('DEFAULT_INSTANCE_MYSQL_URL', default=None)
 DEFAULT_INSTANCE_MONGO_URL = env('DEFAULT_INSTANCE_MONGO_URL', default=None)
 
 # The RabbitMQ host must be accessible from both OpenCraft IM as well as well as any instances using it.
-INSTANCE_RABBITMQ_HOST = env('INSTANCE_RABBITMQ_HOST', default=None)
+INSTANCE_RABBITMQ_HOST = env('INSTANCE_RABBITMQ_HOST', default='rabbitmq-dev.opencraft.hosting')
 INSTANCE_RABBITMQ_PORT = env('INSTANCE_RABBITMQ_PORT', default=5671)
-INSTANCE_RABBITMQ_SSH_USERNAME = env('INSTANCE_RABBITMQ_SSH_USERNAME', default='ubuntu')
 
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)

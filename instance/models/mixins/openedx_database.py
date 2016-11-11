@@ -319,6 +319,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         new_settings += template.render({
             'vhost': self.rabbitmq_vhost,
             'host': settings.INSTANCE_RABBITMQ_HOST,
+            'port': settings.INSTANCE_RABBITMQ_PORT,
             'xqueue_user': self.rabbitmq_provider_user.username,
             'xqueue_pass': self.rabbitmq_provider_user.password,
             'celery_user': self.rabbitmq_consumer_user.username,

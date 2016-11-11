@@ -2,11 +2,11 @@ XQUEUE_RABBITMQ_USER: '{{ xqueue_user }}'
 XQUEUE_RABBITMQ_PASS: '{{ xqueue_pass }}'
 XQUEUE_RABBITMQ_VHOST: '{{ vhost }}'
 XQUEUE_RABBITMQ_HOSTNAME: '{{ host }}'
-XQUEUE_RABBITMQ_PORT: '{{ host }}'
+XQUEUE_RABBITMQ_PORT: {{ port }}
 XQUEUE_RABBITMQ_TLS: true
 
 EDXAPP_CELERY_USER: '{{ celery_user }}'
 EDXAPP_CELERY_PASSWORD: '{{ celery_pass }}'
 EDXAPP_CELERY_BROKER_VHOST: '{{ vhost }}'
-EDXAPP_CELERY_BROKER_HOSTNAME: '{{ host }}:{{ port }}'
+EDXAPP_RABBIT_HOSTNAME: '{{ host }}:{{ port }}'
 EDXAPP_CELERY_BROKER_USE_SSL: true

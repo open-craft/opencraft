@@ -25,6 +25,7 @@ OpenEdXInstance Database Mixins - Tests
 import subprocess
 
 import pymongo
+import requests
 import yaml
 from django.conf import settings
 from django.test.utils import override_settings
@@ -32,6 +33,7 @@ from django.test.utils import override_settings
 from instance.models.database_server import (
     MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
 )
+from instance.models.mixins.rabbitmq import RabbitMQAPIError
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -488,3 +490,54 @@ class MongoDBInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
+
+
+class RabbitMQInstanceTestCase(TestCase):
+    """
+    Test cases for RabbitMQInstanceMixin
+    """
+    def setUp(self):
+        super().setUp()
+        self.instance = None
+
+    def tearDown(self):
+        if self.instance:
+            self.instance.deprovision_rabbitmq()
+        super().tearDown()
+
+    def request_overview(self):
+        """
+        A helper method to request the overview data for the configured RabbitMQ instance
+        """
+        response = requests.get(
+            '{}/api/overview'.format(settings.RABBITMQ_API_URL),
+            auth=(settings.RABBITMQ_ADMIN_USERNAME, settings.RABBITMQ_ADMIN_PASSWORD),
+            headers={'content-type': 'application/json'}
+        )
+        return response
+
+    def test_rabbitmq_access(self):
+        """
+        Test that RabbitMQ is accessible
+        """
+        response = self.request_overview()
+        self.assertTrue(response.ok)
+        self.assertIn('"protocol":"amqp/ssl"', response.text)
+
+    def test_rabbitmq_request(self):
+        """
+        Test a simple get request with _rabbitmq_request
+        """
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        response = self.instance._rabbitmq_request('get', 'overview')
+        other_response = self.request_overview()
+        self.assertEqual(response.json(), other_response.json())
+
+    @override_settings(RABBITMQ_ADMIN_PASSWORD='asdf')
+    def test_rabbitmq_api_error(self):
+        """
+        Test that RabbitMQAPIError is thrown during auth issues
+        """
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        with self.assertRaises(RabbitMQAPIError):
+            self.instance._rabbitmq_request('get', 'overview')

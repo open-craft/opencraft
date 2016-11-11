@@ -22,19 +22,20 @@ Instance app model mixins - RabbitMQ
 
 # Imports #####################################################################
 
-import pathlib
+import json
+import requests
+import urllib.parse
 
 from django.conf import settings
 from django.db import models
 
-from instance.ansible import capture_playbook_output
 from instance.models.rabbitmq import RabbitMQUser
 
 
 # Classes #####################################################################
 
-class ReconfigurationFailed(Exception):
-    """Exception indicating that reconfiguring RabbitMQ failed."""
+class RabbitMQAPIError(Exception):
+    """Exception indicating that a call to the RabbitMQ API failed."""
 
 
 class RabbitMQInstanceMixin(models.Model):
@@ -61,55 +62,61 @@ class RabbitMQInstanceMixin(models.Model):
     class Meta:
         abstract = True
 
-    def _get_rabbitmq_vars(self, remove):
+    def _rabbitmq_request(self, action, *url_args, data=None):
         """
-        Generate the vars string for the RabbitMQ playbook.
+        Generic method for sending an HTTP request to the RabbitMQ API.
+        Raises a RabbitMQAPIError if the response isn't OK.
         """
-        users = ''.join([
-            '- username: {username}\n  password: {password}\n'.format(username=user.username, password=user.password)
-            for user in [self.rabbitmq_provider_user, self.rabbitmq_consumer_user]
-        ])
-        ansible_vars = 'STATE: {state}\nRABBITMQ_VHOST: {vhost}\nRABBITMQ_USERS:\n{users}'.format(
-            state='absent' if remove else 'present',
-            vhost=self.rabbitmq_vhost,
-            users=users
+        formatted_args = '/'.join(urllib.parse.quote(arg, safe='') for arg in url_args)
+        if data is not None:
+            data = json.dumps(data)
+
+        url = '{api_url}/api/{args}'.format(api_url=settings.RABBITMQ_API_URL, args=formatted_args)
+        response = getattr(requests, action)(
+            url,
+            auth=(settings.RABBITMQ_ADMIN_USERNAME, settings.RABBITMQ_ADMIN_PASSWORD),
+            headers={'content-type': 'application/json'},
+            data=data
         )
 
-        return ansible_vars
-
-    def _run_rabbitmq_playbook(self, remove):
-        """
-        Run the RabbitMQ playbook to reconfigure add/remove a vhost and users.
-        """
-        playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/rabbitmq_conf/rabbitmq_conf.yml"
-        returncode = capture_playbook_output(
-            requirements_path=str(playbook_path.parent / "requirements.txt"),
-            inventory_str=settings.INSTANCE_RABBITMQ_HOST,
-            vars_str=self._get_rabbitmq_vars(remove),
-            playbook_path=str(playbook_path),
-            username=settings.INSTANCE_RABBITMQ_SSH_USERNAME,
-            logger_=self.logger,
-        )
-        if returncode != 0:
-            self.logger.error("Playbook to reconfigure RabbitMQ server %s failed.", self)
-            raise ReconfigurationFailed
-
-        return returncode
+        if not response.ok:
+            self.logger.error(
+                "RabbitMQ API call failed for instance %s. URL: %s. Verb: %s. Response status: %s.",
+                self,
+                url,
+                action,
+                response.status_code
+            )
+            raise RabbitMQAPIError
+        return response
 
     def provision_rabbitmq(self):
         """
-        Create RabbitMQ vhost and users
+        Creates the RabbitMQ vhost and users.
         """
         if not self.rabbitmq_provisioned:
-            self._run_rabbitmq_playbook(False)
+            self._rabbitmq_request('put', 'vhosts', self.rabbitmq_vhost)
+
+            for user in [self.rabbitmq_provider_user, self.rabbitmq_consumer_user]:
+                self._rabbitmq_request('put', 'users', user.username, data={
+                    'password': user.password,
+                    'tags': user.username,
+                })
+                self._rabbitmq_request('put', 'permissions', self.rabbitmq_vhost, user.username, data={
+                    'configure': '.*',
+                    'write': '.*',
+                    'read': '.*'
+                })
         self.rabbitmq_provisioned = True
         self.save()
 
     def deprovision_rabbitmq(self):
         """
-        Delete RabbitMQ vhost and users
+        Deletes the RabbitMQ vhost and users.
         """
         if self.rabbitmq_provisioned:
-            self._run_rabbitmq_playbook(True)
+            self._rabbitmq_request('delete', 'vhosts', self.rabbitmq_vhost)
+            for user in [self.rabbitmq_consumer_user, self.rabbitmq_provider_user]:
+                self._rabbitmq_request('delete', 'users', user.username)
         self.rabbitmq_provisioned = False
         self.save()
