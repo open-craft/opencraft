@@ -274,9 +274,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         if not self.active_appserver:
             return self.get_preliminary_page_config(self.ref.pk)
+        ip_address = self.active_appserver.server.public_ip
+        if not ip_address:
+            # The active appserver doesn't have a public IP address.  This means that the server
+            # has been terminated, so we don't show the preliminary page in this case, and simply
+            # deconfigure the backend instead.
+            return [], []
         backend_name = "be-{}".format(self.active_appserver.server.name)
         server_name = "appserver-{}".format(self.active_appserver.pk)
-        ip_address = self.active_appserver.server.public_ip
         template = loader.get_template("instance/haproxy/openedx.conf")
         config = template.render(dict(
             domain=self.domain,

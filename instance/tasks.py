@@ -27,6 +27,7 @@ import logging
 
 from huey.contrib.djhuey import crontab, db_task, db_periodic_task
 
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import sufficient_time_passed
 from pr_watch import github
@@ -63,6 +64,16 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
                 # finish and replace the second as the active server. We are not really worried about that for now.
                 instance.set_appserver_active(appserver_id)
             break
+
+
+@db_task()
+def set_appserver_active(appserver_id):
+    """
+    Mark an AppServer as active.
+    """
+    logger.info('Retrieving AppServer: ID=%s', appserver_id)
+    appserver = OpenEdXAppServer.objects.get(pk=appserver_id)
+    appserver.instance.set_appserver_active(appserver_id)
 
 
 @db_task()
