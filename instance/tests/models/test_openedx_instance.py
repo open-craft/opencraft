@@ -467,6 +467,10 @@ class OpenEdXInstanceTestCase(TestCase):
             backend_map, config, domain_names, instance.active_appserver.server.public_ip
         )
 
+        # Test configuration after terminating appserver
+        with patch('instance.openstack.get_server_public_address', return_value=None):
+            self.assertEqual(instance.get_load_balancer_configuration(), ([], []))
+
     def test_get_load_balancer_config_ext_domains(self):
         """
         Test the load balancer configuration when external domains are set.

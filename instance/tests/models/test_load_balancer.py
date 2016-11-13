@@ -47,7 +47,9 @@ def mock_instances():
     """
     instances = [
         _make_mock_instance(
-            ["test1.lb.opencraft.hosting", "test2.lb.opencraft.hosting"],
+            # We include an upper-case domain name here to be able to test it gets properly
+            # converted to lower-case when the configuration is sent to the load balancer.
+            ["test1.lb.opencraft.hosting", "TEST2.lb.opencraft.hosting"],
             "1.2.3.4",
             "first-backend",
         ),
