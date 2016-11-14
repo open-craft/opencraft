@@ -57,6 +57,10 @@ install_system_dependencies: apt_get_update
 install_virtualenv_system:
 	sudo pip3 install virtualenv
 
+create_db:
+	createdb --encoding utf-8 --template template0 opencraft || \
+	    echo "Could not create database 'opencraft' - it probably already exists"
+
 collectstatic: clean static_external
 	honcho run ./manage.py collectstatic --noinput
 
@@ -98,7 +102,6 @@ test_unit: clean static_external
 
 # Check whether migrations need to be generated, creating "opencraft" database first if it doesn't exist
 test_migrations_missing: clean
-	createdb --encoding utf-8 --template template0 opencraft 2> /dev/null || true
 	honcho -e .env.test run ./manage.py makemigrations --dry-run --check
 
 test_browser: clean static_external

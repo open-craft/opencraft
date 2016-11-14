@@ -23,6 +23,9 @@ dependencies:
     - sudo apt-get update; sudo apt-get install python2.7 python2.7-dev
   override:
     - pip install -r requirements.txt
+database:
+  override:
+    - make create_db
 test:
   override:
     - bin/run-circleci-tests:

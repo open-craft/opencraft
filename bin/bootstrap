@@ -49,8 +49,7 @@ EOF
 sudo service postgresql restart
 
 # Create postgres database
-createdb --encoding utf-8 --template template0 opencraft ||
-  echo "Could not create database 'opencraft' - it probably already exists"
+make create_db
 
 # Use test configuration for local development, excluding the line that
 # disables logging to the console.
