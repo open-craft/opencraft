@@ -45,7 +45,7 @@ SITE_ROOT = root()
 # Keep the secret key used in production secret
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default='[]')
+ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default=[])
 
 DEBUG = env.bool('DEBUG', default=False)
 
@@ -98,19 +98,19 @@ INSTALLED_APPS = (
     'simple_email_confirmation',
 ) + LOCAL_APPS
 
-if DEBUG:
-    INSTALLED_APPS += ('debug_toolbar',)
-
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
+
+if DEBUG:
+    INSTALLED_APPS += ('debug_toolbar',)
+    MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
 ROOT_URLCONF = 'opencraft.urls'
 

@@ -545,7 +545,7 @@ class LogoutTestCase(UserMixin, TestCase):
         Test that the logout view logs the user out.
         """
         response = self.client.get(self.url, follow=True)
-        self.assertFalse(response.context['user'].is_authenticated())
+        self.assertFalse(response.context['user'].is_authenticated)
 
     def test_redirect(self):
         """

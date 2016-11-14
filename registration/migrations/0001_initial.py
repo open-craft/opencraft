@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('project_description', models.TextField(verbose_name='your project', help_text='What are you going to use the instance for? What are your expectations?')),
                 ('subscribe_to_updates', models.BooleanField(verbose_name='', default=False, help_text='I want OpenCraft to keep me updated about the progress of the beta test, and occasionally send me an email about it.')),
                 ('status', models.CharField(choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending', max_length=255)),
-                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
     ]

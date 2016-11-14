@@ -25,7 +25,7 @@ Email verification
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import get_template
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 # Settings ####################################################################

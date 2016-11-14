@@ -79,15 +79,6 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         spawn_appserver(instance_id)
         return Response({'status': 'Instance provisioning started'})
 
-    def get_view_name(self):
-        """
-        Get the verbose name for each view
-        """
-        suffix = self.suffix
-        if self.action == 'retrieve':
-            suffix = "Details"
-        return "Open edX App Server {}".format(suffix)
-
     @detail_route(methods=['post'])
     def make_active(self, request, pk):
         """

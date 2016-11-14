@@ -64,12 +64,3 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return InstanceReferenceBasicSerializer
         return InstanceReferenceDetailedSerializer
-
-    def get_view_name(self):
-        """
-        Get the verbose name for each view
-        """
-        suffix = self.suffix
-        if self.action == 'retrieve':
-            suffix = "Details"
-        return "Instance {}".format(suffix)

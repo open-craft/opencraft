@@ -91,16 +91,3 @@ class OpenEdXInstanceAPITestCase(APITestCase):
                 app_server_data['api_url'], 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)
             )
             self.assertEqual(app_server_data['status'], 'new')
-
-    def test_view_name(self):
-        """
-        Test the verbose name set by get_view_name(), which appears when the API is accessed
-        in a web browser.
-        """
-        self.api_client.login(username='user3', password='pass')
-        response = self.api_client.get('/api/v1/instance/', HTTP_ACCEPT="text/html")
-        self.assertIn("Instance List", str(response.content))
-
-        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
-        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk), HTTP_ACCEPT="text/html")
-        self.assertIn("Instance Details", str(response.content))

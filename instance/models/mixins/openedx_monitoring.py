@@ -86,7 +86,9 @@ class NewRelicAvailabilityMonitor(models.Model):
     A New Relic Synthetics availability monitor for an instance.
     """
     id = models.CharField(max_length=256, primary_key=True)
-    instance = models.ForeignKey('OpenEdXInstance', related_name='new_relic_availability_monitors')
+    instance = models.ForeignKey(
+        'OpenEdXInstance', related_name='new_relic_availability_monitors', on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return self.pk

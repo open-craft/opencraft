@@ -102,7 +102,7 @@ class NewRelicTestCase(TestCase):
         url = 'http://newrelic-test.stage.opencraft.hosting/'
         self.assertEqual(newrelic.create_synthetics_monitor(url), monitor_id)
         self.assertEqual(len(responses.calls), 1)
-        request_json = json.loads(responses.calls[0].request.body)
+        request_json = json.loads(responses.calls[0].request.body.decode())
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
         self.assertEqual(request_json, {
@@ -128,7 +128,7 @@ class NewRelicTestCase(TestCase):
         emails = ['foo@example.com', 'bar@example.com']
         newrelic.add_synthetics_email_alerts(monitor_id, emails)
         self.assertEqual(len(responses.calls), 1)
-        request_json = json.loads(responses.calls[0].request.body)
+        request_json = json.loads(responses.calls[0].request.body.decode())
         self.assertEqual(request_json, {
             'count': len(emails),
             'emails': emails,
