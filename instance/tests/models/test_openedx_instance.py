@@ -418,6 +418,21 @@ class OpenEdXInstanceTestCase(TestCase):
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
             self.assertTrue(ansible_vars[setting])
 
+    @patch_services
+    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    def test_forum_api_key(self, mocks, mock_provision):
+        """
+        Ensure the FORUM_API_KEY matches EDXAPP_COMMENTS_SERVICE_KEY
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key', use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        api_key = configuration_vars['EDXAPP_COMMENTS_SERVICE_KEY']
+        self.assertIsNot(api_key, '')
+        self.assertIsNotNone(api_key)
+        self.assertEqual(configuration_vars['FORUM_API_KEY'], api_key)
+
     def _check_load_balancer_configuration(self, backend_map, config, domain_names, ip_address):
         """
         Verify the load balancer configuration given in backend_map and config.
