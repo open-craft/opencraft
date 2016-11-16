@@ -49,6 +49,8 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default=[])
 
 DEBUG = env.bool('DEBUG', default=False)
 
+INTERNAL_IPS = ["10.0.2.2"]
+
 
 # Auth ########################################################################
 
