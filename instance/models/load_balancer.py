@@ -25,6 +25,7 @@ import random
 import textwrap
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django_extensions.db.models import TimeStampedModel
@@ -186,14 +187,15 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         This is factored out into a separate method so it can be mocked out in the tests.
         """
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
-        returncode = ansible.capture_playbook_output(
-            requirements_path=str(playbook_path.parent / "requirements.txt"),
-            inventory_str=self.domain,
-            vars_str=ansible_vars,
-            playbook_path=str(playbook_path),
-            username=self.ssh_username,
-            logger_=self.logger,
-        )
+        with cache.lock(self.domain):
+            returncode = ansible.capture_playbook_output(
+                requirements_path=str(playbook_path.parent / "requirements.txt"),
+                inventory_str=self.domain,
+                vars_str=ansible_vars,
+                playbook_path=str(playbook_path),
+                username=self.ssh_username,
+                logger_=self.logger,
+            )
         if returncode != 0:
             self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
             raise ReconfigurationFailed
