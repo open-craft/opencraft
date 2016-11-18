@@ -268,7 +268,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         super().save(**kwargs)
 
-    def get_load_balancer_configuration(self):
+    def get_load_balancer_configuration(self, triggered_by_instance=False):
         """
         Return the haproxy configuration fragment and backend map for this instance.
         """
@@ -279,6 +279,11 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             # The active appserver doesn't have a public IP address.  This means that the server
             # has been terminated, so we don't show the preliminary page in this case, and simply
             # deconfigure the backend instead.
+            if triggered_by_instance:
+                self.logger.info(
+                    "Active appserver does not have a public IP address. "
+                    "Deconfiguring the load balancer backend."
+                )
             return [], []
         backend_name = "be-{}".format(self.active_appserver.server.name)
         server_name = "appserver-{}".format(self.active_appserver.pk)
@@ -289,7 +294,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             ip_address=ip_address,
         ))
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
-        return backend_map, [(backend_name, config)]
+        backend_conf = [(backend_name, config)]
+        if triggered_by_instance:
+            self.logger.info(
+                "New load-balancer configuration:\n    backend map: %s\n   configuration: %s",
+                backend_map,
+                backend_conf,
+            )
+        return backend_map, backend_conf
 
     @property
     def appserver_set(self):
@@ -306,7 +318,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
         self.active_appserver = app_server
         self.save()
-        self.load_balancing_server.reconfigure()
+        self.reconfigure_load_balancer()
         self.enable_monitoring()
 
     def set_appserver_inactive(self):
@@ -316,8 +328,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.disable_monitoring()
         self.active_appserver = None
         self.save()
-        if self.load_balancing_server is not None:
-            self.load_balancing_server.reconfigure()
+        self.reconfigure_load_balancer()
 
     @log_exception
     def spawn_appserver(self):
@@ -329,7 +340,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         if not self.load_balancing_server:
             self.load_balancing_server = LoadBalancingServer.objects.select_random()
             self.save()
-            self.load_balancing_server.reconfigure()
+            self.reconfigure_load_balancer()
 
         # We unconditionally set the DNS records here, though this would only be strictly needed
         # when the first AppServer is spawned.  However, there is no easy way to tell whether the
@@ -418,7 +429,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             if self.active_appserver is None:
                 # If an appserver is active, reconfiguring the load_balancer happens
                 # implicitly when terminate_vm() is called further down.
-                load_balancer.reconfigure()
+                self.reconfigure_load_balancer(load_balancer)
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
 

@@ -22,8 +22,8 @@ Instance app model mixins - load balancing
 
 # Imports #####################################################################
 
-from django.db import models
 from django.conf import settings
+from django.db import models
 from tldextract import TLDExtract
 
 from instance.gandi import GandiAPI
@@ -84,12 +84,27 @@ class LoadBalancedInstance(models.Model):
             domain_parts = tldextract(domain)
             gandi.remove_dns_record(domain_parts.registered_domain, domain_parts.subdomain)
 
+    def reconfigure_load_balancer(self, load_balancing_server=None):
+        """
+        Reconfigure the associated load balancer.
+        """
+        if load_balancing_server is None:
+            load_balancing_server = self.load_balancing_server
+            if load_balancing_server is None:
+                return
+        self.logger.info("Triggering reconfiguration of the load balancing server...")
+        self.load_balancing_server.reconfigure(self.ref.pk)
+
     def get_preliminary_page_config(self, primary_key):
         """
         Return a load balancer configuration for the preliminary page.
         """
         if not settings.PRELIMINARY_PAGE_SERVER_IP:
+            self.logger.info(
+                "Not configuring the preliminary page since PRELIMINARY_PAGE_SERVER_IP is not set."
+            )
             return [], []
+        self.logger.info("Configuring load balancer to point to the preliminary page.")
         backend_name = "be-preliminary-page-{}".format(primary_key)
         config = "    server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP)
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]

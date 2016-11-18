@@ -30,6 +30,7 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.load_balanced import LoadBalancedInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
@@ -96,6 +97,23 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         self.assertEqual(LoadBalancedInstance.get_managed_domains(None), [])
         self.assertEqual(LoadBalancedInstance.get_load_balanced_domains(None), [])
+
+    @patch_services
+    def test_reconfigure_load_balancer(self, mock_run_playbook):
+        """
+        Test that reconfigure_load_balancer reconfigures the load balancer and logs to the instance.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
+        appserver_id = instance.spawn_appserver()
+        instance.set_appserver_active(appserver_id)
+        with self.assertLogs("instance.models.instance") as logs:
+            instance.reconfigure_load_balancer()
+        annotation = instance.get_log_message_annotation()
+        for log_line in logs.output:
+            self.assertIn(annotation, log_line)
+        self.assertEqual(len(logs.output), 2)
+        self.assertIn("Triggering reconfiguration of the load balancing server", logs.output[0])
+        self.assertIn("New load-balancer configuration", logs.output[1])
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
     def test_preliminary_page_not_configured(self):
