@@ -137,18 +137,21 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             if field.one_to_many and issubclass(field.related_model, LoadBalancedInstance):
                 yield from getattr(self, field.get_accessor_name()).iterator()
 
-    def get_configuration(self, triggering_id=None):
+    def get_configuration(self, triggering_instance_id=None):
         """
         Collect the backend maps and configuration fragments from all associated instances.
 
         This function also appends fragment_name_postfix to all backend names to avoid name clashes
         between multiple instance managers using the same load balancer (e.g. for the integration
         tests).
+
+        The triggering_instance_id indicates the id of the instance reference that initiated the
+        reconfiguration of the load balancer.
         """
         backend_map = []
         backend_conf = []
         for instance in self.get_instances():
-            triggered_by_instance = instance.ref.pk == triggering_id
+            triggered_by_instance = instance.ref.pk == triggering_instance_id
             map_entries, conf_entries = instance.get_load_balancer_configuration(
                 triggered_by_instance
             )
@@ -162,11 +165,14 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             )
         return "\n".join(backend_map), "\n".join(backend_conf)
 
-    def get_ansible_vars(self, triggering_id=None):
+    def get_ansible_vars(self, triggering_instance_id=None):
         """
         Render the configuration script to be executed on the load balancer.
+
+        The triggering_instance_id indicates the id of the instance reference that initiated the
+        reconfiguration of the load balancer.
         """
-        backend_map, backend_conf = self.get_configuration(triggering_id)
+        backend_map, backend_conf = self.get_configuration(triggering_instance_id)
         fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
         return (
             "FRAGMENT_NAME: {fragment_name}\n"
@@ -200,12 +206,15 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
             raise ReconfigurationFailed
 
-    def reconfigure(self, triggering_id=None):
+    def reconfigure(self, triggering_instance_id=None):
         """
         Regenerate the configuration fragments on the load-balancing server.
+
+        The triggering_instance_id indicates the id of the instance reference that initiated the
+        reconfiguration of the load balancer.
         """
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
-        self.run_playbook(self.get_ansible_vars(triggering_id))
+        self.run_playbook(self.get_ansible_vars(triggering_instance_id))
 
     def deconfigure(self):
         """

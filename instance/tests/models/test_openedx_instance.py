@@ -467,8 +467,12 @@ class OpenEdXInstanceTestCase(TestCase):
             backend_map, config, domain_names, instance.active_appserver.server.public_ip
         )
 
-        # Test configuration after terminating appserver
-        with patch('instance.openstack.get_server_public_address', return_value=None):
+        # Test configuration in case an active appserver doesn't have a public IP address anymore.
+        # This might happen if the OpenStack server dies or gets modified from the outside, but it
+        # is not expected to happen under normal circumstances.  We deconfigure the backend and log
+        # an error in this case.
+        with patch('instance.openstack.get_server_public_address', return_value=None), \
+                self.assertLogs("instance.models.instance", "ERROR"):
             self.assertEqual(instance.get_load_balancer_configuration(), ([], []))
 
     def test_get_load_balancer_config_ext_domains(self):

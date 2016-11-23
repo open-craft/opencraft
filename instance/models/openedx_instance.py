@@ -271,19 +271,18 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     def get_load_balancer_configuration(self, triggered_by_instance=False):
         """
         Return the haproxy configuration fragment and backend map for this instance.
+
+        The triggered_by_instance flag indicates whether the reconfiguration was initiated by this
+        instance, in which case we log additional information.
         """
         if not self.active_appserver:
             return self.get_preliminary_page_config(self.ref.pk)
         ip_address = self.active_appserver.server.public_ip
         if not ip_address:
-            # The active appserver doesn't have a public IP address.  This means that the server
-            # has been terminated, so we don't show the preliminary page in this case, and simply
-            # deconfigure the backend instead.
-            if triggered_by_instance:
-                self.logger.info(
-                    "Active appserver does not have a public IP address. "
-                    "Deconfiguring the load balancer backend."
-                )
+            self.logger.error(
+                "Active appserver does not have a public IP address. This should not happen. "
+                "Deconfiguring the load balancer backend."
+            )
             return [], []
         backend_name = "be-{}".format(self.active_appserver.server.name)
         server_name = "appserver-{}".format(self.active_appserver.pk)
