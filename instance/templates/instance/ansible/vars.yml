@@ -3,6 +3,11 @@ COMMON_HOSTNAME: '{{ instance.domain }}'
 COMMON_ENVIRONMENT: opencraft
 COMMON_DEPLOYMENT: '{{ instance.internal_lms_domain }}'
 
+# HTTP authentication
+COMMON_ENABLE_BASIC_AUTH: true
+COMMON_HTPASSWD_USER: '{{ instance.http_auth_user }}'
+COMMON_HTPASSWD_PASS: '{{ instance.http_auth_pass }}'
+
 # edxapp
 EDXAPP_PLATFORM_NAME: "{{ instance.name }}"
 EDXAPP_SITE_NAME: '{{ instance.domain }}'
@@ -26,13 +31,11 @@ CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
 EDXAPP_SESSION_COOKIE_DOMAIN: ''
 
 # Nginx
-{% if instance.protocol == 'https' %}
-NGINX_ENABLE_SSL: true
-NGINX_REDIRECT_TO_HTTPS: true
-{% else %}
+NGINX_SET_X_FORWARDED_HEADERS: false
+
+# SSL is handled on the load balancer, and the appservers are HTTP only.
 NGINX_ENABLE_SSL: false
 NGINX_REDIRECT_TO_HTTPS: false
-{% endif %}
 
 # Nginx redirects (optional)
 # This example redirects non-www to www version of myinstance.org.

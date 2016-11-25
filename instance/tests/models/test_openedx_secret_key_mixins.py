@@ -91,6 +91,18 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         instance.save()
         self.assertEqual(instance.get_secret_key_settings(), '')
 
+    def test_http_auth_settings(self):
+        """
+        Test HTTP auth username and password generation.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.secret_key_b64encoded = 'T3BlbkNyYWZ0'
+        instance.save()
+
+        self.assertEqual(instance.http_auth_user, '75182ee9f532ee81')
+        self.assertEqual(instance.http_auth_pass, 'af350fc1d3ceb6c0')
+        self.assertEqual(instance.http_auth_info_base64(), b'NzUxODJlZTlmNTMyZWU4MTphZjM1MGZjMWQzY2ViNmMw')
+
     @patch_services
     def test_do_not_create_insecure_secret_keys(self, mocks):
         """

@@ -328,6 +328,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         template = loader.get_template("instance/haproxy/openedx.conf")
         config = template.render(dict(
             domain=self.domain,
+            http_auth_info_base64=self.http_auth_info_base64(),
             server_name=server_name,
             ip_address=ip_address,
         ))

@@ -27,7 +27,7 @@ import time
 import requests
 
 
-def check_url_accessible(url, attempts=3, delay=15):
+def check_url_accessible(url, auth=None, attempts=3, delay=15):
     """
     Check that the given URL is accessible and returns a success status code.
 
@@ -37,7 +37,7 @@ def check_url_accessible(url, attempts=3, delay=15):
     while True:
         attempts -= 1
         try:
-            requests.get(url, verify=ca_path).raise_for_status()
+            requests.get(url, auth=auth, verify=ca_path).raise_for_status()
             break
         except Exception:  # pylint: disable=broad-except
             if not attempts:
