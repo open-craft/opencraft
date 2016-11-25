@@ -915,11 +915,18 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.secret_key_b64encoded = 'esFyh7kbvbMQiYhRx9fISJw9gkcSCStGAfOWaPu9cfc6/tMu'
         instance.save()
 
-        provider = instance.get_key_provider()
-
-        self.assertEqual(provider.THIS_IS_A_TEST, '95652a974218e2efc44f99feb6f2ab89a263746688ff428ca2c898ae44111f58')
-        self.assertEqual(provider.OTHER_TEST, '820b455b1f0e30b75ec0514ab172c588223b010de3beacce3cd27217adc7fe60')
-        self.assertEqual(provider.SUPER_SECRET, '21b5271f21ee6dacfde05cd97e20739f0e73dc8a43408ef14b657bfbf718e2b4')
+        self.assertEqual(
+            instance.get_secret_key_for_var('THIS_IS_A_TEST'),
+            '95652a974218e2efc44f99feb6f2ab89a263746688ff428ca2c898ae44111f58',
+        )
+        self.assertEqual(
+            instance.get_secret_key_for_var('OTHER_TEST'),
+            '820b455b1f0e30b75ec0514ab172c588223b010de3beacce3cd27217adc7fe60',
+        )
+        self.assertEqual(
+            instance.get_secret_key_for_var('SUPER_SECRET'),
+            '21b5271f21ee6dacfde05cd97e20739f0e73dc8a43408ef14b657bfbf718e2b4',
+        )
 
     @patch_services
     def test_do_not_create_insecure_secret_keys(self, mocks):
@@ -932,9 +939,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.save()
 
         expected_error_string = re.escape(
-            'Attempted to create key provider for instance {}, but no key present.'.format(
-                instance
-            )
+            'Attempted to create secret key for instance {}, but no master key present.'.format(instance)
         )
 
         # Six provides a compatibility method for assertRaisesRegex, since the method

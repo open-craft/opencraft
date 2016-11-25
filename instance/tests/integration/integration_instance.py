@@ -42,7 +42,6 @@ from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tests.integration.utils import check_url_accessible
 from instance.tasks import spawn_appserver
-from instance.models.mixins.secret_keys import SecretKeyProvider
 from opencraft.tests.utils import shard
 from registration.models import BetaTestApplication
 
@@ -87,9 +86,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         Verify that the appserver's configuration includes expected secret keys.
         """
         instance_key = instance.secret_key_b64encoded
-        key_generator = SecretKeyProvider(instance_key)
         for expected_key in self.EXPECTED_SECRET_KEYS:
-            self.assertIn(getattr(key_generator, expected_key), appserver.configuration_settings)
+            self.assertIn(instance.get_secret_key_for_var(expected_key), appserver.configuration_settings)
 
     def assert_mysql_db_provisioned(self, instance):
         """
