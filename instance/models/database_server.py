@@ -73,6 +73,7 @@ class DatabaseServerManager(models.Manager):
                 )
             logger.info("Creating DatabaseServer %s", hostname)
             database_server, created = self.get_or_create(  # pylint: disable=no-member
+                name=hostname,
                 hostname=hostname,
                 defaults=dict(
                     username=username,
@@ -120,6 +121,10 @@ class DatabaseServer(ValidateModelMixin, TimeStampedModel):
     class Meta:
         abstract = True
 
+    # Human readable identifier for database instances
+    name = models.CharField(max_length=250, blank=False)
+    description = models.CharField(max_length=250, blank=True)
+
     # Host name or IP address of this database server
     hostname = models.CharField(max_length=128, unique=True)
 
@@ -166,7 +171,13 @@ class DatabaseServer(ValidateModelMixin, TimeStampedModel):
         return url
 
     def __str__(self):
-        return self.hostname
+        description = ''
+        if self.description:
+            description = ' ({description})'.format(description=self.description)
+        return '{name}{description}'.format(
+            name=self.name,
+            description=description
+        )
 
     def settings_match(self, username, password, port):
         """

@@ -37,6 +37,7 @@ class MySQLServerFactory(DjangoModelFactory):
     class Meta:
         model = MySQLServer
 
+    name = factory.Sequence('mysql-server-{}'.format)
     hostname = factory.Sequence('mysql-server-{}'.format)
 
 
@@ -47,4 +48,5 @@ class MongoDBServerFactory(DjangoModelFactory):
     class Meta:
         model = MongoDBServer
 
+    name = factory.Sequence('mysql-server-{}'.format)
     hostname = factory.Sequence('mongodb-server-{}'.format)

@@ -59,11 +59,11 @@ class OpenEdXAppServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstri
 
 
 class MySQLServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('hostname', 'port', 'username', 'password')
+    list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
 
 
 class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('hostname', 'port', 'username', 'password')
+    list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
