@@ -193,7 +193,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         This is factored out into a separate method so it can be mocked out in the tests.
         """
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
-        with cache.lock(self.domain):
+        with cache.lock("load_balancer_reconfigure:{}".format(self.domain), timeout=900):
             returncode = ansible.capture_playbook_output(
                 requirements_path=str(playbook_path.parent / "requirements.txt"),
                 inventory_str=self.domain,
