@@ -26,9 +26,10 @@ from django.contrib import admin
 
 from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.instance import InstanceReference
-from instance.models.openedx_instance import OpenEdXInstance
-from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
+from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 
 
@@ -66,6 +67,10 @@ class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
 
 
+class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('domain', 'ssh_username')
+
+
 admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
 admin.site.register(InstanceReference, InstanceReferenceAdmin)
@@ -73,3 +78,4 @@ admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
 admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
 admin.site.register(MySQLServer, MySQLServerAdmin)
 admin.site.register(MongoDBServer, MongoDBServerAdmin)
+admin.site.register(LoadBalancingServer, LoadBalancingServerAdmin)
