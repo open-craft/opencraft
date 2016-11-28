@@ -29,6 +29,7 @@ from base64 import b64encode, b64decode
 
 from django.db import models
 from django.template import loader
+import yaml
 
 # Functions ###################################################################
 
@@ -48,6 +49,39 @@ def generate_secret_key(char_length):
     random_string = b64encode(random_bytes)
     # ...and return!
     return random_string
+
+
+# Constants ###################################################################
+
+# The names of Ansible variables that should be set to independent random keys.
+OPENEDX_SECRET_KEYS = [
+    'ANALYTICS_API_SECRET_KEY',
+    'CREDENTIALS_SECRET_KEY',
+    'DISCOVERY_SECRET_KEY',
+    'ECOMMERCE_CYBERSOURCE_SECRET_KEY',
+    'ECOMMERCE_SECRET_KEY',
+    'ECOMMERCE_SOCIAL_AUTH_EDX_OIDC_KEY',
+    'ECOMMERCE_SOCIAL_AUTH_EDX_OIDC_SECRET',
+    'ECOMMERCE_WORKER_JWT_SECRET_KEY',
+    'EDXAPP_ANALYTICS_API_KEY',
+    'EDXAPP_EDXAPP_SECRET_KEY',
+    'EDXAPP_EDX_API_KEY',
+    'EDXAPP_JWT_SECRET_KEY',
+    'EDXAPP_PROFILE_IMAGE_SECRET_KEY',
+    'EDX_NOTES_API_SECRET_KEY',
+    'FORUM_API_KEY',
+    'INSIGHTS_SECRET_KEY',
+    'NOTIFIER_LMS_SECRET_KEY',
+    'PROGRAMS_SECRET_KEY',
+]
+
+# Translation table for keys that must match other keys (shared API keys)
+OPENEDX_SHARED_KEYS = {
+    'ECOMMERCE_EDX_API_KEY': 'EDXAPP_EDX_API_KEY',
+    'EDXAPP_COMMENTS_SERVICE_KEY': 'FORUM_API_KEY',
+    'NOTIFIER_COMMENT_SERVICE_API_KEY': 'FORUM_API_KEY',
+    'NOTIFIER_USER_SERVICE_API_KEY': 'EDXAPP_EDX_API_KEY',
+}
 
 
 # Classes #####################################################################
@@ -70,6 +104,13 @@ class SecretKeyInstanceMixin(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def secret_key(self):
+        """
+        Return the secret key in binary form.
+        """
+        return b64decode(self.secret_key_b64encoded)
+
     def set_field_defaults(self):
         """
         Set default values.
@@ -84,44 +125,24 @@ class SecretKeyInstanceMixin(models.Model):
         """
         self.secret_key_b64encoded = generate_secret_key(48)
 
-    def get_secret_key_settings(self):
+    def get_secret_key_for_var(self, var_name):
         """
-        Render the secret keys template as YAML and return it for use
-        in the appserver.
-        """
-        key_provider = self.get_key_provider()
-        if not self.secret_key_b64encoded:
-            self.logger.warning('Instance does not have a secret key; not prefilling variables.')
-            return ''
-        template = loader.get_template('instance/ansible/secret-keys.yml')
-        return template.render({"secret_generator": key_provider})
-
-    def get_key_provider(self):
-        """
-        Get a proxy we can pass to a template that'll generate secret keys
-        for any attribute requested from it.
-        """
-        if not self.appserver_set.exists() and not self.secret_key_b64encoded:
-            raise ValueError(
-                'Attempted to create key provider for instance {}, but no key present.'.format(self)
-            )
-        return SecretKeyProvider(self.secret_key_b64encoded)
-
-
-class SecretKeyProvider:
-    """
-    Proxy object that, when an attribute is requested from it, will provide
-    a unique secret key generated based on the name of the attribute.
-    """
-    def __init__(self, secret_key):
-        """
-        Save the secret key
-        """
-        self.secret_key = b64decode(secret_key)
-
-    def __getattr__(self, var_name):
-        """
-        Create an HMAC that can be used as a secret key, based on the variable
-        name that was requested.
+        Return the secret key for the given variable name.
         """
         return hmac.new(self.secret_key, msg=var_name.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
+
+    def get_secret_key_settings(self):
+        """
+        Render the secret key settings as YAML and return it for use in the appserver.
+        """
+        if not self.secret_key_b64encoded:
+            if not self.appserver_set.exists():
+                raise ValueError(
+                    'Attempted to create secret key for instance {}, but no master key present.'.format(self)
+                )
+            self.logger.warning('Instance does not have a secret key; not prefilling variables.')
+            return ''
+        keys = {var: self.get_secret_key_for_var(var) for var in OPENEDX_SECRET_KEYS}
+        for to_var, from_var in OPENEDX_SHARED_KEYS.items():
+            keys[to_var] = keys[from_var]
+        return yaml.dump(keys)

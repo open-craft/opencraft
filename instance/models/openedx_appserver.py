@@ -145,8 +145,10 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',
         'configuration_storage_settings',
-        'configuration_extra_settings',
         'configuration_secret_keys',
+        # The extra settings should stay at the end of this list to allow manual overrides of all
+        # settings.
+        'configuration_extra_settings',
     ]
 
     class Meta:
