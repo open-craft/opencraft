@@ -22,6 +22,7 @@ OpenEdXInstance model - Tests
 
 # Imports #####################################################################
 
+import codecs
 from datetime import timedelta
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
@@ -40,6 +41,7 @@ import six
 from instance import newrelic
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
+from instance.models.mixins.secret_keys import OPENEDX_SECRET_KEYS, OPENEDX_SHARED_KEYS
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
 from instance.models.openedx_appserver import DEFAULT_EDX_PLATFORM_REPO_URL
@@ -927,6 +929,25 @@ class OpenEdXInstanceTestCase(TestCase):
             instance.get_secret_key_for_var('SUPER_SECRET'),
             '21b5271f21ee6dacfde05cd97e20739f0e73dc8a43408ef14b657bfbf718e2b4',
         )
+
+    def test_secret_key_settings(self):
+        """
+        Test the YAML settings returned by SecretKeyInstanceMixin.
+        """
+        instance = OpenEdXInstanceFactory()
+        settings = yaml.load(instance.get_secret_key_settings())
+
+        # Test that all keys are hex-encoded strings.
+        for secret_key in settings.values():
+            codecs.decode(secret_key, "hex")
+
+        # Make sure all independent secret keys are all different
+        independent_secrets = set(settings[var] for var in OPENEDX_SECRET_KEYS)
+        self.assertEqual(len(independent_secrets), len(OPENEDX_SECRET_KEYS))
+
+        # Verify that API client keys are set to the matching server key.
+        for to_var, from_var in OPENEDX_SHARED_KEYS.items():
+            self.assertEqual(settings[to_var], settings[from_var])
 
     @patch_services
     def test_do_not_create_insecure_secret_keys(self, mocks):
