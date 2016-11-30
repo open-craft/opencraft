@@ -41,6 +41,7 @@ import six
 from instance import newrelic
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
+from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.secret_keys import OPENEDX_SECRET_KEYS, OPENEDX_SHARED_KEYS
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
@@ -725,15 +726,17 @@ class OpenEdXInstanceTestCase(TestCase):
 
         self.assertEqual(instance.is_shut_down, expected_result)
 
-    @ddt.data(True, False)
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
-    @patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_inactive')
-    def test_shut_down(self, unset_load_balancer, mock_set_appserver_inactive, mock_remove_dns_records):
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    def test_shut_down(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
         """
         Test that `shut_down` method terminates all app servers belonging to an instance
         and disables monitoring.
         """
         instance = OpenEdXInstanceFactory()
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
         reference_date = timezone.now()
 
         # Create app servers
@@ -750,18 +753,18 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Set single app server active
         instance.active_appserver = active_appserver
-        if unset_load_balancer:
-            instance.load_balancing_server = None
         instance.save()
         active_appserver.instance.refresh_from_db()
 
-        self.assertEqual(mock_set_appserver_inactive.call_count, 0)
+        self.assertEqual(mock_reconfigure.call_count, 0)
+        self.assertEqual(mock_disable_monitoring.call_count, 0)
         self.assertEqual(mock_remove_dns_records.call_count, 0)
 
         # Shut down instance
         instance.shut_down()
 
-        self.assertEqual(mock_set_appserver_inactive.call_count, 1)
+        self.assertEqual(mock_reconfigure.call_count, 1)
+        self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
 
         # Check status of running app servers
@@ -782,6 +785,25 @@ class OpenEdXInstanceTestCase(TestCase):
             (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
             (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
             (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+        ])
+
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    def test_shut_down_no_active_appserver(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+        """
+        Test that the shut_down method works correctly if no appserver is active.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
+        appserver = self._create_running_appserver(instance)
+        instance.shut_down()
+        self.assertEqual(mock_reconfigure.call_count, 1)
+        self.assertEqual(mock_disable_monitoring.call_count, 0)
+        self.assertEqual(mock_remove_dns_records.call_count, 1)
+        self._assert_status([
+            (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)
         ])
 
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
