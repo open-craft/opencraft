@@ -93,7 +93,7 @@ class LoadBalancedInstance(models.Model):
             if load_balancing_server is None:
                 return
         self.logger.info("Triggering reconfiguration of the load balancing server...")
-        self.load_balancing_server.reconfigure(self.ref.pk)
+        load_balancing_server.reconfigure(self.ref.pk)
 
     def get_preliminary_page_config(self, primary_key):
         """

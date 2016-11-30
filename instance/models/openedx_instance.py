@@ -425,10 +425,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             load_balancer = self.load_balancing_server
             self.load_balancing_server = None
             self.save()
-            if self.active_appserver is None:
-                # If an appserver is active, reconfiguring the load_balancer happens
-                # implicitly when terminate_vm() is called further down.
-                self.reconfigure_load_balancer(load_balancer)
+            self.reconfigure_load_balancer(load_balancer)
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
 
