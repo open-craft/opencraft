@@ -129,7 +129,6 @@ sqlparse==0.2.2
 static3==0.7.0
 stevedore==1.18.0
 -e git+https://github.com/jonashagstedt/swampdragon.git@ef8dedd191b7b3a7a11d49f5190699ed0b00bcb2#egg=SwampDragon
-tldextract==2.0.2
 tlslite==0.4.9
 tornado==4.4.2
 tornado-redis==2.4.18

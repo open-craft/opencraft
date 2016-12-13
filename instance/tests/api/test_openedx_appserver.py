@@ -23,13 +23,14 @@ Views - Tests
 # Imports #####################################################################
 
 from unittest.mock import patch
-import ddt
 
+import ddt
 from rest_framework import status
 
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.utils import patch_gandi
 
 
 # Tests #######################################################################
@@ -148,10 +149,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn('log_entries', response.data)
         self.assertIn('log_error_entries', response.data)
 
+    @patch_gandi
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
-    @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver(self, mock_run_playbook, mock_set_dns_record, mock_provision):
+    def test_spawn_appserver(self, mock_run_playbook, mock_provision):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
 
@@ -167,7 +168,6 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(mock_set_dns_record.call_count, 3)  # 3 calls: 1 for LMS, 1 for LMS preview, 1 for Studio
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)

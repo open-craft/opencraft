@@ -38,6 +38,7 @@ import responses
 import yaml
 import six
 
+from instance import gandi
 from instance import newrelic
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
@@ -235,12 +236,12 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
         self.assertEqual(mocks.mock_provision_swift.call_count, 0)
 
-        self.assertEqual(mocks.mock_set_dns_record.call_count, 3)  # Three domains: LMS, LMS preview, Studio
-        lb_domain = instance.load_balancing_server.domain + "."
-        self.assertEqual(mocks.mock_set_dns_record.mock_calls, [
-            call('example.com', name='test.spawn', type='CNAME', value=lb_domain),
-            call('example.com', name='preview-test.spawn', type='CNAME', value=lb_domain),
-            call('example.com', name='studio-test.spawn', type='CNAME', value=lb_domain),
+        lb_domain = instance.load_balancing_server.domain + '.'
+        dns_records = gandi.api.client.list_records('example.com')
+        self.assertCountEqual(dns_records, [
+            dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='preview-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='studio-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
         ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -302,7 +303,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test set_appserver_active()
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.com',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
         instance.set_appserver_active(appserver_id)

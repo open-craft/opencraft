@@ -25,10 +25,22 @@ Test utils
 from contextlib import ExitStack
 from unittest.mock import Mock, patch
 
+from instance import gandi
+from instance.tests.fake_gandi_client import FakeGandiClient
 from instance.tests.models.factories.server import OSServerMockManager
 
 
 # Functions ###################################################################
+
+def patch_gandi(func=None):
+    """
+    Decorator to temporarily replace the Gandi API by the fake implementation.
+    """
+    patcher = patch('instance.gandi.api', gandi.GandiAPI(client=FakeGandiClient()))
+    if func:
+        return patcher(func)
+    return patcher
+
 
 def patch_services(func):
     """
@@ -65,7 +77,6 @@ def patch_services(func):
                     'instance.models.server.openstack.create_server', side_effect=new_servers,
                 ),
                 mock_sleep=mock_sleep,
-                mock_set_dns_record=stack_patch('instance.models.mixins.load_balanced.gandi.set_dns_record'),
                 mock_run_ansible_playbooks=stack_patch(
                     'instance.models.mixins.ansible.AnsibleAppServerMixin.run_ansible_playbooks',
                     return_value=([], 0),
@@ -86,5 +97,6 @@ def patch_services(func):
                     'instance.models.load_balancer.LoadBalancingServer.run_playbook'
                 ),
             )
+            stack.enter_context(patch_gandi())
             return func(self, mocks, *args, **kwargs)
     return wrapper

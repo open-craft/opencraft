@@ -26,11 +26,12 @@ from unittest.mock import patch, call
 
 from django.test import override_settings
 
+from instance import gandi
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.load_balanced import LoadBalancedInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_services
+from instance.tests.utils import patch_gandi, patch_services
 
 
 # Tests #######################################################################
@@ -40,30 +41,37 @@ class LoadBalancedInstanceTestCase(TestCase):
     Tests for OpenEdXStorageMixin
     """
 
-    @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
-    def test_set_dns_records(self, mock_set_dns_record):
+    def _verify_dns_records(self, instance, domain):
+        """
+        Verify that DNS records have been set correctly for the given domain.
+        """
+        lb_domain = instance.load_balancing_server.domain + '.'
+        dns_records = gandi.api.client.list_records(domain)
+        self.assertCountEqual(dns_records, [
+            dict(name='test.dns', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='preview-test.dns', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='studio-test.dns', type='CNAME', value=lb_domain, ttl=1200),
+        ])
+
+    @patch_gandi
+    def test_set_dns_records(self):
         """
         Test set_dns_records() without external domains.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.example.com',
                                           use_ephemeral_databases=True)
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."
-        self.assertEqual(mock_set_dns_record.mock_calls, [
-            call('opencraft.com', name='test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.com', name='preview-test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.com', name='studio-test.dns', type='CNAME', value=lb_domain),
-        ])
+        self._verify_dns_records(instance, 'example.com')
 
-    @patch('instance.models.mixins.load_balanced.gandi.set_dns_record')
-    def test_set_dns_records_external_domain(self, mock_set_dns_record):
+    @patch_gandi
+    def test_set_dns_records_external_domain(self):
         """
         Test set_dns_records() with custom external domains.
         Ensure that the DNS records are only created for the internal domains.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.co.uk',
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
@@ -71,25 +79,20 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
         instance.set_dns_records()
-        lb_domain = instance.load_balancing_server.domain + "."
-        self.assertEqual(mock_set_dns_record.mock_calls, [
-            call('opencraft.hosting', name='test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.hosting', name='preview-test.dns', type='CNAME', value=lb_domain),
-            call('opencraft.hosting', name='studio-test.dns', type='CNAME', value=lb_domain),
-        ])
+        self._verify_dns_records(instance, 'opencraft.co.uk')
 
-    @patch('instance.models.mixins.load_balanced.gandi.remove_dns_record')
-    def test_remove_dns_records(self, mock_remove_dns_record):
+    @patch_gandi
+    def test_remove_dns_records(self):
         """
         Test remove_dns_records().
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.com')
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.co.uk')
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
+        instance.set_dns_records()
         instance.remove_dns_records()
-        self.assertEqual(mock_remove_dns_record.mock_calls, [
-            call('opencraft.com', 'test.dns'),
-            call('opencraft.com', 'preview-test.dns'),
-            call('opencraft.com', 'studio-test.dns'),
-        ])
+        dns_records = gandi.api.client.list_records('opencraft.co.uk')
+        self.assertEqual(dns_records, [])
 
     def test_domains(self):
         """

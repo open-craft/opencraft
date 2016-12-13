@@ -24,19 +24,9 @@ Instance app model mixins - load balancing
 
 from django.conf import settings
 from django.db import models
-from tldextract import TLDExtract
 
-from instance.gandi import GandiAPI
+from instance import gandi
 from instance.models.load_balancer import LoadBalancingServer
-
-
-# Constants ###################################################################
-
-gandi = GandiAPI()
-
-# By default, tldextract will make an http request to fetch an updated list of
-# TLDs on first invocation. Passing suffix_list_urls=None here prevents this.
-tldextract = TLDExtract(suffix_list_urls=None)
 
 
 # Classes #####################################################################
@@ -68,21 +58,14 @@ class LoadBalancedInstance(models.Model):
         """
         load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
         for domain in self.get_managed_domains():
-            domain_parts = tldextract(domain)
-            gandi.set_dns_record(
-                domain_parts.registered_domain,
-                type="CNAME",
-                name=domain_parts.subdomain,
-                value=load_balancer_domain,
-            )
+            gandi.api.set_dns_record(domain, type="CNAME", value=load_balancer_domain)
 
     def remove_dns_records(self):
         """
         Delete the DNS records for this instance.
         """
         for domain in self.get_managed_domains():
-            domain_parts = tldextract(domain)
-            gandi.remove_dns_record(domain_parts.registered_domain, domain_parts.subdomain)
+            gandi.api.remove_dns_record(domain)
 
     def reconfigure_load_balancer(self, load_balancing_server=None):
         """
