@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 
 import ddt
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import override_settings
 
 from instance.models.database_server import (
@@ -243,6 +243,7 @@ class DatabaseServerManagerTest(TestCase):
 
         self._assert_settings(
             mysql_server,
+            name=mysql_url_obj.hostname,
             hostname=mysql_url_obj.hostname,
             username=mysql_url_obj.username or '',
             password=mysql_url_obj.password or '',
@@ -250,6 +251,7 @@ class DatabaseServerManagerTest(TestCase):
         )
         self._assert_settings(
             mongodb_server,
+            name=mysql_url_obj.hostname,
             hostname=mongodb_url_obj.hostname,
             username=mongodb_url_obj.username or '',
             password=mongodb_url_obj.password or '',
@@ -426,3 +428,65 @@ class DatabaseServerManagerTest(TestCase):
             self.assertEqual(len([
                 log_entry for log_entry in log_entries if mongodb_warning in log_entry.text
             ]), 1)
+
+    def test__create_default_ignores_name(self):
+        """
+        Test that `_create_default` does not create new database server
+        if there is an existing database server with the default hostname and a name
+        that does not match the default hostname.
+
+        `_create_default` used to call `get_or_create` like this:
+
+        database_server, created = self.get_or_create(
+            name=hostname,
+            hostname=hostname,
+            defaults=dict(
+                ...
+            )
+        )
+
+        Under the circumstances described above, this was causing a ValidationError for `hostname`:
+        Since `name` of the existing database server did not match `hostname`,
+        Django would try to create a new database server, which would fail
+        because `hostname` needs to be unique across database server objects.
+
+        Now, `_create_default` calls `get_or_create` like this:
+
+        database_server, created = self.get_or_create(
+            hostname=hostname,
+            defaults=dict(
+                name=hostname,
+                ...
+            )
+        )
+
+        This means that new database servers will still get their `name` set to `hostname` by default,
+        but the `name` field will be ignored when checking whether to create a new database server.
+        """
+        MySQLServer.objects._create_default()
+        MongoDBServer.objects._create_default()
+
+        # Precondition
+        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+
+        # Change name of MySQLServer and MongoDBServer
+        mysql_server = MySQLServer.objects.get()
+        mongodb_server = MongoDBServer.objects.get()
+        mysql_server.name = 'Default MySQL server'
+        mongodb_server.name = 'Default MongoDB server'
+        mysql_server.save()
+        mongodb_server.save()
+
+        try:
+            MySQLServer.objects._create_default()
+            MongoDBServer.objects._create_default()
+        except ValidationError:
+            self.fail(
+                '_create_default should only check `hostname` of existing database servers '
+                'when deciding whether to create a new database server. '
+                'It should ignore `name`.'
+            )
+        else:
+            self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
+            self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
