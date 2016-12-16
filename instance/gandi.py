@@ -42,10 +42,13 @@ class GandiAPI():
     Gandi API proxy object
     """
 
-    def __init__(self, api_url='https://rpc.gandi.net/xmlrpc/'):
+    def __init__(self, api_url='https://rpc.gandi.net/xmlrpc/', client=None):
         # This is a map of domain_name => zone_id key-value pairs.
-        self._zone_id_cache = {}
-        self.client = xmlrpc.client.ServerProxy(api_url)
+        self._zone_id_cache = None
+        if client:
+            self.client = client
+        else:
+            self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
     def api_key(self):
@@ -61,15 +64,38 @@ class GandiAPI():
         """
         return self.client.domain.zone
 
+    def _populate_zone_id_cache(self):
+        """
+        Populate the internal zone ID cache with all domains in the current Gandi account.
+        """
+        self._zone_id_cache = {}
+        for domain_dict in self.client.domain.list(self.api_key):
+            domain = domain_dict['fqdn'].lower()
+            self._zone_id_cache[domain] = self.client.domain.info(self.api_key, domain)['zone_id']
+
+    def split_domain_name(self, domain):
+        """
+        Split the given domain name in the registered domain and the subdomain.
+        """
+        if self._zone_id_cache is None:
+            self._populate_zone_id_cache()
+        labels = domain.lower().split('.')
+        for split_index in range(len(labels) - 1):
+            registered_domain = '.'.join(labels[split_index:])
+            if registered_domain in self._zone_id_cache:
+                subdomain = '.'.join(labels[:split_index]) or '@'
+                return subdomain, registered_domain
+        raise ValueError(
+            'The given domain name does not match any domain registered in the Gandi account.'
+        )
+
     def get_zone_id(self, domain):
         """
         Gandi zone ID used by domain
         """
-        zone_id = self._zone_id_cache.get(domain, None)
-        if zone_id is None:
-            zone_id = self.client.domain.info(self.api_key, domain)['zone_id']
-            self._zone_id_cache[domain] = zone_id
-        return zone_id
+        if self._zone_id_cache is None:
+            self._populate_zone_id_cache()
+        return self._zone_id_cache[domain]
 
     def delete_dns_record(self, zone_id, zone_version_id, record_name):
         """
@@ -128,6 +154,8 @@ class GandiAPI():
         """
         if 'ttl' not in record.keys():
             record['ttl'] = 1200
+        assert 'name' not in record, 'The name gets extracted from the FQDN passed in `domain`.'
+        record['name'], registered_domain = self.split_domain_name(domain)
 
         def set_dns_record_callback(zone_id, zone_version):
             """
@@ -138,22 +166,27 @@ class GandiAPI():
 
         self._dns_operation(
             callback=set_dns_record_callback,
-            domain=domain,
+            domain=registered_domain,
             log_msg='Setting DNS record: {}'.format(record),
         )
 
-    def remove_dns_record(self, domain, name):
+    def remove_dns_record(self, domain):
         """
         Remove the given name for the domain.
         """
+        subdomain, registered_domain = self.split_domain_name(domain)
+
         def remove_dns_record_callback(zone_id, zone_version):
             """
             Callback to be passed to _dns_operation().
             """
-            self.delete_dns_record(zone_id, zone_version, name)
+            self.delete_dns_record(zone_id, zone_version, subdomain)
 
         self._dns_operation(
             callback=remove_dns_record_callback,
-            domain=domain,
-            log_msg='Deleting DNS record: {}'.format(name),
+            domain=registered_domain,
+            log_msg='Deleting DNS record: {}'.format(subdomain),
         )
+
+
+api = GandiAPI()
