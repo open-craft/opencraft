@@ -73,9 +73,9 @@ class DatabaseServerManager(models.Manager):
                 )
             logger.info("Creating DatabaseServer %s", hostname)
             database_server, created = self.get_or_create(  # pylint: disable=no-member
-                name=hostname,
                 hostname=hostname,
                 defaults=dict(
+                    name=hostname,
                     username=username,
                     password=password,
                     port=port,
