@@ -227,7 +227,10 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             """
             if appserver.status == AppServerStatus.Terminated:
                 return True
-            configuration_failed = appserver.status == AppServerStatus.ConfigurationFailed
+            configuration_failed = (
+                appserver.status == AppServerStatus.ConfigurationFailed or
+                appserver.status == AppServerStatus.Error
+            )
             vm_terminated = appserver.server.status == ServerStatus.Terminated
             return configuration_failed and vm_terminated
 
