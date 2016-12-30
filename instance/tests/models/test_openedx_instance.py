@@ -301,7 +301,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch_services
     def test_set_appserver_active(self, mocks):
         """
-        Test set_appserver_active()
+        Test set_appserver_active() and set_appserver_inactive()
         """
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
                                           use_ephemeral_databases=True)
@@ -310,10 +310,12 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver.pk, appserver_id)
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
+        self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
         instance.set_appserver_inactive()
         instance.refresh_from_db()
         self.assertIsNone(instance.active_appserver)
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
+        self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
@@ -801,7 +803,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver = self._create_running_appserver(instance)
         instance.shut_down()
         self.assertEqual(mock_reconfigure.call_count, 1)
-        self.assertEqual(mock_disable_monitoring.call_count, 0)
+        self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
         self._assert_status([
             (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)

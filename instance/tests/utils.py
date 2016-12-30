@@ -131,6 +131,12 @@ def patch_services(func):
                 mock_load_balancer_run_playbook=stack_patch(
                     'instance.models.load_balancer.LoadBalancingServer.run_playbook'
                 ),
+                mock_enable_monitoring=stack_patch(
+                    'instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.enable_monitoring'
+                ),
+                mock_disable_monitoring=stack_patch(
+                    'instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring'
+                ),
             )
             stack.enter_context(patch_gandi())
             return func(self, mocks, *args, **kwargs)

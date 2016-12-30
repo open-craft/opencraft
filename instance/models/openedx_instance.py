@@ -324,7 +324,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         Reset the active AppServer to None.  Called when the active appserver is terminated.
         """
-        self.disable_monitoring()
         self.active_appserver = None
         self.save()
         self.reconfigure_load_balancer()
@@ -420,6 +419,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         Shut down this instance.
         """
+        self.disable_monitoring()
         self.remove_dns_records()
         if self.load_balancing_server is not None:
             load_balancer = self.load_balancing_server
