@@ -6,7 +6,7 @@ beautifulsoup4==4.5.1
 chardet==2.3.0
 CherryPy==3.8.2
 click==6.6
-cliff==2.2.0
+cliff==2.3.0
 cmd2==0.6.9
 colorama==0.3.7
 cookies==2.2.1
@@ -54,6 +54,9 @@ jasmine==2.5.0
 jasmine-core==2.5.2
 Jinja2==2.8
 jira==1.0.7
+jsonpatch==1.14
+jsonpointer==1.10
+jsonschema==2.5.1
 keystoneauth1==2.17.0
 lazy-object-proxy==1.2.2
 libsass==0.11.2
@@ -100,10 +103,13 @@ pylint-flask==0.5
 pylint-plugin-utils==0.2.4
 pymongo==3.3.1
 pyparsing==2.1.10
+python-cinderclient==1.9.0
 python-dateutil==2.6.0
-python-keystoneclient==3.6.0
+python-glanceclient==2.5.0
+python-keystoneclient==3.8.0
 python-neutronclient==6.0.0
 python-novaclient==6.0.0
+python-openstackclient==3.6.0
 python-swiftclient==3.1.0
 pytz==2016.7
 PyYAML==3.10
@@ -136,6 +142,7 @@ tornado-redis==2.4.18
 traitlets==4.3.1
 unicodecsv==0.14.1
 virtualenv==15.0.3
+warlock==1.2.0
 wcwidth==0.1.7
 Werkzeug==0.11.1
 wrapt==1.10.8
