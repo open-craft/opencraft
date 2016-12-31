@@ -96,6 +96,7 @@ INSTALLED_APPS = (
     'huey.contrib.djhuey',
     'swampdragon',
     'simple_email_confirmation',
+    'channels',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
@@ -132,6 +133,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'opencraft.wsgi.application'
+
+
+# Django channels #############################################################
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgiref.inmemory.ChannelLayer",
+        "ROUTING": "opencraft.routing.channel_routing",
+    },
+}
 
 
 # Internationalization ########################################################

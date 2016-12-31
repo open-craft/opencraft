@@ -1,3 +1,1 @@
-web: python3 manage.py runserver_plus
-websocket: python3 websocket.py
-worker: python3 manage.py run_huey --no-periodic
+web: python3 manage.py runserver
