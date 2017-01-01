@@ -192,7 +192,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
         """
         Format a log line annotation for this server.
         """
-        return 'server={!s:.20}'.format(self.name)
+        return 'server={} ({!s:.20})'.format(self.pk, self.name)
 
     def sleep_until(self, condition, timeout=3600):
         """

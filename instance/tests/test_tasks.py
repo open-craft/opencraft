@@ -112,18 +112,30 @@ class CleanUpTestCase(TestCase):
     Test cases for clean up tasks
     """
 
+    @staticmethod
+    def mock_logger_process(msg, kwargs):
+        """
+        Mocks the ModelLoggerAdapter.process return value.
+        """
+        return msg, kwargs
+
+    @patch('instance.logging.ModelLoggerAdapter.process')
     @patch('instance.models.openedx_instance.OpenEdXInstance.terminate_obsolete_appservers')
-    def test_terminate_obsolete_appservers(self, mock_terminate_appservers):
+    def test_terminate_obsolete_appservers(self, mock_terminate_appservers, mock_logger):
         """
         Test that `terminate_obsolete_appservers_all_instances`
         calls `terminate_obsolete_appservers` on all existing instances.
         """
+        mock_logger.side_effect = self.mock_logger_process
+
         for dummy in range(5):
             OpenEdXInstanceFactory()
 
         tasks.terminate_obsolete_appservers_all_instances()
 
         self.assertEqual(mock_terminate_appservers.call_count, 5)
+        self.assertEqual(mock_logger.call_count, 5)
+        mock_logger.assert_called_with("Terminating obsolete appservers for instance", {})
 
     @ddt.data(
         {'pr_state': 'closed', 'pr_days_since_closed': 4, 'instance_is_shut_down': False},
@@ -131,12 +143,14 @@ class CleanUpTestCase(TestCase):
         {'pr_state': 'closed', 'pr_days_since_closed': 10, 'instance_is_shut_down': True},
         {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_is_shut_down': False},
     )
+    @patch('instance.logging.ModelLoggerAdapter.process')
     @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
-    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_shut_down):
+    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_shut_down, mock_logger):
         """
         Test that `shut_down_obsolete_pr_sandboxes` correctly identifies and shuts down instances
         whose PRs got merged (more than) one week ago.
         """
+        mock_logger.side_effect = self.mock_logger_process
         reference_date = timezone.now()
 
         # Create PRs and instances
@@ -161,8 +175,11 @@ class CleanUpTestCase(TestCase):
             # Check if task tried to shut down instances
             if data['instance_is_shut_down']:
                 self.assertEqual(mock_shut_down.call_count, 5)
+                self.assertEqual(mock_logger.call_count, 15)
+                mock_logger.assert_called_with("Shutting down obsolete sandbox instance", {})
             else:
                 self.assertEqual(mock_shut_down.call_count, 0)
+                self.assertEqual(mock_logger.call_count, 10)
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
     def test_shut_down_obsolete_pr_sandboxes_no_pr(self, mock_shut_down):

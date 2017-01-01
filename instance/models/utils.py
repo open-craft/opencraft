@@ -319,6 +319,8 @@ class ResourceStateDescriptor:
                 raise WrongStateException("This transition cannot be used to move from {} to {}".format(
                     current_state.name, to_state.name  # pylint: disable=no-member
                 ))
+            if (hasattr(resource, 'logger')):
+                resource.logger.info('Transition from "%s" to "%s"', current_state.name, to_state.name)
             self._set_state(resource, to_state)
         do_transition.from_states = from_states  # Convenient way for other code to inspect this transition
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition

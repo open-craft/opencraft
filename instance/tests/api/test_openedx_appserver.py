@@ -236,26 +236,31 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             },
             {
                 'level': 'INFO',
-                'text': 'instance.models.server    | server={server_name} | info',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) | info',
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} | error',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) | error',
             },
             {
                 'level': 'INFO',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Starting server (status=Pending [pending])...'
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Failed to start server: Not found (HTTP 404)'
+            },
+            {
+                'level': 'INFO',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
+                        ' Transition from "Pending" to "Failed"'
             },
         ]
         self.check_log_list(
             expected_list, response.data['log_entries'],
-            inst_id=instance.ref.id, as_id=app_server.pk, server_name=server.name,
+            inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
 
     def check_log_list(self, expected_list, log_list, **kwargs):
@@ -297,15 +302,17 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} | error',
-            },
-            {
-                'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Failed to start server: Not found (HTTP 404)'
             },
+            {
+                'level': 'INFO',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
+                        ' Transition from "Pending" to "Failed"'
+            },
         ]
+
         self.check_log_list(
             expected_list, response.data['log_error_entries'],
-            inst_id=instance.ref.id, as_id=app_server.pk, server_name=server.name,
+            inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
