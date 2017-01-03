@@ -26,11 +26,12 @@ from unittest.mock import patch
 
 import ddt
 from rest_framework import status
+from django.conf import settings
 
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_gandi
+from instance.tests.utils import patch_gandi, patch_url
 
 
 # Tests #######################################################################
@@ -111,6 +112,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_details(self):
         """
         GET - Detailed attributes - instance manager allowed access
@@ -200,6 +202,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver, app_server)
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_entries(self):
         """
         GET - Log entries
@@ -267,6 +270,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             text = expected_entry['text'].format(**kwargs)
             self.assertEqual(text, log_entry['text'])
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_error_entries(self):
         """
         GET - Log error entries
