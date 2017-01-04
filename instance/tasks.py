@@ -71,7 +71,7 @@ def set_appserver_active(appserver_id):
     """
     Mark an AppServer as active.
     """
-    logger.info('Retrieving AppServer: ID=%s', appserver_id)
+    logger.info('Activating AppServer: ID=%s', appserver_id)
     appserver = OpenEdXAppServer.objects.get(pk=appserver_id)
     appserver.instance.set_appserver_active(appserver_id)
 
@@ -90,6 +90,7 @@ def shut_down_obsolete_pr_sandboxes():
             closed_at = github.parse_date(pr['closed_at'])
             now = datetime.now()
             if sufficient_time_passed(closed_at, now, 7):
+                instance.logger.info("Shutting down obsolete sandbox instance")
                 instance.shut_down()
 
 
@@ -99,6 +100,7 @@ def terminate_obsolete_appservers_all_instances():
     Terminate obsolete app servers for all instances.
     """
     for instance in OpenEdXInstance.objects.all():
+        instance.logger.info("Terminating obsolete appservers for instance")
         instance.terminate_obsolete_appservers()
 
 

@@ -24,6 +24,8 @@ Test utils
 
 from contextlib import ExitStack
 from unittest.mock import Mock, patch
+import requests
+import responses
 
 from instance import gandi
 from instance.tests.fake_gandi_client import FakeGandiClient
@@ -40,6 +42,39 @@ def patch_gandi(func=None):
     if func:
         return patcher(func)
     return patcher
+
+
+def patch_url(url, method=responses.GET, status=requests.codes.ok):
+    """
+    Decorator which mocks responses from the given url.
+
+    Arguments:
+
+    * `url`: http url to mock
+    * `method`: http method used in request (default responses.GET)
+    * `status`: http status returned by response (default requests.codes.ok)
+
+    Usage:
+
+    E.g., to mock POST requests to the OpenStack authentication URL:
+
+        import responses
+        from django.conf import settings
+        from instance.tests.utils import patch_url
+
+        @patch_url(settings.OPENSTACK_AUTH_URL, method=responses.POST)
+        def test_that_calls_nova(...):
+            ...
+    """
+    def function_wrapper(func):
+        def responses_wrapper(*args, **kwargs):
+            responses.add(
+                method=method,
+                url=url,
+                status=status,
+            )
+        return responses_wrapper(func)
+    return function_wrapper
 
 
 def patch_services(func):
@@ -95,6 +130,12 @@ def patch_services(func):
                 ),
                 mock_load_balancer_run_playbook=stack_patch(
                     'instance.models.load_balancer.LoadBalancingServer.run_playbook'
+                ),
+                mock_enable_monitoring=stack_patch(
+                    'instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.enable_monitoring'
+                ),
+                mock_disable_monitoring=stack_patch(
+                    'instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring'
                 ),
             )
             stack.enter_context(patch_gandi())

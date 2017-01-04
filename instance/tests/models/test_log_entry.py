@@ -65,7 +65,7 @@ class LoggingTestCase(TestCase):
                 self.instance.ref.pk, self.app_server.pk
             )
         )
-        self.server_prefix = 'instance.models.server    | server=test-vm-name | '
+        self.server_prefix = 'instance.models.server    | server={} (test-vm-name) | '.format(self.app_server.server.pk)
 
     def check_log_entries(self, entries, expected):
         """
@@ -150,8 +150,8 @@ class LoggingTestCase(TestCase):
             'log_entry': {
                 'created': '2015-09-21T21:07:01Z',
                 'level': 'INFO',
-                'text': ('instance.models.server    | server=test-vm-name | Text the client '
-                         'should also see, with unicode «ταБЬℓσ»'),
+                'text': ('instance.models.server    | server={} (test-vm-name) | Text the client '
+                         'should also see, with unicode «ταБЬℓσ»'.format(self.server.pk)),
             },
             'type': 'object_log_line',
             'server_id': self.server.pk,
@@ -224,7 +224,8 @@ class LoggingTestCase(TestCase):
         log_entry = LogEntry.objects.order_by('-pk')[0]
         self.assertEqual(
             str(log_entry),
-            '2015-10-20 20:10:15 |     INFO | instance.models.server    | server=test-vm-name | ' + msg,
+            '2015-10-20 20:10:15 |     INFO | instance.models.server    | server={} ({}) | {}'.format(
+                self.server.pk, self.server.name, msg)
         )
 
     def test_invalid_content_type_object_id_combo(self):

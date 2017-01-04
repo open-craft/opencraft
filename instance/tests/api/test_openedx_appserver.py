@@ -26,11 +26,12 @@ from unittest.mock import patch
 
 import ddt
 from rest_framework import status
+from django.conf import settings
 
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_gandi
+from instance.tests.utils import patch_gandi, patch_url
 
 
 # Tests #######################################################################
@@ -111,6 +112,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_details(self):
         """
         GET - Detailed attributes - instance manager allowed access
@@ -200,6 +202,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver, app_server)
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_entries(self):
         """
         GET - Log entries
@@ -233,26 +236,31 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             },
             {
                 'level': 'INFO',
-                'text': 'instance.models.server    | server={server_name} | info',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) | info',
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} | error',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) | error',
             },
             {
                 'level': 'INFO',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Starting server (status=Pending [pending])...'
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Failed to start server: Not found (HTTP 404)'
+            },
+            {
+                'level': 'INFO',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
+                        ' Transition from "Pending" to "Failed"'
             },
         ]
         self.check_log_list(
             expected_list, response.data['log_entries'],
-            inst_id=instance.ref.id, as_id=app_server.pk, server_name=server.name,
+            inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
 
     def check_log_list(self, expected_list, log_list, **kwargs):
@@ -267,6 +275,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             text = expected_entry['text'].format(**kwargs)
             self.assertEqual(text, log_entry['text'])
 
+    @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_error_entries(self):
         """
         GET - Log error entries
@@ -293,15 +302,17 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             },
             {
                 'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} | error',
-            },
-            {
-                'level': 'ERROR',
-                'text': 'instance.models.server    | server={server_name} |'
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
                         ' Failed to start server: Not found (HTTP 404)'
             },
+            {
+                'level': 'INFO',
+                'text': 'instance.models.server    | server={server_id} ({server_name}) |'
+                        ' Transition from "Pending" to "Failed"'
+            },
         ]
+
         self.check_log_list(
             expected_list, response.data['log_error_entries'],
-            inst_id=instance.ref.id, as_id=app_server.pk, server_name=server.name,
+            inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
