@@ -27,6 +27,9 @@ from unittest import mock
 from unittest.mock import Mock, call, patch, MagicMock
 
 import ddt
+from django.conf import settings
+from openstack.network.v2.security_group import SecurityGroup
+from openstack.network.v2.security_group_rule import SecurityGroupRule
 import requests
 from swiftclient.service import SwiftError
 
@@ -35,6 +38,7 @@ from instance.tests.base import TestCase
 
 # Constants and helpers #######################################################
 
+SecurityGroupRuleDefinition = openstack.SecurityGroupRuleDefinition
 
 CONTAINER_AUTH = dict(
     user='username',
@@ -62,6 +66,7 @@ def create_file_download_response(success=True, status_code=200, container=CONTA
 
 # Tests #######################################################################
 
+@ddt.ddt
 class OpenStackTestCase(TestCase):
     """
     Test cases for OpenStack helper functions
@@ -70,6 +75,98 @@ class OpenStackTestCase(TestCase):
         super().setUp()
 
         self.nova = Mock()
+
+    def test_get_openstack_connection(self):
+        """
+        Test get_openstack_connection()
+        """
+        conn = openstack.get_openstack_connection()
+        self.assertEqual(conn.profile.get_services()[0]['region_name'], settings.OPENSTACK_REGION)
+        self.assertTrue(conn.session.user_agent.startswith('opencraft-im'))
+        # TODO: In future we could use 'mimic' to fake the OpenStack API for testing.
+        # Then, here we could test 'conn.authorize()'
+
+    RULE1_DICT = {
+        "direction": "egress", "ether_type": "IPv6", "protocol": None,
+        "port_range_min": None, "port_range_max": None,
+        "remote_ip_prefix": "::/0", "remote_group_id": None,
+    }
+    RULE2_DICT = {
+        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
+        "port_range_min": 22, "port_range_max": 22,
+        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+    }
+
+    @ddt.data(
+        # Case 1:
+        (
+            # Desired rules:
+            [
+                SecurityGroupRuleDefinition(**RULE2_DICT),
+            ],
+            # "Existing" rules on the mock OpenStack remote:
+            [
+                SecurityGroupRule.new(id="rule1", **RULE1_DICT),
+            ],
+            # Rules we expect to be added (as dicts):
+            [RULE2_DICT],
+            # IDs of rules we expect to be deleted:
+            ["rule1"],
+        ),
+        # Case 2:
+        (
+            # Desired rules:
+            [
+                SecurityGroupRuleDefinition(**RULE1_DICT),
+                SecurityGroupRuleDefinition(**RULE2_DICT),
+            ],
+            # "Existing" rules on the mock OpenStack remote:
+            [
+                SecurityGroupRule.new(id="rule2", **RULE2_DICT),
+                SecurityGroupRule.new(id="rule3", **RULE2_DICT),  # Duplicate of rule 2
+            ],
+            # Rules we expect to be added (as dicts):
+            [RULE1_DICT],
+            # IDs of rules we expect to be deleted:
+            ["rule3"],
+        ),
+        # Case 2:
+        (
+            # Desired rules:
+            [
+                SecurityGroupRuleDefinition(**RULE1_DICT),
+                SecurityGroupRuleDefinition(**RULE2_DICT),
+            ],
+            # "Existing" rules on the mock OpenStack remote:
+            [
+                SecurityGroupRule.new(id="rule1", **RULE1_DICT),
+                SecurityGroupRule.new(id="rule2", **RULE2_DICT),
+            ],
+            # Rules we expect to be added (as dicts):
+            [],
+            # IDs of rules we expect to be deleted:
+            [],
+        ),
+    )
+    @ddt.unpack
+    def test_sync_security_group_rules(self, rule_definitions, existing_rules, expected_adds, expected_deletes):
+        """
+        Test sync_security_group_rules()
+        """
+        network = Mock()
+        network.security_group_rules.return_value = existing_rules
+        security_group = SecurityGroup.new(id="00000000-1234-1234-1234-000000000000")
+        openstack.sync_security_group_rules(security_group, rule_definitions, network=network)
+
+        network.security_group_rules.assert_called_once_with(security_group_id=security_group.id)
+        self.assertEqual(network.create_security_group_rule.call_count, len(expected_adds))
+        add_call_kwargs = [c[1] for c in network.create_security_group_rule.call_args_list]
+        for rule in add_call_kwargs:
+            self.assertEqual(rule.pop("security_group_id"), security_group.id)
+        self.assertEqual(add_call_kwargs, expected_adds)
+        self.assertEqual(network.delete_security_group_rule.call_count, len(expected_deletes))
+        deleted_ids = [c[0][0].id for c in network.delete_security_group_rule.call_args_list]
+        self.assertEqual(deleted_ids, expected_deletes)
 
     def test_create_server(self):
         """
@@ -81,7 +178,7 @@ class OpenStackTestCase(TestCase):
         self.assertEqual(self.nova.mock_calls, [
             call.flavors.find(disk=40, ram=4096),
             call.images.find(name='Ubuntu 12.04'),
-            call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None)
+            call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None, security_groups=None)
         ])
 
     def test_delete_servers_by_name(self):

@@ -21,6 +21,7 @@ Integration tests - helper functions.
 """
 
 import pathlib
+import socket
 import time
 
 import requests
@@ -42,3 +43,12 @@ def check_url_accessible(url, attempts=3, delay=15):
             if not attempts:
                 raise
         time.sleep(delay)
+
+
+def is_port_open(ip_addr, port):
+        """
+        Determine if the server at ip_addr is accepting connections on the given
+        port or not.
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        return sock.connect_ex((ip_addr, port)) == 0

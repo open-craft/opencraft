@@ -272,11 +272,6 @@ if BACKUP_SWIFT_ENABLED:
 
 # DNS (Gandi) #################################################################
 
-# Instances will be created as subdomains of this domain by default
-DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
-DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='studio-')
-DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', default='preview-')
-
 # See https://www.gandi.net/admin/api_key
 GANDI_API_KEY = env('GANDI_API_KEY')
 
@@ -297,6 +292,14 @@ WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
 
 # Github organization to watch
 WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
+
+
+# Open edX Instance and App Server Settings  ##################################
+
+# Instances will be created as subdomains of this domain by default
+DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
+DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='studio-')
+DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', default='preview-')
 
 # Default admin organization for instances (gets shell access)
 DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
@@ -329,6 +332,42 @@ STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
 STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default=OPENEDX_RELEASE_STABLE_REF)
+
+# The name of the security group to use for edxapp App servers.
+# This is used to set appropriate firewall rules to prevent external access to
+# the AppServers.
+# This security group will be created if it doesn't exist, and its rules will
+# be managed by OpenCraft IM.
+EDXAPP_APPSERVER_SECURITY_GROUP_NAME = env('EDXAPP_APPSERVER_SECURITY_GROUP_NAME', default='edxapp-appserver')
+EDXAPP_APPSERVER_SECURITY_GROUP_RULES = [
+    # Each entry here must have the keys defined in instance.openstack.SecurityGroupRuleDefinition.
+    # The following allows all egress traffic, and only allows ingress on ports 22, 80, and 443
+    {
+        "direction": "egress", "ether_type": "IPv4", "protocol": None,
+        "port_range_min": None, "port_range_max": None,
+        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None
+    },
+    {
+        "direction": "egress", "ether_type": "IPv6", "protocol": None,
+        "port_range_min": None, "port_range_max": None,
+        "remote_ip_prefix": "::/0", "remote_group_id": None,
+    },
+    {
+        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
+        "port_range_min": 22, "port_range_max": 22,
+        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+    },
+    {
+        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
+        "port_range_min": 80, "port_range_max": 80,
+        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+    },
+    {
+        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
+        "port_range_min": 443, "port_range_max": 443,
+        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+    },
+]
 
 # Ansible #####################################################################
 

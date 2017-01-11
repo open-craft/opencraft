@@ -351,7 +351,7 @@ class OpenStackServer(Server):
         return self.status
 
     @Server.status.only_for(Status.Pending)
-    def start(self):
+    def start(self, **kwargs):
         """
         Get a server instance started and an openstack_id assigned
 
@@ -367,6 +367,7 @@ class OpenStackServer(Server):
                 settings.OPENSTACK_SANDBOX_FLAVOR,
                 settings.OPENSTACK_SANDBOX_BASE_IMAGE,
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
+                **kwargs
             )
         except novaclient.exceptions.ClientException as e:
             self.logger.error('Failed to start server: %s', e)

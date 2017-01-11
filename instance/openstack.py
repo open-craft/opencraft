@@ -26,6 +26,8 @@ from collections import namedtuple, defaultdict
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
+from openstack.connection import Connection
+from openstack.profile import Profile
 import requests
 from swiftclient.service import SwiftService
 
@@ -39,8 +41,78 @@ logger = logging.getLogger(__name__)
 
 FailedContainer = namedtuple('FailedContainer', ['name', 'number_of_failures'])
 StatContainer = namedtuple('StatContainer', ['read_acl', 'write_acl', 'bytes'])
+# A simplified version of openstack.network.v2.security_group_rule.SecurityGroupRule
+# This version removes fields like 'id', 'security_group_id', 'updated_at' so
+# that these rules can be compared across servers/time/space.
+SecurityGroupRuleDefinition = namedtuple('SecurityGroupRuleDefinition', [
+    # See http://developer.openstack.org/sdks/python/openstacksdk/users/resources/network/v2/security_group_rule.html
+    # for details on the supported values of these fields
+    'direction',  # 'ingress' or 'egress'
+    'ether_type',  # 'IPv4' or 'IPv6'
+    'protocol',  # None, 'tcp', 'udp', 'icmp'
+    'port_range_min',
+    'port_range_max',
+    # One of the following must be None and the other must be a string:
+    'remote_ip_prefix',  # e.g. '0.0.0.0/0'
+    'remote_group_id',
+])
 
 # Functions ###################################################################
+
+
+def get_openstack_connection():
+    """
+    Get the OpenStack Connection object.
+
+    This is the new, all-powerful Python API for OpenStack. It should be used
+    instead of the service-specific APIs such as the Nova API below.
+
+    The returned Connection object has an attribute for each available service,
+    e.g. "compute", "network", etc.
+    """
+    profile = Profile()
+    profile.set_region(Profile.ALL, settings.OPENSTACK_REGION)
+    return Connection(
+        profile=profile,
+        user_agent='opencraft-im',
+        auth_url=settings.OPENSTACK_AUTH_URL,
+        project_name=settings.OPENSTACK_TENANT,
+        username=settings.OPENSTACK_USER,
+        password=settings.OPENSTACK_PASSWORD,
+    )
+
+
+def sync_security_group_rules(security_group, rule_definitions, network=None):
+    """
+    Given an OpenStack 'SecurityGroup' instance and a list of rules (in the form
+    of SecurityGroupRuleDefinition tuples), ensure that the security group's
+    rules match the provided rules. Add/delete rules from the remote security
+    group until it matches 'rules'.
+    """
+    assert all(isinstance(rule, SecurityGroupRuleDefinition) for rule in rule_definitions)
+    network = network or get_openstack_connection().network
+    rule_definitions_set = set(rule_definitions)
+
+    existing_rules = network.security_group_rules(security_group_id=security_group.id)
+    for existing_rule in existing_rules:
+        # Simplify this rule by converting from a 'SecurityGroupRule' to a 'SecurityGroupRuleDefinition':
+        rule_definition = SecurityGroupRuleDefinition(
+            **{key: getattr(existing_rule, key) for key in SecurityGroupRuleDefinition._fields}
+        )
+
+        if rule_definition in rule_definitions_set:
+            # This rule exists, as expected.
+            rule_definitions_set.remove(rule_definition)
+        else:
+            # This rule that was found on the remote server is not in the list of desired rules.
+            # Delete it.
+            logger.info("Updating network security group %s to remove %s", security_group.name, rule_definition)
+            network.delete_security_group_rule(existing_rule)
+
+    # Any rule left in rule_definitions_set is one that needs to be created:
+    for rule_definition in rule_definitions_set:
+        logger.info("Updating network security group %s to add %s", security_group.name, rule_definition)
+        network.create_security_group_rule(security_group_id=security_group.id, **rule_definition._asdict())
 
 
 def get_nova_client(api_version=2):
@@ -67,7 +139,7 @@ def get_nova_client(api_version=2):
     return nova
 
 
-def create_server(nova, server_name, flavor_selector, image_selector, key_name=None):
+def create_server(nova, server_name, flavor_selector, image_selector, key_name=None, security_groups=None):
     """
     Create a VM via nova
     """
@@ -75,7 +147,7 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     image = nova.images.find(**image_selector)
 
     logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
-    return nova.servers.create(server_name, image, flavor, key_name=key_name)
+    return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)
 
 
 def delete_servers_by_name(nova, server_name):

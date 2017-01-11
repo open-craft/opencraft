@@ -40,7 +40,7 @@ from instance.openstack import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
-from instance.tests.integration.utils import check_url_accessible
+from instance.tests.integration.utils import check_url_accessible, is_port_open
 from instance.tasks import spawn_appserver
 from opencraft.tests.utils import shard
 from registration.models import BetaTestApplication
@@ -70,6 +70,35 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         check_url_accessible('http://{0}/'.format(server.public_ip))
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
             check_url_accessible(url)
+
+    def assert_appserver_firewalled(self, instance):
+        """
+        Ensure the instance's appserver is not exposing any services it shouldn't be
+        """
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.active_appserver)
+        server_ip = instance.active_appserver.server.public_ip
+        ports_should_be_open = [22, 80]  # 443 may or may not be open, depending on instance.protocol
+        for port in ports_should_be_open:
+            self.assertTrue(
+                is_port_open(server_ip, port),
+                "Expected port {} on AppServer VM {} to be open.".format(port, server_ip)
+            )
+        ports_should_be_inaccessible = [
+            3306,  # MySQL
+            8000,  # LMS (direct)
+            8001,  # Studio (direct)
+            8002,  # ecommerce
+            9200,  # ElasticSearch
+            11211,  # memcached
+            18080,  # Forums Service
+            27017,  # MongoDB
+        ]
+        for port in ports_should_be_inaccessible:
+            self.assertFalse(
+                is_port_open(server_ip, port),
+                "Expected port {} on AppServer VM {} to be open.".format(port, server_ip)
+            )
 
     def assert_swift_container_provisioned(self, instance):
         """
@@ -140,6 +169,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
+        self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
         self.assertTrue(instance.require_user_creation_success())
         for appserver in instance.appserver_set.all():
@@ -158,6 +188,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
         self.assert_instance_up(instance)
+        self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
         self.assertFalse(instance.require_user_creation_success())
         for appserver in instance.appserver_set.all():

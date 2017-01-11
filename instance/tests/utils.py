@@ -119,6 +119,9 @@ def patch_services(func):
                 mock_provision_failed_email=stack_patch(
                     'instance.models.mixins.utilities.EmailMixin.provision_failed_email',
                 ),
+                mock_check_security_groups=stack_patch(
+                    'instance.models.openedx_appserver.OpenEdXAppServer.check_security_groups',
+                ),
                 mock_provision_mysql=stack_patch(
                     'instance.models.mixins.openedx_database.MySQLInstanceMixin.provision_mysql',
                 ),

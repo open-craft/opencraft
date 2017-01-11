@@ -80,6 +80,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
             instance_data
         )
         self.assertIn(('edx_platform_commit', 'master'), instance_data)
+        self.assertIn(('additional_security_groups', []), instance_data)
         # AppServer info:
         self.assertIn(('appserver_count', 1), instance_data)
         self.assertIn('active_appserver', response.data)

@@ -33,7 +33,7 @@ import novaclient
 import yaml
 
 from instance.models.appserver import Status as AppServerStatus
-from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_appserver import OpenEdXAppServer, EDXAPP_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
@@ -258,6 +258,93 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver = make_test_appserver(instance)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
+
+    @patch_services
+    def test_default_security_groups(self, mocks):
+        """
+        Test that security groups are set when provisioning an AppServer
+        """
+        result = make_test_appserver().provision()
+        self.assertTrue(result)
+        create_server_kwargs = mocks.mock_create_server.call_args[1]
+        self.assertEqual(create_server_kwargs["security_groups"], [settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME])
+
+    @override_settings(EDXAPP_APPSERVER_SECURITY_GROUP_NAME="default-group")
+    @patch_services
+    def test_additional_security_groups(self, mocks):
+        """
+        Test a differently-named default security group, as well as the ability
+        for an Instance to specify additional security groups.
+        """
+        instance = OpenEdXInstanceFactory(additional_security_groups=["group_a", "group_b"])
+        app_server = make_test_appserver(instance)
+        result = app_server.provision()
+        self.assertTrue(result)
+        create_server_kwargs = mocks.mock_create_server.call_args[1]
+        self.assertEqual(create_server_kwargs["security_groups"], ["default-group", "group_a", "group_b"])
+
+    @patch_services
+    def test_provision_invalid_security_groups(self, mocks):
+        """
+        Test what happens when security groups cannot be created/synced/verified.
+        The server VM should not be created, and the provisioning should fail.
+        """
+        mocks.mock_check_security_groups.side_effect = Exception("Testing security group update failure")
+        app_server = make_test_appserver()
+        result = app_server.provision()
+        self.assertFalse(result)
+        mocks.mock_create_server.assert_not_called()
+        mocks.mock_provision_failed_email.assert_called_once_with(
+            "Unable to check/update the network security groups for the new VM"
+        )
+
+    @patch("instance.models.openedx_appserver.get_openstack_connection")
+    @patch("instance.models.openedx_appserver.sync_security_group_rules")
+    def test_check_security_groups(self, mock_sync_security_group_rules, mock_get_openstack_connection):
+        """
+        Test that check_security_groups() can create and synchronize security groups
+        """
+        # We simulate the existence of these network security groups on the OpenStack cloud:
+        existing_groups = ["group_a", "group_b"]
+        new_security_group = Mock()
+
+        def mocked_find_security_group(name_or_id):
+            """ Mock openstack network.find_security_group """
+            if name_or_id in existing_groups:
+                result = Mock()
+                result.name = name_or_id
+                return result
+
+        def mocked_create_security_group(**args):
+            """ Mock openstack network.create_security_group """
+            new_security_group.__dict__.update(**args)
+            return new_security_group
+
+        network = mock_get_openstack_connection().network
+        network.find_security_group.side_effect = mocked_find_security_group
+        network.create_security_group.side_effect = mocked_create_security_group
+
+        instance = OpenEdXInstanceFactory(additional_security_groups=["group_a", "group_b"])
+        app_server = make_test_appserver(instance)
+
+        # Call check_security_groups():
+        app_server.check_security_groups()
+        # the default group doesn't exist, so we expect it was created:
+        network.create_security_group.assert_called_once_with(name=settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME)
+        # we also expect that its description was set:
+        expected_description = "Security group for Open EdX AppServers. Managed automatically by OpenCraft IM."
+        network.update_security_group.assert_called_once_with(new_security_group, description=expected_description)
+        # We expect that the group was synced with the configured rules:
+        mock_sync_security_group_rules.assert_called_once_with(
+            new_security_group, EDXAPP_APPSERVER_SECURITY_GROUP_RULES, network=network
+        )
+
+        # Now, if we change the additional groups, we expect to get an exception:
+        instance.additional_security_groups = ["invalid"]
+        instance.save()
+        app_server = make_test_appserver(instance)
+        with self.assertRaisesRegex(Exception, "Unable to find the OpenStack network security group called 'invalid'."):
+            app_server.check_security_groups()
 
 
 @ddt
