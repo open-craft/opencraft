@@ -38,11 +38,6 @@ from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################
 
-PROTOCOL_CHOICES = (
-    ('http', 'HTTP - Unencrypted clear text'),
-    ('https', 'HTTPS - Encrypted'),
-)
-
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(settings.DEFAULT_FORK)
 
 # OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
@@ -67,7 +62,6 @@ class OpenEdXAppConfiguration(models.Model):
         'The default contact email for this instance; also used as the from address for emails '
         'sent by the server.'
     ))
-    protocol = models.CharField(max_length=5, default='http', choices=PROTOCOL_CHOICES)
 
     # Ansible-specific settings:
     configuration_source_repo_url = models.URLField(max_length=256, blank=False)

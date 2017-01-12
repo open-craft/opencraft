@@ -183,9 +183,9 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.studio_domain, internal_studio_domain)
         self.assertEqual(instance.studio_domain_nginx_regex, r'~^(studio\-sample\.example\.org)$')
-        self.assertEqual(instance.url, 'http://{}/'.format(internal_lms_domain))
-        self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(internal_lms_preview_domain))
-        self.assertEqual(instance.studio_url, 'http://{}/'.format(internal_studio_domain))
+        self.assertEqual(instance.url, 'https://{}/'.format(internal_lms_domain))
+        self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(internal_lms_preview_domain))
+        self.assertEqual(instance.studio_url, 'https://{}/'.format(internal_studio_domain))
         self.assertEqual(str(instance), 'Sample Instance (sample.example.org)')
         # External domains take precedence over internal domains.
         external_lms_domain = 'external.domain.com'
@@ -206,15 +206,10 @@ class OpenEdXInstanceTestCase(TestCase):
             instance.studio_domain_nginx_regex,
             r'~^(external\-studio\.domain\.com|studio\-sample\.example\.org)$'
         )
-        self.assertEqual(instance.url, 'http://{}/'.format(external_lms_domain))
-        self.assertEqual(instance.lms_preview_url, 'http://{}/'.format(external_lms_preview_domain))
-        self.assertEqual(instance.studio_url, 'http://{}/'.format(external_studio_domain))
-        self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
-        # URLs respect the protocol setting.
-        instance.protocol = 'https'
         self.assertEqual(instance.url, 'https://{}/'.format(external_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(external_lms_preview_domain))
         self.assertEqual(instance.studio_url, 'https://{}/'.format(external_studio_domain))
+        self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
 
     @patch_services
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
