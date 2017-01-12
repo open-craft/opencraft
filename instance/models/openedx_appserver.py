@@ -33,7 +33,7 @@ from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
 from instance.models.utils import format_help_text
-from instance.openstack import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
+from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
 from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################

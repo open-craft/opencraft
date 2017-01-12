@@ -72,7 +72,7 @@ def get_openstack_connection():
     """
     profile = Profile()
     profile.set_region(Profile.ALL, settings.OPENSTACK_REGION)
-    return Connection(
+    connection = Connection(
         profile=profile,
         user_agent='opencraft-im',
         auth_url=settings.OPENSTACK_AUTH_URL,
@@ -80,6 +80,13 @@ def get_openstack_connection():
         username=settings.OPENSTACK_USER,
         password=settings.OPENSTACK_PASSWORD,
     )
+    # API queries via the nova client occasionally get connection errors from the OpenStack provider.
+    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
+    # urllib3's definition) are retried before giving up.
+    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
+    connection.session.session.mount('http://', adapter)
+    connection.session.session.mount('https://', adapter)
+    return connection
 
 
 def sync_security_group_rules(security_group, rule_definitions, network=None):
@@ -148,16 +155,6 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
 
     logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
     return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)
-
-
-def delete_servers_by_name(nova, server_name):
-    """
-    Delete all servers with `server_name`
-    """
-    for server in nova.servers.list():
-        if server.name == server_name:
-            logger.info('deleting server %s', server)
-            nova.servers.delete(server)
 
 
 def get_server_public_address(server):

@@ -34,7 +34,7 @@ from swiftclient.service import SwiftError
 from backup_swift.tarsnap import make_tarsnap_backup
 from backup_swift.utils import ping_heartbeat_url, filter_logger, filter_swift
 
-from instance import openstack
+from instance import openstack_utils
 
 # Logging #####################################################################
 
@@ -54,7 +54,7 @@ def do_backup_swift():
         error_report = ""
         download_results = []
         try:
-            download_results = openstack.download_swift_account(settings.BACKUP_SWIFT_TARGET)
+            download_results = openstack_utils.download_swift_account(settings.BACKUP_SWIFT_TARGET)
         except SwiftError:
             error_report += "Miscellaneous error while downloading swift containers\n"
             logger.exception("Misc error while downloading swift containers")

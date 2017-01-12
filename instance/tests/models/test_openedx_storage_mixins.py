@@ -119,7 +119,7 @@ class SwiftContainerInstanceTestCase(TestCase):
             create_swift_container.call_args_list,
         )
 
-    @patch('instance.openstack.create_swift_container')
+    @patch('instance.openstack_utils.create_swift_container')
     def test_provision_swift(self, create_swift_container):
         """
         Test provisioning Swift containers, and that they are provisioned only once.
@@ -133,7 +133,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
 
-    @patch('instance.openstack.create_swift_container')
+    @patch('instance.openstack_utils.create_swift_container')
     @override_settings(SWIFT_ENABLE=False)
     def test_swift_disabled(self, create_swift_container):
         """

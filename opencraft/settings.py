@@ -340,7 +340,7 @@ STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default=OPENE
 # be managed by OpenCraft IM.
 EDXAPP_APPSERVER_SECURITY_GROUP_NAME = env('EDXAPP_APPSERVER_SECURITY_GROUP_NAME', default='edxapp-appserver')
 EDXAPP_APPSERVER_SECURITY_GROUP_RULES = [
-    # Each entry here must have the keys defined in instance.openstack.SecurityGroupRuleDefinition.
+    # Each entry here must have the keys defined in instance.openstack_utils.SecurityGroupRuleDefinition.
     # The following allows all egress traffic, and only allows ingress on ports 22, 80, and 443
     {
         "direction": "egress", "ether_type": "IPv4", "protocol": None,

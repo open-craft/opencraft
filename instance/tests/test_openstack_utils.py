@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-OpenStack - Tests
+OpenStack Utilities - Tests
 """
 
 # Imports #####################################################################
@@ -33,12 +33,12 @@ from openstack.network.v2.security_group_rule import SecurityGroupRule
 import requests
 from swiftclient.service import SwiftError
 
-from instance import openstack
+from instance import openstack_utils
 from instance.tests.base import TestCase
 
 # Constants and helpers #######################################################
 
-SecurityGroupRuleDefinition = openstack.SecurityGroupRuleDefinition
+SecurityGroupRuleDefinition = openstack_utils.SecurityGroupRuleDefinition
 
 CONTAINER_AUTH = dict(
     user='username',
@@ -80,7 +80,7 @@ class OpenStackTestCase(TestCase):
         """
         Test get_openstack_connection()
         """
-        conn = openstack.get_openstack_connection()
+        conn = openstack_utils.get_openstack_connection()
         self.assertEqual(conn.profile.get_services()[0]['region_name'], settings.OPENSTACK_REGION)
         self.assertTrue(conn.session.user_agent.startswith('opencraft-im'))
         # TODO: In future we could use 'mimic' to fake the OpenStack API for testing.
@@ -156,7 +156,7 @@ class OpenStackTestCase(TestCase):
         network = Mock()
         network.security_group_rules.return_value = existing_rules
         security_group = SecurityGroup.new(id="00000000-1234-1234-1234-000000000000")
-        openstack.sync_security_group_rules(security_group, rule_definitions, network=network)
+        openstack_utils.sync_security_group_rules(security_group, rule_definitions, network=network)
 
         network.security_group_rules.assert_called_once_with(security_group_id=security_group.id)
         self.assertEqual(network.create_security_group_rule.call_count, len(expected_adds))
@@ -174,28 +174,11 @@ class OpenStackTestCase(TestCase):
         """
         self.nova.flavors.find.return_value = 'test-flavor'
         self.nova.images.find.return_value = 'test-image'
-        openstack.create_server(self.nova, 'test-vm', {"ram": 4096, "disk": 40}, {"name": "Ubuntu 12.04"})
+        openstack_utils.create_server(self.nova, 'test-vm', {"ram": 4096, "disk": 40}, {"name": "Ubuntu 12.04"})
         self.assertEqual(self.nova.mock_calls, [
             call.flavors.find(disk=40, ram=4096),
             call.images.find(name='Ubuntu 12.04'),
             call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None, security_groups=None)
-        ])
-
-    def test_delete_servers_by_name(self):
-        """
-        Delete all servers with a given name
-        """
-        server_class = namedtuple('server_class', 'name pk')
-        self.nova.servers.list.return_value = [
-            server_class(name='server-a', pk=1),
-            server_class(name='server-a', pk=2),
-            server_class(name='server-b', pk=3),
-        ]
-        openstack.delete_servers_by_name(self.nova, 'server-a')
-        self.assertEqual(self.nova.mock_calls, [
-            call.servers.list(),
-            call.servers.delete(server_class(name='server-a', pk=1)),
-            call.servers.delete(server_class(name='server-a', pk=2)),
         ])
 
     def test_get_server_public_address_none(self):
@@ -204,7 +187,7 @@ class OpenStackTestCase(TestCase):
         """
         server_class = namedtuple('Server', 'addresses')
         server = server_class(addresses=[])
-        self.assertEqual(openstack.get_server_public_address(server), None)
+        self.assertEqual(openstack_utils.get_server_public_address(server), None)
 
     @patch('requests.packages.urllib3.util.retry.Retry.sleep')
     @patch('http.client.HTTPConnection.getresponse')
@@ -218,7 +201,7 @@ class OpenStackTestCase(TestCase):
             """ Invoked by the nova client when making a HTTP request (via requests/urllib3) """
             raise ConnectionResetError('[Errno 104] Connection reset by peer')
         mock_getresponse.side_effect = getresponse_call
-        nova = openstack.get_nova_client()
+        nova = openstack_utils.get_nova_client()
         with self.assertRaises(requests.exceptions.ConnectionError):
             nova.servers.get('test-id')
         self.assertEqual(mock_getresponse.call_count, 11)
@@ -256,7 +239,9 @@ class SwiftTestCase(TestCase):
         self.service_handle = MagicMock()
         self.service_handle.__enter__.return_value = self.service
         self.swift_service_function = MagicMock(return_value=self.service_handle)
-        self.swift_service_function_patch = mock.patch("instance.openstack.swift_service", self.swift_service_function)
+        self.swift_service_function_patch = mock.patch(
+            "instance.openstack_utils.swift_service", self.swift_service_function
+        )
         self.swift_service_function_patch.start()
 
     def tearDown(self):
@@ -278,7 +263,7 @@ class SwiftTestCase(TestCase):
     )
     def test_create_swift_container(self, auth):
         """Test for create_swift_container function."""
-        openstack.create_swift_container(CONTAINER_NAME, **auth)
+        openstack_utils.create_swift_container(CONTAINER_NAME, **auth)
         self.service.post.assert_called_once_with(CONTAINER_NAME, options={'read_acl': '.r:*'})
         self.basic_checks(auth)
 
@@ -288,7 +273,7 @@ class SwiftTestCase(TestCase):
     def test_delete_swift_containerr(self, auth):
         """Test for delete_swift_container function."""
         self.service.delete.return_value = [None] * 10 # Response contents are ignored
-        openstack.delete_swift_container(CONTAINER_NAME, **auth)
+        openstack_utils.delete_swift_container(CONTAINER_NAME, **auth)
         self.service.delete.assert_called_once_with(CONTAINER_NAME)
         self.basic_checks(auth)
 
@@ -343,7 +328,7 @@ class SwiftTestCase(TestCase):
         :param dict expected_failed_files: Expected response from the download call
         """
         self.service.download.return_value = file_responses
-        actual_failed_files = openstack.download_swift_account(DOWNLOAD_FOLDER, **auth)
+        actual_failed_files = openstack_utils.download_swift_account(DOWNLOAD_FOLDER, **auth)
         self.assertEqual(dict(actual_failed_files), expected_failed_files)
 
     def test_download_propagates_exceptions(self):
@@ -352,7 +337,7 @@ class SwiftTestCase(TestCase):
         """
         self.service.download.side_effect = SwiftError(None)
         with self.assertRaises(SwiftError):
-            openstack.download_swift_account(DOWNLOAD_FOLDER)
+            openstack_utils.download_swift_account(DOWNLOAD_FOLDER)
 
     @ddt.data(
         ({}, 'container-1', '1234', '.r:*'),
@@ -366,7 +351,7 @@ class SwiftTestCase(TestCase):
         self.service.stat.return_value = self.stat_container_response(
             container_name=container_name, size=size, read_acl=read_acl
         )
-        actual_stat_response = openstack.stat_container(container_name, **auth)
+        actual_stat_response = openstack_utils.stat_container(container_name, **auth)
         self.service.stat.assert_called_once_with(container_name)
         self.assertEqual(read_acl, actual_stat_response.read_acl)
         self.assertEqual(size, actual_stat_response.bytes)
@@ -380,8 +365,8 @@ class ServicePassesAuthTestCase(TestCase):
     # pylint: disable=no-self-use
     def test_service_passes_auth(self):
         """Test if swift_service passes authorization properly. """
-        with mock.patch('instance.openstack.SwiftService') as service:
-            openstack.swift_service(
+        with mock.patch('instance.openstack_utils.SwiftService') as service:
+            openstack_utils.swift_service(
                 user='user',
                 password='password',
                 tenant='tenant',
