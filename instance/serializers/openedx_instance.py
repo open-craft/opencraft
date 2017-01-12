@@ -66,7 +66,6 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         model = OpenEdXInstanceBasicSerializer.Meta.model
         fields = OpenEdXInstanceBasicSerializer.Meta.fields + (
             'email',
-            'protocol',
             'use_ephemeral_databases',
             'github_admin_organizations',
             'github_admin_users',

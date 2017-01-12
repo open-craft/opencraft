@@ -78,7 +78,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         instance.refresh_from_db()
         self.assertIsNotNone(instance.active_appserver)
         server_ip = instance.active_appserver.server.public_ip
-        ports_should_be_open = [22, 80]  # 443 may or may not be open, depending on instance.protocol
+        ports_should_be_open = [22, 80]  # 443 may or may not be open
         for port in ports_should_be_open:
             self.assertTrue(
                 is_port_open(server_ip, port),

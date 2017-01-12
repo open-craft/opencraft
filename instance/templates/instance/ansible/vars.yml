@@ -8,7 +8,7 @@ EDXAPP_PLATFORM_NAME: "{{ instance.name }}"
 EDXAPP_SITE_NAME: '{{ instance.domain }}'
 EDXAPP_LMS_NGINX_PORT: 80
 EDXAPP_LMS_SSL_NGINX_PORT: 443
-EDXAPP_LMS_BASE_SCHEME: '{{ instance.protocol }}'
+EDXAPP_LMS_BASE_SCHEME: 'https'
 EDXAPP_LMS_SITE_NAME: '{{ instance.domain }}'
 EDXAPP_LMS_BASE: '{{ instance.domain }}'
 
@@ -33,12 +33,6 @@ NGINX_REDIRECT_TO_HTTPS: true
 NGINX_ENABLE_SSL: false
 NGINX_REDIRECT_TO_HTTPS: false
 {% endif %}
-
-# SSL certificates
-# Paths are relative to the location of the playbook file!
-# We don't need this in OC IM where SSL is handled by the load balancer.
-# NGINX_SSL_CERTIFICATE: '{{ playbook_dir }}/../../relative/path/to/ssl-cert.pem'
-# NGINX_SSL_KEY: '{{ playbook_dir }}/../../relative/path/to/ssl-key.key'
 
 # Nginx redirects (optional)
 # This example redirects non-www to www version of myinstance.org.
@@ -77,11 +71,7 @@ SECURITY_UPDATE_ALL_PACKAGES: false
 SECURITY_UPGRADE_ON_ANSIBLE: true
 
 # OAuth
-{% if instance.protocol == 'https' %}
-EDXAPP_OAUTH_ENFORCE_SECURE: true
-{% else %}
 EDXAPP_OAUTH_ENFORCE_SECURE: false
-{% endif %}
 
 # Set YouTube API key to null to avoid YouTube XHR errors.
 # Can be overridden in extra settings with a valid API key.
@@ -94,8 +84,8 @@ EDXAPP_ANALYTICS_DASHBOARD_URL: ''
 # Notifier (forum digest notifications)
 NOTIFIER_DIGEST_TASK_INTERVAL: '1440'  # 1440 minutes == 24 hours
 NOTIFIER_DIGEST_EMAIL_SENDER: '{{ appserver.email }}'
-NOTIFIER_LMS_URL_BASE: '{{ instance.protocol }}://{{ instance.domain }}'
-NOTIFIER_LOGO_IMAGE_URL: '{{ instance.protocol }}://{{ instance.domain }}/static/images/logo.png'
+NOTIFIER_LMS_URL_BASE: 'https://{{ instance.domain }}'
+NOTIFIER_LOGO_IMAGE_URL: 'https://{{ instance.domain }}/static/images/logo.png'
 
 NOTIFIER_EMAIL_BACKEND: 'smtp'
 NOTIFIER_EMAIL_HOST: 'localhost'
@@ -189,8 +179,8 @@ POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  
 
 # Ecommerce
 SANDBOX_ENABLE_ECOMMERCE: false  # set to true to enable ecommerce
-ECOMMERCE_ECOMMERCE_URL_ROOT: '{{ instance.protocol }}://{{ instance.domain }}:18130'
-ECOMMERCE_SUPPORT_URL: '{{ instance.protocol }}://{{ instance.domain }}'
+ECOMMERCE_ECOMMERCE_URL_ROOT: 'https://{{ instance.domain }}:18130'
+ECOMMERCE_SUPPORT_URL: 'https://{{ instance.domain }}'
 ECOMMERCE_LMS_URL_ROOT: '{{ instance.domain }}'
 ECOMMERCE_PLATFORM_NAME: "{{ EDXAPP_PLATFORM_NAME }}"
 # Set your own ECOMMERCE_PAYMENT_PROCESSOR_CONFIG, or update the variables for the appropriate processor:

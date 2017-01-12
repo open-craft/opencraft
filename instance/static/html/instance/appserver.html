@@ -36,7 +36,7 @@
         </tr>
         <tr>
           <th>VM IP Address</th>
-          <td><a href="{{ appserver.protocol }}://{{ appserver.server.public_ip }}">{{ appserver.server.public_ip }}</a></td>
+          <td><a href="http://{{ appserver.server.public_ip }}">{{ appserver.server.public_ip }}</a></td>
         </tr>
       </tbody>
     </table>
@@ -61,10 +61,6 @@
         <tr>
           <td>Email</td>
           <td>{{ appserver.email }}</td>
-        </tr>
-        <tr>
-          <td>Protocol</td>
-          <td>{{ appserver.protocol }}</td>
         </tr>
         <tr>
           <td>Use ephemeral databases</td>

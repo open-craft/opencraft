@@ -73,8 +73,8 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
         self.assertIn(('is_shut_down', False), instance_data)
         self.assertIn(('name', instance.name), instance_data)
-        self.assertIn(('url', 'http://domain.api.example.com/'), instance_data)
-        self.assertIn(('studio_url', 'http://studio-domain.api.example.com/'), instance_data)
+        self.assertIn(('url', 'https://domain.api.example.com/'), instance_data)
+        self.assertIn(('studio_url', 'https://studio-domain.api.example.com/'), instance_data)
         self.assertIn(
             ('edx_platform_repository_url', 'https://github.com/{}.git'.format(settings.DEFAULT_FORK)),
             instance_data
