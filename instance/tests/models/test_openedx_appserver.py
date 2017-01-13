@@ -33,7 +33,7 @@ import novaclient
 import yaml
 
 from instance.models.appserver import Status as AppServerStatus
-from instance.models.openedx_appserver import OpenEdXAppServer, EDXAPP_APPSERVER_SECURITY_GROUP_RULES
+from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
@@ -267,9 +267,9 @@ class OpenEdXAppServerTestCase(TestCase):
         result = make_test_appserver().provision()
         self.assertTrue(result)
         create_server_kwargs = mocks.mock_create_server.call_args[1]
-        self.assertEqual(create_server_kwargs["security_groups"], [settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME])
+        self.assertEqual(create_server_kwargs["security_groups"], [settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME])
 
-    @override_settings(EDXAPP_APPSERVER_SECURITY_GROUP_NAME="default-group")
+    @override_settings(OPENEDX_APPSERVER_SECURITY_GROUP_NAME="default-group")
     @patch_services
     def test_additional_security_groups(self, mocks):
         """
@@ -330,13 +330,13 @@ class OpenEdXAppServerTestCase(TestCase):
         # Call check_security_groups():
         app_server.check_security_groups()
         # the default group doesn't exist, so we expect it was created:
-        network.create_security_group.assert_called_once_with(name=settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME)
+        network.create_security_group.assert_called_once_with(name=settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
         # we also expect that its description was set:
         expected_description = "Security group for Open EdX AppServers. Managed automatically by OpenCraft IM."
         network.update_security_group.assert_called_once_with(new_security_group, description=expected_description)
         # We expect that the group was synced with the configured rules:
         mock_sync_security_group_rules.assert_called_once_with(
-            new_security_group, EDXAPP_APPSERVER_SECURITY_GROUP_RULES, network=network
+            new_security_group, OPENEDX_APPSERVER_SECURITY_GROUP_RULES, network=network
         )
 
         # Now, if we change the additional groups, we expect to get an exception:

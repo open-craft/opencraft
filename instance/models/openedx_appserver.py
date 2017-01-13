@@ -46,9 +46,9 @@ PROTOCOL_CHOICES = (
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(settings.DEFAULT_FORK)
 
 # OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
-EDXAPP_APPSERVER_SECURITY_GROUP_RULES = [
+OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
-    SecurityGroupRuleDefinition(**rule) for rule in settings.EDXAPP_APPSERVER_SECURITY_GROUP_RULES
+    SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 ]
 
 # Models ######################################################################
@@ -306,7 +306,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         Example return value: ["edxapp-appserver"]
         """
-        return [settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME] + self.additional_security_groups
+        return [settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME] + self.additional_security_groups
 
     def check_security_groups(self):
         """
@@ -314,21 +314,21 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         group that only allows access to a few ports, like 443 and 22.
 
         The security group with the name specified by
-        settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME is created and managed
+        settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME is created and managed
         by this code.
         """
         self.logger.info('Checking security groups (OpenStack firewall settings)')
         network = get_openstack_connection().network
-        main_security_group = network.find_security_group(settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME)
+        main_security_group = network.find_security_group(settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
         if not main_security_group:
             # We need to create this security group:
-            main_security_group = network.create_security_group(name=settings.EDXAPP_APPSERVER_SECURITY_GROUP_NAME)
+            main_security_group = network.create_security_group(name=settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
         description = 'Security group for Open EdX AppServers. Managed automatically by OpenCraft IM.'
         if main_security_group.description != description:
             network.update_security_group(main_security_group, description=description)
 
         # We manage this security group - update its rules to match the configured list of rules
-        sync_security_group_rules(main_security_group, EDXAPP_APPSERVER_SECURITY_GROUP_RULES, network=network)
+        sync_security_group_rules(main_security_group, OPENEDX_APPSERVER_SECURITY_GROUP_RULES, network=network)
 
         # For any additional security groups, just verify that the group exists:
         groups = self.security_groups

@@ -174,6 +174,21 @@ flavor:
 
     OPENSTACK_SANDBOX_FLAVOR='{"name": "m1.medium"}'
 
+### OpenStack Security Groups
+
+Every VM used to host Open edX will automatically be added to an OpenStack
+network security group, which is provides a firewall that limits what 
+ports/services on the VM are exposed to the Internet. The security group will
+automatically be created and managed by OpenCraft IM.
+
+Instances of Open edX can also be assigned additional security groups.
+Typically, these additional security groups would not contain any rules; they
+are instead used for things like granting access to a specific database server.
+(e.g. add an additional security group called `allow-mysql-access` to the Open
+edX instance; it does not need to contain any rules. Then, on your MySQL server,
+edit its security group rules to only allow access to VMs in the
+`allow-mysql-access` security group.)
+
 ### Application settings
 
 * `DEBUG`: Turn on debug mode. Use in development only (default: False)
@@ -309,6 +324,13 @@ set the following configuration variables:
   production instances.
 * `STABLE_CONFIGURATION_VERSION`: The configuration commit ref used by default
   for production instances.  Defaults to OPENEDX_RELEASE_STABLE_REF.
+* `OPENEDX_APPSERVER_SECURITY_GROUP_NAME`: The name of an OpenStack network
+  security group to use for the Open edX VMs which run the LMS/CMS. Defaults to
+  `edxapp-appserver`. This security group will be automatically created and
+  managed by OpenCraft IM; any changes made to it manually will be lost.
+* `OPENEDX_APPSERVER_SECURITY_GROUP_RULES`: This specifies the firewall rules
+  that the above security group will have. The default allows ingress on ports
+  22, 80, and 443 only.
 
 Migrations
 ----------
