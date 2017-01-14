@@ -12,7 +12,7 @@ import requests
 from backup_swift.tasks import do_backup_swift, backup_swift_periodic, backup_swift_task
 from backup_swift.utils import filter_swift
 from . import tarsnap, tasks
-from instance.openstack import FailedContainer
+from instance.openstack_utils import FailedContainer
 
 
 @mock.patch('subprocess.run')
@@ -181,7 +181,9 @@ class TestBackupSequence(TestCase):
     def setUp(self):
         """Sets up patchers."""
         self.patchers = []
-        self.openstack_download = self.add_patcher(mock.patch("backup_swift.tasks.openstack.download_swift_account"))
+        self.openstack_download = self.add_patcher(
+            mock.patch("backup_swift.tasks.openstack_utils.download_swift_account")
+        )
         self.tarsnap_backup = self.add_patcher(mock.patch("backup_swift.tasks.make_tarsnap_backup"))
         self.mail_admins = self.add_patcher(mock.patch("backup_swift.tasks.mail_admins"))
         self.heartbeat = self.add_patcher(mock.patch("backup_swift.tasks.ping_heartbeat_url"))

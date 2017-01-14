@@ -20,6 +20,7 @@
 Instance app models - Open EdX AppServer models
 """
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.template import loader
 from django.utils.text import slugify
@@ -32,6 +33,7 @@ from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
 from instance.models.utils import format_help_text
+from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
 from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################
@@ -42,6 +44,12 @@ PROTOCOL_CHOICES = (
 )
 
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(settings.DEFAULT_FORK)
+
+# OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
+OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
+    # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
+    SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
+]
 
 # Models ######################################################################
 
@@ -103,7 +111,18 @@ class OpenEdXAppConfiguration(models.Model):
     )
     lms_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
+        blank=True,
         help_text='Instance manager users that should be made staff users on the instance.',
+    )
+    additional_security_groups = ArrayField(
+        models.CharField(max_length=200),
+        default=list,
+        blank=True,
+        help_text=(
+            "Optional: A list of extra OpenStack security group names to use for this instance's VMs. "
+            "A typical use case is to grant this instance access to a private database server that is "
+            "behind a firewall. (In the django admin, separate group names with a comma.)"
+        )
     )
 
     @classmethod
@@ -279,6 +298,45 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         admin_users += self.github_admin_users
         return admin_users
 
+    @property
+    def security_groups(self):
+        """
+        List of the names of each OpenStack network security group used by this
+        AppServer
+
+        Example return value: ["edxapp-appserver"]
+        """
+        return [settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME] + self.additional_security_groups
+
+    def check_security_groups(self):
+        """
+        For security reasons, every edxapp AppServer should be in a security
+        group that only allows access to a few ports, like 443 and 22.
+
+        The security group with the name specified by
+        settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME is created and managed
+        by this code.
+        """
+        self.logger.info('Checking security groups (OpenStack firewall settings)')
+        network = get_openstack_connection().network
+        main_security_group = network.find_security_group(settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
+        if not main_security_group:
+            # We need to create this security group:
+            main_security_group = network.create_security_group(name=settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
+        description = 'Security group for Open EdX AppServers. Managed automatically by OpenCraft IM.'
+        if main_security_group.description != description:
+            network.update_security_group(main_security_group, description=description)
+
+        # We manage this security group - update its rules to match the configured list of rules
+        sync_security_group_rules(main_security_group, OPENEDX_APPSERVER_SECURITY_GROUP_RULES, network=network)
+
+        # For any additional security groups, just verify that the group exists:
+        groups = self.security_groups
+        groups.remove(main_security_group.name) # We already checked this group
+        for group_name in groups:
+            if network.find_security_group(group_name) is None:
+                raise Exception("Unable to find the OpenStack network security group called '{}'.".format(group_name))
+
     @log_exception
     @AppServer.status.only_for(AppServer.Status.New)
     def provision(self):
@@ -288,7 +346,17 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         Returns True on success or False on failure
         """
         self.logger.info('Starting provisioning')
-        # Start by requesting a new server/VM:
+
+        # Check firewall rules:
+        try:
+            self.check_security_groups()
+        except:  # pylint: disable=bare-except
+            message = "Unable to check/update the network security groups for the new VM"
+            self.logger.exception(message)
+            self.provision_failed_email(message)
+            return False
+
+        # Requesting a new server/VM:
         self._status_to_waiting_for_server()
         assert self.server.vm_not_yet_requested
         self.server.name_prefix = ('edxapp-' + slugify(self.instance.domain))[:20]
@@ -299,7 +367,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return self.server.status.accepts_ssh_commands
 
         try:
-            self.server.start()
+            self.server.start(security_groups=self.security_groups)
             self.logger.info('Waiting for server %s...', self.server)
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)

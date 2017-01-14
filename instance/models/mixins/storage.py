@@ -26,7 +26,7 @@ from django.conf import settings
 from django.db import models
 from swiftclient.exceptions import ClientException as SwiftClientException
 
-from instance import openstack
+from instance import openstack_utils
 
 
 # Classes #####################################################################
@@ -58,7 +58,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         if settings.SWIFT_ENABLE and not self.swift_provisioned:
             for container_name in self.swift_container_names:
-                openstack.create_swift_container(
+                openstack_utils.create_swift_container(
                     container_name,
                     user=self.swift_openstack_user,
                     password=self.swift_openstack_password,
@@ -76,7 +76,7 @@ class SwiftContainerInstanceMixin(models.Model):
         if settings.SWIFT_ENABLE and self.swift_provisioned:
             for container_name in self.swift_container_names:
                 try:
-                    openstack.delete_swift_container(
+                    openstack_utils.delete_swift_container(
                         container_name,
                         user=self.swift_openstack_user,
                         password=self.swift_openstack_password,

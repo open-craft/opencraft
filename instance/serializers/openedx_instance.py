@@ -92,6 +92,8 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             's3_secret_access_key',
             's3_bucket_name',
 
+            'additional_security_groups',
+
             'configuration_source_repo_url',
             'configuration_version',
             'configuration_extra_settings',

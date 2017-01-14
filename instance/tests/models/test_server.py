@@ -72,7 +72,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(str(server), 'Pending OpenStack Server')
         self.assertEqual(server.status, ServerStatus.Pending)
 
-    @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.openstack_utils.create_server')
     def test_start_server(self, mock_create_server):
         """
         Start a new server
@@ -95,7 +95,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.openstack_id, 'pending-server-id')
         self.assertEqual(str(server), 'pending-server-id')
 
-    @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.openstack_utils.create_server')
     def test_start_server_fails(self, mock_create_server):
         """
         Check if 'start' behaves correctly when server creation fails
@@ -109,7 +109,7 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServer.objects.get(pk=server.pk)
         self.assertEqual(server.status, ServerStatus.BuildFailed)
 
-    @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server(self, mock_create_server):
         """
         Get the os_server attribute of a new server
@@ -122,7 +122,7 @@ class OpenStackServerTestCase(TestCase):
 
     @patch('novaclient.client.HTTPClient.authenticate', autospec=True)
     @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
-    @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate):
         """
         The nova client should retry in case of server errors
@@ -531,7 +531,7 @@ class OpenStackServerStatusTestCase(TestCase):
             with self.assertRaises(WrongStateException):
                 getattr(instance, transition['name'])()
 
-    @patch('instance.models.server.openstack.create_server')
+    @patch('instance.models.server.openstack_utils.create_server')
     def test_update_status_pending(self, mock_create_server):
         """
         Update status while the server is pending

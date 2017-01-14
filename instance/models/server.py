@@ -33,7 +33,7 @@ import novaclient
 import requests
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
-from instance import openstack
+from instance import openstack_utils
 from instance.logging import ModelLoggerAdapter
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
@@ -267,7 +267,7 @@ class OpenStackServer(Server):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.nova = openstack.get_nova_client()
+        self.nova = openstack_utils.get_nova_client()
 
     def __str__(self):
         if self.openstack_id:
@@ -294,7 +294,7 @@ class OpenStackServer(Server):
             return None
 
         try:
-            public_addr = openstack.get_server_public_address(self.os_server)
+            public_addr = openstack_utils.get_server_public_address(self.os_server)
         except (requests.RequestException, novaclient.exceptions.ClientException):
             return None  # Could not determine an IP based on the OS API
         if not public_addr:
@@ -351,7 +351,7 @@ class OpenStackServer(Server):
         return self.status
 
     @Server.status.only_for(Status.Pending)
-    def start(self):
+    def start(self, **kwargs):
         """
         Get a server instance started and an openstack_id assigned
 
@@ -361,12 +361,13 @@ class OpenStackServer(Server):
         self.logger.info('Starting server (status=%s)...', self.status)
         self._status_to_building()
         try:
-            os_server = openstack.create_server(
+            os_server = openstack_utils.create_server(
                 self.nova,
                 self.name,
                 settings.OPENSTACK_SANDBOX_FLAVOR,
                 settings.OPENSTACK_SANDBOX_BASE_IMAGE,
                 key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
+                **kwargs
             )
         except novaclient.exceptions.ClientException as e:
             self.logger.error('Failed to start server: %s', e)

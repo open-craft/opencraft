@@ -96,7 +96,7 @@ def patch_services(func):
                 return stack.enter_context(patch(*args, **kwargs))
 
             mock_sleep = stack_patch('instance.models.server.time.sleep')
-            mock_get_nova_client = stack_patch('instance.models.server.openstack.get_nova_client')
+            mock_get_nova_client = stack_patch('instance.models.server.openstack_utils.get_nova_client')
             mock_get_nova_client.return_value.servers.get = os_server_manager.get_os_server
 
             def check_sleep_count(_delay):
@@ -109,7 +109,7 @@ def patch_services(func):
                 mock_get_nova_client=mock_get_nova_client,
                 mock_is_port_open=stack_patch('instance.models.server.is_port_open', return_value=True),
                 mock_create_server=stack_patch(
-                    'instance.models.server.openstack.create_server', side_effect=new_servers,
+                    'instance.models.server.openstack_utils.create_server', side_effect=new_servers,
                 ),
                 mock_sleep=mock_sleep,
                 mock_run_ansible_playbooks=stack_patch(
@@ -118,6 +118,9 @@ def patch_services(func):
                 ),
                 mock_provision_failed_email=stack_patch(
                     'instance.models.mixins.utilities.EmailMixin.provision_failed_email',
+                ),
+                mock_check_security_groups=stack_patch(
+                    'instance.models.openedx_appserver.OpenEdXAppServer.check_security_groups',
                 ),
                 mock_provision_mysql=stack_patch(
                     'instance.models.mixins.openedx_database.MySQLInstanceMixin.provision_mysql',

@@ -477,7 +477,7 @@ class OpenEdXInstanceTestCase(TestCase):
         # This might happen if the OpenStack server dies or gets modified from the outside, but it
         # is not expected to happen under normal circumstances.  We deconfigure the backend and log
         # an error in this case.
-        with patch('instance.openstack.get_server_public_address', return_value=None), \
+        with patch('instance.openstack_utils.get_server_public_address', return_value=None), \
                 self.assertLogs("instance.models.instance", "ERROR"):
             self.assertEqual(instance.get_load_balancer_configuration(), ([], []))
 
