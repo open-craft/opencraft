@@ -571,6 +571,14 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver._status_to_configuration_failed()
 
     @staticmethod
+    def _set_appserver_errored(appserver):
+        """
+        Transition `appserver` to AppServerStatus.Error.
+        """
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_error()
+
+    @staticmethod
     def _set_server_ready(server):
         """
         Transition `server` to Status.Ready.
@@ -606,6 +614,8 @@ class OpenEdXInstanceTestCase(TestCase):
             self._set_appserver_running(appserver)
         if status == AppServerStatus.ConfigurationFailed:
             self._set_appserver_configuration_failed(appserver)
+        elif status == AppServerStatus.Error:
+            self._set_appserver_errored(appserver)
         elif status == AppServerStatus.Terminated:
             self._set_appserver_terminated(appserver)
         return appserver
@@ -623,6 +633,13 @@ class OpenEdXInstanceTestCase(TestCase):
         and (optionally) was `created` on a specific date.
         """
         return self._create_appserver(instance, AppServerStatus.ConfigurationFailed, created)
+
+    def _create_errored_appserver(self, instance, created=None):
+        """
+        Return app server for `instance` that has `status` AppServerStatus.Error,
+        and (optionally) was `created` on a specific date.
+        """
+        return self._create_appserver(instance, AppServerStatus.Error, created)
 
     def _create_terminated_appserver(self, instance, created=None):
         """
@@ -713,7 +730,10 @@ class OpenEdXInstanceTestCase(TestCase):
         failed_appservers = [
             self._create_failed_appserver(instance) for dummy in range(num_terminated_appservers)
         ]
-        for failed_appserver in failed_appservers:
+        errored_appservers = [
+            self._create_errored_appserver(instance) for dummy in range(num_terminated_appservers)
+        ]
+        for failed_appserver in failed_appservers + errored_appservers:
             self._set_server_terminated(failed_appserver.server)
 
         if num_failed_appservers_vm_ready:
