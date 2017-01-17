@@ -26,6 +26,7 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.template import loader
+from django.utils import timezone
 
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
@@ -320,6 +321,8 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
         self.active_appserver = app_server
         self.save()
+        self.active_appserver.last_activated = timezone.now()
+        self.active_appserver.save()
         self.reconfigure_load_balancer()
         self.enable_monitoring()
 

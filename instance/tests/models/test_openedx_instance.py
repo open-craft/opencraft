@@ -23,7 +23,7 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 import codecs
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import call, patch, Mock
 from uuid import uuid4
 import re
@@ -33,6 +33,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
+from freezegun import freeze_time
+from pytz import utc
 import requests
 import responses
 import yaml
@@ -306,9 +308,16 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
                                           use_ephemeral_databases=True)
         appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
+
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            instance.set_appserver_active(appserver_id)
+        activation_time = utc.localize(freezed_time())
+
         instance.refresh_from_db()
         self.assertEqual(instance.active_appserver.pk, appserver_id)
+        self.assertEqual(instance.appserver_set.get().last_activated, activation_time)
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
         self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
         instance.set_appserver_inactive()
