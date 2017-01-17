@@ -876,44 +876,50 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertTrue(instance.is_shut_down)
 
     @ddt.data(2, 5, 10)
-    def test_terminate_obsolete_appservers(self, days):
+    @patch_services
+    def test_terminate_obsolete_appservers(self, mock_services, days):
         """
-        Test that `terminate_obsolete_appservers` correctly identifies and terminates app servers
-        that were created (more than) `days` before the currently-active app server of the parent instance.
+        When there is an active appserver, test that `terminate_obsolete_appservers`
+        correctly identifies and terminates app servers created more than `days` before now, except:
+        - the active appserver
+        - a release candidate server (the most recent running appserver)
+        - a fallback appserver for `days` after activation (the most recent running appserver created before)
         """
         instance = OpenEdXInstanceFactory()
         reference_date = timezone.now()
 
         # Create app servers
-        with freeze_time(reference_date - timedelta(days=days + 1)):
-            obsolete_appserver = self._create_running_appserver(instance)
-            obsolete_appserver_failed = self._create_failed_appserver(instance)
+        with freeze_time(reference_date - timedelta(days=days + 3)):
+            oldest_appserver = self._create_running_appserver(instance)
+            oldest_appserver_failed = self._create_failed_appserver(instance)
 
-        with freeze_time(reference_date - timedelta(days=days - 1)):
-            recent_appserver = self._create_running_appserver(instance)
-            recent_appserver_failed = self._create_failed_appserver(instance)
+        with freeze_time(reference_date - timedelta(days=days + 2)):
+            fallback_appserver = self._create_running_appserver(instance)
+            fallback_appserver_failed = self._create_failed_appserver(instance)
 
-        with freeze_time(reference_date):
+        with freeze_time(reference_date - timedelta(days=1)):
             active_appserver = self._create_running_appserver(instance)
 
-        with freeze_time(reference_date + timedelta(days=days)):
-            newer_appserver = self._create_running_appserver(instance)
-            newer_appserver_failed = self._create_failed_appserver(instance)
+        with freeze_time(reference_date + timedelta(days=days + 2)):
+            rc_appserver = self._create_running_appserver(instance)
+            rc_appserver_failed = self._create_failed_appserver(instance)
 
-        # Set single app server active
-        instance.active_appserver = active_appserver
-        instance.save()
+        # Set single app server active - this will be the reference date
+        with freeze_time(reference_date):
+            instance.set_appserver_active(active_appserver.pk)
 
-        # Terminate app servers
+        # Terminate app servers - only the oldest and failed fallback appservers should be terminated,
+        # as all the other appservers were either created less than `days` before now,
+        # or kept as a fallback appserver
         with freeze_time(reference_date):
             instance.terminate_obsolete_appservers(days=days)
 
         # Check status of running app servers
         self._assert_status([
-            (obsolete_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
-            (recent_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (oldest_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (fallback_appserver, AppServerStatus.Running, ServerStatus.Pending),
             (active_appserver, AppServerStatus.Running, ServerStatus.Pending),
-            (newer_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
         ])
 
         # Check status of failed app servers:
@@ -923,49 +929,91 @@ class OpenEdXInstanceTestCase(TestCase):
         # However, the VM (OpenStackServer) that an app server is associated with
         # *should* have ServerStatus.Terminated if the app server was old enough to be terminated.
         self._assert_status([
-            (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
-            (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
-            (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (oldest_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (fallback_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
         ])
 
-    def test_terminate_obsolete_appservers_no_active(self):
+        # Terminate app servers after `days` have passed - the fallback appserver should be terminated
+        # and the other appservers
+        with freeze_time(reference_date + timedelta(days=days + 1)):
+            instance.terminate_obsolete_appservers(days=days)
+
+        self._assert_status([
+            (oldest_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (oldest_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (fallback_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (fallback_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (active_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+        ])
+
+        # Terminated app servers again, much later - this time only the active appserver and the most recent
+        # running appserver should remain
+        with freeze_time(reference_date + timedelta(days=days * 3)):
+            instance.terminate_obsolete_appservers(days=days)
+
+        self._assert_status([
+            (oldest_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (oldest_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (fallback_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (fallback_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (active_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+        ])
+
+    @ddt.data(2, 5, 10)
+    @patch_services
+    def test_terminate_obsolete_appservers_no_active(self, mock_services, days):
         """
-        Test that `terminate_obsolete_appservers` does not terminate any app servers
-        if an instance does not have an active app server.
+        When there is NO active appserver, test that `terminate_obsolete_appservers`
+        correctly identifies and terminates app servers created more than `days` before now,
+        except a release candidate server (the most recent running appserver)
         """
         instance = OpenEdXInstanceFactory()
         reference_date = timezone.now()
 
         # Create app servers
-        with freeze_time(reference_date - timedelta(days=5)):
-            obsolete_appserver = self._create_running_appserver(instance)
-            obsolete_appserver_failed = self._create_failed_appserver(instance)
+        with freeze_time(reference_date - timedelta(days=days + 1)):
+            oldest_appserver = self._create_running_appserver(instance)
+            oldest_appserver_failed = self._create_failed_appserver(instance)
 
-        with freeze_time(reference_date - timedelta(days=1)):
+        with freeze_time(reference_date - timedelta(days=days - 1)):
             recent_appserver = self._create_running_appserver(instance)
             recent_appserver_failed = self._create_failed_appserver(instance)
 
+        with freeze_time(reference_date + timedelta(days=days)):
+            rc_appserver = self._create_running_appserver(instance)
+            rc_appserver_failed = self._create_failed_appserver(instance)
+
+        # Terminate app servers - recent appservers aren't older than `days` yet
         with freeze_time(reference_date):
-            appserver = self._create_running_appserver(instance)
-            appserver_failed = self._create_failed_appserver(instance)
+            instance.terminate_obsolete_appservers(days=days)
 
-        with freeze_time(reference_date + timedelta(days=3)):
-            newer_appserver = self._create_running_appserver(instance)
-            newer_appserver_failed = self._create_failed_appserver(instance)
-
-        # Terminate app servers
-        instance.terminate_obsolete_appservers()
-
-        # Check status of app servers (should be unchanged)
+        # Check status of app servers - only the oldest appservers should be terminated
         self._assert_status([
-            (obsolete_appserver, AppServerStatus.Running, ServerStatus.Pending),
-            (obsolete_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (oldest_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (oldest_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
             (recent_appserver, AppServerStatus.Running, ServerStatus.Pending),
             (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
-            (appserver, AppServerStatus.Running, ServerStatus.Pending),
-            (appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
-            (newer_appserver, AppServerStatus.Running, ServerStatus.Pending),
-            (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+            (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
+        ])
+
+        # Terminate app servers - now all appservers are older than `days`, but the rc should still be kept
+        with freeze_time(reference_date + timedelta(days=days * 2 + 1)):
+            instance.terminate_obsolete_appservers()
+
+        # Check status of app servers - only the oldest and recent appservers should now be terminated
+        self._assert_status([
+            (oldest_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (oldest_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (recent_appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
+            (recent_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
+            (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
+            (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
 
     def test_secret_key_creation(self):

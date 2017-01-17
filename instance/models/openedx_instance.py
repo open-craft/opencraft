@@ -412,15 +412,35 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
     def terminate_obsolete_appservers(self, days=2):
         """
-        Terminate app servers that were created (more than) `days`
-        before the currently-active app server of this instance.
-
-        Do nothing if this instance doesn't have an active app server.
+        Terminate app servers that were created more than `days` before now, except:
+        - the active appserver if there is one,
+        - a release candidate (rc) appserver, to allow testing before the next appserver activation
+          (we keep the most recent running appserver)
+        - a fallback appserver, for `days` after activating an appserver, to allow reverts
+          (we keep the most recent running appserver created before the current activation)
         """
         active_appserver = self.active_appserver
-        if active_appserver:
-            for appserver in self.appserver_set.all():
-                if sufficient_time_passed(appserver.created, active_appserver.created, days):
+        fallback_appserver = None
+        rc_appserver = None
+
+        for appserver in self.appserver_set.all().order_by('-created'):
+            if appserver == active_appserver:
+                continue
+
+            # Keep a running appserver as fallback for `days` after activation, to allow reverts
+            if active_appserver and appserver.created < active_appserver.last_activated:
+                if not sufficient_time_passed(active_appserver.last_activated, timezone.now(), days) \
+                        and not fallback_appserver and appserver.status == AppServerStatus.Running:
+                    fallback_appserver = appserver
+                elif sufficient_time_passed(appserver.created, timezone.now(), days):
+                    appserver.terminate_vm()
+
+            # Keep the most recent running appserver created after activation (or when none is activated)
+            # to allow testing of a release candidate (rc)
+            else:
+                if not rc_appserver and appserver.status == AppServerStatus.Running:
+                    rc_appserver = appserver
+                elif sufficient_time_passed(appserver.created, timezone.now(), days):
                     appserver.terminate_vm()
 
     def shut_down(self):
