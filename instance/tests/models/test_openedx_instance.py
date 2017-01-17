@@ -606,9 +606,9 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         server._status_to_terminated()
 
-    def _create_appserver(self, instance, status, created=None):
+    def _create_appserver(self, instance, status):
         """
-        Return appserver for `instance` that has `status`, and (optionally) was `created` on a specific date.
+        Return appserver for `instance` that has `status`
 
         Note that this method does not set the status of the VM (OpenStackServer)
         that is associated with the app server.
@@ -616,9 +616,6 @@ class OpenEdXInstanceTestCase(TestCase):
         Client code is expected to take care of that itself (if necessary).
         """
         appserver = make_test_appserver(instance)
-        if created:
-            appserver.created = created
-            appserver.save()
         if status == AppServerStatus.Running:
             self._set_appserver_running(appserver)
         if status == AppServerStatus.ConfigurationFailed:
@@ -629,33 +626,29 @@ class OpenEdXInstanceTestCase(TestCase):
             self._set_appserver_terminated(appserver)
         return appserver
 
-    def _create_running_appserver(self, instance, created=None):
+    def _create_running_appserver(self, instance):
         """
-        Return app server for `instance` that has `status` AppServerStatus.Running,
-        and (optionally) was `created` on a specific date.
+        Return app server for `instance` that has `status` AppServerStatus.Running
         """
-        return self._create_appserver(instance, AppServerStatus.Running, created)
+        return self._create_appserver(instance, AppServerStatus.Running)
 
-    def _create_failed_appserver(self, instance, created=None, with_running_server=False):
+    def _create_failed_appserver(self, instance, with_running_server=False):
         """
-        Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed,
-        and (optionally) was `created` on a specific date.
+        Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed
         """
-        return self._create_appserver(instance, AppServerStatus.ConfigurationFailed, created)
+        return self._create_appserver(instance, AppServerStatus.ConfigurationFailed)
 
-    def _create_errored_appserver(self, instance, created=None):
+    def _create_errored_appserver(self, instance):
         """
-        Return app server for `instance` that has `status` AppServerStatus.Error,
-        and (optionally) was `created` on a specific date.
+        Return app server for `instance` that has `status` AppServerStatus.Error
         """
-        return self._create_appserver(instance, AppServerStatus.Error, created)
+        return self._create_appserver(instance, AppServerStatus.Error)
 
-    def _create_terminated_appserver(self, instance, created=None):
+    def _create_terminated_appserver(self, instance):
         """
-        Return app server for `instance` that has `status` AppServerStatus.Terminated,
-        and (optionally) was `created` on a specific date.
+        Return app server for `instance` that has `status` AppServerStatus.Terminated
         """
-        return self._create_appserver(instance, AppServerStatus.Terminated, created)
+        return self._create_appserver(instance, AppServerStatus.Terminated)
 
     def _assert_status(self, appservers):
         """
@@ -772,16 +765,20 @@ class OpenEdXInstanceTestCase(TestCase):
         reference_date = timezone.now()
 
         # Create app servers
-        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=5))
-        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=5))
+        with freeze_time(reference_date - timedelta(days=5)):
+            obsolete_appserver = self._create_running_appserver(instance)
+            obsolete_appserver_failed = self._create_failed_appserver(instance)
 
-        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=1))
-        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=1))
+        with freeze_time(reference_date - timedelta(days=1)):
+            recent_appserver = self._create_running_appserver(instance)
+            recent_appserver_failed = self._create_failed_appserver(instance)
 
-        active_appserver = self._create_running_appserver(instance, reference_date)
+        with freeze_time(reference_date):
+            active_appserver = self._create_running_appserver(instance)
 
-        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=3))
-        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=3))
+        with freeze_time(reference_date + timedelta(days=3)):
+            newer_appserver = self._create_running_appserver(instance)
+            newer_appserver_failed = self._create_failed_appserver(instance)
 
         # Set single app server active
         instance.active_appserver = active_appserver
@@ -888,23 +885,28 @@ class OpenEdXInstanceTestCase(TestCase):
         reference_date = timezone.now()
 
         # Create app servers
-        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=days + 1))
-        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=days + 1))
+        with freeze_time(reference_date - timedelta(days=days + 1)):
+            obsolete_appserver = self._create_running_appserver(instance)
+            obsolete_appserver_failed = self._create_failed_appserver(instance)
 
-        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=days - 1))
-        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=days - 1))
+        with freeze_time(reference_date - timedelta(days=days - 1)):
+            recent_appserver = self._create_running_appserver(instance)
+            recent_appserver_failed = self._create_failed_appserver(instance)
 
-        active_appserver = self._create_running_appserver(instance, reference_date)
+        with freeze_time(reference_date):
+            active_appserver = self._create_running_appserver(instance)
 
-        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=days))
-        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=days))
+        with freeze_time(reference_date + timedelta(days=days)):
+            newer_appserver = self._create_running_appserver(instance)
+            newer_appserver_failed = self._create_failed_appserver(instance)
 
         # Set single app server active
         instance.active_appserver = active_appserver
         instance.save()
 
         # Terminate app servers
-        instance.terminate_obsolete_appservers(days=days)
+        with freeze_time(reference_date):
+            instance.terminate_obsolete_appservers(days=days)
 
         # Check status of running app servers
         self._assert_status([
@@ -935,17 +937,21 @@ class OpenEdXInstanceTestCase(TestCase):
         reference_date = timezone.now()
 
         # Create app servers
-        obsolete_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=5))
-        obsolete_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=5))
+        with freeze_time(reference_date - timedelta(days=5)):
+            obsolete_appserver = self._create_running_appserver(instance)
+            obsolete_appserver_failed = self._create_failed_appserver(instance)
 
-        recent_appserver = self._create_running_appserver(instance, reference_date - timedelta(days=1))
-        recent_appserver_failed = self._create_failed_appserver(instance, reference_date - timedelta(days=1))
+        with freeze_time(reference_date - timedelta(days=1)):
+            recent_appserver = self._create_running_appserver(instance)
+            recent_appserver_failed = self._create_failed_appserver(instance)
 
-        appserver = self._create_running_appserver(instance, reference_date)
-        appserver_failed = self._create_failed_appserver(instance, reference_date)
+        with freeze_time(reference_date):
+            appserver = self._create_running_appserver(instance)
+            appserver_failed = self._create_failed_appserver(instance)
 
-        newer_appserver = self._create_running_appserver(instance, reference_date + timedelta(days=3))
-        newer_appserver_failed = self._create_failed_appserver(instance, reference_date + timedelta(days=3))
+        with freeze_time(reference_date + timedelta(days=3)):
+            newer_appserver = self._create_running_appserver(instance)
+            newer_appserver_failed = self._create_failed_appserver(instance)
 
         # Terminate app servers
         instance.terminate_obsolete_appservers()
