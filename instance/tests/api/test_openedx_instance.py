@@ -44,12 +44,12 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         """
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/')
-        self.assertEqual(response.data, [])
+        self.assertEqual(response.data, [])  # pylint: disable=no-member
 
         OpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        instance_data = response.data[0].items()
+        instance_data = response.data[0].items()  # pylint: disable=no-member
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
         self.assertIn(('is_shut_down', False), instance_data)
         self.assertIn(('appserver_count', 0), instance_data)
@@ -69,7 +69,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        instance_data = response.data.items()
+        instance_data = response.data.items()  # pylint: disable=no-member
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
         self.assertIn(('is_shut_down', False), instance_data)
         self.assertIn(('name', instance.name), instance_data)
@@ -83,10 +83,10 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('additional_security_groups', []), instance_data)
         # AppServer info:
         self.assertIn(('appserver_count', 1), instance_data)
-        self.assertIn('active_appserver', response.data)
-        self.assertIn('newest_appserver', response.data)
+        self.assertIn('active_appserver', response.data)  # pylint: disable=no-member
+        self.assertIn('newest_appserver', response.data)  # pylint: disable=no-member
         for key in ('active_appserver', 'newest_appserver'):
-            app_server_data = response.data[key]
+            app_server_data = response.data[key]  # pylint: disable=no-member
             self.assertEqual(app_server_data['id'], app_server.pk)
             self.assertEqual(
                 app_server_data['api_url'], 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)

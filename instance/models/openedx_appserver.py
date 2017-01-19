@@ -318,7 +318,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         by this code.
         """
         self.logger.info('Checking security groups (OpenStack firewall settings)')
-        network = get_openstack_connection().network
+        network = get_openstack_connection().network  # pylint: disable=no-member
         main_security_group = network.find_security_group(settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
         if not main_security_group:
             # We need to create this security group:

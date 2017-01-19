@@ -367,7 +367,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         """
         Return a queryset for all users that are not the current user, if any.
         """
-        users = User.objects.all() #pylint: disable=no-member
+        users = User.objects.all()
         if self.instance and self.instance.user_id:
             users = users.exclude(pk=self.instance.user_id)
         return users

@@ -53,7 +53,7 @@ class LoadBalancingServerManager(models.Manager):
                     "DEFAULT_LOAD_BALANCING_SERVER must have the form ssh_username@domain.name."
                 )
             logger.info("Creating LoadBalancingServer %s", domain)
-            server, created = self.get_or_create(  # pylint: disable=no-member
+            server, created = self.get_or_create(
                 domain=domain,
                 defaults=dict(ssh_username=ssh_username),
             )
@@ -77,10 +77,10 @@ class LoadBalancingServerManager(models.Manager):
         # The set of servers might change between retrieving the server count and retrieving the random
         # server, so we make this atomic.
         with transaction.atomic():
-            servers = self.filter(accepts_new_backends=True)  # pylint: disable=no-member
+            servers = self.filter(accepts_new_backends=True)
             count = servers.count()
             if not count:
-                raise self.model.DoesNotExist(  # pylint: disable=no-member
+                raise self.model.DoesNotExist(
                     "No configured LoadBalancingServer accepts new backends."
                 )
             return servers[random.randrange(count)]
@@ -230,4 +230,4 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         Delete the LoadBalancingServer from the database.
         """
         self.deconfigure()
-        super().delete(*args, **kwargs)  # pylint: disable=no-member
+        super().delete(*args, **kwargs)

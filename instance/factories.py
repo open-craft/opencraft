@@ -46,13 +46,13 @@ def _check_environment():
     if not settings.SWIFT_ENABLE:
         logger.warning("Swift support is currently disabled. Adjust SWIFT_ENABLE setting.")
         return
-    if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:  # pylint: disable=no-member
+    if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:
         logger.warning(
             "No MySQL servers configured, and default URL for external MySQL database is missing."
             "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
         )
         return
-    if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:  # pylint: disable=no-member
+    if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:
         logger.warning(
             "No MongoDB servers configured, and default URL for external MongoDB database is missing."
             "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."

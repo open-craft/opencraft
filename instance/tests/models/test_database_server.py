@@ -325,11 +325,11 @@ class DatabaseServerManagerTest(TestCase):
         MySQLServer.objects._create_default()
         MongoDBServer.objects._create_default()
 
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
-        mysql_server = MySQLServer.objects.get()  # pylint: disable=no-member
-        mongodb_server = MongoDBServer.objects.get()  # pylint: disable=no-member
+        mysql_server = MySQLServer.objects.get()
+        mongodb_server = MongoDBServer.objects.get()
 
         self._assert_default_settings(mysql_server, mongodb_server)
 
@@ -344,8 +344,8 @@ class DatabaseServerManagerTest(TestCase):
         MySQLServer.objects._create_default()
         MongoDBServer.objects._create_default()
 
-        self.assertEqual(MySQLServer.objects.count(), 0)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 0)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 0)
+        self.assertEqual(MongoDBServer.objects.count(), 0)
 
     def test__create_default_exists_settings_match(self):
         """
@@ -359,15 +359,15 @@ class DatabaseServerManagerTest(TestCase):
         MongoDBServer.objects._create_default()
 
         # Precondition
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
         MySQLServer.objects._create_default()
         MongoDBServer.objects._create_default()
 
         # Number of database servers should not have changed
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
         log_entries = LogEntry.objects.all()
         self.assertFalse(any(
@@ -393,8 +393,8 @@ class DatabaseServerManagerTest(TestCase):
         MongoDBServer.objects._create_default()
 
         # Precondition
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
         with override_settings(
             DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@{hostname}'.format(hostname=mysql_hostname),
@@ -404,8 +404,8 @@ class DatabaseServerManagerTest(TestCase):
             MongoDBServer.objects._create_default()
 
         # Number of database servers should not have changed
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
         # Log entries should contain two warnings about existing servers with different settings
         log_entries = LogEntry.objects.all()
@@ -467,8 +467,8 @@ class DatabaseServerManagerTest(TestCase):
         MongoDBServer.objects._create_default()
 
         # Precondition
-        self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-        self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+        self.assertEqual(MySQLServer.objects.count(), 1)
+        self.assertEqual(MongoDBServer.objects.count(), 1)
 
         # Change name of MySQLServer and MongoDBServer
         mysql_server = MySQLServer.objects.get()
@@ -488,5 +488,5 @@ class DatabaseServerManagerTest(TestCase):
                 'It should ignore `name`.'
             )
         else:
-            self.assertEqual(MySQLServer.objects.count(), 1)  # pylint: disable=no-member
-            self.assertEqual(MongoDBServer.objects.count(), 1)  # pylint: disable=no-member
+            self.assertEqual(MySQLServer.objects.count(), 1)
+            self.assertEqual(MongoDBServer.objects.count(), 1)

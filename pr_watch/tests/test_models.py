@@ -83,7 +83,7 @@ class WatchedPullRequestTestCase(TestCase):
         watched_pr.set_fork_name('org2/another-repo')
         self.assertEqual(watched_pr.github_organization_name, 'org2')
         self.assertEqual(watched_pr.github_repository_name, 'another-repo')
-        watched_pr.save()  # pylint: disable=no-member
+        watched_pr.save()
 
         # Check values in DB
         watched_pr = WatchedPullRequest.objects.get(pk=watched_pr.pk)

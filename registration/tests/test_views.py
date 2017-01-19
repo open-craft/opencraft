@@ -88,7 +88,7 @@ class BetaTestApplicationViewTestMixin:
         self._assert_email_verification_sent(application)
         with patch('registration.provision._provision_instance', autospec=True) as mock_handler:
             expected_call_count = 0
-            for verification_email in mail.outbox:  # fix flaky pylint: disable=no-member,useless-suppression
+            for verification_email in mail.outbox:
                 verify_url = re.search(r'https?://[^\s]+',
                                        verification_email.body).group(0)
                 self.client.get(verify_url)
@@ -169,10 +169,10 @@ class BetaTestApplicationViewTestMixin:
         on the beta application.
         """
         addresses = {application.user.email, application.public_contact_email}
-        self.assertEqual(len(mail.outbox), len(addresses))  # fix flaky pylint: disable=no-member,useless-suppression
-        self.assertEqual(EmailAddress.objects.count(), len(addresses)) #pylint: disable=no-member
+        self.assertEqual(len(mail.outbox), len(addresses))
+        self.assertEqual(EmailAddress.objects.count(), len(addresses))
         for email_address in addresses:
-            email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
+            email = EmailAddress.objects.get(email=email_address)
             self.assertIs(email.is_confirmed, False)
 
     def _assert_email_addresses_verified(self, application):
@@ -182,7 +182,7 @@ class BetaTestApplicationViewTestMixin:
         """
         for email_address in {application.user.email,
                               application.public_contact_email}:
-            email = EmailAddress.objects.get(email=email_address) #pylint: disable=no-member
+            email = EmailAddress.objects.get(email=email_address)
             self.assertIs(email.is_confirmed, True)
         response = self._get_response_body(self.url)
         self.assertNotIn('pending email confirmation',
@@ -200,7 +200,7 @@ class BetaTestApplicationViewTestMixin:
             self.assertEqual(self._get_error_messages(response),
                              expected_errors)
         self.assertEqual(BetaTestApplication.objects.count(), original_count)
-        self.assertEqual(len(mail.outbox), 0)  # fix flaky pylint: disable=no-member,useless-suppression
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_valid_application(self):
         """
@@ -227,7 +227,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='I got here first',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username='test'), #pylint: disable=no-member
+            user=User.objects.create(username='test'),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
@@ -281,7 +281,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='That username is mine',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username=self.form_data['username']), #pylint: disable=no-member
+            user=User.objects.create(username=self.form_data['username']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
             'username': ['This username is already taken.'],
@@ -305,8 +305,7 @@ class BetaTestApplicationViewTestMixin:
             instance_name='That email address is mine',
             public_contact_email='test@example.com',
             project_description='test',
-            user=User.objects.create(username='test', #pylint: disable=no-member
-                                     email=self.form_data['email']),
+            user=User.objects.create(username='test', email=self.form_data['email']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
             'email': ['This email address is already registered.'],
@@ -518,7 +517,7 @@ class LoginTestCase(UserMixin, TestCase):
             data={'username': self.username, 'password': self.password},
             follow=True,
         )
-        self.assertEqual(response.context['user'], self.user)
+        self.assertEqual(response.context['user'], self.user)  # pylint: disable=no-member
 
     def test_redirect(self):
         """
@@ -545,7 +544,7 @@ class LogoutTestCase(UserMixin, TestCase):
         Test that the logout view logs the user out.
         """
         response = self.client.get(self.url, follow=True)
-        self.assertFalse(response.context['user'].is_authenticated)
+        self.assertFalse(response.context['user'].is_authenticated)  # pylint: disable=no-member
 
     def test_redirect(self):
         """

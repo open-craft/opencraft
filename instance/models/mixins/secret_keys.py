@@ -28,7 +28,6 @@ import hmac
 from base64 import b64encode, b64decode
 
 from django.db import models
-from django.template import loader
 import yaml
 
 # Functions ###################################################################

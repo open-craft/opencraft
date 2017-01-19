@@ -97,7 +97,7 @@ def sync_security_group_rules(security_group, rule_definitions, network=None):
     group until it matches 'rules'.
     """
     assert all(isinstance(rule, SecurityGroupRuleDefinition) for rule in rule_definitions)
-    network = network or get_openstack_connection().network
+    network = network or get_openstack_connection().network  # pylint: disable=no-member
     rule_definitions_set = set(rule_definitions)
 
     existing_rules = network.security_group_rules(security_group_id=security_group.id)

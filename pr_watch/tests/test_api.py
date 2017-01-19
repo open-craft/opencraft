@@ -53,12 +53,12 @@ class APITestCase(WithUserTestCase):
 
         response = self.api_client.get('/api/v1/pr_watch/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data, forbidden_message)
+        self.assertEqual(response.data, forbidden_message)  # pylint: disable=no-member
 
         watched_pr = make_watched_pr_and_instance()
         response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=watched_pr.pk))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data, forbidden_message)
+        self.assertEqual(response.data, forbidden_message)   # pylint: disable=no-member
 
     def test_get_authenticated(self):
         """
@@ -66,7 +66,7 @@ class APITestCase(WithUserTestCase):
         """
         self.api_client.login(username='user1', password='pass')
         response = self.api_client.get('/api/v1/pr_watch/')
-        self.assertEqual(response.data, [])
+        self.assertEqual(response.data, [])  # pylint: disable=no-member
 
         watched_pr = make_watched_pr_and_instance(branch_name='api-test-branch')
 
@@ -83,12 +83,12 @@ class APITestCase(WithUserTestCase):
 
         response = self.api_client.get('/api/v1/pr_watch/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        check_output(response.data[0])
+        check_output(response.data[0])  # pylint: disable=no-member
 
         # And check the details view:
         response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=watched_pr.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        check_output(response.data)
+        check_output(response.data)  # pylint: disable=no-member
 
     @patch('pr_watch.github.get_pr_by_number')
     def test_update_instance(self, mock_get_pr_by_number):
@@ -140,4 +140,7 @@ class APITestCase(WithUserTestCase):
         mock_get_pr_by_number.return_value = PRFactory(number=watched_pr.github_pr_number)
         response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=watched_pr.pk))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {'error': 'Could not fetch updated details from GitHub.'})
+        self.assertEqual(
+            response.data,  # pylint: disable=no-member
+            {'error': 'Could not fetch updated details from GitHub.'}
+        )
