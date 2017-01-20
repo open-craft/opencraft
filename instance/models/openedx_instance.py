@@ -358,6 +358,8 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.provision_mongo()
             self.logger.info('Provisioning Swift container...')
             self.provision_swift()
+            self.logger.info('Provisioning RabbitMQ vhost...')
+            self.provision_rabbitmq()
 
         app_server = self._create_owned_appserver()
 
@@ -440,4 +442,5 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         self.deprovision_mysql()
         self.deprovision_mongo()
         self.deprovision_swift()
+        self.deprovision_rabbitmq()
         super().delete(*args, **kwargs)

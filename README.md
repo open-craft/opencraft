@@ -90,7 +90,7 @@ The environment variables in `.env` customize the settings from
 `opencraft/settings.py` which are loaded via `env()`. For more information about
 each setting, see the [list of settings](#application-settings) below, and
 [`opencraft/settings.py`](opencraft/settings.py). As a minimum, you will need to
-add credentials for OpenStack, Gandi and GitHub. You can use this example `.env`
+add credentials for OpenStack, Gandi, RabbitMQ, and GitHub. You can use this example `.env`
 file as a starting point:
 
 ```sh
@@ -106,6 +106,9 @@ DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 WATCH_ORGANIZATION='github-org'
+RABBITMQ_API_URL='https://rabbitmq-dev.opencraft.hosting:15671'
+RABBITMQ_ADMIN_USERNAME='admin'
+RABBITMQ_ADMIN_PASSWORD='changeme'
 ```
 
 ### A note on SSH keys
@@ -227,6 +230,15 @@ edit its security group rules to only allow access to VMs in the
   the load balancer when no AppServer is active (e.g. during the deployment of
   the first AppServer.)  This can point to a static page informing the user that
   the instance is currently being deployed.
+
+### RabbitMQ settings
+* `RABBITMQ_API_URL`: The full API URL (including the protocol and port) to the
+  RabbitMQ server which will be used to manage vhosts and users for instances.
+* `RABBITMQ_ADMIN_USERNAME`: The username of an account which has the permission to
+  create and delete vhosts and users.
+* `RABBITMQ_ADMIN_PASSWORD`: The corresponding password of the admin account.
+* `INSTANCE_RABBITMQ_HOST`: The RabbitMQ host to be used by instances.
+* `INSTANCE_RABBITMQ_PORT`: The RabbitMQ port to be used by instances.
 
 ### DNS settings
 

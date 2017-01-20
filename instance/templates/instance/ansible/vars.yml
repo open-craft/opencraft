@@ -212,6 +212,10 @@ ECOMMERCE_PAYPAL_RECEIPT_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/re
 ECOMMERCE_PAYPAL_CANCEL_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/'
 ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/error/'
 
+# Default to an xqueue version that supports RabbitMQ
+xqueue_source_repo: https://github.com/open-craft/xqueue.git
+xqueue_version: opencraft-release/eucalyptus.2
+
 # Comprehensive theming
 # EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
 # EDXAPP_COMPREHENSIVE_THEME_DIRS:
