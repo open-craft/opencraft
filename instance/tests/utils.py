@@ -44,7 +44,7 @@ def patch_gandi(func=None):
     return patcher
 
 
-def patch_url(url, method=responses.GET, status=requests.codes.ok):  # pylint: disable=no-member
+def patch_url(url, method=responses.GET, status=requests.codes.ok):
     """
     Decorator which mocks responses from the given url.
 

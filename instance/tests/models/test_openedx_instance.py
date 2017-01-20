@@ -854,7 +854,7 @@ class OpenEdXInstanceTestCase(TestCase):
             responses.add(
                 responses.DELETE,
                 '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
-                status=requests.codes.not_found  # pylint: disable=no-member
+                status=requests.codes.not_found
             )
 
         # Preconditions

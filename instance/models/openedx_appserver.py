@@ -190,7 +190,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Add local Django users to the list of LMS users to be created on the instance.
         """
-        self.lms_users.add(*lms_users)  # pylint: disable=no-member
+        self.lms_users.add(*lms_users)
         self.lms_user_settings = self.create_lms_user_settings()
         self.save()
 
@@ -318,7 +318,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         by this code.
         """
         self.logger.info('Checking security groups (OpenStack firewall settings)')
-        network = get_openstack_connection().network  # pylint: disable=no-member
+        network = get_openstack_connection().network
         main_security_group = network.find_security_group(settings.OPENEDX_APPSERVER_SECURITY_GROUP_NAME)
         if not main_security_group:
             # We need to create this security group:

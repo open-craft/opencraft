@@ -132,7 +132,7 @@ class Instance(ValidateModelMixin, models.Model):
     def ref(self):
         """ Get the InstanceReference for this Instance """
         try:
-            return self.ref_set.get()  # pylint: disable=no-member
+            return self.ref_set.get()
         except ObjectDoesNotExist:
             return InstanceReference(instance=self)
 

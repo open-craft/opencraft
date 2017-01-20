@@ -101,7 +101,7 @@ class ClassProperty(property):
     def __get__(self, cls, owner):
         # TODO: Requires astroid 2.0+ to pass pylint
         # https://bitbucket.org/logilab/pylint/issues/439/confused-by-descriptors
-        return self.fget.__get__(None, owner)()  # pylint: disable=no-member
+        return self.fget.__get__(None, owner)()
 
 
 class ResourceState:
@@ -273,9 +273,8 @@ class ResourceStateDescriptor:
                 """
                 state = self.__get__(resource)
                 if not isinstance(state, accepted_states):
-                    #TODO: why is no-member disabled?
                     raise WrongStateException("The method '{}' cannot be called in this state ({} / {}).".format(
-                        method.__name__, state.name, state.__class__.__name__  # pylint: disable=no-member
+                        method.__name__, state.name, state.__class__.__name__
                     ))
 
             descriptor = self
@@ -315,16 +314,11 @@ class ResourceStateDescriptor:
             """ The method that performs a specific transition """
             current_state = self.__get__(resource)
             if from_states and not isinstance(current_state, from_states):
-                #TODO: why is no-member disabled?
                 raise WrongStateException("This transition cannot be used to move from {} to {}".format(
-                    current_state.name, to_state.name  # pylint: disable=no-member
+                    current_state.name, to_state.name
                 ))
             if hasattr(resource, 'logger'):
-                resource.logger.info(
-                    'Transition from "%s" to "%s"',
-                    current_state.name,  # pylint: disable=no-member
-                    to_state.name
-                )
+                resource.logger.info('Transition from "%s" to "%s"', current_state.name, to_state.name)
             self._set_state(resource, to_state)
         do_transition.from_states = from_states  # Convenient way for other code to inspect this transition
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition

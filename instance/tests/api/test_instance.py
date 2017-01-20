@@ -45,10 +45,7 @@ class InstanceAPITestCase(APITestCase):
         """
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(
-            response.data,  # pylint: disable=no-member
-            {"detail": "Authentication credentials were not provided."}
-        )
+        self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
     @ddt.data(
         'user1', 'user2',
@@ -60,10 +57,7 @@ class InstanceAPITestCase(APITestCase):
         self.api_client.login(username=username, password='pass')
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(
-            response.data,  # pylint: disable=no-member
-            {"detail": "You do not have permission to perform this action."}
-        )
+        self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
     def test_get_authenticated(self):
         """
@@ -72,12 +66,12 @@ class InstanceAPITestCase(APITestCase):
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [])  # pylint: disable=no-member
+        self.assertEqual(response.data, [])
 
         instance = OpenEdXInstanceFactory()
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.check_serialized_instance(response.data[0], instance)  # pylint: disable=no-member
+        self.check_serialized_instance(response.data[0], instance)
 
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),
@@ -94,7 +88,7 @@ class InstanceAPITestCase(APITestCase):
         instance = OpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data, {'detail': message})  # pylint: disable=no-member
+        self.assertEqual(response.data, {'detail': message})
 
     def check_serialized_instance(self, data, instance):
         """
@@ -115,7 +109,7 @@ class InstanceAPITestCase(APITestCase):
         instance = OpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.check_serialized_instance(response.data, instance)  # pylint: disable=no-member
+        self.check_serialized_instance(response.data, instance)
 
     def test_get_log_entries(self):
         """
@@ -133,7 +127,7 @@ class InstanceAPITestCase(APITestCase):
             {'level': 'INFO', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | info'},
             {'level': 'ERROR', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | error'},
         ]
-        log_entries = response.data['log_entries']  # pylint: disable=no-member
+        log_entries = response.data['log_entries']
         self.assertEqual(len(expected_list), len(log_entries))
 
         for expected_entry, log_entry in zip(expected_list, log_entries):

@@ -517,7 +517,7 @@ class LoginTestCase(UserMixin, TestCase):
             data={'username': self.username, 'password': self.password},
             follow=True,
         )
-        self.assertEqual(response.context['user'], self.user)  # pylint: disable=no-member
+        self.assertEqual(response.context['user'], self.user)
 
     def test_redirect(self):
         """
@@ -544,7 +544,7 @@ class LogoutTestCase(UserMixin, TestCase):
         Test that the logout view logs the user out.
         """
         response = self.client.get(self.url, follow=True)
-        self.assertFalse(response.context['user'].is_authenticated)  # pylint: disable=no-member
+        self.assertFalse(response.context['user'].is_authenticated)
 
     def test_redirect(self):
         """

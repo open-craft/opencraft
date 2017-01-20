@@ -47,10 +47,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         """
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(
-            response.data,  # pylint: disable=no-member
-            {"detail": "Authentication credentials were not provided."}
-        )
+        self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
     @ddt.data(
         'user1', 'user2',
@@ -62,10 +59,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.api_client.login(username=username, password='pass')
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(
-            response.data,  # pylint: disable=no-member
-            {"detail": "You do not have permission to perform this action."}
-        )
+        self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
     def test_get_authenticated(self):
         """
@@ -74,13 +68,13 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [])  # pylint: disable=no-member
+        self.assertEqual(response.data, [])
 
         app_server = make_test_appserver()
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        data = response.data[0]  # pylint: disable=no-member
+        data = response.data[0]
         data_entries = data.items()
         self.assertIn(('id', app_server.pk), data_entries)
         self.assertIn(
@@ -120,7 +114,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server = make_test_appserver()
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data, {'detail': message})  # pylint: disable=no-member
+        self.assertEqual(response.data, {'detail': message})
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_details(self):
@@ -132,7 +126,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        data = response.data  # pylint: disable=no-member
+        data = response.data
         data_entries = data.items()
         self.assertIn(('id', app_server.pk), data_entries)
         self.assertIn(
@@ -156,7 +150,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             data_entries
         )
         self.assertIn('server', data)
-        server_data = response.data['server'].items()  # pylint: disable=no-member
+        server_data = response.data['server'].items()
         self.assertIn(('id', app_server.server.pk), server_data)
         self.assertIn(('public_ip', None), server_data)
         # The API call will try to start the server, which will fail, since we're
@@ -182,7 +176,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
 
         response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'status': 'Instance provisioning started'})  # pylint: disable=no-member
+        self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
         instance.refresh_from_db()
 
@@ -210,7 +204,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
 
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'status': 'App server activation initiated.'})  # pylint: disable=no-member
+        self.assertEqual(response.data, {'status': 'App server activation initiated.'})
         self.assertEqual(mock_run_playbook.call_count, 1)
 
         instance.refresh_from_db()
@@ -273,7 +267,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             },
         ]
         self.check_log_list(
-            expected_list, response.data['log_entries'],  # pylint: disable=no-member
+            expected_list, response.data['log_entries'],
             inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
 
@@ -327,6 +321,6 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         ]
 
         self.check_log_list(
-            expected_list, response.data['log_error_entries'],  # pylint: disable=no-member
+            expected_list, response.data['log_error_entries'],
             inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
