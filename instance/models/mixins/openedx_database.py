@@ -36,6 +36,7 @@ from instance.models.rabbitmq import RabbitMQUser
 
 # Classes #####################################################################
 
+# pylint: disable=too-many-instance-attributes
 class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
