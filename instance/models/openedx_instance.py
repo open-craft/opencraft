@@ -422,6 +422,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         active_appserver = self.active_appserver
         fallback_appserver = None
         rc_appserver = None
+        now = timezone.now()
 
         for appserver in self.appserver_set.all().order_by('-created'):
             if appserver == active_appserver:
@@ -429,10 +430,10 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
             # Keep a running appserver as fallback for `days` after activation, to allow reverts
             if active_appserver and appserver.created < active_appserver.last_activated:
-                if not sufficient_time_passed(active_appserver.last_activated, timezone.now(), days) \
+                if not sufficient_time_passed(active_appserver.last_activated, now, days) \
                         and not fallback_appserver and appserver.status == AppServerStatus.Running:
                     fallback_appserver = appserver
-                elif sufficient_time_passed(appserver.created, timezone.now(), days):
+                elif sufficient_time_passed(appserver.created, now, days):
                     appserver.terminate_vm()
 
             # Keep the most recent running appserver created after activation (or when none is activated)
@@ -440,7 +441,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             else:
                 if not rc_appserver and appserver.status == AppServerStatus.Running:
                     rc_appserver = appserver
-                elif sufficient_time_passed(appserver.created, timezone.now(), days):
+                elif sufficient_time_passed(appserver.created, now, days):
                     appserver.terminate_vm()
 
     def shut_down(self):

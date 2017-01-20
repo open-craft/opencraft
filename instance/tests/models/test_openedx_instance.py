@@ -883,7 +883,8 @@ class OpenEdXInstanceTestCase(TestCase):
         correctly identifies and terminates app servers created more than `days` before now, except:
         - the active appserver
         - a release candidate server (the most recent running appserver)
-        - a fallback appserver for `days` after activation (the most recent running appserver created before)
+        - a fallback appserver for `days` after activation (the most recent running appserver created
+          before the currently-active app server was activated)
         """
         instance = OpenEdXInstanceFactory()
         reference_date = timezone.now()
@@ -935,7 +936,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
         # Terminate app servers after `days` have passed - the fallback appserver should be terminated
-        # and the other appservers
+        # but the other appservers still running should be preserved
         with freeze_time(reference_date + timedelta(days=days + 1)):
             instance.terminate_obsolete_appservers(days=days)
 
@@ -949,7 +950,7 @@ class OpenEdXInstanceTestCase(TestCase):
             (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Pending),
         ])
 
-        # Terminated app servers again, much later - this time only the active appserver and the most recent
+        # Terminate app servers again, much later - this time only the active appserver and the most recent
         # running appserver should remain
         with freeze_time(reference_date + timedelta(days=days * 3)):
             instance.terminate_obsolete_appservers(days=days)

@@ -128,7 +128,8 @@ def poll_streams(*files, line_timeout=None, global_timeout=None):
 
 def sufficient_time_passed(earlier_date, later_date, expected_days_since):
     """
-    Check if `later_date` is at least `expected_days_passed` after `earlier_date`.
+    Check if at least `expected_days_since` have passed between `earlier_date`
+    and `later_date`.
     """
     days_passed = (later_date - earlier_date).days
     return days_passed >= expected_days_since
