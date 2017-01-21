@@ -128,8 +128,8 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
 
-        # Provision again without resetting the mock.  The assertCountEqual assertion will verify
-        # that the container isn't provisioned again.
+        # Reset the mock, and provision again.  The container is technically reprovisioned, but this is a no-op.
+        create_swift_container.reset_mock()
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
 

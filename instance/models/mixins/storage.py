@@ -56,7 +56,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Create the Swift containers if necessary.
         """
-        if settings.SWIFT_ENABLE and not self.swift_provisioned:
+        if settings.SWIFT_ENABLE:
             for container_name in self.swift_container_names:
                 openstack_utils.create_swift_container(
                     container_name,

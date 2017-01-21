@@ -99,6 +99,10 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                     }
                 ],
             },
+            {
+                "name": self._get_mysql_database_name("programs"),
+                "user": self._get_mysql_user_name("program"),
+            },
         ]
 
     @property

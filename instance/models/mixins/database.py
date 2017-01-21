@@ -27,6 +27,7 @@ import inspect
 from django.db import models
 import MySQLdb as mysql
 import pymongo
+import warnings
 
 from instance.models.database_server import MySQLServer, MongoDBServer
 
@@ -69,9 +70,11 @@ def _get_mysql_cursor(mysql_server):
 @database_name_escaped
 def _create_database(cursor, database):
     """
-    Create MySQL database
+    Create MySQL database, if it doesn't already exist.
     """
-    cursor.execute('CREATE DATABASE `{database}` DEFAULT CHARACTER SET utf8'.format(database=database))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cursor.execute('CREATE DATABASE IF NOT EXISTS `{db}` DEFAULT CHARACTER SET utf8'.format(db=database))
 
 
 def _create_user(cursor, user, password):
@@ -102,7 +105,9 @@ def _drop_database(cursor, database):
     """
     Drop MySQL database
     """
-    cursor.execute('DROP DATABASE IF EXISTS `{database}`'.format(database=database))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cursor.execute('DROP DATABASE IF EXISTS `{database}`'.format(database=database))
 
 
 def _drop_user(cursor, user):
@@ -145,7 +150,7 @@ class MySQLInstanceMixin(models.Model):
         """
         Create mysql user and databases
         """
-        if self.mysql_server and not self.mysql_provisioned:
+        if self.mysql_server:
             cursor = _get_mysql_cursor(self.mysql_server)
 
             # Create migration and read_only users
@@ -220,9 +225,10 @@ class MongoDBInstanceMixin(models.Model):
         """
         Create mongo user and databases
         """
-        if self.mongodb_server and not self.mongo_provisioned:
+        if self.mongodb_server:
             mongo = pymongo.MongoClient(self.mongodb_server.url)
             for database in self.mongo_database_names:
+                # May update the password if the user already exists
                 mongo[database].add_user(self.mongo_user, self.mongo_pass)
             self.mongo_provisioned = True
             self.save()
