@@ -23,11 +23,11 @@ Instance app model mixins - Database
 # Imports #####################################################################
 
 import inspect
+import warnings
 
 from django.db import models
 import MySQLdb as mysql
 import pymongo
-import warnings
 
 from instance.models.database_server import MySQLServer, MongoDBServer
 
