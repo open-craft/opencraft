@@ -124,14 +124,15 @@ First, **as the user that the instance manager runs as (e.g. `vagrant`)**, run:
 
 This will create an ssh key pair for that user, saving it at `~/.ssh/id_rsa` and
 `~/.ssh/id_rsa.pub` by default. Next, we need to upload the public key to
-OpenStack. Make sure the nova command line client is installed:
+OpenStack. Make sure the nova command line client is installed (it should already
+be the case from the OpenCraft IM python environment):
 
-    pip install python-novaclient
+    pip install python-openstackclient
 
 [Configure the client with your OpenStack credentials](http://docs.openstack.org/cli-reference/common/cli_set_environment_variables_using_openstack_rc.html),
 then run:
 
-    nova keypair-add --pub_key ~/.ssh/id_rsa.pub KEY_NAME
+    openstack keypair create --public-key ~/.ssh/id_rsa.pub KEY_NAME
 
 where `KEY_NAME` is the name used to identify this key pair in OpenStack. The
 `OPENSTACK_SANDBOX_SSH_KEYNAME` setting in your `.env` file should be set to

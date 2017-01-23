@@ -121,7 +121,7 @@ class CleanUpTestCase(TestCase):
 
     @patch('instance.logging.ModelLoggerAdapter.process')
     @patch('instance.models.openedx_instance.OpenEdXInstance.terminate_obsolete_appservers')
-    def test_terminate_obsolete_appservers(self, mock_terminate_appservers, mock_logger):
+    def test_terminate_obsolete_appservers(self, mock_terminate_obsolete_appservers, mock_logger):
         """
         Test that `terminate_obsolete_appservers_all_instances`
         calls `terminate_obsolete_appservers` on all existing instances.
@@ -133,7 +133,7 @@ class CleanUpTestCase(TestCase):
 
         tasks.terminate_obsolete_appservers_all_instances()
 
-        self.assertEqual(mock_terminate_appservers.call_count, 5)
+        self.assertEqual(mock_terminate_obsolete_appservers.call_count, 5)
         self.assertEqual(mock_logger.call_count, 5)
         mock_logger.assert_called_with("Terminating obsolete appservers for instance", {})
 

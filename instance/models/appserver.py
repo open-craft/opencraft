@@ -162,6 +162,8 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     server = models.OneToOneField(OpenStackServer, on_delete=models.CASCADE, related_name='+')
     # The Instance that owns this. InstanceReference has related_name accessors like 'openedxappserver_set'
     owner = models.ForeignKey(InstanceReference, on_delete=models.CASCADE, related_name='%(class)s_set')
+    # When this AppServer was last made the active AppServer of its instance
+    last_activated = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

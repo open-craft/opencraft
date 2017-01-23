@@ -126,9 +126,10 @@ def poll_streams(*files, line_timeout=None, global_timeout=None):
                 selector.unregister(key.fileobj)
 
 
-def sufficient_time_passed(date, reference_date, expected_days_since):
+def sufficient_time_passed(earlier_date, later_date, expected_days_since):
     """
-    Check if delta between `date` and `reference_date` is greater than or equal to `expected_days_since`.
+    Check if at least `expected_days_since` have passed between `earlier_date`
+    and `later_date`.
     """
-    days_since = (reference_date - date).days
-    return days_since >= expected_days_since
+    days_passed = (later_date - earlier_date).days
+    return days_passed >= expected_days_since
