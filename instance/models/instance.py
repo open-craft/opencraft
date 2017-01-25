@@ -77,7 +77,7 @@ class InstanceReference(TimeStampedModel):
         """
         if not kwargs.pop('instance_already_deleted', False):
             self.instance.delete(ref_already_deleted=True)
-        super().delete(*args, **kwargs)  # pylint: disable=no-member
+        super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         """
@@ -132,7 +132,7 @@ class Instance(ValidateModelMixin, models.Model):
     def ref(self):
         """ Get the InstanceReference for this Instance """
         try:
-            return self.ref_set.get()  # pylint: disable=no-member
+            return self.ref_set.get()
         except ObjectDoesNotExist:
             return InstanceReference(instance=self)
 
@@ -164,7 +164,6 @@ class Instance(ValidateModelMixin, models.Model):
             self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
         self.ref.save()
 
-    # pylint: disable=no-member
     def refresh_from_db(self, using=None, fields=None, **kwargs):
         """
         Reload from DB, or load related field.

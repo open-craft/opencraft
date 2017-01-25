@@ -512,7 +512,8 @@ class RabbitMQInstanceTestCase(TestCase):
             self.instance.deprovision_rabbitmq()
         super().tearDown()
 
-    def request_overview(self):
+    @staticmethod
+    def request_overview():
         """
         A helper method to request the overview data for the configured RabbitMQ instance
         """

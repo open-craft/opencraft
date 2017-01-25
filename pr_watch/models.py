@@ -247,4 +247,4 @@ class WatchedPullRequest(models.Model):
             instance.save()
             if not self.instance:
                 self.instance = instance
-                self.save(update_fields=["instance"])  # pylint: disable=no-member
+                self.save(update_fields=["instance"])

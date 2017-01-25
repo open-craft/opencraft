@@ -135,7 +135,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         public contact email address have been verified.
         """
         email_addresses = {self.user.email, self.public_contact_email}
-        verified = EmailAddress.objects.exclude(confirmed_at=None).filter( #pylint: disable=no-member
+        verified = EmailAddress.objects.exclude(confirmed_at=None).filter(
             email__in=email_addresses
         )
         return verified.count() == len(email_addresses)

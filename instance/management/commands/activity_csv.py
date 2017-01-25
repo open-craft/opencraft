@@ -63,7 +63,7 @@ class Command(BaseCommand):
             try:
                 out = open(options['out'], 'w')
             except PermissionError:
-                self.stderr.write(self.style.ERROR(  # pylint: disable=no-member
+                self.stderr.write(self.style.ERROR(
                     'Permission denied while attempting to write file: {outfile}'.format(outfile=options['out'])
                 ))
                 sys.exit(1)
@@ -79,11 +79,11 @@ class Command(BaseCommand):
 
         if not active_appservers:
             self.stderr.write(
-                self.style.SUCCESS('There are no active app servers! Nothing to do.')  # pylint: disable=no-member
+                self.style.SUCCESS('There are no active app servers! Nothing to do.')
             )
             sys.exit(0)
 
-        self.stderr.write(self.style.SUCCESS('Running playbook...'))  # pylint: disable=no-member
+        self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
         with ansible.create_temp_dir() as playbook_output_dir:
             inventory = '[apps]\n{servers}'.format(servers='\n'.join(active_appservers.keys()))
@@ -91,7 +91,7 @@ class Command(BaseCommand):
 
             def log_line(line):
                 """Helper to pass to capture_playbook_output()."""
-                self.stderr.write(self.style.SUCCESS(line))  # pylint: disable=no-member
+                self.stderr.write(self.style.SUCCESS(line))
             log_line.info = log_line
             log_line.error = log_line
 
@@ -140,4 +140,4 @@ class Command(BaseCommand):
                     instance_age.days
                 ])
 
-            self.stderr.write(self.style.SUCCESS('Done generating CSV output.'))  # pylint: disable=no-member
+            self.stderr.write(self.style.SUCCESS('Done generating CSV output.'))

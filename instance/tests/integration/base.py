@@ -57,7 +57,7 @@ class IntegrationTestCase(TestCase):
         for instance in OpenEdXInstance.objects.iterator():
             instance.load_balancing_server = None
             instance.save()
-        for load_balancer in LoadBalancingServer.objects.iterator():  # pylint: disable=no-member
+        for load_balancer in LoadBalancingServer.objects.iterator():
             load_balancer.delete()
         for instance in OpenEdXInstance.objects.iterator():
             instance.delete()

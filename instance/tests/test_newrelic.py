@@ -173,8 +173,8 @@ class NewRelicTestCase(TestCase):
                 try:
                     newrelic.delete_synthetics_monitor(monitor_id)
                 except requests.exceptions.HTTPError:
-                    if error == requests.codes.not_found:  # pylint: disable=no-member
+                    if error == requests.codes.not_found:
                         self.fail('Should not raise an exception for {} response.'.format(error))
                 else:
-                    if not error == requests.codes.not_found:  # pylint: disable=no-member
+                    if not error == requests.codes.not_found:
                         self.fail('Should raise an exception for {} response.'.format(error))

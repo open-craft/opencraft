@@ -46,9 +46,9 @@ def check_url_accessible(url, attempts=3, delay=15):
 
 
 def is_port_open(ip_addr, port):
-        """
-        Determine if the server at ip_addr is accepting connections on the given
-        port or not.
-        """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        return sock.connect_ex((ip_addr, port)) == 0
+    """
+    Determine if the server at ip_addr is accepting connections on the given
+    port or not.
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    return sock.connect_ex((ip_addr, port)) == 0
