@@ -351,7 +351,11 @@ class OpenStackServer(Server):
         return self.status
 
     @Server.status.only_for(Status.Pending)
-    def start(self, **kwargs):
+    def start(self,
+              flavor_selector=settings.OPENSTACK_SANDBOX_FLAVOR,
+              image_selector=settings.OPENSTACK_SANDBOX_BASE_IMAGE,
+              key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
+              **kwargs):
         """
         Get a server instance started and an openstack_id assigned
 
@@ -360,13 +364,14 @@ class OpenStackServer(Server):
         """
         self.logger.info('Starting server (status=%s)...', self.status)
         self._status_to_building()
+
         try:
             os_server = openstack_utils.create_server(
                 self.nova,
                 self.name,
-                settings.OPENSTACK_SANDBOX_FLAVOR,
-                settings.OPENSTACK_SANDBOX_BASE_IMAGE,
-                key_name=settings.OPENSTACK_SANDBOX_SSH_KEYNAME,
+                flavor_selector=flavor_selector,
+                image_selector=image_selector,
+                key_name=key_name,
                 **kwargs
             )
         except novaclient.exceptions.ClientException as e:

@@ -367,7 +367,12 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return self.server.status.accepts_ssh_commands
 
         try:
-            self.server.start(security_groups=self.security_groups)
+            self.server.start(
+                security_groups=self.security_groups,
+                flavor_selector=self.instance.openstack_server_flavor,
+                image_selector=self.instance.openstack_server_base_image,
+                key_name=self.instance.openstack_server_ssh_keyname,
+            )
             self.logger.info('Waiting for server %s...', self.server)
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)

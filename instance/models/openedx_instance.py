@@ -23,6 +23,7 @@ import re
 import string
 
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.template import loader
@@ -87,6 +88,29 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     )
 
     successfully_provisioned = models.BooleanField(default=False)
+
+    openstack_server_flavor = JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text='JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}.'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.',
+    )
+    openstack_server_base_image = JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
+    )
+    openstack_server_ssh_keyname = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        default='',
+        help_text='SSH key name used when setting up access to the openstack project.'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_SSH_KEYNAME on server creation.',
+    )
 
     class Meta:
         verbose_name = 'Open edX Instance'
@@ -256,6 +280,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
+
+        # openstack server settings
+        if not self.openstack_server_flavor:
+            self.openstack_server_flavor = settings.OPENSTACK_SANDBOX_FLAVOR
+        if not self.openstack_server_base_image:
+            self.openstack_server_base_image = settings.OPENSTACK_SANDBOX_BASE_IMAGE
+        if not self.openstack_server_ssh_keyname:
+            self.openstack_server_ssh_keyname = settings.OPENSTACK_SANDBOX_SSH_KEYNAME
         super().set_field_defaults()
 
     def save(self, **kwargs):
