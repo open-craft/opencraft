@@ -56,7 +56,7 @@ class DatabaseServerManager(models.Manager):
         """
         Create the default database server configured in the Django settings, if any.
         """
-        database_server_url = getattr(settings, self.model.DEFAULT_SETTINGS_NAME, None)  # pylint: disable=no-member
+        database_server_url = getattr(settings, self.model.DEFAULT_SETTINGS_NAME, None)
         if database_server_url:
             database_server_url_obj = urlparse(database_server_url)
             hostname, username, password, port = (
@@ -68,11 +68,11 @@ class DatabaseServerManager(models.Manager):
             if not hostname:
                 raise ImproperlyConfigured(
                     "{setting_name} must specify at least host name of database server.".format(
-                        setting_name=self.model.DEFAULT_SETTINGS_NAME  # pylint: disable=no-member
+                        setting_name=self.model.DEFAULT_SETTINGS_NAME
                     )
                 )
             logger.info("Creating DatabaseServer %s", hostname)
-            database_server, created = self.get_or_create(  # pylint: disable=no-member
+            database_server, created = self.get_or_create(
                 hostname=hostname,
                 defaults=dict(
                     name=hostname,
@@ -103,10 +103,10 @@ class DatabaseServerManager(models.Manager):
         # The set of servers might change between retrieving the server count and retrieving the random server,
         # so we make this atomic.
         with transaction.atomic():
-            servers = self.filter(accepts_new_clients=True)  # pylint: disable=no-member
+            servers = self.filter(accepts_new_clients=True)
             count = servers.count()
             if not count:
-                raise self.model.DoesNotExist(  # pylint: disable=no-member
+                raise self.model.DoesNotExist(
                     "No configured DatabaseServer accepts new clients."
                 )
             return servers[random.randrange(count)]

@@ -23,8 +23,8 @@ Instance app model mixins - RabbitMQ
 # Imports #####################################################################
 
 import json
-import requests
 import urllib.parse
+import requests
 
 from django.conf import settings
 from django.db import models

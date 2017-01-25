@@ -74,26 +74,30 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        data = response.data[0].items()
-        self.assertIn(('id', app_server.pk), data)
-        self.assertIn(('api_url', 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)), data)
-        self.assertIn(('name', 'AppServer 1'), data)
+        data = response.data[0]
+        data_entries = data.items()
+        self.assertIn(('id', app_server.pk), data_entries)
+        self.assertIn(
+            ('api_url', 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)),
+            data_entries
+        )
+        self.assertIn(('name', 'AppServer 1'), data_entries)
         # Status fields:
-        self.assertIn(('status', 'new'), data)
-        self.assertIn(('status_name', 'New'), data)
-        self.assertIn(('status_description', 'Newly created'), data)
-        self.assertIn(('is_steady', True), data)
-        self.assertIn(('is_healthy', True), data)
+        self.assertIn(('status', 'new'), data_entries)
+        self.assertIn(('status_name', 'New'), data_entries)
+        self.assertIn(('status_description', 'Newly created'), data_entries)
+        self.assertIn(('is_steady', True), data_entries)
+        self.assertIn(('is_healthy', True), data_entries)
         # Created/modified date:
-        self.assertIn('created', response.data[0])
-        self.assertIn('modified', response.data[0])
+        self.assertIn('created', data)
+        self.assertIn('modified', data)
         # Other details should not be in the list view:
-        self.assertNotIn('instance', response.data[0])
-        self.assertNotIn('server', response.data[0])
-        self.assertNotIn('configuration_settings', response.data[0])
-        self.assertNotIn('edx_platform_commit', response.data[0])
-        self.assertNotIn('log_entries', response.data[0])
-        self.assertNotIn('log_error_entries', response.data[0])
+        self.assertNotIn('instance', data)
+        self.assertNotIn('server', data)
+        self.assertNotIn('configuration_settings', data)
+        self.assertNotIn('edx_platform_commit', data)
+        self.assertNotIn('log_entries', data)
+        self.assertNotIn('log_error_entries', data)
 
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),
@@ -122,34 +126,38 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        data = response.data.items()
-        self.assertIn(('id', app_server.pk), data)
-        self.assertIn(('api_url', 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)), data)
-        self.assertIn(('name', 'AppServer 1'), data)
+        data = response.data
+        data_entries = data.items()
+        self.assertIn(('id', app_server.pk), data_entries)
+        self.assertIn(
+            ('api_url', 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk)),
+            data_entries
+        )
+        self.assertIn(('name', 'AppServer 1'), data_entries)
         # Status fields:
-        self.assertIn(('status', 'new'), data)
-        self.assertIn(('status_name', 'New'), data)
-        self.assertIn(('status_description', 'Newly created'), data)
-        self.assertIn(('is_steady', True), data)
-        self.assertIn(('is_healthy', True), data)
+        self.assertIn(('status', 'new'), data_entries)
+        self.assertIn(('status_name', 'New'), data_entries)
+        self.assertIn(('status_description', 'Newly created'), data_entries)
+        self.assertIn(('is_steady', True), data_entries)
+        self.assertIn(('is_healthy', True), data_entries)
         # Created/modified date:
-        self.assertIn('created', response.data)
-        self.assertIn('modified', response.data)
+        self.assertIn('created', data)
+        self.assertIn('modified', data)
         # Other details:
         instance_id = app_server.instance.ref.pk
         self.assertIn(
             ('instance', {'id': instance_id, 'api_url': 'http://testserver/api/v1/instance/{}/'.format(instance_id)}),
-            data
+            data_entries
         )
-        self.assertIn('server', response.data)
+        self.assertIn('server', data)
         server_data = response.data['server'].items()
         self.assertIn(('id', app_server.server.pk), server_data)
         self.assertIn(('public_ip', None), server_data)
         # The API call will try to start the server, which will fail, since we're
         # not actually talking to an OpenStack instance when unit tests are running
         self.assertIn(('status', 'failed'), server_data)
-        self.assertIn('log_entries', response.data)
-        self.assertIn('log_error_entries', response.data)
+        self.assertIn('log_entries', data)
+        self.assertIn('log_error_entries', data)
 
     @patch_gandi
     @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)

@@ -114,7 +114,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Verify that the appserver's configuration includes expected secret keys.
         """
-        instance_key = instance.secret_key_b64encoded
         for expected_key in self.EXPECTED_SECRET_KEYS:
             self.assertIn(instance.get_secret_key_for_var(expected_key), appserver.configuration_settings)
 

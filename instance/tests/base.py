@@ -112,7 +112,7 @@ class WithUserTestCase(DjangoTestCase):
         # User3 has InstanceManager privileges
         self.user3 = User.objects.create_user('user3', 'user3@example.com', 'pass')
         content_type = ContentType.objects.get_for_model(InstanceReference)
-        permission = Permission.objects.get(  # pylint: disable=no-member
+        permission = Permission.objects.get(
             content_type=content_type, codename='manage_all')
         self.user3.user_permissions.add(permission)
         self.user3.save()

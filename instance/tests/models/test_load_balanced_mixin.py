@@ -22,8 +22,6 @@ Load-balanced instance mixin - tests
 
 # Imports #####################################################################
 
-from unittest.mock import patch, call
-
 from django.test import override_settings
 
 from instance import gandi

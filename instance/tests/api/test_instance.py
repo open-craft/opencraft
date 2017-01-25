@@ -127,8 +127,9 @@ class InstanceAPITestCase(APITestCase):
             {'level': 'INFO', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | info'},
             {'level': 'ERROR', 'text': 'instance.models.instance  | instance={inst_id} (Test!) | error'},
         ]
-        self.assertEqual(len(expected_list), len(response.data['log_entries']))
+        log_entries = response.data['log_entries']
+        self.assertEqual(len(expected_list), len(log_entries))
 
-        for expected_entry, log_entry in zip(expected_list, response.data['log_entries']):
+        for expected_entry, log_entry in zip(expected_list, log_entries):
             self.assertEqual(expected_entry['level'], log_entry['level'])
             self.assertEqual(expected_entry['text'].format(inst_id=instance.ref.pk), log_entry['text'])

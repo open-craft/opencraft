@@ -371,26 +371,22 @@ class SimpleResourceTestCase(TestCase):
         # In State 1, we can call method_one():
         res.return_value = 'A'
         self.assertEqual(res.method_one(), 'A')
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_one.is_available(), True) #pylint: disable=no-member
+        self.assertEqual(res.method_one.is_available(), True)
 
         # In State 1, we can call method_one_with_args():
         self.assertEqual(res.method_one_with_args(4, 5, c=6), 32)
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_one_with_args.is_available(), True) #pylint: disable=no-member
+        self.assertEqual(res.method_one_with_args.is_available(), True)
 
         # But not method_two()
         expected_message = "The method 'method_two' cannot be called in this state \\(State 1 / State1\\)."
         with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_two()
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_two.is_available(), False) #pylint: disable=no-member
+        self.assertEqual(res.method_two.is_available(), False)
 
         # In State 1, we can call method_odd():
         res.return_value = 'B'
         self.assertEqual(res.method_odd(), 'B')
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_odd.is_available(), True) #pylint: disable=no-member
+        self.assertEqual(res.method_odd.is_available(), True)
 
         # Go to State 2:
         res.increment_state()
@@ -399,13 +395,11 @@ class SimpleResourceTestCase(TestCase):
         expected_message = "The method 'method_one' cannot be called in this state \\(State 2 / State2\\)."
         with self.assertRaisesRegex(WrongStateException, expected_message):
             res.method_one()
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_one.is_available(), False) #pylint: disable=no-member
+        self.assertEqual(res.method_one.is_available(), False)
 
         res.return_value = 'C'
         self.assertEqual(res.method_two(), 'C')
-        # TODO: Why do we need to disable no-member for `is_available`?
-        self.assertEqual(res.method_two.is_available(), True) #pylint: disable=no-member
+        self.assertEqual(res.method_two.is_available(), True)
 
     def test_property_only_for(self):
         """

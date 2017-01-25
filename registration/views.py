@@ -80,7 +80,7 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
                                 password=form.cleaned_data['password'])
             login(self.request, user)
         for email_address in {user.email, self.object.public_contact_email}:
-            if not EmailAddress.objects.filter(email=email_address).exists(): #pylint: disable=no-member
+            if not EmailAddress.objects.filter(email=email_address).exists():
                 email = EmailAddress.objects.create_unconfirmed(email_address, user)
                 send_email_verification(email, self.request)
         return response

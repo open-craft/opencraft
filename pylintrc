@@ -90,6 +90,7 @@ disable=
     fixme,
     locally-disabled,
     no-init,
+    no-member,
     too-few-public-methods,
     too-many-ancestors,
     protected-access,

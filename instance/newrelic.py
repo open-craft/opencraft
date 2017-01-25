@@ -97,7 +97,7 @@ def delete_synthetics_monitor(monitor_id):
         r = requests.delete(url, headers=_request_headers())
         r.raise_for_status()
     except requests.exceptions.HTTPError:
-        if r.status_code == requests.codes.not_found:  # pylint: disable=no-member
+        if r.status_code == requests.codes.not_found:
             logger.info('Monitor for %s has already been deleted. Proceeding.')
         else:
             raise

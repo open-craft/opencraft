@@ -92,7 +92,7 @@ upgrade_dependencies:
 # Tests #######################################################################
 
 test_prospector: clean
-	prospector --profile opencraft
+	prospector --profile opencraft --uses django
 
 test_unit: clean static_external
 	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput

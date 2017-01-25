@@ -1,4 +1,4 @@
-autodetect: true
+autodetect: false
 doc-warnings: false
 dodgy:
   disable: []
