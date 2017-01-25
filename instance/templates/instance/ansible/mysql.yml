@@ -49,6 +49,19 @@ EDX_NOTES_API_MYSQL_DB_USER: '{{ edx_notes_api_user }}'
 EDX_NOTES_API_MYSQL_DB_PASS: '{{ edx_notes_api_pass }}'
 EDX_NOTES_API_MYSQL_HOST: '{{ host }}'
 
+# programs
+PROGRAMS_DEFAULT_DB_NAME: '{{ programs_database }}'
+PROGRAMS_DATABASES:
+  default:
+    ENGINE: 'django.db.backends.mysql'
+    NAME: '{{ programs_database }}'
+    USER: '{{ programs_user }}'
+    PASSWORD: '{{ programs_pass }}'
+    HOST: '{{ host }}'
+    PORT: {{ port }}
+    ATOMIC_REQUESTS: true
+    CONN_MAX_AGE: 60
+
 # analytics_api
 ANALYTICS_API_DEFAULT_DB_NAME: '{{ analytics_api_database }}'
 ANALYTICS_API_REPORTS_DB_NAME: '{{ reports_database }}'

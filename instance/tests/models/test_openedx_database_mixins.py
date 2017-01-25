@@ -337,6 +337,13 @@ class MySQLInstanceTestCase(TestCase):
                     "CONN_MAX_AGE": 60,
                 }}]
             ),
+            "PROGRAMS_": make_nested_group_info(
+                ["DEFAULT_DB_NAME", "DATABASES"],
+                [{"name": "programs", "user": "program", "additional_settings": {
+                    "ATOMIC_REQUESTS": True,
+                    "CONN_MAX_AGE": 60,
+                }}]
+            ),
             "INSIGHTS_": make_nested_group_info(
                 ["DATABASE_NAME", "DATABASES"],
                 [{"name": "dashboard", "user": "dashboard"}]
