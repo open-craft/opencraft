@@ -5,8 +5,6 @@ from __future__ import unicode_literals
 from django.db import migrations
 from django.utils import timezone
 
-from instance.models.openedx_instance import OpenEdXInstance
-
 
 class Migration(migrations.Migration):
 
@@ -14,6 +12,9 @@ class Migration(migrations.Migration):
         """
         Ensure active AppServers have a value for `last_activated`
         """
+        # We can't import the OpenEdXInstance model directly as it may be a newer
+        # version than this migration expects. We use the historical version.
+        OpenEdXInstance = apps.get_model("instance", "OpenEdXInstance")
         now = timezone.now()
         for instance in OpenEdXInstance.objects.all():
             if instance.active_appserver and instance.active_appserver.last_activated is None:
