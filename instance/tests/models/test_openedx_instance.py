@@ -85,9 +85,6 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.github_admin_organizations, [])
         self.assertEqual(instance.github_admin_users, [])
         self.assertNotEqual(instance.secret_key_b64encoded, '')
-        self.assertEqual(instance.openstack_server_base_image, settings.OPENSTACK_SANDBOX_BASE_IMAGE)
-        self.assertEqual(instance.openstack_server_flavor, settings.OPENSTACK_SANDBOX_FLAVOR)
-        self.assertEqual(instance.openstack_server_ssh_keyname, settings.OPENSTACK_SANDBOX_SSH_KEYNAME)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
