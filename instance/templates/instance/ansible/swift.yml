@@ -1,4 +1,6 @@
 EDXAPP_SETTINGS: 'openstack'
+COMMON_EDXAPP_SETTINGS: 'openstack'
+COMMON_ENABLE_OPENSTACK_INTEGRATION: true
 XQUEUE_SETTINGS: 'openstack_settings'
 
 VHOST_NAME: 'openstack'
@@ -28,6 +30,7 @@ XQUEUE_UPLOAD_BUCKET: '{{ container_name }}'
 XQUEUE_UPLOAD_PATH_PREFIX: 'xqueue'
 
 # Tracking logs
+COMMON_SWIFT_LOG_SYNC: true
 COMMON_OBJECT_STORE_LOG_SYNC: true
 COMMON_OBJECT_STORE_LOG_SYNC_BUCKET: '{{ container_name }}'
 COMMON_OBJECT_STORE_LOG_SYNC_PREFIX: 'logs/tracking/'
