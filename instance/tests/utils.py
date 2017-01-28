@@ -129,6 +129,9 @@ def patch_services(func):
                 mock_provision_mongo=stack_patch(
                     'instance.models.mixins.openedx_database.MongoDBInstanceMixin.provision_mongo',
                 ),
+                mock_provision_rabbitmq=stack_patch(
+                    'instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.provision_rabbitmq',
+                ),
                 mock_provision_swift=stack_patch(
                     'instance.models.mixins.openedx_storage.SwiftContainerInstanceMixin.provision_swift'
                 ),

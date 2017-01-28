@@ -23,9 +23,11 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
+import urllib
 
+import ddt
 import pymongo
-import requests
+import responses
 import yaml
 from django.conf import settings
 from django.test.utils import override_settings
@@ -499,6 +501,7 @@ class MongoDBInstanceTestCase(TestCase):
         self.check_mongo_vars_not_set(appserver)
 
 
+@ddt.ddt
 class RabbitMQInstanceTestCase(TestCase):
     """
     Test cases for RabbitMQInstanceMixin
@@ -507,39 +510,86 @@ class RabbitMQInstanceTestCase(TestCase):
         super().setUp()
         self.instance = None
 
-    def tearDown(self):
-        if self.instance:
-            self.instance.deprovision_rabbitmq()
-        super().tearDown()
-
-    @staticmethod
-    def request_overview():
+    @responses.activate
+    @ddt.data(
+        ('GET', ['overview'], '/api/overview'),
+        ('PUT', ['users', 'testuser'], '/api/users/testuser'),
+        ('DELETE', ['permissions', '/some_vhost', 'testuser'], '/api/permissions/%2Fsome_vhost/testuser')
+    )
+    @ddt.unpack
+    def test_rabbitmq_request(self, method, url_parts, expected_url):
         """
-        A helper method to request the overview data for the configured RabbitMQ instance
+        Test to make sure the _rabbitmq_request parameters form the correct URLs
         """
-        response = requests.get(
-            '{}/api/overview'.format(settings.RABBITMQ_API_URL),
-            auth=(settings.RABBITMQ_ADMIN_USERNAME, settings.RABBITMQ_ADMIN_PASSWORD),
-            headers={'content-type': 'application/json'}
+        url = '{service_url}{path}'.format(
+            service_url=settings.RABBITMQ_API_URL,
+            path=expected_url
         )
-        return response
+        expected_body = {'info': 'This is a mocked request to URL {url}'.format(url=url)}
 
-    def test_rabbitmq_access(self):
-        """
-        Test that RabbitMQ is accessible
-        """
-        response = self.request_overview()
-        self.assertTrue(response.ok)
-        self.assertIn('"protocol":"amqp/ssl"', response.text)
+        # Mock the URL with a uniquely identifying body so that we can verify that the
+        # correct URL is formed and called.
+        responses.add(method, url, json=expected_body)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        response = self.instance._rabbitmq_request(method.lower(), *url_parts)
 
-    def test_rabbitmq_request(self):
+        self.assertDictEqual(
+            response.json(),
+            expected_body
+        )
+
+    @responses.activate
+    def test_provision_rabbitmq(self):
         """
-        Test a simple get request with _rabbitmq_request
+        Record the calls to the RabbitMQ API and make sure a new vhost along with
+        two new users are created during provision and deleted during deprobision.
+
+        The use of `responses.RequestsMock` raises an exception during context deconstruction
+        if any of the URLs added to the `responses` object aren't ever called. Also,
+        if any RabbitMQ API URLs are called that haven't been mocked, a `RabbitMQAPIError`
+        should be raised (given the default `.env.test` configuration).
+
+        So, this test should pass if and only if all of the specifically mocked URLs are
+        called during both provision and deprovision.
         """
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        response = self.instance._rabbitmq_request('get', 'overview')
-        other_response = self.request_overview()
-        self.assertEqual(response.json(), other_response.json())
+        rabbitmq_users = [self.instance.rabbitmq_provider_user, self.instance.rabbitmq_consumer_user]
+        rabbitmq_vhost = urllib.parse.quote(self.instance.rabbitmq_vhost, safe='')
+
+        vhosts_calls = ['vhosts/{}'.format(rabbitmq_vhost)]
+        users_calls = ['users/{}'.format(user) for user in rabbitmq_users]
+        permissions_calls = ['permissions/{}/{}'.format(rabbitmq_vhost, user) for user in rabbitmq_users]
+
+        provision_calls = [
+            '{}/api/{}'.format(settings.RABBITMQ_API_URL, url)
+            for url in vhosts_calls + users_calls + permissions_calls
+        ]
+        deprovision_calls = [
+            '{}/api/{}'.format(settings.RABBITMQ_API_URL, url)
+            for url in vhosts_calls + users_calls
+        ]
+
+        # Spec the provisioning calls
+        with responses.RequestsMock() as rsps:
+            for url in provision_calls:
+                rsps.add(
+                    responses.PUT,
+                    url,
+                    content_type='application/json',
+                    body='{}'
+                )
+            self.instance.provision_rabbitmq()
+
+        # Spec the deprovisioning calls
+        with responses.RequestsMock() as rsps:
+            for url in deprovision_calls:
+                rsps.add(
+                    responses.DELETE,
+                    url,
+                    content_type='application/json',
+                    body='{}'
+                )
+            self.instance.deprovision_rabbitmq()
 
     @override_settings(RABBITMQ_ADMIN_PASSWORD='asdf')
     def test_rabbitmq_api_error(self):
