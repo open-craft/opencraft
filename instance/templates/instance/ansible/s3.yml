@@ -1,6 +1,8 @@
+COMMON_ENABLE_AWS_INTEGRATION: true
 AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
 AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
 
+EDXAPP_DEFAULT_FILE_STORAGE: 'storages.backends.s3boto3.S3Boto3Storage'
 EDXAPP_AWS_ACCESS_KEY_ID: '{{ instance.s3_access_key }}'
 EDXAPP_AWS_SECRET_ACCESS_KEY: '{{ instance.s3_secret_access_key }}'
 EDXAPP_AUTH_EXTRA:
