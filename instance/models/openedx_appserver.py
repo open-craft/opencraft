@@ -24,6 +24,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.template import loader
 from django.utils.text import slugify
+# FIXME want to use django.contrib.postgres.fields.JSONField instead,
+# but this requires upgrading to PostgreSQL ≥ 9.4
+# ref https://docs.djangoproject.com/en/1.10/ref/contrib/postgres/fields/#django.contrib.postgres.fields.JSONField
 from django_extensions.db.fields.json import JSONField
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
@@ -367,7 +370,12 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return self.server.status.accepts_ssh_commands
 
         try:
-            self.server.start(security_groups=self.security_groups)
+            self.server.start(
+                security_groups=self.security_groups,
+                flavor_selector=self.instance.openstack_server_flavor,
+                image_selector=self.instance.openstack_server_base_image,
+                key_name=self.instance.openstack_server_ssh_keyname,
+            )
             self.logger.info('Waiting for server %s...', self.server)
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)

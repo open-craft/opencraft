@@ -346,6 +346,39 @@ class OpenEdXAppServerTestCase(TestCase):
         with self.assertRaisesRegex(Exception, "Unable to find the OpenStack network security group called 'invalid'."):
             app_server.check_security_groups()
 
+    @patch_services
+    def test_default_openstack_settings(self, mocks):
+        """
+        Test that the default openstack settings are used when starting an appserver
+        """
+        result = make_test_appserver().provision()
+        self.assertTrue(result)
+        create_server_kwargs = mocks.mock_create_server.call_args[1]
+        self.assertEqual(create_server_kwargs["flavor_selector"], settings.OPENSTACK_SANDBOX_FLAVOR)
+        self.assertEqual(create_server_kwargs["image_selector"], settings.OPENSTACK_SANDBOX_BASE_IMAGE)
+        self.assertEqual(create_server_kwargs["key_name"], settings.OPENSTACK_SANDBOX_SSH_KEYNAME)
+
+    @patch_services
+    def test_custom_openstack_settings(self, mocks):
+        """
+        Test that the instance's custom openstack settings are used when starting an appserver.
+        """
+        flavor_selector = {'name': 'another-flavor'}
+        image_selector = {'name': 'another-image'}
+        key_name = 'another-key'
+        instance = OpenEdXInstanceFactory(
+            openstack_server_flavor=flavor_selector,
+            openstack_server_base_image=image_selector,
+            openstack_server_ssh_keyname=key_name,
+        )
+        app_server = make_test_appserver(instance)
+        result = app_server.provision()
+        self.assertTrue(result)
+        create_server_kwargs = mocks.mock_create_server.call_args[1]
+        self.assertEqual(create_server_kwargs["flavor_selector"], flavor_selector)
+        self.assertEqual(create_server_kwargs["image_selector"], image_selector)
+        self.assertEqual(create_server_kwargs["key_name"], key_name)
+
 
 @ddt
 class OpenEdXAppServerStatusTestCase(TestCase):
