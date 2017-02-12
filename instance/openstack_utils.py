@@ -122,7 +122,7 @@ def sync_security_group_rules(security_group, rule_definitions, network=None):
         network.create_security_group_rule(security_group_id=security_group.id, **rule_definition._asdict())
 
 
-def get_nova_client(api_version=2):
+def get_nova_client(region_name, api_version=2):
     """
     Instantiate a python novaclient.Client() object with proper credentials
     """
@@ -132,7 +132,7 @@ def get_nova_client(api_version=2):
         settings.OPENSTACK_PASSWORD,
         settings.OPENSTACK_TENANT,
         settings.OPENSTACK_AUTH_URL,
-        region_name=settings.OPENSTACK_REGION,
+        region_name=region_name,
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.

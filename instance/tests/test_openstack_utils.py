@@ -201,7 +201,7 @@ class OpenStackTestCase(TestCase):
             """ Invoked by the nova client when making a HTTP request (via requests/urllib3) """
             raise ConnectionResetError('[Errno 104] Connection reset by peer')
         mock_getresponse.side_effect = getresponse_call
-        nova = openstack_utils.get_nova_client()
+        nova = openstack_utils.get_nova_client(settings.OPENSTACK_REGION)
         with self.assertRaises(requests.exceptions.ConnectionError):
             nova.servers.get('test-id')
         self.assertEqual(mock_getresponse.call_count, 11)
