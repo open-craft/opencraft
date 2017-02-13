@@ -66,7 +66,6 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         model = OpenEdXInstanceBasicSerializer.Meta.model
         fields = OpenEdXInstanceBasicSerializer.Meta.fields + (
             'email',
-            'protocol',
             'use_ephemeral_databases',
             'github_admin_organizations',
             'github_admin_users',
@@ -74,6 +73,9 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'internal_lms_domain',
             'url',
             'studio_url',
+
+            'http_auth_user',
+            'http_auth_pass',
 
             'mysql_user',
             'mysql_pass',

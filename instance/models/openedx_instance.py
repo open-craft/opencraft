@@ -203,21 +203,21 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         LMS URL.
         """
-        return u'{0.protocol}://{0.domain}/'.format(self)
+        return u'https://{}/'.format(self.domain)
 
     @property
     def studio_url(self):
         """
         Studio URL.
         """
-        return u'{0.protocol}://{0.studio_domain}/'.format(self)
+        return u'https://{}/'.format(self.studio_domain)
 
     @property
     def lms_preview_url(self):
         """
         LMS preview URL.
         """
-        return u'{0.protocol}://{0.lms_preview_domain}/'.format(self)
+        return u'https://{}/'.format(self.lms_preview_domain)
 
     @property
     def database_name(self):
@@ -328,6 +328,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         template = loader.get_template("instance/haproxy/openedx.conf")
         config = template.render(dict(
             domain=self.domain,
+            http_auth_info_base64=self.http_auth_info_base64(),
             server_name=server_name,
             ip_address=ip_address,
         ))

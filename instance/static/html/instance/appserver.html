@@ -36,8 +36,13 @@
         </tr>
         <tr>
           <th>VM IP Address</th>
-          <td><a href="{{ appserver.protocol }}://{{ appserver.server.public_ip }}">{{ appserver.server.public_ip }}</a></td>
+          <td>{{ appserver.server.public_ip }}</a></td>
         </tr>
+        <tr>
+          <th>Authenticated Link</th>
+          <td><a href="http://{{ instance.http_auth_user }}:{{ instance.http_auth_pass }}@{{ appserver.server.public_ip }}/">{{ appserver.name }}</a></td>
+        </tr>
+
       </tbody>
     </table>
 
@@ -61,10 +66,6 @@
         <tr>
           <td>Email</td>
           <td>{{ appserver.email }}</td>
-        </tr>
-        <tr>
-          <td>Protocol</td>
-          <td>{{ appserver.protocol }}</td>
         </tr>
         <tr>
           <td>Use ephemeral databases</td>

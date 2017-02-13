@@ -145,3 +145,24 @@ class SecretKeyInstanceMixin(models.Model):
         for to_var, from_var in OPENEDX_SHARED_KEYS.items():
             keys[to_var] = keys[from_var]
         return yaml.dump(keys)
+
+    @property
+    def http_auth_user(self):
+        """
+        Return the HTTP basic auth user name.
+        """
+        return self.get_secret_key_for_var('COMMON_HTPASSWD_USER')[:16]
+
+    @property
+    def http_auth_pass(self):
+        """
+        Return the HTTP basic auth password.
+        """
+        return self.get_secret_key_for_var('COMMON_HTPASSWD_PASS')[:16]
+
+    def http_auth_info_base64(self):
+        """
+        Return the HTTP auth information in the format required by Authorization HTTP header.
+        """
+        user_pass = '{}:{}'.format(self.http_auth_user, self.http_auth_pass)
+        return b64encode(user_pass.encode('latin1'))
