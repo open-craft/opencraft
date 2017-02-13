@@ -56,7 +56,7 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver = make_test_appserver()
         appserver.openedx_release = "open-release/zelkova"
         with self.assertRaises(RuntimeError):
-            appserver.save(update_fields=["openedx_releasse"])
+            appserver.save(update_fields=["openedx_release"])
 
     @patch_services
     def test_provision(self, mocks):

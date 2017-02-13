@@ -83,7 +83,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
 
     def test_secret_key_settings_no_key(self):
         """
-        Test that secret key settings are empty if not master key is set.
+        Test that secret key settings are empty if the master key is not set.
         """
         instance = OpenEdXInstanceFactory()
         make_test_appserver(instance)
