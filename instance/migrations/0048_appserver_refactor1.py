@@ -2,7 +2,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 import django_extensions.db.fields
-import instance.models.instance
 import instance.models.mixins.utilities
 import instance.models.utils
 
@@ -101,7 +100,6 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Open edX Instance',
             },
-            bases=(instance.models.instance.Instance, models.Model),
         ),
         migrations.AlterModelOptions(
             name='openstackserver',

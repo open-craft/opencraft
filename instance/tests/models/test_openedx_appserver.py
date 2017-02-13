@@ -48,6 +48,16 @@ class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
     """
+
+    def test_immutable_fields(self):
+        """
+        Test that some appserver fields are immutable.
+        """
+        appserver = make_test_appserver()
+        appserver.openedx_release = "open-release/zelkova"
+        with self.assertRaises(RuntimeError):
+            appserver.save(update_fields=["openedx_release"])
+
     @patch_services
     def test_provision(self, mocks):
         """
@@ -178,6 +188,15 @@ class OpenEdXAppServerTestCase(TestCase):
             app_server = OpenEdXAppServer.objects.get(pk=app_server.pk)
             with self.assertRaises(WrongStateException):
                 app_server.provision()
+
+    @patch('instance.openstack_utils.get_nova_client')
+    def test_launch_in_other_region(self, mock_get_nova_client):  # pylint: disable=no-self-use
+        """
+        Test launching an appserver in a non-default region.
+        """
+        instance = OpenEdXInstanceFactory(openstack_region="elsewhere")
+        make_test_appserver(instance)
+        mock_get_nova_client.assert_called_once_with("elsewhere")
 
     def test_configuration_extra_settings(self):
         """

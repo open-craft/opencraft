@@ -60,7 +60,7 @@ SecurityGroupRuleDefinition = namedtuple('SecurityGroupRuleDefinition', [
 # Functions ###################################################################
 
 
-def get_openstack_connection():
+def get_openstack_connection(region_name):
     """
     Get the OpenStack Connection object.
 
@@ -71,7 +71,7 @@ def get_openstack_connection():
     e.g. "compute", "network", etc.
     """
     profile = Profile()
-    profile.set_region(Profile.ALL, settings.OPENSTACK_REGION)
+    profile.set_region(Profile.ALL, region_name)
     connection = Connection(
         profile=profile,
         user_agent='opencraft-im',
@@ -89,7 +89,7 @@ def get_openstack_connection():
     return connection
 
 
-def sync_security_group_rules(security_group, rule_definitions, network=None):
+def sync_security_group_rules(security_group, rule_definitions, network):
     """
     Given an OpenStack 'SecurityGroup' instance and a list of rules (in the form
     of SecurityGroupRuleDefinition tuples), ensure that the security group's
@@ -97,7 +97,6 @@ def sync_security_group_rules(security_group, rule_definitions, network=None):
     group until it matches 'rules'.
     """
     assert all(isinstance(rule, SecurityGroupRuleDefinition) for rule in rule_definitions)
-    network = network or get_openstack_connection().network
     rule_definitions_set = set(rule_definitions)
 
     existing_rules = network.security_group_rules(security_group_id=security_group.id)
@@ -122,7 +121,7 @@ def sync_security_group_rules(security_group, rule_definitions, network=None):
         network.create_security_group_rule(security_group_id=security_group.id, **rule_definition._asdict())
 
 
-def get_nova_client(api_version=2):
+def get_nova_client(region_name, api_version=2):
     """
     Instantiate a python novaclient.Client() object with proper credentials
     """
@@ -132,7 +131,7 @@ def get_nova_client(api_version=2):
         settings.OPENSTACK_PASSWORD,
         settings.OPENSTACK_TENANT,
         settings.OPENSTACK_AUTH_URL,
-        region_name=settings.OPENSTACK_REGION,
+        region_name=region_name,
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.

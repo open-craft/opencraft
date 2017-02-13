@@ -203,12 +203,15 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         if self.pk:
             # We are changing an existing AppServer object. But most AppServer fields are meant
             # to be immutable. Only 'status' and 'modified' are allowed to change.
-            if not set(kwargs.get('update_fields', [])) < set(['_status', 'modified']):
+            if not set(kwargs.get('update_fields', [])) <= set(['_status', 'modified']):
                 raise RuntimeError("Error: Attempted to modify an AppServer instance. AppServers are immutable.")
         else:
             # This is a new AppServer. Does it have a Server associated with it yet?
             if not self.server_id:
-                self.server = OpenStackServer.objects.create(name_prefix="inst-{}-vm".format(self.owner_id))
+                self.server = OpenStackServer.objects.create(
+                    name_prefix="inst-{}-vm".format(self.owner_id),
+                    openstack_region=self.instance.openstack_region,
+                )
         super().save(**kwargs)
 
     def terminate_vm(self):

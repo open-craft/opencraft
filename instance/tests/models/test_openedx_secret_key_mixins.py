@@ -30,6 +30,7 @@ import six
 from instance.models.mixins.secret_keys import OPENEDX_SECRET_KEYS, OPENEDX_SHARED_KEYS
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.utils import patch_services
 
 
@@ -79,6 +80,16 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         # Verify that API client keys are set to the matching server key.
         for to_var, from_var in OPENEDX_SHARED_KEYS.items():
             self.assertEqual(secret_key_settings[to_var], secret_key_settings[from_var])
+
+    def test_secret_key_settings_no_key(self):
+        """
+        Test that secret key settings are empty if the master key is not set.
+        """
+        instance = OpenEdXInstanceFactory()
+        make_test_appserver(instance)
+        instance.secret_key_b64encoded = ''
+        instance.save()
+        self.assertEqual(instance.get_secret_key_settings(), '')
 
     @patch_services
     def test_do_not_create_insecure_secret_keys(self, mocks):
