@@ -141,6 +141,7 @@ EDXAPP_FEATURES:
   PREVIEW_LMS_BASE: '{{ instance.lms_preview_domain }}'
   REQUIRE_COURSE_EMAIL_AUTH: false
   USE_MICROSITES: false
+  PREVENT_CONCURRENT_LOGINS: false
   # These are not part of the standard install:
   # CUSTOM_COURSES_EDX: true
   # ENABLE_LTI_PROVIDER: true
