@@ -325,42 +325,65 @@ describe('Instance app', function () {
             it('sets is_active correctly', function() {
                 expect($scope.is_active).toBe(true); // Based on the fixture, AppServer 8 is active
 
-                parentScope.instance.active_appserver = null;
+                appServerDetail.is_active = false;
                 $scope.refresh();
                 flushHttpBackend();
                 expect($scope.is_active).toBeFalsy();
 
-                parentScope.instance.active_appserver = {id: 404};
+                appServerDetail.id = 404;
                 $scope.refresh();
                 flushHttpBackend();
                 expect($scope.is_active).toBeFalsy();
             });
         });
 
-        describe('$scope.make_appserver_active', function() {
+        describe('$scope.make_appserver_active(true)', function() {
             it('will make an API call to make the AppServer active, then refresh the view', function() {
-                parentScope.instance.active_appserver = null;
+                appServerDetail.is_active = false;
                 $scope.refresh();
                 spyOn(rootScope, 'notify');
                 spyOn($scope, 'refresh');
                 httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_active/').respond('');
-                $scope.make_appserver_active();
+                $scope.make_appserver_active(true);
                 flushHttpBackend();
                 expect(parentScope.refresh).toHaveBeenCalled();
                 expect($scope.refresh).toHaveBeenCalled();
-                expect(rootScope.notify).toHaveBeenCalledWith('AppServer 2 is now active. The DNS changes may take a while to propagate.');
+                expect(rootScope.notify).toHaveBeenCalledWith('AppServer 2 is now active. The load balancer changes will take a short while to propagate.');
             });
             it('displays a notification if the AppServer failed to activate', function() {
-                parentScope.instance.active_appserver = null;
+                appServerDetail.is_active = false;
                 $scope.refresh();
                 spyOn(rootScope, 'notify');
                 spyOn($scope, 'refresh');
                 httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_active/').respond(500, '');
-                $scope.make_appserver_active();
+                $scope.make_appserver_active(true);
                 flushHttpBackend();
                 expect(parentScope.refresh).not.toHaveBeenCalled();
                 expect($scope.refresh).toHaveBeenCalled();
                 expect(rootScope.notify).toHaveBeenCalledWith('An error occurred. AppServer 2 could not be made active.', 'alert');
+            });
+        });
+
+        describe('$scope.make_appserver_active(false)', function() {
+            it('will make an API call to make the AppServer inactive, then refresh the view', function() {
+                spyOn(rootScope, 'notify');
+                spyOn($scope, 'refresh');
+                httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_inactive/').respond('');
+                $scope.make_appserver_active(false);
+                flushHttpBackend();
+                expect(parentScope.refresh).toHaveBeenCalled();
+                expect($scope.refresh).toHaveBeenCalled();
+                expect(rootScope.notify).toHaveBeenCalledWith('AppServer 2 is now inactive. The load balancer changes will take a short while to propagate.');
+            });
+            it('displays a notification if the AppServer failed to activate', function() {
+                spyOn(rootScope, 'notify');
+                spyOn($scope, 'refresh');
+                httpBackend.expectPOST('/api/v1/openedx_appserver/' + appServerDetail.id + '/make_inactive/').respond(500, '');
+                $scope.make_appserver_active(false);
+                flushHttpBackend();
+                expect(parentScope.refresh).not.toHaveBeenCalled();
+                expect($scope.refresh).toHaveBeenCalled();
+                expect(rootScope.notify).toHaveBeenCalledWith('An error occurred. AppServer 2 could not be made inactive.', 'alert');
             });
         });
 

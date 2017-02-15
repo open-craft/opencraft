@@ -170,6 +170,22 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     class Meta:
         verbose_name = 'Open edX App Server'
 
+    def make_active(self, active=True):
+        """
+        Activate or deactivate the current appserver.
+        Reconfigure the load balancer, and if activating, enable monitoring.
+
+        Parameters:
+        * `active`: defaults to True.  Set to False to deactivate the appserver.
+        """
+        self.logger.info('Making %s %s for instance %s...',
+                         self.name, "active" if active else "inactive", self.instance.name)
+        self.is_active = active
+        self.save()
+        self.instance.reconfigure_load_balancer()
+        if active:
+            self.instance.enable_monitoring()
+
     def set_field_defaults(self):
         """
         Set default values.
@@ -411,8 +427,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return False
 
     def terminate_vm(self):
-        if self.pk == self.instance.active_appserver_id:
-            self.instance.set_appserver_inactive()
+        if self.is_active:
+            self.make_active(active=False)
         super().terminate_vm()
 
     def save(self, *args, **kwargs):

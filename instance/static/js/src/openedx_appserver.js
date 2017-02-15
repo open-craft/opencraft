@@ -48,21 +48,25 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                     appserver.log_error_entries = [];  // This field is not always present.
                 }
                 $scope.appserver = appserver;
-                $scope.is_active = $scope.instance.active_appserver && (appserver.id == $scope.instance.active_appserver.id);
+                $scope.is_active = appserver.is_active;
             });
         };
 
-        $scope.make_appserver_active = function() {
-            $scope.is_active = true; // Disable the button optimistically
-            OpenCraftAPI.one("openedx_appserver", $stateParams.appserverId).post('make_active').then(function() {
+        $scope.make_appserver_active = function(active) {
+            var action = active ? 'active' : 'inactive';
+            $scope.is_active = active; // Toggle the button optimistically
+            OpenCraftAPI.one("openedx_appserver", $stateParams.appserverId).post('make_' + action).then(function() {
                 // Refresh the list of app servers in the instance scope, then refresh this appserver
                 $scope.$parent.refresh().then(function() {
                     $scope.refresh();
                 });
-                $scope.notify($scope.appserver.name + ' is now active. The DNS changes may take a while to propagate.');
+                $scope.notify($scope.appserver.name + ' is now ' + action +
+                              '. The load balancer changes will take a short while to propagate.');
+
             }, function() {
                 $scope.refresh();
-                $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be made active.', 'alert');
+                $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be made ' + action + '.',
+                              'alert');
             });
         };
 

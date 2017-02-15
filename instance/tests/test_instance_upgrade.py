@@ -23,6 +23,8 @@ from unittest.mock import call, patch, Mock
 import ddt
 
 from instance.instance_upgrade import InstanceUpgrade, DogwoodToEucalyptus1, GitVersionSpec, Eucalyptus1toEucalyptus2
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 
@@ -87,46 +89,31 @@ class BaseInstanceUpgradeTest(TestCase):
         return GitVersionSpec(url, revision)
 
 
+class DummyInstanceUpgrade(InstanceUpgrade):
+    """
+    InstanceUpgrade class is intended to be abstract; this class provides simplest implementation possible
+    """
+    INITIAL_RELEASE = "QWERTY"
+    TARGET_RELEASE = "ASDFGH"
+
+    def upgrade_instance(self, instance):
+        """
+        Upgrade single instance
+        """
+        pass
+
+
 @ddt.ddt
 class TestInstanceUpgrade(BaseInstanceUpgradeTest):
     """
     Tests for generic instance upgrade functionality
     """
-
-    class DummyInstanceUpgrade(InstanceUpgrade):
-        """
-        InstanceUpgrade class is intended to be abstract; this class provides simplest implementation possible
-        """
-        INITIAL_RELEASE = "QWERTY"
-        TARGET_RELEASE = "ASDFGH"
-
-        def upgrade_instance(self, instance):
-            """
-            Upgrade single instance
-            """
-            pass
-
     def setUp(self):
         """
         Test set up method
         """
         super(TestInstanceUpgrade, self).setUp()
-        self.upgrader = self.DummyInstanceUpgrade()
-
-    def test_get_instances_to_upgrade(self):
-        """
-        Test get_instances_to_upgrade
-        """
-        expected_instances = ['instance1', 'instance2', 'instance3']
-        self.instance_objects_mock.filter.return_value = expected_instances
-        actual_instances = self.upgrader.get_instances_to_upgrade()
-
-        self.assertEqual(actual_instances, expected_instances)
-        self.instance_objects_mock.filter.assert_called_once_with(
-            active_appserver___status="running",
-            openedx_release__contains=self.DummyInstanceUpgrade.INITIAL_RELEASE,
-            use_ephemeral_databases=False
-        )
+        self.upgrader = DummyInstanceUpgrade()
 
     def test_set_git_specs(self):
         """
@@ -135,8 +122,8 @@ class TestInstanceUpgrade(BaseInstanceUpgradeTest):
         instance_mock = self._make_instance_mock()
         self.upgrader.set_git_specs(instance_mock)
 
-        expected_platform_spec = self.DummyInstanceUpgrade.EDX_PLATFORM_SPEC
-        expected_config_spec = self.DummyInstanceUpgrade.CONFIGURATION_SPEC
+        expected_platform_spec = DummyInstanceUpgrade.EDX_PLATFORM_SPEC
+        expected_config_spec = DummyInstanceUpgrade.CONFIGURATION_SPEC
 
         self._assert_git_specs(instance_mock, expected_platform_spec, expected_config_spec)
 
@@ -250,3 +237,67 @@ class TestEucalyptus1toEucalyptus2(BaseInstanceUpgradeTest):
         self._assert_git_specs(instance_mock, expected_platform_spec, expected_config_spec)
         self.assertNotIn("COMMON_EUCALYPTUS_UPGRADE", instance_mock.configuration_extra_settings)
         self.assertEqual(instance_mock.openedx_release, "open-release/eucalyptus.2")
+
+
+class InstancesToUpgradeTest(TestCase):
+    """
+    Test the get_instances_to_upgrade method with real instances.
+    """
+    def setUp(self):
+        """
+        Set up the dummy instance upgrader.
+        """
+        super(InstancesToUpgradeTest, self).setUp()
+        self.upgrader = DummyInstanceUpgrade()
+
+    def test_get_instances_to_upgrade(self):
+        """
+        Test get_instances_to_upgrade with real instances.
+        """
+        # Initalize the expected_instances list with create three instances
+        expected_instances = []
+        for iidx in range(3):
+            instance = OpenEdXInstanceFactory(openedx_release=DummyInstanceUpgrade.INITIAL_RELEASE,
+                                              use_ephemeral_databases=False)
+            # Create iidx appservers, and set to Running
+            for aidx in range(iidx + 1):
+                app_server = make_test_appserver(instance)
+                app_server._status_to_waiting_for_server()
+                app_server._status_to_configuring_server()
+                app_server._status_to_running()
+
+                # Activate every other appserver (0, 2, ..)
+                app_server.is_active = not bool(aidx % 2)
+                app_server.save()
+
+            # The instance is expected in the list
+            expected_instances.append(instance)
+
+        # Create a third instance using an incorrect release, but an active, running appserver
+        instance = OpenEdXInstanceFactory(openedx_release="not-this-release",
+                                          use_ephemeral_databases=False)
+        # Create iidx appservers, and set to Running
+        app_server = make_test_appserver(instance)
+        app_server._status_to_waiting_for_server()
+        app_server._status_to_configuring_server()
+        app_server._status_to_running()
+        app_server.is_active = True
+        app_server.save()
+
+        # Create a fourth instance with no active appservers
+        instance = OpenEdXInstanceFactory(openedx_release=DummyInstanceUpgrade.INITIAL_RELEASE,
+                                          use_ephemeral_databases=False)
+        # Create iidx appservers, and set to Running
+        app_server = make_test_appserver(instance)
+        app_server._status_to_waiting_for_server()
+        app_server._status_to_configuring_server()
+        app_server._status_to_running()
+        app_server.is_active = False
+        app_server.save()
+
+        # Create a fifth instance with appservers at all
+        instance = OpenEdXInstanceFactory(openedx_release=DummyInstanceUpgrade.INITIAL_RELEASE,
+                                          use_ephemeral_databases=False)
+
+        actual_instances = self.upgrader.get_instances_to_upgrade()
+        self.assertEqual(list(actual_instances.order_by('pk')), expected_instances)

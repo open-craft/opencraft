@@ -28,6 +28,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from instance.logging import ModelLoggerAdapter
@@ -164,6 +165,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     owner = models.ForeignKey(InstanceReference, on_delete=models.CASCADE, related_name='%(class)s_set')
     # When this AppServer was last made the active AppServer of its instance
     last_activated = models.DateTimeField(null=True, blank=True)
+    _is_active = models.BooleanField(default=False, db_column="is_active")
 
     class Meta:
         abstract = True
@@ -198,6 +200,24 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         context = self.instance.event_context  # dict with instance_id
         context.update({'appserver_id': self.pk, 'appserver_type': self.__class__.__name__})
         return context
+
+    @property
+    def is_active(self):
+        """
+        Returns the _is_active value
+        """
+        return self._is_active
+
+    @is_active.setter
+    def is_active(self, value):
+        """
+        Set the _is_active field.
+        Updates last_activated if _is_active was changed, and value = True.
+        """
+        if bool(self._is_active) != bool(value):
+            self._is_active = value
+            if self._is_active:
+                self.last_activated = timezone.now()
 
     def save(self, **kwargs):
         if self.pk:

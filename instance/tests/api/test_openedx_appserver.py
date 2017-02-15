@@ -160,7 +160,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn('log_error_entries', data)
 
     @patch_gandi
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
     def test_spawn_appserver(self, mock_run_playbook, mock_provision):
         """
@@ -172,7 +172,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
         self.assertEqual(instance.appserver_set.count(), 0)
-        self.assertEqual(instance.active_appserver, None)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -182,7 +182,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
 
         self.assertEqual(instance.appserver_set.count(), 1)
         # Even though provisioning succeeded, the API does not make app servers active automatically:
-        self.assertEqual(instance.active_appserver, None)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
@@ -200,7 +200,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
         app_server = make_test_appserver(instance)
-        self.assertEqual(instance.active_appserver, None)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -208,7 +208,91 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(mock_run_playbook.call_count, 1)
 
         instance.refresh_from_db()
-        self.assertEqual(instance.active_appserver, app_server)
+        self.assertEqual(list(instance.get_active_appservers().all()), [app_server])
+        app_server.refresh_from_db()
+        self.assertTrue(app_server.is_active)
+
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    def test_make_active_unhealthy(self, mock_run_playbook):
+        """
+        POST /api/v1/openedx_appserver/:id/make_active/ - AppServer must be healthy
+        to be activated
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        app_server = make_test_appserver(instance)
+
+        # Move to unhealthy status
+        app_server._status_to_waiting_for_server()
+        app_server._status_to_error()
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'error': 'Cannot make an unhealthy app server active.'})
+        self.assertEqual(mock_run_playbook.call_count, 0)
+
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    def test_make_inactive(self, mock_run_playbook):
+        """
+        POST /api/v1/openedx_appserver/:id/make_inactive/ - Make this OpenEdXAppServer inactive
+        for its given instance.
+
+        AppServer does not need to be healty to be deactivated.
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        app_server = make_test_appserver(instance)
+        self.assertFalse(instance.get_active_appservers().exists())
+
+        # Make the server active
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        instance.refresh_from_db()
+        self.assertEqual(list(instance.get_active_appservers().all()), [app_server])
+        app_server.refresh_from_db()
+        self.assertTrue(app_server.is_active)
+
+        # Make the server inactive
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'App server deactivation initiated.'})
+        self.assertEqual(mock_run_playbook.call_count, 2)
+
+        instance.refresh_from_db()
+        self.assertFalse(instance.get_active_appservers().exists())
+        app_server.refresh_from_db()
+        self.assertFalse(app_server.is_active)
+
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    def test_make_inactive_unhealthy(self, mock_run_playbook):
+        """
+        POST /api/v1/openedx_appserver/:id/make_inactive/ - unheahtly AppServers can be deactivated
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        app_server = make_test_appserver(instance)
+        self.assertFalse(instance.get_active_appservers().exists())
+
+        # Make the server active
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        instance.refresh_from_db()
+        self.assertEqual(list(instance.get_active_appservers().all()), [app_server])
+        app_server.refresh_from_db()
+        self.assertTrue(app_server.is_active)
+
+        # Move to unhealthy status
+        app_server._status_to_waiting_for_server()
+        app_server._status_to_error()
+
+        # Make the server inactive
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'App server deactivation initiated.'})
+        self.assertEqual(mock_run_playbook.call_count, 2)
+
+        instance.refresh_from_db()
+        self.assertFalse(instance.get_active_appservers().exists())
+        app_server.refresh_from_db()
+        self.assertFalse(app_server.is_active)
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_entries(self):

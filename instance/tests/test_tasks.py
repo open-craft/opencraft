@@ -48,9 +48,9 @@ class SpawnAppServerTestCase(TestCase):
         self.mock_spawn_appserver = patcher.start()
         self.mock_spawn_appserver.return_value = 10
 
-        patcher = patch('instance.models.openedx_instance.OpenEdXInstance.set_appserver_active')
+        patcher = patch('instance.tasks.appserver_make_active')
         self.addCleanup(patcher.stop)
-        self.mock_set_appserver_active = patcher.start()
+        self.mock_add_active_appserver = patcher.start()
 
     def test_provision_sandbox_instance(self):
         """
@@ -62,7 +62,7 @@ class SpawnAppServerTestCase(TestCase):
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         self.mock_spawn_appserver.assert_called_once_with(instance)
         # By default we don't mark_active_on_success:
-        self.assertEqual(self.mock_set_appserver_active.call_count, 0)
+        self.assertEqual(self.mock_add_active_appserver.call_count, 0)
 
     @ddt.data(True, False)
     def test_mark_active_on_success(self, provisioning_succeeds):
@@ -76,7 +76,7 @@ class SpawnAppServerTestCase(TestCase):
         tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
 
-        self.assertEqual(self.mock_set_appserver_active.call_count, 1 if provisioning_succeeds else 0)
+        self.assertEqual(self.mock_add_active_appserver.call_count, 1 if provisioning_succeeds else 0)
 
     def test_num_attempts(self):
         """
@@ -89,7 +89,7 @@ class SpawnAppServerTestCase(TestCase):
         tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
         self.assertEqual(self.mock_spawn_appserver.call_count, 3)
-        self.assertEqual(self.mock_set_appserver_active.call_count, 0)
+        self.assertEqual(self.mock_add_active_appserver.call_count, 0)
 
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))

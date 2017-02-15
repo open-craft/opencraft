@@ -32,7 +32,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from instance import ansible
-from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_appserver import OpenEdXAppServer
 from registration.models import BetaTestApplication
 
 
@@ -70,13 +70,19 @@ class Command(BaseCommand):
 
         self.activity_csv(out)
 
-    def activity_csv(self, out):  # pylint: disable=missing-docstring
-        # Produce a mapping of public IPs (of active app servers) to parent instances.
-        active_appservers = {
-            instance.active_appserver.server.public_ip: instance for instance in OpenEdXInstance.objects.all()
-            if not (instance.active_appserver is None or instance.active_appserver.server.public_ip is None)
-        }
+    @staticmethod
+    def get_active_appservers():
+        """ Produce a mapping of public IPs (of active app servers) to parent instances. """
+        active_appservers = {}
+        for appserver in OpenEdXAppServer.objects.filter(_is_active=True):
+            public_ip = appserver.server.public_ip
+            if public_ip is not None:
+                active_appservers[public_ip] = appserver.instance
+        return active_appservers
 
+    def activity_csv(self, out):
+        """Generate the activity CSV."""
+        active_appservers = self.get_active_appservers()
         if not active_appservers:
             self.stderr.write(
                 self.style.SUCCESS('There are no active app servers! Nothing to do.')
@@ -119,14 +125,13 @@ class Command(BaseCommand):
             data = ConfigParser()
             data.read(filenames)
 
-            for public_ip in active_appservers.keys():
+            for public_ip, instance in sorted(active_appservers.items(), key=lambda tup: tup[1].id):
                 try:
                     section = data[public_ip]
                 except KeyError:
                     # Fill in stats for any instaces that failed with "N/A"
                     section = {'hits': 'N/A', 'users': 'N/A', 'courses': 'N/A'}
 
-                instance = active_appservers[public_ip]
                 instance_age = datetime.now(instance.created.tzinfo) - instance.created
 
                 try:

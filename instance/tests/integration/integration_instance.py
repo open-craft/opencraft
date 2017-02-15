@@ -63,11 +63,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         Check that the given instance is up and accepting requests
         """
         instance.refresh_from_db()
-        self.assertIsNotNone(instance.active_appserver)
-        self.assertEqual(instance.active_appserver.status, AppServerStatus.Running)
-        self.assertEqual(instance.active_appserver.server.status, ServerStatus.Ready)
-        server = instance.active_appserver.server
         auth = (instance.http_auth_user, instance.http_auth_pass)
+        active_appservers = list(instance.get_active_appservers().all())
+        self.assertEqual(len(active_appservers), 1)
+        self.assertTrue(active_appservers[0].is_active)
+        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
+        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
+        server = active_appservers[0].server
         check_url_accessible('http://{0}/'.format(server.public_ip), auth=auth)
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
             check_url_accessible(url)
@@ -77,8 +79,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         Ensure the instance's appserver is not exposing any services it shouldn't be
         """
         instance.refresh_from_db()
-        self.assertIsNotNone(instance.active_appserver)
-        server_ip = instance.active_appserver.server.public_ip
+        active_appservers = list(instance.get_active_appservers().all())
+        self.assertEqual(len(active_appservers), 1)
+        server_ip = active_appservers[0].server.public_ip
         ports_should_be_open = [22, 80]
         for port in ports_should_be_open:
             self.assertTrue(
@@ -255,8 +258,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failure.yml"):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
         appserver = instance.appserver_set.last()
+        self.assertFalse(appserver.is_active)
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
@@ -271,6 +275,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failignore.yml"):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        self.assertIsNotNone(instance.active_appserver)
-        self.assertEqual(instance.active_appserver.status, AppServerStatus.Running)
-        self.assertEqual(instance.active_appserver.server.status, ServerStatus.Ready)
+        active_appservers = list(instance.get_active_appservers().all())
+        self.assertEqual(len(active_appservers), 1)
+        self.assertTrue(active_appservers[0].is_active)
+        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
+        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)

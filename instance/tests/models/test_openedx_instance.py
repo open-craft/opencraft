@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# pylint: disable=too-many-lines
 """
 OpenEdXInstance model - Tests
 """
@@ -33,7 +32,6 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
-from pytz import utc
 import requests
 import responses
 import yaml
@@ -217,7 +215,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
 
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver(self, mocks, mock_provision):
         """
         Run spawn_appserver() sequence
@@ -229,7 +227,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
         self.assertIsNotNone(appserver_id)
         self.assertEqual(instance.appserver_set.count(), 1)
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         # We are using ephemeral databases:
         self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
@@ -261,7 +259,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_newrelic_configuration(self, mocks, mock_provision):
         """
         Check that newrelic ansible vars are set correctly
@@ -277,7 +275,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['NEWRELIC_LICENSE_KEY'], 'newrelic-key')
 
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_domains(self, mocks, mock_provision):
         """
         Test that relevant configuration variables use external domains when provisioning a new app server.
@@ -299,33 +297,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['EDXAPP_CMS_BASE'], instance.external_studio_domain)
 
     @patch_services
-    def test_set_appserver_active(self, mocks):
-        """
-        Test set_appserver_active() and set_appserver_inactive()
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
-                                          use_ephemeral_databases=True)
-        appserver_id = instance.spawn_appserver()
-
-        self.assertEqual(instance.appserver_set.get().last_activated, None)
-
-        with freeze_time('2017-01-17 11:25:00') as freezed_time:
-            instance.set_appserver_active(appserver_id)
-        activation_time = utc.localize(freezed_time())
-
-        instance.refresh_from_db()
-        self.assertEqual(instance.active_appserver.pk, appserver_id)
-        self.assertEqual(instance.appserver_set.get().last_activated, activation_time)
-        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
-        self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
-        instance.set_appserver_inactive()
-        instance.refresh_from_db()
-        self.assertIsNone(instance.active_appserver)
-        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
-        self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
-
-    @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_names(self, mocks, mock_provision):
         """
         Run spawn_appserver() sequence multiple times and check names of resulting app servers
@@ -345,7 +317,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(appserver.name, "AppServer 3")
 
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_lms_users(self, mocks, mock_provision):
         """
         Provision an AppServer with a user added to lms_users.
@@ -380,13 +352,14 @@ class OpenEdXInstanceTestCase(TestCase):
             use_ephemeral_databases=True,
         )
         self.assertEqual(instance.appserver_set.count(), 0)
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
         appserver_id = instance.spawn_appserver()
         self.assertIsNotNone(appserver_id)
         self.assertEqual(instance.appserver_set.count(), 1)
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         appserver = instance.appserver_set.get(pk=appserver_id)
+        self.assertFalse(appserver.is_active)
         self.assertEqual(appserver.status, AppServerStatus.Running)
         self.assertEqual(appserver.server.status, Server.Status.Ready)
 
@@ -401,10 +374,10 @@ class OpenEdXInstanceTestCase(TestCase):
 
         instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
         self.assertEqual(instance.appserver_set.count(), 0)
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
         result = instance.spawn_appserver()
         self.assertIsNone(result)
-        self.assertIsNone(instance.active_appserver)
+        self.assertFalse(instance.get_active_appservers().exists())
 
         # however, an AppServer will still have been created:
         self.assertEqual(instance.appserver_set.count(), 1)
@@ -412,7 +385,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
 
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_databases(self, mocks, mock_provision):
         """
         Run spawn_appserver() sequence, with external databases
@@ -432,7 +405,7 @@ class OpenEdXInstanceTestCase(TestCase):
             self.assertTrue(ansible_vars[setting])
 
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_forum_api_key(self, mocks, mock_provision):
         """
         Ensure the FORUM_API_KEY matches EDXAPP_COMMENTS_SERVICE_KEY
@@ -474,10 +447,11 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Test configuration for active appserver
         appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        appserver.make_active()
         backend_map, config = instance.get_load_balancer_configuration()
         self._check_load_balancer_configuration(
-            backend_map, config, domain_names, instance.active_appserver.server.public_ip
+            backend_map, config, domain_names, appserver.server.public_ip,
         )
 
         # Test configuration in case an active appserver doesn't have a public IP address anymore.
@@ -779,18 +753,17 @@ class OpenEdXInstanceTestCase(TestCase):
             newer_appserver_failed = self._create_failed_appserver(instance)
 
         # Set single app server active
-        instance.active_appserver = active_appserver
-        instance.save()
-        active_appserver.instance.refresh_from_db()
+        active_appserver.make_active()
+        active_appserver.refresh_from_db()
 
-        self.assertEqual(mock_reconfigure.call_count, 0)
+        self.assertEqual(mock_reconfigure.call_count, 1)
         self.assertEqual(mock_disable_monitoring.call_count, 0)
         self.assertEqual(mock_remove_dns_records.call_count, 0)
 
         # Shut down instance
         instance.shut_down()
 
-        self.assertEqual(mock_reconfigure.call_count, 1)
+        self.assertEqual(mock_reconfigure.call_count, 2)
         self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
 
@@ -834,6 +807,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.enable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @responses.activate
     def test_shut_down_monitors_not_found(self, *mock_methods):
@@ -844,8 +818,8 @@ class OpenEdXInstanceTestCase(TestCase):
         monitor_ids = [str(uuid4()) for i in range(3)]
         instance = OpenEdXInstanceFactory()
         appserver = self._create_running_appserver(instance)
-        instance.active_appserver = appserver
-        instance.save()
+        appserver.make_active()
+        self.assertTrue(appserver.is_active)
         appserver.instance.refresh_from_db()
 
         for monitor_id in monitor_ids:
@@ -872,6 +846,9 @@ class OpenEdXInstanceTestCase(TestCase):
             (appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
         ])
         self.assertTrue(instance.is_shut_down)
+
+        appserver.refresh_from_db()
+        self.assertFalse(appserver.is_active)
 
     @ddt.data(2, 5, 10)
     @patch_services
@@ -905,7 +882,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
         # Set single app server active - this will be the reference date
         with freeze_time(reference_date):
-            instance.set_appserver_active(active_appserver.pk)
+            active_appserver.make_active()
 
         # Terminate app servers - only the oldest and failed fallback appservers should be terminated,
         # as all the other appservers were either created less than `days` before now,

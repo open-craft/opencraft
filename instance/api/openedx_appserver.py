@@ -33,7 +33,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.openedx_appserver import OpenEdXAppServerSerializer, SpawnAppServerSerializer
-from instance.tasks import set_appserver_active, spawn_appserver
+from instance.tasks import appserver_make_active, spawn_appserver
 
 
 # Views - API #################################################################
@@ -82,12 +82,21 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(methods=['post'])
     def make_active(self, request, pk):
         """
-        Make this AppServer the active app server for the instance.
+        Add this AppServer to the list of active app server for the instance.
         """
         app_server = self.get_object()
         if not app_server.status.is_healthy_state:
             return Response(
                 {"error": "Cannot make an unhealthy app server active."}, status=status.HTTP_400_BAD_REQUEST
             )
-        set_appserver_active(app_server.pk)
+        appserver_make_active(app_server.pk)
         return Response({'status': 'App server activation initiated.'})
+
+    @detail_route(methods=['post'])
+    def make_inactive(self, request, pk):
+        """
+        Remove this AppServer from the list of active app server for the instance.
+        """
+        app_server = self.get_object()
+        appserver_make_active(app_server.pk, active=False)
+        return Response({'status': 'App server deactivation initiated.'})

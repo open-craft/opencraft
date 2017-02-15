@@ -59,21 +59,19 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
         appserver_id = instance.spawn_appserver()
         if appserver_id:
             if mark_active_on_success:
-                # If the AppServer provisioned successfully, make it the active one:
-                # Note: if I call spawn_appserver() twice, and the second one provisions sooner, the first one may then
-                # finish and replace the second as the active server. We are not really worried about that for now.
-                instance.set_appserver_active(appserver_id)
+                # If the AppServer provisioned successfully, make it active.
+                appserver_make_active(appserver_id)
             break
 
 
 @db_task()
-def set_appserver_active(appserver_id):
+def appserver_make_active(appserver_id, active=True):
     """
-    Mark an AppServer as active.
+    Mark an AppServer as active or inactive.
     """
-    logger.info('Activating AppServer: ID=%s', appserver_id)
+    logger.info('%s AppServer: ID=%s', "Activating" if active else "Deactivating", appserver_id)
     appserver = OpenEdXAppServer.objects.get(pk=appserver_id)
-    appserver.instance.set_appserver_active(appserver_id)
+    appserver.make_active(active)
 
 
 @db_task()
