@@ -181,13 +181,102 @@ class OpenStackTestCase(TestCase):
             call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None, security_groups=None)
         ])
 
-    def test_get_server_public_address_none(self):
+    @ddt.data(
+        # Case 1: no public IP when none has been assigned yet
+        ([], None),
+        # Case 2: IPV4 address only
+        (
+            {
+                'Ext-Net': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '137.74.25.16',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 4,
+                    },
+                ],
+            },
+            {
+                'OS-EXT-IPS:type': 'fixed',
+                'addr': '137.74.25.16',
+                'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                'version': 4,
+            }
+        ),
+        # Case 3: IPV6 address only
+        (
+            {
+                'Ext-Net': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '2001:41d0:302:1000::364',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 6,
+                    },
+                ],
+            },
+            None
+        ),
+        # Case 4: IPV4 + IPV6 address
+        (
+            {
+                'Ext-Net': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '2001:41d0:302:1000::364',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 6,
+                    },
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '137.74.25.16',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 4,
+                    },
+                ],
+            },
+            {
+                'OS-EXT-IPS:type': 'fixed',
+                'addr': '137.74.25.16',
+                'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                'version': 4,
+            }
+        ),
+        # Case 5: IPV4 + IPV6 address, version 6 requested
+        (
+            {
+                'Ext-Net': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '2001:41d0:302:1000::364',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 6,
+                    },
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '137.74.25.16',
+                        'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                        'version': 4,
+                    },
+                ],
+            },
+            {
+                'OS-EXT-IPS:type': 'fixed',
+                'addr': '2001:41d0:302:1000::364',
+                'OS-EXT-IPS-MAC:mac_addr': 'fa:16:3e:30:12:4a',
+                'version': 6,
+            },
+            6
+        )
+    )
+    @ddt.unpack
+    def test_get_server_public_address(self, addresses, expected_address, version=4):
         """
-        No public IP when none has been assigned yet
+        Expect an address with the requested version, or None if not available.
         """
         server_class = namedtuple('Server', 'addresses')
-        server = server_class(addresses=[])
-        self.assertEqual(openstack_utils.get_server_public_address(server), None)
+        server = server_class(addresses=addresses)
+        self.assertEqual(openstack_utils.get_server_public_address(server, ip_version=version), expected_address)
 
     @patch('requests.packages.urllib3.util.retry.Retry.sleep')
     @patch('http.client.HTTPConnection.getresponse')

@@ -75,7 +75,7 @@ class OSServerMockManager:
         Returns the mock `os_server` for this `openstack_id`
         """
         if openstack_id not in self._os_server_dict.keys():
-            self._os_server_dict[openstack_id] = MagicMock(addresses={"Ext-Net": [{"addr": "1.1.1.1", }]})
+            self._os_server_dict[openstack_id] = MagicMock(addresses={"Ext-Net": [{"addr": "1.1.1.1", "version": 4}]})
         return self._os_server_dict[openstack_id]
 
     def set_os_server_attributes(self, openstack_id, **attributes):

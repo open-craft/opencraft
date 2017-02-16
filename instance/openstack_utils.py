@@ -156,19 +156,22 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)
 
 
-def get_server_public_address(server):
+def get_server_public_address(server, ip_version=4):
     """
-    Retrieve the public IP of `server`
+    Retrieve the public IP of `server` with the given `ip_version` (default 4).
     """
     addresses = server.addresses
     if not addresses:
         return None
 
-    # TODO: Ensure it is public
-    first_address_key = list(addresses.keys())[0]
-    first_address = addresses[first_address_key][0]
+    # Return the first address with the given IP version
+    for address_list in addresses.values():
+        # TODO: Ensure it is public, e.g. OVH addresses have key='Ext-Net'
+        for address in address_list:
+            if int(address.get('version', 0)) == ip_version:
+                return address
 
-    return first_address
+    return None
 
 
 def swift_service(
