@@ -49,6 +49,14 @@ EDX_NOTES_API_MYSQL_DB_USER: '{{ edx_notes_api_user }}'
 EDX_NOTES_API_MYSQL_DB_PASS: '{{ edx_notes_api_pass }}'
 EDX_NOTES_API_MYSQL_HOST: '{{ host }}'
 
+# notifier
+NOTIFIER_DATABASE_ENGINE: 'django.db.backends.mysql'
+NOTIFIER_DATABASE_NAME: '{{ notifier_database }}'
+NOTIFIER_DATABASE_USER: '{{ notifier_user }}'
+NOTIFIER_DATABASE_PASSWORD: '{{ notifier_pass }}'
+NOTIFIER_DATABASE_HOST: '{{ host }}'
+NOTIFIER_DATABASE_PORT: {{ port }}
+
 # programs
 PROGRAMS_DEFAULT_DB_NAME: '{{ programs_database }}'
 PROGRAMS_DATABASES:

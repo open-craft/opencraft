@@ -80,6 +80,10 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 "priv": "SELECT,INSERT,UPDATE,DELETE",
             },
             {
+                "name": self._get_mysql_database_name("notifier"),
+                "user": self._get_mysql_user_name("notifier"),
+            },
+            {
                 "name": self._get_mysql_database_name("analytics_api"),
                 "user": self._get_mysql_user_name("api"),
             },

@@ -321,6 +321,10 @@ class MySQLInstanceTestCase(TestCase):
             "EDXAPP_MYSQL_": make_flat_group_info(database={"name": "edxapp", "user": "edxapp"}),
             "XQUEUE_MYSQL_": make_flat_group_info(database={"name": "xqueue", "user": "xqueue"}),
             "EDXAPP_MYSQL_CSMH_": make_flat_group_info(database={"name": "edxapp_csmh", "user": "edxapp"}),
+            "NOTIFIER_DATABASE_": make_flat_group_info(
+                var_names=["NAME", "USER", "PASSWORD", "HOST", "PORT"],
+                database={"name": "notifier", "user": "notifier"}
+            ),
             "EDX_NOTES_API_MYSQL_": make_flat_group_info(
                 var_names=["DB_NAME", "DB_USER", "DB_PASS", "HOST"],
                 database={"name": "edx_notes_api", "user": "notes"},
