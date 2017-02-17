@@ -118,6 +118,11 @@ class Instance(ValidateModelMixin, models.Model):
     # in a query, e.g. to do .select_related('ref_set')
     ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
     openstack_region = models.CharField(max_length=16, blank=False)
+    tags = models.ManyToManyField(
+        'InstanceTag',
+        blank=True,
+        help_text='Custom tags associated with the instance.',
+    )
 
     class Meta:
         abstract = True
@@ -218,3 +223,14 @@ class Instance(ValidateModelMixin, models.Model):
         if not kwargs.pop('ref_already_deleted', False):
             self.ref.delete(instance_already_deleted=True)
         super().delete(*args, **kwargs)
+
+
+class InstanceTag(ValidateModelMixin, models.Model):
+    """
+    Custom tags that can be applied to instances, for filtering and annotation.
+    """
+    name = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
