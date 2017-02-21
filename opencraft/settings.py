@@ -373,6 +373,24 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
         "port_range_min": 443, "port_range_max": 443,
         "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
     },
+    {
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "icmp",
+        "port_range_min": None,
+        "port_range_max": None,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
+    },
+    {
+        "direction": "ingress",
+        "ether_type": "IPv6",
+        "protocol": "icmp",
+        "port_range_min": None,
+        "port_range_max": None,
+        "remote_ip_prefix": "::/0",
+        "remote_group_id": None,
+    },
 ]
 
 # Ansible #####################################################################
