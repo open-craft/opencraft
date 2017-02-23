@@ -35,13 +35,12 @@ from instance.logging import log_exception
 from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
-from instance.models.utils import format_help_text
+from instance.models.utils import default_setting, format_help_text
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
 from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################
 
-DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(settings.DEFAULT_FORK)
 
 # OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
 OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
@@ -49,8 +48,20 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 ]
 
-# Models ######################################################################
 
+# Functions ###################################################################
+
+def default_admin_organizations():
+    """
+    Helper function to set the default value for the field `github_admin_organizations`.
+    """
+    default = settings.DEFAULT_ADMIN_ORGANIZATION
+    if default:
+        return [default]
+    return []
+
+
+# Models ######################################################################
 
 class OpenEdXAppConfiguration(models.Model):
     """
@@ -66,37 +77,57 @@ class OpenEdXAppConfiguration(models.Model):
         'sent by the server.'
     ))
 
+    openedx_release = models.CharField(
+        max_length=128,
+        blank=False,
+        default=default_setting('DEFAULT_OPENEDX_RELEASE'),
+        help_text=format_help_text(
+            """
+            Set this to a release tag like "named-release/dogwood" to build a specific release of
+            Open edX. This setting becomes the default value for edx_platform_version,
+            forum_version, notifier_version, xqueue_version, and certs_version so it should be a git
+            branch that exists in all of those repositories.
+
+            Note: to build a specific branch of edx-platform, you should just override
+            edx_platform_commit rather than changing this setting.
+
+            Note 2: This value does not affect the default value of configuration_version.
+            """
+        ),
+    )
+
     # Ansible-specific settings:
-    configuration_source_repo_url = models.URLField(max_length=256, blank=False)
-    configuration_version = models.CharField(max_length=50, blank=False)
+    configuration_source_repo_url = models.URLField(
+        max_length=256,
+        blank=False,
+        default=default_setting('DEFAULT_CONFIGURATION_REPO_URL'),
+    )
+    configuration_version = models.CharField(
+        max_length=50,
+        blank=False,
+        default=default_setting('DEFAULT_CONFIGURATION_VERSION'),
+    )
     configuration_extra_settings = models.TextField(blank=True, help_text="YAML config vars that override all others")
 
-    edx_platform_repository_url = models.CharField(max_length=256, blank=False, help_text=(
-        'URL to the edx-platform repository to use. Leave blank for default.'
-    ))
+    edx_platform_repository_url = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('DEFAULT_EDX_PLATFORM_REPO_URL'),
+        help_text=(
+            'URL to the edx-platform repository to use. Leave blank for default.'
+        ),
+    )
     edx_platform_commit = models.CharField(max_length=256, blank=False, help_text=(
         'edx-platform commit hash or branch or tag to use. Leave blank to use the default, '
         'which is equal to the value of "openedx_release".'
     ))
-
-    openedx_release = models.CharField(max_length=128, blank=False, help_text=format_help_text("""
-        Set this to a release tag like "named-release/dogwood" to build a specific release of
-        Open edX. This setting becomes the default value for edx_platform_version,
-        forum_version, notifier_version, xqueue_version, and certs_version so it should be a git
-        branch that exists in all of those repositories.
-
-        Note: to build a specific branch of edx-platform, you should just override
-        edx_platform_commit rather than changing this setting.
-
-        Note 2: This value does not affect the default value of configuration_version.
-    """))
 
     # Misc settings:
     use_ephemeral_databases = models.BooleanField()
     github_admin_organizations = JSONField(
         max_length=256,
         blank=True,
-        default=[],
+        default=default_admin_organizations,
         help_text='A list of Github organizations; the members of the "Owners" team in these '
         "organizations be given SSH admin access to this instance's VMs.",
     )
@@ -185,18 +216,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         self.instance.reconfigure_load_balancer()
         if active:
             self.instance.enable_monitoring()
-
-    def set_field_defaults(self):
-        """
-        Set default values.
-        """
-        if not self.github_admin_organizations and settings.DEFAULT_ADMIN_ORGANIZATION:
-            self.github_admin_organizations = [settings.DEFAULT_ADMIN_ORGANIZATION]
-        # Always override configuration_settings - it's not meant to be manually set. We can't
-        # assert that it isn't set because if a ValidationError occurred, this method could be
-        # called multiple times before this AppServer is successfully created.
-        self.configuration_settings = self.create_configuration_settings()
-        super().set_field_defaults()
 
     @AppServer.status.only_for(AppServer.Status.New)
     def add_lms_users(self, lms_users):
@@ -435,6 +454,11 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Save this OpenEdXAppServer
         """
+        # Always override configuration_settings - it's not meant to be manually set. We can't
+        # assert that it isn't set because if a ValidationError occurred, this method could be
+        # called multiple times before this AppServer is successfully created.
+        if not self.pk:
+            self.configuration_settings = self.create_configuration_settings()
         super().save(*args, **kwargs)
         # Notify anyone monitoring for changes via swampdragon/websockets:
         publish_data('notification', {

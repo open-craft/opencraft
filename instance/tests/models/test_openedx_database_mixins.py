@@ -209,15 +209,6 @@ class MySQLInstanceTestCase(TestCase):
         }
         self.assertEqual(template_vars, expected_template_vars)
 
-    @override_settings(DEFAULT_INSTANCE_MYSQL_URL=None)
-    def test_create_instance_no_default_mysql_url(self):
-        """
-        Test that creating an instance with persistent databases raises an exception
-        if DEFAULT_INSTANCE_MYSQL_URL not set.
-        """
-        with self.assertRaises(MySQLServer.DoesNotExist):
-            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-
     def test_provision_mysql(self):
         """
         Provision mysql database
@@ -271,6 +262,9 @@ class MySQLInstanceTestCase(TestCase):
         """
         Test that get_database_settings produces correct settings for MySQL databases
         """
+        # Delete MySQLServer object created during the migrations to allow the settings override to
+        # take effect.
+        MySQLServer.objects.all().delete()
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         expected_host = "mysql.opencraft.com"
         expected_port = MYSQL_SERVER_DEFAULT_PORT
@@ -417,15 +411,6 @@ class MongoDBInstanceTestCase(TestCase):
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, appserver.configuration_settings)
 
-    @override_settings(DEFAULT_INSTANCE_MONGO_URL=None)
-    def test_create_instance_no_default_mongo_url(self):
-        """
-        Test that creating an instance with persistent databases raises an exception
-        if DEFAULT_INSTANCE_MONGO_URL not set.
-        """
-        with self.assertRaises(MongoDBServer.DoesNotExist):
-            self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-
     def test_provision_mongo(self):
         """
         Provision mongo databases
@@ -467,6 +452,9 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Add mongo ansible vars if instance has a MongoDB server
         """
+        # Delete MongoDBServer object created during the migrations to allow the settings override
+        # to take effect.
+        MongoDBServer.objects.all().delete()
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         appserver = make_test_appserver(self.instance)
         ansible_vars = appserver.configuration_settings

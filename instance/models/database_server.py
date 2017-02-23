@@ -189,13 +189,13 @@ class DatabaseServer(ValidateModelMixin, TimeStampedModel):
             port = self.default_port
         return self.username == username and self.password == password and self.port == port
 
-    def set_field_defaults(self):
+    def save(self, **kwargs):
         """
-        Set default values.
+        Set default port before saving.
         """
         if not self.port:
             self.port = self.default_port
-        super().set_field_defaults()
+        super().save(**kwargs)
 
 
 class MySQLServer(DatabaseServer):

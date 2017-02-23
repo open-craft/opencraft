@@ -27,6 +27,7 @@ from django.db import models
 from swiftclient.exceptions import ClientException as SwiftClientException
 
 from instance import openstack_utils
+from instance.models.utils import default_setting
 
 
 # Classes #####################################################################
@@ -35,11 +36,30 @@ class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
     """
-    swift_openstack_user = models.CharField(max_length=32, blank=True)
-    swift_openstack_password = models.CharField(max_length=64, blank=True)
-    swift_openstack_tenant = models.CharField(max_length=32, blank=True)
-    swift_openstack_auth_url = models.URLField(blank=True)
-    swift_openstack_region = models.CharField(max_length=16, blank=True)
+    swift_openstack_user = models.CharField(
+        max_length=32,
+        blank=True,
+        default=default_setting('SWIFT_OPENSTACK_USER'),
+    )
+    swift_openstack_password = models.CharField(
+        max_length=64,
+        blank=True,
+        default=default_setting('SWIFT_OPENSTACK_PASSWORD'),
+    )
+    swift_openstack_tenant = models.CharField(
+        max_length=32,
+        blank=True,
+        default=default_setting('SWIFT_OPENSTACK_TENANT'),
+    )
+    swift_openstack_auth_url = models.URLField(
+        blank=True,
+        default=default_setting('SWIFT_OPENSTACK_AUTH_URL'),
+    )
+    swift_openstack_region = models.CharField(
+        max_length=16,
+        blank=True,
+        default=default_setting('SWIFT_OPENSTACK_REGION'),
+    )
     swift_provisioned = models.BooleanField(default=False)
 
     class Meta:

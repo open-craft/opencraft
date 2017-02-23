@@ -289,13 +289,15 @@ edit its security group rules to only allow access to VMs in the
   will be represented as an instance of the `MySQLServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MySQL database server in testing
-  and development environments.
+  and development environments.  It is mandatory to set this setting to run the
+  initial migrations.
 * `DEFAULT_INSTANCE_MONGO_URL`: The external MongoDB database server to be used
   by instances configured not to use ephemeral databases. The database server
   will be represented as an instance of the `MongoDBServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MongoDB database server in testing
-  and development environments.
+  and development environments.  It is mandatory to set this setting to run the
+  initial migrations.
 
 ### External SMTP service settings
 

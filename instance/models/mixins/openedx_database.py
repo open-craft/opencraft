@@ -21,22 +21,16 @@ Open edX instance database mixin
 """
 import hashlib
 import hmac
-import string
 
 from django.conf import settings
-from django.db import IntegrityError
 from django.template import loader
-from django.utils.crypto import get_random_string
 
-from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
-from instance.models.rabbitmq import RabbitMQUser
 
 
 # Classes #####################################################################
 
-# pylint: disable=too-many-instance-attributes
 class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
@@ -222,60 +216,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             generate_var_name("user"): user,
             generate_var_name("pass"): self._get_mysql_pass(user),
         }
-
-    @staticmethod
-    def new_rabbitmq_user():
-        """
-        Return a new RabbitMQ user.
-        """
-        for _ in range(200):
-            # Keep retrying until we get a unique username.
-            try:
-                return RabbitMQUser.objects.create(
-                    username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
-                    password=get_random_string(length=64)
-                )
-            except IntegrityError:
-                pass
-
-        raise IntegrityError
-
-    def set_field_defaults(self):
-        """
-        Set default values for database servers, as well as mysql, mongo, and rabbitmq credentials.
-
-        Don't change existing values on subsequent calls.
-
-        Credentials are only used for persistent databases (cf. get_database_settings).
-        We generate them for all instances to ensure that app servers can be spawned successfully
-        even if an instance is edited to change 'use_ephemeral_databases' from True to False.
-
-        Note that the maximum length for the name of a MySQL user is 16 characters.
-        But since we add suffixes to mysql_user to generate unique user names
-        for different services (e.g. xqueue) we don't want to use the maximum length here.
-        """
-        # Associate this instance with a MySQLServer and a MongoDBServer
-        if not self.mysql_server:
-            self.mysql_server = MySQLServer.objects.select_random()
-        if not self.mongodb_server:
-            self.mongodb_server = MongoDBServer.objects.select_random()
-
-        # Generate unique credentials for MySQL and MongoDB databases
-        if not self.mysql_user:
-            self.mysql_user = get_random_string(length=6, allowed_chars=string.ascii_lowercase)
-            self.mysql_pass = get_random_string(length=32)
-        if not self.mongo_user:
-            self.mongo_user = get_random_string(length=16, allowed_chars=string.ascii_lowercase)
-            self.mongo_pass = get_random_string(length=32)
-        if not self.rabbitmq_vhost:
-            self.rabbitmq_vhost = '/{id}'.format(
-                id=get_random_string(length=14, allowed_chars=string.ascii_lowercase)
-            )
-
-            self.rabbitmq_provider_user = self.new_rabbitmq_user()
-            self.rabbitmq_consumer_user = self.new_rabbitmq_user()
-
-        super().set_field_defaults()
 
     def get_database_settings(self):
         """
