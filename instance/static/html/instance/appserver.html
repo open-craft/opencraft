@@ -47,10 +47,17 @@
     </table>
 
     <button ng-disabled="is_active || !appserver.is_healthy"
-            tooltip="This will update the DNS entries so that this app server is used for the instance. Only one app server can be active at any time."
-            tooltip-placement="right"
-            ng-click="make_appserver_active()">
+            tooltip="This will add this app server to the load balancer pool for this instance."
+            tooltip-placement="below"
+            ng-click="make_appserver_active(true)">
       Activate this app server
+    </button>
+
+    <button ng-disabled="!is_active || instance.active_appservers.length < 2"
+            tooltip="This will remove this app server from the load balancer pool for this instance."
+            tooltip-placement="below"
+            ng-click="make_appserver_active(false)">
+      Deactivate this app server
     </button>
   </accordion-group>
 

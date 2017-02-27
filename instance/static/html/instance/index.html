@@ -13,8 +13,7 @@
       <li ng-repeat="instance in instanceList | filter: {is_shut_down: false}"
           ng-class="{active: instance.id == state.params.instanceId}"
           ng-init="
-              active_appserver = instance.active_appserver;
-              newer_appserver = (instance.newest_appserver && instance.newest_appserver.id != active_appserver.id ? instance.newest_appserver : null);
+              newer_appserver = (instance.newest_appserver && !instance.newest_appserver.is_active ?  instance.newest_appserver : null);
           ">
         <!-- Is there an app server newer than the active app server? -->
         <div class="status-icon-newest" ng-if="newer_appserver"
@@ -24,14 +23,15 @@
           <i ng-attr-class="{{ newer_appserver.is_steady && (newer_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
         </div>
         <div class="status-icon-newest" ng-if="!newer_appserver" tooltip="No newer appserver"
+             tooltip="No newer appserver"
              tooltip-placement="bottom" tooltip-append-to-body="true">
           <!-- placeholder indicating that there is no newer AppServer -->
         </div>
-        <div class="status-icon-active" ng-class="{healthy: active_appserver.is_healthy, unhealthy: active_appserver.is_healthy === false}"
-             tooltip="{{ active_appserver.status_description || 'No active appserver' }}"
+        <div class="status-icon-active" ng-class="{healthy: instance.is_healthy, unhealthy: instance.is_healthy === false}"
+             tooltip="{{ instance.status_description || 'No active appserver' }}"
              tooltip-placement="bottom" tooltip-append-to-body="true">
-          <i ng-if="active_appserver" ng-attr-class="{{ active_appserver.is_steady && (active_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}">
-          </i>
+          <i ng-if="instance.active_appservers.length > 0"
+             ng-attr-class="{{ instance.is_steady && (instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
         </div>
         <a ui-sref="instances.details({instanceId:instance.id})">
           <strong class="instance-name">{{ instance.name }}</strong>

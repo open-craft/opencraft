@@ -15,13 +15,13 @@
     </div>
     <div class="large-2 columns">
       <span class="status radius label"
-        ng-if="instance.active_appserver"
-        ng-class="{warning: !instance.active_appserver.is_healthy, success: instance.active_appserver.is_healthy}"
-        tooltip="{{ instance.active_appserver.status_description }}">
-        <i ng-attr-class="{{ instance.active_appserver.is_steady && (instance.active_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
-        {{ instance.active_appserver.name }}: {{ instance.active_appserver.status_name }}
+        ng-repeat="appserver in instance.active_appservers | orderBy: 'id'"
+        ng-class="{warning: !appserver.is_healthy, success: appserver.is_healthy}"
+        tooltip="{{ appserver.status_description }}">
+        <i ng-attr-class="{{ appserver.is_steady && (appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+        {{ appserver.name }}: {{ appserver.status_name }}
       </span>
-      <span class="status radius label warning" ng-if="!instance.active_appserver">
+      <span class="status radius label warning" ng-if="instance.active_appservers.length == 0">
         No active app server
       </span>
     </div>
@@ -38,11 +38,11 @@
         </button>
         <ul class="side-nav appserver-list">
           <li ng-repeat="appserver in instance.appservers | orderBy: 'id'"
-              ng-class="{'active-server': appserver.id == instance.active_appserver.id,
+              ng-class="{'active-server': appserver.is_active,
                          active: appserver.id == state.params.appserverId}">
             <a ui-sref="instances.details.openedx_appserver_details({appserverId: appserver.id})">
               <i class="fa fa-server"></i> <span class="appserver-name">{{ appserver.name }}</span>
-              <span ng-if="appserver.id == instance.active_appserver.id">(Active)</span>
+              <span ng-if="appserver.is_active">(Active)</span>
               <ul>
                 <li>{{ appserver.status_name }}</li>
               </ul>

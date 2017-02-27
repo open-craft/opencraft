@@ -28,6 +28,7 @@ from collections import namedtuple
 import logging
 
 from django.conf import settings
+from django.db.models import Q
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tasks import spawn_appserver
@@ -55,11 +56,12 @@ class InstanceUpgrade(object):
         """
         Obtains list of instances to be upgraded
         """
-        return OpenEdXInstance.objects.filter(  # Select instances
-            active_appserver___status="running",  # that are running
+        return OpenEdXInstance.objects.filter(Q(  # Select distinct instances
+            Q(ref_set__openedxappserver_set___is_active=True,  # with active appserver(s)
+              ref_set__openedxappserver_set___status="running"),  # that are running
             openedx_release__contains=self.INITIAL_RELEASE,  # on {INITIAL_INSTANCE}
             use_ephemeral_databases=False,  # and use persistent databases.
-        )
+        )).distinct()
 
     def upgrade_instance(self, instance):
         """

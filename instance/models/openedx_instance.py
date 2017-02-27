@@ -27,6 +27,7 @@ from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
+from django.utils.text import slugify
 # FIXME want to use django.contrib.postgres.fields.JSONField instead,
 # but this requires upgrading to PostgreSQL ≥ 9.4
 # ref https://docs.djangoproject.com/en/1.10/ref/contrib/postgres/fields/#django.contrib.postgres.fields.JSONField
@@ -41,7 +42,7 @@ from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
-from instance.models.openedx_appserver import OpenEdXAppConfiguration, OpenEdXAppServer, DEFAULT_EDX_PLATFORM_REPO_URL
+from instance.models.openedx_appserver import OpenEdXAppConfiguration, DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 
@@ -85,10 +86,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
-
-    active_appserver = models.OneToOneField(
-        OpenEdXAppServer, null=True, blank=True, on_delete=models.SET_NULL, related_name='+',
-    )
 
     successfully_provisioned = models.BooleanField(default=False)
 
@@ -148,6 +145,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             return self.internal_lms_domain
 
     @property
+    def domain_slug(self):
+        """
+        Returns a slug-friendly name for this instance, using the domain name.
+        """
+        prefix = ('edxins-' + slugify(self.domain))[:20]
+        return "{prefix}-{num}".format(prefix=prefix, num=self.id)
+
+    @property
     def lms_preview_domain(self):
         """
         LMS preview domain name.
@@ -182,6 +187,12 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         return [
             self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain
         ]
+
+    def get_active_appservers(self):
+        """
+        Returns a queryset containing the active appservers.
+        """
+        return self.appserver_set.filter(_is_active=True)
 
     @property
     def studio_domain_nginx_regex(self):
@@ -314,23 +325,35 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         The triggered_by_instance flag indicates whether the reconfiguration was initiated by this
         instance, in which case we log additional information.
         """
-        if not self.active_appserver:
+        active_appservers = self.get_active_appservers()
+        if not active_appservers.exists():
             return self.get_preliminary_page_config(self.ref.pk)
-        ip_address = self.active_appserver.server.public_ip
-        if not ip_address:
+
+        # Create the haproxy backend configuration from the list of active appservers
+        appserver_vars = []
+        for appserver in active_appservers:
+            server_name = "appserver-{}".format(appserver.pk)
+            ip_address = appserver.server.public_ip
+            if ip_address:
+                appserver_vars.append(dict(ip_address=ip_address, name=server_name))
+            else:
+                appserver.logger.error(
+                    "Active appserver does not have a public IP address. This should not happen."
+                )
+
+        if len(appserver_vars) == 0:
             self.logger.error(
-                "Active appserver does not have a public IP address. This should not happen. "
+                "No active appservers found with public IP addresses.  This should not happen. "
                 "Deconfiguring the load balancer backend."
             )
             return [], []
-        backend_name = "be-{}".format(self.active_appserver.server.name)
-        server_name = "appserver-{}".format(self.active_appserver.pk)
+
+        backend_name = "be-{}".format(self.domain_slug)
         template = loader.get_template("instance/haproxy/openedx.conf")
         config = template.render(dict(
             domain=self.domain,
             http_auth_info_base64=self.http_auth_info_base64(),
-            server_name=server_name,
-            ip_address=ip_address,
+            appservers=appserver_vars,
         ))
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
         backend_conf = [(backend_name, config)]
@@ -348,27 +371,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         Get the set of OpenEdxAppServers owned by this instance.
         """
         return self.ref.openedxappserver_set
-
-    def set_appserver_active(self, appserver_id):
-        """
-        Mark the AppServer with the given ID as the active one.
-        """
-        app_server = self.appserver_set.get(pk=appserver_id)  # Make sure the AppServer is owned by this instance
-        self.logger.info('Making %s active for instance %s...', app_server.name, self.name)
-        self.active_appserver = app_server
-        self.save()
-        self.active_appserver.last_activated = timezone.now()
-        self.active_appserver.save()
-        self.reconfigure_load_balancer()
-        self.enable_monitoring()
-
-    def set_appserver_inactive(self):
-        """
-        Reset the active AppServer to None.  Called when the active appserver is terminated.
-        """
-        self.active_appserver = None
-        self.save()
-        self.reconfigure_load_balancer()
 
     @log_exception
     def spawn_appserver(self):
@@ -449,24 +451,27 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     def terminate_obsolete_appservers(self, days=2):
         """
         Terminate app servers that were created more than `days` before now, except:
-        - the active appserver if there is one,
+        - the active appserver(s) if there are any,
         - a release candidate (rc) appserver, to allow testing before the next appserver activation
           (we keep the most recent running appserver)
         - a fallback appserver, for `days` after activating an appserver, to allow reverts
-          (we keep the most recent running appserver created before the current activation)
+          (we keep the most recent running appserver created before the latest activation)
         """
-        active_appserver = self.active_appserver
+        latest_active_appserver = None
+        if self.get_active_appservers().exists():
+            latest_active_appserver = self.get_active_appservers().latest('last_activated')
         fallback_appserver = None
         rc_appserver = None
         now = timezone.now()
 
         for appserver in self.appserver_set.all().order_by('-created'):
-            if appserver == active_appserver:
+            # Skip active appservers
+            if appserver.is_active:
                 continue
 
-            # Keep a running appserver as fallback for `days` after activation, to allow reverts
-            if active_appserver and appserver.created < active_appserver.last_activated:
-                if not sufficient_time_passed(active_appserver.last_activated, now, days) \
+            # Keep a running appserver as fallback for `days` after latest activation, to allow reverts
+            if latest_active_appserver and appserver.created < latest_active_appserver.last_activated:
+                if not sufficient_time_passed(latest_active_appserver.last_activated, now, days) \
                         and not fallback_appserver and appserver.status == AppServerStatus.Running:
                     fallback_appserver = appserver
                 elif sufficient_time_passed(appserver.created, now, days):

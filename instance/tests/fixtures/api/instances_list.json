@@ -9,18 +9,6 @@
         "domain": "pr12338.sandbox.example.com",
         "is_shut_down": false,
         "appserver_count": 2,
-        "active_appserver": {
-            "id": 8,
-            "api_url": "http://localhost:5000/api/v1/openedx_appserver/8/",
-            "name": "AppServer 2",
-            "status": "running",
-            "status_name": "Running",
-            "status_description": "App server is up and running",
-            "is_steady": true,
-            "is_healthy": true,
-            "created": "2016-05-19T03:33:25.248Z",
-            "modified": "2016-05-19T03:33:25.248Z"
-        },
         "newest_appserver": {
             "id": 8,
             "api_url": "http://localhost:5000/api/v1/openedx_appserver/8/",
@@ -30,6 +18,7 @@
             "status_description": "App server is up and running",
             "is_steady": true,
             "is_healthy": true,
+            "is_active": true,
             "created": "2016-05-19T03:33:25.248Z",
             "modified": "2016-05-19T03:33:25.248Z"
         }
@@ -44,7 +33,6 @@
         "domain": "pr12340.sandbox.example.com",
         "is_shut_down": false,
         "appserver_count": 1,
-        "active_appserver": null,
         "newest_appserver": {
             "id": 4,
             "api_url": "http://localhost:5000/api/v1/openedx_appserver/4/",
@@ -54,6 +42,7 @@
             "status_description": "App server was not configured successfully (but may be partially online)",
             "is_steady": true,
             "is_healthy": false,
+            "is_active": false,
             "created": "2016-05-19T01:25:56.909Z",
             "modified": "2016-05-19T01:25:56.909Z"
         }

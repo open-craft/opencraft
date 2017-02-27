@@ -53,6 +53,7 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
         output['id'] = obj.pk
         output['api_url'] = api_url
         output['name'] = obj.name
+        output['is_active'] = obj.is_active
 
         output['status'] = obj.status.state_id
         output['status_name'] = obj.status.name

@@ -29,6 +29,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail as django_mail
 from django.test import override_settings
+from freezegun import freeze_time
+from pytz import utc
 import novaclient
 import yaml
 
@@ -397,6 +399,75 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(create_server_kwargs["flavor_selector"], flavor_selector)
         self.assertEqual(create_server_kwargs["image_selector"], image_selector)
         self.assertEqual(create_server_kwargs["key_name"], key_name)
+
+    @patch_services
+    def test_is_active(self, *mocks):
+        """
+        Test is_active property and setter
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
+                                          use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            appserver.is_active = True
+        activation_time = utc.localize(freezed_time())
+        self.assertTrue(appserver.is_active)
+
+        # Re-activating doesn't change the date, since no change was made.
+        appserver.is_active = True
+        self.assertTrue(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+
+        self.assertEqual(appserver.last_activated, activation_time)
+
+        # Deactivating does not change last_activated time
+        appserver.is_active = False
+        self.assertFalse(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+
+        # Re-deactivating is ok too
+        appserver.is_active = False
+        self.assertFalse(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+
+    @patch_services
+    def test_make_active(self, mocks):
+        """
+        Test make_active() and make_active(active=False)
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
+                                          use_ephemeral_databases=True)
+        appserver_id = instance.spawn_appserver()
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
+        appserver = instance.appserver_set.get(pk=appserver_id)
+
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            appserver.make_active()
+        activation_time = utc.localize(freezed_time())
+
+        instance.refresh_from_db()
+        appserver.refresh_from_db()
+        self.assertTrue(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+        self.assertEqual(instance.appserver_set.get().last_activated, activation_time)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
+        self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
+
+        # Test deactivate
+        appserver.make_active(active=False)
+        instance.refresh_from_db()
+        appserver.refresh_from_db()
+        self.assertFalse(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+        self.assertFalse(instance.get_active_appservers().exists())
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
+        self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
 
 
 @ddt

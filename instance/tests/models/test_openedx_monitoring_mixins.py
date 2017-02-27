@@ -51,7 +51,8 @@ class OpenEdXMonitoringTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        appserver.make_active()
         self.assertEqual(mock_enable_monitoring.call_count, 1)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')

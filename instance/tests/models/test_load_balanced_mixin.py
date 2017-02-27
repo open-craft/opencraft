@@ -106,9 +106,9 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
         appserver_id = instance.spawn_appserver()
-        instance.set_appserver_active(appserver_id)
+        appserver = instance.appserver_set.get(pk=appserver_id)
         with self.assertLogs("instance.models.instance") as logs:
-            instance.reconfigure_load_balancer()
+            appserver.make_active()
         annotation = instance.get_log_message_annotation()
         for log_line in logs.output:
             self.assertIn(annotation, log_line)

@@ -50,7 +50,31 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         """
         output = super().to_representation(obj)
         output['appserver_count'] = obj.appserver_set.count()
-        output['active_appserver'] = AppServerBasicSerializer(obj.active_appserver, context=self.context).data
+        output['status_description'] = []
+
+        # Store the list of active appservers, and collated status information
+        #
+        # * Instance is_healthy/_steady iff there's more than one active appserver,
+        #   and all of the active appservers are healthy/steady.
+        # * Instance status description is all the active appserver's status descriptions
+        output['active_appservers'] = []
+        output['status_description'] = []
+        output['is_healthy'] = True
+        output['is_steady'] = True
+        for appserver in obj.get_active_appservers():
+            serialized_appserver = AppServerBasicSerializer(appserver, context=self.context).data
+            if not serialized_appserver['is_healthy']:
+                output['is_healthy'] = False
+            if not serialized_appserver['is_steady']:
+                output['is_steady'] = False
+            output['active_appservers'].append(serialized_appserver)
+            output['status_description'].append(serialized_appserver['status_description'])
+
+        output['status_description'] = '\n'.join(output['status_description'])
+        if len(output['active_appservers']) == 0:
+            output['is_healthy'] = None
+            output['is_steady'] = None
+
         newest_appserver = obj.appserver_set.order_by('-created').first()
         output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
         return output
@@ -69,7 +93,6 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'use_ephemeral_databases',
             'github_admin_organizations',
             'github_admin_users',
-            'active_appserver',
             'internal_lms_domain',
             'url',
             'studio_url',
