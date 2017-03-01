@@ -201,6 +201,9 @@ edit its security group rules to only allow access to VMs in the
 * `REDIS_URL`: (default: `redis://localhost:6379/`)
 * `HUEY_ALWAYS_EAGER`: Set to True to run huey tasks synchronously, in the web
   process. Use in development only (default: False)
+* `HUEY_QUEUE_NAME`: The name of the Huey task queue.  This setting can be used
+  to run multiple separate worker queues, e.g. one for the web server and one
+  for batch jobs started from the Django shell.
 * `LOGGING_ROTATE_MAX_KBYTES`: The max size of each log file (in KB, default: 10MB)
 * `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
 * `SUBDOMAIN_BLACKLIST`: A comma-separated list of subdomains that are to be

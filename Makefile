@@ -17,7 +17,8 @@
 
 # Config ######################################################################
 
-WORKERS = 4
+WORKERS = 3
+WORKERS_LOW_PRIORITY = 3
 SHELL = /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
@@ -78,13 +79,13 @@ migration_autogen: clean
 	$(HONCHO_MANAGE) makemigrations
 
 run: clean migration_check collectstatic
-	honcho start --concurrency "worker=$(WORKERS)"
+	honcho start --concurrency "worker=$(WORKERS),worker_low_priority=$(WORKERS_LOW_PRIORITY)"
 
 rundev: clean migration_check static_external
 	honcho start -f Procfile.dev
 
 shell:
-	$(HONCHO_MANAGE) shell_plus
+	HUEY_QUEUE_NAME=opencraft_low_priority $(HONCHO_MANAGE) shell_plus
 
 upgrade_dependencies:
 	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U

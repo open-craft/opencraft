@@ -213,7 +213,7 @@ CACHES = {
 # Huey (redis task queue) #####################################################
 
 HUEY = {
-    'name': 'opencraft',
+    'name': env('HUEY_QUEUE_NAME', default='opencraft'),
     'connection': {
         'host': REDIS_URL_OBJ.hostname,
         'port': REDIS_URL_OBJ.port,
