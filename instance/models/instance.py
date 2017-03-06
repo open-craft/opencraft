@@ -34,6 +34,7 @@ from django_extensions.db.models import TimeStampedModel
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.models.log_entry import LogEntry
+from instance.models.utils import default_setting
 from instance.logging import ModelLoggerAdapter
 from .utils import ValidateModelMixin
 
@@ -117,7 +118,11 @@ class Instance(ValidateModelMixin, models.Model):
     # 'ref' property instead of accessing this directly. The only time to use this directly is
     # in a query, e.g. to do .select_related('ref_set')
     ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
-    openstack_region = models.CharField(max_length=16, blank=False)
+    openstack_region = models.CharField(
+        max_length=16,
+        blank=False,
+        default=default_setting('OPENSTACK_REGION'),
+    )
     tags = models.ManyToManyField(
         'InstanceTag',
         blank=True,
@@ -161,11 +166,6 @@ class Instance(ValidateModelMixin, models.Model):
     def modified(self):
         """ Get this instance's modified date, which is stored in the InstanceReference """
         return self.ref.modified
-
-    def set_field_defaults(self):
-        if not self.openstack_region:
-            self.openstack_region = settings.OPENSTACK_REGION
-        super().set_field_defaults()
 
     def save(self, *args, **kwargs):
         """ Save this Instance """

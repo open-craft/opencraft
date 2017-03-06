@@ -42,8 +42,9 @@ from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
-from instance.models.openedx_appserver import OpenEdXAppConfiguration, DEFAULT_EDX_PLATFORM_REPO_URL
+from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.server import Status as ServerStatus
+from instance.models.utils import default_setting
 from instance.utils import sufficient_time_passed
 
 
@@ -59,7 +60,6 @@ def generate_internal_lms_domain(sub_domain):
 
 # Models ######################################################################
 
-# pylint: disable=too-many-instance-attributes
 class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
                       OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
     """
@@ -92,14 +92,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     openstack_server_flavor = JSONField(
         null=True,
         blank=True,
-        default=None,
+        default=default_setting('OPENSTACK_SANDBOX_FLAVOR'),
         help_text='JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}.'
                   ' Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.',
     )
     openstack_server_base_image = JSONField(
         null=True,
         blank=True,
-        default=None,
+        default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
         help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
                   ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
     )
@@ -107,7 +107,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         max_length=256,
         null=True,
         blank=True,
-        default='',
+        default=default_setting('OPENSTACK_SANDBOX_SSH_KEYNAME'),
         help_text='SSH key name used when setting up access to the openstack project.'
                   ' Defaults to settings.OPENSTACK_SANDBOX_SSH_KEYNAME on server creation.',
     )
@@ -279,31 +279,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
         return all_appservers_terminated and monitoring_turned_off
 
-    def set_field_defaults(self):
-        """
-        Set default values.
-        """
-        # Main settings
-        if not self.openedx_release:
-            self.openedx_release = settings.DEFAULT_OPENEDX_RELEASE
-        if not self.configuration_source_repo_url:
-            self.configuration_source_repo_url = settings.DEFAULT_CONFIGURATION_REPO_URL
-        if not self.configuration_version:
-            self.configuration_version = settings.DEFAULT_CONFIGURATION_VERSION
-        if not self.edx_platform_repository_url:
-            self.edx_platform_repository_url = DEFAULT_EDX_PLATFORM_REPO_URL
-        if not self.edx_platform_commit:
-            self.edx_platform_commit = self.openedx_release
-
-        # Openstack server settings
-        if not self.openstack_server_flavor:
-            self.openstack_server_flavor = settings.OPENSTACK_SANDBOX_FLAVOR
-        if not self.openstack_server_base_image:
-            self.openstack_server_base_image = settings.OPENSTACK_SANDBOX_BASE_IMAGE
-        if not self.openstack_server_ssh_keyname:
-            self.openstack_server_ssh_keyname = settings.OPENSTACK_SANDBOX_SSH_KEYNAME
-        super().set_field_defaults()
-
     def save(self, **kwargs):
         """
         Set default values before saving the instance.
@@ -316,6 +291,8 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.internal_studio_domain = settings.DEFAULT_STUDIO_DOMAIN_PREFIX + self.internal_lms_domain
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
+        if not self.edx_platform_commit:
+            self.edx_platform_commit = self.openedx_release
         super().save(**kwargs)
 
     def get_load_balancer_configuration(self, triggered_by_instance=False):

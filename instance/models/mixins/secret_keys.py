@@ -22,6 +22,7 @@ Instance app model mixins - Database
 
 # Imports #####################################################################
 
+import functools
 import os
 import hashlib
 import hmac
@@ -91,6 +92,7 @@ class SecretKeyInstanceMixin(models.Model):
     """
     secret_key_b64encoded = models.CharField(
         max_length=48,
+        default=functools.partial(generate_secret_key, 48),
         blank=True,
         verbose_name='Instance-specific base-64-encoded secret key',
         help_text=(
@@ -109,20 +111,6 @@ class SecretKeyInstanceMixin(models.Model):
         Return the secret key in binary form.
         """
         return b64decode(self.secret_key_b64encoded)
-
-    def set_field_defaults(self):
-        """
-        Set default values.
-        """
-        self.set_random_key()
-        super().set_field_defaults()
-
-    def set_random_key(self):
-        """
-        Generates a random seed for this instance to use when creating
-        derived secret keys for instance variables
-        """
-        self.secret_key_b64encoded = generate_secret_key(48)
 
     def get_secret_key_for_var(self, var_name):
         """

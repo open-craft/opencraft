@@ -259,42 +259,6 @@ class DatabaseServerManagerTest(TestCase):
         )
 
     @override_settings(
-        DEFAULT_INSTANCE_MYSQL_URL=None,
-        DEFAULT_INSTANCE_MONGO_URL=None,
-    )
-    def test_no_database_server_available(self):
-        """
-        Test that `get_random` raises an exception when no database servers are available.
-        """
-        with self.assertRaises(MySQLServer.DoesNotExist):
-            MySQLServer.objects.select_random()
-        with self.assertRaises(MongoDBServer.DoesNotExist):
-            MongoDBServer.objects.select_random()
-
-    @override_settings(
-        DEFAULT_INSTANCE_MYSQL_URL=None,
-        DEFAULT_INSTANCE_MONGO_URL=None,
-    )
-    def test_no_database_server_accepts_new_clients(self):
-        """
-        Test that `get_random` raises an exception when no database servers accept new clients.
-
-        This tests needs to override `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
-        because `get_random` calls `DatabaseServerManager._create_default`
-        before selecting a database server. That method would use the default values of these settings
-        to create default MySQLServer and MongoDBServer objects, which would have
-        `accept_new_clients` set to `True`.
-        """
-        for _ in range(3):
-            MySQLServerFactory(accepts_new_clients=False)
-            MongoDBServerFactory(accepts_new_clients=False)
-
-        with self.assertRaises(MySQLServer.DoesNotExist):
-            MySQLServer.objects.select_random()
-        with self.assertRaises(MongoDBServer.DoesNotExist):
-            MongoDBServer.objects.select_random()
-
-    @override_settings(
         DEFAULT_INSTANCE_MYSQL_URL='mysql-server-no-hostname',
         DEFAULT_INSTANCE_MONGO_URL='mongodb-server-no-hostname',
     )
@@ -332,20 +296,6 @@ class DatabaseServerManagerTest(TestCase):
         mongodb_server = MongoDBServer.objects.get()
 
         self._assert_default_settings(mysql_server, mongodb_server)
-
-    @override_settings(
-        DEFAULT_INSTANCE_MYSQL_URL=None,
-        DEFAULT_INSTANCE_MONGO_URL=None,
-    )
-    def test__create_default_no_default_settings(self):
-        """
-        Test that `_create_default` does not create database server if default settings missing.
-        """
-        MySQLServer.objects._create_default()
-        MongoDBServer.objects._create_default()
-
-        self.assertEqual(MySQLServer.objects.count(), 0)
-        self.assertEqual(MongoDBServer.objects.count(), 0)
 
     def test__create_default_exists_settings_match(self):
         """

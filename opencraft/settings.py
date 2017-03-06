@@ -292,6 +292,7 @@ GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 
 # Default github repository to pull code from
 DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
+DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
 # Github fork to watch
 WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)

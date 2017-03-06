@@ -43,7 +43,6 @@ from instance.models.instance import InstanceReference
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
-from instance.models.openedx_appserver import DEFAULT_EDX_PLATFORM_REPO_URL
 from instance.models.server import OpenStackServer, Server, Status as ServerStatus
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -58,7 +57,7 @@ class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
     """
-    # pylint: disable=too-many-public-methods
+
     def _assert_defaults(self, instance, name="Instance"):
         """
         Assert that default settings for instance are correct
@@ -67,7 +66,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.openedx_release, settings.DEFAULT_OPENEDX_RELEASE)
         self.assertEqual(instance.configuration_source_repo_url, settings.DEFAULT_CONFIGURATION_REPO_URL)
         self.assertEqual(instance.configuration_version, settings.DEFAULT_CONFIGURATION_VERSION)
-        self.assertEqual(instance.edx_platform_repository_url, DEFAULT_EDX_PLATFORM_REPO_URL)
+        self.assertEqual(instance.edx_platform_repository_url, settings.DEFAULT_EDX_PLATFORM_REPO_URL)
         self.assertEqual(instance.edx_platform_commit, settings.DEFAULT_OPENEDX_RELEASE)
         self.assertTrue(instance.mysql_server)
         self.assertTrue(instance.mongodb_server)
@@ -89,6 +88,11 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.openstack_server_ssh_keyname, settings.OPENSTACK_SANDBOX_SSH_KEYNAME)
         self.assertEqual(instance.created, instance.ref.created)
         self.assertEqual(instance.modified, instance.ref.modified)
+        self.assertEqual(instance.additional_security_groups, [])
+        self.assertEqual(instance.use_ephemeral_databases, settings.INSTANCE_EPHEMERAL_DATABASES)
+        self.assertTrue(instance.rabbitmq_vhost)
+        self.assertTrue(instance.rabbitmq_consumer_user)
+        self.assertTrue(instance.rabbitmq_provider_user)
 
     @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
@@ -107,39 +111,6 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstance.objects.create(sub_domain='production.defaults')
         self._assert_defaults(instance)
-
-    def test_update_defaults(self):
-        """
-        Check that database and storage settings don't change when updating an instance's settings.
-
-        Since 'set_field_defaults' is currently only called if an instance has not been saved to the database,
-        the chances of it overriding existing values are non-existent.
-
-        But we include this test anyway to guard against regressions.
-        """
-        instance = OpenEdXInstance.objects.create(sub_domain='testing.defaults')
-        self._assert_defaults(instance)
-
-        mysql_server = instance.mysql_server
-        mongodb_server = instance.mongodb_server
-        mysql_user = instance.mysql_user
-        mysql_pass = instance.mysql_pass
-        mongo_user = instance.mongo_user
-        mongo_pass = instance.mongo_pass
-        secret_key = instance.secret_key_b64encoded
-
-        instance.name = "Test Instance"
-        instance.save()
-        instance.refresh_from_db()
-        self._assert_defaults(instance, name=instance.name)
-
-        self.assertEqual(instance.mysql_server.pk, mysql_server.pk)
-        self.assertEqual(instance.mongodb_server.pk, mongodb_server.pk)
-        self.assertEqual(instance.mysql_user, mysql_user)
-        self.assertEqual(instance.mysql_pass, mysql_pass)
-        self.assertEqual(instance.mongo_user, mongo_user)
-        self.assertEqual(instance.mongo_pass, mongo_pass)
-        self.assertEqual(instance.secret_key_b64encoded, secret_key)
 
     def test_id_different_from_ref_id(self):
         """

@@ -22,10 +22,13 @@ Instance app model mixins - Database
 
 # Imports #####################################################################
 
+import functools
 import inspect
+import string
 import warnings
 
 from django.db import models
+from django.utils.crypto import get_random_string
 import MySQLdb as mysql
 import pymongo
 
@@ -122,6 +125,20 @@ def _drop_user(cursor, user):
         cursor.execute('DROP USER %s', (user,))
 
 
+def select_random_mysql_server():
+    """
+    Helper for the field default of `mysql_server`.
+    """
+    return MySQLServer.objects.select_random().pk
+
+
+def select_random_mongodb_server():
+    """
+    Helper for the field default of `mongodb_server`.
+    """
+    return MongoDBServer.objects.select_random().pk
+
+
 # Classes #####################################################################
 
 class MySQLInstanceMixin(models.Model):
@@ -129,11 +146,26 @@ class MySQLInstanceMixin(models.Model):
     An instance that uses mysql databases
     """
     mysql_server = models.ForeignKey(
-        MySQLServer, null=True, blank=True, on_delete=models.PROTECT
+        MySQLServer,
+        null=True,
+        blank=True,
+        default=select_random_mysql_server,
+        on_delete=models.PROTECT,
     )
 
-    mysql_user = models.CharField(max_length=16, blank=True)  # 16 chars is mysql maximum
-    mysql_pass = models.CharField(max_length=32, blank=True)
+    mysql_user = models.CharField(
+        max_length=16,  # 16 chars is mysql maximum
+        # Note that the maximum length for the name of a MySQL user is 16 characters.
+        # But since we add suffixes to mysql_user to generate unique user names
+        # for different services (e.g. xqueue) we don't want to use the maximum length here.
+        default=functools.partial(get_random_string, length=6, allowed_chars=string.ascii_lowercase),
+        blank=True,
+    )
+    mysql_pass = models.CharField(
+        max_length=32,
+        blank=True,
+        default=functools.partial(get_random_string, length=32),
+    )
     mysql_provisioned = models.BooleanField(default=False)
 
     class Meta:
@@ -204,11 +236,23 @@ class MongoDBInstanceMixin(models.Model):
     An instance that uses mongo databases
     """
     mongodb_server = models.ForeignKey(
-        MongoDBServer, null=True, blank=True, on_delete=models.PROTECT
+        MongoDBServer,
+        null=True,
+        blank=True,
+        default=select_random_mongodb_server,
+        on_delete=models.PROTECT,
     )
 
-    mongo_user = models.CharField(max_length=16, blank=True)
-    mongo_pass = models.CharField(max_length=32, blank=True)
+    mongo_user = models.CharField(
+        max_length=16,
+        blank=True,
+        default=functools.partial(get_random_string, length=16, allowed_chars=string.ascii_lowercase),
+    )
+    mongo_pass = models.CharField(
+        max_length=32,
+        blank=True,
+        default=functools.partial(get_random_string, length=32),
+    )
     mongo_provisioned = models.BooleanField(default=False)
 
     class Meta:

@@ -25,10 +25,12 @@ Factories module - Tests
 from unittest.mock import Mock, patch
 
 from django.conf import settings
+from django.test import override_settings
 import yaml
 
 from instance.factories import instance_factory, production_instance_factory
 from instance.models.log_entry import LogEntry
+from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 
@@ -141,6 +143,10 @@ class FactoriesTestCase(TestCase):
         Test that calling `production_instance_factory` with settings that are problematic
         for production instances produces warnings and does not create production instance.
         """
+        # Delete database server objects created during the migrations.
+        MySQLServer.objects.all().delete()
+        MongoDBServer.objects.all().delete()
+
         for setting, value, warning in (
                 (
                     'SWIFT_ENABLE',
@@ -164,15 +170,12 @@ class FactoriesTestCase(TestCase):
                     ),
                 ),
         ):
-            with patch("instance.factories.settings") as patched_settings:
-                setattr(patched_settings, setting, value)
+            with override_settings(**{setting: value}):
                 sub_domain = "production-instance-doomed"
                 production_instance_factory(sub_domain=sub_domain)
-                log_entries = LogEntry.objects.all()
+                log_entries = LogEntry.objects.filter(level="WARNING")
                 general_entry = log_entries[0]
                 setting_entry = log_entries[1]
-                for log_entry in (general_entry, setting_entry):
-                    self.assertEqual(log_entry.level, "WARNING")
                 self.assertIn(
                     "Environment not ready. Please fix the problems above, then try again. Aborting.",
                     general_entry.text

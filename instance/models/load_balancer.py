@@ -19,6 +19,7 @@
 """
 Definition of the Load balancing server model.
 """
+import functools
 import logging
 import pathlib
 import random
@@ -90,6 +91,13 @@ class ReconfigurationFailed(Exception):
     """Exception indicating that reconfiguring the load balancer failed."""
 
 
+def generate_fragment_name(length):
+    """
+    Helper function to set the default value of the field `fragment_name_postfix`.
+    """
+    return format(random.getrandbits(length * 4), "x")
+
+
 class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
     """
     A model representing a configured load-balancing server.
@@ -101,21 +109,18 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
     ssh_username = models.CharField(max_length=32)
     # Whether new backends can be assigned to this load-balancing server
     accepts_new_backends = models.BooleanField(default=True)
-    # A random postfix appended to the haproxy configuration file names to make collisions
-    # impossible.
-    fragment_name_postfix = models.CharField(max_length=8, blank=True)
+    # A random postfix appended to the haproxy configuration file names to avoid clashes between
+    # multiple instance managers (or multiple concurrently running integration tests) sharing the
+    # same load balancer.
+    fragment_name_postfix = models.CharField(
+        max_length=8,
+        blank=True,
+        default=functools.partial(generate_fragment_name, length=8),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = ModelLoggerAdapter(logger, {'obj': self})
-
-    def set_field_defaults(self):
-        if not self.fragment_name_postfix:
-            # Set a unique fragment_name_postfix to avoid clashes between multiple instance
-            # managers sharing the same load balancer.
-            bits = self._meta.get_field("fragment_name_postfix").max_length * 4
-            self.fragment_name_postfix = format(random.getrandbits(bits), "x")
-        super().set_field_defaults()
 
     def __str__(self):
         return self.domain

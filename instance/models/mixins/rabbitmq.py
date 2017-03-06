@@ -23,13 +23,43 @@ Instance app model mixins - RabbitMQ
 # Imports #####################################################################
 
 import json
+import string
 import urllib.parse
-import requests
 
 from django.conf import settings
-from django.db import models
+from django.db import IntegrityError, models
+from django.utils.crypto import get_random_string
+import requests
 
 from instance.models.rabbitmq import RabbitMQUser
+
+
+# Functions ###################################################################
+
+def generate_random_vhost():
+    """
+    Helper function for the default value of the field `rabbitmq_vhost`.
+    """
+    return '/{id}'.format(
+        id=get_random_string(length=14, allowed_chars=string.ascii_lowercase)
+    )
+
+
+def new_rabbitmq_user():
+    """
+    Return the primary key of a new RabbitMQ user.
+    """
+    for _ in range(200):
+        # Keep retrying until we get a unique username.
+        try:
+            return RabbitMQUser.objects.create(
+                username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
+                password=get_random_string(length=64)
+            ).pk
+        except IntegrityError:
+            pass
+
+    raise IntegrityError
 
 
 # Classes #####################################################################
@@ -42,20 +72,22 @@ class RabbitMQInstanceMixin(models.Model):
     """
     An instance that uses a RabbitMQ vhost with a set of users.
     """
-    rabbitmq_vhost = models.CharField(max_length=16, blank=True)
+    rabbitmq_vhost = models.CharField(max_length=16, blank=True, default=generate_random_vhost)
     rabbitmq_provider_user = models.ForeignKey(
         RabbitMQUser,
         related_name='provider_instance',
         on_delete=models.CASCADE,
         blank=True,
-        null=True
+        null=True,
+        default=new_rabbitmq_user,
     )
     rabbitmq_consumer_user = models.ForeignKey(
         RabbitMQUser,
         related_name='consumer_instance',
         on_delete=models.CASCADE,
         blank=True,
-        null=True
+        null=True,
+        default=new_rabbitmq_user,
     )
     rabbitmq_provisioned = models.BooleanField(default=False)
 

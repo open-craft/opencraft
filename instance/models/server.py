@@ -36,7 +36,7 @@ from swampdragon.pubsub_providers.data_publisher import publish_data
 from instance import openstack_utils
 from instance.logging import ModelLoggerAdapter
 from instance.models.utils import (
-    ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException
+    ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException, default_setting
 )
 from instance.utils import is_port_open, to_json
 
@@ -260,7 +260,11 @@ class OpenStackServer(Server):
     """
     A Server VM hosted on an OpenStack cloud
     """
-    openstack_region = models.CharField(max_length=16, blank=False)
+    openstack_region = models.CharField(
+        max_length=16,
+        blank=False,
+        default=default_setting('OPENSTACK_REGION'),
+    )
     openstack_id = models.CharField(max_length=250, db_index=True, blank=True)
 
     class Meta:
@@ -269,11 +273,6 @@ class OpenStackServer(Server):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nova = openstack_utils.get_nova_client(self.openstack_region)
-
-    def set_field_defaults(self):
-        if not self.openstack_region:
-            self.openstack_region = settings.OPENSTACK_REGION
-        super().set_field_defaults()
 
     def __str__(self):
         if self.openstack_id:
