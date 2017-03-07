@@ -25,14 +25,15 @@ These functions are meant to be used manually from the interactive Python shell.
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.dispatch import receiver
 from django.template.loader import get_template
 
 from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
+from instance.signals import appserver_spawned
 
 
 # Functions ###################################################################
-
 
 def _send_mail(application, template_name, subject):
     """Helper function to send an email to the user."""
@@ -47,7 +48,6 @@ def _send_mail(application, template_name, subject):
         from_email=settings.BETATEST_EMAIL_SENDER,
         recipient_list=(application.user.email,),
     )
-
 
 def accept_application(application):
     """Accept a beta test application.
@@ -68,6 +68,26 @@ def accept_application(application):
     _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()
+
+@receiver(appserver_spawned)
+def on_appserver_spawned(sender, **kwargs):
+    """
+    Monitor spawning of new appservers, to send the welcome email once it is ready.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+
+    if not instance.application_set:
+        return
+    application = instance.application_set.get() # There should only be one
+
+    if application.status != BetaTestApplication.PENDING:
+        return
+
+    if appserver is None:
+        raise ApplicationNotReady('Provisioning of AppServer failed.')
+    else:
+        accept_application(application)
 
 
 # Exceptions ##################################################################
