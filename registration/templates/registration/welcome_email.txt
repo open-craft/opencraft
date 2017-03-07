@@ -1,26 +1,25 @@
 {% autoescape off %}
-Hi {{ application.user.profile.full_name }},
+Hi,
 
-We are pleased to inform you that your application to participate in the
-OpenCraft Instance Manager beta test has been accepted.  Your Open edX instance
-has been provisioned and is available at
+Thank you very much for applying to participate to the OpenCraft.Hosting
+betatest. Your instance is now ready:
 
-    {{ application.instance.url }}
+{{ application.instance.url }}
 
-The Studio interface used to create course materials is available at
+The Studio interface used to create course materials is available at:
 
-    {{ application.instance.studio_url }}
+{{ application.instance.studio_url }}
 
 To log in, use the email address {{ application.user.email }} and the password
 you provided in the application.  You can reset your password by clicking the
 "Forgot password?" link on the login page
 
-    {{ application.instance.url }}/login
+{{ application.instance.url }}/login
 
-Since the OpenCraft Instance Manager is in beta state, there might still be some
-problems or downtime for your instance.  We appreciate any feedback on the
-project – just reply to this email!
+It is a beta test, so there might occasionally be some issues, but your
+instance should be usable in a production setting - a lot of the current
+betatesters already do. If you notice any issue, let me know! That's where we
+need your help, to know what needs fixing : )
 
-Happy testing,
 {{ signature }}
 {% endautoescape %}
