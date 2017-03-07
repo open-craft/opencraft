@@ -41,14 +41,21 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @db_task()
-def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=1):
+def spawn_appserver(
+        instance_ref_id,
+        mark_active_on_success=False,
+        num_attempts=1,
+        success_tag=None,
+        failure_tag=None):
     """
     Create a new AppServer for an existing instance.
 
     instance_ref_id should be the ID of an InstanceReference (instance.ref.pk)
 
     Optionally mark the new AppServer as active when the provisioning completes.
-    Optionally retry up to 'num_attempts' times
+    Optionally retry up to 'num_attempts' times.
+    Optionally tag the instance with 'success_tag' when the deployment succeeds,
+    or failure_tag if it fails.
     """
     for i in range(1, num_attempts + 1):
         logger.info('Retrieving instance: ID=%s', instance_ref_id)
@@ -58,10 +65,19 @@ def spawn_appserver(instance_ref_id, mark_active_on_success=False, num_attempts=
         instance.logger.info('Spawning new AppServer, attempt %d of %d', i, num_attempts)
         appserver_id = instance.spawn_appserver()
         if appserver_id:
+            if failure_tag:
+                instance.tags.remove(failure_tag)
+            if success_tag:
+                instance.tags.add(success_tag)
             if mark_active_on_success:
                 # If the AppServer provisioned successfully, make it active.
                 appserver_make_active(appserver_id)
             break
+    else:
+        if failure_tag:
+            instance.tags.add(failure_tag)
+        if success_tag:
+            instance.tags.remove(success_tag)
 
 
 @db_task()
