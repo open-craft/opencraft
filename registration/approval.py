@@ -30,10 +30,6 @@ from django.template.loader import get_template
 from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
 
-# Settings ####################################################################
-
-BETATEST_WELCOME_SUBJECT = 'Welcome to the OpenCraft Instance Manager free 30-day trial!'
-BETATEST_REJECT_SUBJECT = 'An update on your free 30-day trial test application status for OpenCraft Instance Manager'
 
 # Functions ###################################################################
 
@@ -60,24 +56,24 @@ def accept_application(application):
     launched, activates it and sends an email to the user to notify them that their instance is
     ready.
     """
-    assert application.instance is not None, 'No instance provisioned yet.'
+    if application.instance is not None:
+        raise ApplicationNotReady('No instance provisioned yet.')
+
     appserver = application.instance.active_appserver
-    assert appserver is not None, 'The instance does not have an active AppServer yet.'
-    assert appserver.status == AppServer.Status.Running, 'The AppServer is not running yet.'
-    _send_mail(application, 'registration/welcome_email.txt', BETATEST_WELCOME_SUBJECT)
+    if appserver is None:
+        raise ApplicationNotReady('The instance does not have an active AppServer yet.')
+    if appserver.status != AppServer.Status.Running:
+        raise ApplicationNotReady('The AppServer is not running yet.')
+
+    _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()
 
 
-def reject_application(application):
-    """Reject a beta test application.
+# Exceptions ##################################################################
 
-    All servers associated with the application will be terminated, and an email is send to the
-    applicant to inform them that the application has been rejected.
+class ApplicationNotReady(Exception):
     """
-    if application.instance is not None:
-        for appserver in application.instance.appserver_set.iterator():
-            appserver.terminate_vm()
-    _send_mail(application, 'registration/reject_email.txt', BETATEST_REJECT_SUBJECT)
-    application.status = BetaTestApplication.REJECTED
-    application.save()
+    Raised when trying to process an application which isn't ready yet
+    """
+    pass

@@ -27,7 +27,7 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from registration.approval import accept_application, reject_application
+from registration.approval import accept_application
 from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
 
@@ -47,14 +47,4 @@ class ApprovalTestCase(TestCase):
             self.assertTrue(mock_send_mail.called)
         self.assertEqual(application.status, BetaTestApplication.ACCEPTED)
 
-    def test_reject_application(self):
-        """Basic test for reject_application(), mainly for coverage."""
-        user = get_user_model().objects.create_user(username='test', email='test@example.com')
-        application = mock.Mock(user=user, subdomain='test')
-        appserver = mock.Mock()
-        application.instance.appserver_set.iterator.return_value = [appserver]
-        with mock.patch('registration.approval.send_mail') as mock_send_mail:
-            reject_application(application)
-            self.assertTrue(mock_send_mail.called)
-        self.assertTrue(appserver.terminate_vm.called)
-        self.assertEqual(application.status, BetaTestApplication.REJECTED)
+    # TODO: Test error cases

@@ -26,5 +26,5 @@ class RegistrationAppConfig(AppConfig):
     name = 'registration'
 
     def ready(self):
-        # Connect signal handler for automatic provisioning
-        from . import provision
+        # Connect signal handler for automatic provisioning & approval
+        from . import approval, provision
