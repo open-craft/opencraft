@@ -192,49 +192,78 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             return
 
     @log_exception
-    def spawn_appserver(self):
+    def spawn_appserver(self,
+                        mark_active_on_success=False,
+                        num_attempts=2,
+                        success_tag=None,
+                        failure_tag=None):
         """
-        Provision a new AppServer.
+        Provision a new AppServer
+
+        Optionally mark the new AppServer as active when the provisioning completes.
+        Optionally retry up to 'num_attempts' times.
+        Optionally tag the instance with 'success_tag' when the deployment succeeds,
+        or failure_tag if it fails.
 
         Returns the ID of the new AppServer on success or None on failure.
         """
-        if not self.load_balancing_server:
-            self.load_balancing_server = LoadBalancingServer.objects.select_random()
-            self.save()
-            self.reconfigure_load_balancer()
+        for attempt in range(num_attempts):
+            if not self.load_balancing_server:
+                self.load_balancing_server = LoadBalancingServer.objects.select_random()
+                self.save()
+                self.reconfigure_load_balancer()
 
-        # We unconditionally set the DNS records here, though this would only be strictly needed
-        # when the first AppServer is spawned.  However, there is no easy way to tell whether the
-        # DNS records have already been successfully set, and it doesn't hurt to always do it.
-        self.set_dns_records()
+            # We unconditionally set the DNS records here, though this would only be strictly needed
+            # when the first AppServer is spawned.  However, there is no easy way to tell whether the
+            # DNS records have already been successfully set, and it doesn't hurt to always do it.
+            self.set_dns_records()
 
-        # Provision external databases:
-        if not self.use_ephemeral_databases:
-            # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
-            # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
-            self.logger.info('Provisioning MySQL database...')
-            self.provision_mysql()
-            self.logger.info('Provisioning MongoDB databases...')
-            self.provision_mongo()
-            if self.storage_type == self.SWIFT_STORAGE:
-                self.logger.info('Provisioning Swift container...')
-                self.provision_swift()
-            elif self.storage_type == self.S3_STORAGE:
-                self.logger.info('Provisioning S3 bucket...')
-                self.provision_s3()
-            self.logger.info('Provisioning RabbitMQ vhost...')
-            self.provision_rabbitmq()
+            # Provision external databases:
+            if not self.use_ephemeral_databases:
+                # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
+                # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
+                self.logger.info('Provisioning MySQL database...')
+                self.provision_mysql()
+                self.logger.info('Provisioning MongoDB databases...')
+                self.provision_mongo()
+                if self.storage_type == self.SWIFT_STORAGE:
+                    self.logger.info('Provisioning Swift container...')
+                    self.provision_swift()
+                elif self.storage_type == self.S3_STORAGE:
+                    self.logger.info('Provisioning S3 bucket...')
+                    self.provision_s3()
+                self.logger.info('Provisioning RabbitMQ vhost...')
+                self.provision_rabbitmq()
 
-        app_server = self._create_owned_appserver()
+            app_server = self._create_owned_appserver()
 
-        if app_server.provision():
-            self.logger.info('Provisioned new app server, %s', app_server.name)
-            self.successfully_provisioned = True
-            self.save()
-            return app_server.pk
+            if app_server.provision():
+                break
+            else:
+                self.logger.error('Failed to provision new app server')
         else:
-            self.logger.error('Failed to provision new app server')
-            return None
+            self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
+            if failure_tag:
+                self.tags.add(failure_tag)
+            if success_tag:
+                self.tags.remove(success_tag)
+            return
+
+        self.logger.info('Provisioned new app server, %s', app_server.name)
+        self.successfully_provisioned = True
+        self.save()
+
+        if failure_tag:
+            self.tags.remove(failure_tag)
+        if success_tag:
+            self.tags.add(success_tag)
+
+        if mark_active_on_success:
+            # FIXME merge make_appserver_active (from tasks) into make_active
+            # FIXME make make_active accept deactivate_others parameter
+            app_server.make_active()
+
+        return app_server.pk
 
     def _create_owned_appserver(self):
         """
