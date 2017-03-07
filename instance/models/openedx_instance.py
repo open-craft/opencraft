@@ -29,6 +29,7 @@ from django.utils import timezone
 
 from instance import gandi
 from instance.logging import log_exception
+from instance.signals import appserver_spawned
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
@@ -241,12 +242,14 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
                 break
             else:
                 self.logger.error('Failed to provision new app server')
+
         else:
             self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
             if failure_tag:
                 self.tags.add(failure_tag)
             if success_tag:
                 self.tags.remove(success_tag)
+            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
             return
 
         self.logger.info('Provisioned new app server, %s', app_server.name)
@@ -262,6 +265,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             # FIXME merge make_appserver_active (from tasks) into make_active
             # FIXME make make_active accept deactivate_others parameter
             app_server.make_active()
+
+        appserver_spawned.send(sender=self.__class__, instance=self, app_server=app_server)
 
         return app_server.pk
 
