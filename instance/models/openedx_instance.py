@@ -89,29 +89,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
     successfully_provisioned = models.BooleanField(default=False)
 
-    openstack_server_flavor = JSONField(
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_FLAVOR'),
-        help_text='JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}.'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.',
-    )
-    openstack_server_base_image = JSONField(
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
-        help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
-    )
-    openstack_server_ssh_keyname = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_SSH_KEYNAME'),
-        help_text='SSH key name used when setting up access to the openstack project.'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_SSH_KEYNAME on server creation.',
-    )
-
     class Meta:
         verbose_name = 'Open edX Instance'
 
