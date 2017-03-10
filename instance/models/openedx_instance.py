@@ -28,10 +28,6 @@ from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
 from django.utils.text import slugify
-# FIXME want to use django.contrib.postgres.fields.JSONField instead,
-# but this requires upgrading to PostgreSQL ≥ 9.4
-# ref https://docs.djangoproject.com/en/1.10/ref/contrib/postgres/fields/#django.contrib.postgres.fields.JSONField
-from django_extensions.db.fields.json import JSONField
 
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
@@ -44,7 +40,6 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.server import Status as ServerStatus
-from instance.models.utils import default_setting
 from instance.utils import sufficient_time_passed
 
 
