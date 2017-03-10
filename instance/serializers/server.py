@@ -46,6 +46,7 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'openstack_id',
             'status',
             'public_ip',
+            'openstack_region',
         )
 
     def to_representation(self, obj):

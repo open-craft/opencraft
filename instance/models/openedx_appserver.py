@@ -122,6 +122,30 @@ class OpenEdXAppConfiguration(models.Model):
         'which is equal to the value of "openedx_release".'
     ))
 
+    # OpenStack VM settings
+    openstack_server_flavor = JSONField(
+        null=True,
+        blank=True,
+        default=default_setting('OPENSTACK_SANDBOX_FLAVOR'),
+        help_text='JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}.'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.',
+    )
+    openstack_server_base_image = JSONField(
+        null=True,
+        blank=True,
+        default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
+        help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
+    )
+    openstack_server_ssh_keyname = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        default=default_setting('OPENSTACK_SANDBOX_SSH_KEYNAME'),
+        help_text='SSH key name used when setting up access to the openstack project.'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_SSH_KEYNAME on server creation.',
+    )
+
     # Misc settings:
     use_ephemeral_databases = models.BooleanField()
     github_admin_organizations = JSONField(
@@ -401,9 +425,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         try:
             self.server.start(
                 security_groups=self.security_groups,
-                flavor_selector=self.instance.openstack_server_flavor,
-                image_selector=self.instance.openstack_server_base_image,
-                key_name=self.instance.openstack_server_ssh_keyname,
+                flavor_selector=self.openstack_server_flavor,
+                image_selector=self.openstack_server_base_image,
+                key_name=self.openstack_server_ssh_keyname,
             )
             self.logger.info('Waiting for server %s...', self.server)
             self.server.sleep_until(lambda: self.server.status.vm_available)

@@ -28,10 +28,6 @@ from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
 from django.utils.text import slugify
-# FIXME want to use django.contrib.postgres.fields.JSONField instead,
-# but this requires upgrading to PostgreSQL ≥ 9.4
-# ref https://docs.djangoproject.com/en/1.10/ref/contrib/postgres/fields/#django.contrib.postgres.fields.JSONField
-from django_extensions.db.fields.json import JSONField
 
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
@@ -44,7 +40,6 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.server import Status as ServerStatus
-from instance.models.utils import default_setting
 from instance.utils import sufficient_time_passed
 
 
@@ -88,29 +83,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     external_studio_domain = models.CharField(max_length=100, blank=True)
 
     successfully_provisioned = models.BooleanField(default=False)
-
-    openstack_server_flavor = JSONField(
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_FLAVOR'),
-        help_text='JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}.'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.',
-    )
-    openstack_server_base_image = JSONField(
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
-        help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
-    )
-    openstack_server_ssh_keyname = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-        default=default_setting('OPENSTACK_SANDBOX_SSH_KEYNAME'),
-        help_text='SSH key name used when setting up access to the openstack project.'
-                  ' Defaults to settings.OPENSTACK_SANDBOX_SSH_KEYNAME on server creation.',
-    )
 
     class Meta:
         verbose_name = 'Open edX Instance'

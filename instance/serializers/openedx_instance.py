@@ -126,6 +126,11 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'edx_platform_commit',
 
             'openedx_release',
+
+            'openstack_region',
+            'openstack_server_flavor',
+            'openstack_server_base_image',
+            'openstack_server_ssh_keyname',
         )
 
     def to_representation(self, obj):
