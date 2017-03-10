@@ -206,6 +206,10 @@ ECOMMERCE_PAYPAL_RECEIPT_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/re
 ECOMMERCE_PAYPAL_CANCEL_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/'
 ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/error/'
 
+# Enterprise
+EDXAPP_ENTERPRISE_ENROLLMENT_API_URL: 'http://localhost/api/enrollment/v1/'
+EDXAPP_ENTERPRISE_PUBLIC_ENROLLMENT_API_URL: '{{ EDXAPP_LMS_ROOT_URL }}/api/enrollment/v1/'
+
 # Default to an xqueue version that supports RabbitMQ
 xqueue_source_repo: https://github.com/open-craft/xqueue.git
 xqueue_version: opencraft-release/eucalyptus.2
