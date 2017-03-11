@@ -106,6 +106,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'mongo_user',
             'mongo_pass',
             'mongo_provisioned',
+            'rabbitmq_provisioned',
 
             'swift_openstack_user',
             'swift_openstack_password',
