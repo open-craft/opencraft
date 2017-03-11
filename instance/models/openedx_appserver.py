@@ -222,7 +222,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_extra_settings',
     ]
 
-    class Meta:
+    class Meta(AppServer.Meta):
         verbose_name = 'Open edX App Server'
 
     def make_active(self, active=True):

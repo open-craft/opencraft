@@ -27,7 +27,6 @@ import logging
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
@@ -150,8 +149,12 @@ class Instance(ValidateModelMixin, models.Model):
     def ref(self):
         """ Get the InstanceReference for this Instance """
         try:
-            return self.ref_set.get()
-        except ObjectDoesNotExist:
+            # This is a 1:1 relation, but django's ORM does not know that.
+            # We use all() instead of get() or first() because all()[0] can be optimized better by django's ORM
+            # (e.g. when using prefetch_related).
+            return self.ref_set.all()[0]
+        except IndexError:
+            # The InstanceReference does not yet exist - create it:
             return InstanceReference(instance=self)
 
     @property

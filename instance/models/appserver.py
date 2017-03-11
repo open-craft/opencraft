@@ -168,6 +168,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     _is_active = models.BooleanField(default=False, db_column="is_active")
 
     class Meta:
+        ordering = ('-created', )
         abstract = True
 
     def __init__(self, *args, **kwargs):

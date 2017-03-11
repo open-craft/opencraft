@@ -24,6 +24,7 @@ Instance serializers (API representation)
 
 from rest_framework import serializers
 
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from pr_watch.models import WatchedPullRequest
@@ -74,8 +75,17 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
             output['is_healthy'] = None
             output['is_steady'] = None
 
-        newest_appserver = obj.appserver_set.order_by('-created').first()
-        output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
+        try:
+            # Note that appservers are ordered by '-created' by default.
+            # We don't change or check the ordering of the .appserver_set.all() queryset here
+            # because that causes the django ORM to force a new database query to be made
+            # for each instance here, even if appserver_set was previously cached.
+            assert OpenEdXAppServer._meta.ordering[0] == '-created'
+            newest_appserver = obj.appserver_set.all()[0]
+        except IndexError:
+            output['newest_appserver'] = None
+        else:
+            output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
         return output
 
 
