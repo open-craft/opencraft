@@ -241,6 +241,10 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         self.server.terminate()
         if self.status == Status.Running:
             self._status_to_terminated()
+        elif self.status == Status.ConfiguringServer:
+            self._status_to_configuration_failed()
+        elif self.status == Status.WaitingForServer:
+            self._status_to_error()
 
     def _get_log_entries(self, level_list=None, limit=None):
         """
