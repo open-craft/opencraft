@@ -61,6 +61,11 @@ class InstanceReference(TimeStampedModel):
     instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     instance_id = models.PositiveIntegerField()
     instance = GenericForeignKey('instance_type', 'instance_id')
+    is_archived = models.BooleanField(default=False, help_text=(
+        "When this Instance is no longer needed, it is shut down and marked as archived. "
+        "Archived instances do not appear in the list of instances, but their data, "
+        "logs, and settings are preserved (including e.g. all MySQL and MongoDB data)."
+    ))
 
     class Meta:
         ordering = ['-created']
@@ -119,11 +124,13 @@ class Instance(ValidateModelMixin, models.Model):
     # in a query, e.g. to do .select_related('ref_set')
     ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
     openstack_region = models.CharField(
+        # TODO: Move this to OpenedXInstance
         max_length=16,
         blank=False,
         default=default_setting('OPENSTACK_REGION'),
     )
     tags = models.ManyToManyField(
+        # TODO: Move this to InstanceReference (common fields should be in non-abstract tables where possible)
         'InstanceTag',
         blank=True,
         help_text='Custom tags associated with the instance.',
@@ -213,6 +220,14 @@ class Instance(ValidateModelMixin, models.Model):
         entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
         # TODO: Filter out log entries for which the user doesn't have view rights
         return reversed(list(entries[:limit]))
+
+    def archive(self):
+        """
+        Mark this instance as archived.
+        Subclasses should override this to shut down any active resources being used by this instance.
+        """
+        self.ref.is_archived = True
+        self.ref.save()
 
     def delete(self, *args, **kwargs):
         """

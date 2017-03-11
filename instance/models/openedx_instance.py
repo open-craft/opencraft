@@ -39,7 +39,6 @@ from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
-from instance.models.server import Status as ServerStatus
 from instance.utils import sufficient_time_passed
 
 
@@ -215,41 +214,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         allowed = string.ascii_letters + string.digits + '_'
         escaped = ''.join(char for char in name if char in allowed)
         return truncate_name(escaped, length=50)
-
-    @property
-    def is_shut_down(self):
-        """
-        Return True if this instance has been shut down, else False.
-
-        An instance has been shut down if monitoring has been turned off
-        and each of its app servers has either been terminated
-        or failed to provision and the corresponding VM has since been terminated.
-
-        If an instance has no app servers, we assume that it has *not* been shut down.
-        This ensures that the GUI lists newly created instances without app servers.
-        """
-        if self.appserver_set.count() == 0:
-            return False
-
-        def appserver_is_shut_down(appserver):
-            """
-            Return True if `appserver` has been terminated
-            or if it failed to provision and the corresponding VM has since been terminated.
-            """
-            if appserver.status == AppServerStatus.Terminated:
-                return True
-            configuration_failed = (
-                appserver.status == AppServerStatus.ConfigurationFailed or
-                appserver.status == AppServerStatus.Error
-            )
-            vm_terminated = appserver.server.status == ServerStatus.Terminated
-            return configuration_failed and vm_terminated
-
-        all_appservers_terminated = all(
-            appserver_is_shut_down(appserver) for appserver in self.appserver_set.all()
-        )
-        monitoring_turned_off = self.new_relic_availability_monitors.count() == 0
-        return all_appservers_terminated and monitoring_turned_off
 
     def save(self, **kwargs):
         """
@@ -434,9 +398,9 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
                 elif sufficient_time_passed(appserver.created, now, days):
                     appserver.terminate_vm()
 
-    def shut_down(self):
+    def archive(self):
         """
-        Shut down this instance.
+        Shut down this instance's app servers and mark it as archived.
         """
         self.disable_monitoring()
         self.remove_dns_records()
@@ -447,12 +411,24 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.reconfigure_load_balancer(load_balancer)
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
+        super().archive()
+
+    @staticmethod
+    def shut_down():
+        """
+        The shut_down() functionality was replaced with archive() - remind shell users who run this directly.
+        """
+        raise AttributeError(
+            "Use archive() to shut down all of an instances app servers and remove it from the instance list."
+        )
 
     def delete(self, *args, **kwargs):
         """
         Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
+
+        This is handy for development but should not be used in production - just use archive() instead.
         """
-        self.shut_down()
+        self.archive()
         self.deprovision_mysql()
         self.deprovision_mongo()
         self.deprovision_swift()

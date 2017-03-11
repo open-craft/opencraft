@@ -49,7 +49,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance_data = response.data[0].items()
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
-        self.assertIn(('is_shut_down', False), instance_data)
+        self.assertIn(('is_archived', False), instance_data)
         self.assertIn(('appserver_count', 0), instance_data)
         self.assertIn(('active_appservers', []), instance_data)
         self.assertIn(('is_healthy', None), instance_data)
@@ -77,7 +77,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
 
         instance_data = response.data.items()
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
-        self.assertIn(('is_shut_down', False), instance_data)
+        self.assertIn(('is_archived', False), instance_data)
         self.assertIn(('url', 'https://domain.api.example.com/'), instance_data)
         self.assertIn(('studio_url', 'https://studio-domain.api.example.com/'), instance_data)
         self.assertIn(

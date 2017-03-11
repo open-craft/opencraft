@@ -67,6 +67,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'name',
             'created',
             'modified',
+            'is_archived',
         )
 
     def serialize_details(self, instance):
