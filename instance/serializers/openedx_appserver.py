@@ -39,8 +39,6 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
     """
     instance = InstanceReferenceMinimalSerializer(source='owner')
     server = OpenStackServerSerializer()
-    log_entries = LogEntrySerializer(many=True, read_only=True)
-    log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
     class Meta:
         model = OpenEdXAppServer
@@ -50,8 +48,6 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
             'configuration_settings',
             'instance',
             'server',
-            'log_entries',
-            'log_error_entries',
         )
 
     def to_representation(self, obj):
@@ -61,6 +57,18 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
         output = AppServerBasicSerializer(obj, context=self.context).data
         output.update(super().to_representation(obj))
         return output
+
+
+class OpenEdXAppServerLogSerializer(serializers.ModelSerializer):
+    """
+    Provide the log entries for an OpenEdXAppServer
+    """
+    log_entries = LogEntrySerializer(many=True, read_only=True)
+    log_error_entries = LogEntrySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = OpenEdXAppServer
+        fields = ('log_entries', 'log_error_entries')
 
 
 # create/update intentionally omitted, pylint: disable=abstract-method

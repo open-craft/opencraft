@@ -32,7 +32,11 @@ from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
-from instance.serializers.openedx_appserver import OpenEdXAppServerSerializer, SpawnAppServerSerializer
+from instance.serializers.openedx_appserver import (
+    OpenEdXAppServerLogSerializer,
+    OpenEdXAppServerSerializer,
+    SpawnAppServerSerializer,
+)
 from instance.tasks import appserver_make_active, spawn_appserver
 
 
@@ -78,6 +82,13 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
 
         spawn_appserver(instance_id)
         return Response({'status': 'Instance provisioning started'})
+
+    @detail_route(methods=['get'])
+    def logs(self, request, pk):
+        """
+        Get this AppServer's log entries
+        """
+        return Response(OpenEdXAppServerLogSerializer(self.get_object()).data)
 
     @detail_route(methods=['post'])
     def make_active(self, request, pk):
