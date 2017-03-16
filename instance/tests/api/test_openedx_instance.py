@@ -115,13 +115,30 @@ class OpenEdXInstanceAPITestCase(APITestCase):
                 with self.assertNumQueries(queries_per_api_call):
                     response = self.api_client.get('/api/v1/instance/')
             except AssertionError:
-                # The above assertion error alone won't indicate the value of i at the time the assertion was
-                # thrown, so state that:
+                # The above assertion error alone won't indicate the number of
+                # instances at the time the assertion was thrown, so state that:
                 msg = "Expect query count to be {} when retrieving list of {} instances".format(
                     queries_per_api_call, num_instances
                 )
                 raise AssertionError(msg)
             self.assertEqual(len(response.data), num_instances)
+
+    def test_newest_appserver(self):
+        """
+        GET - instance list - is 'newest_appserver' in fact the newest one?
+        """
+        instance, dummy = self.add_active_appserver()
+
+        mid_app_server = make_test_appserver(instance)
+        mid_app_server.is_active = True
+        mid_app_server.save()  # Outside of tests, use app_server.make_active() instead
+
+        newest_appserver = make_test_appserver(instance)
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+
+        self.assertEqual(response.data[0]['newest_appserver']['id'], newest_appserver.id)
 
     def test_get_details(self):
         """

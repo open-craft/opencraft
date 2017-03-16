@@ -164,7 +164,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         Returns a queryset containing the active appservers.
         """
         if hasattr(self.ref, '_cached_active_appservers'):
-            # A database optimization like prefetch_related() hascomputed the active
+            # A database optimization like prefetch_related() has computed the active
             # appservers for a large number of instances and cached that result on
             # the InstanceReference of each one.
             # (This is used to optimize the /api/v1/instances/ endpoint query for example)

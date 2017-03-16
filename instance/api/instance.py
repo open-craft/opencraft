@@ -67,7 +67,8 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         List all instances.
         """
         queryset = self.queryset.prefetch_related(
-            # Use prefetching to make the instance listing always an O(1) database query.
+            # Use prefetching to make the number of database queries required to
+            # generate this list O(1).
             Prefetch('instance__ref_set__openedxappserver_set'),
             Prefetch(
                 'instance__ref_set__openedxappserver_set',
@@ -75,5 +76,8 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
                 to_attr='_cached_active_appservers'
             ),
         )
+        if 'include_archived' not in request.query_params:
+            # By default, exclude archived instances from the list:
+            queryset = queryset.filter(is_archived=False)
         serializer = InstanceReferenceBasicSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)

@@ -123,13 +123,11 @@ class Instance(ValidateModelMixin, models.Model):
     # in a query, e.g. to do .select_related('ref_set')
     ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
     openstack_region = models.CharField(
-        # TODO: Move this to OpenedXInstance
         max_length=16,
         blank=False,
         default=default_setting('OPENSTACK_REGION'),
     )
     tags = models.ManyToManyField(
-        # TODO: Move this to InstanceReference (common fields should be in non-abstract tables where possible)
         'InstanceTag',
         blank=True,
         help_text='Custom tags associated with the instance.',
