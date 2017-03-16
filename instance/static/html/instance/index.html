@@ -10,7 +10,7 @@
   <!-- Instances List -->
   <div class="large-3 columns">
     <ul class="side-nav side-instance-list">
-      <li ng-repeat="instance in instanceList | filter: {is_shut_down: false}"
+      <li ng-repeat="instance in instanceList"
           ng-class="{active: instance.id == state.params.instanceId}"
           ng-init="
               newer_appserver = (instance.newest_appserver && !instance.newest_appserver.is_active ?  instance.newest_appserver : null);

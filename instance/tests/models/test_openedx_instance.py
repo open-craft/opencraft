@@ -24,7 +24,6 @@ OpenEdXInstance model - Tests
 
 from datetime import timedelta
 from unittest.mock import patch, Mock
-from uuid import uuid4
 
 import ddt
 from django.conf import settings
@@ -32,12 +31,9 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
 from freezegun import freeze_time
-import requests
-import responses
 import yaml
 
 from instance import gandi
-from instance import newrelic
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
 from instance.models.load_balancer import LoadBalancingServer
@@ -457,7 +453,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @ddt.data(True, False)
     @patch_services
-    @patch('instance.models.openedx_instance.OpenEdXInstance.shut_down')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.archive')
     @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
     @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
     @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
@@ -611,95 +607,12 @@ class OpenEdXInstanceTestCase(TestCase):
             server = OpenStackServer.objects.get(id=appserver.server.pk)
             self.assertEqual(server.status, expected_server_status)
 
-    @ddt.data(
-        # No app servers; monitoring disabled
-        (0, 0, 0, False, False),
-        # No app servers; monitoring enabled
-        (0, 0, 0, True, False),
-        # No running, no terminated, and some failed app servers with VM ready; monitoring disabled
-        (0, 0, 3, False, False),
-        # No running, no terminated, and some failed app servers with VM ready; monitoring enabled
-        (0, 0, 3, True, False),
-        # No running, some terminated, and no failed app servers with VM ready; monitoring disabled
-        (0, 3, 0, False, True),
-        # No running, some terminated, and no failed app servers with VM ready; monitoring enabled
-        (0, 3, 0, True, False),
-        # No running, some terminated, and some failed app servers with VM ready; monitoring disabled
-        (0, 3, 3, False, False),
-        # No running, some terminated, and some failed app servers with VM ready; monitoring enabled
-        (0, 3, 3, True, False),
-        # Some running, no terminated, and no failed app servers with VM ready; monitoring disabled
-        (3, 0, 0, False, False),
-        # Some running, no terminated, and no failed app servers with VM ready; monitoring enabled
-        (3, 0, 0, True, False),
-        # Some running, some terminated, and no failed app servers with VM ready; monitoring disabled
-        (3, 3, 0, False, False),
-        # Some running, some terminated, and no failed app servers with VM ready; monitoring enabled
-        (3, 3, 0, True, False),
-        # Some running, no terminated, and some failed app servers with VM ready; monitoring disabled
-        (3, 0, 3, False, False),
-        # Some running, no terminated, and some failed app servers with VM ready; monitoring enabled
-        (3, 0, 3, True, False),
-        # Some running, some terminated, and some failed app servers with VM ready; monitoring disabled
-        (3, 3, 3, False, False),
-        # Some running, some terminated, and some failed app servers with VM ready; monitoring enabled
-        (3, 3, 3, True, False),
-    )
-    @ddt.unpack
-    @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_is_shut_down(
-            self,
-            num_running_appservers,
-            num_terminated_appservers,
-            num_failed_appservers_vm_ready,
-            monitoring_enabled,
-            expected_result,
-            mock_newrelic
-    ):
-        """
-        Test that `is_shut_down` property correctly reports whether an instance has been shut down.
-
-        An instance has been shut down if monitoring has been turned off
-        and each of its app servers has either been terminated
-        or failed to provision and the corresponding VM has since been terminated.
-
-        If an instance has no app servers, we assume that it has *not* been shut down.
-        This ensures that the GUI lists newly created instances without app servers.
-        """
-        instance = OpenEdXInstanceFactory()
-
-        for dummy in range(num_running_appservers):
-            self._create_running_appserver(instance)
-        for dummy in range(num_terminated_appservers):
-            self._create_terminated_appserver(instance)
-        failed_appservers = [
-            self._create_failed_appserver(instance) for dummy in range(num_terminated_appservers)
-        ]
-        errored_appservers = [
-            self._create_errored_appserver(instance) for dummy in range(num_terminated_appservers)
-        ]
-        for failed_appserver in failed_appservers + errored_appservers:
-            self._set_server_terminated(failed_appserver.server)
-
-        if num_failed_appservers_vm_ready:
-            failed_appservers_vm_ready = [
-                self._create_failed_appserver(instance) for dummy in range(num_terminated_appservers)
-            ]
-            for failed_appserver in failed_appservers_vm_ready:
-                self._set_server_ready(failed_appserver.server)
-
-        if monitoring_enabled:
-            monitor_id = str(uuid4())
-            instance.new_relic_availability_monitors.create(pk=monitor_id)
-
-        self.assertEqual(instance.is_shut_down, expected_result)
-
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_shut_down(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+    def test_archive(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
         """
-        Test that `shut_down` method terminates all app servers belonging to an instance
+        Test that `archive` method terminates all app servers belonging to an instance
         and disables monitoring.
         """
         instance = OpenEdXInstanceFactory()
@@ -731,8 +644,14 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mock_disable_monitoring.call_count, 0)
         self.assertEqual(mock_remove_dns_records.call_count, 0)
 
+        # Instance should not be marked as archived
+        self.assertFalse(instance.ref.is_archived)
+
         # Shut down instance
-        instance.shut_down()
+        instance.archive()
+
+        # Now the instance should be marked as archived
+        self.assertTrue(instance.ref.is_archived)
 
         self.assertEqual(mock_reconfigure.call_count, 2)
         self.assertEqual(mock_disable_monitoring.call_count, 1)
@@ -761,65 +680,22 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_shut_down_no_active_appserver(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+    def test_archive_no_active_appserver(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
         """
-        Test that the shut_down method works correctly if no appserver is active.
+        Test that the archive method works correctly if no appserver is active.
         """
         instance = OpenEdXInstanceFactory()
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
         appserver = self._create_running_appserver(instance)
-        instance.shut_down()
+        instance.archive()
         self.assertEqual(mock_reconfigure.call_count, 1)
         self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
         self._assert_status([
             (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)
         ])
-
-    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
-    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.enable_monitoring')
-    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    @responses.activate
-    def test_shut_down_monitors_not_found(self, *mock_methods):
-        """
-        Test that instance `is_shut_down` after calling `shut_down` on it,
-        even if monitors associated with it no longer exist.
-        """
-        monitor_ids = [str(uuid4()) for i in range(3)]
-        instance = OpenEdXInstanceFactory()
-        appserver = self._create_running_appserver(instance)
-        appserver.make_active()
-        self.assertTrue(appserver.is_active)
-        appserver.instance.refresh_from_db()
-
-        for monitor_id in monitor_ids:
-            instance.new_relic_availability_monitors.create(pk=monitor_id)
-            responses.add(
-                responses.DELETE,
-                '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
-                status=requests.codes.not_found
-            )
-
-        # Preconditions
-        self.assertEqual(instance.new_relic_availability_monitors.count(), 3)
-        self.assertFalse(instance.is_shut_down)
-
-        # Shut down instance
-        instance.shut_down()
-
-        # Instance should
-        # - no longer have any monitors associated with it
-        # - no longer have any running app servers
-        # - be considered "shut down"
-        self.assertEqual(instance.new_relic_availability_monitors.count(), 0)
-        self._assert_status([
-            (appserver, AppServerStatus.Terminated, ServerStatus.Terminated),
-        ])
-        self.assertTrue(instance.is_shut_down)
-
-        appserver.refresh_from_db()
-        self.assertFalse(appserver.is_active)
+        self.assertTrue(instance.ref.is_archived)
 
     @ddt.data(2, 5, 10)
     @patch_services
@@ -962,3 +838,12 @@ class OpenEdXInstanceTestCase(TestCase):
             (rc_appserver, AppServerStatus.Running, ServerStatus.Pending),
             (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
+
+    def test_shut_down_reminder(self):
+        """
+        Test that if developers run the shut_down() method on the console, they see a warning
+        """
+        instance = OpenEdXInstanceFactory()
+        msg = r"Use archive\(\) to shut down all of an instances app servers and remove it from the instance list."
+        with self.assertRaisesRegex(AttributeError, msg):
+            instance.shut_down()

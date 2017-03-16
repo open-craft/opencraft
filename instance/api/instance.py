@@ -22,9 +22,12 @@ Instance API
 
 # Imports #####################################################################
 
+from django.db.models import Prefetch
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.serializers.instance import InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer
 
 
@@ -48,6 +51,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     * `created`
     * `modified`
     * `instance_type`
+    * `is_archived`
 
     Note that IDs used for instances are always the ID of the InstanceReference object, which
     may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance
@@ -56,11 +60,24 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     it.
     """
     queryset = InstanceReference.objects.all()
+    serializer_class = InstanceReferenceDetailedSerializer
 
-    def get_serializer_class(self):
+    def list(self, request):
         """
-        Return the basic serializer for the list action, and the detailed serializer otherwise.
+        List all instances.
         """
-        if self.action == 'list':
-            return InstanceReferenceBasicSerializer
-        return InstanceReferenceDetailedSerializer
+        queryset = self.queryset.prefetch_related(
+            # Use prefetching to make the number of database queries required to
+            # generate this list O(1).
+            Prefetch('instance__ref_set__openedxappserver_set'),
+            Prefetch(
+                'instance__ref_set__openedxappserver_set',
+                queryset=OpenEdXAppServer.objects.filter(_is_active=True),
+                to_attr='_cached_active_appservers'
+            ),
+        )
+        if 'include_archived' not in request.query_params:
+            # By default, exclude archived instances from the list:
+            queryset = queryset.filter(is_archived=False)
+        serializer = InstanceReferenceBasicSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)

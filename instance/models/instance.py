@@ -27,7 +27,6 @@ import logging
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
@@ -61,6 +60,11 @@ class InstanceReference(TimeStampedModel):
     instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     instance_id = models.PositiveIntegerField()
     instance = GenericForeignKey('instance_type', 'instance_id')
+    is_archived = models.BooleanField(default=False, help_text=(
+        "When this Instance is no longer needed, it is shut down and marked as archived. "
+        "Archived instances do not appear in the list of instances, but their data, "
+        "logs, and settings are preserved (including e.g. all MySQL and MongoDB data)."
+    ))
 
     class Meta:
         ordering = ['-created']
@@ -143,8 +147,12 @@ class Instance(ValidateModelMixin, models.Model):
     def ref(self):
         """ Get the InstanceReference for this Instance """
         try:
-            return self.ref_set.get()
-        except ObjectDoesNotExist:
+            # This is a 1:1 relation, but django's ORM does not know that.
+            # We use all() instead of get() or first() because all()[0] can be optimized better by django's ORM
+            # (e.g. when using prefetch_related).
+            return self.ref_set.all()[0]
+        except IndexError:
+            # The InstanceReference does not yet exist - create it:
             return InstanceReference(instance=self)
 
     @property
@@ -213,6 +221,14 @@ class Instance(ValidateModelMixin, models.Model):
         entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
         # TODO: Filter out log entries for which the user doesn't have view rights
         return reversed(list(entries[:limit]))
+
+    def archive(self):
+        """
+        Mark this instance as archived.
+        Subclasses should override this to shut down any active resources being used by this instance.
+        """
+        self.ref.is_archived = True
+        self.ref.save()
 
     def delete(self, *args, **kwargs):
         """

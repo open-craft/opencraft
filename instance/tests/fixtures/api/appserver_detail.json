@@ -38,17 +38,5 @@
         "public_ip": "192.0.2.3",
         "status_name": "Ready",
         "status_description": "Booted and ready"
-    },
-    "log_entries": [
-        {
-            "level": "INFO",
-            "text": "instance.models.appserver | instance=50 (PR#12338: WIP S),app_server=8 (AppServer 2) | Starting provisioning",
-            "created": "2016-05-19T03:33:25.272824Z"
-        },
-        {
-            "level": "INFO",
-            "text": "instance.models.server    | server=edxapp-pr12338sandbo | Starting server (status=Pending [pending])...",
-            "created": "2016-05-19T03:33:25.336898Z"
-        }
-    ]
+    }
 }

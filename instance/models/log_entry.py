@@ -61,6 +61,9 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
 
     class Meta:
         ordering = ('-created', )
+        index_together = [
+            ['content_type', 'object_id'],
+        ]
         permissions = (
             ("read_log_entry", "Can read LogEntry"),
         )

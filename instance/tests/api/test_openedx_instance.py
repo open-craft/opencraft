@@ -49,7 +49,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance_data = response.data[0].items()
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
-        self.assertIn(('is_shut_down', False), instance_data)
+        self.assertIn(('is_archived', False), instance_data)
         self.assertIn(('appserver_count', 0), instance_data)
         self.assertIn(('active_appservers', []), instance_data)
         self.assertIn(('is_healthy', None), instance_data)
@@ -57,12 +57,12 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('status_description', ''), instance_data)
         self.assertIn(('newest_appserver', None), instance_data)
 
-    def add_active_appserver(self):
+    def add_active_appserver(self, sub_domain='domain.api'):
         """
         Create an instance, and add an active appserver.
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
+        instance = OpenEdXInstanceFactory(sub_domain=sub_domain)
         app_server = make_test_appserver(instance)
         app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
         app_server.save()
@@ -77,7 +77,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
 
         instance_data = response.data.items()
         self.assertIn(('domain', 'domain.api.example.com'), instance_data)
-        self.assertIn(('is_shut_down', False), instance_data)
+        self.assertIn(('is_archived', False), instance_data)
         self.assertIn(('url', 'https://domain.api.example.com/'), instance_data)
         self.assertIn(('studio_url', 'https://studio-domain.api.example.com/'), instance_data)
         self.assertIn(
@@ -97,6 +97,48 @@ class OpenEdXInstanceAPITestCase(APITestCase):
                 app_server_data['api_url'], 'http://testserver/api/v1/openedx_appserver/{pk}/'.format(pk=appserver_id)
             )
         return response
+
+    def test_instance_list_efficiency(self):
+        """
+        The number of database queries required to fetch /api/v1/instance/
+        should be O(1)
+        """
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(len(response.data), 0)
+
+        queries_per_api_call = 9
+
+        for num_instances in range(1, 4):
+            self.add_active_appserver(sub_domain='api{}'.format(num_instances))
+            try:
+                with self.assertNumQueries(queries_per_api_call):
+                    response = self.api_client.get('/api/v1/instance/')
+            except AssertionError:
+                # The above assertion error alone won't indicate the number of
+                # instances at the time the assertion was thrown, so state that:
+                msg = "Expect query count to be {} when retrieving list of {} instances".format(
+                    queries_per_api_call, num_instances
+                )
+                raise AssertionError(msg)
+            self.assertEqual(len(response.data), num_instances)
+
+    def test_newest_appserver(self):
+        """
+        GET - instance list - is 'newest_appserver' in fact the newest one?
+        """
+        instance, dummy = self.add_active_appserver()
+
+        mid_app_server = make_test_appserver(instance)
+        mid_app_server.is_active = True
+        mid_app_server.save()  # Outside of tests, use app_server.make_active() instead
+
+        newest_appserver = make_test_appserver(instance)
+
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+
+        self.assertEqual(response.data[0]['newest_appserver']['id'], newest_appserver.id)
 
     def test_get_details(self):
         """

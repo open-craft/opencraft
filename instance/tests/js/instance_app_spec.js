@@ -315,11 +315,6 @@ describe('Instance app', function () {
 
         describe('$scope.refresh', function() {
             it('loads the AppServer details from the API on init', function() {
-                // If django-rest-framework's serializers have dropped the empty 'log_error_entries'
-                // field, it should have been added back (so that we can call .push() on it):
-                if (!appServerDetail.log_error_entries) {
-                    appServerDetail.log_error_entries = [];
-                }
                 expect(jasmine.sanitizeRestangularOne($scope.appserver)).toEqual(appServerDetail);
             });
             it('sets is_active correctly', function() {
@@ -334,6 +329,24 @@ describe('Instance app', function () {
                 $scope.refresh();
                 flushHttpBackend();
                 expect($scope.is_active).toBeFalsy();
+            });
+        });
+
+        describe('loading log files', function() {
+            it('loads the AppServer logs when the log panel is opened', function() {
+                var logEntry = {
+                    "level": "INFO",
+                    "text": "instance.models.appserver | instance=50 (PR#12338: WIP S),app_server=8 (AppServer 2) | Starting provisioning",
+                    "created": "2016-05-19T03:33:25.272824Z"
+                };
+                httpBackend.whenGET('/api/v1/openedx_appserver/8/logs/').respond({
+                    "log_entries": [logEntry]
+                });
+
+                expect($scope.appserverLogs).toBe(null);
+                $scope.logsPanelOpen = true;
+                flushHttpBackend();
+                expect($scope.appserverLogs.log_entries[0]).toEqual(logEntry);
             });
         });
 
@@ -391,8 +404,9 @@ describe('Instance app', function () {
             beforeEach(function() {
                 spyOn(rootScope, 'updateInstanceList'); // Mock this out to avoid its HTTP requests
                 spyOn($scope, 'refresh');
-                spyOn($scope.appserver.log_entries, 'push');
-                spyOn($scope.appserver.log_error_entries, 'push');
+                $scope.appserverLogs = {log_entries: [], log_error_entries: []}; // Mock the loading of the logs
+                spyOn($scope.appserverLogs.log_entries, 'push');
+                spyOn($scope.appserverLogs.log_error_entries, 'push');
             });
             it('update the AppServer details whenever the AppServer is updated', function() {
                 swampdragon.sendChannelMessage({type: "openedx_appserver_update", appserver_id: 404});
@@ -408,8 +422,8 @@ describe('Instance app', function () {
                     log_entry: logEntry,
                 });
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
-                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
             });
             it("update the AppServer's log entries for new AppServer error logs", function() {
                 const logEntry = {created: new Date(), level: "ERROR", text: "Something went wrong"};
@@ -419,8 +433,8 @@ describe('Instance app', function () {
                     log_entry: logEntry,
                 });
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
-                expect($scope.appserver.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).toHaveBeenCalledWith(logEntry);
             });
             it("do not update the AppServer's log entries for other AppServer logs", function() {
                 swampdragon.sendChannelMessage({
@@ -429,8 +443,8 @@ describe('Instance app', function () {
                     log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
                 });
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
-                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
             });
             it("update the AppServer's log entries for new VM error logs", function() {
                 const logEntry = {created: new Date(), level: "ERROR", text: "Something went wrong on the server"};
@@ -440,8 +454,8 @@ describe('Instance app', function () {
                     log_entry: logEntry,
                 });
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).toHaveBeenCalledWith(logEntry);
-                expect($scope.appserver.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).toHaveBeenCalledWith(logEntry);
             });
             it("do not update the AppServer's log entries for other VM logs", function() {
                 swampdragon.sendChannelMessage({
@@ -450,14 +464,14 @@ describe('Instance app', function () {
                     log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
                 });
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
-                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
             });
             it('do not update the AppServer or log entries details for other changes', function() {
                 swampdragon.sendChannelMessage({type: "other_update"});
                 expect($scope.refresh).not.toHaveBeenCalled();
-                expect($scope.appserver.log_entries.push).not.toHaveBeenCalled();
-                expect($scope.appserver.log_error_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
             });
         });
     });

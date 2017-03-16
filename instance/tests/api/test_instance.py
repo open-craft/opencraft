@@ -73,6 +73,29 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data[0], instance)
 
+    def test_list_archived_instances(self):
+        """
+        GET - List of instances should exclude archived instances
+        by default, but show them if explicitly requested.
+        """
+        self.api_client.login(username='user3', password='pass')
+        regular_instance = OpenEdXInstanceFactory()
+        archived_instance = OpenEdXInstanceFactory()
+        archived_instance.ref.is_archived = True
+        archived_instance.ref.save()
+
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.check_serialized_instance(response.data[0], regular_instance)
+
+        response = self.api_client.get('/api/v1/instance/?include_archived')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        # Newer instances are first, so the archived instance will be first:
+        self.check_serialized_instance(response.data[0], archived_instance)
+        self.check_serialized_instance(response.data[1], regular_instance)
+
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),
         ('user1', 'You do not have permission to perform this action.'),

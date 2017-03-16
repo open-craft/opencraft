@@ -36,6 +36,9 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
 
         $scope.init = function() {
             $scope.appserver = null;
+            $scope.appserverLogs = null; // Logs. Once loaded, this is {log_entries: [], log_error_entries: []}
+            $scope.isFetchingLogs = false; // Are we currently loading the logs?
+            $scope.logsPanelOpen = false; // Is the logs panel visible?
             $scope.refresh();
         };
 
@@ -44,13 +47,35 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 if (appserver.instance.id != $stateParams.instanceId) {
                     throw "This appserver is associated with another instance.";
                 }
-                if (typeof appserver.log_error_entries === "undefined") {
-                    appserver.log_error_entries = [];  // This field is not always present.
-                }
                 $scope.appserver = appserver;
                 $scope.is_active = appserver.is_active;
+            }, function() {
+                $scope.notify("Unable to load the appserver details.");
             });
         };
+
+        $scope.fetchLogs = function() {
+            if ($scope.appserverLogs || $scope.isFetchingLogs) {
+                return;
+            }
+            $scope.isFetchingLogs = true;
+            OpenCraftAPI.one("openedx_appserver", $stateParams.appserverId).customGET("logs").then(function(logs) {
+                if (typeof logs.log_error_entries === "undefined") {
+                    logs.log_error_entries = [];  // This field is not always present.
+                }
+                $scope.appserverLogs = logs;
+                $scope.isFetchingLogs = false;
+            }, function() {
+                $scope.notify("Unable to load the logs for this appserver.");
+                $scope.isFetchingLogs = false;
+            });
+        };
+
+        $scope.$watch('logsPanelOpen', function(isOpen) {
+            if (isOpen) {
+                $scope.fetchLogs();
+            }
+        });
 
         $scope.make_appserver_active = function(active) {
             var action = active ? 'active' : 'inactive';
@@ -71,14 +96,15 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
         };
 
         $scope.$on("swampdragon:object_log_line", function (event, data) {
-            if (!$scope.appserver) {
-                return; // The App Server is not loaded yet, so no need to watch for log lines
+            if (!$scope.appserverLogs) {
+                return; // The App Server logs are not loaded yet, so no need to watch for log lines
             }
             if (data.appserver_id == $scope.appserver.id || ($scope.appserver.server && data.server_id == $scope.appserver.server.id)) {
                 if (data.log_entry.level == 'ERROR' || data.log_entry.level == 'CRITICAL') {
-                    $scope.appserver.log_error_entries.push(data.log_entry);
+                    $scope.appserverLogs.log_error_entries.push(data.log_entry);
                 }
-                $scope.appserver.log_entries.push(data.log_entry);
+                $scope.appserverLogs.log_entries.push(data.log_entry);
+                $scope.$apply();
             }
         });
 

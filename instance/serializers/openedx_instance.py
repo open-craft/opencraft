@@ -41,7 +41,6 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         model = OpenEdXInstance
         fields = (
             'domain',
-            'is_shut_down',
         )
 
     def to_representation(self, obj):
@@ -75,8 +74,16 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
             output['is_healthy'] = None
             output['is_steady'] = None
 
-        newest_appserver = obj.appserver_set.order_by('-created').first()
-        output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
+        try:
+            # Note that appservers are ordered by '-created' by default.
+            # We don't change or check the ordering of the .appserver_set.all() queryset here
+            # because that causes the django ORM to force a new database query to be made
+            # for each instance here, even if appserver_set was previously cached.
+            newest_appserver = obj.appserver_set.all()[0]
+        except IndexError:
+            output['newest_appserver'] = None
+        else:
+            output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
         return output
 
 
@@ -106,6 +113,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'mongo_user',
             'mongo_pass',
             'mongo_provisioned',
+            'rabbitmq_provisioned',
 
             'swift_openstack_user',
             'swift_openstack_password',

@@ -105,7 +105,7 @@ def shut_down_obsolete_pr_sandboxes():
             now = datetime.now()
             if sufficient_time_passed(closed_at, now, 7):
                 instance.logger.info("Shutting down obsolete sandbox instance")
-                instance.shut_down()
+                instance.archive()
 
 
 @db_task()
