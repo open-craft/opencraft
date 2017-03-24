@@ -176,6 +176,10 @@ class OpenEdXAppConfiguration(models.Model):
             "behind a firewall. (In the django admin, separate group names with a comma.)"
         )
     )
+    enable_vm_dns_records = models.BooleanField(
+        default=False,
+        help_text="Set additional DNS records pointing directly to the active app servers."
+    )
 
     @classmethod
     def get_config_fields(cls):
@@ -240,6 +244,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         self.instance.reconfigure_load_balancer()
         if active:
             self.instance.enable_monitoring()
+        if self.enable_vm_dns_records:
+            self.instance.set_active_vm_dns_records()
 
     @AppServer.status.only_for(AppServer.Status.New)
     def add_lms_users(self, lms_users):
