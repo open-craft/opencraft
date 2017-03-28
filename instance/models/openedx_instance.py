@@ -29,6 +29,7 @@ from django.template import loader
 from django.utils import timezone
 from django.utils.text import slugify
 
+from instance import gandi
 from instance.logging import log_exception
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import Instance
@@ -283,6 +284,18 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
                 backend_conf,
             )
         return backend_map, backend_conf
+
+    def set_active_vm_dns_records(self):
+        """
+        Set DNS A records for all active app servers.
+        """
+        self.logger.info("Setting DNS records for active app servers...")
+        for i, appserver in enumerate(self.get_active_appservers(), 1):
+            ip_addr = appserver.server.public_ip
+            if ip_addr:
+                domain = "vm{index}.{base_domain}".format(index=i, base_domain=self.internal_lms_domain)
+                gandi.api.set_dns_record(domain, type="A", value=ip_addr)
+        # TODO: implement cleaning up DNS addresses that are no longer needed.
 
     @property
     def appserver_set(self):

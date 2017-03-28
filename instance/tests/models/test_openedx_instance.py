@@ -23,6 +23,7 @@ OpenEdXInstance model - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
+import re
 from unittest.mock import patch, Mock
 
 import ddt
@@ -847,3 +848,38 @@ class OpenEdXInstanceTestCase(TestCase):
         msg = r"Use archive\(\) to shut down all of an instances app servers and remove it from the instance list."
         with self.assertRaisesRegex(AttributeError, msg):
             instance.shut_down()
+
+    def _verify_vm_dns_records(self, domain, active_vm_ips):
+        """
+        Helper function to verify a set of DNS records for active VMs.
+        """
+        dns_ips = set()
+        vm_indices = set()
+        for record in gandi.api.client.list_records(domain):
+            match = re.match(r'vm(\d+)\.', record['name'])
+            if match:
+                self.assertEqual(record['type'], 'A')
+                dns_ips.add(record['value'])
+                vm_indices.add(int(match.group(1)))
+        self.assertEqual(dns_ips, set(active_vm_ips))
+        self.assertEqual(vm_indices, set(range(1, len(vm_indices) + 1)))
+
+    @patch_services
+    def test_active_vm_dns_records(self, mocks):
+        """
+        Test that DNS records for active app servers get set.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com',
+                                          enable_vm_dns_records=True)
+        instance.spawn_appserver()
+        appserver1 = instance.appserver_set.first()
+        self._verify_vm_dns_records('test.com', [])
+        appserver1.make_active()
+
+        mocks.os_server_manager.set_os_server_attributes('server2', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver2 = instance.appserver_set.first()
+        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
+        appserver2.make_active()
+        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
+        # We haven't implemented cleaning up VM DNS records yet, so we can't test it.
