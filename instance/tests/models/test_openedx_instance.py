@@ -869,8 +869,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test that DNS records for active app servers get set.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com',
-                                          enable_vm_dns_records=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com')
         instance.spawn_appserver()
         appserver1 = instance.appserver_set.first()
         self._verify_vm_dns_records('test.com', [])
