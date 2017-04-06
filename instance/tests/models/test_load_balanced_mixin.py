@@ -112,9 +112,10 @@ class LoadBalancedInstanceTestCase(TestCase):
         annotation = instance.get_log_message_annotation()
         for log_line in logs.output:
             self.assertIn(annotation, log_line)
-        self.assertEqual(len(logs.output), 2)
+        self.assertEqual(len(logs.output), 3)
         self.assertIn("Triggering reconfiguration of the load balancing server", logs.output[0])
         self.assertIn("New load-balancer configuration", logs.output[1])
+        self.assertIn("Setting DNS records for active app servers", logs.output[2])
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
     def test_preliminary_page_not_configured(self):
