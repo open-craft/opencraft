@@ -126,6 +126,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             's3_bucket_name',
 
             'additional_security_groups',
+            'additional_monitoring_emails',
 
             'configuration_source_repo_url',
             'configuration_version',

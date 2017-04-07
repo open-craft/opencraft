@@ -176,6 +176,16 @@ class OpenEdXAppConfiguration(models.Model):
             "behind a firewall. (In the django admin, separate group names with a comma.)"
         )
     )
+    additional_monitoring_emails = ArrayField(
+        models.CharField(max_length=200),
+        default=list,
+        blank=True,
+        help_text=(
+            "Optional: A list of additional email addresses other than settings.ADMINS "
+            "who should receive alerts from New Relic Synthetics Monitors when this instance "
+            "becomes unavailable."
+        )
+    )
 
     @classmethod
     def get_config_fields(cls):
