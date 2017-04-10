@@ -40,7 +40,7 @@ class NewRelicTestCase(TestCase):
     Test cases for New Relic helper functions & API calls
     """
     @responses.activate
-    def test_get_synthetics_monitors(self):
+    def test_get_synthetics_monitor(self):
         """
         Check that the get_synthetics_monitor function fetches the details
         of a specific monitor from the Synthetics API.

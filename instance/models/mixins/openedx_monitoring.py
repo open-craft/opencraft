@@ -44,17 +44,18 @@ class OpenEdXMonitoringMixin:
             return
         self.logger.info('Checking New Relic Synthetics monitors')
 
+        urls_to_monitor = self._urls_to_monitor  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
 
         for monitor in self.new_relic_availability_monitors.all():
             url = newrelic.get_synthetics_monitor(monitor.pk)['uri']
-            if url in self._urls_to_monitor:
+            if url in urls_to_monitor:
                 already_monitored_urls.add(url)
             else:
                 self.logger.info('Deleting New Relic Synthetics monitor for old public URL %s', url)
                 monitor.delete()
 
-        for url in self._urls_to_monitor - already_monitored_urls:
+        for url in urls_to_monitor - already_monitored_urls:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             self.new_relic_availability_monitors.create(pk=new_monitor_id)
