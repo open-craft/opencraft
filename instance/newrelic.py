@@ -40,15 +40,29 @@ SYNTHETICS_API_URL = 'https://synthetics.newrelic.com/synthetics/api/v1'
 
 # Functions ###################################################################
 
-def get_synthetics_monitors():
+def get_synthetics_monitor(monitor_id):
     """
-    Return a list of active Synthetics monitors.
+    Return details of an active Synthetics monitor.
+
+    Example return value:
+        {
+            "id": UUID,
+            "name": string,
+            "type": string,
+            "frequency": integer,
+            "uri": string,
+            "locations": array of strings,
+            "status": string,
+            "slaThreshold": double,
+            "userId": integer,
+            "apiVersion": string
+        }
     """
-    url = '{0}/monitors'.format(SYNTHETICS_API_URL)
+    url = '{0}/monitors/{1}'.format(SYNTHETICS_API_URL, monitor_id)
     logger.info('GET %s', url)
     r = requests.get(url, headers=_request_headers())
     r.raise_for_status()
-    return r.json()['monitors']
+    return r.json()
 
 
 def create_synthetics_monitor(uri, name=None, monitor_type='SIMPLE',
@@ -70,9 +84,24 @@ def create_synthetics_monitor(uri, name=None, monitor_type='SIMPLE',
     return r.headers['location'].rsplit('/', 1)[-1]
 
 
+def get_synthetics_notification_emails(monitor_id):
+    """
+    Get the list of emails that New Relic will notify when the monitor
+    detects that the URI is offline.
+    """
+    url = '{0}/monitors/{1}/notifications'.format(SYNTHETICS_API_URL,
+                                                  monitor_id)
+    logger.info('GET %s', url)
+    r = requests.get(url, headers=_request_headers())
+    r.raise_for_status()
+    return r.json()['emails']
+
+
 def add_synthetics_email_alerts(monitor_id, emails):
     """
-    Set up email alerts for the given monitor.
+    Add email addresses to the notification list for the given monitor.
+
+    Will raise an error if the email is already on the list.
     """
     url = '{0}/monitors/{1}/notifications'.format(SYNTHETICS_API_URL,
                                                   monitor_id)

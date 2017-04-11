@@ -42,28 +42,35 @@ class OpenEdXMonitoringMixin:
             self.logger.warning('Skipping monitoring setup, '
                                 'NEWRELIC_ADMIN_USER_API_KEY not set')
             return
-        self.logger.info('Setting up New Relic Synthetics monitors')
+        self.logger.info('Checking New Relic Synthetics monitors')
 
-        # Delete existing monitors if they don't monitor this instance's
-        # public urls
-        monitors = newrelic.get_synthetics_monitors()
-        already_enabled = [monitor for monitor in monitors
-                           if monitor['uri'] in self._urls_to_monitor]
-        already_enabled_ids = {enabled['id'] for enabled in already_enabled}
-        for monitor in self.new_relic_availability_monitors.exclude(
-                pk__in=already_enabled_ids):
-            monitor.delete()
+        urls_to_monitor = self._urls_to_monitor  # Store locally so we don't keep re-computing this
+        already_monitored_urls = set()
 
-        # Add monitors for urls that are not already being monitored
-        already_enabled_urls = {enabled['uri'] for enabled in already_enabled}
-        for url in self._urls_to_monitor - already_enabled_urls:
-            monitor_id = newrelic.create_synthetics_monitor(url)
-            self.new_relic_availability_monitors.create(pk=monitor_id)
+        for monitor in self.new_relic_availability_monitors.all():
+            url = newrelic.get_synthetics_monitor(monitor.pk)['uri']
+            if url in urls_to_monitor:
+                already_monitored_urls.add(url)
+            else:
+                self.logger.info('Deleting New Relic Synthetics monitor for old public URL %s', url)
+                monitor.delete()
 
-            # Set up email alerts
-            if settings.ADMINS:
-                emails = [email for name, email in settings.ADMINS]
-                newrelic.add_synthetics_email_alerts(monitor_id, emails)
+        for url in urls_to_monitor - already_monitored_urls:
+            self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
+            new_monitor_id = newrelic.create_synthetics_monitor(url)
+            self.new_relic_availability_monitors.create(pk=new_monitor_id)
+
+        # Set up email alerts.
+        # We add emails here but never remove them - that must be done manually (or the monitor deleted)
+        # in order to reduce the chance of bugs or misconfigurations accidentally supressing monitors.
+        emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
+        if emails_to_monitor:
+            for monitor in self.new_relic_availability_monitors.all():
+                emails_current = set(newrelic.get_synthetics_notification_emails(monitor.id))
+                emails_to_add = list(emails_to_monitor - emails_current)
+                if emails_to_add:
+                    self.logger.info('Adding email(s) to monitor %s: %s', monitor.id, ', '.join(emails_to_add))
+                    newrelic.add_synthetics_email_alerts(monitor.id, emails_to_add)
 
     def disable_monitoring(self):
         """

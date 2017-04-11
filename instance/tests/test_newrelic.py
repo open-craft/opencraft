@@ -40,49 +40,30 @@ class NewRelicTestCase(TestCase):
     Test cases for New Relic helper functions & API calls
     """
     @responses.activate
-    def test_get_synthetics_monitors(self):
+    def test_get_synthetics_monitor(self):
         """
-        Check that the get_synthetics_monitors function fetches a list of
-        monitors from the Synthetics API.
+        Check that the get_synthetics_monitor function fetches the details
+        of a specific monitor from the Synthetics API.
         """
+        monitor_id = 'd35c6c1c-23a5-4a67-b3b0-287c34e84664'
         response_json = {
-            'count': 2,
-            'monitors': [
-                {
-                    'apiVersion': '0.2.2',
-                    'createdAt': '2016-06-06T07:11:51.859+0000',
-                    'frequency': 5,
-                    'id': 'd35c6c1c-23a5-4a67-b3b0-287c34e84664',
-                    'locations': ['AWS_US_EAST_1'],
-                    'modifiedAt': '2016-06-06T07:11:51.859+0000',
-                    'name': 'test-simple',
-                    'slaThreshold': 7.0,
-                    'status': 'ENABLED',
-                    'type': 'SIMPLE',
-                    'uri': 'http://newrelic-test.stage.opencraft.hosting/',
-                    'userId': 0,
-                },
-                {
-                    'apiVersion': '0.2.2',
-                    'createdAt': '2016-06-06T07:13:03.842+0000',
-                    'frequency': 5,
-                    'id': '924a289a-6997-41ba-92be-bbe497b49753',
-                    'locations': ['AWS_US_EAST_1'],
-                    'modifiedAt': '2016-06-06T07:13:03.842+0000',
-                    'name': 'test-browser',
-                    'slaThreshold': 7.0,
-                    'status': 'ENABLED',
-                    'type': 'BROWSER',
-                    'uri': 'http://newrelic-test.stage.opencraft.hosting/',
-                    'userId': 0,
-                },
-            ],
+            'apiVersion': '0.2.2',
+            'createdAt': '2016-06-06T07:11:51.859+0000',
+            'frequency': 5,
+            'id': monitor_id,
+            'locations': ['AWS_US_EAST_1'],
+            'modifiedAt': '2016-06-06T07:11:51.859+0000',
+            'name': 'test-simple',
+            'slaThreshold': 7.0,
+            'status': 'ENABLED',
+            'type': 'SIMPLE',
+            'uri': 'http://newrelic-test.stage.opencraft.hosting/',
+            'userId': 0,
         }
         responses.add(responses.GET,
-                      '{0}/monitors'.format(newrelic.SYNTHETICS_API_URL),
+                      '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
                       json=response_json, status=200)
-        self.assertEqual(newrelic.get_synthetics_monitors(),
-                         response_json['monitors'])
+        self.assertEqual(newrelic.get_synthetics_monitor(monitor_id), response_json)
         self.assertEqual(len(responses.calls), 1)
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
@@ -113,6 +94,23 @@ class NewRelicTestCase(TestCase):
             'locations': ['AWS_US_EAST_1'],
             'status': 'ENABLED',
         })
+
+    @responses.activate
+    def test_get_synthetics_notification_emails(self):
+        """
+        Check that the get_synthetics_notification_emails function gets a list of
+        email addresses receiving alerts for the specified monitor.
+        """
+        monitor_id = '924a289a-6997-41ba-92be-bbe497b49753'
+        emails = ['foo@example.com', 'bar@example.com']
+        response_json = {
+            'count': 2,
+            'emails': emails,
+        }
+        responses.add(responses.GET,
+                      '{0}/monitors/{1}/notifications'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
+                      json=response_json, status=200)
+        self.assertEqual(newrelic.get_synthetics_notification_emails(monitor_id), emails)
 
     @responses.activate
     def test_add_synthetics_email_alerts(self):
