@@ -1,11 +1,12 @@
 ---
-- name: Update apt-get
-  raw: apt-get update -qq
-
-- name: Install packages
-  raw: apt-get install -qq python-minimal
-
 - name: Fail on purpose
   hosts: all
   tasks:
-    - command: /bin/false
+    - name: Update apt-get
+      raw: "apt-get update -qq"
+
+    - name: Install packages
+      raw: "apt-get install -qq python-minimal"
+
+    - name: Fail, propagating the error
+      command: /bin/false
