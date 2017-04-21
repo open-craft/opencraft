@@ -428,6 +428,8 @@ class OpenEdXInstanceTestCase(TestCase):
         # an error in this case.
         with patch('instance.openstack_utils.get_server_public_address', return_value=None), \
                 self.assertLogs("instance.models.instance", "ERROR"):
+            appserver.server._public_ip = None
+            appserver.server.save()
             self.assertEqual(instance.get_load_balancer_configuration(), ([], []))
 
     def test_get_load_balancer_config_ext_domains(self):

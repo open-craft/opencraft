@@ -266,6 +266,7 @@ class OpenStackServer(Server):
         default=default_setting('OPENSTACK_REGION'),
     )
     openstack_id = models.CharField(max_length=250, db_index=True, blank=True)
+    _public_ip = models.GenericIPAddressField(blank=True, null=True, db_column="public_ip")
 
     class Meta:
         verbose_name = 'OpenStack VM'
@@ -295,17 +296,20 @@ class OpenStackServer(Server):
         """
         Return one of the public address(es)
         """
-        if not self.openstack_id:
+        if not self.vm_created:
+            # No VM means no public IP.
             return None
-
-        try:
+        if not self._public_ip:
+            # This branch will only be reached the first time the public IP address of a server is
+            # requested. We let any exceptions occurring during the Nova API calls propagate to the
+            # caller.  We previously caught and ignored all exceptions here, which led to
+            # hard-to-debug bugs.
             public_addr = openstack_utils.get_server_public_address(self.os_server)
-        except (requests.RequestException, novaclient.exceptions.ClientException):
-            return None  # Could not determine an IP based on the OS API
-        if not public_addr:
-            return None
-
-        return public_addr['addr']
+            if not public_addr:
+                return None
+            self._public_ip = public_addr['addr']
+            self.save()
+        return self._public_ip
 
     @property
     def vm_created(self):
@@ -321,38 +325,45 @@ class OpenStackServer(Server):
         """
         return self.status == Status.Pending
 
-    def update_status(self):
+    def _update_status_from_nova(self, os_server):
         """
-        Refresh the status by querying the openstack server via nova
+        Update the status from the Nova Server object given in os_server.
         """
-        # TODO: Check when server is stopped or terminated
-
-        # First check if it makes sense to update the current status.
-        # This is not the case if we can not interact with the server:
-        if self.status in (Status.BuildFailed, Status.Terminated):
-            return self.status
-        try:
-            os_server = self.os_server
-        except (requests.RequestException, novaclient.exceptions.ClientException):
-            self.logger.debug('Could not reach the OpenStack API')
-            if self.status not in (Status.BuildFailed, Status.Terminated, Status.Pending, Status.Unknown):
-                self._status_to_unknown()
-            return self.status
         self.logger.debug('Updating status from nova (currently %s):\n%s', self.status, to_json(os_server))
-
         if self.status == Status.Unknown:
             if os_server.status in ('INITIALIZED', 'BUILDING'):
                 # OpenStack has multiple API versions; INITIALIZED is current; BUILDING was used in the past
                 self._status_to_building()
-
         if self.status in (Status.Building, Status.Unknown):
             self.logger.debug('OpenStack: loaded="%s" status="%s"', os_server._loaded, os_server.status)
             if os_server._loaded and os_server.status == 'ACTIVE':
                 self._status_to_booting()
-
         if self.status in (Status.Booting, Status.Unknown) and self.public_ip and is_port_open(self.public_ip, 22):
             self._status_to_ready()
 
+    def update_status(self):
+        """
+        Refresh the status by querying the openstack server via nova
+        """
+        # TODO: Check when server is stopped
+
+        # First check if it makes sense to update the current status.
+        # This is not the case if we can not interact with the server:
+        if self.status not in [Status.BuildFailed, Status.Terminated, Status.Pending]:
+            try:
+                os_server = self.os_server
+            except novaclient.exceptions.NotFound:
+                # This exception is raised before the server is created, and after it has been
+                # terminated.  Because of the first "if", we can't get her in Pending state, so the
+                # server must have been terminated.
+                self.logger.debug('Server does not exist anymore: %s', self)
+                self._status_to_terminated()
+            except (requests.RequestException, novaclient.exceptions.ClientException):
+                self.logger.debug('Could not reach the OpenStack API')
+                if self.status != Status.Unknown:
+                    self._status_to_unknown()
+            else:
+                self._update_status_from_nova(os_server)
         return self.status
 
     @Server.status.only_for(Status.Pending)
