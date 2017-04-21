@@ -198,18 +198,23 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         This is factored out into a separate method so it can be mocked out in the tests.
         """
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
-        with cache.lock("load_balancer_reconfigure:{}".format(self.domain), timeout=900):
-            returncode = ansible.capture_playbook_output(
-                requirements_path=str(playbook_path.parent / "requirements.txt"),
-                inventory_str=self.domain,
-                vars_str=ansible_vars,
-                playbook_path=str(playbook_path),
-                username=self.ssh_username,
-                logger_=self.logger,
-            )
+        returncode = ansible.capture_playbook_output(
+            requirements_path=str(playbook_path.parent / "requirements.txt"),
+            inventory_str=self.domain,
+            vars_str=ansible_vars,
+            playbook_path=str(playbook_path),
+            username=self.ssh_username,
+            logger_=self.logger,
+        )
         if returncode != 0:
             self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
             raise ReconfigurationFailed
+
+    def _configuration_lock(self):
+        """
+        A Redis lock to protect reconfigurations of this load balancer instance.
+        """
+        return cache.lock("load_balancer_reconfigure:{}".format(self.domain), timeout=900)
 
     def reconfigure(self, triggering_instance_id=None):
         """
@@ -219,16 +224,18 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         reconfiguration of the load balancer.
         """
         self.logger.info("Reconfiguring load-balancing server %s", self.domain)
-        self.run_playbook(self.get_ansible_vars(triggering_instance_id))
+        with self._configuration_lock():
+            self.run_playbook(self.get_ansible_vars(triggering_instance_id))
 
     def deconfigure(self):
         """
         Remove the configuration fragment from the load-balancing server.
         """
         fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
-        self.run_playbook(
-            "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
-        )
+        with self._configuration_lock():
+            self.run_playbook(
+                "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
+            )
 
     def delete(self, *args, **kwargs):
         """
