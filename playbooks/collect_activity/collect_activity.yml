@@ -15,13 +15,15 @@
       copy:
         src: stats.py
         dest: /tmp/collect_activity.py
-      become_user: edxapp
+      become: yes
+      become_user: www-data
 
     - name: Run stats script
       command: >
         /edx/bin/python.edxapp /tmp/collect_activity.py {{ inventory_hostname }} {{ remote_output_filename }}
       register: stats_results
-      become_user: edxapp
+      become: yes
+      become_user: www-data
 
     # For debugging purposes:
     #   stdout contains the computed stats
