@@ -1,4 +1,15 @@
 ---
+- name: Bootstrap instance(s)
+  hosts: all
+  gather_facts: no
+  become: True
+  tasks:
+    - name: Update apt-get
+      raw: "apt-get update -qq"
+
+    - name: Install packages
+      raw: "apt-get install -qq python-minimal"
+
 - name: Fail and ignore on purpose
   hosts: all
   tasks:
