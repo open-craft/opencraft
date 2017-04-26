@@ -539,8 +539,8 @@ class OpenStackServerStatusTestCase(TestCase):
         mock_create_server.return_value.id = 'pending-server-id'
         server = OpenStackServerFactory()
         self.assertEqual(server.status, ServerStatus.Pending)
-        self.assertIsInstance(server.update_status(), ServerStatus.Building)
-        self.assertEqual(server.status, ServerStatus.Building)
+        self.assertIsInstance(server.update_status(), ServerStatus.Pending)
+        self.assertEqual(server.status, ServerStatus.Pending)
 
     def test_update_status_building(self):
         """

@@ -22,6 +22,7 @@ Instance - Integration Tests
 # Imports #####################################################################
 
 import os
+import time
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -35,7 +36,7 @@ import pymongo
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.models.server import Status as ServerStatus
+from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.openstack_utils import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
@@ -101,7 +102,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         for port in ports_should_be_inaccessible:
             self.assertFalse(
                 is_port_open(server_ip, port),
-                "Expected port {} on AppServer VM {} to be open.".format(port, server_ip)
+                "Expected port {} on AppServer VM {} to be inaccessible.".format(port, server_ip)
             )
 
     def assert_swift_container_provisioned(self, instance):
@@ -280,3 +281,15 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(active_appservers[0].is_active)
         self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
+
+    def test_openstack_server_terminated(self):
+        """
+        Test that OpenStackServer detects if the VM was terminated externally.
+        """
+        server = OpenStackServer(name_prefix="integration_test")
+        server.save()
+        server.start()
+        server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
+        server.os_server.delete()
+        time.sleep(10)
+        self.assertEqual(server.update_status(), ServerStatus.Terminated)
