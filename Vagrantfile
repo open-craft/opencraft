@@ -1,9 +1,38 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-unless Vagrant.has_plugin?("vagrant-vbguest")
-  raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
+def install_plugins(plugins)
+  not_installed = []
+  plugins.each do |plugin|
+    unless Vagrant.has_plugin?(plugin)
+      not_installed << plugin
+    end
+  end
+
+  unless not_installed.empty?
+    puts "The following required plugins must be installed:"
+    puts "'#{not_installed.join("', '")}'"
+    print "Install? [y]/n: "
+    unless STDIN.gets.chomp == "n"
+      not_installed.each { |plugin| install_plugin(plugin) }
+    else
+      exit
+    end
+    $? ? continue : ( raise 'Plugin installation failed, see errors above.' )
+  end
 end
+
+def install_plugin(plugin)
+  system("vagrant plugin install #{plugin}")
+end
+
+# If plugins successfully installed, restart vagrant to detect changes.
+def continue
+  exec("vagrant #{ARGV[0]}")
+end
+
+required_plugins = ["vagrant-vbguest"]
+install_plugins(required_plugins)
 
 Vagrant.configure(2) do |config|
   # TODO: Switch back to the official box once it is released
