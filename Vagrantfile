@@ -9,7 +9,7 @@ def install_plugins(plugins)
     end
   end
 
-  unless not_installed.empty?
+  if not_installed.any?
     puts "The following required plugins must be installed:"
     puts "'#{not_installed.join("', '")}'"
     print "Install? [y]/n: "
