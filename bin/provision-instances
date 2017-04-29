@@ -1,0 +1,227 @@
+#!/usr/bin/python3
+#
+# This script runs a full instance provision over all non-ephemeral instances
+# on OCIM. Running this script requires Django to be initialized - the easiest
+# way to do this is by evaluating the script from within the Django shell by
+# running:
+#
+#   > eval(open('bin/provision-instances').open())
+#
+# The provision process happens in "waves", where all instances that fail to
+# provision in a given wave are recorded and reprovisioned during the next wave.
+#
+# This provision script is designed to withstand restarts of either OCIM or
+# this script itself; it accomplishes this by always saving and loading the
+# state of the provision process to/from `ocim_update_waves.ini`.
+
+import ast
+from configparser import ConfigParser
+from datetime import datetime, timedelta
+import os
+import pytz
+from time import sleep
+
+from instance.models.openedx_instance import OpenEdXInstance
+from instance.tasks import spawn_appserver
+
+WAVES_FILE = 'ocim_update_waves.ini'
+SLEEP_TIME = 60
+MAX_PROCESSING = 6
+MAX_PROCESSING_TIME = 240  # 4 hours
+
+waves_config = ConfigParser()
+
+
+def bootstrap_instance_list():
+    # Collect all of the instances that should be included in the OCIM upgrades.
+    #
+    # Instances with any of the following attributes at the start of the upgrade
+    # are avoided for the entire upgrade:
+    #   - Any instance considered "shut down" (all VMs terminated)
+    #   - Any instance without any appservers
+    #   - Any instance set to use ephemeral databases
+    #   - Any instance where the latest appserver isn't in a healthy stable state (e.g. running)
+
+    failed_results = []
+    ready_instances = []
+    for inst in OpenEdXInstance.objects.all():
+        # Set field defaults for ALL instances, even ones we're not going to reprovision.
+        inst.set_field_defaults()
+        inst.save()
+
+        latest_appserver = inst.appserver_set.last()
+
+        if inst.is_shut_down:
+            print('-', end='', flush=True)
+            continue
+
+        if not latest_appserver:
+            failed_results.append((inst, 'is has no appservers'))
+            print('n', end='', flush=True)
+            continue
+
+        if inst.use_ephemeral_databases:
+            failed_results.append((inst, 'it has "use_ephemeral_databases" enabled'))
+            print('e', end='', flush=True)
+            continue
+
+        if not (latest_appserver.status.is_steady_state and latest_appserver.status.is_healthy_state):
+            failed_results.append((inst, 'it\'s latest appserver is in the "{}" state'.format(
+                latest_appserver.status.name
+            )))
+            print('x', end='', flush=True)
+            continue
+
+        ready_instances.append(inst.pk)
+        print('.', end='', flush=True)
+
+    print('\n')
+    for inst, message in failed_results:
+        print('* Instance {} will be excluded because {}.'.format(inst.internal_lms_domain, message))
+    print('\n** TOTAL INCLUDED: {}\n** TOTAL EXCLUDED: {}'.format(
+        len(ready_instances), len(failed_results)
+    ))
+
+    return ready_instances
+
+
+def save_waves_config():
+    with open(WAVES_FILE, 'w') as waves_config_file:
+        waves_config.write(waves_config_file)
+
+
+def get_current_wave():
+    if not os.path.isfile(WAVES_FILE):
+        initial_instance_list = bootstrap_instance_list()
+
+        print ('Waiting for 10 seconds... quit now if you don\'t want to start spawning appservers.')
+        sleep(10)
+
+        current_wave = '0'
+        print('** INITIALIZING WAVE 0 **')
+
+        waves_config[current_wave] = {
+            'pending': str(initial_instance_list),
+            'processing': '[]',
+            'successful': '[]',
+            'failed': '[]',
+        }
+        # This section stores the values of the latest appserver (before a new
+        # one was spawned). This is useful for sanity checking.
+        waves_config['!latest_appservers'] = {}
+        save_waves_config()
+    else:
+        waves_config.read(WAVES_FILE)
+
+        last_wave = sorted(waves_config.sections())[-1]
+        last_wave_config = waves_config[last_wave]
+
+        last_wave_parsed = {}
+        for category, instance_list in last_wave_config.items():
+            last_wave_parsed[category] = ast.literal_eval(instance_list)
+
+        if len(last_wave_parsed['pending']) == 0 and len(last_wave_parsed['processing']) == 0:
+            # There are no instances in the current wave that are pending or processing.
+            if len(last_wave_parsed['failed']) == 0:
+                # If there aren't any failed instances or if we've reached the
+                # wave limit, cease fire.
+                return None
+            # The latest wave is exhausted, so use the last wave's failed
+            # instances to source a new wave.
+            current_wave = str(int(last_wave) + 1)
+            print('** INITIALIZING WAVE {} **'.format(current_wave))
+
+            waves_config[current_wave] = {
+                'pending': last_wave_config['failed'],
+                'processing': '[]',
+                'successful': '[]',
+                'failed': '[]',
+            }
+            save_waves_config()
+        else:
+            current_wave = last_wave
+
+    print('Current wave: {}\n- pending: {}\n- processing: {}'.format(
+        current_wave,
+        waves_config[current_wave]['pending'],
+        waves_config[current_wave]['processing'],
+    ))
+
+    return waves_config[current_wave]
+
+
+def reprovision_instances():
+    wave = None
+    parsed_wave = {}
+
+    def save_wave():
+        for k, v in parsed_wave.items():
+            wave[k] = str(v)
+        save_waves_config()
+
+    while True:
+        if wave is None or len(parsed_wave['pending']) == 0 and len(parsed_wave['processing']) == 0:
+            # We're out of instances to process in this wave.
+            wave = get_current_wave()
+
+            if wave is None:
+                # There are no more waves to process.
+                return
+
+            for category, instance_list in wave.items():
+                parsed_wave[category] = ast.literal_eval(instance_list)
+
+        # Move `pending` instances to `processing` if ready; spawn appservers.
+        while len(parsed_wave['pending']) > 0 and len(parsed_wave['processing']) < MAX_PROCESSING:
+            instance_id = parsed_wave['pending'].pop(0)
+            instance = OpenEdXInstance.objects.get(pk=int(instance_id))
+            waves_config['!latest_appservers'][str(instance_id)] = str(instance.appserver_set.last().pk)
+            parsed_wave['processing'].append(instance_id)
+
+            save_wave()
+            print('** SPAWNING NEW APPSERVER FOR INSTANCE {} ({}) **'.format(
+                instance_id, instance.internal_lms_domain
+            ))
+            spawn_appserver(instance.ref.pk)
+
+        print('[{}]\n- Total pending: {} ({})\n- Total processing: {} ({})'.format(
+            str(datetime.now()),
+            len(parsed_wave['pending']),
+            wave['pending'],
+            len(parsed_wave['processing']),
+            wave['processing'],
+        ))
+        sleep(SLEEP_TIME)
+
+        # Move `processing` instances to `successful` or `failed` if ready.
+        for instance_id in parsed_wave['processing']:
+            instance = OpenEdXInstance.objects.get(pk=int(instance_id))
+            last_appserver = instance.appserver_set.last()
+
+            last_appserver_age = (datetime.now(pytz.UTC) - last_appserver.created)/timedelta(minutes=1)
+            last_appserver_old = last_appserver_age > MAX_PROCESSING_TIME
+
+            if waves_config['!latest_appservers'][str(instance_id)] != str(last_appserver.pk) and (last_appserver_old or last_appserver.status.is_steady_state):
+                if last_appserver_old:
+                    destination_state = 'failed'
+                    print('** BUILD FOR INSTANCE {} ({}) TIMED OUT AT {} MINUTES **'.format(
+                        instance_id, instance.internal_lms_domain, last_appserver_age
+                    ))
+                else:
+                    # If the latest appserver of the instance is different and is in a
+                    # steady state, move the build to `successful` or `failed`.
+                    destination_state = 'successful' if last_appserver.status.is_healthy_state else 'failed'
+
+                parsed_wave['processing'].remove(instance_id)
+                newlist = parsed_wave[destination_state]
+                newlist.append(instance_id)
+
+                save_wave()
+                print('** INSTANCE {} ({}) MARKED AS {} **'.format(
+                    instance_id, instance.internal_lms_domain, destination_state.upper()
+                ))
+
+if __name__ == '__main__':
+    print('Using {} concurrent builds'.format(MAX_PROCESSING))
+
+    reprovision_instances()
