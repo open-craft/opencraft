@@ -7,6 +7,7 @@ VHOST_NAME: 'openstack'
 # COMMON_VHOST_ROLE_NAME is deprecated; keeping it around for compatibility
 COMMON_VHOST_ROLE_NAME: '{{ VHOST_NAME }}'
 
+EDXAPP_USE_SWIFT_STORAGE: true
 EDXAPP_DEFAULT_FILE_STORAGE: 'swift.storage.SwiftStorage'
 EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME: '{{ container_name }}'
 EDXAPP_SWIFT_AUTH_VERSION: '2'
