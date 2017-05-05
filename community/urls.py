@@ -17,28 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Global URL Patterns
+URL Patterns for Community Resources
 """
 
 # Imports #####################################################################
 
-from django.conf.urls import include, url
-from django.contrib import admin
-from django.views.generic.base import RedirectView
-
-import opencraft.views as views
+from django.conf.urls import url
+from . import views
 
 
 # URL Patterns ################################################################
 
 urlpatterns = [
-    url(r'^grappelli/', include('grappelli.urls')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('api.urls', namespace='api')),
-    url(r'^instance/', include('instance.urls', namespace='instance')),
-    url(r'^registration/', include('registration.urls', namespace='registration')),
-    url(r'^community/', include('community.urls', namespace='community')),
-    url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
-    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', views.IndexView.as_view(), name='index'),
+    url(r'^example_openstack_vars/$', views.example_openstack_vars, name='example_openstack_vars'),
 ]

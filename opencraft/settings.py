@@ -77,7 +77,8 @@ LOCAL_APPS = (
     'pr_watch',
     'userprofile',
     'registration',
-    'backup_swift'
+    'backup_swift',
+    'community',
 )
 
 INSTALLED_APPS = (

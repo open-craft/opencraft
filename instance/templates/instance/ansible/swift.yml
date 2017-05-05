@@ -5,7 +5,7 @@ XQUEUE_SETTINGS: 'openstack_settings'
 
 VHOST_NAME: 'openstack'
 # COMMON_VHOST_ROLE_NAME is deprecated; keeping it around for compatibility
-COMMON_VHOST_ROLE_NAME: '{{ VHOST_NAME }}'
+COMMON_VHOST_ROLE_NAME: '{% verbatim %}{{ VHOST_NAME }}{% endverbatim %}'
 
 EDXAPP_DEFAULT_FILE_STORAGE: 'swift.storage.SwiftStorage'
 EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME: '{{ container_name }}'
@@ -24,7 +24,7 @@ XQUEUE_SWIFT_USERNAME: '{{ user }}'
 XQUEUE_SWIFT_KEY: '{{ password }}'
 XQUEUE_SWIFT_TENANT_NAME: '{{ tenant }}'
 XQUEUE_SWIFT_AUTH_URL: '{{ auth_url }}'
-XQUEUE_SWIFT_AUTH_VERSION: '{{ EDXAPP_SWIFT_AUTH_VERSION }}'
+XQUEUE_SWIFT_AUTH_VERSION: '{% verbatim %}{{ EDXAPP_SWIFT_AUTH_VERSION }}{% endverbatim %}'
 XQUEUE_SWIFT_REGION_NAME: '{{ region }}'
 XQUEUE_UPLOAD_BUCKET: '{{ container_name }}'
 XQUEUE_UPLOAD_PATH_PREFIX: 'xqueue'

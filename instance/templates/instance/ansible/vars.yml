@@ -60,6 +60,9 @@ EDXAPP_SERVER_EMAIL: '{{ appserver.email }}'
 EDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: '{{ appserver.email }}'
 ECOMMERCE_OSCAR_FROM_EMAIL: '{{ appserver.email }}'
 
+{% if smtp_relay_settings %}
+# Do not change the email settings below - use POSTFIX_QUEUE_EXTERNAL_SMTP_HOST etc. instead
+{% endif %}
 EDXAPP_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
 EDXAPP_EMAIL_HOST: 'localhost'
 EDXAPP_EMAIL_PORT: 25
@@ -90,6 +93,9 @@ NOTIFIER_DIGEST_EMAIL_SENDER: '{{ appserver.email }}'
 NOTIFIER_LMS_URL_BASE: 'https://{{ instance.domain }}'
 NOTIFIER_LOGO_IMAGE_URL: 'https://{{ instance.domain }}/static/images/logo.png'
 
+{% if smtp_relay_settings %}
+# Do not change the email settings below - use POSTFIX_QUEUE_EXTERNAL_SMTP_HOST etc. instead
+{% endif %}
 NOTIFIER_EMAIL_BACKEND: 'smtp'
 NOTIFIER_EMAIL_HOST: 'localhost'
 NOTIFIER_EMAIL_PORT: 25
@@ -173,11 +179,13 @@ POSTFIX_QUEUE_EXTERNAL_SMTP_HOST: '{{ smtp_relay_settings.host }}'
 POSTFIX_QUEUE_EXTERNAL_SMTP_PORT: '{{ smtp_relay_settings.port }}'
 POSTFIX_QUEUE_EXTERNAL_SMTP_USER: '{{ smtp_relay_settings.username }}'
 POSTFIX_QUEUE_EXTERNAL_SMTP_PASSWORD: '{{ smtp_relay_settings.password }}'
+{% if smtp_relay_settings.rewritten_address %}
 # The following two settings ensure that original From address is copied into the Reply-To header,
 # after which the original From address is replaced with an address constructed from instance domain
 # and the INSTANCE_SMTP_RELAY_SENDER_DOMAIN setting, for example: lms.myinstance.org@opencraft.hosting.
 POSTFIX_QUEUE_HEADER_CHECKS: '/^From:(.*)$/   PREPEND Reply-To:$1'
 POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  {{ smtp_relay_settings.rewritten_address }}'
+{% endif %}
 {% endif %}
 {% endwith %}
 
