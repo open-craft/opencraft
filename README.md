@@ -637,13 +637,22 @@ for appserver in instance.appserver_set.all():
     appserver.terminate_vm()
 ```
 
-**To completely delete an instance**, which will also terminate all associated
-AppServers and their virtual machines, run:
+**To delete an instance in production**, use the `archive()` method. The `archive()`
+method will terminate all associated AppServers, remove DNS entries, disable monitoring,
+and remove instance from the UI, but will keep data in databases and SWIFT storage intact:
+
+```python
+instance.archive()
+```
+
+**To completely delete an instance in development**, use the `delete()` method, which
+works just like `archive()` except that it also destroys all data (MySQL, mongo, SWIFT):
 
 ```python
 instance.delete()
 ```
 
+**Do not use delete() in production!**
 
 manage.py
 ---------
