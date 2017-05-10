@@ -85,7 +85,18 @@ class OpenEdXStorageMixinTestCase(TestCase):
             s3_bucket_name='test-s3-bucket-name',
             use_ephemeral_databases=True,
         )
-        self.assertEqual(instance.get_storage_settings(), '')
+        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: !!null\n'
+        self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
+
+    def test_import_export_bucket_setting_ephemeral(self):
+        """
+        Test that get_storage_settings() sets EDXAPP_IMPORT_EXPORT_BUCKET to null when in ephemeral mode
+        """
+        instance = OpenEdXInstanceFactory(
+            use_ephemeral_databases=True,
+        )
+        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: !!null\n'
+        self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
 
 
 class SwiftContainerInstanceTestCase(TestCase):
