@@ -126,7 +126,7 @@ be the case from the OpenCraft IM python environment):
 
     pip install python-openstackclient
 
-[Configure the client with your OpenStack credentials](http://docs.openstack.org/cli-reference/common/cli_set_environment_variables_using_openstack_rc.html),
+[Configure the client with your OpenStack credentials](https://web.archive.org/web/20161105104308/https://docs.openstack.org/user-guide/common/cli-set-environment-variables-using-openstack-rc.html),
 then run:
 
     openstack keypair create --public-key ~/.ssh/id_rsa.pub KEY_NAME
