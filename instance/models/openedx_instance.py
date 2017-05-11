@@ -19,7 +19,6 @@
 """
 Instance app models - Open edX Instance models
 """
-import re
 import string
 
 from django.conf import settings
@@ -35,6 +34,7 @@ from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.load_balanced import LoadBalancedInstance
+from instance.models.mixins.domain_names import DomainNameInstance
 from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
@@ -43,155 +43,24 @@ from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.utils import sufficient_time_passed
 
 
-# Functions ###################################################################
-
-def generate_internal_lms_domain(sub_domain):
-    """
-    Generates value for internal_lms_domain field from the supplied sub_domain and the
-    DEFAULT_INSTANCE_BASE_DOMAIN setting.
-    """
-    return '{}.{}'.format(sub_domain, settings.DEFAULT_INSTANCE_BASE_DOMAIN)
-
-
 # Models ######################################################################
 
-class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
+class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
                       OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
     """
 
-    # Most settings/fields are inherited from OpenEdXAppConfiguration
-
-    # Internal domains are controlled by us and their DNS records are automatically set to point to the current active
-    # appserver. They are generated from a unique prefix (given as 'sub_domain' in instance factories) and the value of
-    # DEFAULT_INSTANCE_BASE_DOMAIN at instance creation time. They cannot be blank and are normally never changed after
-    # the instance is created.
-    # External domains on the other hand are controlled by the customer and are optional. We use external domains in
-    # preference to internal domains when displaying links to the instance in the UI and when passing domain-related
-    # settings to Ansible vars when provisioning appservers.
-    # The `domain`, `lms_preview_domain`, and `studio_domain` properties below are useful if you need to access
-    # corresponding domains regardless of whether an instance uses external domains or not (they return the external
-    # domain if set, and fall back to the corresponding internal domain otherwise).
-    internal_lms_domain = models.CharField(max_length=100, blank=False, unique=True)
-    internal_lms_preview_domain = models.CharField(max_length=100, blank=False, unique=True)
-    internal_studio_domain = models.CharField(max_length=100, blank=False, unique=True)
-    internal_discovery_domain = models.CharField(max_length=100, blank=False, unique=True)
-    internal_ecommerce_domain = models.CharField(max_length=100, blank=False, unique=True)
-
-    external_lms_domain = models.CharField(max_length=100, blank=True)
-    external_lms_preview_domain = models.CharField(max_length=100, blank=True)
-    external_studio_domain = models.CharField(max_length=100, blank=True)
-    external_discovery_domain = models.CharField(max_length=100, blank=True)
-    external_ecommerce_domain = models.CharField(max_length=100, blank=True)
+    # Most settings/fields are inherited from mixins
 
     successfully_provisioned = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Open edX Instance'
 
-    def __init__(self, *args, **kwargs):
-        """
-        OpenEdXInstance constructor.
-
-        The constructor is overridden to optionally accept a 'sub_domain' parameter instead of a full
-        value for 'internal_lms_domain'. When 'sub_domain' is provided, the 'internal_lms_domain' field is automatically
-        generated from from the value of 'sub_domain' and the DEFAULT_INSTANCE_BASE_DOMAIN setting.
-        """
-        if 'sub_domain' in kwargs:
-            sub_domain = kwargs.pop('sub_domain')
-            if 'internal_lms_domain' not in kwargs:
-                kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
-        super().__init__(*args, **kwargs)
-
     def __str__(self):
         return "{} ({})".format(self.name, self.domain)
-
-    @property
-    def domain(self):
-        """
-        LMS domain name.
-
-        Returns external domain if present, otherwise falls back to internal domain.
-        """
-        return self.get_domain('lms')
-
-    @property
-    def domain_slug(self):
-        """
-        Returns a slug-friendly name for this instance, using the domain name.
-        """
-        prefix = ('edxins-' + slugify(self.domain))[:20]
-        return "{prefix}-{num}".format(prefix=prefix, num=self.id)
-
-    def get_domain(self, site):
-        """
-        Returns the external domain for the given site if present; otherwise, falls back to the internal domain.
-        """
-        internal_attr = 'internal_{}_domain'.format(site)
-        external_attr = 'external_{}_domain'.format(site)
-        return getattr(self, external_attr, None) or getattr(self, internal_attr)
-
-    @property
-    def discovery_domain(self):
-        """
-        Discovery domain name.
-
-        Returns external discovery domain if present, otherwise falls back to internal discovery domain.
-        """
-        return self.get_domain('discovery')
-
-    @property
-    def ecommerce_domain(self):
-        """
-        Ecommerce domain name.
-
-        Returns external ecommerce domain if present, otherwise falls back to internal ecommerce domain.
-        """
-        return self.get_domain('ecommerce')
-
-    @property
-    def lms_preview_domain(self):
-        """
-        LMS preview domain name.
-
-        Returns external preview domain if present, otherwise falls back to internal preview domain.
-        """
-        return self.get_domain('lms_preview')
-
-    @property
-    def studio_domain(self):
-        """
-        Studio domain name.
-
-        Returns external studio domain if present, otherwise falls back to internal studio domain.
-        """
-        return self.get_domain('studio')
-
-    def get_load_balanced_domains(self):
-        domain_names = [
-            self.external_lms_domain,
-            self.external_lms_preview_domain,
-            self.external_studio_domain,
-            self.external_discovery_domain,
-            self.external_ecommerce_domain,
-            self.internal_lms_domain,
-            self.internal_lms_preview_domain,
-            self.internal_studio_domain,
-            self.internal_discovery_domain,
-            self.internal_ecommerce_domain,
-        ]
-        return [name for name in domain_names if name]
-
-    def get_managed_domains(self):
-        return [
-            self.internal_lms_domain,
-            self.internal_lms_preview_domain,
-            self.internal_studio_domain,
-            self.internal_discovery_domain,
-            self.internal_ecommerce_domain,
-        ]
 
     def get_active_appservers(self):
         """
@@ -204,62 +73,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             # (This is used to optimize the /api/v1/instances/ endpoint query for example)
             return self.ref._cached_active_appservers
         return self.appserver_set.filter(_is_active=True)
-
-    def domain_nginx_regex(self, site_name):
-        """
-        Regex that matches either the internal or external URL for the site.
-
-        This is meant exclusively for filling in the server_name regex in nginx configs.
-        """
-        domains = []
-        for attr in ['external_{}_domain', 'internal_{}_domain']:
-            domain = getattr(self, attr.format(site_name), None)
-            if domain:
-                domains.append(domain)
-        choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
-        return '^({})$'.format(choices)
-
-    @property
-    def studio_domain_nginx_regex(self):
-        """
-        Regex that matches either the internal or the external Studio URL.
-        """
-        return self.domain_nginx_regex('studio')
-
-    @property
-    def discovery_domain_nginx_regex(self):
-        """
-        Regex that matches either the internal or the external Discovery URL.
-        """
-        return self.domain_nginx_regex('discovery')
-
-    @property
-    def ecommerce_domain_nginx_regex(self):
-        """
-        Regex that matches either the internal or the external ecommerce URL.
-        """
-        return self.domain_nginx_regex('ecommerce')
-
-    @property
-    def url(self):
-        """
-        LMS URL.
-        """
-        return u'https://{}/'.format(self.domain)
-
-    @property
-    def studio_url(self):
-        """
-        Studio URL.
-        """
-        return u'https://{}/'.format(self.studio_domain)
-
-    @property
-    def lms_preview_url(self):
-        """
-        LMS preview URL.
-        """
-        return u'https://{}/'.format(self.lms_preview_domain)
 
     @property
     def database_name(self):
@@ -281,14 +94,6 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         """
         # Set default field values from settings - using the `default` field attribute confuses
         # automatically generated migrations, generating a new one when settings don't match
-        if not self.internal_lms_preview_domain:
-            self.internal_lms_preview_domain = settings.DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX + self.internal_lms_domain
-        if not self.internal_studio_domain:
-            self.internal_studio_domain = settings.DEFAULT_STUDIO_DOMAIN_PREFIX + self.internal_lms_domain
-        if not self.internal_discovery_domain:
-            self.internal_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.internal_lms_domain
-        if not self.internal_ecommerce_domain:
-            self.internal_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.internal_lms_domain
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         if not self.edx_platform_commit:

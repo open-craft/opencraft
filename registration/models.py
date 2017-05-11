@@ -29,7 +29,8 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
-from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
+from instance.models.mixins.domain_names import generate_internal_lms_domain
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 
 
