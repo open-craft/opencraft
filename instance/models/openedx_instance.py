@@ -77,10 +77,14 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
     internal_lms_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_lms_preview_domain = models.CharField(max_length=100, blank=False, unique=True)
     internal_studio_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_discovery_domain = models.CharField(max_length=100, blank=False, unique=True)
+    internal_ecommerce_domain = models.CharField(max_length=100, blank=False, unique=True)
 
     external_lms_domain = models.CharField(max_length=100, blank=True)
     external_lms_preview_domain = models.CharField(max_length=100, blank=True)
     external_studio_domain = models.CharField(max_length=100, blank=True)
+    external_discovery_domain = models.CharField(max_length=100, blank=True)
+    external_ecommerce_domain = models.CharField(max_length=100, blank=True)
 
     successfully_provisioned = models.BooleanField(default=False)
 
@@ -111,10 +115,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
         Returns external domain if present, otherwise falls back to internal domain.
         """
-        if self.external_lms_domain:
-            return self.external_lms_domain
-        else:
-            return self.internal_lms_domain
+        return self.get_domain('lms')
 
     @property
     def domain_slug(self):
@@ -124,6 +125,32 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
         prefix = ('edxins-' + slugify(self.domain))[:20]
         return "{prefix}-{num}".format(prefix=prefix, num=self.id)
 
+    def get_domain(self, site):
+        """
+        Returns the external domain for the given site if present; otherwise, falls back to the internal domain.
+        """
+        internal_attr = 'internal_{}_domain'.format(site)
+        external_attr = 'external_{}_domain'.format(site)
+        return getattr(self, external_attr, None) or getattr(self, internal_attr)
+
+    @property
+    def discovery_domain(self):
+        """
+        Discovery domain name.
+
+        Returns external discovery domain if present, otherwise falls back to internal discovery domain.
+        """
+        return self.get_domain('discovery')
+
+    @property
+    def ecommerce_domain(self):
+        """
+        Ecommerce domain name.
+
+        Returns external ecommerce domain if present, otherwise falls back to internal ecommerce domain.
+        """
+        return self.get_domain('ecommerce')
+
     @property
     def lms_preview_domain(self):
         """
@@ -131,10 +158,7 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
         Returns external preview domain if present, otherwise falls back to internal preview domain.
         """
-        if self.external_lms_preview_domain:
-            return self.external_lms_preview_domain
-        else:
-            return self.internal_lms_preview_domain
+        return self.get_domain('lms_preview')
 
     @property
     def studio_domain(self):
@@ -143,21 +167,30 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
 
         Returns external studio domain if present, otherwise falls back to internal studio domain.
         """
-        if self.external_studio_domain:
-            return self.external_studio_domain
-        else:
-            return self.internal_studio_domain
+        return self.get_domain('studio')
 
     def get_load_balanced_domains(self):
         domain_names = [
-            self.external_lms_domain, self.external_lms_preview_domain, self.external_studio_domain,
-            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain,
+            self.external_lms_domain,
+            self.external_lms_preview_domain,
+            self.external_studio_domain,
+            self.external_discovery_domain,
+            self.external_ecommerce_domain,
+            self.internal_lms_domain,
+            self.internal_lms_preview_domain,
+            self.internal_studio_domain,
+            self.internal_discovery_domain,
+            self.internal_ecommerce_domain,
         ]
         return [name for name in domain_names if name]
 
     def get_managed_domains(self):
         return [
-            self.internal_lms_domain, self.internal_lms_preview_domain, self.internal_studio_domain
+            self.internal_lms_domain,
+            self.internal_lms_preview_domain,
+            self.internal_studio_domain,
+            self.internal_discovery_domain,
+            self.internal_ecommerce_domain,
         ]
 
     def get_active_appservers(self):
@@ -172,20 +205,40 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             return self.ref._cached_active_appservers
         return self.appserver_set.filter(_is_active=True)
 
+    def domain_nginx_regex(self, site_name):
+        """
+        Regex that matches either the internal or external URL for the site.
+
+        This is meant exclusively for filling in the server_name regex in nginx configs.
+        """
+        domains = []
+        for attr in ['external_{}_domain', 'internal_{}_domain']:
+            domain = getattr(self, attr.format(site_name), None)
+            if domain:
+                domains.append(domain)
+        choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
+        return '^({})$'.format(choices)
+
     @property
     def studio_domain_nginx_regex(self):
         """
         Regex that matches either the internal or the external Studio URL.
-
-        This is exclusively meant for the Ansible variable CMS_HOSTNAME to configure the nginx
-        server_name regex to match the Studio domains.
         """
-        if self.external_studio_domain:
-            domains = [self.external_studio_domain, self.internal_studio_domain]
-        else:
-            domains = [self.internal_studio_domain]
-        choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
-        return '~^({})$'.format(choices)
+        return self.domain_nginx_regex('studio')
+
+    @property
+    def discovery_domain_nginx_regex(self):
+        """
+        Regex that matches either the internal or the external Discovery URL.
+        """
+        return self.domain_nginx_regex('discovery')
+
+    @property
+    def ecommerce_domain_nginx_regex(self):
+        """
+        Regex that matches either the internal or the external ecommerce URL.
+        """
+        return self.domain_nginx_regex('ecommerce')
 
     @property
     def url(self):
@@ -232,6 +285,10 @@ class OpenEdXInstance(LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXData
             self.internal_lms_preview_domain = settings.DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX + self.internal_lms_domain
         if not self.internal_studio_domain:
             self.internal_studio_domain = settings.DEFAULT_STUDIO_DOMAIN_PREFIX + self.internal_lms_domain
+        if not self.internal_discovery_domain:
+            self.internal_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.internal_lms_domain
+        if not self.internal_ecommerce_domain:
+            self.internal_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.internal_lms_domain
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         if not self.edx_platform_commit:

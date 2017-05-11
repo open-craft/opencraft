@@ -89,6 +89,18 @@ ANALYTICS_API_DATABASES:
     HOST: '{{ host }}'
     PORT: {{ port }}
 
+# course discovery api
+DISCOVERY_DATABASES:
+  default:
+    ENGINE: 'django.db.backends.mysql'
+    NAME: '{{ discovery_database }}'
+    USER: '{{ discovery_user }}'
+    PASSWORD: '{{ discovery_pass }}'
+    HOST: '{{ host }}'
+    PORT: {{ port }}
+    ATOMIC_REQUESTS: false
+    CONN_MAX_AGE: 60
+
 # Common users
 COMMON_MYSQL_MIGRATE_USER: '{{ migrate_user }}'
 COMMON_MYSQL_MIGRATE_PASS: '{{ migrate_pass }}'

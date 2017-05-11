@@ -88,6 +88,10 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 "user": self._get_mysql_user_name("api"),
             },
             {
+                "name": self._get_mysql_database_name("discovery"),
+                "user": self._get_mysql_user_name("discovery"),
+            },
+            {
                 "name": self._get_mysql_database_name("reports"),
                 "user": self._get_mysql_user_name("reports"),
                 "priv": "SELECT",

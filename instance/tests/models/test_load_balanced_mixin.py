@@ -49,6 +49,8 @@ class LoadBalancedInstanceTestCase(TestCase):
             dict(name='test.dns', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='preview-test.dns', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='studio-test.dns', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='ecommerce-test.dns', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='discovery-test.dns', type='CNAME', value=lb_domain, ttl=1200),
         ])
 
     @patch_gandi

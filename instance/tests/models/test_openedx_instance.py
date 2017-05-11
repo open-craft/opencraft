@@ -142,6 +142,8 @@ class OpenEdXInstanceTestCase(TestCase):
         internal_lms_domain = 'sample.example.org'
         internal_lms_preview_domain = 'preview-sample.example.org'
         internal_studio_domain = 'studio-sample.example.org'
+        internal_ecom_domain = 'ecommerce-sample.example.org'
+        internal_discovery_domain = 'discovery-sample.example.org'
         self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
         self.assertEqual(instance.internal_lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.internal_studio_domain, internal_studio_domain)
@@ -153,7 +155,9 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.domain, internal_lms_domain)
         self.assertEqual(instance.lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.studio_domain, internal_studio_domain)
-        self.assertEqual(instance.studio_domain_nginx_regex, r'~^(studio\-sample\.example\.org)$')
+        self.assertEqual(instance.studio_domain_nginx_regex, r'^(studio\-sample\.example\.org)$')
+        self.assertEqual(instance.ecommerce_domain_nginx_regex, r'^(ecommerce\-sample\.example\.org)$')
+        self.assertEqual(instance.discovery_domain_nginx_regex, r'^(discovery\-sample\.example\.org)$')
         self.assertEqual(instance.url, 'https://{}/'.format(internal_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(internal_lms_preview_domain))
         self.assertEqual(instance.studio_url, 'https://{}/'.format(internal_studio_domain))
@@ -162,20 +166,37 @@ class OpenEdXInstanceTestCase(TestCase):
         external_lms_domain = 'external.domain.com'
         external_lms_preview_domain = 'lms-preview.external.domain.com'
         external_studio_domain = 'external-studio.domain.com'
+        external_ecom_domain = 'external-ecommerce.domain.com'
+        external_discovery_domain = 'external-discovery.domain.com'
         instance.external_lms_domain = external_lms_domain
         instance.external_lms_preview_domain = external_lms_preview_domain
         instance.external_studio_domain = external_studio_domain
+        instance.external_discovery_domain = external_discovery_domain
+        instance.external_ecommerce_domain = external_ecom_domain
         # Internal domains are still the same.
         self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
         self.assertEqual(instance.internal_lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.internal_studio_domain, internal_studio_domain)
+        self.assertEqual(instance.internal_ecommerce_domain, internal_ecom_domain)
+        self.assertEqual(instance.internal_discovery_domain, internal_discovery_domain)
+
         # Default domains will now equal external domains.
         self.assertEqual(instance.domain, external_lms_domain)
         self.assertEqual(instance.lms_preview_domain, external_lms_preview_domain)
         self.assertEqual(instance.studio_domain, external_studio_domain)
         self.assertEqual(
             instance.studio_domain_nginx_regex,
-            r'~^(external\-studio\.domain\.com|studio\-sample\.example\.org)$'
+            r'^(external\-studio\.domain\.com|studio\-sample\.example\.org)$'
+        )
+        self.assertEqual(instance.ecommerce_domain, external_ecom_domain)
+        self.assertEqual(
+            instance.ecommerce_domain_nginx_regex,
+            r'^(external\-ecommerce\.domain\.com|ecommerce\-sample\.example\.org)$'
+        )
+        self.assertEqual(instance.discovery_domain, external_discovery_domain)
+        self.assertEqual(
+            instance.discovery_domain_nginx_regex,
+            r'^(external\-discovery\.domain\.com|discovery\-sample\.example\.org)$'
         )
         self.assertEqual(instance.url, 'https://{}/'.format(external_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(external_lms_preview_domain))
@@ -208,6 +229,8 @@ class OpenEdXInstanceTestCase(TestCase):
             dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='preview-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='studio-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='ecommerce-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='discovery-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
         ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -405,6 +428,8 @@ class OpenEdXInstanceTestCase(TestCase):
             "test.load_balancer.example.com",
             "preview-test.load_balancer.example.com",
             "studio-test.load_balancer.example.com",
+            "ecommerce-test.load_balancer.example.com",
+            "discovery-test.load_balancer.example.com",
         ]
 
         # Test configuration for preliminary page
@@ -440,14 +465,20 @@ class OpenEdXInstanceTestCase(TestCase):
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
+                                          external_ecommerce_domain='ecom.myexternal.org',
+                                          external_discovery_domain='catalog.myexternal.org',
                                           use_ephemeral_databases=True)
         domain_names = [
             'test.load_balancer.opencraft.hosting',
             'preview-test.load_balancer.opencraft.hosting',
             'studio-test.load_balancer.opencraft.hosting',
+            'ecommerce-test.load_balancer.opencraft.hosting',
+            'discovery-test.load_balancer.opencraft.hosting',
             'courses.myexternal.org',
             'preview.myexternal.org',
             'studio.myexternal.org',
+            'ecom.myexternal.org',
+            'catalog.myexternal.org',
         ]
         backend_map, config = instance.get_load_balancer_configuration()
         self._check_load_balancer_configuration(
