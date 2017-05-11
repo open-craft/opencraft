@@ -117,7 +117,7 @@ class DomainNameInstance(models.Model):
         elif nginx_regex_key is not None:
             return self.domain_nginx_regex(nginx_regex_key)
         else:
-            return super().__getattr__(domain_attr)
+            return super().__getattribute__(domain_attr)
 
     def get_domain(self, domain_key):
         """
