@@ -23,8 +23,10 @@ import re
 
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 # Functions ###################################################################
+
 
 def generate_internal_lms_domain(sub_domain):
     """
@@ -54,7 +56,7 @@ class DomainNameInstance(models.Model):
         'discovery_domain': 'discovery',
     }
 
-    allowed_nginx_domain_regex_attributes = {
+    nginx_domain_regex_attributes = {
         'studio_domain_nginx_regex': 'studio',
         'discovery_domain_nginx_regex': 'discovery',
         'ecommerce_domain_nginx_regex': 'ecommerce',
@@ -109,13 +111,13 @@ class DomainNameInstance(models.Model):
         domain (if that variable has been set for this instance).
         """
         domain_key = self.allowed_domain_attributes.get(domain_attr)
-        nginx_regex_key = self.allowed_nginx_domain_regex_attributes.get(domain_attr)
+        nginx_regex_key = self.nginx_domain_regex_attributes.get(domain_attr)
         if domain_key is not None:
             return self.get_domain(domain_key)
         elif nginx_regex_key is not None:
-            return self.ecommerce_domain_nginx_regex(nginx_regex_key)
+            return self.domain_nginx_regex(nginx_regex_key)
         else:
-            return super().__getattr__(domain)
+            return super().__getattr__(domain_attr)
 
     def get_domain(self, domain_key):
         """
@@ -123,7 +125,7 @@ class DomainNameInstance(models.Model):
         falls back to the internal domain.
         """
         for domain_type in self.domain_hierarchy:
-            domain_attr = domain_attr_template.format(
+            domain_attr = self.domain_attr_template.format(
                 domain_type=domain_type,
                 domain_key=domain_key
             )

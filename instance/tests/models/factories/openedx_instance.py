@@ -27,7 +27,8 @@ import uuid
 import factory
 from factory.django import DjangoModelFactory
 
-from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
+from instance.models.mixins.domain_names import generate_internal_lms_domain
+from instance.models.openedx_instance import OpenEdXInstance
 
 
 # Classes #####################################################################

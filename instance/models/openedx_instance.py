@@ -26,7 +26,6 @@ from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.template import loader
 from django.utils import timezone
-from django.utils.text import slugify
 
 from instance import gandi
 from instance.logging import log_exception
