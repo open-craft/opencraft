@@ -37,6 +37,8 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
     """
     Simple high-level serializer for OpenEdXInstance
     """
+    domain = serializers.CharField(read_only=True)
+
     class Meta:
         model = OpenEdXInstance
         fields = (
