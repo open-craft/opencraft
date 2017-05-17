@@ -2,6 +2,11 @@
 COMMON_HOSTNAME: '{{ instance.domain }}'
 COMMON_ENVIRONMENT: opencraft
 COMMON_DEPLOYMENT: '{{ instance.internal_lms_domain }}'
+# Set the default fallback DNS servers to be Google's DNS. This is necessary to eliminate a single
+# point of failure with OVH DNS (which we've seen slow down and become unavailable from time to time).
+COMMON_FALLBACK_DNS_SERVERS:
+  - 8.8.8.8
+  - 8.8.4.4
 
 # HTTP authentication
 COMMON_ENABLE_BASIC_AUTH: true
