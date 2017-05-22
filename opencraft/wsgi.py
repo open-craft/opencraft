@@ -30,10 +30,9 @@ https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
-from dj_static import Cling
 
 
 # Main ########################################################################
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opencraft.settings")
-application = Cling(get_wsgi_application())
+application = get_wsgi_application()
