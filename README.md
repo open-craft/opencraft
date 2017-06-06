@@ -252,6 +252,10 @@ edit its security group rules to only allow access to VMs in the
   generating the LMS preview domain (default: `"preview-"`)
 * `DEFAULT_STUDIO_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
   generating the Studio domain (default: `"studio-"`)
+* `DEFAULT_ECOMMERCE_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
+  generating the ecommerce domain (default: `"ecommerce-"`)
+* `DEFAULT_DISCOVERY_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
+  generating the Course Discovery domain (default: `"discovery-"`)
 * `GANDI_API_KEY`: Your Gandi API key (required)
 
 ### GitHub settings
@@ -749,6 +753,45 @@ Each instance controls its own set of databases on the external database servers
 so it is fine for multiple instances to use the same MySQL and MongoDB database servers.
 Set up multiple database servers if the instance manager controls a large number of instances,
 or if individual instances receive a large amount of traffic.
+
+### Configuring ecommerce and Course Discovery
+
+By default, instances are not provisioned with either ecommerce or the Course Discovery
+service. However, support is available to manually enable those services. To do so, the
+following additional variables must be est on the instance:
+
+```yaml
+DISCOVERY_ELASTICSEARCH_URL: "http://149.202.166.156:9200/"
+SANDBOX_ENABLE_DISCOVERY: yes
+SANDBOX_ENABLE_ECOMMERCE: yes
+COMMON_HOSTNAME: "custom-local-hostname-here"
+DISCOVERY_VERSION: "c96c77bbf80650b3d3cc238335cc5205e24b775f"
+```
+
+Currently, we don't support Elasticsearch as a database backend, so we have to pass
+that in manually. Additionally, discovery and ecommerce still aren't first-class
+citizens, so they must be enabled via extra var. We need to set the hostname, other
+than the FQDN, that the appserver refers to itself as so that we can properly go out
+to the load balancer-terminated SSL connection. And finally, newer versions of course
+discovery don't work properly with OIDC login yet.
+
+Once the spawn is complete, you'll need to take the following steps to finish setup
+(these are one-time actions that are stored in the database):
+
+1. Update the staff user so that a first name is associated with it
+   (some routines look for a user profile).
+2. Update the database-backed OAuth2 clients for course discovery and
+   ecommerce so that they're associated with the staff user.
+3. In the sandbox ecommerce env, configure the Enterprise Partner, Site,
+   and SiteConfiguration [per the instructions on this page](http://edx.
+   readthedocs.io/projects/edx-installing-configuring-and-running/en/lat
+   est/ecommerce/install_ecommerce.html#configure-a-site-partner-and-sit
+   e-configuration).
+4. In the sandbox discovery env, configure a partner [as described here]
+   (https://open-edx-course-catalog.readthedocs.io/en/latest/getting_sta
+   rted.html#configure-partners).
+
+
 
 ### Controlling persistence settings from PRs
 

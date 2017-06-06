@@ -29,7 +29,7 @@ EDXAPP_CMS_NGINX_PORT: 80
 EDXAPP_CMS_SSL_NGINX_PORT: 443
 EDXAPP_CMS_SITE_NAME: '{{ instance.studio_domain }}'
 EDXAPP_CMS_BASE: '{{ instance.studio_domain }}'
-CMS_HOSTNAME: '{{ instance.studio_domain_nginx_regex }}'
+CMS_HOSTNAME: '~{{ instance.studio_domain_nginx_regex }}'
 
 # Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
 # We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
@@ -186,11 +186,23 @@ POSTFIX_QUEUE_SENDER_CANONICAL_MAPS: '{{ smtp_relay_settings.source_address }}  
 {% endif %}
 {% endwith %}
 
+# Discovery
+SANDBOX_ENABLE_DISCOVERY: false # set to true to enable discovery
+DISCOVERY_ELASTICSEARCH_URL: 'http://localhost:9200'
+DISCOVERY_URL_ROOT: 'https://{{ instance.discovery_domain }}'
+DISCOVERY_HOSTNAME: '~{{ instance.discovery_domain_nginx_regex }}'
+DISCOVERY_NGINX_PORT: 80
+DISCOVERY_SSL_NGINX_PORT: 443
+
 # Ecommerce
 SANDBOX_ENABLE_ECOMMERCE: false  # set to true to enable ecommerce
-ECOMMERCE_ECOMMERCE_URL_ROOT: 'https://{{ instance.domain }}:18130'
+ECOMMERCE_NGINX_PORT: 80
+ECOMMERCE_SSL_NGINX_PORT: 443
+ECOMMERCE_HOSTNAME: '~{{ instance.ecommerce_domain_nginx_regex }}'
+ECOMMERCE_ECOMMERCE_URL_ROOT: 'https://{{ instance.ecommerce_domain }}'
 ECOMMERCE_SUPPORT_URL: 'https://{{ instance.domain }}'
-ECOMMERCE_LMS_URL_ROOT: '{{ instance.domain }}'
+ECOMMERCE_LMS_URL_ROOT: 'https://{{ instance.domain }}'
+ECOMMERCE_COURSE_CATALOG_URL: 'https://{{ instance.discovery_domain }}'
 ECOMMERCE_PLATFORM_NAME: "{{ EDXAPP_PLATFORM_NAME }}"
 # Set your own ECOMMERCE_PAYMENT_PROCESSOR_CONFIG, or update the variables for the appropriate processor:
 # * CyberSource

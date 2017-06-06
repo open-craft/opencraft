@@ -29,7 +29,8 @@ from django.core.validators import RegexValidator
 from django.db import models, transaction
 
 from instance.logging import ModelLoggerAdapter
-from instance.models.openedx_instance import OpenEdXInstance, generate_internal_lms_domain
+from instance.models.mixins.domain_names import generate_internal_lms_domain
+from instance.models.openedx_instance import OpenEdXInstance
 from pr_watch import github
 from pr_watch.github import fork_name2tuple
 

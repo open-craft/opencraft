@@ -222,7 +222,7 @@ class MySQLInstanceTestCase(TestCase):
         Make sure that database names are escaped correctly
         """
         sub_domain = 'really.really.really.really.long.subdomain'
-        base_domain = 'this-is-a-really-long-unusual-domain-แปลกมาก.com'
+        base_domain = 'this-is-a-really-unusual-domain-แปลกมาก.com'
         internal_lms_domain = '{}.{}'.format(sub_domain, base_domain)
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
                                                internal_lms_domain=internal_lms_domain)
