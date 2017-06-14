@@ -28,7 +28,6 @@ if [[ $USER == 'vagrant' ]]; then
 fi
 
 # Install python dependencies
-pip install setuptools==32  # This is currently necessary due to this bug: https://github.com/pypa/setuptools/issues/951
 pip install -r requirements.txt
 
 # TODO: Should only be needed for the unofficial vagrant image
