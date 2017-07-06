@@ -242,7 +242,7 @@ class OpenEdXInstanceTestCase(TestCase):
                 getattr(appserver, field_name),
             )
         self.assertEqual(appserver.configuration_database_settings, "")
-        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: !!null\n'
+        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: ""\n'
         self.assertEqual(appserver.configuration_storage_settings, ephemeral_settings)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], instance.domain)
