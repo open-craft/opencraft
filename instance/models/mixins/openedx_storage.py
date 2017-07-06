@@ -57,8 +57,6 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
     def get_storage_settings(self):
         """
         Get configuration_storage_settings to pass to a new AppServer
-
-        Only needed when not using ephemeral databases
         """
         if self.use_ephemeral_databases:
             # Workaround for broken CMS course export/import
