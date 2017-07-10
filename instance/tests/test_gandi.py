@@ -88,8 +88,12 @@ class GandiTestCase(TestCase):
         self.assertEqual(self.api.split_domain_name('sub.domain.test.com'), ('sub.domain', 'test.com'))
         self.assertEqual(self.api.split_domain_name('sub.domain.opencraft.co.uk'), ('sub.domain', 'opencraft.co.uk'))
         self.assertEqual(self.api.split_domain_name('example.com'), ('@', 'example.com'))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as error:
             self.api.split_domain_name('sub.domain.unknown.com')
+        self.assertEqual(
+            str(error.exception),
+            'The given domain name "sub.domain.unknown.com" does not match any domain registered in the Gandi account.'
+        )
 
     def test_get_zone_id(self):
         """

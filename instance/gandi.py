@@ -86,7 +86,7 @@ class GandiAPI():
                 subdomain = '.'.join(labels[:split_index]) or '@'
                 return subdomain, registered_domain
         raise ValueError(
-            'The given domain name does not match any domain registered in the Gandi account.'
+            'The given domain name "{}" does not match any domain registered in the Gandi account.'.format(domain)
         )
 
     def get_zone_id(self, domain):
