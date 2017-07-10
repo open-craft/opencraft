@@ -57,11 +57,12 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
     def get_storage_settings(self):
         """
         Get configuration_storage_settings to pass to a new AppServer
-
-        Only needed when not using ephemeral databases
         """
         if self.use_ephemeral_databases:
-            return ''
+            # Workaround for broken CMS course export/import
+            # caused by https://github.com/edx/edx-platform/pull/14552
+            template = loader.get_template('instance/ansible/ephemeral.yml')
+            return template.render()
 
         new_settings = ''
         if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
