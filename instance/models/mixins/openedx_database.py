@@ -22,7 +22,6 @@ Open edX instance database mixin
 import hashlib
 import hmac
 
-from django.conf import settings
 from django.template import loader
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
@@ -271,8 +270,8 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         template = loader.get_template('instance/ansible/rabbitmq.yml')
         new_settings += template.render({
             'vhost': self.rabbitmq_vhost,
-            'host': settings.INSTANCE_RABBITMQ_HOST,
-            'port': settings.INSTANCE_RABBITMQ_PORT,
+            'host': self.rabbitmq_server.instance_host,
+            'port': self.rabbitmq_server.instance_port,
             'xqueue_user': self.rabbitmq_provider_user.username,
             'xqueue_pass': self.rabbitmq_provider_user.password,
             'celery_user': self.rabbitmq_consumer_user.username,

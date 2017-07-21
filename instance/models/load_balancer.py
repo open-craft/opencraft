@@ -28,18 +28,19 @@ import textwrap
 from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models, transaction
+from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
 from instance import ansible
 from instance.logging import ModelLoggerAdapter
+from instance.models.shared_server import SharedServerManager
 from instance.models.utils import ValidateModelMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class LoadBalancingServerManager(models.Manager):
+class LoadBalancingServerManager(SharedServerManager):
     """
     Custom manager for the LoadBalancingServer model.
     """
@@ -65,26 +66,11 @@ class LoadBalancingServerManager(models.Manager):
                     domain, server.ssh_username, ssh_username
                 )
 
-    def select_random(self):
+    def filter_accepts_new_clients(self):
         """
-        Select a load-balancing server for a new instance.
-
-        The current implementation selects one of the load balancers that accept new backends at
-        random.  If no load-balancing server accepts new backends, LoadBalancingServer.DoesNotExist
-        is raised.
+        Returns a query selector of servers accepting new clients.
         """
-        self._create_default()
-
-        # The set of servers might change between retrieving the server count and retrieving the random
-        # server, so we make this atomic.
-        with transaction.atomic():
-            servers = self.filter(accepts_new_backends=True)
-            count = servers.count()
-            if not count:
-                raise self.model.DoesNotExist(
-                    "No configured LoadBalancingServer accepts new backends."
-                )
-            return servers[random.randrange(count)]
+        return self.filter(accepts_new_backends=True)
 
 
 class ReconfigurationFailed(Exception):

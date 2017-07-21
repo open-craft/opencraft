@@ -272,9 +272,7 @@ if BACKUP_SWIFT_ENABLED:
 
 # RabbitMQ ####################################################################
 
-RABBITMQ_API_URL = env('RABBITMQ_API_URL', default='https://rabbitmq-dev.opencraft.hosting:15671')
-RABBITMQ_ADMIN_USERNAME = env('RABBITMQ_ADMIN_USERNAME', default='admin')
-RABBITMQ_ADMIN_PASSWORD = env('RABBITMQ_ADMIN_PASSWORD', default='changeme')
+DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 
 # DNS (Gandi) #################################################################
 
@@ -514,8 +512,7 @@ DEFAULT_INSTANCE_MYSQL_URL = env('DEFAULT_INSTANCE_MYSQL_URL', default=None)
 DEFAULT_INSTANCE_MONGO_URL = env('DEFAULT_INSTANCE_MONGO_URL', default=None)
 
 # The RabbitMQ host must be accessible from both OpenCraft IM as well as well as any instances using it.
-INSTANCE_RABBITMQ_HOST = env('INSTANCE_RABBITMQ_HOST', default='rabbitmq-dev.opencraft.hosting')
-INSTANCE_RABBITMQ_PORT = env('INSTANCE_RABBITMQ_PORT', default=5671)
+DEFAULT_INSTANCE_RABBITMQ_URL = env('DEFAULT_INSTANCE_RABBITMQ_URL', default=None)
 
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)

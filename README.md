@@ -106,9 +106,6 @@ DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 WATCH_ORGANIZATION='github-org'
-RABBITMQ_API_URL='https://rabbitmq-dev.opencraft.hosting:15671'
-RABBITMQ_ADMIN_USERNAME='admin'
-RABBITMQ_ADMIN_PASSWORD='changeme'
 ```
 
 ### A note on SSH keys
@@ -236,13 +233,11 @@ edit its security group rules to only allow access to VMs in the
   the instance is currently being deployed.
 
 ### RabbitMQ settings
-* `RABBITMQ_API_URL`: The full API URL (including the protocol and port) to the
-  RabbitMQ server which will be used to manage vhosts and users for instances.
-* `RABBITMQ_ADMIN_USERNAME`: The username of an account which has the permission to
-  create and delete vhosts and users.
-* `RABBITMQ_ADMIN_PASSWORD`: The corresponding password of the admin account.
-* `INSTANCE_RABBITMQ_HOST`: The RabbitMQ host to be used by instances.
-* `INSTANCE_RABBITMQ_PORT`: The RabbitMQ port to be used by instances.
+* `DEFAULT_RABBITMQ_API_URL`: The full API URL (including the protocol, port, and basic auth)
+  to the RabbitMQ server which will be used to manage vhosts and users for instances. E.g.,
+  `https://admin:admin_password@rabbitmq.example.com:15671`
+* `DEFAULT_INSTANCE_RABBITMQ_URL`: The RabbitMQ AMQPS URI to be used by instances. E.g.,
+  `amqps://rabbitmq.example.com:5671`
 
 ### DNS settings
 
