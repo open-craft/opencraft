@@ -270,6 +270,17 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
+# Amazon Web Services #########################################################
+
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+
+AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', default='us-east-1')
+AWS_INSTANCE_MACHINE_IMAGE_ID = env('AWS_INSTANCE_MACHINE_IMAGE_ID', default='ami-d15a75c7')
+AWS_INSTANCE_TYPE = env('AWS_INSTANCE_TYPE', default='t2.medium')
+AWS_INSTANCE_VOLUME_SIZE = env('AWS_INSTANCE_VOLUME_SIZE', default=50)  # in GB
+AWS_INSTANCE_SSH_USERNAME = env('AWS_INSTANCE_SSH_USERNAME', default='ubuntu')
+
 # RabbitMQ ####################################################################
 
 RABBITMQ_API_URL = env('RABBITMQ_API_URL', default='https://rabbitmq-dev.opencraft.hosting:15671')
@@ -302,6 +313,9 @@ WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
 
 
 # Open edX Instance and App Server Settings  ##################################
+
+# Instances can either be created under 'openstack' or 'aws'
+DEFAULT_INSTANCE_CLOUD_PROVIDER = env('DEFAULT_INSTANCE_CLOUD_PROVIDER', default='openstack')
 
 # Instances will be created as subdomains of this domain by default
 DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
