@@ -152,7 +152,7 @@ def get_pr_list_from_username(user_name, fork_name):
     return pr_list
 
 
-def get_team_from_organization(organization_name, team_name='Owners'):
+def get_team_from_organization(organization_name, team_name='Sandbox'):
     """
     Retrieve a team by organization & team name
     """
@@ -163,7 +163,7 @@ def get_team_from_organization(organization_name, team_name='Owners'):
     raise KeyError(team_name)
 
 
-def get_username_list_from_team(organization_name, team_name='Owners'):
+def get_username_list_from_team(organization_name, team_name='Sandbox'):
     """
     Retrieve the usernames of a given team's members
     """
