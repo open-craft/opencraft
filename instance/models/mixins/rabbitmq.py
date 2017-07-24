@@ -26,12 +26,12 @@ import json
 import string
 import urllib.parse
 
-from django.conf import settings
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 import requests
 
 from instance.models.rabbitmq import RabbitMQUser
+from instance.models.rabbitmq_server import RabbitMQServer
 
 
 # Functions ###################################################################
@@ -62,6 +62,13 @@ def new_rabbitmq_user():
     raise IntegrityError
 
 
+def select_random_rabbitmq_server():
+    """
+    Helper for the field default of `rabbitmq_server`.
+    """
+    return RabbitMQServer.objects.select_random().pk
+
+
 # Classes #####################################################################
 
 class RabbitMQAPIError(Exception):
@@ -72,6 +79,14 @@ class RabbitMQInstanceMixin(models.Model):
     """
     An instance that uses a RabbitMQ vhost with a set of users.
     """
+    rabbitmq_server = models.ForeignKey(
+        RabbitMQServer,
+        null=True,
+        blank=True,
+        default=select_random_rabbitmq_server,
+        on_delete=models.PROTECT,
+    )
+
     rabbitmq_vhost = models.CharField(max_length=16, blank=True, default=generate_random_vhost)
     rabbitmq_provider_user = models.ForeignKey(
         RabbitMQUser,
@@ -103,10 +118,10 @@ class RabbitMQInstanceMixin(models.Model):
         if data is not None:
             data = json.dumps(data)
 
-        url = '{api_url}/api/{args}'.format(api_url=settings.RABBITMQ_API_URL, args=formatted_args)
+        url = '{api_url}/api/{args}'.format(api_url=self.rabbitmq_server.api_url, args=formatted_args)
         response = getattr(requests, action)(
             url,
-            auth=(settings.RABBITMQ_ADMIN_USERNAME, settings.RABBITMQ_ADMIN_PASSWORD),
+            auth=(self.rabbitmq_server.admin_username, self.rabbitmq_server.admin_password),
             headers={'content-type': 'application/json'},
             data=data
         )

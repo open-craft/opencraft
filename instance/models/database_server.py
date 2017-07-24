@@ -23,14 +23,14 @@ Instance app models - Database Server models
 # Imports #####################################################################
 
 import logging
-import random
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models, transaction
+from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
+from instance.models.shared_server import SharedServerManager
 from .utils import ValidateModelMixin
 
 
@@ -47,7 +47,7 @@ MONGODB_SERVER_DEFAULT_PORT = 27017
 
 # Models ######################################################################
 
-class DatabaseServerManager(models.Manager):
+class DatabaseServerManager(SharedServerManager):
     """
     Custom manager for the DatabaseServer model.
     """
@@ -90,26 +90,6 @@ class DatabaseServerManager(models.Manager):
                     database_server.password, password,
                     database_server.port, port,
                 )
-
-    def select_random(self):
-        """
-        Select a database server for a new instance.
-
-        The current implementation selects one of the database servers that accept new clients at random.
-        If no database server accepts new clients, DatabaseServer.DoesNotExist is raised.
-        """
-        self._create_default()
-
-        # The set of servers might change between retrieving the server count and retrieving the random server,
-        # so we make this atomic.
-        with transaction.atomic():
-            servers = self.filter(accepts_new_clients=True)
-            count = servers.count()
-            if not count:
-                raise self.model.DoesNotExist(
-                    "No configured DatabaseServer accepts new clients."
-                )
-            return servers[random.randrange(count)]
 
 
 class DatabaseServer(ValidateModelMixin, TimeStampedModel):

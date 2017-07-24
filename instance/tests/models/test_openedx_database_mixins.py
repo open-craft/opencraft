@@ -23,6 +23,7 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
+from unittest.mock import patch
 import urllib
 
 import ddt
@@ -30,12 +31,14 @@ import pymongo
 import responses
 import yaml
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.test.utils import override_settings
 
 from instance.models.database_server import (
     MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
 )
 from instance.models.mixins.rabbitmq import RabbitMQAPIError
+from instance.models.rabbitmq_server import RabbitMQServer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -500,7 +503,7 @@ class RabbitMQInstanceTestCase(TestCase):
     """
     def setUp(self):
         super().setUp()
-        self.instance = None
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
 
     @responses.activate
     @ddt.data(
@@ -514,7 +517,7 @@ class RabbitMQInstanceTestCase(TestCase):
         Test to make sure the _rabbitmq_request parameters form the correct URLs
         """
         url = '{service_url}{path}'.format(
-            service_url=settings.RABBITMQ_API_URL,
+            service_url=self.instance.rabbitmq_server.api_url,
             path=expected_url
         )
         expected_body = {'info': 'This is a mocked request to URL {url}'.format(url=url)}
@@ -544,7 +547,6 @@ class RabbitMQInstanceTestCase(TestCase):
         So, this test should pass if and only if all of the specifically mocked URLs are
         called during both provision and deprovision.
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         rabbitmq_users = [self.instance.rabbitmq_provider_user, self.instance.rabbitmq_consumer_user]
         rabbitmq_vhost = urllib.parse.quote(self.instance.rabbitmq_vhost, safe='')
 
@@ -553,11 +555,11 @@ class RabbitMQInstanceTestCase(TestCase):
         permissions_calls = ['permissions/{}/{}'.format(rabbitmq_vhost, user) for user in rabbitmq_users]
 
         provision_calls = [
-            '{}/api/{}'.format(settings.RABBITMQ_API_URL, url)
+            '{}/api/{}'.format(self.instance.rabbitmq_server.api_url, url)
             for url in vhosts_calls + users_calls + permissions_calls
         ]
         deprovision_calls = [
-            '{}/api/{}'.format(settings.RABBITMQ_API_URL, url)
+            '{}/api/{}'.format(self.instance.rabbitmq_server.api_url, url)
             for url in vhosts_calls + users_calls
         ]
 
@@ -583,11 +585,74 @@ class RabbitMQInstanceTestCase(TestCase):
                 )
             self.instance.deprovision_rabbitmq()
 
-    @override_settings(RABBITMQ_ADMIN_PASSWORD='asdf')
+    @responses.activate
     def test_rabbitmq_api_error(self):
         """
         Test that RabbitMQAPIError is thrown during auth issues
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        with self.assertRaises(RabbitMQAPIError):
-            self.instance._rabbitmq_request('get', 'overview')
+        with responses.RequestsMock() as rsps:
+            # Emulate 401 Unauthorized
+            rsps.add(
+                responses.GET,
+                '{}/api/overview'.format(self.instance.rabbitmq_server.api_url),
+                content_type='application/json',
+                body='{}',
+                status=401
+            )
+            with self.assertRaises(RabbitMQAPIError):
+                self.instance._rabbitmq_request('get', 'overview')
+
+    @ddt.data(
+        ({'name': 'test'}, 'test'),
+        ({'name': 'test', 'description': 'test description'}, 'test (test description)')
+    )
+    @ddt.unpack
+    def test_string_representation(self, fields, representation):
+        """
+        Test that the str method returns the appropriate values.
+        """
+        rabbitmq = self.instance.rabbitmq_server
+        for name, value in fields.items():
+            setattr(rabbitmq, name, value)
+        rabbitmq.save()
+        self.assertEqual(str(rabbitmq), representation)
+
+
+class RabbitMQServerManagerTestCase(TestCase):
+    """
+    Tests for RabbitMQServerManager.
+    """
+    @override_settings(DEFAULT_RABBITMQ_API_URL=None)
+    def test_no_rabbitmq_server_available(self):
+        """
+        Test that get_random() raises an exception when no rabbitmq servers are available.
+        """
+        RabbitMQServer.objects.all().delete()
+        with self.assertRaises(RabbitMQServer.DoesNotExist):
+            RabbitMQServer.objects.select_random()
+
+    @override_settings(DEFAULT_RABBITMQ_API_URL="http://doesnotexist.example.com:12345")
+    def test_invalid_rabbitmq_server(self):
+        """
+        Verify that an exception gets raised when the credentials are missing from from the
+        setting for the default rabbitmq API url server.
+        """
+        with self.assertRaises(ImproperlyConfigured):
+            RabbitMQServer.objects.select_random()
+
+    @patch('instance.models.rabbitmq_server.logger')
+    def test_mismatch_warning(self, mock_logger):  # pylint: disable=no-self-use
+        """
+        Test that a warning is logged when trying to spawn the default, but a default already
+        and contains mismatching parameters with the given settings.
+        """
+        urls = ['http://user:pass@doesnotexist.example.com:12345', 'http://user2:pass2@doesnotexist.example.com:12345']
+        for url in urls:
+            with override_settings(DEFAULT_RABBITMQ_API_URL=url):
+                RabbitMQServer.objects._create_default()
+        mock_logger.warning.assert_called_with(
+            'RabbitMQServer for %s already exists, and its settings do not match the Django '
+            'settings: %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s',
+            'admin_password', 'pass2', 'admin_username', 'user2', 'api_url', 'http://doesnotexist.example.com:12345',
+            'instance_host', 'rabbitmq.example.com', 'instance_port', 5671
+        )

@@ -30,6 +30,7 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.rabbitmq_server import RabbitMQServer
 from instance.models.server import OpenStackServer
 
 
@@ -67,6 +68,10 @@ class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
 
 
+class RabbitMQServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('name', 'description', 'api_url', 'instance_host', 'instance_port')
+
+
 class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('domain', 'ssh_username')
 
@@ -78,4 +83,5 @@ admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
 admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
 admin.site.register(MySQLServer, MySQLServerAdmin)
 admin.site.register(MongoDBServer, MongoDBServerAdmin)
+admin.site.register(RabbitMQServer, RabbitMQServerAdmin)
 admin.site.register(LoadBalancingServer, LoadBalancingServerAdmin)
