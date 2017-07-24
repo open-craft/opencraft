@@ -152,7 +152,7 @@ class OpenEdXAppConfiguration(models.Model):
         max_length=256,
         blank=True,
         default=default_admin_organizations,
-        help_text='A list of Github organizations; the members of the "Sandbox" team in these '
+        help_text='A list of GitHub organizations; the members of the "Sandbox" team in these '
         "organizations will be given SSH admin access to this instance's VMs.",
     )
     github_admin_users = JSONField(
