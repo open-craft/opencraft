@@ -209,7 +209,7 @@ class GitHubTestCase(TestCase):
             status=200)
 
         self.assertEqual(
-            github.get_username_list_from_team('open-craft'),
+            github.get_username_list_from_team('open-craft', team_name='Owners'),
             ['antoviaque', 'bradenmacdonald', 'e-kolpakov', 'itsjeyd', 'Kelketek', 'mtyaka', 'smarnach']
         )
 
