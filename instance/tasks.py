@@ -100,7 +100,7 @@ def shut_down_obsolete_pr_sandboxes():
             instance.watchedpullrequest.target_fork_name,
             instance.watchedpullrequest.github_pr_number
         )
-        if pr['state'] == 'closed':
+        if pr['state'] == 'closed' and not instance.is_archived:
             closed_at = github.parse_date(pr['closed_at'])
             now = datetime.now()
             if sufficient_time_passed(closed_at, now, 7):
