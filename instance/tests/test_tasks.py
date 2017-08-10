@@ -194,6 +194,21 @@ class CleanUpTestCase(TestCase):
 
         self.assertEqual(mock_archive.call_count, 0)
 
+    @patch('instance.models.openedx_instance.OpenEdXInstance.archive')
+    def test_shut_down_obsolete_pr_sandboxes_archived(self, mock_archive):
+        """
+        Test that `shut_down_obsolete_pr_sandboxes` does not shut down instances
+        more than once.
+        """
+        for dummy in range(5):
+            instance = OpenEdXInstanceFactory()
+            instance.ref.is_archived = True
+            instance.save()
+
+        tasks.shut_down_obsolete_pr_sandboxes()
+
+        self.assertEqual(mock_archive.call_count, 0)
+
     @patch('instance.tasks.terminate_obsolete_appservers_all_instances')
     @patch('instance.tasks.shut_down_obsolete_pr_sandboxes')
     def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):  # pylint: disable=no-self-use
