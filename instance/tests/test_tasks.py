@@ -201,7 +201,7 @@ class CleanUpTestCase(TestCase):
         more than once.
         """
         for dummy in range(5):
-            instance = OpenEdXInstanceFactory(i)
+            instance = OpenEdXInstanceFactory()
             instance.ref.is_archived = True
             instance.save()
 
