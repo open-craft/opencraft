@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 
 GH_HEADERS = {
     'Authorization': 'token {}'.format(settings.GITHUB_ACCESS_TOKEN),
+    'User-Agent': 'open-craft',
     'Time-Zone': 'UTC',
 }
 
@@ -58,6 +59,7 @@ def get_object_from_url(url):
     """
     logger.info('GET URL %s', url)
     r = requests.get(url, headers=GH_HEADERS)
+    logger.info('Response body: %s', r.text)
     if r.status_code == 404:
         raise ObjectDoesNotExist('404 response from {0}'.format(url))
     r.raise_for_status()
