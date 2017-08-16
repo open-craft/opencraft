@@ -24,11 +24,13 @@ Instance API
 
 from django.db.models import Prefetch
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
-from instance.serializers.instance import InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer
+from instance.serializers.instance import (InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer,
+                                           InstanceLogSerializer)
 
 
 # Views - API #################################################################
@@ -81,3 +83,10 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(is_archived=False)
         serializer = InstanceReferenceBasicSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def logs(self, request, pk):
+        """
+        Get this Instance's log entries
+        """
+        return Response(InstanceLogSerializer(self.get_object()).data)

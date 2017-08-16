@@ -105,6 +105,13 @@ class InstanceReference(TimeStampedModel):
         permission = '{}.{}'.format(cls._meta.app_label, "manage_all")
         return user.has_perm(permission)
 
+    @property
+    def log_entries(self):
+        """
+        Convenience method to return all log entries for the Instance this reference is for.
+        """
+        return self.instance.log_entries
+
 
 class Instance(ValidateModelMixin, models.Model):
     """

@@ -143,7 +143,7 @@ class InstanceAPITestCase(APITestCase):
         instance.logger.info("info")
         instance.logger.error("error")
 
-        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
+        response = self.api_client.get('/api/v1/instance/{pk}/logs/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         expected_list = [

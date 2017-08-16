@@ -98,9 +98,6 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
         # Merge instance details into the resulting dict, but never overwrite existing fields
         for key, val in details.items():
             output.setdefault(key, val)
-        if not self.summary_only:
-            # Add log entries:
-            output['log_entries'] = [LogEntrySerializer(entry).data for entry in obj.instance.log_entries]
         return output
 
 
@@ -110,3 +107,15 @@ class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
     more detail.
     """
     summary_only = False
+
+
+class InstanceLogSerializer(serializers.ModelSerializer):
+    """
+    Provide the log entries for an Instance
+    """
+    log_entries = LogEntrySerializer(many=True, read_only=True)
+    log_error_entries = LogEntrySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InstanceReference
+        fields = ('log_entries', 'log_error_entries',)
