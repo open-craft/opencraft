@@ -256,7 +256,9 @@ edit its security group rules to only allow access to VMs in the
 ### GitHub settings
 
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
-  https://github.com/settings/tokens
+  https://github.com/settings/tokens, and enable the `read:org` and
+  `read:user` scopes on the token.  The user must also be a member of
+  `WATCH_ORGANIZATION`.
 * `WATCH_ORGANIZATION`: The organization to watch (required). The instance
   manager will automatically set up sandboxes for pull requests made by members
   of this organization.
