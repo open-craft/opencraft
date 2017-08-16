@@ -37,6 +37,10 @@
           <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
         </button>
         <ul class="side-nav appserver-list">
+          <li ng-if="instance.appservers.length < instance.appserver_count">
+            <a ng-click='loadAllAppServers()'>(show all {{ instance.appserver_count }})</a>
+          </li>
+
           <li ng-repeat="appserver in instance.appservers | orderBy: 'id'"
               ng-class="{'active-server': appserver.is_active,
                          active: appserver.id == state.params.appserverId}">

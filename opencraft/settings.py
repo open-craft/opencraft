@@ -524,6 +524,13 @@ INSTANCE_SMTP_RELAY_USERNAME = env('INSTANCE_SMTP_RELAY_USERNAME', default='')
 INSTANCE_SMTP_RELAY_PASSWORD = env('INSTANCE_SMTP_RELAY_PASSWORD', default='')
 INSTANCE_SMTP_RELAY_SENDER_DOMAIN = env('INSTANCE_SMTP_RELAY_SENDER_DOMAIN', default=DEFAULT_INSTANCE_BASE_DOMAIN)
 
+# User interface ##############################################################
+
+# The instance view loads data for at most 5 appservers and shows a button to load more
+# The /api/v1/instance/10/ API will also include at most this number of appservers.
+# This avoids sending too much information.
+NUM_INITIAL_APPSERVERS_SHOWN = 5
+
 # Subdomain blacklist #########################################################
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
