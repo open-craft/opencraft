@@ -172,6 +172,24 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert len(mysql_database_name) <= 64
         return mysql_database_name
 
+    def get_mysql_cursor_for_db(self, db_suffix):
+        """
+        Get an adminstrative cursor with which to execute queries on the database
+        for the application linked to the provided db_suffix.
+        """
+        if not self.mysql_server:
+            return None
+        import MySQLdb as mysql
+        db_name = self._get_mysql_database_name(db_suffix)
+        conn = mysql.connect(
+            host=self.mysql_server.hostname,
+            user=self.mysql_server.username,
+            passwd=self.mysql_server.password,
+            port=self.mysql_server.port,
+            database=db_name,
+        )
+        return conn.cursor()
+
     def _get_mysql_user_name(self, suffix):
         """
         Build unique name for MySQL user using suffix.

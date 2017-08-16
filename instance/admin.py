@@ -25,7 +25,7 @@ Admin for the instance app
 from django.contrib import admin
 
 from instance.models.database_server import MySQLServer, MongoDBServer
-from instance.models.instance import InstanceReference
+from instance.models.instance import InstanceReference, InstanceTag
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -47,6 +47,10 @@ class OpenStackServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstrin
 
 class InstanceReferenceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('id', 'instance', 'created', 'modified')
+
+
+class InstanceTagAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('id', 'name', 'description')
 
 
 class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
@@ -79,6 +83,7 @@ class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docs
 admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
 admin.site.register(InstanceReference, InstanceReferenceAdmin)
+admin.site.register(InstanceTag, InstanceTagAdmin)
 admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
 admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
 admin.site.register(MySQLServer, MySQLServerAdmin)
