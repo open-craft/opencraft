@@ -1,0 +1,35 @@
+#!/bin/bash
+# This script installs and configures a rabbitmq server instance in the vagrant
+# development environment, allowing local connections rather than requiring an
+# external server
+
+set -e
+
+# Add the rabbit apt repository key
+wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
+
+
+# install the rabbitmq server
+echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
+sudo apt-get update
+sudo apt-get install -y rabbitmq-server
+
+
+# install and configure the rabbitmq admin interface needed by OCIM
+sudo rabbitmq-plugins enable rabbitmq_management
+
+
+# Create an OCIM user and queue
+USERNAME=ocim
+PASSWORD=passw3rd
+VHOST=ocim
+
+sudo rabbitmqctl list_users | grep $USERNAME
+
+if [[ $? ]] ; then
+  echo "User $USERNAME exists"
+else
+  sudo rabbitmqctl add_user $USERNAME $PASSWORD
+  sudo rabbitmqctl add_vhost $VHOST
+  sudo rabbitmqctl set_permissions -p $VHOST $USERNAME ".*" ".*" ".*"
+fi
