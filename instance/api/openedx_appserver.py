@@ -23,10 +23,12 @@ Open edX AppServer API
 # Imports #####################################################################
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.aggregates import Max
 from rest_framework import viewsets, status, serializers
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+from instance.models.appserver import Status
 
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
@@ -82,6 +84,31 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
 
         spawn_appserver(instance_id)
         return Response({'status': 'Instance provisioning started'})
+
+    @list_route(methods=['get'])
+    def app_server_summary(self, request):
+        """
+        Helper method for the instance list which will return the details of the newest and active
+        instance for every instance. This means that only a maximum of two AppServers will be returned
+        per instance, thus reducing the amount of query data streamed from the DB. It also makes it
+        easier to only fetch the fields required in the instance list menu.
+        """
+        newest_timestamps = InstanceReference.objects.\
+            annotate(server_created=Max('openedxappserver_set__created')).values_list('server_created')
+        newest_servers = OpenEdXAppServer.objects.filter(created__in=newest_timestamps).order_by('-id')
+        active_servers = OpenEdXAppServer.objects.filter(_is_active=True).order_by('owner_id').distinct('owner_id')
+
+        summary = {'newest': {}, 'active': {}}
+        for server in active_servers:
+            summary['active'][server.owner_id] = OpenEdXAppServerSerializer(server, context={'request': request}).data
+        for server in newest_servers:
+            current_active = summary['active'].get(server.owner_id, None)
+            if current_active is not None and current_active['id'] == server:
+                # this is not newer than the active
+                continue
+            summary['newest'][server.owner_id] = OpenEdXAppServerSerializer(server, context={'request': request}).data
+
+        return Response(summary)
 
     @detail_route(methods=['get'])
     def logs(self, request, pk):

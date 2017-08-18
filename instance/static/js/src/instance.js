@@ -81,6 +81,7 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
             $scope.state = $state;
 
             $scope.instanceList = [];
+            $scope.serverForInstance = {};
             $scope.updateInstanceList();
 
             // Init websockets
@@ -102,10 +103,23 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
             return OpenCraftAPI.all("instance").getList().then(function(instanceList) {
                 $scope.instanceList = instanceList;
                 console.log('Updated instance list:', instanceList);
+                $scope.updateAppServerSummary();
             }, function(response) {
                 console.log('Error from server: ', response);
             }).finally(function () {
                 $scope.loading = false;
+            });
+        };
+
+        $scope.updateAppServerSummary = function() {
+            console.log('Updating app server summary')
+            return OpenCraftAPI.one('openedx_appserver', 'app_server_summary').get().then(function(summary) {
+                $scope.serverForInstance = summary;
+                console.log("Updated app server summary: " + summary);
+            }, function(response) {
+                console.log('Error from server: ', response);
+            }).finally(function() {
+
             });
         };
 

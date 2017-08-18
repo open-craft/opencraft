@@ -13,25 +13,26 @@
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance.id == state.params.instanceId}"
           ng-init="
-              newer_appserver = (instance.newest_appserver && !instance.newest_appserver.is_active ?  instance.newest_appserver : null);
+              newer_appserver = serverForInstance.newest[instance.id];
+              active_appserver = serverForInstance.active[instance.id];
           ">
         <!-- Is there an app server newer than the active app server? -->
-        <div class="status-icon-newest" ng-if="newer_appserver"
-             ng-class="{healthy: newer_appserver.is_healthy, unhealthy: newer_appserver.is_healthy === false}"
-             tooltip="{{newer_appserver.name}} (newer than the active appserver): {{ newer_appserver.status_description }}"
+        <div class="status-icon-newest" ng-if="serverForInstance.newest[instance.id]"
+             ng-class="{healthy: serverForInstance.newest[instance.id].is_healthy, unhealthy: serverForInstance.newest[instance.id].is_healthy === false}"
+             tooltip="{{serverForInstance.newest[instance.id].name}} (newer than the active appserver): {{ serverForInstance.newest[instance.id].status_description }}"
              tooltip-placement="bottom" tooltip-append-to-body="true">
-          <i ng-attr-class="{{ newer_appserver.is_steady && (newer_appserver.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+          <i ng-attr-class="{{ serverForInstance.newest[instance.id].is_steady && (serverForInstance.newest[instance.id].is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
         </div>
-        <div class="status-icon-newest" ng-if="!newer_appserver" tooltip="No newer appserver"
+        <div class="status-icon-newest" ng-if="!serverForInstance.newest[instance.id]" tooltip="No newer appserver"
              tooltip="No newer appserver"
              tooltip-placement="bottom" tooltip-append-to-body="true">
           <!-- placeholder indicating that there is no newer AppServer -->
         </div>
         <div class="status-icon-active" ng-class="{healthy: instance.is_healthy, unhealthy: instance.is_healthy === false}"
-             tooltip="{{ instance.status_description || 'No active appserver' }}"
+             tooltip="{{ serverForInstance.active[instance.id].status_description || 'No active appserver' }}"
              tooltip-placement="bottom" tooltip-append-to-body="true">
-          <i ng-if="instance.active_appservers.length > 0"
-             ng-attr-class="{{ instance.is_steady && (instance.is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
+          <i ng-if="serverForInstance.active[instance.id]"
+             ng-attr-class="{{ serverForInstance.active[instance.id].is_steady && (serverForInstance.active[instance.id].is_healthy && 'fa fa-check' || 'fa fa-times') || 'fa fa-ellipsis-h' }}"></i>
         </div>
         <a ui-sref="instances.details({instanceId:instance.id})">
           <strong class="instance-name">{{ instance.name }}</strong>

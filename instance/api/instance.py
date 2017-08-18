@@ -27,7 +27,6 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
-from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.serializers.instance import (
     InstanceReferenceBasicSerializer,
     InstanceReferenceDetailedSerializer,
@@ -72,19 +71,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         List all instances. No App server list is returned in the list view, only the newest app server information.
 
         """
-        queryset = self.queryset.prefetch_related(
-            # Use prefetching to make the number of database queries required to
-            # generate this list O(1).
-            # Note that prefetching all app server information is still required, as the "newest" is not decideable
-            # at this point. This will cause more data than necessary to be streamed from the DB, but removing this
-            # prefetch without first selecting only the "newest" here results in O(n).
-            Prefetch('instance__ref_set__openedxappserver_set'),
-            Prefetch(
-                'instance__ref_set__openedxappserver_set',
-                queryset=OpenEdXAppServer.objects.filter(_is_active=True),
-                to_attr='_cached_active_appservers'
-            ),
-        )
+        queryset = self.queryset.prefetch_related(Prefetch('instance'))
         if 'include_archived' not in request.query_params:
             # By default, exclude archived instances from the list:
             queryset = queryset.filter(is_archived=False)
