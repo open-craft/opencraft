@@ -46,6 +46,8 @@ clean:
 	find -name '*~' -delete
 	find -name '__pycache__' -type d -delete
 	rm -rf .coverage build
+
+clean_static:
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
 	find static/external -type d -empty -delete
 

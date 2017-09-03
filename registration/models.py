@@ -76,8 +76,9 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 'The subdomain name must at least have 3 characters.',
             ),
             validators.RegexValidator(
-                r'^[\w.-]+$',
-                "Please include only letters, numbers, '_', '-' and '.'",
+                r'^[a-zA-Z0-9](?:[a-zA-Z0-9\-]{1,63}[a-zA-Z0-9])$',
+                'Please include only letters (case-insensitive), numbers, and hyphens. '
+                'Cannot start or end with a hyphen.',
             ),
             validate_available_subdomain,
         ],
@@ -148,6 +149,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         We can't do this in a regular validator, since we have to allow the subdomain of the
         instance associated with this application.
         """
+        self.subdomain = self.subdomain.lower()
         generated_domain = generate_internal_lms_domain(self.subdomain)
         if self.instance is not None and self.instance.internal_lms_domain == generated_domain:
             return
