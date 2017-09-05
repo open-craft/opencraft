@@ -103,7 +103,7 @@ class WatchedPullRequest(models.Model):
     # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
     # api (including the head commit sha hash, which does not require a separate API call as
     # is currently used.)
-    branch_name = models.CharField(max_length=50, default='master')
+    branch_name = models.CharField(max_length=255, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
     github_organization_name = models.CharField(max_length=200, db_index=True)
     github_repository_name = models.CharField(max_length=200, db_index=True)
