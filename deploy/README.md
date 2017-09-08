@@ -51,7 +51,6 @@ To do this you'll need to:
 Run the playbook
 ----------------
 
-
 1. Install Ansible, e.g. by creating a new Python 2 virtualenv and running
 
         pip install -r requirements.txt
@@ -82,3 +81,18 @@ and run it manually inside a `screen` or `tmux` session:
 4. Run the server and workers: `/var/www/.virtualenvs/opencraft/bin/exec make run WORKERS=5`
 
 5. Detach the `screen` session to log out again, leaving the server running.
+
+Show changes that would be applied to `.env` file
+-------------------------------------------------
+
+To see the difference between the current `.env` file on the server and the
+version that will be created by the ansible playbook, you can use this command
+line:
+
+    ansible-playbook  opencraft.yml \
+        --check --diff --start-at-task="Install the configuration/environment file"
+        -u ubuntu --extra-vars @private.yml -i your.host.name.here,
+
+It will start a dry-run of Ansible in diff mode, starting at the task that
+creates the configuration file.  You can break using Ctrl-C after the diff has
+been shown.

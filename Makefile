@@ -17,8 +17,8 @@
 
 # Config ######################################################################
 
-WORKERS = 3
-WORKERS_LOW_PRIORITY = 3
+WORKERS ?= 3
+WORKERS_LOW_PRIORITY ?= 3
 SHELL = /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
