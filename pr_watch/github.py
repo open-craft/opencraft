@@ -62,6 +62,8 @@ def get_object_from_url(url):
     logger.info('Response body: %s', r.text)
     if r.status_code == 404:
         raise ObjectDoesNotExist('404 response from {0}'.format(url))
+    if r.status_code == 403 and r.headers.get('X-RateLimit-Remaining', '') == '0':
+        raise RateLimitExceeded('Rate limit exceeded when requesting a resource at {}'.format(url))
     r.raise_for_status()
     return r.json()
 
@@ -143,14 +145,21 @@ def get_pr_list_from_username(user_name, fork_name):
     """
     Retrieve the current active PRs for a given user
     """
-    q = 'is:open is:pr author:{author} repo:{repo}'.format(author=user_name, repo=fork_name)
+    return get_pr_list_from_usernames([user_name], fork_name)
+
+
+def get_pr_list_from_usernames(user_names, fork_name):
+    """
+    Retrieve the current active PRs for a given set of users
+    """
+    authors = ' '.join('author:{author}'.format(author=author) for author in user_names)
+    q = 'is:open is:pr {authors} repo:{repo}'.format(authors=authors, repo=fork_name)
     r_pr_list = get_object_from_url('https://api.github.com/search/issues?sort=created&q={}'.format(q))
-    logger.debug('List of PRs received for user %s: %s', user_name, r_pr_list)
 
     pr_list = []
     for pr_dict in r_pr_list['items']:
-        pr = get_pr_by_number(fork_name, pr_dict['number'])
-        pr_list.append(pr)
+        logger.debug('Received PR for user %s: %s', pr_dict['user']['login'], pr_dict)
+        pr_list.append(get_pr_by_number(fork_name, pr_dict['number']))
     return pr_list
 
 
@@ -242,5 +251,12 @@ class PR:
 class ObjectDoesNotExist(Exception):
     """
     Exception raised when trying to access a github object that does not exist.
+    """
+    pass
+
+
+class RateLimitExceeded(Exception):
+    """
+    Exception raised when trying to access a GitHub object and a rate limit is hit
     """
     pass

@@ -29,6 +29,7 @@ from django.test import TestCase, override_settings
 
 from instance.models.openedx_instance import OpenEdXInstance
 from pr_watch import tasks
+from pr_watch.github import RateLimitExceeded
 from pr_watch.models import WatchedPullRequest
 from pr_watch.tests.factories import PRFactory
 
@@ -42,10 +43,10 @@ class TasksTestCase(TestCase):
     """
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.spawn_appserver')
-    @patch('pr_watch.tasks.get_pr_list_from_username')
+    @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @patch('pr_watch.tasks.get_username_list_from_team')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
-    def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_username,
+    def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_usernames,
                           mock_spawn_appserver, mock_get_commit_id_from_ref):
         """
         New PR created on the watched repo
@@ -69,7 +70,7 @@ class TasksTestCase(TestCase):
         )
         pr_url = 'https://github.com/source/repo/pull/234'
         self.assertEqual(pr.github_pr_url, pr_url)
-        mock_get_pr_list_from_username.return_value = [pr]
+        mock_get_pr_list_from_usernames.return_value = [pr]
         mock_get_commit_id_from_ref.return_value = '7' * 40
 
         tasks.watch_pr()
@@ -100,3 +101,43 @@ class TasksTestCase(TestCase):
         # Once the new instance/appserver has been spawned, it shouldn't spawn again:
         tasks.watch_pr()
         self.assertEqual(mock_spawn_appserver.call_count, 1)
+
+    @patch('pr_watch.github.get_commit_id_from_ref')
+    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.get_pr_list_from_usernames')
+    @patch('pr_watch.tasks.get_username_list_from_team')
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
+    def test_watch_pr_rate_limit_exceeded(
+            self,
+            mock_get_username_list,
+            mock_get_pr_list_from_usernames,
+            mock_spawn_appserver,
+            mock_get_commit_id_from_ref
+    ):
+        """
+        New PR created on the watched repo
+        """
+        ansible_extra_settings = textwrap.dedent("""\
+            WATCH: true
+            edx_ansible_source_repo: https://github.com/open-craft/configuration
+            configuration_version: named-release/elder
+        """)
+        mock_get_username_list.return_value = ['itsjeyd']
+        pr = PRFactory(
+            number=234,
+            source_fork_name='fork/repo',
+            target_fork_name='source/repo',
+            branch_name='watch-branch',
+            title='Watched PR title which is very long',
+            username='bradenmacdonald',
+            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\n{}```\r\nMore...'.format(
+                ansible_extra_settings
+            ),
+        )
+        pr_url = 'https://github.com/source/repo/pull/234'
+        self.assertEqual(pr.github_pr_url, pr_url)
+        mock_get_pr_list_from_usernames.side_effect = RateLimitExceeded
+        mock_get_commit_id_from_ref.return_value = '7' * 40
+
+        tasks.watch_pr()
+        self.assertEqual(mock_spawn_appserver.call_count, 0)
