@@ -39,6 +39,7 @@ class GitHubTestCase(TestCase):
     """
     Test cases for GitHub helper functions & API calls
     """
+
     def test_fork_name2tuple(self):
         """
         Conversion of `fork_name` to `fork_tuple`
@@ -193,6 +194,27 @@ class GitHubTestCase(TestCase):
         )
 
     @responses.activate
+    @patch('pr_watch.github.get_pr_by_number')
+    def test_get_pr_list_from_usernames(self, mock_get_pr_by_number):
+        """
+        Get list of open PR for a list of users
+        """
+        responses.add(
+            responses.GET, 'https://api.github.com/search/issues?sort=created&q=is:open '
+                           'is:pr author:itsjeyd author:haikuginger repo:edx/edx-platform',
+            match_querystring=True,
+            body=get_raw_fixture('github/api_search_open_prs_multiple_users.json'),
+            content_type='application/json; charset=utf8',
+            status=200)
+
+        mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
+
+        self.assertEqual(
+            github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'),
+            [['edx/edx-platform', 9147], ['edx/edx-platform', 9146], ['edx/edx-platform', 15921]]
+        )
+
+    @responses.activate
     def test_get_username_list_from_team(self):
         """
         Get list of members in a team
@@ -210,7 +232,16 @@ class GitHubTestCase(TestCase):
 
         self.assertEqual(
             github.get_username_list_from_team('open-craft', team_name='Owners'),
-            ['antoviaque', 'bradenmacdonald', 'e-kolpakov', 'itsjeyd', 'Kelketek', 'mtyaka', 'smarnach']
+            [
+                'antoviaque',
+                'bradenmacdonald',
+                'e-kolpakov',
+                'itsjeyd',
+                'Kelketek',
+                'mtyaka',
+                'smarnach',
+                'haikuginger'
+            ]
         )
 
     @responses.activate
@@ -225,6 +256,24 @@ class GitHubTestCase(TestCase):
             status=200)
 
         with self.assertRaises(KeyError, msg='non-existent'):
+            github.get_username_list_from_team('open-craft', team_name='non-existent')
+
+    @responses.activate
+    def test_rate_limit_exceeded(self):
+        """
+        Get list of open PR for non-existent team
+        """
+        responses.add(
+            responses.GET, 'https://api.github.com/orgs/open-craft/teams',
+            body=get_raw_fixture('github/api_teams.json'),
+            content_type='application/json; charset=utf8',
+            status=403,
+            adding_headers={
+                'X-RateLimit-Remaining': '0'
+            }
+        )
+
+        with self.assertRaises(github.RateLimitExceeded):
             github.get_username_list_from_team('open-craft', team_name='non-existent')
 
     def test_parse_date(self):

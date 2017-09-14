@@ -1,0 +1,168 @@
+{
+  "total_count": 3,
+  "incomplete_results": false,
+  "items": [
+    {
+      "url": "https://api.github.com/repos/edx/edx-platform/issues/9147",
+      "labels_url": "https://api.github.com/repos/edx/edx-platform/issues/9147/labels{/name}",
+      "comments_url": "https://api.github.com/repos/edx/edx-platform/issues/9147/comments",
+      "events_url": "https://api.github.com/repos/edx/edx-platform/issues/9147/events",
+      "html_url": "https://github.com/edx/edx-platform/pull/9147",
+      "id": 98358928,
+      "number": 9147,
+      "title": "Move problem responses export from legacy instructor dash to new instructor dash",
+      "user": {
+        "login": "itsjeyd",
+        "id": 961441,
+        "avatar_url": "https://avatars.githubusercontent.com/u/961441?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/itsjeyd",
+        "html_url": "https://github.com/itsjeyd",
+        "followers_url": "https://api.github.com/users/itsjeyd/followers",
+        "following_url": "https://api.github.com/users/itsjeyd/following{/other_user}",
+        "gists_url": "https://api.github.com/users/itsjeyd/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/itsjeyd/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/itsjeyd/subscriptions",
+        "organizations_url": "https://api.github.com/users/itsjeyd/orgs",
+        "repos_url": "https://api.github.com/users/itsjeyd/repos",
+        "events_url": "https://api.github.com/users/itsjeyd/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/itsjeyd/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "labels": [
+
+      ],
+      "state": "open",
+      "locked": false,
+      "assignee": null,
+      "milestone": null,
+      "comments": 4,
+      "created_at": "2015-07-31T10:07:17Z",
+      "updated_at": "2015-07-31T18:29:04Z",
+      "closed_at": null,
+      "pull_request": {
+        "url": "https://api.github.com/repos/edx/edx-platform/pulls/9147",
+        "html_url": "https://github.com/edx/edx-platform/pull/9147",
+        "diff_url": "https://github.com/edx/edx-platform/pull/9147.diff",
+        "patch_url": "https://github.com/edx/edx-platform/pull/9147.patch"
+      },
+      "body": "This PR moves functionality for exporting a CSV file listing student responses to a given problem from the legacy instructor dashboard to the new instructor dashboard (\"Data Download\" tab).\r\n\r\nLike other types of reports that can be generated from the instructor dashboard, CSV files listing problem responses are prepared asynchronously. When they are ready they can be downloaded from the \"Reports Available for Download\" section at the bottom of the page.\r\n\r\nInstead of the original functionality the legacy dashboard now includes a message that directs users to the correct location in the new instructor dashboard.\r\n\r\n**Affected components**: LMS\r\n\r\n**Affected users**: staff/instructors\r\n\r\n### Screenshots\r\n\r\n**Instructor dashboard**\r\n\r\n-   Export controls:\r\n    \r\n![problem-responses-export](https://cloud.githubusercontent.com/assets/961441/8908992/629319c4-347f-11e5-8dd6-1bf78ff77e80.png)\r\n\r\n-   Export results:\r\n\r\n![problem-responses-export-results](https://cloud.githubusercontent.com/assets/961441/8909006/7a5679de-347f-11e5-965f-a5af6b8e3c75.png)\r\n\r\n**Legacy dashboard**\r\n\r\n![legacy-instructor-dashboard-message](https://cloud.githubusercontent.com/assets/961441/8909021/8f202cf2-347f-11e5-9c03-f63f3fdf55c6.png)\r\n\r\n### Testing\r\n\r\n1. Log in to Studio as `staff` user.\r\n2. Create course and add a section, subsection, and unit.\r\n3. Add problem (e.g. \"Text Input\") to unit and publish section.\r\n4. Navigate to unit in LMS and provide answer to problem added in previous step.\r\n5. Click \"Staff Debug Info\" and copy problem URL (= value of `location` attribute, e.g. `i4x://edX/DemoX/problem/9cee77a606ea4c1aa5440e0ea5d0f618`).\r\n6. Navigate to \"Data Download\" tab of instructor dashboard.\r\n7. Paste problem URL into input field (\"Problem URL:\") and click button below (\"Download a CSV of problem responses\").\r\n\r\nOnce the CSV file becomes available for download, navigate to `/tmp/edx-s3/grades/<name-of-course>/` in Devstack and do `cat <name-of-file>.csv` to verify export results.\r\n\r\n### Partner Information\r\n\r\nNot an edX partner - 3rd party-hosted open edX instance",
+      "score": 1.0
+    },
+    {
+      "url": "https://api.github.com/repos/edx/edx-platform/issues/9146",
+      "labels_url": "https://api.github.com/repos/edx/edx-platform/issues/9146/labels{/name}",
+      "comments_url": "https://api.github.com/repos/edx/edx-platform/issues/9146/comments",
+      "events_url": "https://api.github.com/repos/edx/edx-platform/issues/9146/events",
+      "html_url": "https://github.com/edx/edx-platform/pull/9146",
+      "id": 98341218,
+      "number": 9146,
+      "title": "Instructor Dashboard: Display info about course timeline",
+      "user": {
+        "login": "itsjeyd",
+        "id": 961441,
+        "avatar_url": "https://avatars.githubusercontent.com/u/961441?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/itsjeyd",
+        "html_url": "https://github.com/itsjeyd",
+        "followers_url": "https://api.github.com/users/itsjeyd/followers",
+        "following_url": "https://api.github.com/users/itsjeyd/following{/other_user}",
+        "gists_url": "https://api.github.com/users/itsjeyd/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/itsjeyd/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/itsjeyd/subscriptions",
+        "organizations_url": "https://api.github.com/users/itsjeyd/orgs",
+        "repos_url": "https://api.github.com/users/itsjeyd/repos",
+        "events_url": "https://api.github.com/users/itsjeyd/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/itsjeyd/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "labels": [
+
+      ],
+      "state": "open",
+      "locked": false,
+      "assignee": null,
+      "milestone": null,
+      "comments": 4,
+      "created_at": "2015-07-31T08:25:25Z",
+      "updated_at": "2015-07-31T17:58:10Z",
+      "closed_at": null,
+      "pull_request": {
+        "url": "https://api.github.com/repos/edx/edx-platform/pulls/9146",
+        "html_url": "https://github.com/edx/edx-platform/pull/9146",
+        "diff_url": "https://github.com/edx/edx-platform/pull/9146.diff",
+        "patch_url": "https://github.com/edx/edx-platform/pull/9146.patch"
+      },
+      "body": "This PR adds the following information to the \"Course Info\" tab of the new instructor dashboard:\r\n\r\n- Course start date\r\n- Course end date\r\n- Number of sections (weeks)\r\n\r\n**Affected components**: LMS\r\n\r\n**Affected users**: staff/instructors\r\n\r\n### Screenshots\r\n\r\n![Course Info tab with start date, end date, number of sections](https://cloud.githubusercontent.com/assets/961441/9002979/2d446596-376a-11e5-92c4-cfe27fe4fe4c.png)\r\n\r\n### Testing\r\n\r\n1.  Run the LMS and sign in as `staff@example.com`.\r\n\r\n2.  Navigate to <http://localhost:8000/courses/edX/DemoX/Demo_Course/instructor> and click on the \"Course Info\" tab.\r\n\r\n3. You will find the information described above under \"Basic Course Information\".\r\n\r\n### Partner Information\r\n\r\nNot an edX partner - 3rd party-hosted open edX instance",
+      "score": 1.0
+    },
+    {
+      "url": "https://api.github.com/repos/edx/edx-platform/issues/15921",
+      "repository_url": "https://api.github.com/repos/edx/edx-platform",
+      "labels_url": "https://api.github.com/repos/edx/edx-platform/issues/15921/labels{/name}",
+      "comments_url": "https://api.github.com/repos/edx/edx-platform/issues/15921/comments",
+      "events_url": "https://api.github.com/repos/edx/edx-platform/issues/15921/events",
+      "html_url": "https://github.com/edx/edx-platform/pull/15921",
+      "id": 253785074,
+      "number": 15921,
+      "title": "Show advertised start date on course details page",
+      "user": {
+        "login": "haikuginger",
+        "id": 7773758,
+        "avatar_url": "https://avatars3.githubusercontent.com/u/7773758?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/haikuginger",
+        "html_url": "https://github.com/haikuginger",
+        "followers_url": "https://api.github.com/users/haikuginger/followers",
+        "following_url": "https://api.github.com/users/haikuginger/following{/other_user}",
+        "gists_url": "https://api.github.com/users/haikuginger/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/haikuginger/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/haikuginger/subscriptions",
+        "organizations_url": "https://api.github.com/users/haikuginger/orgs",
+        "repos_url": "https://api.github.com/users/haikuginger/repos",
+        "events_url": "https://api.github.com/users/haikuginger/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/haikuginger/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "labels": [
+        {
+          "id": 128413104,
+          "url": "https://api.github.com/repos/edx/edx-platform/labels/needs%20triage",
+          "name": "needs triage",
+          "color": "e11d21",
+          "default": false
+        },
+        {
+          "id": 78051711,
+          "url": "https://api.github.com/repos/edx/edx-platform/labels/open-source-contribution",
+          "name": "open-source-contribution",
+          "color": "bfe5bf",
+          "default": false
+        }
+      ],
+      "state": "open",
+      "locked": false,
+      "assignee": null,
+      "assignees": [
+
+      ],
+      "milestone": null,
+      "comments": 2,
+      "created_at": "2017-08-29T19:59:11Z",
+      "updated_at": "2017-08-30T19:35:45Z",
+      "closed_at": null,
+      "author_association": "MEMBER",
+      "pull_request": {
+        "url": "https://api.github.com/repos/edx/edx-platform/pulls/15921",
+        "html_url": "https://github.com/edx/edx-platform/pull/15921",
+        "diff_url": "https://github.com/edx/edx-platform/pull/15921.diff",
+        "patch_url": "https://github.com/edx/edx-platform/pull/15921.patch"
+      },
+      "body": "This pull request allows a course's \"Advertised Start Date\" to be shown on the course details page when set. At the same time, this fixes a bug where the platform default course start date is shown when the course start date is set to that value, but an advertised start date is set.\r\n\r\n**Dependencies**: None\r\n\r\n**Screenshots**:\r\n\r\nBefore:\r\n\r\n<img width=\"1248\" alt=\"screen shot 2017-08-29 at 3 50 59 pm\" src=\"https://user-images.githubusercontent.com/7773758/29841085-1fd2468e-8cd2-11e7-9d0f-dfea9d7e023b.png\">\r\n\r\nAfter:\r\n\r\n<img width=\"1231\" alt=\"screen shot 2017-08-29 at 3 50 26 pm\" src=\"https://user-images.githubusercontent.com/7773758/29841096-27d75478-8cd2-11e7-8e2f-021acbf714c1.png\">\r\n\r\n**Sandbox URL**: TBD - sandbox is being provisioned.\r\n\r\n**Partner information**: 3rd party-hosted open edX instance\r\n\r\n**Testing instructions**:\r\n\r\n1. With your devstack on master, set a course to start at the default start date (2013-01-01T00:00Z).\r\n2. In the course's advanced settings, set the Advertised Start Date to have a custom, recognizable string.\r\n3. At the URL `/courses` on your devstack, observe that the course shows your custom advertised start date.\r\n4. Click on the course, and observe that the start date indicated is the platform default start date, rather than your custom string.\r\n5. Update your devstack to this version.\r\n6. Refresh the course details page.\r\n7. Observe that your custom advertised start date is now used.\r\n\r\n**Reviewers**\r\n- [ ] @clemente\r\n- [ ] edX reviewer[s] TBD\r\n\r\n**Settings**\r\n```yaml\r\nEDXAPP_FEATURES:\r\n  ENABLE_COMBINED_LOGIN_REGISTRATION: true\r\n```",
+      "score": 1.0
+    }
+  ]
+}

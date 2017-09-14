@@ -131,5 +131,24 @@
     "received_events_url": "https://api.github.com/users/smarnach/received_events",
     "type": "User",
     "site_admin": false
+  },
+  {
+    "login": "haikuginger",
+    "id": 7773758,
+    "avatar_url": "https://avatars3.githubusercontent.com/u/7773758?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/haikuginger",
+    "html_url": "https://github.com/haikuginger",
+    "followers_url": "https://api.github.com/users/haikuginger/followers",
+    "following_url": "https://api.github.com/users/haikuginger/following{/other_user}",
+    "gists_url": "https://api.github.com/users/haikuginger/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/haikuginger/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/haikuginger/subscriptions",
+    "organizations_url": "https://api.github.com/users/haikuginger/orgs",
+    "repos_url": "https://api.github.com/users/haikuginger/repos",
+    "events_url": "https://api.github.com/users/haikuginger/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/haikuginger/received_events",
+    "type": "User",
+    "site_admin": false
   }
 ]
