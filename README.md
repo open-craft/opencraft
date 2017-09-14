@@ -178,7 +178,7 @@ flavor:
 ### OpenStack Security Groups
 
 Every VM used to host Open edX will automatically be added to an OpenStack
-network security group, which is provides a firewall that limits what 
+network security group, which is provides a firewall that limits what
 ports/services on the VM are exposed to the Internet. The security group will
 automatically be created and managed by OpenCraft IM.
 
@@ -654,6 +654,74 @@ instance.delete()
 ```
 
 **Do not use delete() in production!**
+
+Bulk-updating sandboxes
+-----------------------
+
+OpenCraft IM provides a tagging mechanism that you can use to update instances in bulk.
+The following script shows how to update multiple instances at once from the Django shell:
+
+```python
+# Author: Brandon DeRosier <brandon@opencraft.com>
+
+# 1. Set up tags
+tag, _ = InstanceTag.objects.get_or_create(name='ficus3-redeployment')
+success_tag, _ = InstanceTag.objects.get_or_create(name=tag.name + "-succeeded")
+failure_tag, _ = InstanceTag.objects.get_or_create(name=tag.name + "-failed")
+
+# 2. Find all the affected instances (ficus.1) and tag them
+upgrade_instances = OpenEdXInstance.objects.filter(
+    openedx_release='open-release/ficus.1',
+    edx_platform_commit='opencraft-release/ficus.1',
+    configuration_version='opencraft-release/ficus.1',
+    ref_set__is_archived=False,
+)
+for instance in upgrade_instances:
+    instance.tags.add(tag)
+    instance.openedx_release='open-release/ficus.3'
+    instance.edx_platform_commit='opencraft-release/ficus.3'
+    instance.configuration_version='opencraft-release/ficus.3'
+    instance.save()
+
+# 3. Spawn the new appservers
+for instance in tag.openedxinstance_set.iterator():
+    spawn_appserver(instance.ref.pk, success_tag=success_tag, failure_tag=failure_tag)
+
+# 4. Try again on any failed instances (run multiple times if necessary)
+for instance in failure_tag.openedxinstance_set.iterator():
+    spawn_appserver(instance.ref.pk, success_tag=success_tag, failure_tag=failure_tag)
+
+# 5. Activate only the latest appserver for all upgraded instances
+for instance in success_tag.openedxinstance_set.iterator():
+    print('Swapping active instance for: ' + instance.domain)
+    # Deactivate currently active servers
+    for appserver in instance.appserver_set.filter(_is_active=True):
+        print(' - Deactivating {} ({})'.format(appserver.name, appserver.id))
+        appserver.is_active = False
+        appserver.save()
+    # Activate the latest server
+    latest_appserver = instance.appserver_set.latest('created')
+    print(' - Activating {} ({})'.format(latest_appserver.name, latest_appserver.id))
+    latest_appserver.is_active = True
+    latest_appserver.save()
+
+# 6. Reconfigure the load balancer once
+lb = LoadBalancingServer.objects.get(accepts_new_backends=True)
+lb.reconfigure()
+
+# 7. Update the monitoring for each of the instances after the load balancer is reconfigured
+for instance in success_tag.openedxinstance_set.iterator():
+    instance.set_active_vm_dns_records()
+    instance.enable_monitoring()
+
+# 8. Remove tags
+all_tags = [tag, success_tag, failure_tag]
+untag = success_tag.openedxinstance_set.all()
+
+for inst in untag:
+    inst.tags.remove(*all_tags)
+    inst.save()
+```
 
 manage.py
 ---------
