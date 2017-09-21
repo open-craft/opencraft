@@ -655,6 +655,7 @@ instance.delete()
 
 **Do not use delete() in production!**
 
+
 manage.py
 ---------
 
@@ -674,6 +675,13 @@ all *active app servers*. The CSV will be printed to `stdout` by default, but an
 output file can be specified by using the `--out` flag.
 
     make manage "activity_csv --out activity_report.csv"
+
+**`instance_redeploy`**: Redeploy appservers in bulk, optionally making updates
+to apply upgrades or settings changes prior to redeployment.  Appservers are
+spawned in batches, and successful redeployments will be automatically
+activated.  To see the options available, run:
+
+    make manage "instance_redeploy --help"
 
 
 Databases

@@ -326,7 +326,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEF
 
 # Git ref for stable Open edX release. Used as a default refspec for
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
-OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/ficus.3')
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/ginkgo.1')
 
 # The edx-platform repository used by default for production instances
 STABLE_EDX_PLATFORM_REPO_URL = env(

@@ -59,8 +59,8 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     # or a release candidate tag will work.  We point both the edx-platform and the configuration
     # versions to the branch "integration" in our own forks.  These branches are based on the
     # corresponding openedx_release versions from upstream, but can contain custom modifications.
-    openedx_release = 'open-release/ficus.3'
+    openedx_release = 'open-release/ginkgo.1'
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration'
+    configuration_version = 'integration-ginkgo'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
-    edx_platform_commit = 'opencraft-release/ficus.3'
+    edx_platform_commit = 'opencraft-release/ginkgo.1'
