@@ -59,6 +59,8 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
     # summary_only: Uses less detailed serializers for related instances
     summary_only = True
 
+    logs_url = serializers.HyperlinkedIdentityField(view_name='api:instance-logs')
+
     class Meta:
         model = InstanceReference
         fields = (
@@ -68,6 +70,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'created',
             'modified',
             'is_archived',
+            'logs_url',
         )
 
     def serialize_details(self, instance):
@@ -114,8 +117,7 @@ class InstanceLogSerializer(serializers.ModelSerializer):
     Provide the log entries for an Instance
     """
     log_entries = LogEntrySerializer(many=True, read_only=True)
-    log_error_entries = LogEntrySerializer(many=True, read_only=True)
 
     class Meta:
         model = InstanceReference
-        fields = ('log_entries', 'log_error_entries',)
+        fields = ('log_entries', )

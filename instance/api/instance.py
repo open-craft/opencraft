@@ -29,8 +29,11 @@ from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
-from instance.serializers.instance import (InstanceReferenceBasicSerializer, InstanceReferenceDetailedSerializer,
-                                           InstanceLogSerializer)
+from instance.serializers.instance import (
+    InstanceReferenceBasicSerializer,
+    InstanceReferenceDetailedSerializer,
+    InstanceLogSerializer
+)
 
 
 # Views - API #################################################################
