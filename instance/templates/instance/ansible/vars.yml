@@ -13,6 +13,11 @@ COMMON_ENABLE_BASIC_AUTH: true
 COMMON_HTPASSWD_USER: '{{ instance.http_auth_user }}'
 COMMON_HTPASSWD_PASS: '{{ instance.http_auth_pass }}'
 
+# OAuth2 / JWT issuer settings
+COMMON_OAUTH_BASE_URL: "{{ EDXAPP_LMS_ROOT_URL }}"
+COMMON_JWT_SECRET_KEY: "{{ EDXAPP_JWT_SECRET_KEY }}"
+COMMON_JWT_AUDIENCE: 'lms-key'
+
 # edxapp
 EDXAPP_PLATFORM_NAME: "{{ instance.name }}"
 EDXAPP_SITE_NAME: '{{ instance.domain }}'
