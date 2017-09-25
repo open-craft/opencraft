@@ -3,8 +3,8 @@ OpenCraft Instance Manager
 
 [![Circle CI](https://img.shields.io/circleci/project/open-craft/opencraft/master.svg)](https://circleci.com/gh/open-craft/opencraft/tree/master) [![Dependency Status](https://gemnasium.com/badges/github.com/open-craft/opencraft.svg)](https://gemnasium.com/github.com/open-craft/opencraft)
 
-The OpenCraft Instance Manager is a Django application to deploy and manage
-[Open edX](https://open.edx.org/) sandboxes on
+The OpenCraft Instance Manager (Ocim) is a Django application to deploy and
+manage [Open edX](https://open.edx.org/) sandboxes on
 [OpenStack](https://www.openstack.org/) virtual machines. It is primarily
 intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
