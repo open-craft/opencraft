@@ -111,7 +111,7 @@ test_browser: clean static_external
 	@echo -e "\nRunning browser tests..."
 	xvfb-run --auto-servernum honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
 
-test_integration: clean
+test_integration: clean clean_static
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."
 	honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput
@@ -122,7 +122,7 @@ else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
 endif
 
-test_integration_cleanup: clean
+test_integration_cleanup: clean clean_static
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration test cleanup script with credentials from .env.integration file..."
 	honcho -e .env.integration run bin/integration-cleanup
@@ -143,7 +143,7 @@ test_instance_js_web: clean static_external
 test_registration_js_web: clean static_external
 	cd registration/tests/js && jasmine --host 0.0.0.0
 
-test: clean test_prospector test_unit test_migrations_missing test_js test_browser test_integration
+test: clean clean_static test_prospector test_unit test_migrations_missing test_js test_browser test_integration
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean
@@ -152,5 +152,5 @@ test_one: clean
 
 # Files #######################################################################
 
-static_external:
+static_external: clean_static
 	$(MAKE) -C static/external
