@@ -194,6 +194,14 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             }
         });
 
+        $scope.loadAllAppServers = function() {
+            OpenCraftAPI.one("instance", $scope.instance.id).customGET("app_servers").then(function(response) {
+                $scope.instance.appservers = response.app_servers;
+            }, function() {
+                $scope.notify("Unable to load the app servers for this instance.");
+            });
+        };
+
         $scope.refresh = function() {
             // [Re]load the instance data from the server.
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {

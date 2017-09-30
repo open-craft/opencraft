@@ -26,6 +26,7 @@ from rest_framework import serializers
 
 from instance.models.instance import InstanceReference, Instance
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.logentry import LogEntrySerializer
 from instance.serializers.openedx_instance import OpenEdXInstanceSerializer
 
@@ -60,6 +61,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
     summary_only = True
 
     logs_url = serializers.HyperlinkedIdentityField(view_name='api:instance-logs')
+    appservers_full_list_url = serializers.HyperlinkedIdentityField(view_name='api:instance-app-servers')
 
     class Meta:
         model = InstanceReference
@@ -71,6 +73,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'modified',
             'is_archived',
             'logs_url',
+            'appservers_full_list_url',
         )
 
     def serialize_details(self, instance):
@@ -121,3 +124,20 @@ class InstanceLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = InstanceReference
         fields = ('log_entries', )
+
+
+class InstanceAppServerSerializer(serializers.ModelSerializer):
+    """
+    Provide the complete list of app servers for an instance
+    """
+    class Meta:
+        model = InstanceReference
+        fields = ('app_servers',)
+
+    def to_representation(self, obj):
+        output = super().to_representation(obj)
+        output['app_servers'] = [
+            AppServerBasicSerializer(appserver, context=self.context).data
+            for appserver in obj.app_servers
+        ]
+        return output

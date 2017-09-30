@@ -21,7 +21,6 @@ Instance API
 """
 
 # Imports #####################################################################
-
 from django.db.models import Prefetch
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
@@ -32,7 +31,8 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.serializers.instance import (
     InstanceReferenceBasicSerializer,
     InstanceReferenceDetailedSerializer,
-    InstanceLogSerializer
+    InstanceLogSerializer,
+    InstanceAppServerSerializer
 )
 
 
@@ -69,11 +69,15 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request):
         """
-        List all instances.
+        List all instances. No App server list is returned in the list view, only the newest app server information.
+
         """
         queryset = self.queryset.prefetch_related(
             # Use prefetching to make the number of database queries required to
             # generate this list O(1).
+            # Note that prefetching all app server information is still required, as the "newest" is not decideable
+            # at this point. This will cause more data than necessary to be streamed from the DB, but removing this
+            # prefetch without first selecting only the "newest" here results in O(n).
             Prefetch('instance__ref_set__openedxappserver_set'),
             Prefetch(
                 'instance__ref_set__openedxappserver_set',
@@ -93,3 +97,10 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         Get this Instance's log entries
         """
         return Response(InstanceLogSerializer(self.get_object()).data)
+
+    @detail_route(methods=['get'])
+    def app_servers(self, request, pk):
+        """
+        Get this Instance's entire list of AppServers
+        """
+        return Response(InstanceAppServerSerializer(self.get_object(), context={'request': request}).data)

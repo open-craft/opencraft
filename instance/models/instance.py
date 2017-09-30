@@ -112,6 +112,13 @@ class InstanceReference(TimeStampedModel):
         """
         return self.instance.log_entries
 
+    @property
+    def app_servers(self):
+        """
+        Returns the list of all AppServers belonging to the Instance this reference is for.
+        """
+        return self.instance.appserver_set.all()
+
 
 class Instance(ValidateModelMixin, models.Model):
     """
