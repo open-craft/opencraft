@@ -134,7 +134,7 @@ class OpenEdXAppConfiguration(models.Model):
         null=True,
         blank=True,
         default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
-        help_text='JSON openstack base image selector, e.g. {"name": "ubuntu-12.04-ref-ul"}'
+        help_text='JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"}'
                   ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
     )
     openstack_server_ssh_keyname = models.CharField(

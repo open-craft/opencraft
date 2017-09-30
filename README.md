@@ -3,8 +3,8 @@ OpenCraft Instance Manager
 
 [![Circle CI](https://img.shields.io/circleci/project/open-craft/opencraft/master.svg)](https://circleci.com/gh/open-craft/opencraft/tree/master) [![Dependency Status](https://gemnasium.com/badges/github.com/open-craft/opencraft.svg)](https://gemnasium.com/github.com/open-craft/opencraft)
 
-The OpenCraft Instance Manager is a Django application to deploy and manage
-[Open edX](https://open.edx.org/) sandboxes on
+The OpenCraft Instance Manager (Ocim) is a Django application to deploy and
+manage [Open edX](https://open.edx.org/) sandboxes on
 [OpenStack](https://www.openstack.org/) virtual machines. It is primarily
 intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
@@ -137,21 +137,21 @@ this name.
 
 ### OpenStack images
 
-Open edX is currently designed to run on Ubuntu 12.04. Your OpenStack host may
+Open edX is currently designed to run on Ubuntu 16.04. Your OpenStack host may
 already have an image available for this version of Ubuntu, but for maximum
 compatibility we recommend the
-[official Ubuntu cloud image](https://cloud-images.ubuntu.com/precise/current/).
+[official Ubuntu cloud image](https://cloud-images.ubuntu.com/xenial/current/).
 To add this image to OpenStack, install glance:
 
     pip install python-glanceclient
 
 Then, fetch the image and add it to OpenStack:
 
-    wget https://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-amd64-disk1.img
+    wget https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
     glance image-create \
       --disk-format=qcow2 \
       --container-format=bare \
-      --file precise-server-cloudimg-amd64-disk1.img \
+      --file xenial-server-cloudimg-amd64-disk1.img \
       --name IMAGE_NAME \
       --progress
 
@@ -278,7 +278,7 @@ edit its security group rules to only allow access to VMs in the
 * `OPENSTACK_SANDBOX_FLAVOR`: A json string specifying the instance flavor to use
   (default: `{"ram": 4096, "disk": 40}`)
 * `OPENSTACK_SANDBOX_BASE_IMAGE`: A json string specifying the base image to use
-  (default: `{"name": "Ubuntu 12.04"}`)
+  (default: `{"name": "Ubuntu 16.04"}`)
 * `OPENSTACK_SANDBOX_SSH_KEYNAME`: The name of the default ssh key pair used to
   connect to sandbox instances (default: `opencraft`). This key pair should be
   [registered with OpenStack](http://docs.openstack.org/user-guide/cli_nova_configure_access_security_for_instances.html)
