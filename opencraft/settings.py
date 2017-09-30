@@ -49,6 +49,8 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default=[])
 
 DEBUG = env.bool('DEBUG', default=False)
 
+ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
+
 
 # Auth ########################################################################
 
@@ -108,9 +110,14 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-if DEBUG:
+if DEBUG and ENABLE_DEBUG_TOOLBAR:
     INSTALLED_APPS += ('debug_toolbar',)
     MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    # Enable in all pages
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+    }
+
 
 ROOT_URLCONF = 'opencraft.urls'
 

@@ -22,6 +22,7 @@ Global URL Patterns
 
 # Imports #####################################################################
 
+from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
@@ -41,3 +42,12 @@ urlpatterns = [
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
+
+if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
+    # Enable debug toolbar URLs
+    import debug_toolbar # pylint: disable=wrong-import-position,wrong-import-order
+    # "debug" URL pattern must be before "site" URL pattern.
+    # See https://github.com/jazzband/django-debug-toolbar/issues/529
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
