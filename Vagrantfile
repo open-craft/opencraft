@@ -25,6 +25,10 @@ Vagrant.configure(2) do |config|
                       privileged: false,
                       keep_color: true
 
+  config.vm.provision 'rabbitmq',
+                      type: 'shell',
+                      path: 'bin/install-rabbit'
+
   config.vm.provider :virtualbox do |vb|
     vb.memory = 1024
     # Allow DNS to work for Ubuntu host

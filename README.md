@@ -239,6 +239,11 @@ edit its security group rules to only allow access to VMs in the
 * `DEFAULT_INSTANCE_RABBITMQ_URL`: The RabbitMQ AMQPS URI to be used by instances. E.g.,
   `amqps://rabbitmq.example.com:5671`
 
+It is possible to install and configure rabbitmq to run on the vagrant machine if wanted.
+This is an optional extra dependency which can be installed using `vagrant provision --provision-with rabbitmq`.
+This will add a user and queue locally and can be used with the settings `DEFAULT_INSTANCE_RABBITMQ_URL='amqps://127.0.0.1:5671'`
+and `DEFAULT_RABBITMQ_API_URL='http://ocim:ocim@127.0.0.1:15672'`
+
 ### DNS settings
 
 * `DEFAULT_INSTANCE_BASE_DOMAIN`: Instances are created as subdomains of this domain,
