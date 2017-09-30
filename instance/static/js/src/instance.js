@@ -143,6 +143,10 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             $scope.is_updating_from_pr = false;
             $scope.instance_active_tabs = {};
             $scope.old_appserver_count = 0;
+
+            $scope.instanceLogs = false;
+            $scope.isFetchingLogs = false;
+
             $scope.refresh();
         };
 
@@ -164,6 +168,37 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             }, function() {
                 $scope.notify('Update failed.', 'alert');
                 $scope.is_updating_from_pr = false;
+            });
+        };
+
+        $scope.fetchLogs = function() {
+            if ($scope.instanceLogs || $scope.isFetchingLogs) {
+                return;
+            }
+            $scope.isFetchingLogs = true;
+            OpenCraftAPI.one("instance", $scope.instance.id).customGET("logs").then(function(logs) {
+                if (typeof logs.log_error_entries === "undefined") {
+                    logs.log_error_entries = [];  // This field is not always present.
+                }
+                $scope.instanceLogs = logs;
+                $scope.isFetchingLogs = false;
+            }, function() {
+                $scope.notify("Unable to load the logs for this appserver.");
+                $scope.isFetchingLogs = false;
+            });
+        };
+
+        $scope.$watch('instance_active_tabs.log_tab', function(tab_open){
+            if (tab_open) {
+                $scope.fetchLogs();
+            }
+        });
+
+        $scope.loadAllAppServers = function() {
+            OpenCraftAPI.one("instance", $scope.instance.id).customGET("app_servers").then(function(response) {
+                $scope.instance.appservers = response.app_servers;
+            }, function() {
+                $scope.notify("Unable to load the app servers for this instance.");
             });
         };
 

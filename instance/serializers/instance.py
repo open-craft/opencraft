@@ -26,6 +26,7 @@ from rest_framework import serializers
 
 from instance.models.instance import InstanceReference, Instance
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.logentry import LogEntrySerializer
 from instance.serializers.openedx_instance import OpenEdXInstanceSerializer
 
@@ -59,6 +60,9 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
     # summary_only: Uses less detailed serializers for related instances
     summary_only = True
 
+    logs_url = serializers.HyperlinkedIdentityField(view_name='api:instance-logs')
+    appservers_full_list_url = serializers.HyperlinkedIdentityField(view_name='api:instance-app-servers')
+
     class Meta:
         model = InstanceReference
         fields = (
@@ -68,6 +72,8 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'created',
             'modified',
             'is_archived',
+            'logs_url',
+            'appservers_full_list_url',
         )
 
     def serialize_details(self, instance):
@@ -98,9 +104,6 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
         # Merge instance details into the resulting dict, but never overwrite existing fields
         for key, val in details.items():
             output.setdefault(key, val)
-        if not self.summary_only:
-            # Add log entries:
-            output['log_entries'] = [LogEntrySerializer(entry).data for entry in obj.instance.log_entries]
         return output
 
 
@@ -110,3 +113,31 @@ class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
     more detail.
     """
     summary_only = False
+
+
+class InstanceLogSerializer(serializers.ModelSerializer):
+    """
+    Provide the log entries for an Instance
+    """
+    log_entries = LogEntrySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InstanceReference
+        fields = ('log_entries', )
+
+
+class InstanceAppServerSerializer(serializers.ModelSerializer):
+    """
+    Provide the complete list of app servers for an instance
+    """
+    class Meta:
+        model = InstanceReference
+        fields = ('app_servers',)
+
+    def to_representation(self, obj):
+        output = super().to_representation(obj)
+        output['app_servers'] = [
+            AppServerBasicSerializer(appserver, context=self.context).data
+            for appserver in obj.app_servers
+        ]
+        return output

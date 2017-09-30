@@ -1,3 +1,5 @@
+EDXAPP_SETTINGS: 'openstack'
+
 django_users:
 {% for user in lms_users %}
   - email: '{{ user.email }}'

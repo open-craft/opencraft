@@ -27,7 +27,7 @@ from unittest.mock import patch
 from urllib.parse import urlparse
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.utils.six import StringIO
 import MySQLdb as mysql
@@ -164,6 +164,18 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assertTrue(result)
             db.logout()
 
+    def assert_lms_users_provisioned(self, user, appserver):
+        """
+        Ensure the lms user playbook was run on the appserver.
+        """
+        self.assertEqual(appserver.lms_users.count(), 1)
+        self.assertEqual(appserver.lms_users.get(), user)
+        self.assertTrue(appserver.lms_user_settings)
+
+        lms_user_playbook = appserver.lms_user_creation_playbook()
+        self.assertTrue(lms_user_playbook)
+        self.assertIn(lms_user_playbook, appserver.get_playbooks())
+
     @shard(1)
     def test_spawn_appserver(self):
         """
@@ -171,6 +183,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         OpenEdXInstanceFactory(name='Integration - test_spawn_appserver')
         instance = OpenEdXInstance.objects.get()
+
+        # Add an lms user, as happens with beta registration
+        user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
         self.assert_appserver_firewalled(instance)
@@ -178,6 +195,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(instance.require_user_creation_success())
         for appserver in instance.appserver_set.all():
             self.assert_secret_keys(instance, appserver)
+            self.assert_lms_users_provisioned(user, appserver)
 
     @shard(2)
     def test_external_databases(self):
@@ -212,7 +230,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(instance.successfully_provisioned)
         self.assertTrue(instance.require_user_creation_success())
 
-        user = User.objects.create_user('betatestuser', 'betatest@example.com')
+        user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
 
         BetaTestApplication.objects.create(
             user=user,

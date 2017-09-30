@@ -37,6 +37,10 @@
           <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
         </button>
         <ul class="side-nav appserver-list">
+          <li ng-if="instance.appservers.length < instance.appserver_count">
+            <a ng-click='loadAllAppServers()'>(show all {{ instance.appserver_count }})</a>
+          </li>
+
           <li ng-repeat="appserver in instance.appservers | orderBy: 'id'"
               ng-class="{'active-server': appserver.is_active,
                          active: appserver.id == state.params.appserverId}">
@@ -108,8 +112,11 @@
   </tab>
   <tab heading="Log" active="instance_active_tabs.log_tab">
     <p>This log does not include events from each App Server or VM. Select an App Server on the "App Servers" tab to view those logs.</p>
+    <div ng-if="isFetchingLogs">
+        Loading log...
+    </div>
     <div ng-attr-class="instance-log {{ line.level | lowercase }}"
-         ng-repeat="line in instance.log_entries track by $index">
+         ng-repeat="line in instanceLogs.log_entries track by $index">
       <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
       <span class="log-level">{{ line.level }}</span>
       <pre>{{ line.text }}</pre>

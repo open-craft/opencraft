@@ -22,6 +22,7 @@ Instance serializers (API representation)
 
 # Imports #####################################################################
 
+from django.conf import settings
 from rest_framework import serializers
 
 from instance.models.openedx_instance import OpenEdXInstance
@@ -149,8 +150,9 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         Add additional fields/data to the output
         """
         output = super().to_representation(obj)
+        filtered_appservers = obj.appserver_set.all()[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
         output['appservers'] = [
-            AppServerBasicSerializer(appserver, context=self.context).data for appserver in obj.appserver_set.all()
+            AppServerBasicSerializer(appserver, context=self.context).data for appserver in filtered_appservers
         ]
         try:
             output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data

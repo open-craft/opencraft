@@ -49,6 +49,8 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default=[])
 
 DEBUG = env.bool('DEBUG', default=False)
 
+ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
+
 
 # Auth ########################################################################
 
@@ -108,9 +110,14 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-if DEBUG:
+if DEBUG and ENABLE_DEBUG_TOOLBAR:
     INSTALLED_APPS += ('debug_toolbar',)
     MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    # Enable in all pages
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+    }
+
 
 ROOT_URLCONF = 'opencraft.urls'
 
@@ -523,6 +530,13 @@ INSTANCE_SMTP_RELAY_PORT = env.int('INSTANCE_SMTP_RELAY_PORT', default=587)
 INSTANCE_SMTP_RELAY_USERNAME = env('INSTANCE_SMTP_RELAY_USERNAME', default='')
 INSTANCE_SMTP_RELAY_PASSWORD = env('INSTANCE_SMTP_RELAY_PASSWORD', default='')
 INSTANCE_SMTP_RELAY_SENDER_DOMAIN = env('INSTANCE_SMTP_RELAY_SENDER_DOMAIN', default=DEFAULT_INSTANCE_BASE_DOMAIN)
+
+# User interface ##############################################################
+
+# The instance view loads data for at most 5 appservers and shows a button to load more
+# The /api/v1/instance/10/ API will also include at most this number of appservers.
+# This avoids sending too much information.
+NUM_INITIAL_APPSERVERS_SHOWN = 5
 
 # Subdomain blacklist #########################################################
 
