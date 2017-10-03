@@ -30,6 +30,14 @@
                 {% include row with field=form.password_confirmation %}
             {% endif %}
             {% include row with field=form.project_description %}
+
+	        {# design fields #}
+            {% include row with field=form.main_color %}
+            {% include row with field=form.link_color %}
+            {% include row with field=form.bg_color_1 %}
+            {% include row with field=form.bg_color_2 %}
+            {% include row with field=form.logo %}
+            {% include row with field=form.favicon %}
         {% endwith %}
         {% with row="registration/form_checkbox_field.html" %}
             {% include row with field=form.accept_terms %}

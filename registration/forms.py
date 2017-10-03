@@ -98,6 +98,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
             'project_description': Textarea,
+            'main_color': TextInput(attrs={'type': 'color'}),
+            'link_color': TextInput(attrs={'type': 'color'}),
+            'bg_color_1': TextInput(attrs={'type': 'color'}),
+            'bg_color_2': TextInput(attrs={'type': 'color'}),
         }
 
     # Fields that can be modified after the application has been submitted

@@ -102,6 +102,45 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text=('What are you going to use the instance for? What are '
                    'your expectations?'),
     )
+
+    # Theme fields. They allow to define the design, e.g. choose colors and logo
+    main_color = models.CharField(
+        max_length=7,
+        help_text='This is used as the primary color in your theme palette.',
+        default='333333', # #126f9a == text-color == rgb(51, 51, 51)
+    )
+    link_color = models.CharField(
+        max_length=7,
+        help_text='This is used as the color for clickable links on your '
+                  'instance.',
+        default='0075b4', # #0075b4 == link-color == rgb(0, 117, 180)
+
+    )
+    bg_color_1 = models.CharField(
+        max_length=7,
+        verbose_name='Primary background color',
+        help_text='Used as the main filler color for buttons, background, etc.',
+        default='126f9a', # #126f9a == m-blue-d3 == rgb(18,111,154)
+    )
+    bg_color_2 = models.CharField(
+        max_length=7,
+        verbose_name='Secondary background color',
+        help_text='Used as the secondary filler color for buttons, background, '
+                  'etc.',
+        default='c2387d', # #c2387d == m-pink == rgb(194, 56, 125)
+    )
+    logo = models.ImageField(
+        help_text='Your branding to be displayed throughout your instance.',
+        null=True, # to ease migrations
+        blank=False,
+    )
+    favicon = models.ImageField(
+        help_text="This is used as the browser tab icon for your instance's "
+                  "pages.",
+        null=True, # to ease migrations
+        blank=False,
+    )
+
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about the progress '
