@@ -87,6 +87,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.modified, instance.ref.modified)
         self.assertEqual(instance.additional_security_groups, [])
         self.assertEqual(instance.use_ephemeral_databases, settings.INSTANCE_EPHEMERAL_DATABASES)
+        self.assertFalse(instance.deploy_simpletheme)
         self.assertTrue(instance.rabbitmq_vhost)
         self.assertTrue(instance.rabbitmq_consumer_user)
         self.assertTrue(instance.rabbitmq_provider_user)

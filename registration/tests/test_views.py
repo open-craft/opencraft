@@ -68,6 +68,10 @@ class BetaTestApplicationViewTestMixin:
             'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
             'subscribe_to_updates': False,
+            'main_color': '#001122',
+            'link_color': '#001122',
+            'header_bg_color': '#ffffff',
+            'footer_bg_color': '#ffffff',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -111,14 +115,26 @@ class BetaTestApplicationViewTestMixin:
                        if name not in {'password',
                                        'password_strength',
                                        'password_confirmation',
-                                       'csrfmiddlewaretoken'}}
+                                       'csrfmiddlewaretoken',
+                                       'main_color',
+                                       'link_color',
+                                       'header_bg_color',
+                                       'footer_bg_color',
+                                       'logo',
+                                       'favicon'}}
         form_values = {name: field['value']
                        for name, field in form_fields.items()}
         expected_values = {name: value
                            for name, value in self.form_data.items()
                            if name not in {'password',
                                            'password_strength',
-                                           'password_confirmation'}}
+                                           'password_confirmation',
+                                           'main_color',
+                                           'link_color',
+                                           'header_bg_color',
+                                           'footer_bg_color',
+                                           'logo',
+                                           'favicon'}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
             if field.get('type') != 'checkbox':
@@ -348,6 +364,7 @@ class BetaTestApplicationViewTestMixin:
             'password_confirmation': ["The two password fields didn't match."],
         })
 
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
     def test_existing_user(self):
         """
         Logged in user already exists but has not registered.
@@ -457,6 +474,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
     def test_modify_user(self):
         """
         Check that the username and email fields cannot be modified if the user
@@ -477,6 +495,33 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         self._register(modified)
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
+
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com')
+    def test_modifying_design_fields_sends_email(self):
+        """
+        Check that after an user changes certain fields, we'll get a notification
+        e-mail informing of the changes (because we might need to redeploy the
+        instance). E.g. after changing colors or other design fields.
+        """
+
+        self._register(self.form_data)
+        modified = self.form_data.copy()
+        original_emails = len(mail.outbox)
+
+        # Modifying most fields shouldn't send an e-mail
+        with self.assertTemplateNotUsed('registration/fields_changed_email.txt'):
+            modified.update({
+                'project_description': 'Learn',
+            })
+            self._register(modified)
+            self.assertEqual(len(mail.outbox), original_emails)
+
+        with self.assertTemplateUsed('registration/fields_changed_email.txt'):
+            modified.update({
+                'main_color': '#001188',
+            })
+            self._register(modified)
+            self.assertEqual(len(mail.outbox), original_emails + 1)
 
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,

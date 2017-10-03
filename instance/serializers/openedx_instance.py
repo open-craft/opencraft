@@ -101,6 +101,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         fields = OpenEdXInstanceBasicSerializer.Meta.fields + (
             'email',
             'use_ephemeral_databases',
+            'deploy_simpletheme',
             'github_admin_organizations',
             'github_admin_users',
             'internal_lms_domain',
@@ -150,16 +151,22 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         Add additional fields/data to the output
         """
         output = super().to_representation(obj)
+
         filtered_appservers = obj.appserver_set.all()[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
         output['appservers'] = [
             AppServerBasicSerializer(appserver, context=self.context).data for appserver in filtered_appservers
         ]
+
         try:
             output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data
         except WatchedPullRequest.DoesNotExist:
             output['source_pr'] = None
+
         if obj.load_balancing_server:
             output['load_balancing_server'] = obj.load_balancing_server.domain
         else:
             output['load_balancing_server'] = None
+
+        output['configuration_theme_settings'] = obj.get_theme_settings()
+
         return output
