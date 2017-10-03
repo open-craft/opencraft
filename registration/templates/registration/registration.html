@@ -21,6 +21,15 @@
 
             <div id="form" class="page-content__header small-10 small-offset-1 columns">
                 {% if application.pk %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
+                                <p class="box-alert__content">
+                                    {{ message }}
+                                </p>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                     {% if application.status == 'pending' %}
                         <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
                             <p class="box-alert__content">

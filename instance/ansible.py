@@ -62,7 +62,8 @@ def yaml_merge(yaml_str1, yaml_str2):
         return yaml_str1
 
     dict1 = yaml.load(yaml_str1)
-    dict2 = yaml.load(yaml_str2)
+    dict2 = yaml.load(yaml_str2) or {}
+
     result_dict = dict_merge(dict1, dict2)
 
     return yaml.dump(result_dict)
