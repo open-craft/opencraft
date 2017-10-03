@@ -278,6 +278,20 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
+
+# SWIFT for media files. This configuration is used by Ocim to store files
+# uploaded in Ocim forms. It will not be copied to the deployed instance.
+MEDIAFILES_SWIFT_ENABLE = env.bool('MEDIAFILES_SWIFT_ENABLE', default=False)
+if MEDIAFILES_SWIFT_ENABLE:
+    DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
+    SWIFT_AUTH_URL = env('MEDIAFILES_SWIFT_AUTH_URL')
+    SWIFT_USERNAME = env('MEDIAFILES_SWIFT_USERNAME')
+    SWIFT_TENANT_NAME = env('MEDIAFILES_SWIFT_TENANT_NAME')
+    SWIFT_REGION_NAME = env('MEDIAFILES_SWIFT_REGION_NAME')
+    SWIFT_KEY = env('MEDIAFILES_SWIFT_KEY')
+    SWIFT_CONTAINER_NAME = env('MEDIAFILES_SWIFT_CONTAINER_NAME')
+
+
 # RabbitMQ ####################################################################
 
 DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
@@ -422,6 +436,9 @@ EMAIL_BACKEND = env('EMAIL_BACKEND',
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='opencraft@localhost')
 SERVER_EMAIL = env('SERVER_EMAIL', default='opencraft@locahost')
 EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
+
+# Destination e-mail for notifications like "The user changed the logo"
+VARIABLES_NOTIFICATION_EMAIL = env('VARIABLES_NOTIFICATION_EMAIL', default=None)
 
 # SMTP configuration
 EMAIL_HOST = env('EMAIL_HOST', default='localhost')

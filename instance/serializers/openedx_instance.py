@@ -101,6 +101,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         fields = OpenEdXInstanceBasicSerializer.Meta.fields + (
             'email',
             'use_ephemeral_databases',
+            'deploy_simpletheme',
             'github_admin_organizations',
             'github_admin_users',
             'internal_lms_domain',
