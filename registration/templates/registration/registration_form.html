@@ -1,4 +1,4 @@
-<form id="registration-form" name="{{ form.form_name }}" action="#form" method="post" ng-controller="Registration" novalidate>
+<form id="registration-form" name="{{ form.form_name }}" action="#form" method="post" enctype="multipart/form-data" ng-controller="Registration" novalidate>
 
     {% csrf_token %}
 
