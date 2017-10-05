@@ -109,6 +109,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'full_name',
         'project_description',
         'subscribe_to_updates',
+        'main_color',
+        'link_color',
+        'bg_color_1',
+        'bg_color_2',
+        'logo',
+        'favicon',
     }
 
     full_name = forms.CharField(
