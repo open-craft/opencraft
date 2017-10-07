@@ -282,7 +282,7 @@ if BACKUP_SWIFT_ENABLED:
 # uploaded in Ocim forms. It will not be copied to the deployed instance.
 MEDIAFILES_SWIFT_ENABLE = env.bool('MEDIAFILES_SWIFT_ENABLE', default=False)
 if MEDIAFILES_SWIFT_ENABLE:
-    DEFAULT_FILE_STORAGE='swift.storage.SwiftStorage'
+    DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_AUTH_URL = env('MEDIAFILES_SWIFT_AUTH_URL')
     SWIFT_USERNAME = env('MEDIAFILES_SWIFT_USERNAME')
     SWIFT_TENANT_NAME = env('MEDIAFILES_SWIFT_TENANT_NAME')
