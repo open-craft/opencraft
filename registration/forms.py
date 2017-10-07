@@ -25,6 +25,7 @@ Forms for registration/login
 import logging
 
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -117,6 +118,16 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'favicon',
     }
 
+    # Fields that when modified need a restart of the instance
+    needs_restart = {
+        'main_color',
+        'link_color',
+        'bg_color_1',
+        'bg_color_2',
+        'logo',
+        'favicon',
+    }
+
     full_name = forms.CharField(
         max_length=255,
         widget=TextInput,
@@ -197,6 +208,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         If this form updates an existing application, populate fields from
         related models and make non-modifiable fields read only.
         """
+        self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
         if self.instance:
             if hasattr(self.instance, 'user'):
@@ -311,10 +323,20 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         submitted.
         """
         cleaned_data = super().clean()
+        if self.restart_fields_changed():
+            messages.add_message(self.request, messages.INFO,
+                                 "Thank you for submitting these changes - we will rebuild your instance to "
+                                 "apply them, and email you to confirm once it is up to date.")
         if self.instance and self.instance.pk:
             return {field: value for field, value in cleaned_data.items()
                     if field in self.can_be_modified}
         return cleaned_data
+
+    def restart_fields_changed(self):
+        """
+        Return true if any of the fields that need a restart were changed
+        """
+        return any(field in self.changed_data for field in self.needs_restart)
 
     def save(self, commit=True):
         """
