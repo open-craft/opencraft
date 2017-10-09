@@ -436,6 +436,9 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='opencraft@localhost')
 SERVER_EMAIL = env('SERVER_EMAIL', default='opencraft@locahost')
 EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
 
+# Destination e-mail for notifications like "The user changed the logo"
+VARIABLES_NOTIFICATION_EMAIL = env('VARIABLES_NOTIFICATION_EMAIL', default=None)
+
 # SMTP configuration
 EMAIL_HOST = env('EMAIL_HOST', default='localhost')
 EMAIL_PORT = env('EMAIL_PORT', default=25)
