@@ -26,8 +26,10 @@ import logging
 
 from django import forms
 from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db import transaction
 from django.utils.text import capfirst
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
@@ -386,6 +388,27 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             with transaction.atomic():
                 application.user.profile.save()
                 application.save()
+        if self.restart_fields_changed() and settings.VARIABLES_NOTIFICATION_EMAIL:
+            subject = settings.EMAIL_SUBJECT_PREFIX + 'Update required'
+            text = ("The instance at {domain} requires new values:\n"
+                    "- main color: {main_color}\n"
+                    "- link color: {link_color}\n"
+                    "- bg_color_1: {bg_color_1}\n"
+                    "- bg_color_2: {bg_color_2}\n"
+                    "- logo: {logo}\n"
+                    "- favicon: {favicon}\n"
+                   ).format(**{
+                       'domain': application.subdomain + '.' + BetaTestApplication.BASE_DOMAIN,
+                       'main_color': application.main_color,
+                       'link_color': application.link_color,
+                       'bg_color_1': application.bg_color_1,
+                       'bg_color_2': application.bg_color_2,
+                       'logo': application.logo,
+                       'favicon': application.favicon,
+                   })
+            sender = settings.DEFAULT_FROM_EMAIL
+            dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
+            send_mail(subject, text, sender, dest)
 
     def fields_with_errors(self):
         """
