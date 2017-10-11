@@ -389,22 +389,29 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 application.user.profile.save()
                 application.save()
         if self.restart_fields_changed() and settings.VARIABLES_NOTIFICATION_EMAIL:
-            subject = settings.EMAIL_SUBJECT_PREFIX + 'Update required'
-            text = ("The instance at {domain} requires new values:\n"
+            subject = '{prefix} Update required at instance {name}'.format(
+                prefix=settings.EMAIL_SUBJECT_PREFIX,
+                name=application.subdomain,
+            )
+            text = ("Instance {id} at {domain} requires a redeployment because "
+                    "some values were changed through the registration form.\n"
+                    "\n"
+                    "The new values are:\n"
                     "- main color: {main_color}\n"
                     "- link color: {link_color}\n"
-                    "- bg_color_1: {bg_color_1}\n"
-                    "- bg_color_2: {bg_color_2}\n"
+                    "- primary background color: {bg_color_1}\n"
+                    "- secondary background color: {bg_color_2}\n"
                     "- logo: {logo}\n"
                     "- favicon: {favicon}\n"
                    ).format(**{
-                       'domain': application.subdomain + '.' + BetaTestApplication.BASE_DOMAIN,
+                       'id': application.instance_id,
+                       'domain': application.domain,
                        'main_color': application.main_color,
                        'link_color': application.link_color,
                        'bg_color_1': application.bg_color_1,
                        'bg_color_2': application.bg_color_2,
-                       'logo': application.logo,
-                       'favicon': application.favicon,
+                       'logo': application.logo.url,
+                       'favicon': application.favicon.url,
                    })
             sender = settings.DEFAULT_FROM_EMAIL
             dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
