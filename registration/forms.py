@@ -325,10 +325,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         submitted.
         """
         cleaned_data = super().clean()
-        if self.restart_fields_changed():
-            messages.add_message(self.request, messages.INFO,
-                                 "Thank you for submitting these changes - we will rebuild your instance to "
-                                 "apply them, and email you to confirm once it is up to date.")
         if self.instance and self.instance.pk:
             return {field: value for field, value in cleaned_data.items()
                     if field in self.can_be_modified}
@@ -388,35 +384,41 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             with transaction.atomic():
                 application.user.profile.save()
                 application.save()
-        if self.restart_fields_changed() and settings.VARIABLES_NOTIFICATION_EMAIL:
-            subject = '{prefix} Update required at instance {name}'.format(
-                prefix=settings.EMAIL_SUBJECT_PREFIX,
-                name=application.subdomain,
-            )
-            text = ("Instance {instance_id} at {domain} requires a redeployment "
-                    "because some values were changed through the "
-                    "registration form.\n"
-                    "\n"
-                    "The new values are:\n"
-                    "- main color: {main_color}\n"
-                    "- link color: {link_color}\n"
-                    "- primary background color: {bg_color_1}\n"
-                    "- secondary background color: {bg_color_2}\n"
-                    "- logo: {logo}\n"
-                    "- favicon: {favicon}\n"
-                   ).format(
-                       instance_id=application.instance_id,
-                       domain=application.domain,
-                       main_color=application.main_color,
-                       link_color=application.link_color,
-                       bg_color_1=application.bg_color_1,
-                       bg_color_2=application.bg_color_2,
-                       logo=application.logo.url,
-                       favicon=application.favicon.url,
-                   )
-            sender = settings.DEFAULT_FROM_EMAIL
-            dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
-            send_mail(subject, text, sender, dest)
+
+        if self.restart_fields_changed():
+            messages.add_message(self.request, messages.INFO,
+                                 "Thank you for submitting these changes - we will rebuild your instance to "
+                                 "apply them, and email you to confirm once it is up to date.")
+
+            if settings.VARIABLES_NOTIFICATION_EMAIL:
+                subject = '{prefix} Update required at instance {name}'.format(
+                    prefix=settings.EMAIL_SUBJECT_PREFIX,
+                    name=application.subdomain,
+                )
+                text = ("Instance {instance_id} at {domain} requires a redeployment "
+                        "because some values were changed through the "
+                        "registration form.\n"
+                        "\n"
+                        "The new values are:\n"
+                        "- main color: {main_color}\n"
+                        "- link color: {link_color}\n"
+                        "- primary background color: {bg_color_1}\n"
+                        "- secondary background color: {bg_color_2}\n"
+                        "- logo: {logo}\n"
+                        "- favicon: {favicon}\n"
+                ).format(
+                    instance_id=application.instance_id,
+                    domain=application.domain,
+                    main_color=application.main_color,
+                    link_color=application.link_color,
+                    bg_color_1=application.bg_color_1,
+                    bg_color_2=application.bg_color_2,
+                    logo=application.logo.url,
+                    favicon=application.favicon.url,
+                )
+                sender = settings.DEFAULT_FROM_EMAIL
+                dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
+                send_mail(subject, text, sender, dest)
 
     def fields_with_errors(self):
         """
