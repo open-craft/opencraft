@@ -393,8 +393,9 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 prefix=settings.EMAIL_SUBJECT_PREFIX,
                 name=application.subdomain,
             )
-            text = ("Instance {id} at {domain} requires a redeployment because "
-                    "some values were changed through the registration form.\n"
+            text = ("Instance {instance_id} at {domain} requires a redeployment "
+                    "because some values were changed through the "
+                    "registration form.\n"
                     "\n"
                     "The new values are:\n"
                     "- main color: {main_color}\n"
@@ -403,16 +404,16 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                     "- secondary background color: {bg_color_2}\n"
                     "- logo: {logo}\n"
                     "- favicon: {favicon}\n"
-                   ).format(**{
-                       'id': application.instance_id,
-                       'domain': application.domain,
-                       'main_color': application.main_color,
-                       'link_color': application.link_color,
-                       'bg_color_1': application.bg_color_1,
-                       'bg_color_2': application.bg_color_2,
-                       'logo': application.logo.url,
-                       'favicon': application.favicon.url,
-                   })
+                   ).format(
+                       instance_id=application.instance_id,
+                       domain=application.domain,
+                       main_color=application.main_color,
+                       link_color=application.link_color,
+                       bg_color_1=application.bg_color_1,
+                       bg_color_2=application.bg_color_2,
+                       logo=application.logo.url,
+                       favicon=application.favicon.url,
+                   )
             sender = settings.DEFAULT_FROM_EMAIL
             dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
             send_mail(subject, text, sender, dest)
