@@ -14,8 +14,10 @@ COMMON_HTPASSWD_USER: '{{ instance.http_auth_user }}'
 COMMON_HTPASSWD_PASS: '{{ instance.http_auth_pass }}'
 
 # OAuth2 / JWT issuer settings
+{% verbatim %}
 COMMON_OAUTH_BASE_URL: "{{ EDXAPP_LMS_ROOT_URL }}"
 COMMON_JWT_SECRET_KEY: "{{ EDXAPP_JWT_SECRET_KEY }}"
+{% endverbatim %}
 COMMON_JWT_AUDIENCE: 'lms-key'
 
 # edxapp
@@ -212,6 +214,7 @@ EDXAPP_ECOMMERCE_API_URL: 'https://{{ instance.ecommerce_domain }}/api/v2'
 ECOMMERCE_SUPPORT_URL: 'https://{{ instance.domain }}'
 ECOMMERCE_LMS_URL_ROOT: 'https://{{ instance.domain }}'
 ECOMMERCE_COURSE_CATALOG_URL: 'https://{{ instance.discovery_domain }}'
+{% verbatim %}
 ECOMMERCE_PLATFORM_NAME: "{{ EDXAPP_PLATFORM_NAME }}"
 # Set your own ECOMMERCE_PAYMENT_PROCESSOR_CONFIG, or update the variables for the appropriate processor:
 # * CyberSource
@@ -231,6 +234,7 @@ ECOMMERCE_PAYPAL_CLIENT_SECRET: 'SET-ME-PLEASE'
 ECOMMERCE_PAYPAL_RECEIPT_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/receipt/'
 ECOMMERCE_PAYPAL_CANCEL_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/'
 ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/error/'
+{% endverbatim %}
 
 # Comprehensive theming
 # EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
