@@ -1,0 +1,15 @@
+{# This e-mail is sent to us when an Ocim user modifies design fields in the registration form #}
+{% autoescape off %}
+
+Instance at {{ application.domain }} (ID {{ application.instance_id }}) requires a redeployment because some values were changed through the registration form.
+
+The new values are:
+
+- main color: {{ application.main_color }}
+- link color: {{ application.link_color }}
+- primary background color: {{ application.bg_color_1 }}
+- secondary background color: {{ application.bg_color_2 }}
+- logo: {{ application.logo.url }}
+- favicon: {{ application.favicon.url }}
+
+{% endautoescape %}
