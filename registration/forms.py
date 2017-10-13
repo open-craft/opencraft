@@ -32,6 +32,7 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
 from django.utils.text import capfirst
+from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
@@ -391,31 +392,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                                  "apply them, and email you to confirm once it is up to date.")
 
             if settings.VARIABLES_NOTIFICATION_EMAIL:
-                subject = '{prefix} Update required at instance {name}'.format(
-                    prefix=settings.EMAIL_SUBJECT_PREFIX,
+                subject = 'Update required at instance {name}'.format(
                     name=application.subdomain,
                 )
-                text = ("Instance {instance_id} at {domain} requires a redeployment "
-                        "because some values were changed through the "
-                        "registration form.\n"
-                        "\n"
-                        "The new values are:\n"
-                        "- main color: {main_color}\n"
-                        "- link color: {link_color}\n"
-                        "- primary background color: {bg_color_1}\n"
-                        "- secondary background color: {bg_color_2}\n"
-                        "- logo: {logo}\n"
-                        "- favicon: {favicon}\n"
-                       ).format(
-                           instance_id=application.instance_id,
-                           domain=application.domain,
-                           main_color=application.main_color,
-                           link_color=application.link_color,
-                           bg_color_1=application.bg_color_1,
-                           bg_color_2=application.bg_color_2,
-                           logo=application.logo.url,
-                           favicon=application.favicon.url,
-                       )
+                template = get_template('registration/fields_changed_email.txt')
+                message = template.render(dict(
+                    application=application,
+                ))
                 sender = settings.DEFAULT_FROM_EMAIL
                 dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
                 send_mail(subject, text, sender, dest)
