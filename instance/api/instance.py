@@ -72,16 +72,22 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         List all instances. No App server list is returned in the list view, only the newest app server information.
 
         """
+        # Don't load all columns, because some of them have very big data
+        appservers_few_columns = OpenEdXAppServer.objects.only('_is_active', '_status', 'id', 'name', 'owner_id',
+                                                               'created', 'modified')
         queryset = self.queryset.prefetch_related(
             # Use prefetching to make the number of database queries required to
             # generate this list O(1).
-            # Note that prefetching all app server information is still required, as the "newest" is not decideable
+            # Note that prefetching all app servers information is still required, as the "newest" is not decideable
             # at this point. This will cause more data than necessary to be streamed from the DB, but removing this
             # prefetch without first selecting only the "newest" here results in O(n).
-            Prefetch('instance__ref_set__openedxappserver_set'),
             Prefetch(
                 'instance__ref_set__openedxappserver_set',
-                queryset=OpenEdXAppServer.objects.filter(_is_active=True),
+                queryset=appservers_few_columns,
+            ),
+            Prefetch(
+                'instance__ref_set__openedxappserver_set',
+                queryset=appservers_few_columns.filter(_is_active=True),
                 to_attr='_cached_active_appservers'
             ),
         )
