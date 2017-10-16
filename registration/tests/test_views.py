@@ -490,6 +490,33 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com')
+    def test_modify_design_fields_sends_notification_email(self):
+        """
+        Check that after an user changes certain fields, we'll get a notification
+        e-mail informing of the changes (because we might need to redeploy the
+        instance). E.g. after changing colors or other design fields.
+        """
+
+        self._register(self.form_data)
+        modified = self.form_data.copy()
+        original_emails = len(mail.outbox)
+
+        # Modifying most fields shouldn't send an e-mail
+        with self.assertTemplateNotUsed('registration/fields_changed_email.txt'):
+            modified.update({
+                'project_description': 'Learn',
+            })
+            self._register(modified)
+            self.assertEqual(len(mail.outbox), original_emails)
+
+        with self.assertTemplateUsed('registration/fields_changed_email.txt'):
+            modified.update({
+                'main_color': '#001188',
+            })
+            self._register(modified)
+            self.assertEqual(len(mail.outbox), original_emails+1)
+
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
                                      TestCase):
