@@ -396,7 +396,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                     name=application.subdomain,
                 )
                 template = get_template('registration/fields_changed_email.txt')
-                message = template.render(dict(
+                text = template.render(dict(
                     application=application,
                 ))
                 sender = settings.DEFAULT_FROM_EMAIL
