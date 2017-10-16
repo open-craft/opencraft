@@ -9,3 +9,4 @@ FORUM_MONGO_PASSWORD: '{{ pass }}'
 FORUM_MONGO_HOSTS: ['{{ host }}']
 FORUM_MONGO_PORT: {{ port }}
 FORUM_MONGO_DATABASE: '{{ forum_database }}'
+FORUM_REBUILD_INDEX: true
