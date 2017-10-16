@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^registration/', include('registration.urls', namespace='registration')),
     url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
+    url(r'^fine-uploader/', include('django_fine_uploader.urls', namespace='django_fine_uploader')),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
 

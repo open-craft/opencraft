@@ -27,6 +27,7 @@ from django.contrib.auth import views as auth_views
 
 from registration.forms import LoginForm
 from registration.views import BetaTestApplicationView
+from .uploaders import RegistrationImagesUploaderView
 
 
 # URL Patterns ################################################################
@@ -34,6 +35,7 @@ from registration.views import BetaTestApplicationView
 app_name = 'registration'
 urlpatterns = [
     url(r'^$', BetaTestApplicationView.as_view(), name='register'),
+    url(r'^upload$', RegistrationImagesUploaderView.as_view(), name='images-upload'),
     url(r'^login/$', auth_views.login, {'authentication_form': LoginForm}, name='login'),
     url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
 ]

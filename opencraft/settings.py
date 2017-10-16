@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'huey.contrib.djhuey',
     'swampdragon',
     'simple_email_confirmation',
+    'django_fine_uploader.apps.DjangoFineUploaderConfig',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
