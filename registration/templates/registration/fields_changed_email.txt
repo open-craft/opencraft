@@ -12,4 +12,6 @@ The new values are:
 - logo: {{ application.logo.url }}
 - favicon: {{ application.favicon.url }}
 
+List of changed fields: {% for cf in changed_fields %}{{ cf }}, {% endfor %}
+
 {% endautoescape %}
