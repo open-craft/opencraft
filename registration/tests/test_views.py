@@ -358,6 +358,7 @@ class BetaTestApplicationViewTestMixin:
             'password_confirmation': ["The two password fields didn't match."],
         })
 
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
     def test_existing_user(self):
         """
         Logged in user already exists but has not registered.
@@ -467,6 +468,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
     def test_modify_user(self):
         """
         Check that the username and email fields cannot be modified if the user
