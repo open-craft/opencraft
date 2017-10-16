@@ -68,6 +68,12 @@ class BetaTestApplicationViewTestMixin:
             'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
             'subscribe_to_updates': False,
+            'main_color': '#001122',
+            'link_color': '#001122',
+            'bg_color_1': '#001122',
+            'bg_color_2': '#001122',
+            'logo': 'fake/logo.png',
+            'favicon': 'fake/favicon.ico',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -111,14 +117,18 @@ class BetaTestApplicationViewTestMixin:
                        if name not in {'password',
                                        'password_strength',
                                        'password_confirmation',
-                                       'csrfmiddlewaretoken'}}
+                                       'csrfmiddlewaretoken',
+                                       'logo',
+                                       'favicon',}}
         form_values = {name: field['value']
                        for name, field in form_fields.items()}
         expected_values = {name: value
                            for name, value in self.form_data.items()
                            if name not in {'password',
                                            'password_strength',
-                                           'password_confirmation'}}
+                                           'password_confirmation',
+                                           'logo',
+                                           'favicon',}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
             if field.get('type') != 'checkbox':
