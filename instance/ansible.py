@@ -42,6 +42,18 @@ logger = logging.getLogger(__name__)
 
 # Functions ###################################################################
 
+def load_yaml(string):
+    """
+    Return the dict parsed from the given yaml string.
+
+    If the string begins with @, then read from the file there named.
+    """
+    if string.startswith('@'):
+        with open(string[1:]) as f:
+            return yaml.load(f)
+    return yaml.load(string)
+
+
 def yaml_merge(yaml_str1, yaml_str2):
     """
     Merge the two yaml strings, recursively overriding variables from `yaml_str1` by `yaml_str2`
