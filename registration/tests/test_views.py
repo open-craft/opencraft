@@ -119,7 +119,7 @@ class BetaTestApplicationViewTestMixin:
                                        'password_confirmation',
                                        'csrfmiddlewaretoken',
                                        'logo',
-                                       'favicon',}}
+                                       'favicon'}}
         form_values = {name: field['value']
                        for name, field in form_fields.items()}
         expected_values = {name: value
@@ -128,7 +128,7 @@ class BetaTestApplicationViewTestMixin:
                                            'password_strength',
                                            'password_confirmation',
                                            'logo',
-                                           'favicon',}}
+                                           'favicon'}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
             if field.get('type') != 'checkbox':
@@ -491,7 +491,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         self._assert_application_matches_form_data(application)
 
     @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com')
-    def test_modify_design_fields_sends_notification_email(self):
+    def test_modifying_design_fields_sends_email(self):
         """
         Check that after an user changes certain fields, we'll get a notification
         e-mail informing of the changes (because we might need to redeploy the
@@ -515,7 +515,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
                 'main_color': '#001188',
             })
             self._register(modified)
-            self.assertEqual(len(mail.outbox), original_emails+1)
+            self.assertEqual(len(mail.outbox), original_emails + 1)
 
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
