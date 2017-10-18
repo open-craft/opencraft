@@ -211,7 +211,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         If this form updates an existing application, populate fields from
         related models and make non-modifiable fields read only.
         """
-        self.request = kwargs.pop('request')
+        # Save the request to be able to store notification messages later.
+        # AJAX API calls for validation don't pass 'request'.
+        if 'request' in kwargs:
+            self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
         if self.instance:
             if hasattr(self.instance, 'user'):
