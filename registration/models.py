@@ -133,12 +133,14 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text='Your branding to be displayed throughout your instance.',
         null=True, # to ease migrations
         blank=False,
+        default='opencraft_logo_small.png',
     )
     favicon = models.ImageField(
         help_text="This is used as the browser tab icon for your instance's "
                   "pages.",
         null=True, # to ease migrations
         blank=False,
+        default='opencraft_favicon.ico',
     )
 
     subscribe_to_updates = models.BooleanField(
