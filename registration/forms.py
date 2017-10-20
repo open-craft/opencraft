@@ -104,8 +104,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'project_description': Textarea,
             'main_color': TextInput(attrs={'type': 'color'}),
             'link_color': TextInput(attrs={'type': 'color'}),
-            'bg_color_1': TextInput(attrs={'type': 'color'}),
-            'bg_color_2': TextInput(attrs={'type': 'color'}),
+            'header_bg_color': TextInput(attrs={'type': 'color'}),
+            'footer_bg_color': TextInput(attrs={'type': 'color'}),
         }
 
     # Fields that can be modified after the application has been submitted
@@ -115,8 +115,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'subscribe_to_updates',
         'main_color',
         'link_color',
-        'bg_color_1',
-        'bg_color_2',
+        'header_bg_color',
+        'footer_bg_color',
         'logo',
         'favicon',
     }
@@ -125,8 +125,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     needs_restart = {
         'main_color',
         'link_color',
-        'bg_color_1',
-        'bg_color_2',
+        'header_bg_color',
+        'footer_bg_color',
         'logo',
         'favicon',
     }
