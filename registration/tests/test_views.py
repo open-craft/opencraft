@@ -70,8 +70,8 @@ class BetaTestApplicationViewTestMixin:
             'subscribe_to_updates': False,
             'main_color': '#001122',
             'link_color': '#001122',
-            'bg_color_1': '#001122',
-            'bg_color_2': '#001122',
+            'header_bg_color': '#001122',
+            'footer_bg_color': '#001122',
             'logo': 'fake/logo.png',
             'favicon': 'fake/favicon.ico',
         }

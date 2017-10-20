@@ -7,8 +7,8 @@ The new values are:
 
 - main color: {{ application.main_color }}
 - link color: {{ application.link_color }}
-- primary background color: {{ application.bg_color_1 }}
-- secondary background color: {{ application.bg_color_2 }}
+- header background color: {{ application.header_bg_color }}
+- footer background color: {{ application.footer_bg_color }}
 - logo: {{ application.logo.url }}
 - favicon: {{ application.favicon.url }}
 
