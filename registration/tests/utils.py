@@ -77,6 +77,12 @@ class BrowserTestMixin:
                     # Before moving on, make sure checkbox state (checked/unchecked) corresponds to desired value
                     WebDriverWait(self.client, timeout=5) \
                         .until(expected_conditions.element_selection_state_to_be(element, value))
+            elif element.get_attribute('type') == 'color':
+                # TODO be able to change colors. Typing in a color chooser doesn't set it. Clicking it opens a
+                # dialog but without focus, so typing doesn't help either.
+                # element.click()
+                # element.send_keys(value)
+                pass
             elif not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
                 element.send_keys(value)
