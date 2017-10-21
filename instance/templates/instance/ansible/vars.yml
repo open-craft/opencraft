@@ -242,10 +242,13 @@ ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/erro
 {% endverbatim %}
 
 # Comprehensive theming
-# EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
-# EDXAPP_COMPREHENSIVE_THEME_DIRS:
-#   - '/edx/app/edxapp/themes'
-# EDXAPP_DEFAULT_SITE_THEME: 'my-theme-name'
+EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
+EDXAPP_COMPREHENSIVE_THEME_DIRS:
+  - '/edx/app/edxapp/themes'
+EDXAPP_DEFAULT_SITE_THEME: 'simple-theme'
+# See simple-theme configuration variables in simple_theme.yml
+
+# Stanford theming (deprecated)
 # edxapp_theme_name: '{{ EDXAPP_DEFAULT_SITE_THEME }}'
 # edxapp_theme_source_repo: 'https://github.com/open-craft/my-comprehensive-theme.git'
 # edxapp_theme_version: 'master'
