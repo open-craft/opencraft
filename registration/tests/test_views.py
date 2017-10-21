@@ -68,12 +68,6 @@ class BetaTestApplicationViewTestMixin:
             'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
             'subscribe_to_updates': False,
-            'main_color': '#001122',
-            'link_color': '#001122',
-            'header_bg_color': '#001122',
-            'footer_bg_color': '#001122',
-            'logo': 'fake/logo.png',
-            'favicon': 'fake/favicon.ico',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -118,6 +112,10 @@ class BetaTestApplicationViewTestMixin:
                                        'password_strength',
                                        'password_confirmation',
                                        'csrfmiddlewaretoken',
+                                       'main_color',
+                                       'link_color',
+                                       'header_bg_color',
+                                       'footer_bg_color',
                                        'logo',
                                        'favicon'}}
         form_values = {name: field['value']
@@ -127,6 +125,10 @@ class BetaTestApplicationViewTestMixin:
                            if name not in {'password',
                                            'password_strength',
                                            'password_confirmation',
+                                           'main_color',
+                                           'link_color',
+                                           'header_bg_color',
+                                           'footer_bg_color',
                                            'logo',
                                            'favicon'}}
         self.assertEqual(form_values, expected_values)
