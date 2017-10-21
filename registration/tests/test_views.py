@@ -68,6 +68,10 @@ class BetaTestApplicationViewTestMixin:
             'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
             'subscribe_to_updates': False,
+            'main_color': '#001122',
+            'link_color': '#001122',
+            'header_bg_color': '#ffffff',
+            'footer_bg_color': '#ffffff',
         }
 
     def _assert_registration_succeeds(self, form_data):
