@@ -26,6 +26,7 @@ import logging
 
 from django.db import transaction
 from django.dispatch import receiver
+from django.template import loader
 from simple_email_confirmation.signals import email_confirmed
 
 from registration.models import BetaTestApplication
@@ -65,11 +66,20 @@ def _provision_instance(sender, **kwargs):
     if application.instance is not None:
         logger.info('Email confirmed for user %s, but instance already provisioned.', user.username)
         return
+
+    template = loader.get_template('instance/ansible/simple_theme.yml')
+    design_fields_yaml = template.render(
+        dict(
+            application=application,
+        )
+    )
+
     with transaction.atomic():
         application.instance = production_instance_factory(
             sub_domain=application.subdomain,
             name=application.instance_name,
             email=application.public_contact_email,
+            configuration_extra_settings=design_fields_yaml,
         )
         application.instance.lms_users.add(user)
         application.save()
