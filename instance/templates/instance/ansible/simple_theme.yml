@@ -14,4 +14,8 @@ SIMPLETHEME_SASS_OVERRIDES:
   - variable: action-secondary-bg
     value: '{{ application.main_color }}'
 
+SIMPLETHEME_STATIC_FILES_URLS:
+  - lms/static/images/logo.png: '{{ application.logo.url }}'
+  - lms/static/images/favicon.ico: '{{ application.favicon.url }}'
+
 SIMPLETHEME_ENABLE_DEPLOY: True
