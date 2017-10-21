@@ -13,3 +13,5 @@ SIMPLETHEME_SASS_OVERRIDES:
     value: '{{ application.main_color }}'
   - variable: action-secondary-bg
     value: '{{ application.main_color }}'
+
+SIMPLETHEME_ENABLE_DEPLOY: True
