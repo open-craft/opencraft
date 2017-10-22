@@ -46,6 +46,7 @@ def validate_available_subdomain(subdomain):
             code='blacklisted',
         )
 
+
 def validate_logo_height(image):
     """
     Validates that the logo is 70px tall (otherwise it would require extra CSS).
