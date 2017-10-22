@@ -2,8 +2,9 @@
 {% autoescape off %}
 
 Instance at {{ application.domain }} (ID {{ application.instance_id }}) requires a redeployment because some values were changed through the registration form.
+To do the redeployment, follow the detailed instructions in https://tasks.opencraft.com/browse/ADMIN-58
 
-The new values are:
+For reference, the new values are:
 
 - main color: {{ application.main_color }}
 - link color: {{ application.link_color }}
