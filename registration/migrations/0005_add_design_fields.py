@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+# This migration is overriden by 005_add_design_fields_v2.
+# Delete this file after all instances are using the new one.
 
 class Migration(migrations.Migration):
 
