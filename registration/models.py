@@ -46,6 +46,20 @@ def validate_available_subdomain(subdomain):
             code='blacklisted',
         )
 
+def validate_logo_height(image):
+    """
+    Validates that the logo is 70px tall (otherwise it would require extra CSS).
+    """
+
+    if image.name == 'opencraft_logo_small.png':
+        # Don't check the default image (which is in SWIFT). This gives more flexibility in
+        # dev (we don't need to set up the right images in the every SWIFT container). Could
+        # be made safer.
+        return
+
+    if image.height != 70:
+        raise ValidationError("The logo image must be 70px tall to fit into the header.")
+
 
 class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     """
@@ -140,6 +154,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         null=True, # to ease migrations
         blank=False,
         default='opencraft_logo_small.png',
+        validators=[validate_logo_height],
     )
     favicon = models.ImageField(
         help_text="This is used as the browser tab icon for your instance's "
