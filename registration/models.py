@@ -134,14 +134,16 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='#ffffff',
     )
     logo = models.ImageField(
-        help_text='Your branding to be displayed throughout your instance.',
+        help_text="Your branding to be displayed throughout your instance. "
+                  "It should be 70px tall. "
+                  "If unset, OpenCraft's logo will be used.",
         null=True, # to ease migrations
         blank=False,
         default='opencraft_logo_small.png',
     )
     favicon = models.ImageField(
         help_text="This is used as the browser tab icon for your instance's "
-                  "pages.",
+                  "pages. If unset, OpenCraft's icon will be used.",
         null=True, # to ease migrations
         blank=False,
         default='opencraft_favicon.ico',
