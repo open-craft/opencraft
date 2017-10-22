@@ -238,8 +238,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance_name='betatestinstance',
             public_contact_email='publicemail@example.com',
             project_description='I want to beta test OpenCraft IM',
-            logo='logo.png',
-            favicon='favicon.ico',
             status=BetaTestApplication.ACCEPTED,
             instance=instance,
         )
