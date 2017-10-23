@@ -14,7 +14,6 @@ SIMPLETHEME_SASS_OVERRIDES:
   - variable: action-secondary-bg
     value: '{{ application.main_color }}'
 
-# TODO: this syntax is not implemented in simple_theme yet (as of 21th October 2017). Implement
 SIMPLETHEME_STATIC_FILES_URLS:
   - url: '{{ application.logo.url }}'
     dest: lms/static/images/logo.png
