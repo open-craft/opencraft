@@ -204,6 +204,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         )
         return verified.count() == len(email_addresses)
 
+
     def clean(self):
         """
         Verify that the subdomain has not already been taken by any running instance.
