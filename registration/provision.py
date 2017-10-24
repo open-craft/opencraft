@@ -37,6 +37,23 @@ from instance.tasks import spawn_appserver
 
 logger = logging.getLogger(__name__)
 
+
+# Helpers ##############################################################
+
+def get_design_fields_as_yaml(application):
+    """
+    Returns a text string with ansible variables for design fields (colors, logo, ...)
+    in YAML format.
+    """
+    template = loader.get_template('instance/ansible/simple_theme.yml')
+    design_fields_yaml = template.render(
+        dict(
+            application=application,
+        )
+    )
+    return design_fields_yaml
+    
+
 # Signal handler ##############################################################
 
 
@@ -67,12 +84,7 @@ def _provision_instance(sender, **kwargs):
         logger.info('Email confirmed for user %s, but instance already provisioned.', user.username)
         return
 
-    template = loader.get_template('instance/ansible/simple_theme.yml')
-    design_fields_yaml = template.render(
-        dict(
-            application=application,
-        )
-    )
+    design_fields_yaml = get_design_fields_as_yaml(application)
 
     with transaction.atomic():
         application.instance = production_instance_factory(

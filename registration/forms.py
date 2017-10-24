@@ -36,6 +36,7 @@ from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
+from registration.provision import get_design_fields_as_yaml
 from userprofile.models import UserProfile
 
 
@@ -375,7 +376,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
 
     def update_user(self, application, commit=True):
         """
-        Updated the UserProfile for the given application's user.
+        Update the UserProfile for the given application's user.
+        Also detect changes in design fields, store them in instance, and notify us by e-mail.
         """
         if hasattr(application.user, 'profile'):
             application.user.profile.full_name = self.cleaned_data['full_name']
@@ -393,6 +395,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             messages.add_message(self.request, messages.INFO,
                                  "Thank you for submitting these changes - we will rebuild your instance to "
                                  "apply them, and email you to confirm once it is up to date.")
+
+            # Recreate the extra variables in the instance
+            instance = application.instance
+            instance.configuration_extra_settings = get_design_fields_as_yaml(application)
+            instance.save()
+            logger.info("Updated configuration extra settings for instance %i", instance.id)
 
             if settings.VARIABLES_NOTIFICATION_EMAIL:
                 subject = 'Update required at instance {name}'.format(
