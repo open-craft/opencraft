@@ -23,6 +23,7 @@ Admin for the instance app
 # Imports #####################################################################
 
 from django.contrib import admin
+from django_extensions.db.fields.json import JSONField
 
 from instance.models.database_server import MySQLServer, MongoDBServer
 from instance.models.instance import InstanceReference, InstanceTag
@@ -32,6 +33,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.rabbitmq_server import RabbitMQServer
 from instance.models.server import OpenStackServer
+from instance.widgets import JSONWidget
 
 
 # ModelAdmins #################################################################
@@ -55,6 +57,7 @@ class InstanceTagAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
 
 class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('internal_lms_domain', 'name', 'created', 'modified')
+    formfield_overrides = {JSONField: {'widget': JSONWidget}}
 
 
 class OpenEdXAppServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
