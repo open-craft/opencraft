@@ -398,9 +398,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
 
             # Recreate the ansible variables in the instance
             instance = application.instance
-            instance.configuration_extra_settings = get_design_fields_as_yaml(application)
-            instance.save()
-            logger.info("Updated configuration extra settings for instance %i", instance.id)
+            if instance:
+                instance.configuration_extra_settings = get_design_fields_as_yaml(application)
+                instance.save()
+                logger.info("Updated configuration extra settings for instance %i", instance.id)
 
             # Notify us
             if settings.VARIABLES_NOTIFICATION_EMAIL:
