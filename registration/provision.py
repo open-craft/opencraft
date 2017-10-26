@@ -52,7 +52,7 @@ def get_design_fields_as_yaml(application):
         )
     )
     return design_fields_yaml
-    
+
 
 # Signal handler ##############################################################
 
