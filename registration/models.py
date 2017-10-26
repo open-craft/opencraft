@@ -148,6 +148,22 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         # openedx also uses white by default
         default='#ffffff',
     )
+    # If you're using SWIFT (OpenStack) to store files (this is enabled through
+    # the MEDIAFILES_SWIFT_ENABLE environment variable) then you'll need to
+    # upload these default images (logo and favicon) to your container. To do so,
+    # download the configuration file from the OVH account (top right menu), and
+    # run (replacing the cointainer name):
+    #
+    # source downloaded_openstack_configuration_file.sh
+    # swift stat  # this is only to test the connection
+    # swift upload 'daniel_testing_file_uploads_from_ocim' \
+    #   static/img/png/opencraft_logo_small.png            \
+    #   --object-name opencraft_logo_small.png
+    # swift upload 'daniel_testing_file_uploads_from_ocim' \
+    #   static/img/favicon/opencraft_favicon.ico           \
+    #   --object-name opencraft_favicon.ico
+    # swift list daniel_testing_file_uploads_from_ocim  # just to check
+    #
     logo = models.ImageField(
         help_text="Your branding to be displayed throughout your instance. "
                   "It should be 70px tall. "
@@ -157,6 +173,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='opencraft_logo_small.png',
         validators=[validate_logo_height],
     )
+    # Same upload instructions as logo
     favicon = models.ImageField(
         help_text="This is used as the browser tab icon for your instance's "
                   "pages. If unset, OpenCraft's icon will be used.",
