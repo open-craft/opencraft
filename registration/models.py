@@ -164,6 +164,8 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     #   --object-name opencraft_favicon.ico
     # swift list daniel_testing_file_uploads_from_ocim  # just to check
     #
+    # Note that the file names must match the names used in "default", and that
+    # the logo should be 70px tall.
     logo = models.ImageField(
         help_text="Your branding to be displayed throughout your instance. "
                   "It should be 70px tall. "
