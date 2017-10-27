@@ -26,6 +26,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 class JSONWidget(Textarea):
     """
     A widget for displaying and encoding JSON correctly.
+
+    Note:
+    This widget is only needed until a postgresql upgrade occurs and
+    the django_extensions JSONField is replaced with the Django field.
+
     """
 
     def render(self, name, value, attrs=None):
