@@ -19,10 +19,11 @@
 """
 Instance app models - Open EdX AppServer models
 """
+import yaml
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.template import loader
 from django.utils.text import slugify
 # FIXME want to use django.contrib.postgres.fields.JSONField instead,
 # but this requires upgrading to PostgreSQL ≥ 9.4
@@ -35,6 +36,7 @@ from instance.logging import log_exception
 from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
+from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
 from pr_watch.github import get_username_list_from_team
@@ -198,7 +200,7 @@ class OpenEdXAppConfiguration(models.Model):
         return [field.name for field in cls._meta.fields if field.name not in ('id', )]
 
 
-class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, EmailMixin):
+class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, OpenEdXConfigMixin, EmailMixin):
     """
     OpenEdXAppServer: One or more of the Open edX apps, running on a single VM
 
@@ -219,9 +221,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
     CONFIGURATION_PLAYBOOK = 'playbooks/edx_sandbox.yml'
-    CONFIGURATION_VARS_TEMPLATE = 'instance/ansible/vars.yml'
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
-    LMS_USER_VARS_TEMPLATE = 'instance/ansible/lms_users.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',
@@ -302,15 +302,12 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         This is a one-time thing, because configuration_settings, like all AppServer fields, is
         immutable once this AppServer is saved.
         """
-        template = loader.get_template(self.CONFIGURATION_VARS_TEMPLATE)
-        vars_str = template.render({
-            'appserver': self,
-            'instance': self.instance,
-            'newrelic_license_key': settings.NEWRELIC_LICENSE_KEY,
-        })
+        confvars = self._get_configuration_variables()
         for attr_name in self.CONFIGURATION_EXTRA_FIELDS:
             additional_vars = getattr(self, attr_name)
-            vars_str = ansible.yaml_merge(vars_str, additional_vars)
+            additional_vars = yaml.load(additional_vars) if additional_vars else {}
+            confvars = ansible.dict_merge(confvars, additional_vars)
+        vars_str = yaml.dump(confvars, default_flow_style=False)
         self.logger.debug('Vars.yml:\n%s', vars_str)
         return vars_str
 
@@ -318,16 +315,27 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Generate the settings for creating the initial LMS users.
         """
-        template = loader.get_template(self.LMS_USER_VARS_TEMPLATE)
-        return template.render(
-            dict(
-                lms_users=self.lms_users.all(),
+        return yaml.dump(
+            {
+                "EDXAPP_SETTINGS": 'openstack',
+                "django_users": [
+                    {
+                        "email": user.email,
+                        "username": user.username,
+                        "initial_password_hash": user.password,
+                        "staff": True,
+                        "superuser": True
+                    }
+                    for user in self.lms_users.all()
+                ],
+                "django_groups": [],
                 # We do not require users to be created successfully if we're using
                 # non-ephemeral databases and have successfully provisioned any
                 # appservers for this instance in the past; we assume we got it
                 # right the first time and don't worry about errors.
-                ignore_creation_errors=not self.instance.require_user_creation_success()
-            )
+                "ignore_user_creation_errors": not self.instance.require_user_creation_success()
+            },
+            default_flow_style=False
         )
 
     @property

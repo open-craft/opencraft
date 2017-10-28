@@ -1,3 +1,0 @@
-# Don't create default users on production instances
-DEMO_CREATE_STAFF_USER: false
-demo_test_users: []

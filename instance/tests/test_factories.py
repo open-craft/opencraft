@@ -22,8 +22,6 @@ Factories module - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import Mock, patch
-
 from django.conf import settings
 from django.test import override_settings
 import yaml
@@ -42,7 +40,7 @@ class FactoriesTestCase(TestCase):
     Test cases for functions in the factories module
     """
 
-    CONFIGURATION_EXTRA_SETTINGS = "EXTRA_SETTINGS: true"
+    CONFIGURATION_EXTRA_SETTINGS = "{'demo_test_users': [], 'DEMO_CREATE_STAFF_USER': False}"
     SANDBOX_DEFAULTS = {
         "use_ephemeral_databases": True,
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,
@@ -98,22 +96,15 @@ class FactoriesTestCase(TestCase):
         with self.assertRaises(AssertionError):
             instance_factory()
 
-    @patch("instance.factories.loader")
-    def test_production_instance_factory(self, patched_loader):
+    def test_production_instance_factory(self):
         """
         Test that factory function for creating production instances produces expected results
         """
-        mock_template = Mock()
-        mock_template.render.return_value = self.CONFIGURATION_EXTRA_SETTINGS
-        patched_loader.get_template.return_value = mock_template
-
         # Create instance without changing defaults
         sub_domain = "production-instance-with-defaults"
         instance = production_instance_factory(sub_domain=sub_domain)
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self._assert_field_values(instance, sub_domain, **self.PRODUCTION_DEFAULTS)
-        patched_loader.get_template.assert_called_once_with("instance/ansible/prod-vars.yml")
-        mock_template.render.assert_called_once_with({})
 
         # Create instance with custom field values
         sub_domain = "production-instance-customized"
@@ -126,6 +117,8 @@ class FactoriesTestCase(TestCase):
         # Create instance that overrides defaults for extra settings
         sub_domain = "production-instance-extra-settings"
         configuration_extra_settings = """
+        DEMO_CREATE_STAFF_USER: false
+        demo_test_users: []
         EXTRA_SETTINGS: false
         ADDITIONAL_SETTINGS: true
         """
