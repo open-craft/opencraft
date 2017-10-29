@@ -78,11 +78,10 @@ class BrowserTestMixin:
                     WebDriverWait(self.client, timeout=5) \
                         .until(expected_conditions.element_selection_state_to_be(element, value))
             elif element.get_attribute('type') == 'color':
-                # TODO be able to change colors. Typing in a color chooser doesn't set it. Clicking it opens a
-                # dialog but without focus, so typing doesn't help either.
-                # element.click()
-                # element.send_keys(value)
-                pass
+                # Selenium doesn't support typing into HTML5 color field with send_keys, so we use JS to change it
+                # See https://stackoverflow.com/questions/25583641/set-value-of-input-instead-of-sendkeys-selenium-webdriver-nodejs/25584027#25584027
+                id_elem = element.get_attribute('id')
+                self.client.execute_script("document.getElementById('{}').value='{}'".format(id_elem, value))
             elif not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
                 element.send_keys(value)
