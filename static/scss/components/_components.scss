@@ -13,44 +13,5 @@
     {
         position: relative;
         color: currentColor;
-
-        /*
-        // Disabled exclamation icon because it looks like something went wrong, but in fact it's informative. Maybe look for better icon
-        @include from('sm')
-        {
-            margin-left: 7rem;
-        }
-
-        &::before
-        {
-            $icon-size: 5px 32px;
-
-            display: block;
-            position: absolute;
-            right: 100%;
-            top: 50%;
-            height: 1.6em;
-            width: 4.40rem;
-            float: left;
-            background:
-            {
-                image: url('#{$svg-dir}forms/opencraft_exclamation.svg');
-                repeat: no-repeat;
-                size: ((nth($icon-size,1) / 20px) * 1em) ((nth($icon-size,2) / 20px) * 1em);
-                position: center center;
-            }
-            content: '';
-            transform: translate(0, -50%);
-
-            @include from('sm')
-            {
-                $icon-size: 11px 72px;
-
-                width: 9.07rem;
-                height: ((nth($icon-size,2) / 20px) * 1em);
-                background-size: ((nth($icon-size,1) / 20px) * 1em) ((nth($icon-size,2) / 20px) * 1em);
-            }
-        }
-        */
     }
 }
