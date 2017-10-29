@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='betatestapplication',
             name='logo',
-            field=models.ImageField(default='opencraft_logo_small.png', help_text="Your branding to be displayed throughout your instance. It should be 70px tall. If unset, OpenCraft's logo will be used.", null=True, upload_to='', validators=[registration.models.validate_logo_height]),
+            field=models.ImageField(default='opencraft_logo_small.png', help_text="Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft's logo will be used.", null=True, upload_to='', validators=[registration.models.validate_logo_height]),
         ),
         migrations.AddField(
             model_name='betatestapplication',
