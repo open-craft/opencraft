@@ -49,7 +49,7 @@ def validate_available_subdomain(subdomain):
 
 def validate_logo_height(image):
     """
-    Validates that the logo is 70px tall (otherwise it would require extra CSS).
+    Validates that the logo is 48px tall (otherwise it would require extra CSS).
     """
 
     if image.name == 'opencraft_logo_small.png':
@@ -58,8 +58,8 @@ def validate_logo_height(image):
         # be made safer.
         return
 
-    if image.height != 70:
-        raise ValidationError("The logo image must be 70px tall to fit into the header.")
+    if image.height != 48:
+        raise ValidationError("The logo image must be 48px tall to fit into the header.")
 
 
 class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
@@ -165,10 +165,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     # swift list daniel_testing_file_uploads_from_ocim  # just to check
     #
     # Note that the file names must match the names used in "default", and that
-    # the logo should be 70px tall.
+    # the logo should be 48px tall.
     logo = models.ImageField(
         help_text="Your branding to be displayed throughout your instance. "
-                  "It should be 70px tall. "
+                  "It should be 48px tall. "
                   "If unset, OpenCraft's logo will be used.",
         null=True, # to ease migrations
         blank=False,
