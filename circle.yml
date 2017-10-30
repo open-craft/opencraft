@@ -8,6 +8,14 @@ machine:
     DEFAULT_FORK: 'open-craft/edx-platform'
     INSTANCE_EPHEMERAL_DATABASES: 'false'
     LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+    # We make the tests upload files to a testing SWIFT account so that the simple_theme role of the deployed instance can download them later. This container should contain the default images (logo and favicon) just as the real one would.
+    MEDIAFILES_SWIFT_ENABLE: 'true'
+    MEDIAFILES_SWIFT_AUTH_URL: 'https://auth.cloud.ovh.net/v2.0'
+    MEDIAFILES_SWIFT_USERNAME: '8G5tWbKsvRF5'
+    MEDIAFILES_SWIFT_TENANT_NAME: '4225868752343946'
+    MEDIAFILES_SWIFT_REGION_NAME: 'GRA1'
+    MEDIAFILES_SWIFT_KEY: 'BfZrTn5N6ZmnUDwSaYb7d8StEHdQjBWj'
+    MEDIAFILES_SWIFT_CONTAINER_NAME: 'daniel_testing_file_uploads_from_ocim' # → https://storage.gra1.cloud.ovh.net/v1/AUTH_d63f739f98604cb799e584eebbb6057d/daniel_testing_file_uploads_from_ocim/
     TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
     WATCH_FORK: 'open-craft/edx-platform'
     WATCH_ORGANIZATION: 'open-craft'

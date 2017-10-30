@@ -27,9 +27,9 @@ import time
 import requests
 
 
-def check_url_accessible(url, auth=None, attempts=3, delay=15):
+def get_url_contents(url, auth=None, attempts=3, delay=15):
     """
-    Check that the given URL is accessible and returns a success status code.
+    Connect to the given URL and returns its contents as a string.
 
     Raises an exception if there is an HTTP error.
     """
@@ -37,12 +37,23 @@ def check_url_accessible(url, auth=None, attempts=3, delay=15):
     while True:
         attempts -= 1
         try:
-            requests.get(url, auth=auth, verify=ca_path).raise_for_status()
-            break
+            res = requests.get(url, auth=auth, verify=ca_path)
+            res.raise_for_status()
+            return res.text
         except Exception:  # pylint: disable=broad-except
             if not attempts:
                 raise
         time.sleep(delay)
+
+
+def check_url_accessible(url, auth=None, attempts=3, delay=15):
+    """
+    Check that the given URL is accessible and that it returns a success status code.
+
+    Raises an exception if there is an HTTP error.
+    Returns nothing if connection was succesful.
+    """
+    get_url_contents(url, auth, attempts, delay)
 
 
 def is_port_open(ip_addr, port):

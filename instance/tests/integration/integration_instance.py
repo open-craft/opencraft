@@ -22,6 +22,7 @@ Instance - Integration Tests
 # Imports #####################################################################
 
 import os
+import re
 import time
 from unittest.mock import patch
 from urllib.parse import urlparse
@@ -40,8 +41,8 @@ from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.openstack_utils import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
-from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
-from instance.tests.integration.utils import check_url_accessible, is_port_open
+from instance.tests.integration.factories.instance import OpenEdXInstanceFactory, OpenEdXInstanceFactoryWithSimpleTheme
+from instance.tests.integration.utils import check_url_accessible, get_url_contents, is_port_open
 from instance.tasks import spawn_appserver
 from opencraft.tests.utils import shard
 from registration.models import BetaTestApplication
@@ -176,19 +177,99 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(lms_user_playbook)
         self.assertIn(lms_user_playbook, appserver.get_playbooks())
 
+    def assert_theme_provisioned(self, instance, appserver, application):
+        """
+        Ensure the theme settings requested through the registration form resulted in
+        a new theme being created which includes the specified colors and logo/favicon.
+        This test check that simpletheme was set up correctly.
+        """
+        self.assertTrue('SIMPLETHEME_ENABLE_DEPLOY: true' in appserver.configuration_settings)
+
+        # Connect to the appserver and check that simple_theme is enabled
+        # Authentication not required
+        server_html = get_url_contents(instance.url)
+        self.assertIn('<link href="/static/simple-theme/css/lms-main', server_html)
+
+        # Check that a CSS file under the right URL exists
+        # The HTML contains a line like:
+        #     <link href="/static/simple-theme/css/lms-main-v1.f6b41d8970dc.css" rel="stylesheet" type="text/css" />
+        # and we need just the href
+        css_extractor = re.search(r'<link href="(/static/simple-theme/css/lms-main-v1\.[a-z0-9]{12}\.css)" '
+                                  r'rel="stylesheet" type="text/css" />',
+                                  server_html)
+        self.assertTrue(css_extractor)
+        css_url = css_extractor.group(1)
+
+        # Check that the CSS includes the colors passed
+        # E.g. after setting #3c9a12, we will find strings like this one in the minified CSS:can see it used like
+        # .action-primary{box-shadow:0 2px 1px 0 #0a4a67;background:#3c9a12;color:#fff}
+        server_css = get_url_contents(instance.url + css_url)
+
+        self.assertIn(application.main_color, server_css)
+        self.assertIn(application.link_color, server_css)
+        self.assertIn(application.header_bg_color, server_css)
+        self.assertIn(application.footer_bg_color, server_css)
+
+        # Check whether the logo has the same size (in bytes) as the one from the beta registration form
+        # Could be improved to a hash, or to test equality of the binary contents.
+        # The logo is found in a line like this in the HTML:
+        #       <img src="/static/simple-theme/images/logo.82fb8d18479f.png" alt="danieltest1b Home Page"/>
+        logo_extractor = re.search(r'<img src="(/static/simple-theme/images/logo.[a-z0-9]+\.png)" ',
+                                   server_html)
+        self.assertTrue(logo_extractor)
+        logo_url = logo_extractor.group(1)
+        orig_logo_size = len(get_url_contents(application.logo.url))
+        seen_logo_size = len(get_url_contents(instance.url + logo_url))
+        self.assertEqual(orig_logo_size, seen_logo_size)
+
+        # Check whether favicon has the same size. Same system as before
+        # <link rel="icon" type="image/x-icon" href="/static/simple-theme/images/favicon.eb143b51964d.ico" />
+        favicon_extractor = re.search(r'<link rel="icon" type="image/x-icon" '
+                                      r'href="(/static/simple-theme/images/favicon\.[a-z0-9]+\.ico)" />',
+                                      server_html)
+        self.assertTrue(favicon_extractor)
+        favicon_url = favicon_extractor.group(1)
+        orig_favicon_size = len(get_url_contents(application.favicon.url))
+        seen_favicon_size = len(get_url_contents(instance.url + favicon_url))
+        self.assertEqual(orig_favicon_size, seen_favicon_size)
+
     @shard(1)
     def test_spawn_appserver(self):
         """
-        Provision an instance and spawn an AppServer
+        Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
-        OpenEdXInstanceFactory(name='Integration - test_spawn_appserver')
+        # We don't need to pass configuration_source_repo_url/configuration_version here because they are
+        # set up by OpenEdXInstanceFactoryWithSimpleTheme.
+        OpenEdXInstanceFactoryWithSimpleTheme(name='Integration - test_spawn_appserver')
         instance = OpenEdXInstance.objects.get()
 
         # Add an lms user, as happens with beta registration
         user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
         instance.lms_users.add(user)
 
+        # Simulate that the application form was filled. This doesn't create another instance nor user
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain='betatestdomain',
+            instance_name=instance.name,
+            public_contact_email='publicemail@example.com',
+            project_description='I want to beta test OpenCraft IM',
+            status=BetaTestApplication.ACCEPTED,
+            # The presence of these colors will be checked later
+            # Note: avoid string like #ffbb66 because it would be shortened to #fb6 and therefore
+            # much harder to detect ("#ffbb66" wouldn't appear in CSS). Use e.g. #ffbb67
+            main_color='#13709b',
+            link_color='#14719c',
+            header_bg_color='#ffbb67',
+            footer_bg_color='#ddff89',
+            instance=instance,
+        )
+
+        # We don't want to simulate e-mail verification of the user who submitted the application,
+        # because that would start provisioning. Instead, we provision ourselves here.
+
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+
         self.assert_instance_up(instance)
         self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
@@ -196,6 +277,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         for appserver in instance.appserver_set.all():
             self.assert_secret_keys(instance, appserver)
             self.assert_lms_users_provisioned(user, appserver)
+            self.assert_theme_provisioned(instance, appserver, application)
 
     @shard(2)
     def test_external_databases(self):

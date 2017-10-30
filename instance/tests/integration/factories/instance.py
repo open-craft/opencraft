@@ -64,3 +64,16 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     configuration_version = 'integration-ginkgo'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
     edx_platform_commit = 'opencraft-release/ginkgo.1'
+
+
+class OpenEdXInstanceFactoryWithSimpleTheme(OpenEdXInstanceFactory):
+    """
+    Factory for OpenEdXInstance including simple_theme. It requires different branches
+    because simple_theme wasn't merged upstream yet.
+    """
+    # This branch is based on 'integration-ginkgo' and has simple_theme role on top
+    configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
+    configuration_version = 'integration-ginkgo-with-simpletheme'
+
+    # In addition, enable using simple_theme
+    deploy_simpletheme = True
