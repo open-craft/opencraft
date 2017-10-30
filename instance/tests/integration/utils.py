@@ -27,22 +27,40 @@ import time
 import requests
 
 
-def check_url_accessible(url, auth=None, attempts=3, delay=15):
+def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
     """
-    Check that the given URL is accessible and returns a success status code.
+    Connect to the given URL and returns its contents as a string.
+    Does several attempts in case the first one failed.
+    By default it verifies SSL certificates, but it can be disabled to be able to access external pages.
 
     Raises an exception if there is an HTTP error.
     """
     ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
+
     while True:
         attempts -= 1
         try:
-            requests.get(url, auth=auth, verify=ca_path).raise_for_status()
-            break
+            if verify_ssl:
+                res = requests.get(url, auth=auth, verify=ca_path)
+            else:
+                res = requests.get(url, auth=auth, verify=False)
+
+            res.raise_for_status()
+            return res.text
         except Exception:  # pylint: disable=broad-except
             if not attempts:
                 raise
         time.sleep(delay)
+
+
+def check_url_accessible(url, auth=None, attempts=3, delay=15):
+    """
+    Check that the given URL is accessible and that it returns a success status code.
+
+    Raises an exception if there is an HTTP error.
+    Returns nothing if connection was succesful.
+    """
+    get_url_contents(url, auth, attempts, delay)
 
 
 def is_port_open(ip_addr, port):
