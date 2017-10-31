@@ -91,7 +91,6 @@ class InstanceRedeployTestCase(TestCase):
             'Instances pending redeployment: 0',
             'Redeployments in progress: 0',
             'Failed to redeploy: 0',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 0',
             'Batch size: 2',
             'Batch frequency: 0:10:00',
@@ -101,7 +100,6 @@ class InstanceRedeployTestCase(TestCase):
             'Instances pending redeployment: 0',
             'Redeployments in progress: 0',
             'Failed to redeploy: 0',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 0',
             '** Redeployment done **',
         ))
@@ -159,9 +157,8 @@ class InstanceRedeployTestCase(TestCase):
 
         return instances
 
-    @patch('instance.management.commands.instance_redeploy.LoadBalancingServer.reconfigure')
     @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_success(self, mock_spawn_appserver, mock_reconfigure):
+    def test_redeployment_success(self, mock_spawn_appserver):
         """
         Test the instance redeployment when everything goes well
 
@@ -173,6 +170,7 @@ class InstanceRedeployTestCase(TestCase):
         def _spawn_appserver_success(
                 instance_ref_id,
                 mark_active_on_success=False,
+                deactivate_old_appservers=False,
                 num_attempts=1,
                 success_tag=None,
                 failure_tag=None):
@@ -189,45 +187,40 @@ class InstanceRedeployTestCase(TestCase):
         # Redeploying with batch-size=2, so we'll spawn two appservers at a time.
         expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
             '******* Status *******',
-            'Instances pending redeployment: 2',
+            'Instances pending redeployment: 3',
             'Redeployments in progress: 0',
             'Failed to redeploy: 1',
-            'Successfully redeployed (to be activated): 1',
             'Successfully redeployed (done): 1',
             'Batch size: 2',
             'Batch frequency: 0:00:01',
             'Number of upgrade attempts per instance: 1',
 
             '** Starting redeployment **',
-
-            # Instance D was already tagged success -- we get this one for free.
-            'SUCCESS: {0} [{0.id}]'.format(instances['D']['instance']),
-            ' - Activating {0} [{0.id}]'.format(instances['D']['appserver']),
-
-            # Instance C was already tagged failure
-            'FAILED: {0} [{0.id}]'.format(instances['C']['instance']),
-
             'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
             'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
-            'Instances pending redeployment: 0',
+            'Instances pending redeployment: 1',
             'Redeployments in progress: 2',
             'Failed to redeploy: 1',
-            'Successfully redeployed (to be activated): 2',
-            'Successfully redeployed (done): 2',
+            'Successfully redeployed (done): 3',
             'Sleeping for 0:00:01',
             'SUCCESS: {0} [{0.id}]'.format(instances['F']['instance']),
-            ' - Activating {0} [{0.id}]'.format(instances['F']['appserver']),
             'SUCCESS: {0} [{0.id}]'.format(instances['G']['instance']),
-            ' - Activating {0} [{0.id}]'.format(instances['G']['appserver']),
-            'FAILED: {0} [{0.id}]'.format(instances['C']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
+
+            '******* Status *******',
+            'Instances pending redeployment: 0',
+            'Redeployments in progress: 1',
+            'Failed to redeploy: 1',
+            'Successfully redeployed (done): 4',
+            'Sleeping for 0:00:01',
+            'SUCCESS: {0} [{0.id}]'.format(instances['E']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
             'Redeployments in progress: 0',
             'Failed to redeploy: 1',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 4',
 
             '** Redeployment done **',
@@ -247,12 +240,8 @@ class InstanceRedeployTestCase(TestCase):
             # Verify the logs
             captured_logs.check(*expected_logs)
 
-        # Ensure that the load balancer was reconfigured only once per batch of successful appservers
-        self.assertEqual(mock_reconfigure.call_count, 2)
-
-    @patch('instance.management.commands.instance_redeploy.LoadBalancingServer.reconfigure')
     @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_failure(self, mock_spawn_appserver, mock_reconfigure):
+    def test_redeployment_failure(self, mock_spawn_appserver):
         """
         Test the instance redeployment when instances fail.
 
@@ -264,6 +253,7 @@ class InstanceRedeployTestCase(TestCase):
         def _spawn_appserver_failed(
                 instance_ref_id,
                 mark_active_on_success=False,
+                deactivate_old_appservers=False,
                 num_attempts=1,
                 success_tag=None,
                 failure_tag=None):
@@ -280,56 +270,47 @@ class InstanceRedeployTestCase(TestCase):
         # Redeploying with batch-size=1, so we'll spawn one appservers at a time.
         expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
             '******* Status *******',
-            'Instances pending redeployment: 2',
+            'Instances pending redeployment: 3',
             'Redeployments in progress: 0',
             'Failed to redeploy: 1',
-            'Successfully redeployed (to be activated): 1',
             'Successfully redeployed (done): 1',
             'Batch size: 1',
             'Batch frequency: 0:00:01',
             'Number of upgrade attempts per instance: 1',
 
             '** Starting redeployment **',
-
-            # Instance D was tagged success, but since all the test appservers were marked with "error" in
-            # create_test_instances, we notice this and override its success as failure.
-            'SUCCESS: {0} [{0.id}]'.format(instances['D']['instance']),
-            'FAILED: latest {0} [{0.id}] for {1} is not running.'
-            ' (This should not happen.)'.format(instances['D']['appserver'], instances['D']['instance']),
-
-            'FAILED: {0} [{0.id}]'.format(instances['C']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['D']['instance']),
             'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
+
+            '******* Status *******',
+            'Instances pending redeployment: 2',
+            'Redeployments in progress: 1',
+            'Failed to redeploy: 2',
+            'Successfully redeployed (done): 1',
+            'Sleeping for 0:00:01',
+            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 1',
             'Redeployments in progress: 1',
             'Failed to redeploy: 3',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 1',
             'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['C']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['D']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
+            'FAILED: {0} [{0.id}]'.format(instances['G']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
             'Redeployments in progress: 1',
             'Failed to redeploy: 4',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 1',
             'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['C']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['D']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
-            'FAILED: {0} [{0.id}]'.format(instances['G']['instance']),
+            'FAILED: {0} [{0.id}]'.format(instances['E']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
             'Redeployments in progress: 0',
             'Failed to redeploy: 4',
-            'Successfully redeployed (to be activated): 0',
             'Successfully redeployed (done): 1',
 
             '** Redeployment done **',
@@ -348,6 +329,3 @@ class InstanceRedeployTestCase(TestCase):
             )
             # Verify the logs
             captured_logs.check(*expected_logs)
-
-        # No activations were successful here, so no load balancer reconfiguration was made
-        self.assertEqual(mock_reconfigure.call_count, 0)

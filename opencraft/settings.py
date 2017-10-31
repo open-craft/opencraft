@@ -203,6 +203,7 @@ REST_FRAMEWORK = {
 
 # Redis cache & locking #######################################################
 
+REDIS_LOCK_TIMEOUT = env('REDIS_LOCK_TIMEOUT', default=900)
 REDIS_URL = env('REDIS_URL', default='redis://localhost:6379/')
 REDIS_URL_OBJ = urlparse(REDIS_URL)
 
@@ -536,7 +537,7 @@ INSTANCE_SMTP_RELAY_SENDER_DOMAIN = env('INSTANCE_SMTP_RELAY_SENDER_DOMAIN', def
 # The instance view loads data for at most 5 appservers and shows a button to load more
 # The /api/v1/instance/10/ API will also include at most this number of appservers.
 # This avoids sending too much information.
-NUM_INITIAL_APPSERVERS_SHOWN = 5
+NUM_INITIAL_APPSERVERS_SHOWN = env('NUM_INITIAL_APPSERVERS_SHOWN', default=5)
 
 # Subdomain blacklist #########################################################
 

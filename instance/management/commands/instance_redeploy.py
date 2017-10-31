@@ -24,34 +24,15 @@ Instance app - Instance Redeployment management command
 
 import time
 import logging
-import yaml
 
 from django.core.management.base import BaseCommand
 
-from instance.models.appserver import Status as AppserverStatus
+from instance.ansible import load_yaml
 from instance.models.instance import InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.models.load_balancer import LoadBalancingServer
 from instance.tasks import spawn_appserver
 
-# Helpers #####################################################################
-
-
 LOG = logging.getLogger(__name__)
-
-
-def load_yaml(string):
-    """
-    Return the dict parsed from the given yaml string.
-
-    If the string begins with @, then read from the file there named.
-    """
-    if string.startswith('@'):
-        content = open(string[1:])
-    else:
-        content = string
-    return yaml.load(content)
-
 
 # Classes #####################################################################
 
@@ -78,9 +59,9 @@ class Command(BaseCommand):
             '--tag',
             type=str,
             required=True,
-            help='Base name of the tag used to mark instances for redeployment.  After the redeployment is complete,'
-                 'all instances which are successfully redeployed will be marked with this tag.  Instances which failed'
-                 'to redeploy will be marked with tag + "-failed".  E.g., zebrawood-redeployment'
+            help='Base name of the tag used to mark instances for redeployment.  After the redeployment is complete, '
+                 'all instances which are successfully redeployed will be marked with this tag.  Instances which '
+                 'failed to redeploy will be marked with tag + "-failed".  E.g., zebrawood-redeployment-failed'
         )
         parser.add_argument(
             '--filter',
@@ -89,6 +70,13 @@ class Command(BaseCommand):
             help='YAML containing the OpenEdXInstance queryset filter to use to select the instances to redeploy.'
                  ' Pass @path/to/file.yml to read filters from a file. '
                  ' Note that archived instances are automatically excluded. Omit to re-spawn all un-archived instances.'
+        )
+        parser.add_argument(
+            '--exclude',
+            type=load_yaml,
+            default='{}',
+            help='YAML containing the OpenEdXInstance exclusion queryset used to exclude instances for redeployment. '
+                 'Pass @path/to/file.yml to read exclusions from a file. '
         )
         parser.add_argument(
             '--update',
@@ -138,7 +126,7 @@ class Command(BaseCommand):
         self.options = options
 
         # Log the status report, and some more information about the given options
-        self._redeployment_complete()
+        self._log_status()
         LOG.info("Batch size: %d", self.options['batch_size'])
         LOG.info("Batch frequency: %s", self._format_batch_frequency())
         LOG.info("Number of upgrade attempts per instance: %d", self.options['num_attempts'])
@@ -151,6 +139,26 @@ class Command(BaseCommand):
         else:
             LOG.info("** Redeployment canceled **")
 
+    def get_statistics(self, pending=False, ongoing=False, failed=False, successful=False, all_statistics=False):
+        """
+        Get the number of pending, ongoing, failed, and/or successful instance redeployments.
+
+        pending - instances that still require redeployment.
+        ongoing - instances that are currently redeploying.
+        failed - instances that failed to redeploy given the number of attempts.
+        successful - instances that successfully redeployed and are running.
+        """
+        statistics = {}
+        if all_statistics or pending:
+            statistics['pending'] = self._pending_instances().count()
+        if all_statistics or ongoing:
+            statistics['ongoing'] = self.ongoing_tag.openedxinstance_set.count()
+        if all_statistics or failed:
+            statistics['failed'] = self.failure_tag.openedxinstance_set.count()
+        if all_statistics or successful:
+            statistics['successful'] = self.success_tag.openedxinstance_set.count()
+        return statistics
+
     def _format_batch_frequency(self):
         """
         Return the parsed batch frequency as a user-friendly string.
@@ -159,13 +167,6 @@ class Command(BaseCommand):
         minutes, seconds = divmod(frequency, 60)
         hours, minutes = divmod(minutes, 60)
         return "{:d}:{:02d}:{:02d}".format(hours, minutes, seconds)
-
-    @property
-    def complete_tag(self):
-        """
-        Tag used to mark the successfully redeployed and activated instances.
-        """
-        return self._get_tag()
 
     @property
     def ongoing_tag(self):
@@ -205,20 +206,20 @@ class Command(BaseCommand):
         These will match the options['filter'] (if given), and are not already tagged.
         """
         instance_filter = self.options.get('filter', {})
-        instances = OpenEdXInstance.objects.filter(**instance_filter)
-
-        # Exclude archived instances
-        instances = instances.exclude(ref_set__is_archived=True)
-
-        # Exclude any previously-tagged instances
-        instances = instances.exclude(tags__in=[
-            self.complete_tag,
-            self.ongoing_tag,
-            self.success_tag,
-            self.failure_tag,
-        ])
-
-        return instances
+        instance_exclusion = self.options.get('exclude', {})
+        return OpenEdXInstance.objects.filter(
+            **instance_filter
+        ).exclude(
+            **instance_exclusion
+        ).exclude(
+            ref_set__is_archived=True
+        ).exclude(
+            tags__in=[
+                self.ongoing_tag,
+                self.success_tag,
+                self.failure_tag,
+            ]
+        )
 
     def _failed_instances(self):
         """
@@ -245,23 +246,22 @@ class Command(BaseCommand):
         Returns True if redeployment is complete, False if it is still in progress.
 
         The redeployment is still in progress if there are pending or in progress instances remaining.
-
-        Also logs a redeployment status report from the counts taken.
         """
-        num_pending = self._pending_instances().count()
-        num_ongoing = self.ongoing_tag.openedxinstance_set.count()
-        num_failure = self.failure_tag.openedxinstance_set.count()
-        num_success = self.success_tag.openedxinstance_set.count()
-        num_complete = self.complete_tag.openedxinstance_set.count()
+        redeployment_statistics = self.get_statistics(pending=True, ongoing=True)
+        return redeployment_statistics['pending'] == 0 and redeployment_statistics['ongoing'] == 0
 
+    def _log_status(self):
+        """
+        Log the current status of the redeployment.
+
+        This includes logging the pending, ongoing, failed, and successful  redeployments.
+        """
+        redeployment_statistics = self.get_statistics(all_statistics=True)
         LOG.info("******* Status *******")
-        LOG.info("Instances pending redeployment: %d", num_pending)
-        LOG.info("Redeployments in progress: %d", num_ongoing)
-        LOG.info("Failed to redeploy: %d", num_failure)
-        LOG.info("Successfully redeployed (to be activated): %d", num_success)
-        LOG.info("Successfully redeployed (done): %d", num_complete)
-
-        return num_pending == 0 and num_ongoing == 0 and num_success == 0
+        LOG.info("Instances pending redeployment: %d", redeployment_statistics['pending'])
+        LOG.info("Redeployments in progress: %d", redeployment_statistics['ongoing'])
+        LOG.info("Failed to redeploy: %d", redeployment_statistics['failed'])
+        LOG.info("Successfully redeployed (done): %d", redeployment_statistics['successful'])
 
     def _do_mysql_commands(self, instance):
         """
@@ -285,77 +285,51 @@ class Command(BaseCommand):
         update = self.options.get('update', {})
         sleep_seconds = self.options['batch_frequency']
 
-        # Loop termination is handled at the end of the loop
+        # Loop termination is handled at the end.
         while True:
+            # 1. Log instances that failed or succeeded.
+            for instance in self.ongoing_tag.openedxinstance_set.iterator():
+                instance_tags = instance.tags.all()
+                if self.success_tag in instance_tags:
+                    LOG.info("SUCCESS: %s [%s]", instance, instance.id)
+                    instance.tags.remove(self.ongoing_tag)
+                elif self.failure_tag in instance_tags:
+                    LOG.info("FAILED: %s [%s]", instance, instance.id)
+                    instance.tags.remove(self.ongoing_tag)
 
-            # 1. Activate successful instances
-            reconfigure_load_balancer = False
-            for instance in self.success_tag.openedxinstance_set.iterator():
-                LOG.info("SUCCESS: %s [%s]", instance, instance.id)
-                instance.tags.remove(self.ongoing_tag)
-                instance.tags.remove(self.success_tag)
-
-                # Make sure that the latest appserver is running
-                latest_appserver = instance.appserver_set.latest('created')
-                if latest_appserver.status == AppserverStatus.Running:
-                    reconfigure_load_balancer = True
-
-                    # Deactivate currently active servers
-                    for appserver in instance.appserver_set.filter(_is_active=True):
-                        LOG.info(' - Deactivating %s [%s]', appserver, appserver.id)
-                        appserver.is_active = False
-                        appserver.save()
-
-                    # Activate the latest server
-                    LOG.info(' - Activating %s [%s]', latest_appserver, latest_appserver.id)
-                    latest_appserver.is_active = True
-                    latest_appserver.save()
-
-                    # Tag as complete
-                    instance.tags.add(self.complete_tag)
-                else:
-                    # Tag as failure
-                    LOG.info('FAILED: latest %s [%s] for %s is not running. (This should not happen.)',
-                             latest_appserver, latest_appserver.id, instance)
-                    instance.tags.add(self.failure_tag)
-
-            # 2. Reconfigure the load balancer only once to register all new active appservers.
-            #    Note: We do this here instead of passing spawn_appserver(mark_active_on_success=True),
-            #    to reduce the number of times the load balancer has to be reconfigured.
-            if reconfigure_load_balancer:
-                lb = LoadBalancingServer.objects.get(accepts_new_backends=True)
-                lb.reconfigure()
-
-            # 3. Log failed instances
-            for instance in self.failure_tag.openedxinstance_set.iterator():
-                instance.tags.remove(self.ongoing_tag)
-                LOG.info("FAILED: %s [%s]", instance, instance.id)
-
-            # 4. Spawn the next batch of instances, if there's room.
+            # 2. Spawn the next batch of instances, if there's room.
             next_batch_size = batch_size - self.ongoing_tag.openedxinstance_set.count()
             for instance in self._pending_instances()[0:next_batch_size]:
 
+                # 2.1 Execute any custom MySQL commands (useful for complex upgrades).
                 self._do_mysql_commands(instance)
 
+                # 2.2 Update any fields that need to change
+                if update:
+                    for field, value in update.items():
+                        setattr(instance, field, value)
+                    instance.save()
+
+                # 2.3 Redeploy.
+                # Note that if the appserver succeeds or fails to deploy, they'll be marked with the appropriate
+                # tag through `spawn_appserver`'s logic. New appservers will be marked active and old ones will
+                # be deactivated.
                 LOG.info("SPAWNING: %s [%s]", instance, instance.id)
-
-                # Tag the instance as in progress/ongoing
                 instance.tags.add(self.ongoing_tag)
+                spawn_appserver(
+                    instance.ref.pk,
+                    success_tag=self.success_tag,
+                    failure_tag=self.failure_tag,
+                    num_attempts=num_attempts,
+                    mark_active_on_success=True,
+                    deactivate_old_appservers=True,
+                )
 
-                # Update any fields that need to change
-                for field, value in update.items():
-                    setattr(instance, field, value)
-                instance.save()
+            # 3. Give a status update.
+            self._log_status()
 
-                spawn_appserver(instance.ref.pk,
-                                success_tag=self.success_tag,
-                                failure_tag=self.failure_tag,
-                                num_attempts=num_attempts)
-
-            # 5. Stop loop if redeployment is complete.
+            # 4. Sleep for the time it takes to configure the new appserver batch, and loop again, or break if done.
             if self._redeployment_complete():
                 break
-
-            # Otherwise, sleep for the configured time, and loop again.
             LOG.info("Sleeping for %s", self._format_batch_frequency())
             time.sleep(sleep_seconds)

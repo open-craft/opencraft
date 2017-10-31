@@ -21,6 +21,7 @@ WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
 SHELL = /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
+HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
 
 
@@ -63,7 +64,7 @@ create_db:
 	    echo "Could not create database 'opencraft' - it probably already exists"
 
 collectstatic: clean static_external
-	honcho run ./manage.py collectstatic --noinput
+	$(HONCHO_MANAGE) collectstatic --noinput
 
 manage:
 	$(HONCHO_MANAGE) $(RUN_ARGS)
@@ -103,11 +104,11 @@ test_unit: clean static_external
 
 # Check whether migrations need to be generated, creating "opencraft" database first if it doesn't exist
 test_migrations_missing: clean
-	honcho -e .env.test run ./manage.py makemigrations --dry-run --check
+	$(HONCHO_MANAGE_TESTS) makemigrations --dry-run --check
 
 test_browser: clean static_external
 	@echo -e "\nRunning browser tests..."
-	xvfb-run --auto-servernum honcho -e .env.test run ./manage.py test --pattern=browser_*.py --noinput
+	xvfb-run --auto-servernum $(HONCHO_MANAGE_TESTS) test --pattern=browser_*.py --noinput
 
 test_integration: clean
 ifneq ($(wildcard .env.integration),)
@@ -145,7 +146,7 @@ test: clean test_prospector test_unit test_migrations_missing test_js test_brows
 	@echo -e "\nAll tests OK!\n"
 
 test_one: clean
-	honcho -e .env.test run ./manage.py test $(RUN_ARGS)
+	$(HONCHO_MANAGE_TESTS) test $(RUN_ARGS)
 
 
 # Files #######################################################################

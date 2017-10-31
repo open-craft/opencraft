@@ -23,13 +23,15 @@ Worker tasks - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import ddt
 from django.utils import timezone
 
 from instance import tasks
 from instance.tests.base import TestCase
+from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from pr_watch.tests.factories import make_watched_pr_and_instance
 
@@ -48,9 +50,9 @@ class SpawnAppServerTestCase(TestCase):
         self.mock_spawn_appserver = patcher.start()
         self.mock_spawn_appserver.return_value = 10
 
-        patcher = patch('instance.tasks.appserver_make_active')
+        patcher = patch('instance.tasks.make_appserver_active')
         self.addCleanup(patcher.stop)
-        self.mock_add_active_appserver = patcher.start()
+        self.mock_make_appserver_active = patcher.start()
 
     def test_provision_sandbox_instance(self):
         """
@@ -62,7 +64,7 @@ class SpawnAppServerTestCase(TestCase):
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         self.mock_spawn_appserver.assert_called_once_with(instance)
         # By default we don't mark_active_on_success:
-        self.assertEqual(self.mock_add_active_appserver.call_count, 0)
+        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
     @ddt.data(True, False)
     def test_mark_active_on_success(self, provisioning_succeeds):
@@ -75,8 +77,26 @@ class SpawnAppServerTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        if provisioning_succeeds:
+            self.mock_make_appserver_active.assert_called_once_with(10, active=True, deactivate_others=False)
+        else:
+            self.mock_make_appserver_active.assert_not_called()
 
-        self.assertEqual(self.mock_add_active_appserver.call_count, 1 if provisioning_succeeds else 0)
+    @ddt.data(True, False)
+    def test_deactivate_old_appservers(self, provisioning_succeeds):
+        """
+        If `mark_active_on_success` and `deactivate_old_appservers` are both passed in as `True`,
+        the spawn appserver task will mark the newly provisioned AppServer as active, and deactivate
+        old appservers, if provisioning succeeded.
+        """
+        self.mock_spawn_appserver.return_value = 10 if provisioning_succeeds else None
+        instance = OpenEdXInstanceFactory()
+        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True, deactivate_old_appservers=True)
+        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        if provisioning_succeeds:
+            self.mock_make_appserver_active.assert_called_once_with(10, active=True, deactivate_others=True)
+        else:
+            self.mock_make_appserver_active.assert_not_called()
 
     def test_num_attempts(self):
         """
@@ -89,7 +109,7 @@ class SpawnAppServerTestCase(TestCase):
         tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
         self.assertEqual(self.mock_spawn_appserver.call_count, 3)
-        self.assertEqual(self.mock_add_active_appserver.call_count, 0)
+        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
@@ -104,6 +124,56 @@ class SpawnAppServerTestCase(TestCase):
         tasks.spawn_appserver(instance.ref.pk)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))
+
+
+@ddt.ddt
+class MakeAppserverActiveTestCase(TestCase):
+    """
+    Test cases for the task that makes an appserver active.
+    """
+
+    def setUp(self):
+        self.appserver = make_test_appserver()
+        self.appserver.is_active = True
+        self.appserver.save()
+
+    @ddt.data(True, False)
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
+    def test_make_appserver_active(self, active, mock_make_active):
+        """
+        By default, we activate the appserver.
+        """
+        tasks.make_appserver_active(self.appserver.id, active=active)
+        mock_make_active.assert_called_once_with(active=active)
+
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
+    def test_deactivate_others(self, mock_make_active):
+        """
+        When activating the appserver, optionally deactivate others.
+        """
+        for dummy in range(5):
+            appserver = make_test_appserver(self.appserver.instance)
+            appserver.is_active = True
+            appserver.save()
+        tasks.make_appserver_active(self.appserver.id, active=True, deactivate_others=True)
+        mock_make_active.assert_has_calls(
+            # Calls to make the appserver active.
+            [call(active=True)] +
+            # Calls to deactivate other appservers.
+            [call(active=False) for dummy in range(5)]
+        )
+
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
+    def test_disallow_deactivating_all(self, mock_make_active):
+        """
+        Disallow attempts to deactivate all appservers by passing in `active=False` and `deactivate_others=True`.
+        """
+        # Make an extra appserver to make sure it is not deactivated.
+        appserver = make_test_appserver(self.appserver.instance)
+        appserver.is_active = True
+        appserver.save()
+        tasks.make_appserver_active(self.appserver.id, active=False, deactivate_others=True)
+        mock_make_active.assert_called_once_with(active=False)
 
 
 @ddt.ddt
@@ -219,3 +289,26 @@ class CleanUpTestCase(TestCase):
         tasks.clean_up()
         mock_shut_down_sandboxes.assert_called_once_with()
         mock_terminate_appservers.assert_called_once_with()
+
+
+class ReconfigureDirtyLoadBalancersTestCase(TestCase):
+    """
+    Test cases for periodic task that reconfigures all dirty load balancers.
+    """
+
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    def test_reconfigure_dirty_load_balancers(self, mock_reconfigure):
+        """
+        `reconfigure_dirty_load_balancers` calls `reconfigure` on all dirty load balancers, and no others.
+        """
+        # Dirty load balancers.
+        for dummy in range(3):
+            LoadBalancingServerFactory(configuration_version=10, deployed_configuration_version=1)
+
+        # This is impossible.
+        LoadBalancingServerFactory(configuration_version=1, deployed_configuration_version=10)
+        # Clean load balancer.
+        LoadBalancingServerFactory(configuration_version=2, deployed_configuration_version=2)
+
+        tasks.reconfigure_dirty_load_balancers()
+        self.assertEqual(mock_reconfigure.call_count, 3)

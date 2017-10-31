@@ -73,8 +73,16 @@ class LoadBalancingServerManager(SharedServerManager):
         return self.filter(accepts_new_backends=True)
 
 
-class ReconfigurationFailed(Exception):
+class ReconfigurationException(Exception):
+    """Base class exception relating to reconfiguration errors."""
+
+
+class ReconfigurationFailed(ReconfigurationException):
     """Exception indicating that reconfiguring the load balancer failed."""
+
+
+class OtherReconfigurationInProgress(ReconfigurationException):
+    """Exception indicating that another reconfiguration is already in progress."""
 
 
 def generate_fragment_name(length):
@@ -91,17 +99,43 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
     objects = LoadBalancingServerManager()
 
     domain = models.CharField(max_length=100, unique=True)
-    # The username used to ssh into the server
-    ssh_username = models.CharField(max_length=32)
-    # Whether new backends can be assigned to this load-balancing server
-    accepts_new_backends = models.BooleanField(default=True)
-    # A random postfix appended to the haproxy configuration file names to avoid clashes between
-    # multiple instance managers (or multiple concurrently running integration tests) sharing the
-    # same load balancer.
+
+    ssh_username = models.CharField(
+        max_length=32,
+        help_text='The username used to SSH into the server.'
+    )
+
+    accepts_new_backends = models.BooleanField(
+        default=True,
+        help_text='Whether new backends can be assigned to this load-balancing server.'
+    )
+
     fragment_name_postfix = models.CharField(
         max_length=8,
         blank=True,
         default=functools.partial(generate_fragment_name, length=8),
+        help_text=(
+            'A random postfix appended to the haproxy configuration file names to avoid clashes between '
+            'multiple instance managers (or multiple concurrently running integration tests) sharing the '
+            'same load balancer.'
+        )
+    )
+
+    configuration_version = models.PositiveIntegerField(
+        default=1,
+        help_text=(
+            'The current version of configuration for this load balancer. '
+            'The version value is the total number of requests ever made to reconfigure the load balancer.'
+        )
+    )
+
+    deployed_configuration_version = models.PositiveIntegerField(
+        default=1,
+        help_text=(
+            'The currently active configuration version of the load balancer. '
+            'If it is less than the configuration version, the load balancer is dirty. '
+            'If it is equal to it, then no new reconfiguration is currently required.'
+        )
     )
 
     def __init__(self, *args, **kwargs):
@@ -196,12 +230,6 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
             raise ReconfigurationFailed
 
-    def _configuration_lock(self):
-        """
-        A Redis lock to protect reconfigurations of this load balancer instance.
-        """
-        return cache.lock("load_balancer_reconfigure:{}".format(self.domain), timeout=900)
-
     def reconfigure(self, triggering_instance_id=None):
         """
         Regenerate the configuration fragments on the load-balancing server.
@@ -209,14 +237,26 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         The triggering_instance_id indicates the id of the instance reference that initiated the
         reconfiguration of the load balancer.
         """
-        self.logger.info("Reconfiguring load-balancing server %s", self.domain)
-        with self._configuration_lock():
+        # This is subject to a race condition, but it doesn't matter:
+        # if two processes increased the version concurrently, the LB would be marked dirty
+        # either way, and only one could successfully grab the lock, while the other would get
+        # kicked out after the blocking timeout.
+        self.configuration_version += 1
+        self.save()
+
+        # Memorize the configuration version, in case new threads change it.
+        with self._configuration_lock(blocking_timeout=1):
+            candidate_configuration_version = self.configuration_version
+            self.logger.info("Reconfiguring load-balancing server %s", self.domain)
             self.run_playbook(self.get_ansible_vars(triggering_instance_id))
+            self.deployed_configuration_version = candidate_configuration_version
+            self.save()
 
     def deconfigure(self):
         """
         Remove the configuration fragment from the load-balancing server.
         """
+        self.logger.info("Deconfiguring load-balancing server %s", self.domain)
         fragment_name = settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + self.fragment_name_postfix
         with self._configuration_lock():
             self.run_playbook(
@@ -229,3 +269,13 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         """
         self.deconfigure()
         super().delete(*args, **kwargs)
+
+    def _configuration_lock(self, **kwargs):
+        """
+        A Redis lock to protect reconfigurations of this load balancer instance.
+        """
+        return cache.lock(
+            "load_balancer_reconfigure:{}".format(self.domain),
+            timeout=settings.REDIS_LOCK_TIMEOUT,
+            **kwargs
+        )
