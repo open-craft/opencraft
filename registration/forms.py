@@ -36,7 +36,7 @@ from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
-from registration.provision import get_design_fields_as_yaml
+#from registration.provision import get_design_fields_as_yaml
 from userprofile.models import UserProfile
 
 
@@ -397,11 +397,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                                  "apply them, and email you to confirm once it is up to date.")
 
             # Recreate the ansible variables in the instance
-            instance = application.instance
-            if instance:
-                instance.configuration_extra_settings = get_design_fields_as_yaml(application)
-                instance.save()
-                logger.info("Updated configuration extra settings for instance %i", instance.id)
+            # FIXME redo this part
+            # instance = application.instance
+            # if instance:
+            #     instance.configuration_extra_settings = get_design_fields_as_yaml(application)
+            #     instance.save()
+            #     logger.info("Updated configuration extra settings for instance %i", instance.id)
 
             # Notify us
             if settings.VARIABLES_NOTIFICATION_EMAIL:

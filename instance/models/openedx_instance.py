@@ -37,6 +37,7 @@ from instance.models.mixins.domain_names import DomainNameInstance
 from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
+from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.utils import sufficient_time_passed
@@ -45,7 +46,8 @@ from instance.utils import sufficient_time_passed
 # Models ######################################################################
 
 class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
-                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, SecretKeyInstanceMixin, Instance):
+                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, OpenEdXThemeMixin, SecretKeyInstanceMixin,
+                      Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -226,6 +228,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
                 # Copy the current value of each setting into the AppServer, preserving it permanently:
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
+                configuration_theme_settings=self.get_theme_settings(),
                 configuration_secret_keys=self.get_secret_key_settings(),
                 **instance_config
             )

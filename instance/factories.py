@@ -127,6 +127,8 @@ def production_instance_factory(**kwargs):
     # Gather settings
     production_settings = loader.get_template('instance/ansible/prod-vars.yml').render({})
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
+    #configuration_theme_settings = kwargs.pop("configuration_theme_settings", "")
+    # FIXME do something useful with configuration_theme_settings
     extra_settings = ansible.yaml_merge(production_settings, configuration_extra_settings)
     instance_kwargs = dict(
         use_ephemeral_databases=False,
