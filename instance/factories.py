@@ -132,6 +132,7 @@ def production_instance_factory(**kwargs):
     }
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
     configuration_extra_settings = yaml.load(configuration_extra_settings) if configuration_extra_settings else {}
+    # FIXME do something useful with configuration_theme_settings
     extra_settings = yaml.dump(
         ansible.dict_merge(production_settings, configuration_extra_settings),
         default_flow_style=False
