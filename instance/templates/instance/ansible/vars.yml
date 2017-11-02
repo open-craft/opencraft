@@ -245,8 +245,8 @@ ECOMMERCE_PAYPAL_ERROR_URL: '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/erro
 EDXAPP_ENABLE_COMPREHENSIVE_THEMING: true
 EDXAPP_COMPREHENSIVE_THEME_DIRS:
   - '/edx/var/edxapp/themes'
-EDXAPP_DEFAULT_SITE_THEME: 'simple-theme'
 # See simple-theme configuration variables in simple_theme.yml
+# EDXAPP_DEFAULT_SITE_THEME is set there too
 
 # Stanford theming (deprecated)
 # edxapp_theme_name: '{{ EDXAPP_DEFAULT_SITE_THEME }}'
