@@ -24,6 +24,8 @@ SIMPLETHEME_STATIC_FILES_URLS:
 
 SIMPLETHEME_ENABLE_DEPLOY: True
 
+EDXAPP_DEFAULT_SITE_THEME: 'simple-theme'
+
 {% else %}
 
 # Instance wasn't created from application form, so no colors will be set or changed
