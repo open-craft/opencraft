@@ -396,14 +396,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                                  "Thank you for submitting these changes - we will rebuild your instance to "
                                  "apply them, and email you to confirm once it is up to date.")
 
-            # Recreate the ansible variables in the instance
-            # FIXME redo this part
-            # instance = application.instance
-            # if instance:
-            #     instance.configuration_extra_settings = get_design_fields_as_yaml(application)
-            #     instance.save()
-            #     logger.info("Updated configuration extra settings for instance %i", instance.id)
-
             # Notify us
             if settings.VARIABLES_NOTIFICATION_EMAIL:
                 subject = 'Update required at instance {name}'.format(

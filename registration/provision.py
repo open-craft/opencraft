@@ -73,7 +73,6 @@ def _provision_instance(sender, **kwargs):
             sub_domain=application.subdomain,
             name=application.instance_name,
             email=application.public_contact_email,
-            # FIXME note that there's no need to set configuration_theme_settings. See Matjaz's comment. Check and delete this line
         )
         application.instance.lms_users.add(user)
         application.save()

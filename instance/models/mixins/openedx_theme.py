@@ -26,13 +26,11 @@ from django.template import loader
 
 # Classes #####################################################################
 
-# class OpenEdXThemeMixin(models.Model): #FIXME model or not?
 class OpenEdXThemeMixin:
     """
     Mixin that provides functionality required for the storage backends that an OpenEdX
     Instance uses (when not using ephemeral databases)
     """
-    # FIXME fields also here?
 
     class Meta:
         abstract = True
