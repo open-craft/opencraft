@@ -19,6 +19,7 @@
 """
 Definition of the Load balancing server model.
 """
+import contextlib
 import functools
 import logging
 import pathlib
@@ -245,12 +246,15 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         self.save()
 
         # Memorize the configuration version, in case new threads change it.
-        with self._configuration_lock(blocking_timeout=1):
-            candidate_configuration_version = self.configuration_version
-            self.logger.info("Reconfiguring load-balancing server %s", self.domain)
-            self.run_playbook(self.get_ansible_vars(triggering_instance_id))
-            self.deployed_configuration_version = candidate_configuration_version
-            self.save()
+        try:
+            with self._configuration_lock(blocking=False):
+                candidate_configuration_version = self.configuration_version
+                self.logger.info("Reconfiguring load-balancing server %s", self.domain)
+                self.run_playbook(self.get_ansible_vars(triggering_instance_id))
+                self.deployed_configuration_version = candidate_configuration_version
+                self.save()
+        except OtherReconfigurationInProgress:
+            pass
 
     def deconfigure(self):
         """
@@ -270,12 +274,18 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         self.deconfigure()
         super().delete(*args, **kwargs)
 
-    def _configuration_lock(self, **kwargs):
+    @contextlib.contextmanager
+    def _configuration_lock(self, *, blocking=True):
         """
         A Redis lock to protect reconfigurations of this load balancer instance.
         """
-        return cache.lock(
+        lock = cache.lock(
             "load_balancer_reconfigure:{}".format(self.domain),
             timeout=settings.REDIS_LOCK_TIMEOUT,
-            **kwargs
         )
+        if not lock.acquire(blocking):
+            raise OtherReconfigurationInProgress
+        try:
+            yield lock
+        finally:
+            lock.release()
