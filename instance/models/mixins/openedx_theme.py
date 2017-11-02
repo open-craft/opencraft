@@ -19,8 +19,6 @@
 """
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
-from django.conf import settings
-from django.db import models
 from django.template import loader
 
 
@@ -28,12 +26,9 @@ from django.template import loader
 
 class OpenEdXThemeMixin:
     """
-    Mixin that provides functionality required for the storage backends that an OpenEdX
-    Instance uses (when not using ephemeral databases)
+    Mixin that provides functionality to generate variables for simple_theme,
+    e.g. to change logo/favicon and colors.
     """
-
-    class Meta:
-        abstract = True
 
     def get_theme_settings(self):
         """
