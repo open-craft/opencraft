@@ -231,26 +231,32 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
             self.logger.error("Playbook to reconfigure load-balancing server %s failed.", self)
             raise ReconfigurationFailed
 
-    def reconfigure(self, triggering_instance_id=None):
+    def reconfigure(self, triggering_instance_id=None, mark_dirty=True):
         """
         Regenerate the configuration fragments on the load-balancing server.
 
         The triggering_instance_id indicates the id of the instance reference that initiated the
         reconfiguration of the load balancer.
+
+        The mark_dirty flag indicates whether the LB configuration should be marked as dirty.  If
+        this method is called because the configuration changed, the flag should be set to True (the
+        default).  If this method is called because the LB was marked dirty earlier, the flag
+        should be set to False.
         """
-        # We need to use an F expression here.  The problem is not other processes trying to
-        # increase this counter concurrently – that wouldn't matter, since we don't care whether
-        # we increase this counter by one or by two, since both marks the LB as dirty.  However, if
-        # another process is making a completely unrelated change to the LB object we might lose
-        # the increment altogether.
-        LoadBalancingServer.objects.filter(pk=self.pk).update(
-            configuration_version=models.F("configuration_version") + 1
-        )
-        self.refresh_from_db()
+        if mark_dirty:
+            # We need to use an F expression here.  The problem is not other processes trying to
+            # increase this counter concurrently – that wouldn't matter, since we don't care whether
+            # we increase this counter by one or by two, since both marks the LB as dirty.  However, if
+            # another process is making a completely unrelated change to the LB object we might lose
+            # the increment altogether.
+            LoadBalancingServer.objects.filter(pk=self.pk).update(
+                configuration_version=models.F("configuration_version") + 1
+            )
 
         try:
             with self._configuration_lock(blocking=False):
                 # Memorize the configuration version, in case new threads change it.
+                self.refresh_from_db()
                 candidate_configuration_version = self.configuration_version
                 self.logger.info("Reconfiguring load-balancing server %s", self.domain)
                 self.run_playbook(self.get_ansible_vars(triggering_instance_id))
