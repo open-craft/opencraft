@@ -26,7 +26,6 @@ import logging
 
 from django.db import transaction
 from django.dispatch import receiver
-from django.template import loader
 from simple_email_confirmation.signals import email_confirmed
 
 from registration.models import BetaTestApplication
