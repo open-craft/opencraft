@@ -1,4 +1,6 @@
 # Simple-theme (created from SASS variables at deploy time)
+
+{% if application %}
 # These settings come from the instance registration form
 SIMPLETHEME_SASS_OVERRIDES:
   - variable: link-color
@@ -21,3 +23,10 @@ SIMPLETHEME_STATIC_FILES_URLS:
     dest: lms/static/images/favicon.ico
 
 SIMPLETHEME_ENABLE_DEPLOY: True
+
+{% else %}
+
+# Instance wasn't created from application form, so no colors will be set or changed
+# and simple_theme won't be used (unless manually requested through other settings).
+
+{% endif %}
