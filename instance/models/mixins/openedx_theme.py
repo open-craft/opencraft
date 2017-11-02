@@ -45,7 +45,9 @@ class OpenEdXThemeMixin:
 
         template = loader.get_template('instance/ansible/simple_theme.yml')
 
-        application = self.betatestapplication_set.all()[0] # FIXME what to do when there isn't. Maybe store directly the color fields in the mixin?
+        # application can be None (for instances not created through the form) or a
+        # BetaTestApplication object. first() returns None or object.
+        application = self.betatestapplication_set.first()
         design_fields_yaml = template.render(
             dict(
                 application=application,
