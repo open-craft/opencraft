@@ -36,7 +36,6 @@ from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
-#from registration.provision import get_design_fields_as_yaml
 from userprofile.models import UserProfile
 
 
