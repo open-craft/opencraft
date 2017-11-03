@@ -72,6 +72,7 @@ def _provision_instance(sender, **kwargs):
             sub_domain=application.subdomain,
             name=application.instance_name,
             email=application.public_contact_email,
+            deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)
         application.save()
