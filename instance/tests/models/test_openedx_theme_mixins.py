@@ -84,23 +84,23 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_ENABLE_DEPLOY': True,
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
-                     'value': '#003344',},
+                     'value': '#003344', },
                     {'variable': 'header-bg',
-                     'value': '#caaffe',},
+                     'value': '#caaffe', },
                     {'variable': 'footer-bg',
-                     'value': '#ffff11',},
+                     'value': '#ffff11', },
                     {'variable': 'button-color',
-                     'value': '#001122',},
+                     'value': '#001122', },
                     {'variable': 'action-primary-bg',
-                     'value': '#001122',},
+                     'value': '#001122', },
                     {'variable': 'action-secondary-bg',
-                     'value': '#001122',},
+                     'value': '#001122', },
                 ],
                 'SIMPLETHEME_STATIC_FILES_URLS': [
                     {'url': 'static/img/png/opencraft_logo_small.png',
-                     'dest': 'lms/static/images/logo.png',},
+                     'dest': 'lms/static/images/logo.png', },
                     {'url': 'static/img/favicon/favicon.ico',
-                     'dest': 'lms/static/images/favicon.ico',}
+                     'dest': 'lms/static/images/favicon.ico', }
                 ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
             }
