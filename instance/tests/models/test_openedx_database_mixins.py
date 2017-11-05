@@ -185,32 +185,20 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(pass1, self.instance._get_mysql_pass(user1))
         self.assertEqual(pass2, self.instance._get_mysql_pass(user2))
 
-    def test__get_database_suffix(self):
+    def test__get_mysql_pass_from_dbname(self):
         """
-        Test that _get_database_suffix returns correct suffix for a given database.
-        """
-        self.instance = OpenEdXInstanceFactory()
-        suffix = "test"
-        database_name = self.instance._get_mysql_database_name(suffix)
-        self.assertEqual(self.instance._get_database_suffix(database_name), suffix)
-
-    def test__get_template_vars(self):
-        """
-        Test that _get_template_vars returns correct settings for a given database.
+        Test that _get_mysql_pass_from_dbname meets the same criteria as _get_mysql_pass
         """
         self.instance = OpenEdXInstanceFactory()
-        suffix = "test-db"
-        database = {
-            "name": self.instance._get_mysql_database_name(suffix),
-            "user": self.instance._get_mysql_user_name(suffix),
-        }
-        template_vars = self.instance._get_template_vars(database)
-        expected_template_vars = {
-            "{}_database".format(suffix): database["name"],
-            "{}_user".format(suffix): database["user"],
-            "{}_pass".format(suffix): self.instance._get_mysql_pass(database["user"])
-        }
-        self.assertEqual(template_vars, expected_template_vars)
+        database1 = "database1"
+        pass1 = self.instance._get_mysql_pass_from_dbname(database1)
+        database2 = "database2"
+        pass2 = self.instance._get_mysql_pass_from_dbname(database2)
+        self.assertEqual(len(pass1), 64)
+        self.assertEqual(len(pass2), 64)
+        self.assertFalse(pass1 == pass2)
+        self.assertEqual(pass1, self.instance._get_mysql_pass_from_dbname(database1))
+        self.assertEqual(pass2, self.instance._get_mysql_pass_from_dbname(database2))
 
     def test_provision_mysql(self):
         """
@@ -467,12 +455,12 @@ class MongoDBInstanceTestCase(TestCase):
         ansible_vars = appserver.configuration_settings
         self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_HOSTS: [mongo.opencraft.com]', ansible_vars)
+        self.assertIn('EDXAPP_MONGO_HOSTS:\n- mongo.opencraft.com', ansible_vars)
         self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
         self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_HOSTS: [mongo.opencraft.com]', ansible_vars)
+        self.assertIn('FORUM_MONGO_HOSTS:\n- mongo.opencraft.com', ansible_vars)
         self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 

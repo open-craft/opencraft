@@ -85,7 +85,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
             s3_bucket_name='test-s3-bucket-name',
             use_ephemeral_databases=True,
         )
-        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: ""\n'
+        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
         self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
 
     def test_import_export_bucket_setting_ephemeral(self):
@@ -96,7 +96,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         instance = OpenEdXInstanceFactory(
             use_ephemeral_databases=True,
         )
-        ephemeral_settings = 'EDXAPP_IMPORT_EXPORT_BUCKET: ""\n'
+        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
         self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
 
 

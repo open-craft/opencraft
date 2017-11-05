@@ -21,8 +21,7 @@ Open edX instance database mixin
 """
 import hashlib
 import hmac
-
-from django.template import loader
+import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
@@ -215,31 +214,172 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         msg = bytes(source=user, encoding=encoding)
         return hmac.new(key, msg=msg, digestmod=hashlib.sha256).hexdigest()
 
-    def _get_database_suffix(self, name):
+    def _get_mysql_pass_from_dbname(self, dbname):
         """
-        Return suffix that differentiates database identified by name from databases for other services.
+        Returns the mysql password for the user configured for database of `dbname`
         """
-        prefix = "{prefix}_".format(prefix=self.mysql_database_name)
-        return name[len(prefix):]
+        user = self._get_mysql_user_name(dbname)
+        return self._get_mysql_pass(user)
 
-    def _get_template_vars(self, database):
+    def _get_mysql_settings(self):
         """
-        Return dict mapping template variables to appropriate values for database.
+        Return dictionary of settings for mysql databases
         """
-        database_name = database["name"]
-        user = database["user"]
-
-        def generate_var_name(var):
-            """
-            Generate appropriate name for template variable using suffix of database_name.
-            """
-            database_suffix = self._get_database_suffix(database_name)
-            return "{database_suffix}_{var}".format(database_suffix=database_suffix, var=var)
-
         return {
-            generate_var_name("database"): database_name,
-            generate_var_name("user"): user,
-            generate_var_name("pass"): self._get_mysql_pass(user),
+            # edxapp
+            "EDXAPP_MYSQL_DB_NAME": self._get_mysql_database_name("edxapp"),
+            "EDXAPP_MYSQL_USER": self._get_mysql_user_name("edxapp"),
+            "EDXAPP_MYSQL_PASSWORD": self._get_mysql_pass_from_dbname("edxapp"),
+            "EDXAPP_MYSQL_HOST": self.mysql_server.hostname,
+            "EDXAPP_MYSQL_PORT": self.mysql_server.port,
+
+            # ecommerce
+            "ECOMMERCE_DEFAULT_DB_NAME": self._get_mysql_database_name("ecommerce"),
+            "ECOMMERCE_DATABASES": {
+                "default": {
+                    "ENGINE": 'django.db.backends.mysql',
+                    "NAME": self._get_mysql_database_name("ecommerce"),
+                    "USER": self._get_mysql_user_name("ecommerce"),
+                    "PASSWORD": self._get_mysql_pass_from_dbname("ecommerce"),
+                    "HOST": self.mysql_server.hostname,
+                    "PORT": self.mysql_server.port,
+                    "ATOMIC_REQUESTS": True,
+                    "CONN_MAX_AGE": 60
+                },
+            },
+
+            # insights
+            "INSIGHTS_DATABASE_NAME": self._get_mysql_database_name("dashboard"),
+            "INSIGHTS_DATABASES": {
+                "default": {
+                    "ENGINE": 'django.db.backends.mysql',
+                    "NAME": self._get_mysql_database_name("dashboard"),
+                    "USER": self._get_mysql_user_name("dashboard"),
+                    "PASSWORD": self._get_mysql_pass_from_dbname("dashboard"),
+                    "HOST": self.mysql_server.hostname,
+                    "PORT": self.mysql_server.port,
+                },
+            },
+
+            # xqueue
+            "XQUEUE_MYSQL_DB_NAME": self._get_mysql_database_name("xqueue"),
+            "XQUEUE_MYSQL_USER": self._get_mysql_user_name("xqueue"),
+            "XQUEUE_MYSQL_PASSWORD": self._get_mysql_pass_from_dbname("xqueue"),
+            "XQUEUE_MYSQL_HOST": self.mysql_server.hostname,
+            "XQUEUE_MYSQL_PORT": self.mysql_server.port,
+
+            # edxapp_csmh
+            "EDXAPP_MYSQL_CSMH_DB_NAME": self._get_mysql_database_name("edxapp_csmh"),
+            "EDXAPP_MYSQL_CSMH_USER": self._get_mysql_user_name("edxapp"),
+            "EDXAPP_MYSQL_CSMH_PASSWORD": self._get_mysql_pass_from_dbname("edxapp"),
+            "EDXAPP_MYSQL_CSMH_HOST": self.mysql_server.hostname,
+            "EDXAPP_MYSQL_CSMH_PORT": self.mysql_server.port,
+
+            # edx_notes_api
+            "EDX_NOTES_API_MYSQL_DB_NAME": self._get_mysql_database_name("edx_notes_api"),
+            "EDX_NOTES_API_MYSQL_DB_USER": self._get_mysql_user_name("notes"),
+            "EDX_NOTES_API_MYSQL_DB_PASS": self._get_mysql_pass_from_dbname("notes"),
+            "EDX_NOTES_API_MYSQL_HOST": self.mysql_server.hostname,
+
+            # notifier
+            "NOTIFIER_DATABASE_ENGINE": 'django.db.backends.mysql',
+            "NOTIFIER_DATABASE_NAME": self._get_mysql_database_name("notifier"),
+            "NOTIFIER_DATABASE_USER": self._get_mysql_user_name("notifier"),
+            "NOTIFIER_DATABASE_PASSWORD": self._get_mysql_pass_from_dbname("notifier"),
+            "NOTIFIER_DATABASE_HOST": self.mysql_server.hostname,
+            "NOTIFIER_DATABASE_PORT": self.mysql_server.port,
+
+            # programs
+            "PROGRAMS_DEFAULT_DB_NAME": self._get_mysql_database_name("programs"),
+            "PROGRAMS_DATABASES": {
+                "default": {
+                    "ENGINE": 'django.db.backends.mysql',
+                    "NAME": self._get_mysql_database_name("programs"),
+                    "USER": self._get_mysql_user_name("program"),
+                    "PASSWORD": self._get_mysql_pass_from_dbname("program"),
+                    "HOST": self.mysql_server.hostname,
+                    "PORT": self.mysql_server.port,
+                    "ATOMIC_REQUESTS": True,
+                    "CONN_MAX_AGE": 60
+                },
+            },
+
+            # analytics_api
+            "ANALYTICS_API_DEFAULT_DB_NAME": self._get_mysql_database_name("analytics_api"),
+            "ANALYTICS_API_REPORTS_DB_NAME": self._get_mysql_database_name("reports"),
+            "ANALYTICS_API_DATABASES": {
+                "default": {
+                    "ENGINE": 'django.db.backends.mysql',
+                    "NAME": self._get_mysql_database_name("analytics_api"),
+                    "USER": self._get_mysql_user_name("api"),
+                    "PASSWORD": self._get_mysql_pass_from_dbname("api"),
+                    "HOST": self.mysql_server.hostname,
+                    "PORT": self.mysql_server.port,
+                },
+                "reports": {
+                    "ENGINE": 'django.db.backends.mysql',
+                    "NAME": self._get_mysql_database_name("reports"),
+                    "USER": self._get_mysql_user_name("reports"),
+                    "PASSWORD": self._get_mysql_pass_from_dbname("reports"),
+                    "HOST": self.mysql_server.hostname,
+                    "PORT": self.mysql_server.port,
+                },
+            },
+
+            # course discovery api
+            "DISCOVERY_MYSQL": self.mysql_server.hostname,
+            "DISCOVERY_DEFAULT_DB_NAME": self._get_mysql_database_name("discovery"),
+            "DISCOVERY_MYSQL_USER": self._get_mysql_user_name("discovery"),
+            "DISCOVERY_MYSQL_PASSWORD": self._get_mysql_pass_from_dbname("discovery"),
+
+            # Common users
+            "COMMON_MYSQL_MIGRATE_USER": self.migrate_user,
+            "COMMON_MYSQL_MIGRATE_PASS": self._get_mysql_pass(self.migrate_user),
+            "COMMON_MYSQL_READ_ONLY_USER": self.read_only_user,
+            "COMMON_MYSQL_READ_ONLY_PASS": self._get_mysql_pass(self.read_only_user),
+            "COMMON_MYSQL_ADMIN_USER": self.admin_user,
+            "COMMON_MYSQL_ADMIN_PASS": self._get_mysql_pass(self.admin_user),
+        }
+
+    def _get_mongo_settings(self):
+        """
+        Return dictionary of mongodb settings
+        """
+        return {
+            "EDXAPP_MONGO_USER": self.mongo_user,
+            "EDXAPP_MONGO_PASSWORD": self.mongo_pass,
+            "EDXAPP_MONGO_HOSTS": [self.mongodb_server.hostname],
+            "EDXAPP_MONGO_PORT": self.mongodb_server.port,
+            "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
+
+            "FORUM_MONGO_USER": self.mongo_user,
+            "FORUM_MONGO_PASSWORD": self.mongo_pass,
+            "FORUM_MONGO_HOSTS": [self.mongodb_server.hostname],
+            "FORUM_MONGO_PORT": self.mongodb_server.port,
+            "FORUM_MONGO_DATABASE": self.forum_database_name,
+            "FORUM_REBUILD_INDEX": True
+        }
+
+    def _get_rabbitmq_settings(self):
+        """
+        Return dictionary of RabbitMQ Settings
+        """
+        return {
+            "XQUEUE_RABBITMQ_USER": self.rabbitmq_provider_user.username,
+            "XQUEUE_RABBITMQ_PASS": self.rabbitmq_provider_user.password,
+            "XQUEUE_RABBITMQ_VHOST": self.rabbitmq_vhost,
+            "XQUEUE_RABBITMQ_HOSTNAME": self.rabbitmq_server.instance_host,
+            "XQUEUE_RABBITMQ_PORT": self.rabbitmq_server.instance_port,
+            "XQUEUE_RABBITMQ_TLS": True,
+
+            "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
+            "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
+            "EDXAPP_CELERY_BROKER_VHOST": self.rabbitmq_vhost,
+            "EDXAPP_RABBIT_HOSTNAME": "{}:{}".format(
+                self.rabbitmq_server.instance_host,
+                self.rabbitmq_server.instance_port
+            ),
+            "EDXAPP_CELERY_BROKER_USE_SSL": True
         }
 
     def get_database_settings(self):
@@ -251,49 +391,17 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         if self.use_ephemeral_databases:
             return ''
 
-        new_settings = ''
+        new_settings = {}
 
         # MySQL:
         if self.mysql_server:
-            template = loader.get_template('instance/ansible/mysql.yml')
-            context = {
-                # General settings
-                'host': self.mysql_server.hostname,
-                'port': self.mysql_server.port,
-                # Common users
-                'migrate_user': self.migrate_user,
-                'migrate_pass': self._get_mysql_pass(self.migrate_user),
-                'read_only_user': self.read_only_user,
-                'read_only_pass': self._get_mysql_pass(self.read_only_user),
-                'admin_user': self.admin_user,
-                'admin_pass': self._get_mysql_pass(self.admin_user),
-            }
-            for database in self.mysql_databases:
-                context.update(self._get_template_vars(database))
-            new_settings += template.render(context)
+            new_settings.update(self._get_mysql_settings())
 
         # MongoDB:
         if self.mongodb_server:
-            template = loader.get_template('instance/ansible/mongo.yml')
-            new_settings += template.render({
-                'user': self.mongo_user,
-                'pass': self.mongo_pass,
-                'host': self.mongodb_server.hostname,
-                'port': self.mongodb_server.port,
-                'database': self.mongo_database_name,
-                'forum_database': self.forum_database_name
-            })
+            new_settings.update(self._get_mongo_settings())
 
         # RabbitMQ:
-        template = loader.get_template('instance/ansible/rabbitmq.yml')
-        new_settings += template.render({
-            'vhost': self.rabbitmq_vhost,
-            'host': self.rabbitmq_server.instance_host,
-            'port': self.rabbitmq_server.instance_port,
-            'xqueue_user': self.rabbitmq_provider_user.username,
-            'xqueue_pass': self.rabbitmq_provider_user.password,
-            'celery_user': self.rabbitmq_consumer_user.username,
-            'celery_pass': self.rabbitmq_consumer_user.password,
-        })
+        new_settings.update(self._get_rabbitmq_settings())
 
-        return new_settings
+        return yaml.dump(new_settings, default_flow_style=False)

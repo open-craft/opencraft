@@ -19,9 +19,10 @@
 """
 Open edX instance database mixin
 """
+import yaml
+
 from django.conf import settings
 from django.db import models
-from django.template import loader
 
 from .storage import SwiftContainerInstanceMixin
 
@@ -54,6 +55,85 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
         """
         return [self.swift_container_name]
 
+    def _get_s3_settings(self):
+        """
+        Return dictionary of S3 Ansible settings.
+        """
+        return {
+            "COMMON_ENABLE_AWS_INTEGRATION": True,
+            "AWS_ACCESS_KEY_ID": self.s3_access_key,
+            "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
+
+            "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto3.S3Boto3Storage',
+            "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
+            "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
+            "EDXAPP_AUTH_EXTRA": {
+                "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
+            },
+
+            "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
+            "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
+            "XQUEUE_UPLOAD_BUCKET": self.s3_bucket_name,
+            "XQUEUE_UPLOAD_PATH_PREFIX": 'xqueue',
+
+            "EDXAPP_GRADE_STORAGE_TYPE": 's3',
+            "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
+            "EDXAPP_GRADE_ROOT_PATH": 'grades-download',
+
+            # Tracking logs
+            "COMMON_OBJECT_STORE_LOG_SYNC": True,
+            "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": self.s3_bucket_name,
+            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": 'logs/tracking/',
+            "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
+            "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
+        }
+
+    def _get_swift_settings(self):
+        """
+        Return dictionary of Swift Ansible settings.
+        """
+        return {
+            "COMMON_ENABLE_OPENSTACK_INTEGRATION": True,
+            "COMMON_EDXAPP_SETTINGS": "openstack",
+            "EDXAPP_SETTINGS": "openstack",
+            "XQUEUE_SETTINGS": "openstack_settings",
+
+            "VHOST_NAME": "openstack",
+
+            "EDXAPP_DEFAULT_FILE_STORAGE": "swift.storage.SwiftStorage",
+            "EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME": self.swift_container_name,
+            "EDXAPP_SWIFT_AUTH_VERSION": '2',
+            "EDXAPP_SWIFT_USERNAME": self.swift_openstack_user,
+            "EDXAPP_SWIFT_KEY": self.swift_openstack_password,
+            "EDXAPP_SWIFT_TENANT_NAME": self.swift_openstack_tenant,
+            "EDXAPP_SWIFT_AUTH_URL": self.swift_openstack_auth_url,
+            "EDXAPP_SWIFT_REGION_NAME": self.swift_openstack_region,
+
+            "EDXAPP_GRADE_STORAGE_CLASS": 'swift.storage.SwiftStorage',
+            "EDXAPP_GRADE_STORAGE_KWARGS": {
+                "name_prefix": 'grades-download/'
+            },
+
+            "XQUEUE_SWIFT_USERNAME": self.swift_openstack_user,
+            "XQUEUE_SWIFT_KEY": self.swift_openstack_password,
+            "XQUEUE_SWIFT_TENANT_NAME": self.swift_openstack_tenant,
+            "XQUEUE_SWIFT_AUTH_URL": self.swift_openstack_auth_url,
+            "XQUEUE_SWIFT_AUTH_VERSION": "{{ EDXAPP_SWIFT_AUTH_VERSION }}",
+            "XQUEUE_SWIFT_REGION_NAME": self.swift_openstack_region,
+            "XQUEUE_UPLOAD_BUCKET": self.swift_container_name,
+            "XQUEUE_UPLOAD_PATH_PREFIX": 'xqueue',
+
+            # Tracking logs
+            "COMMON_OBJECT_STORE_LOG_SYNC": True,
+            "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": self.swift_container_name,
+            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": "logs/tracking/",
+            "SWIFT_LOG_SYNC_USERNAME": self.swift_openstack_user,
+            "SWIFT_LOG_SYNC_PASSWORD": self.swift_openstack_password,
+            "SWIFT_LOG_SYNC_TENANT_NAME": self.swift_openstack_tenant,
+            "SWIFT_LOG_SYNC_AUTH_URL": self.swift_openstack_auth_url,
+            "SWIFT_LOG_SYNC_REGION_NAME": self.swift_openstack_region,
+        }
+
     def get_storage_settings(self):
         """
         Get configuration_storage_settings to pass to a new AppServer
@@ -61,23 +141,11 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
         if self.use_ephemeral_databases:
             # Workaround for broken CMS course export/import
             # caused by https://github.com/edx/edx-platform/pull/14552
-            template = loader.get_template('instance/ansible/ephemeral.yml')
-            return template.render()
+            return yaml.dump({"EDXAPP_IMPORT_EXPORT_BUCKET": ""}, default_flow_style=False)
 
-        new_settings = ''
         if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
-            # S3
-            template = loader.get_template('instance/ansible/s3.yml')
-            new_settings += template.render({'instance': self})
+            return yaml.dump(self._get_s3_settings(), default_flow_style=False)
         elif settings.SWIFT_ENABLE:
             # Only enable Swift if S3 isn't configured
-            template = loader.get_template('instance/ansible/swift.yml')
-            new_settings += template.render({
-                'user': self.swift_openstack_user,
-                'password': self.swift_openstack_password,
-                'tenant': self.swift_openstack_tenant,
-                'auth_url': self.swift_openstack_auth_url,
-                'region': self.swift_openstack_region,
-                'container_name': self.swift_container_name,
-            })
-        return new_settings
+            return yaml.dump(self._get_swift_settings(), default_flow_style=False)
+        return ""

@@ -23,9 +23,9 @@ Instance app - Factory functions for creating instances
 # Imports #####################################################################
 
 import logging
+import yaml
 
 from django.conf import settings
-from django.template import loader
 
 from instance import ansible
 from instance.models.database_server import MySQLServer, MongoDBServer
@@ -125,9 +125,17 @@ def production_instance_factory(**kwargs):
         return
 
     # Gather settings
-    production_settings = loader.get_template('instance/ansible/prod-vars.yml').render({})
+    production_settings = {
+        # Don't create default users on production instances
+        "DEMO_CREATE_STAFF_USER": False,
+        "demo_test_users": [],
+    }
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
-    extra_settings = ansible.yaml_merge(production_settings, configuration_extra_settings)
+    configuration_extra_settings = yaml.load(configuration_extra_settings) if configuration_extra_settings else {}
+    extra_settings = yaml.dump(
+        ansible.dict_merge(production_settings, configuration_extra_settings),
+        default_flow_style=False
+    )
     instance_kwargs = dict(
         use_ephemeral_databases=False,
         edx_platform_repository_url=settings.STABLE_EDX_PLATFORM_REPO_URL,
