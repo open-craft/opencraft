@@ -153,4 +153,4 @@ def reconfigure_dirty_load_balancers():
     for load_balancer in LoadBalancingServer.objects.filter(
             configuration_version__gt=F('deployed_configuration_version')
     ):
-        load_balancer.reconfigure()
+        load_balancer.reconfigure(mark_dirty=False)
