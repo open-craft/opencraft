@@ -218,7 +218,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                    server_html)
         self.assertTrue(logo_extractor)
         logo_url = logo_extractor.group(1)
-        orig_logo_size = len(get_url_contents(application.logo.url))
+        orig_logo_size = len(get_url_contents(application.logo.url, verify_ssl=False))
         seen_logo_size = len(get_url_contents(instance.url + logo_url))
         self.assertEqual(orig_logo_size, seen_logo_size)
 
@@ -229,7 +229,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                                       server_html)
         self.assertTrue(favicon_extractor)
         favicon_url = favicon_extractor.group(1)
-        orig_favicon_size = len(get_url_contents(application.favicon.url))
+        orig_favicon_size = len(get_url_contents(application.favicon.url, verify_ssl=False))
         seen_favicon_size = len(get_url_contents(instance.url + favicon_url))
         self.assertEqual(orig_favicon_size, seen_favicon_size)
 

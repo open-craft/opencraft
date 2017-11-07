@@ -27,17 +27,23 @@ import time
 import requests
 
 
-def get_url_contents(url, auth=None, attempts=3, delay=15):
+def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
     """
     Connect to the given URL and returns its contents as a string.
+    Does several attempts in case the first one failed.
+    By default it verifies SSL certificates, but it can be disabled to be able to access external pages.
 
     Raises an exception if there is an HTTP error.
     """
-    ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
+    if verify_ssl:
+        ca = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
+    else:
+        ca = False
+
     while True:
         attempts -= 1
         try:
-            res = requests.get(url, auth=auth, verify=ca_path)
+            res = requests.get(url, auth=auth, verify=ca)
             res.raise_for_status()
             return res.text
         except Exception:  # pylint: disable=broad-except
