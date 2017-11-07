@@ -19,8 +19,9 @@
 """
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
+import yaml
+
 from django.db import models
-from django.template import loader
 
 
 # Classes #####################################################################
@@ -54,14 +55,56 @@ class OpenEdXThemeMixin(models.Model):
             # We don't change their colors and we don't use simple_theme
             return ""
 
-        template = loader.get_template('instance/ansible/simple_theme.yml')
-
         # application can be None (for instances not created through the form) or a
         # BetaTestApplication object. first() returns None or object.
         application = self.betatestapplication_set.first()
-        design_fields_yaml = template.render(
-            dict(
-                application=application,
-            )
-        )
-        return design_fields_yaml
+
+        if not application:
+            # Instance wasn't created from application form, so no colors will be set or changed
+            # and simple_theme won't be used (unless manually requested through other settings).
+            return ""
+
+        # These settings set the values required by simple_theme
+        settings = {
+            # This block defines our theme by applying the chosen colors to SASS-defined color variables
+            "SIMPLETHEME_SASS_OVERRIDES": [
+                {
+                    "variable": "link-color",
+                    "value": application.link_color,
+                },
+                {
+                    "variable": "header-bg",
+                    "value": application.header_bg_color,
+                },
+                {
+                    "variable": "footer-bg",
+                    "value": application.footer_bg_color,
+                },
+                {
+                    "variable": "button-color",
+                    "value": application.main_color,
+                },
+                {
+                    "variable": "action-primary-bg",
+                    "value": application.main_color,
+                },
+                {
+                    "variable": "action-secondary-bg",
+                    "value": application.main_color,
+                },
+            ],
+            "SIMPLETHEME_STATIC_FILES_URLS": [
+                {
+                    "url": application.logo.url,
+                    "dest": "lms/static/images/logo.png",
+                },
+                {
+                    "url": application.favicon.url,
+                    "dest": "lms/static/images/favicon.ico",
+                },
+            ],
+            "SIMPLETHEME_ENABLE_DEPLOY": True,
+            "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+        }
+
+        return yaml.dump(settings, default_flow_style=False)
