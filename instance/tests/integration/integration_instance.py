@@ -177,6 +177,36 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(lms_user_playbook)
         self.assertIn(lms_user_playbook, appserver.get_playbooks())
 
+    def _assert_theme_colors_in_css(self, instance, application, css_url):
+        """
+        Check that the CSS in the server includes the colors requested in the application.
+        E.g. after setting #3c9a12, we will find strings like this one in the minified CSS:
+         .action-primary{box-shadow:0 2px 1px 0 #0a4a67;background:#3c9a12;color:#fff}
+        """
+        server_css = get_url_contents(instance.url + css_url)
+
+        self.assertIn(application.main_color, server_css)
+        self.assertIn(application.link_color, server_css)
+        self.assertIn(application.header_bg_color, server_css)
+        self.assertIn(application.footer_bg_color, server_css)
+
+    def _assert_theme_logo_in_html(self, instance, application, logo_url):
+        """
+        Check whether the logo has the same size (in bytes) as the one from the beta registration form.
+        Could be improved to a hash check, or to test equality of the binary contents.
+        """
+        orig_logo_size = len(get_url_contents(application.logo.url, verify_ssl=False))
+        seen_logo_size = len(get_url_contents(instance.url + logo_url))
+        self.assertEqual(orig_logo_size, seen_logo_size)
+
+    def _assert_theme_favicon_in_html(self, instance, application, favicon_url):
+        """
+        Check whether favicon has the same size. Same system as with the logo.
+        """
+        orig_favicon_size = len(get_url_contents(application.favicon.url, verify_ssl=False))
+        seen_favicon_size = len(get_url_contents(instance.url + favicon_url))
+        self.assertEqual(orig_favicon_size, seen_favicon_size)
+
     def assert_theme_provisioned(self, instance, appserver, application):
         """
         Ensure the theme settings requested through the registration form resulted in
@@ -200,38 +230,26 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertTrue(css_extractor)
         css_url = css_extractor.group(1)
 
-        # Check that the CSS includes the colors passed
-        # E.g. after setting #3c9a12, we will find strings like this one in the minified CSS:can see it used like
-        # .action-primary{box-shadow:0 2px 1px 0 #0a4a67;background:#3c9a12;color:#fff}
-        server_css = get_url_contents(instance.url + css_url)
+        self._assert_theme_colors_in_css(instance, application, css_url)
 
-        self.assertIn(application.main_color, server_css)
-        self.assertIn(application.link_color, server_css)
-        self.assertIn(application.header_bg_color, server_css)
-        self.assertIn(application.footer_bg_color, server_css)
-
-        # Check whether the logo has the same size (in bytes) as the one from the beta registration form
-        # Could be improved to a hash, or to test equality of the binary contents.
         # The logo is found in a line like this in the HTML:
         #       <img src="/static/simple-theme/images/logo.82fb8d18479f.png" alt="danieltest1b Home Page"/>
         logo_extractor = re.search(r'<img src="(/static/simple-theme/images/logo.[a-z0-9]+\.png)" ',
                                    server_html)
         self.assertTrue(logo_extractor)
         logo_url = logo_extractor.group(1)
-        orig_logo_size = len(get_url_contents(application.logo.url, verify_ssl=False))
-        seen_logo_size = len(get_url_contents(instance.url + logo_url))
-        self.assertEqual(orig_logo_size, seen_logo_size)
 
-        # Check whether favicon has the same size. Same system as before
+        self._assert_theme_logo_in_html(instance, application, logo_url)
+
+        # Favicon is in a line like
         # <link rel="icon" type="image/x-icon" href="/static/simple-theme/images/favicon.eb143b51964d.ico" />
         favicon_extractor = re.search(r'<link rel="icon" type="image/x-icon" '
                                       r'href="(/static/simple-theme/images/favicon\.[a-z0-9]+\.ico)" />',
                                       server_html)
         self.assertTrue(favicon_extractor)
         favicon_url = favicon_extractor.group(1)
-        orig_favicon_size = len(get_url_contents(application.favicon.url, verify_ssl=False))
-        seen_favicon_size = len(get_url_contents(instance.url + favicon_url))
-        self.assertEqual(orig_favicon_size, seen_favicon_size)
+
+        self._assert_theme_favicon_in_html(instance, application, favicon_url)
 
     @shard(1)
     def test_spawn_appserver(self):
