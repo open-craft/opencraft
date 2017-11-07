@@ -35,15 +35,16 @@ def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
 
     Raises an exception if there is an HTTP error.
     """
-    if verify_ssl:
-        ca = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
-    else:
-        ca = False
+    ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
 
     while True:
         attempts -= 1
         try:
-            res = requests.get(url, auth=auth, verify=ca)
+            if verify_ssl:
+                res = requests.get(url, auth=auth, verify=ca_path)
+            else:
+                res = requests.get(url, auth=auth, verify=False)
+
             res.raise_for_status()
             return res.text
         except Exception:  # pylint: disable=broad-except
