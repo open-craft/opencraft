@@ -147,6 +147,14 @@ class OpenEdXConfigMixin(models.Model):
             "INSIGHTS_VERSION": self.openedx_release,
             "ECOMMERCE_VERSION": self.openedx_release,
 
+            # Theme
+            # Enable comprehensive theming
+            "EDXAPP_ENABLE_COMPREHENSIVE_THEMING": True,
+            "EDXAPP_COMPREHENSIVE_THEME_DIRS": [
+                "/edx/var/edxapp/themes",
+            ],
+            # EDXAPP_DEFAULT_SITE_THEME is set by OpenEdXThemeMixin when required
+
             # Misc
             "EDXAPP_LANG": 'en_US.UTF-8',
             "EDXAPP_TIME_ZONE": 'UTC',
