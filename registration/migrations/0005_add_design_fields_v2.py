@@ -8,8 +8,6 @@ import registration.models
 
 class Migration(migrations.Migration):
 
-    replaces = [('registration', '0005_add_design_fields'),]
-
     dependencies = [
         ('registration', '0004_subscribe_to_updates_label'),
     ]
