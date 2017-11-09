@@ -9,8 +9,6 @@ machine:
     INSTANCE_EPHEMERAL_DATABASES: 'false'
     LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
     TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
-    WATCH_FORK: 'open-craft/edx-platform'
-    WATCH_ORGANIZATION: 'open-craft'
 dependencies:
   pre:
     - pip install --upgrade pip

@@ -208,6 +208,12 @@ class PR:
         self.username = username
         self.body = body
 
+    def __repr__(self):
+        """
+        User-friendly unique description of a PR object.
+        """
+        return "PR {} by {}".format(self.github_pr_url, self.username)
+
     @property
     def truncated_title(self):
         """

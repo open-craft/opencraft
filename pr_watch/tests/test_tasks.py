@@ -24,6 +24,7 @@ Worker tasks - Tests
 
 import textwrap
 from unittest.mock import patch
+import yaml
 
 from django.test import TestCase, override_settings
 
@@ -31,7 +32,7 @@ from instance.models.openedx_instance import OpenEdXInstance
 from pr_watch import tasks
 from pr_watch.github import RateLimitExceeded
 from pr_watch.models import WatchedPullRequest
-from pr_watch.tests.factories import PRFactory
+from pr_watch.tests.factories import WatchedForkFactory, PRFactory
 
 
 # Tests #######################################################################
@@ -57,6 +58,7 @@ class TasksTestCase(TestCase):
             configuration_version: named-release/elder
         """)
         mock_get_username_list.return_value = ['itsjeyd']
+        WatchedForkFactory(fork='source/repo')
         pr = PRFactory(
             number=234,
             source_fork_name='fork/repo',
@@ -83,7 +85,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
         self.assertEqual(instance.edx_platform_commit, '7' * 40)
         self.assertEqual(instance.openedx_release, 'master')
-        self.assertEqual(instance.configuration_extra_settings, ansible_extra_settings)
+        self.assertEqual(yaml.load(instance.configuration_extra_settings), yaml.load(ansible_extra_settings))
         self.assertEqual(instance.configuration_source_repo_url, 'https://github.com/open-craft/configuration')
         self.assertEqual(instance.configuration_version, 'named-release/elder')
         self.assertEqual(
@@ -141,3 +143,135 @@ class TasksTestCase(TestCase):
 
         tasks.watch_pr()
         self.assertEqual(mock_spawn_appserver.call_count, 0)
+
+    @patch('pr_watch.github.get_commit_id_from_ref')
+    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.get_pr_list_from_usernames')
+    @patch('pr_watch.tasks.get_username_list_from_team')
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
+    def test_watch_several_forks(self, mock_get_username_list, mock_get_pr_list_from_usernames,
+                                 mock_spawn_appserver, mock_get_commit_id_from_ref):
+        """
+        Create 2 watched forks with different settings, do a PR on each and check that both are seen and set up.
+        """
+
+        # Because we need to create 2 very similar repositories, we share code
+        def create_test_data(number):
+            """
+            Return some data about a fork and repository. The data is almost the same, but values have a "1" or "2"
+            (or the number you pass) appended. Also, the PR's id is 23001 for PR1, 23002 for PR2 etc.
+            """
+            pr_extra_settings = textwrap.dedent("""\
+                PHRASE: "I am the value defined in PR{}"
+                edx_ansible_source_repo: https://github.com/open-craft/configuration
+                configuration_version: named-release/elder
+            """.format(number))
+            wf = WatchedForkFactory(
+                organization='test-organization',
+                fork='source/repo{}'.format(number),
+                # These 2 values will be replaced by the ones from the PR because the PR ones have more precedence
+                configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
+                configuration_version='named-release/elder-fromwatchedfork',
+                configuration_extra_settings=textwrap.dedent("""\
+                PHRASE: "I am a setting which was set up the watched fork {} (but will be overriden by the PR)"
+                FORK_SPECIFIC_PHRASE: "I am another setting which was set up in watched fork {}"
+                """.format(number, number)),
+                openedx_release='ginkgo.8',
+            )
+            pr_number = 23000 + number
+            pr = PRFactory(
+                number=pr_number,
+                source_fork_name='fork/repo',
+                target_fork_name=wf.fork,
+                branch_name='watch-branch',
+                title='Watched PR title which is very long',
+                username='bradenmacdonald',
+                body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\n{}```\r\nMore...'.format(
+                    pr_extra_settings
+                ),
+            )
+            pr_url = 'https://github.com/{}/pull/{}'.format(wf.fork, pr_number)
+            pr_expected_resulting_settings = {
+                'PHRASE': "I am the value defined in PR{}".format(number),
+                'FORK_SPECIFIC_PHRASE': "I am another setting which was set up in watched fork {}".format(number),
+                'edx_ansible_source_repo': 'https://github.com/open-craft/configuration',
+                'configuration_version': 'named-release/elder',
+            }
+
+            return {'wf': wf, 'pr': pr, 'url': pr_url, 'expected_settings': pr_expected_resulting_settings}
+
+        # Create 2 WatchedFork and 2 WatchedPullRequest (1 in each). They mostly use the same values except the first
+        # one has values ending in "1" (e.g. source/repo1) and the 2nd in "2" (e.g. source/repo2)
+        test_data = [
+            create_test_data(1),
+            create_test_data(2),
+        ]
+
+        def fake_pr_list_from_usernames(username_list, fork_name):
+            """
+            Simulate a GitHub answer to avoid doing API calls.
+            When asked about PRs in the first repository, answer the first test PR,
+            and when asked about the second, answer the second one.
+            """
+            if fork_name == 'edx/edx-platform':
+                return []
+            elif fork_name == 'source/repo1':
+                return [test_data[0]['pr']]  # first PR
+            elif fork_name == 'source/repo2':
+                return [test_data[1]['pr']]  # second PR
+            else:
+                raise NotImplementedError()
+
+        # Substitute GitHub API calls by our results
+        mock_get_username_list.return_value = ['itsjeyd']
+        mock_get_pr_list_from_usernames.side_effect = fake_pr_list_from_usernames
+        # Commit ID is the same in both PRs
+        mock_get_commit_id_from_ref.return_value = '7' * 40
+
+        self.assertEqual(mock_spawn_appserver.call_count, 0)
+
+        # Check github (with our mocked response), this will detect 2 watched PRs and spawn 1 instance for each
+        tasks.watch_pr()
+
+        self.assertEqual(mock_spawn_appserver.call_count, 2)
+
+        # Now do checks twice, once for every instance, checking the appropriate values each time
+        for pr_number in [1, 2]:
+            # "pr" contains the data we expect to see: URL, settings, and the PR object itself
+            pr = test_data[pr_number - 1]
+
+            new_instance_ref_id = mock_spawn_appserver.mock_calls[pr_number - 1][1][0]
+            instance = OpenEdXInstance.objects.get(ref_set__pk=new_instance_ref_id)
+            subdomain_part = 'pr2300{}'.format(pr_number) # e.g. pr23001, pr23002, etc.
+            self.assertEqual(instance.internal_lms_domain, '{}.sandbox.awesome.hosting.org'.format(subdomain_part))
+            self.assertEqual(instance.internal_lms_preview_domain,
+                             'preview-{}.sandbox.awesome.hosting.org'.format(subdomain_part))
+            self.assertEqual(instance.internal_studio_domain,
+                             'studio-{}.sandbox.awesome.hosting.org'.format(subdomain_part))
+            self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
+            self.assertEqual(instance.edx_platform_commit, '7' * 40)
+            self.assertEqual(instance.openedx_release, 'ginkgo.8') # from WatchedFork
+            self.assertEqual(yaml.load(instance.configuration_extra_settings), pr['expected_settings'])
+            # PR settings have precedence and they overwrote the ones in the WatchedFork
+            self.assertEqual(instance.configuration_source_repo_url,
+                             'https://github.com/open-craft/configuration')
+            self.assertEqual(instance.configuration_version, 'named-release/elder')
+            self.assertEqual(
+                instance.name,
+                'PR#2300{}: Watched PR title which ... (bradenmacdonald) - '
+                'fork/watch-branch (7777777)'.format(pr_number)
+            )
+
+            self.assertEqual(pr['pr'].github_pr_url, pr['url'])
+
+            # Also check the WatchedPullRequest object:
+            watched_pr = WatchedPullRequest.objects.get(github_pr_url=pr['url'])
+            self.assertEqual(watched_pr.github_pr_number, 23000 + pr_number)
+            self.assertEqual(watched_pr.github_pr_url, pr['url'])
+            self.assertEqual(watched_pr.github_base_url, 'https://github.com/fork/repo')
+            self.assertEqual(watched_pr.branch_name, 'watch-branch')
+            self.assertEqual(watched_pr.instance_id, instance.id)
+
+        # Once the new instance/appservers have been spawned, they shouldn't spawn again:
+        tasks.watch_pr()
+        self.assertEqual(mock_spawn_appserver.call_count, 2)

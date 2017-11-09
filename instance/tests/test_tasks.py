@@ -224,8 +224,8 @@ class CleanUpTestCase(TestCase):
         reference_date = timezone.now()
 
         # Create PRs and instances
-        for dummy in range(5):
-            make_watched_pr_and_instance()
+        for i in range(5):
+            make_watched_pr_and_instance(source_fork_name='some/fork{}'.format(i))
 
         # Calculate date when PR was closed
         pr_state = data['pr_state']

@@ -258,12 +258,6 @@ edit its security group rules to only allow access to VMs in the
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens, and enable the `read:org` and
   `read:user` scopes on the token.  The user must also be a member of
-  `WATCH_ORGANIZATION`.
-* `WATCH_ORGANIZATION`: The organization to watch (required). The instance
-  manager will automatically set up sandboxes for pull requests made by members
-  of this organization.
-* `WATCH_FORK`: Sandboxes are created for pull requests made against this fork
-  (default: `edx/edx-platform`)
 
 ### New Relic settings
 
@@ -518,9 +512,10 @@ Provisioning sandboxes
 
 ### GitHub pull requests
 
-When configured correctly, the instance manager will automatically provision
-sandboxes whenever a pull request is made on GitHub on your configured
-`WATCH_FORK`, by members of your `WATCH_ORGANIZATION`.
+When configured correctly, the instance manager can automatically provision
+sandboxes whenever a pull request is made on GitHub. You can choose which
+repositories and organization to watch by creating in admin or shell a
+`WatchedFork` object with the name of your fork (e.g. `edx/edx-platform`).
 
 To customize these sandboxes, you can add a **Settings** section to your pull
 request description, using the following format:
@@ -539,6 +534,16 @@ For example:
     ```
 
 Note: You need to match the above format exactly.
+
+Another option to customize sandboxes is to write the settings as a field inside
+the `WatchedFork`: `configuration_extra_settings`. These settings will be applied
+to all pull requests for that repository, without having to write a **Settings**
+section in each PR. If there is a **Settings** section, it will be combined with
+the `WatchedFork` settings, with the PR settings always having precedence.
+The `configuration_source_repo_url`, `configuration_version` and `openedx_release`
+from the `WatchedFork` provide a default value for all PRs of that fork, and can
+also be overriden in the PR body through the `edx_ansible_source_repo`,
+`configuration_version` and `openedx_release` variables respectively.
 
 ### Manual provisioning
 

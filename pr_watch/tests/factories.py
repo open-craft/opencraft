@@ -26,15 +26,16 @@ from unittest.mock import patch
 
 import factory
 
+from factory.django import DjangoModelFactory
 from pr_watch import github
-from pr_watch.models import WatchedPullRequest
+from pr_watch.models import WatchedFork, WatchedPullRequest
 
 
 # Classes #####################################################################
 
 class PRFactory(factory.Factory):
     """
-    Factory for PR instances
+    Factory for PR instances (GitHub Pull Request)
     """
     class Meta:
         model = github.PR
@@ -47,6 +48,19 @@ class PRFactory(factory.Factory):
     username = 'edx'
     body = ''
 
+
+class WatchedForkFactory(DjangoModelFactory):
+    """
+    Factory for WatchedFork instances
+    """
+    class Meta:
+        model = WatchedFork
+
+    enabled = True
+    organization = 'test-org'
+    fork = 'fork/repo'
+
+
 # Functions ###################################################################
 
 
@@ -55,6 +69,9 @@ def make_watched_pr_and_instance(**kwargs):
     Create a WatchedPullRequest and associated OpenEdXInstance
     """
     pr = PRFactory(**kwargs)
+    watched_fork = WatchedForkFactory(fork=pr.fork_name)
+
+    watched_fork.save()
     with patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40)):
-        instance, dummy = WatchedPullRequest.objects.get_or_create_from_pr(pr)
+        instance, dummy = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
     return instance.watchedpullrequest

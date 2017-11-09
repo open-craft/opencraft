@@ -300,13 +300,6 @@ GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
-# Github fork to watch
-WATCH_FORK = env('WATCH_FORK', default=DEFAULT_FORK)
-
-# Github organization to watch
-WATCH_ORGANIZATION = env('WATCH_ORGANIZATION')
-
-
 # Open edX Instance and App Server Settings  ##################################
 
 # Instances will be created as subdomains of this domain by default
