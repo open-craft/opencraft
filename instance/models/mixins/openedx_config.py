@@ -23,7 +23,7 @@ class OpenEdXConfigMixin(models.Model):
         """
         template = {
             # System
-            "COMMON_HOSTNAME": self.instance.domain,
+            "COMMON_HOSTNAME": self.server_hostname,
             "COMMON_ENVIRONMENT": "opencraft",
             "COMMON_DEPLOYMENT": self.instance.internal_lms_domain,
             # Set the default fallback DNS servers to be Google's DNS. This is necessary to eliminate a single

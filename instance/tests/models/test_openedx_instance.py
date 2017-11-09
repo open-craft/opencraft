@@ -245,7 +245,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
         self.assertEqual(appserver.configuration_storage_settings, ephemeral_settings)
         configuration_vars = yaml.load(appserver.configuration_settings)
-        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], instance.domain)
+        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
 
@@ -283,7 +283,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
-        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], instance.external_lms_domain)
+        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_LMS_BASE'], instance.external_lms_domain)
         self.assertEqual(configuration_vars['EDXAPP_PREVIEW_LMS_BASE'], instance.external_lms_preview_domain)
         self.assertEqual(configuration_vars['EDXAPP_CMS_BASE'], instance.external_studio_domain)

@@ -412,6 +412,20 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             if network.find_security_group(group_name) is None:
                 raise Exception("Unable to find the OpenStack network security group called '{}'.".format(group_name))
 
+    @property
+    def server_name_prefix(self):
+        """
+        Prefix for the associated server name.
+        """
+        return ('edxapp-' + slugify(self.instance.domain))[:20]
+
+    @property
+    def server_hostname(self):
+        """
+        Hostname value for the associated server.
+        """
+        return '{}-{}'.format(self.server_name_prefix, slugify(self.name))
+
     @log_exception
     @AppServer.status.only_for(AppServer.Status.New)
     def provision(self):
@@ -434,7 +448,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # Requesting a new server/VM:
         self._status_to_waiting_for_server()
         assert self.server.vm_not_yet_requested
-        self.server.name_prefix = ('edxapp-' + slugify(self.instance.domain))[:20]
+        self.server.name_prefix = self.server_name_prefix
         self.server.save()
 
         def accepts_ssh_commands():
