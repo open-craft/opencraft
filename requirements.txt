@@ -148,3 +148,5 @@ warlock==1.2.0
 wcwidth==0.1.7
 Werkzeug==0.11.1
 wrapt==1.10.8
+Pillow==4.3.0
+django_storage_swift==1.2.17
