@@ -47,6 +47,21 @@ def validate_available_subdomain(subdomain):
         )
 
 
+def validate_logo_height(image):
+    """
+    Validates that the logo is 48px tall (otherwise it would require extra CSS).
+    """
+
+    if image.name == 'opencraft_logo_small.png':
+        # Don't check the default image (which is in SWIFT). This gives more flexibility in
+        # dev (we don't need to set up the right images in the every SWIFT container). Could
+        # be made safer.
+        return
+
+    if image.height != 48:
+        raise ValidationError("The logo image must be 48px tall to fit into the header.")
+
+
 class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     """
     An application to beta test the Instance Manager.
@@ -102,6 +117,73 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text=('What are you going to use the instance for? What are '
                    'your expectations?'),
     )
+
+    # Theme fields. They allow to define the design, e.g. choose colors and logo
+    main_color = models.CharField(
+        max_length=7,
+        help_text='This is used as the primary color in your theme palette. '
+                  'It is used as filler for buttons.',
+        # #126f9a == $m-blue-d3 in variables.scss. It's rgb(18,111,154)
+        default='#126f9a',
+    )
+    link_color = models.CharField(
+        max_length=7,
+        help_text='This is used as the color for clickable links on your '
+                  'instance.',
+        # Same as main_color. Almost like openedx's #0075b4 == rgb(0, 117, 180)
+        default='#126f9a',
+
+    )
+    header_bg_color = models.CharField(
+        max_length=7,
+        verbose_name='Header background color',
+        help_text='Used as the background color for the top bar.',
+        # openedx also uses white by default
+        default='#ffffff',
+    )
+    footer_bg_color = models.CharField(
+        max_length=7,
+        verbose_name='Footer background color',
+        help_text='Used as the background color for the footer.',
+        # openedx also uses white by default
+        default='#ffffff',
+    )
+    # If you're using SWIFT (OpenStack) to store files (this is enabled through
+    # the MEDIAFILES_SWIFT_ENABLE environment variable) then you'll need to
+    # upload these default images (logo and favicon) to your container. To do so,
+    # download the configuration file from the OVH account (top right menu), and
+    # run (replacing the cointainer name):
+    #
+    # source downloaded_openstack_configuration_file.sh
+    # swift stat  # this is only to test the connection
+    # swift upload 'daniel_testing_file_uploads_from_ocim' \
+    #   static/img/png/opencraft_logo_small.png            \
+    #   --object-name opencraft_logo_small.png
+    # swift upload 'daniel_testing_file_uploads_from_ocim' \
+    #   static/img/favicon/opencraft_favicon.ico           \
+    #   --object-name opencraft_favicon.ico
+    # swift list daniel_testing_file_uploads_from_ocim  # just to check
+    #
+    # Note that the file names must match the names used in "default", and that
+    # the logo should be 48px tall.
+    logo = models.ImageField(
+        help_text="Your branding to be displayed throughout your instance. "
+                  "It should be 48px tall. "
+                  "If unset, OpenCraft's logo will be used.",
+        null=True, # to ease migrations
+        blank=False,
+        default='opencraft_logo_small.png',
+        validators=[validate_logo_height],
+    )
+    # Same upload instructions as logo
+    favicon = models.ImageField(
+        help_text="This is used as the browser tab icon for your instance's "
+                  "pages. If unset, OpenCraft's icon will be used.",
+        null=True, # to ease migrations
+        blank=False,
+        default='opencraft_favicon.ico',
+    )
+
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about the progress '

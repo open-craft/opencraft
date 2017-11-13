@@ -4,6 +4,7 @@ machine:
   services:
     - redis
   environment:
+    # Don't add sensitive information (e.g. passwords) here but in https://circleci.com/gh/open-craft/opencraft/edit#env-vars
     DEBUG: 'true'
     DEFAULT_FORK: 'open-craft/edx-platform'
     INSTANCE_EPHEMERAL_DATABASES: 'false'

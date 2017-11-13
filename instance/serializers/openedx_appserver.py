@@ -45,6 +45,7 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
         fields = tuple(OpenEdXAppConfiguration.get_config_fields()) + (
             'configuration_database_settings',
             'configuration_storage_settings',
+            'configuration_theme_settings',
             'configuration_settings',
             'instance',
             'server',
