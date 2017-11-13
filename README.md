@@ -1,3 +1,5 @@
+This branch was created to trigger the CircleCI tests (https://github.com/open-craft/configuration/pull/28#issuecomment-343966443) and can be deleted once they run.
+
 OpenCraft Instance Manager
 ==========================
 
