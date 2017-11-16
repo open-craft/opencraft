@@ -24,7 +24,7 @@ Admin for the instance app
 
 from django.contrib import admin
 
-from .models import WatchedPullRequest
+from .models import WatchedFork, WatchedPullRequest
 
 
 # ModelAdmins #################################################################
@@ -33,4 +33,9 @@ class WatchedPullRequestAdmin(admin.ModelAdmin): #pylint: disable=missing-docstr
     list_display = ('reference_name', 'instance')
 
 
+class WatchedForkAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+    list_display = ('enabled', 'organization', 'fork')
+
+
 admin.site.register(WatchedPullRequest, WatchedPullRequestAdmin)
+admin.site.register(WatchedFork, WatchedForkAdmin)

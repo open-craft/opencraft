@@ -24,7 +24,6 @@ Worker tasks for development of Open edX
 
 import logging
 
-from django.conf import settings
 from huey.contrib.djhuey import crontab, db_periodic_task
 
 from pr_watch.github import (
@@ -32,7 +31,7 @@ from pr_watch.github import (
     get_pr_list_from_usernames,
     RateLimitExceeded
 )
-from pr_watch.models import WatchedPullRequest
+from pr_watch.models import WatchedFork, WatchedPullRequest
 from instance.tasks import spawn_appserver
 
 
@@ -50,11 +49,12 @@ def watch_pr():
     organization on the watched repository
     """
     try:
-        team_username_list = get_username_list_from_team(settings.WATCH_ORGANIZATION)
-        for pr in get_pr_list_from_usernames(team_username_list, settings.WATCH_FORK):
-            instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr)
-            if created:
-                logger.info('New PR found, creating sandbox: %s', pr)
-                spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        for watched_fork in WatchedFork.objects.all():
+            team_username_list = get_username_list_from_team(watched_fork.organization)
+            for pr in get_pr_list_from_usernames(team_username_list, watched_fork.fork):
+                instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
+                if created:
+                    logger.info('New PR found, creating sandbox: %s', pr)
+                    spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
     except RateLimitExceeded as err:
         logger.warning('Could not complete PR scan due to an error: %s', str(err))

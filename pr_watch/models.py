@@ -23,11 +23,11 @@ PR Watcher app models
 # Imports #####################################################################
 
 import logging
-
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 
+from instance.ansible import yaml_merge
 from instance.logging import ModelLoggerAdapter
 from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
@@ -46,12 +46,69 @@ sha1_validator = RegexValidator(regex='^[0-9a-f]{40}$', message='Full SHA1 hash 
 
 # Models ######################################################################
 
+class WatchedFork(models.Model):
+    """
+    Represents a fork of edx/edx-platform whose PRs we watch.
+    """
+    # uses internal id key
+    enabled = models.BooleanField(default=True)
+    # This is the old .env variable WATCH_ORGANIZATION
+    organization = models.CharField(
+        max_length=200,
+        db_index=True,
+        help_text=("Watched GitHub organization. E.g.: open-craft. PRs against the watched fork "
+                   "made by members of this organization will trigger a sandbox build"),
+    )
+    # This is the old .env variable WATCH_FORK
+    fork = models.CharField(
+        max_length=200,
+        db_index=True,
+        help_text='Github fork name that will be watched for PRs. E.g.: open-craft/edx-platform'
+    )
+    # This is equivalent to the DEFAULT_CONFIGURATION_REPO_URL .env variable
+    configuration_source_repo_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text='If set, it overrides the default configuration repository',
+    )
+    # Equivalent to settings.DEFAULT_CONFIGURATION_VERSION
+    configuration_version = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        help_text='If set, it overrides the default configuration version',
+    )
+    openedx_release = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        help_text='If set, it overrides the the default Open edX release tag',
+    )
+    configuration_extra_settings = models.TextField(
+        blank=True,
+        null=False,
+        default="",
+        help_text=("YAML string with extra variables. These take precedence over the instance's default "
+                   "extra settings, but can be overriden by the PR settings"),
+    )
+
+    class Meta:
+        unique_together = ('organization', 'fork')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = ModelLoggerAdapter(logger, {'obj': self})
+
+    def __str__(self):
+        return "Fork {} ({})".format(self.fork, self.organization)
+
+
 class WatchedPullRequestQuerySet(models.QuerySet):
     """
     Additional methods for WatchedPullRequest querysets
     Also used as the standard manager for the WatchedPullRequest model
     """
-    def get_or_create_from_pr(self, pr):
+    def get_or_create_from_pr(self, pr, watched_fork):
         """
         Get or create an instance for the given pull request
         """
@@ -59,9 +116,11 @@ class WatchedPullRequestQuerySet(models.QuerySet):
             fork_name=pr.fork_name,
             branch_name=pr.branch_name,
             github_pr_url=pr.github_pr_url,
+            watched_fork=watched_fork,
         )
         if created:
             watched_pr.update_instance_from_pr(pr)
+
         return watched_pr.instance, created
 
     def create(self, *args, **kwargs):
@@ -103,6 +162,7 @@ class WatchedPullRequest(models.Model):
     # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
     # api (including the head commit sha hash, which does not require a separate API call as
     # is currently used.)
+    watched_fork = models.ForeignKey(WatchedFork, blank=False, null=False)
     branch_name = models.CharField(max_length=255, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
     github_organization_name = models.CharField(max_length=200, db_index=True)
@@ -233,13 +293,31 @@ class WatchedPullRequest(models.Model):
             'PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {i.reference_name} ({commit_short_id})'
             .format(pr=pr, i=self, commit_short_id=instance.edx_platform_commit[:7])
         )
-        instance.configuration_extra_settings = pr.extra_settings
+        instance.configuration_extra_settings = yaml_merge(
+            self.watched_fork.configuration_extra_settings,
+            pr.extra_settings
+        )
         instance.use_ephemeral_databases = pr.use_ephemeral_databases(instance.domain)
+        # Configuration repo and version and edx release follow this precedence:
+        # 1) PR settings. 2) WatchedFork settings. 3) instance model defaults
         instance.configuration_source_repo_url = pr.get_extra_setting(
-            'edx_ansible_source_repo', default=instance.configuration_source_repo_url
+            'edx_ansible_source_repo',
+            default=(
+                self.watched_fork.configuration_source_repo_url or
+                instance.configuration_source_repo_url
+            )
         )
         instance.configuration_version = pr.get_extra_setting(
-            'configuration_version', default=instance.configuration_version
+            'configuration_version', default=(
+                self.watched_fork.configuration_version or
+                instance.configuration_version
+            )
+        )
+        instance.openedx_release = pr.get_extra_setting(
+            'openedx_release', default=(
+                self.watched_fork.openedx_release or
+                instance.openedx_release
+            )
         )
         # Save atomically. (because if the instance gets created but self.instance failed to
         # update, then any subsequent call to update_instance_from_pr() would try to create
