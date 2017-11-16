@@ -214,6 +214,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
         # to avoid the possibility of entering an infinite loop (if timeout is negative)
         # or reaching the timeout right away (if timeout is zero)
         assert timeout > 0, "Timeout must be greater than 0 to be able to do anything useful"
+        initial_timeout = timeout
 
         self.logger.info('Waiting to reach status from which we can proceed...')
 
@@ -235,8 +236,8 @@ class Server(ValidateModelMixin, TimeStampedModel):
 
         # If we get here, this means we've reached the timeout
         raise TimeoutError(
-            "Waited {minutes:.2f} to reach appropriate status, and got nowhere. "
-            "Aborting with a status of {status}.".format(minutes=timeout / 60, status=self.status.name)
+            "Waited {minutes:.2f} minutes to reach appropriate status, and got nowhere. "
+            "Aborting with a status of {status}.".format(minutes=initial_timeout / 60, status=self.status.name)
         )
 
     def save(self, *args, **kwargs):
