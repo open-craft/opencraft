@@ -253,9 +253,10 @@ class OpenStackServerTestCase(TestCase):
             server._status_to_building()
         mock_update_status.side_effect = update_status
 
-        with self.assertRaises(TimeoutError):
+        with self.assertRaises(TimeoutError) as timeout_error:
             server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=1)
             self.assertEqual(mock_sleep.call_count, 1)
+            self.assertIn("Waited 0.01", timeout_error.exception)
 
     def test_sleep_until_invalid_timeout(self):
         """
