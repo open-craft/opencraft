@@ -142,7 +142,7 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             $scope.is_spawning_appserver = false;
             $scope.is_updating_from_pr = false;
             $scope.instance_active_tabs = {};
-            $scope.old_appserver_count = 0;
+            $scope.old_appserver_count = 0; // Remembers number of servers to detect when a new one appears
 
             $scope.instanceLogs = false;
             $scope.isFetchingLogs = false;
@@ -206,12 +206,12 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             // [Re]load the instance data from the server.
             return OpenCraftAPI.one("instance", $stateParams.instanceId).get().then(function(instance) {
                 $scope.instance = instance;
-                if (instance.appservers.length > $scope.old_appserver_count) {
+                if (instance.appserver_count > $scope.old_appserver_count) {
                     // There is a new AppServer. If we were expecting one, it is here now.
                     // So stop animations and re-enable the "Launch new AppServer" button.
                     $scope.is_spawning_appserver = false;
                 }
-                $scope.old_appserver_count = instance.appservers.length;
+                $scope.old_appserver_count = instance.appserver_count;
             });
         };
 
