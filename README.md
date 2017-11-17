@@ -774,7 +774,6 @@ following additional variables must be est on the instance:
 DISCOVERY_ELASTICSEARCH_URL: "http://149.202.166.156:9200/"
 SANDBOX_ENABLE_DISCOVERY: yes
 SANDBOX_ENABLE_ECOMMERCE: yes
-COMMON_HOSTNAME: "custom-local-hostname-here"
 DISCOVERY_VERSION: "c96c77bbf80650b3d3cc238335cc5205e24b775f"
 ```
 
