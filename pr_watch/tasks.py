@@ -49,7 +49,7 @@ def watch_pr():
     organization on the watched repository
     """
     try:
-        for watched_fork in WatchedFork.objects.all():
+        for watched_fork in WatchedFork.objects.filter(enabled=True):
             team_username_list = get_username_list_from_team(watched_fork.organization)
             for pr in get_pr_list_from_usernames(team_username_list, watched_fork.fork):
                 instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
