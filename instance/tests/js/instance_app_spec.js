@@ -233,6 +233,7 @@ describe('Instance app', function () {
                 const mockAppServer = {"id": 8, };
                 instanceDetail.newest_appserver = mockAppServer;
                 instanceDetail.appservers.push(mockAppServer);
+                instanceDetail.appserver_count = instanceDetail.appservers.length;
                 swampdragon.sendChannelMessage({type: "openedx_appserver_update", instance_id: instanceDetail.id});
                 flushHttpBackend();
                 expect($scope.is_spawning_appserver).toBe(false);
