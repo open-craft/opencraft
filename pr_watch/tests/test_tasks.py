@@ -275,3 +275,44 @@ class TasksTestCase(TestCase):
         # Once the new instance/appservers have been spawned, they shouldn't spawn again:
         tasks.watch_pr()
         self.assertEqual(mock_spawn_appserver.call_count, 2)
+
+    @patch('pr_watch.github.get_commit_id_from_ref')
+    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.get_pr_list_from_usernames')
+    @patch('pr_watch.tasks.get_username_list_from_team')
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
+    def test_disabled_watchedfork(self, mock_get_username_list, mock_get_pr_list_from_usernames,
+                                  mock_spawn_appserver, mock_get_commit_id_from_ref):
+        """
+        Creates WatchedFork with the 'enabled' field set to false and checks that its PRs are not watched.
+        """
+
+        ansible_extra_settings = textwrap.dedent("""\
+            WATCH: true
+            edx_ansible_source_repo: https://github.com/open-craft/configuration
+            configuration_version: named-release/elder
+        """)
+        mock_get_username_list.return_value = ['itsjeyd']
+        wf = WatchedForkFactory(
+            organization='test-organization',
+            fork='source/repo',
+            enabled=False,
+        )
+        pr = PRFactory(
+            number=234,
+            source_fork_name='fork/repo',
+            target_fork_name=wf.fork,
+            branch_name='watch-branch',
+            title='Watched PR title which is very long',
+            username='bradenmacdonald',
+            body='Hello watcher!\n- - -\r\n**Settings**\r\n```\r\n{}```\r\nMore...'.format(
+                ansible_extra_settings
+            ),
+        )
+
+        mock_get_commit_id_from_ref.return_value = '7' * 40
+        mock_get_pr_list_from_usernames.return_value = [pr]
+
+        tasks.watch_pr()
+        self.assertEqual(mock_spawn_appserver.call_count, 0)
+        self.assertEqual(WatchedPullRequest.objects.count(), 0)
