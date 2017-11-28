@@ -185,7 +185,10 @@ class SwiftContainerInstanceTestCase(TestCase):
             'SWIFT_LOG_SYNC_REGION_NAME': instance.swift_openstack_region,
             'COMMON_OBJECT_STORE_LOG_SYNC_BUCKET': instance.swift_container_name,
         }
-        ansible_vars = appserver.configuration_settings
+        # Replace any \' occurrences because some settings may have it while we do a blanket assertion without it.
+        # For example: we assert "EDXAPP_SWIFT_TENANT_NAME: 9999999999" is in `ansible_vars`, which would have
+        # "EDXAPP_SWIFT_TENANT_NAME: \'9999999999\'", causing a mismatch unless we strip the \'.
+        ansible_vars = str(appserver.configuration_settings).replace("\'", '')
         for ansible_var, value in expected_settings.items():
             if expected:
                 self.assertIn('{}: {}'.format(ansible_var, value), ansible_vars)
