@@ -359,12 +359,13 @@ class OpenStackServer(Server):
                 # server must have been terminated.
                 self.logger.debug('Server does not exist anymore: %s', self)
                 self._status_to_terminated()
-            except (requests.RequestException,
-                    novaclient.exceptions.ClientException,
-                    novaclient.exceptions.EndpointNotFound) as exc:
+            except (requests.RequestException, novaclient.exceptions.ClientException) as exc:
                 self.logger.debug('Could not reach the OpenStack API due to %s', exc)
                 if self.status != Status.Unknown:
                     self._status_to_unknown()
+            except novaclient.exceptions.EndpointNotFound:
+                # TODO: Erase this exception block when we implement multi-OpenStack-project/region support.
+                pass
             else:
                 self._update_status_from_nova(os_server)
         return self.status
@@ -392,9 +393,12 @@ class OpenStackServer(Server):
                 key_name=key_name,
                 **kwargs
             )
-        except (novaclient.exceptions.ClientException, novaclient.exceptions.EndpointNotFound) as exc:
+        except novaclient.exceptions.ClientException as exc:
             self.logger.error('Failed to start server: %s', exc)
             self._status_to_build_failed()
+        except novaclient.exceptions.EndpointNotFound:
+            # TODO: Erase this exception block when we implement multi-OpenStack-project/region support.
+            pass
         else:
             self.openstack_id = os_server.id
             self.logger.info('Server got assigned OpenStack id %s', self.openstack_id)
@@ -436,5 +440,8 @@ class OpenStackServer(Server):
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
-        except (novaclient.exceptions.ClientException, novaclient.exceptions.EndpointNotFound) as exc:
+        except novaclient.exceptions.ClientException as exc:
             self.logger.error('Unable to reach the OpenStack API due to %s', exc)
+        except novaclient.exceptions.EndpointNotFound:
+            # TODO: Erase this exception block when we implement multi-OpenStack-project/region support.
+            pass
