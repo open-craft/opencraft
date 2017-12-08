@@ -125,7 +125,7 @@ be the case from the OpenCraft IM python environment):
 
     pip install python-openstackclient
 
-[Configure the client](http://docs.openstack.org/cli-reference/common/cli_set_environment_variables_using_openstack_rc.html),
+[Configure the client](https://web.archive.org/web/20161105104308/https://docs.openstack.org/user-guide/common/cli-set-environment-variables-using-openstack-rc.html),
 with the same OpenStack credentials that you used in the `.env` file and run:
 
     openstack keypair create --public-key ~/.ssh/id_rsa.pub KEY_NAME
@@ -261,7 +261,7 @@ edit its security group rules to only allow access to VMs in the
 
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens, and enable the `read:org` and
-  `read:user` scopes on the token. You will neet to set up a GitHub organisation
+  `read:user` scopes on the token. You will neet to set up a GitHub organization
   and add a team called 'Sandbox'. The PRs by members of this team can be
   configured to [automatically launch sandbox instances](#provisioning-sandboxes).
 
