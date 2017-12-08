@@ -36,6 +36,7 @@ from instance.tasks import spawn_appserver
 
 logger = logging.getLogger(__name__)
 
+
 # Signal handler ##############################################################
 
 
@@ -65,11 +66,13 @@ def _provision_instance(sender, **kwargs):
     if application.instance is not None:
         logger.info('Email confirmed for user %s, but instance already provisioned.', user.username)
         return
+
     with transaction.atomic():
         application.instance = production_instance_factory(
             sub_domain=application.subdomain,
             name=application.instance_name,
             email=application.public_contact_email,
+            deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)
         application.save()

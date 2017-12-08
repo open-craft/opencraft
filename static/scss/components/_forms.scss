@@ -172,6 +172,23 @@ form .input
             content: " *";
         }
     }
+
+    // The following fields (colors and logo/favicon) are still required, but we 
+    // prefer not to show the "*" because the user isn't required to change them
+    // (the defaults are good and it's not even possible not to submit a color)
+    &--required[for="id_header_bg_color"],
+    &--required[for="id_footer_bg_color"],
+    &--required[for="main_color"],
+    &--required[for="link_color"],
+    &--required[for="id_logo"],
+    &--required[for="id_favicon"]
+    {
+        &::after
+        {
+            content: none;
+        }
+    }
+
 }
 
 // TEXTAREAS

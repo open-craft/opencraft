@@ -25,10 +25,14 @@ Forms for registration/login
 import logging
 
 from django import forms
+from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db import transaction
 from django.utils.text import capfirst
+from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
@@ -98,6 +102,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
             'project_description': Textarea,
+            'main_color': TextInput(attrs={'type': 'color'}),
+            'link_color': TextInput(attrs={'type': 'color'}),
+            'header_bg_color': TextInput(attrs={'type': 'color'}),
+            'footer_bg_color': TextInput(attrs={'type': 'color'}),
         }
 
     # Fields that can be modified after the application has been submitted
@@ -105,6 +113,22 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'full_name',
         'project_description',
         'subscribe_to_updates',
+        'main_color',
+        'link_color',
+        'header_bg_color',
+        'footer_bg_color',
+        'logo',
+        'favicon',
+    }
+
+    # Fields that when modified need a restart of the instance
+    needs_restart = {
+        'main_color',
+        'link_color',
+        'header_bg_color',
+        'footer_bg_color',
+        'logo',
+        'favicon',
     }
 
     full_name = forms.CharField(
@@ -187,6 +211,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         If this form updates an existing application, populate fields from
         related models and make non-modifiable fields read only.
         """
+        # Save the request to be able to store notification messages later.
+        # AJAX API calls for validation don't pass 'request'.
+        if 'request' in kwargs:
+            self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
         if self.instance:
             if hasattr(self.instance, 'user'):
@@ -306,6 +334,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                     if field in self.can_be_modified}
         return cleaned_data
 
+    def restart_fields_changed(self):
+        """
+        Return true if any of the fields that need a restart were changed
+        """
+        return any(field in self.changed_data for field in self.needs_restart)
+
     def save(self, commit=True):
         """
         Create or update User, UserProfile, and BetaTestApplication instances
@@ -341,7 +375,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
 
     def update_user(self, application, commit=True):
         """
-        Updated the UserProfile for the given application's user.
+        Update the UserProfile for the given application's user.
+        Also detect changes in design fields, store them in instance, and notify us by e-mail.
         """
         if hasattr(application.user, 'profile'):
             application.user.profile.full_name = self.cleaned_data['full_name']
@@ -354,6 +389,25 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             with transaction.atomic():
                 application.user.profile.save()
                 application.save()
+
+        if self.restart_fields_changed():
+            messages.add_message(self.request, messages.INFO,
+                                 "Thank you for submitting these changes - we will rebuild your instance to "
+                                 "apply them, and email you to confirm once it is up to date.")
+
+            # Notify us
+            if settings.VARIABLES_NOTIFICATION_EMAIL:
+                subject = 'Update required at instance {name}'.format(
+                    name=application.subdomain,
+                )
+                template = get_template('registration/fields_changed_email.txt')
+                text = template.render(dict(
+                    application=application,
+                    changed_fields=self.changed_data,
+                ))
+                sender = settings.DEFAULT_FROM_EMAIL
+                dest = [settings.VARIABLES_NOTIFICATION_EMAIL]
+                send_mail(subject, text, sender, dest)
 
     def fields_with_errors(self):
         """
