@@ -37,9 +37,9 @@ Vagrant will set up a VirtualBox share mapping your local development directory
 to `/vagrant` inside the virtual machine. Any changes you make locally will be
 reflected inside the virtual machine automatically.
 
-Vagrant will map port 5000 inside the virtual machine to port 5000 on the host,
-so you can access the development server at http://localhost:5000/ using your
-web browser.
+Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
+Once you have set everything up you will be able to access the development
+server at http://localhost:5000/ using your web browser.
 
 ### Local install (skip this step if using Vagrant)
 
@@ -80,11 +80,11 @@ everything is working correctly:
 Configure
 ---------
 
-Honcho will set up environment variables defined in the `.env` file at the root
-of your repository. If you are using vagrant for development, a basic `.env`
-file will already have been created for you, but you will need to add
-credentials for third-party services manually in order to run the development
-server or the integration tests.
+[Honcho](https://honcho.readthedocs.io/en/latest/) will set up environment
+variables defined in the `.env` file at the root of your repository. If you are
+using vagrant for development, a basic `.env` file will already have been
+created for you, but you will need to add credentials for third-party services
+manually in order to run the development server or the integration tests.
 
 The environment variables in `.env` customize the settings from
 `opencraft/settings.py` which are loaded via `env()`. For more information about
@@ -105,7 +105,6 @@ OPENSTACK_SANDBOX_SSH_KEYNAME='keypair-name'
 DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
-WATCH_ORGANIZATION='github-org'
 ```
 
 ### A note on SSH keys
@@ -126,8 +125,8 @@ be the case from the OpenCraft IM python environment):
 
     pip install python-openstackclient
 
-[Configure the client with your OpenStack credentials](http://docs.openstack.org/cli-reference/common/cli_set_environment_variables_using_openstack_rc.html),
-then run:
+[Configure the client](http://docs.openstack.org/cli-reference/common/cli_set_environment_variables_using_openstack_rc.html),
+with the same OpenStack credentials that you used in the `.env` file and run:
 
     openstack keypair create --public-key ~/.ssh/id_rsa.pub KEY_NAME
 
@@ -138,14 +137,19 @@ this name.
 ### OpenStack images
 
 Open edX is currently designed to run on Ubuntu 16.04. Your OpenStack host may
-already have an image available for this version of Ubuntu, but for maximum
-compatibility we recommend the
-[official Ubuntu cloud image](https://cloud-images.ubuntu.com/xenial/current/).
-To add this image to OpenStack, install glance:
+already have an image available for this version of Ubuntu. You can manage
+OpenStack images using `glance`:
 
     pip install python-glanceclient
 
-Then, fetch the image and add it to OpenStack:
+You can check the images available with your host using:
+
+    glance image-list
+
+For maximum compatibility we recommend the
+[official Ubuntu cloud image](https://cloud-images.ubuntu.com/xenial/current/).
+If this image is not available with your host, you can fetch it and add to
+OpenStack using `glance`:
 
     wget https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
     glance image-create \
@@ -178,7 +182,7 @@ flavor:
 ### OpenStack Security Groups
 
 Every VM used to host Open edX will automatically be added to an OpenStack
-network security group, which is provides a firewall that limits what 
+network security group, which is provides a firewall that limits what
 ports/services on the VM are exposed to the Internet. The security group will
 automatically be created and managed by OpenCraft IM.
 
@@ -257,7 +261,10 @@ edit its security group rules to only allow access to VMs in the
 
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens, and enable the `read:org` and
-  `read:user` scopes on the token.  The user must also be a member of
+  `read:user` scopes on the token. You will neet to set up a GitHub organisation
+  and add a team called 'Sandbox'. The PRs by members of this team can be
+  configured to [automatically launch sandbox instances](#provisioning-sandboxes).
+
 
 ### New Relic settings
 
