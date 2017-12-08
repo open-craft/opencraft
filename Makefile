@@ -17,32 +17,35 @@
 
 # Config ######################################################################
 
+# Any configuration variable can be overridden with `VARIABLE = VALUE` in a git-ignored `private.mk` file.
+
+.DEFAULT_GOAL := help
+HELP_SPACING ?= 30
+COVERAGE_THRESHOLD ?= 94
 WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
-SHELL = /bin/bash
+SHELL ?= /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
 
-
 # Parameters ##################################################################
 
-# For `test_one` use the rest as arguments and turn them into do-nothing targets
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),test_one manage))
+# For `test.one` use the rest as arguments and turn them into do-nothing targets
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),test.one manage))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-
 # Commands ####################################################################
 
-all:
-	rundev
+help: ## Display this help message.
+	@echo "Please use \`make <target>' where <target> is one of"
+	@perl -nle'print $& if m{^[\.a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-$(HELP_SPACING)s\033[0m %s\n", $$1, $$2}'
 
-apt_get_update:
-	sudo apt-get update
+all: run.dev
 
-clean:
+clean: ## Remove all temporary files.
 	find -name '*.pyc' -delete
 	find -name '*~' -delete
 	find -name '__pycache__' -type d -delete
@@ -50,42 +53,42 @@ clean:
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
 	find static/external -type d -empty -delete
 
-install_system_db_dependencies: apt_get_update
-	sudo -E apt-get install -y `tr -d '\r' < debian_db_packages.lst`
+apt_get_update: ## Update system package cache.
+	sudo apt-get update
 
-install_system_dependencies: apt_get_update
-	sudo -E apt-get install -y `tr -d '\r' < debian_packages.lst`
+install_system_db_dependencies: apt_get_update ## Install system-level DB dependencies from `debian_db_packages.lst`. Ignores comments.
+	sudo -E apt-get install -y `grep -v '^#' debian_db_packages.lst | tr -d '\r'`
 
-install_virtualenv_system:
-	sudo pip3 install virtualenv
+install_system_dependencies: apt_get_update ## Install system-level dependencies from `debian_packages.lst`. Ignores comments.
+	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
 
-create_db:
+create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --encoding utf-8 --template template0 opencraft || \
 	    echo "Could not create database 'opencraft' - it probably already exists"
 
-collectstatic: clean static_external
+.PHONY: static
+static: clean static_external ## Collect static files for production.
 	$(HONCHO_MANAGE) collectstatic --noinput
 
-manage:
+manage: ## Run a management command.
 	$(HONCHO_MANAGE) $(RUN_ARGS)
 
-migrate: clean
+migrate: clean ## Run migrations.
 	$(HONCHO_MANAGE) migrate
 
-# Check for unapplied migrations
-migration_check: clean
+migrations.check: clean ## Check for unapplied migrations
 	!(($(HONCHO_MANAGE) showmigrations | grep '\[ \]') && printf "\n\033[0;31mERROR: Pending migrations found\033[0m\n\n")
 
-migration_autogen: clean
+migrations: clean ## Generate migrations.
 	$(HONCHO_MANAGE) makemigrations
 
-run: clean migration_check collectstatic
+run: clean migrations.check static ## Run Ocim in a production setting with concurrency.
 	honcho start --concurrency "worker=$(WORKERS),worker_low_priority=$(WORKERS_LOW_PRIORITY)"
 
-rundev: clean migration_check static_external
+run.dev: clean migrations.check static_external ## Run the developmental server using `runserver_plus`.
 	honcho start -f Procfile.dev
 
-shell:
+shell: ## Start the power shell.
 	HUEY_QUEUE_NAME=opencraft_low_priority $(HONCHO_MANAGE) shell_plus
 
 upgrade_dependencies:
@@ -93,24 +96,23 @@ upgrade_dependencies:
 
 # Tests #######################################################################
 
-test_prospector: clean
+test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
-test_unit: clean static_external
+test.unit: clean static_external ## Run all unit tests.
 	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
 	coverage html
-	@echo -e "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
-	@coverage report --fail-under 94 || (echo "\nERROR: Coverage is below 94%\n" && exit 2)
+	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
+	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
 
-# Check whether migrations need to be generated, creating "opencraft" database first if it doesn't exist
-test_migrations_missing: clean
-	$(HONCHO_MANAGE_TESTS) makemigrations --dry-run --check
+test.migrations_missing: clean ## Check if migrations are missing.
+	@$(HONCHO_MANAGE_TESTS) makemigrations --dry-run --check
 
-test_browser: clean static_external
+test.browser: clean static_external ## Run browser-specific tests.
 	@echo -e "\nRunning browser tests..."
 	xvfb-run --auto-servernum $(HONCHO_MANAGE_TESTS) test --pattern=browser_*.py --noinput
 
-test_integration: clean
+test.integration: clean ## Run integration tests.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."
 	honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput
@@ -121,7 +123,7 @@ else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
 endif
 
-test_integration_cleanup: clean
+test.integration_cleanup: clean ## Run the integration cleanup script.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration test cleanup script with credentials from .env.integration file..."
 	honcho -e .env.integration run bin/integration-cleanup
@@ -132,22 +134,21 @@ else
 	echo -e "\nIntegration test cleanup script skipped (create a '.env.integration' file to run them)"
 endif
 
-test_js: clean static_external
+test.js: clean static_external ## Run JS tests.
 	cd instance/tests/js && $(RUN_JS_TESTS)
 	cd registration/tests/js && $(RUN_JS_TESTS)
 
-test_instance_js_web: clean static_external
+test.instance_js_web: clean static_external ## Run instance-specific JS tests.
 	cd instance/tests/js && jasmine --host 0.0.0.0
 
-test_registration_js_web: clean static_external
+test.registration_js_web: clean static_external ## Run registration-specific JS tests.
 	cd registration/tests/js && jasmine --host 0.0.0.0
 
-test: clean test_prospector test_unit test_migrations_missing test_js test_browser test_integration
-	@echo -e "\nAll tests OK!\n"
+test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
+	@echo "\nAll tests OK!\n"
 
-test_one: clean
+test.one: clean
 	$(HONCHO_MANAGE_TESTS) test $(RUN_ARGS)
-
 
 # Files #######################################################################
 

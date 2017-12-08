@@ -28,6 +28,6 @@ case $CIRCLE_NODE_INDEX in
         make test
         ;;
     *)
-        make test_integration
+        make test.integration
         ;;
 esac

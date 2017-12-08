@@ -74,7 +74,7 @@ Where `<currentunixuser>` is the name of whatever user the app runs under.
 When you have finished setting everything up, run the unit tests to make sure
 everything is working correctly:
 
-    make test_unit
+    make test.unit
 
 
 Configure
@@ -359,11 +359,11 @@ To run database migrations:
 
     make migrate
 
-The startup commands such as `make run` and `make rundev` check for pending
+The startup commands such as `make run` and `make run.dev` check for pending
 migrations, and will exit before starting the server if any are found. You can
 also check for pending migrations manually with:
 
-    make migration_check
+    make migrations.check
 
 
 Creating users
@@ -415,7 +415,7 @@ Run
 
 To run the development server:
 
-    make rundev
+    make run.dev
 
 Then go to:
 
@@ -456,7 +456,7 @@ collectstatic to run after each change.
 The production environment automatically runs collectstatic on startup, but you
 can also run it manually:
 
-    make collectstatic
+    make static
 
 
 Running the tests
@@ -467,21 +467,21 @@ To run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.):
     make test
 
 
-To run a single test, use `make test_one`:
+To run a single test, use `make test.one`:
 
-    make test_one instance.tests.models.test_server
+    make test.one instance.tests.models.test_server
 
 You can also run Prospector, the unit tests, JS tests and integration tests
 independently:
 
-    make test_prospector
-    make test_unit
-    make test_js
-    make test_integration
+    make test.quality
+    make test.unit
+    make test.js
+    make test.integration
 
-JS tests can be run in your browser for debugging (run `make test_instance_js_web`
-or `make test_registration_js_web` and then go to http://localhost:8888/), or in a
-CI manner via selenium and `jasmine-ci` (run `make test_js`).
+JS tests can be run in your browser for debugging (run `make test.instance_js_web`
+or `make test.registration_js_web` and then go to http://localhost:8888/), or in a
+CI manner via selenium and `jasmine-ci` (run `make test.js`).
 
 Note that the integration tests aren't run by default, as they require a working
 OpenStack cluster configured. To run them, create a `.env.integration` file -
@@ -495,7 +495,7 @@ clean up any dangling OpenStack VMs past a certain age threshold. While it isn't
 necessary in the usual case, old integration tests that were killed without cleanup
 can be cleaned up after four hours by running the make target:
 
-    make test_integration_cleanup
+    make test.integration_cleanup
 
 The age threshold for the cleanup script defaults to four hours, but this can be
 adjusted by setting `INSTANCE_AGE_THRESHOLD` to a number (in seconds) in the
