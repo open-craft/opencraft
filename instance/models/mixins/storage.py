@@ -36,6 +36,7 @@ class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
     """
+    # TODO?: migrate all these details to an OpenStackConnection
     swift_openstack_user = models.CharField(
         max_length=32,
         blank=True,
@@ -78,6 +79,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         if settings.SWIFT_ENABLE:
             for container_name in self.swift_container_names:
+                # TODO?: Use openstack_connection
                 openstack_utils.create_swift_container(
                     container_name,
                     user=self.swift_openstack_user,
@@ -96,6 +98,7 @@ class SwiftContainerInstanceMixin(models.Model):
         if settings.SWIFT_ENABLE and self.swift_provisioned:
             for container_name in self.swift_container_names:
                 try:
+                    # TODO: use openstack_connection
                     openstack_utils.delete_swift_container(
                         container_name,
                         user=self.swift_openstack_user,

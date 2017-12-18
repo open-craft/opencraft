@@ -136,11 +136,15 @@ class Instance(ValidateModelMixin, models.Model):
     # 'ref' property instead of accessing this directly. The only time to use this directly is
     # in a query, e.g. to do .select_related('ref_set')
     ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
+    # TODO: migrate to OpenStackConnection for VMs
+    # openstack_connection = models.FK(OpenStackConnection)
     openstack_region = models.CharField(
         max_length=16,
         blank=False,
         default=default_setting('OPENSTACK_REGION'),
     )
+    # TODO: add OpenStackConnection reference for swift
+    # swift_connection = models.FK(OpenStackConnection)
     tags = models.ManyToManyField(
         'InstanceTag',
         blank=True,

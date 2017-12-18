@@ -43,6 +43,9 @@ logger = logging.getLogger(__name__)
 # Functions #####################################################################
 
 
+# TODO: some of this code can possibly be reused to implement a migration system to move between swift containers.
+# TODO: add support for backing up all swift containers, possibly also create and backup metadata file that has
+#       information about where and how to restore the backup
 def do_backup_swift():
     """
     Perform full swift backup sequence.

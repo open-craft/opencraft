@@ -160,6 +160,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     )
 
     name = models.CharField(max_length=250, blank=False)
+    # TODO: add OpenStackConnection
     server = models.OneToOneField(OpenStackServer, on_delete=models.CASCADE, related_name='+')
     # The Instance that owns this. InstanceReference has related_name accessors like 'openedxappserver_set'
     owner = models.ForeignKey(InstanceReference, on_delete=models.CASCADE, related_name='%(class)s_set')
@@ -229,6 +230,8 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         else:
             # This is a new AppServer. Does it have a Server associated with it yet?
             if not self.server_id:
+                # TODO: if no OpenStackConnection is set, get default OpenStackConnection from self.instance
+                # TODO: pass the OpenStackConnection reference so it can be part of the server
                 self.server = OpenStackServer.objects.create(
                     name_prefix="inst-{}-vm".format(self.owner_id),
                     openstack_region=self.instance.openstack_region,

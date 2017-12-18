@@ -274,6 +274,7 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env(
         'BACKUP_SWIFT_TARSNAP_KEY_LOCATION', default='/var/www/opencraft/tarsnap.key')
     BACKUP_SWIFT_TARSNAP_CACHE_LOCATION = env('BACKUP_SWIFT_TARSNAP_CACHE_LOCATION', default='/var/cache/tarsnap')
+    # TODO: with multiple swift sources, the archive name should probably be more descriptive of the source.
     # Current date will be appended to the archive name:
     BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)

@@ -60,6 +60,7 @@ SecurityGroupRuleDefinition = namedtuple('SecurityGroupRuleDefinition', [
 # Functions ###################################################################
 
 
+# TODO: refactor to take in all connection settings as parameters
 def get_openstack_connection(region_name):
     """
     Get the OpenStack Connection object.
@@ -121,6 +122,7 @@ def sync_security_group_rules(security_group, rule_definitions, network):
         network.create_security_group_rule(security_group_id=security_group.id, **rule_definition._asdict())
 
 
+# TODO: refactor to take in all connection settings as parameters
 def get_nova_client(region_name, api_version=2):
     """
     Instantiate a python novaclient.Client() object with proper credentials
@@ -174,6 +176,7 @@ def get_server_public_address(server, ip_version=4):
     return None
 
 
+# TODO: refactor to take in auth_version as parameter.
 def swift_service(
         user=settings.SWIFT_OPENSTACK_USER,
         password=settings.SWIFT_OPENSTACK_PASSWORD,

@@ -261,6 +261,7 @@ class OpenStackServer(Server):
     """
     A Server VM hosted on an OpenStack cloud
     """
+    # TODO: migrate to openstack_connection, linked to OpenStackConnection model
     openstack_region = models.CharField(
         max_length=16,
         blank=False,
@@ -274,6 +275,7 @@ class OpenStackServer(Server):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # TODO: use openstack_connection object instead
         self.nova = openstack_utils.get_nova_client(self.openstack_region)
 
     def __str__(self):
@@ -305,6 +307,7 @@ class OpenStackServer(Server):
             # requested. We let any exceptions occurring during the Nova API calls propagate to the
             # caller.  We previously caught and ignored all exceptions here, which led to
             # hard-to-debug bugs.
+            # TODO: user openstack_connection instead
             public_addr = openstack_utils.get_server_public_address(self.os_server)
             if not public_addr:
                 return None
@@ -384,6 +387,7 @@ class OpenStackServer(Server):
         self.logger.info('Starting server (status=%s)...', self.status)
         self._status_to_building()
         try:
+            # TODO: use details from openstack_connection instead
             os_server = openstack_utils.create_server(
                 self.nova,
                 self.name,
