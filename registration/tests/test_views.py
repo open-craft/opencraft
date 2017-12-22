@@ -224,14 +224,28 @@ class BetaTestApplicationViewTestMixin:
         """
         self._assert_registration_succeeds(self.form_data)
 
-    def test_invalid_subdomain(self):
+    @data('hogwarts', 'hog-warts', 'hog1warts')
+    def test_valid_subdomain(self, good_subdomain):
         """
-        Invalid characters in the subdomain.
+        RFC-1034 conformant subdomains succeed in registration.
         """
-        self.form_data['subdomain'] = 'hogwarts?'
+        self.form_data['subdomain'] = good_subdomain
+        self._assert_registration_succeeds(self.form_data)
+
+    @data(
+        '?hogwarts', '?hogwarts?', 'hogwarts?',
+        '-hogwarts', '-hogwarts-', 'hogwarts-',
+        '_hogwarts', 'hog_warts', 'hogwarts_',
+        'hog.warts',
+    )
+    def test_invalid_subdomain(self, bad_subdomain):
+        """
+        Subdomains not RFC-1034 conformant throw an error.
+        """
+        self.form_data['subdomain'] = bad_subdomain
         self._assert_registration_fails(self.form_data, expected_errors={
-            'subdomain': ["Please include only letters, numbers, '_', '-' "
-                          "and '.'"],
+            'subdomain': ['Please include only letters (case-insensitive), numbers, and hyphens. '
+                          'Cannot start or end with a hyphen.'],
         })
 
     def test_existing_subdomain(self):
@@ -269,14 +283,6 @@ class BetaTestApplicationViewTestMixin:
         self._assert_registration_fails(self.form_data, expected_errors={
             'subdomain': ['This domain is already taken.'],
         })
-
-    def test_subdomain_with_base_domain(self):
-        """
-        Subdomain that includes the base domain.
-        """
-        form_data = self.form_data.copy()
-        form_data['subdomain'] += '.' + BetaTestApplication.BASE_DOMAIN
-        self._assert_registration_succeeds(form_data)
 
     def test_invalid_username(self):
         """
