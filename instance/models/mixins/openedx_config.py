@@ -206,7 +206,11 @@ class OpenEdXConfigMixin(models.Model):
             },
 
             # Restart workers regularly to work around a memory leak
-            "EDXAPP_LMS_MAX_REQ": 80000,
+            # Tailor the max_requests number to suit the average request load on the server.
+            # e.g if the instance receives an average of around 42000 requests per day,
+            # with 10% for static assets, restarting after 20000 requests means
+            # restarting each of the 4 LMS workers about every 2-3 days.
+            "EDXAPP_LMS_MAX_REQ": 20000,
 
             # Celery workers
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
