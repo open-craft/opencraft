@@ -161,7 +161,8 @@ class OpenEdXConfigMixin(models.Model):
 
             # Available as ENV_TOKENS in the django setting files.
             "EDXAPP_ENV_EXTRA": {
-                "LANGUAGE_CODE": 'en'
+                "LANGUAGE_CODE": 'en',
+                "SESSION_ENGINE": 'django.contrib.sessions.backends.cached_db',
             },
 
             # Features
