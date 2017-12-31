@@ -82,6 +82,7 @@ LOCAL_APPS = (
     'instance',
     'email_verification',
     'pr_watch',
+    'periodic_builds',
     'userprofile',
     'registration',
     'reports',
