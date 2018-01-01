@@ -1,0 +1,2 @@
+Infrastructure error {{ exception_type }} when deploying appserver for {{ instance.name }}
+

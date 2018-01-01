@@ -29,6 +29,7 @@ from django.template import loader
 from django.utils import timezone
 
 from instance import gandi
+from instance.emails import send_emails_on_deployment_failure
 from instance.logging import log_exception
 from instance.signals import appserver_spawned
 from instance.models.appserver import Status as AppServerStatus
@@ -265,6 +266,7 @@ class OpenEdXInstance(
 
         return self._create_owned_appserver()
 
+    @send_emails_on_deployment_failure
     @log_exception
     def spawn_appserver(self,
                         mark_active_on_success=False,

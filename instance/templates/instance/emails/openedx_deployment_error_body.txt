@@ -1,0 +1,3 @@
+The appserver failed to deploy while running the ansible playbook for instance "{{ instance.name }}" (ID {{instance.id}}).
+
+Check the log for the latest appserver in Ocim's admin.

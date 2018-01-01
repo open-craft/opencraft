@@ -62,7 +62,7 @@ def deploy_edx_edxplatform():
 
     instance, created = OpenEdXInstance.objects.get_or_create(
         internal_lms_domain=generate_internal_lms_domain('master'),
-        # github_admin_organizations=['open-craft'], # FIXME reenable, but it needs GitHub user with API access to it
+        # github_admin_organizations=['open-craft'], # FIXME reenable, but it needs a GitHub user with API access to it
         use_ephemeral_databases=False, # FIXME this is causing a problem with SWIFT because the "openstack" role is not in edx_sandbox.yml; see discovery document. Setting it to True probably avoids the error
         edx_platform_repository_url='https://github.com/edx/edx-platform',
         configuration_source_repo_url='https://github.com/edx/configuration',
@@ -72,9 +72,16 @@ def deploy_edx_edxplatform():
         deploy_simpletheme=True, # FIXME add extra configuration variables that actually change some color
         #mongodb_server=mongodb_server.pk, # FIXME remove, see above
     )
-    # Name is set separately because it's stored in InstanceReference
-    instance.name = 'Integration - Open edX master periodic build'
+    if created:
+        # Name is set separately because it's stored in InstanceReference
+        instance.name = 'Integration - Open edX master periodic build'
+        instance.save()
 
+    # There is a wrapper around spawn_appserver that will check the build result and will send e-mails,
+    # see in send_emails_on_deployment_failure
     spawn_appserver(instance.ref.pk, mark_active_on_success=False, num_attempts=2)
 
-    # FIXME check exit status, maybe in another task with smaller interval
+
+# FIXME add another function to test other branches:
+# "cf OC-3150 – also add a second VM run that checks the stable branches used for beta instances are still working. Be sure to include an additional test lms_user, to mimic the beta instance creation logic."
+# But first finish deploy_edx_platform and make it correctly deploy

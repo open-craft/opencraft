@@ -1,0 +1,10 @@
+Something failed in our infrastructure (OVH, OpenStack) while spawning an appserver for instance "{{ instance }}" (ID {{ instance.id }})
+Infrastructure errors usually happen before starting Open edX's ansible playbook.
+
+Exception:
+{{exception_type}}: {{exception}}
+
+Stack trace:
+{% autoescape off %}
+{{stacktrace}}
+{% endautoescape %}

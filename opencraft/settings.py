@@ -517,6 +517,11 @@ EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
 # Destination e-mail for notifications like "The user changed the logo"
 VARIABLES_NOTIFICATION_EMAIL = env('VARIABLES_NOTIFICATION_EMAIL', default=None)
 
+# Destination e-mail for notifications like "OVH failed when deploying a server"
+INFRASTRUCTURE_DEPLOYMENT_PROBLEMS_EMAIL = env('INFRASTRUCTURE_DEPLOYMENT_PROBLEMS_EMAIL', default=None)
+# Destination e-mail for notifications like "The ansible playbook to deploy Open edX failed"
+OPENEDX_DEPLOYMENT_PROBLEMS_EMAIL = env('OPENEDX_DEPLOYMENT_PROBLEMS_EMAIL', default=None)
+
 # SMTP configuration
 EMAIL_HOST = env('EMAIL_HOST', default='localhost')
 EMAIL_PORT = env('EMAIL_PORT', default=25)
