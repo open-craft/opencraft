@@ -1,0 +1,47 @@
+---
+vagrant_mode: yes
+
+session_user: vagrant
+session_user_group: vagrant
+
+www_user: vagrant
+www_group: users
+
+# Install the app code and data the Vagrant home directory instead of /var/www
+www_data_home_dir: '/home/vagrant'
+opencraft_root_dir: '{{ www_data_home_dir }}/opencraft'
+opencraft_virtualenv_dir: '{{ www_data_home_dir }}/.virtualenvs/opencraft'
+
+# Disable swapfile for Vagrant
+swapfile_size: false
+
+# Disable some of the security features for Vagrant since it's not intended to
+# be public-facing
+security_fail2ban_enabled: false
+security_autoupdate_enabled: false
+security_sudoers_passwordless: [ 'vagrant' ]
+
+# The default .env file configuration for Vagrant. These settings can be
+# overridden in the private.yml file.
+OPENCRAFT_ENV_TOKENS:
+  DEBUG: true
+  SECRET_KEY: 'tests'
+  DATABASE_URL: 'postgres://localhost/opencraft'
+  DEFAULT_INSTANCE_MYSQL_URL: 'mysql://root@localhost'
+  DEFAULT_INSTANCE_MONGO_URL: 'mongodb://localhost'
+  SWIFT_ENABLE: true
+  HUEY_ALWAYS_EAGER: true
+  OPENSTACK_USER: 'test'
+  OPENSTACK_PASSWORD: 'pass'
+  OPENSTACK_TENANT: 'test-tenant'
+  OPENSTACK_AUTH_URL: 'http://example.com/auth/url'
+  OPENSTACK_REGION: 'test-region'
+  DEFAULT_INSTANCE_BASE_DOMAIN: 'example.com'
+  GANDI_API_KEY: 'TEST_GANDI_API_KEY'
+  GITHUB_ACCESS_TOKEN: 'test-token'
+  BACKUP_SWIFT_ENABLED :  true
+  PRELIMINARY_PAGE_SERVER_IP: '47.11.08.15'
+  DEFAULT_LOAD_BALANCING_SERVER: 'ubuntu@haproxy-test.fake.domain'
+  LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'opencraft-'
+  DEFAULT_RABBITMQ_API_URL: 'https://admin:password@rabbitmq.example.com:15671'
+  DEFAULT_INSTANCE_RABBITMQ_URL: 'amqps://rabbitmq.example.com:5671'
