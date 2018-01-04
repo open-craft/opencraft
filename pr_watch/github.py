@@ -152,6 +152,9 @@ def get_pr_list_from_usernames(user_names, fork_name):
     """
     Retrieve the current active PRs for a given set of users
     """
+    if not user_names:
+        return []
+
     authors = ' '.join('author:{author}'.format(author=author) for author in user_names)
     q = 'is:open is:pr {authors} repo:{repo}'.format(authors=authors, repo=fork_name)
     r_pr_list = get_object_from_url('https://api.github.com/search/issues?sort=created&q={}'.format(q))

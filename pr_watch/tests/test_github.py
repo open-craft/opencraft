@@ -199,6 +199,9 @@ class GitHubTestCase(TestCase):
         """
         Get list of open PR for a list of users
         """
+        # Verify we get no PRs when invoking the function with an empty username list.
+        self.assertEqual(github.get_pr_list_from_usernames([], 'edx/edx-platform'), [])
+
         responses.add(
             responses.GET, 'https://api.github.com/search/issues?sort=created&q=is:open '
                            'is:pr author:itsjeyd author:haikuginger repo:edx/edx-platform',
