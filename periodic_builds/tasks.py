@@ -52,16 +52,9 @@ def deploy_edx_edxplatform():
     Because a deployment can take up to 2 hours, don't run this task more often than that, or else you'll have appserver overflow.
     """
 
-    # Find suitable MongoDB server to avoid choosing one randomly
-    # FIXME probably delete this part, we should not hardcode values. Check whether we need to tell which server to use vs. when it's randomly selected (the default) and decide whether to use this code or not
-    # try:
-    #     mongodb_server = MongoDBServer.objects.get(name="OCIM Default")
-    # except MongoDBServer.DoesNotExist:
-    #     mongodb_server = select_random_mongodb_server()
-
 
     instance, created = OpenEdXInstance.objects.get_or_create(
-        internal_lms_domain=generate_internal_lms_domain('master'),
+        internal_lms_domain=generate_internal_lms_domain('master'), # FIXME just pass subdomain='master' or similar
         # github_admin_organizations=['open-craft'], # FIXME reenable, but it needs a GitHub user with API access to it
         use_ephemeral_databases=False, # FIXME this is causing a problem with SWIFT because the "openstack" role is not in edx_sandbox.yml; see discovery document. Setting it to True probably avoids the error
         edx_platform_repository_url='https://github.com/edx/edx-platform',
@@ -70,7 +63,6 @@ def deploy_edx_edxplatform():
         edx_platform_commit='master',
         openedx_release='master',
         deploy_simpletheme=True, # FIXME add extra configuration variables that actually change some color
-        #mongodb_server=mongodb_server.pk, # FIXME remove, see above
     )
     if created:
         # Name is set separately because it's stored in InstanceReference
@@ -79,7 +71,7 @@ def deploy_edx_edxplatform():
 
     # There is a wrapper around spawn_appserver that will check the build result and will send e-mails,
     # see in send_emails_on_deployment_failure
-    spawn_appserver(instance.ref.pk, mark_active_on_success=False, num_attempts=2)
+    spawn_appserver(instance.ref.pk, mark_active_on_success=False)
 
 
 # FIXME add another function to test other branches:
