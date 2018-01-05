@@ -236,7 +236,8 @@ class BetaTestApplicationViewTestMixin:
         '?hogwarts', '?hogwarts?', 'hogwarts?',
         '-hogwarts', '-hogwarts-', 'hogwarts-',
         '_hogwarts', 'hog_warts', 'hogwarts_',
-        'hog.warts',
+        'hog.warts', 'Hogwarts', 'hogWarts',
+        'hogwartsX'
     )
     def test_invalid_subdomain(self, bad_subdomain):
         """
@@ -244,8 +245,21 @@ class BetaTestApplicationViewTestMixin:
         """
         self.form_data['subdomain'] = bad_subdomain
         self._assert_registration_fails(self.form_data, expected_errors={
-            'subdomain': ['Please include only letters (case-insensitive), numbers, and hyphens. '
-                          'Cannot start or end with a hyphen.'],
+            'subdomain': [
+                'Please include only lower-case letters, numbers, and hyphens. '
+                'Cannot start or end with a hyphen.'
+            ],
+        })
+
+    def test_invalid_long_subdomain(self):
+        """
+        Subdomains not RFC-1034 conformant throw an error.
+        """
+        self.form_data['subdomain'] = 'hogwarts-school-of-witchcraft-and-wizardry-the-un-official-website'
+        self._assert_registration_fails(self.form_data, expected_errors={
+            'subdomain': [
+                'The subdomain name can have at most have 63 characters.'
+            ],
         })
 
     def test_existing_subdomain(self):
