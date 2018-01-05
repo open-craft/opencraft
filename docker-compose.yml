@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  opencraft:
+    container_name: opencraft.opencraft
+    environment:
+      DATABASE_URL: postgres://postgres@opencraft.db/opencraft
+      REDIS_URL: redis://opencraft.redis:6379/
+    depends_on:
+      - postgres
+      - redis
+    build: .
+    command: bash -c "sleep 5 && source /venv/bin/activate && yes \"no\" | make migrate && make run.dev"
+    volumes:
+      - ./:/opencraft
+    ports:
+      - "2001:2001"
+      - "5000:5000"
+      - "8888:8888"
+  postgres:
+    container_name: opencraft.db
+    image: postgres:10
+    environment:
+      POSTGRES_DB: opencraft
+      POSTGRES_INITDB_ARGS: --encoding utf-8
+    volumes:
+      - opencraft_db:/var/lib/postgresql/data
+  redis:
+    container_name: opencraft.redis
+    image: redis:4
+
+volumes:
+  opencraft_db:
+  pip_cache:
