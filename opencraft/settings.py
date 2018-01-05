@@ -448,7 +448,7 @@ SIMPLE_EMAIL_CONFIRMATION_AUTO_ADD = False
 
 ADMINS = env.json('ADMINS', default=set())
 
-BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console"])
+BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console", "mail_admins"])
 HANDLERS = BASE_HANDLERS + ['db']
 LOGGING_ROTATE_MAX_KBYTES = env.json('LOGGING_ROTATE_MAX_KBYTES', default=10 * 1024)
 LOGGING_ROTATE_MAX_FILES = env.json('LOGGING_ROTATE_MAX_FILES', default=60)
@@ -477,6 +477,10 @@ LOGGING = {
             'level': 'INFO',
             'class': 'instance.logging.DBHandler',
             'formatter': 'db'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
         },
     },
     'loggers': {
