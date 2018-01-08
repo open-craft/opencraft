@@ -90,9 +90,14 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 3,
                 'The subdomain name must at least have 3 characters.',
             ),
+            validators.MaxLengthValidator(
+                63,
+                'The subdomain name can have at most have 63 characters.',
+            ),
             validators.RegexValidator(
-                r'^[\w.-]+$',
-                "Please include only letters, numbers, '_', '-' and '.'",
+                r'^[a-z0-9]([a-z0-9\-]+[a-z0-9])?$',
+                'Please include only lower-case letters, numbers, and hyphens. '
+                'Cannot start or end with a hyphen.',
             ),
             validate_available_subdomain,
         ],
