@@ -49,6 +49,7 @@ def _send_mail(application, template_name, subject):
         recipient_list=(application.user.email,),
     )
 
+
 def accept_application(application):
     """Accept a beta test application.
 
@@ -68,6 +69,7 @@ def accept_application(application):
     _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()
+
 
 @receiver(appserver_spawned)
 def on_appserver_spawned(sender, **kwargs):
