@@ -39,7 +39,8 @@ logger = logging.getLogger(__name__)
 
 # Data objects ################################################################
 
-FailedContainer = namedtuple('FailedContainer', ['name', 'number_of_failures'])
+FailedContainer = namedtuple(
+    'FailedContainer', ['name', 'number_of_failures', 'extra_information'])
 StatContainer = namedtuple('StatContainer', ['read_acl', 'write_acl', 'bytes'])
 # A simplified version of openstack.network.v2.security_group_rule.SecurityGroupRule
 # This version removes fields like 'id', 'security_group_id', 'updated_at' so
@@ -219,7 +220,7 @@ def download_swift_account(download_target, **kwargs):
              containers backed up successfully.
     """
 
-    errors = defaultdict(lambda: 0)
+    errors = defaultdict(lambda: {'failures_count': 0, 'extra_information': []})
 
     with swift_service(**kwargs) as service:
         downloader = service.download(options={
@@ -234,11 +235,18 @@ def download_swift_account(download_target, **kwargs):
                 if file_download_result['response_dict']['status'] == 304:
                     continue
 
-                errors[file_download_result['container']] += 1
+                container_name = file_download_result['container']
+                errors[container_name]['failures_count'] += 1
+                errors[container_name]['extra_information'].append(
+                    {
+                        extra_info: file_download_result.get(extra_info)
+                        for extra_info in ('path', 'pseudodir', 'error', 'traceback')
+                    }
+                )
 
     return sorted(
-        FailedContainer(name, number_of_failures)
-        for name, number_of_failures in errors.items()
+        FailedContainer(name, failures_desc['failures_count'], failures_desc['extra_information'])
+        for name, failures_desc in errors.items()
     )
 
 

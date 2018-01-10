@@ -65,6 +65,9 @@ def do_backup_swift():
                 error_report += "#. {name}; Failed files: {count}.\n".format(
                     name=container.name, count=container.number_of_failures
                 )
+                error_report += "Extra information: \n{extra_info}".format(
+                    extra_info=container.extra_information
+                )
 
         # In case of downloading errors run tarsnap nevertheless, so we at least backup something.
 

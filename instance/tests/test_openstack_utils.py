@@ -52,16 +52,29 @@ CONTAINER_NAME = "test-container"
 
 DOWNLOAD_FOLDER = '/var/cache/swift-download'
 
+DOWNLOAD_FAILURE_EXTRAS = {
+    'path': '/very/sweet/directory/cookie.txt',
+    'pseudodir': False,
+    'error': 'NeverSeenBeforeError',
+    'traceback': '/down/the/rabbit/hole:42'
+}
+
 
 def create_file_download_response(success=True, status_code=200, container=CONTAINER_NAME):
     """Prepares a dict similar to ones returned by swift download operation."""
-    return {
+    file_download_response = {
         'success': success,
         'container': container,
         'response_dict': {
             'status': status_code
         }
     }
+    if not success:
+        file_download_response.update(
+            DOWNLOAD_FAILURE_EXTRAS
+        )
+
+    return file_download_response
 
 
 # Tests #######################################################################
@@ -368,20 +381,20 @@ class SwiftTestCase(TestCase):
 
     @ddt.data(
         # Two files downloaded successfully, no errors
-        ({}, [{'success': True}, {'success': True}, ], {}),
+        ({}, [{'success': True}, {'success': True}, ], []),
         # Two files downloaded successfully, no errors
-        (CONTAINER_AUTH, [{'success': True}, {'success': True}, ], {}),
+        (CONTAINER_AUTH, [{'success': True}, {'success': True}, ], []),
         # Single failed download
         (
             {},
             [create_file_download_response(), create_file_download_response(False), ],
-            {CONTAINER_NAME: 1}
+            [(CONTAINER_NAME, 1, 1 * [DOWNLOAD_FAILURE_EXTRAS]), ]
         ),
         # Two failed downloads
         (
             {},
             [create_file_download_response(False), create_file_download_response(False), ],
-            {CONTAINER_NAME: 2}
+            [(CONTAINER_NAME, 2, 2 * [DOWNLOAD_FAILURE_EXTRAS]), ]
         ),
         # Many failures in different containers
         (
@@ -393,7 +406,10 @@ class SwiftTestCase(TestCase):
                 create_file_download_response(True, container="container-1"),
                 create_file_download_response(True, container="container-2"),
             ],
-            {"container-1": 2, "container-2": 1}
+            [
+                ("container-1", 2, 2 * [DOWNLOAD_FAILURE_EXTRAS]),
+                ("container-2", 1, 1 * [DOWNLOAD_FAILURE_EXTRAS]),
+            ]
         ),
         # Files that failed with 'Not Modified' status code are OK.
         (
@@ -403,7 +419,7 @@ class SwiftTestCase(TestCase):
                 create_file_download_response(False, status_code=304),
                 create_file_download_response(False, status_code=304),
             ],
-            {}
+            []
         )
 
     )
@@ -418,7 +434,10 @@ class SwiftTestCase(TestCase):
         """
         self.service.download.return_value = file_responses
         actual_failed_files = openstack_utils.download_swift_account(DOWNLOAD_FOLDER, **auth)
-        self.assertEqual(dict(actual_failed_files), expected_failed_files)
+        self.assertEqual(
+            [tuple(failure) for failure in actual_failed_files],
+            expected_failed_files
+        )
 
     def test_download_propagates_exceptions(self):
         """
