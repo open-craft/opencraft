@@ -16,7 +16,7 @@ make install_system_dependencies
 make install_system_db_dependencies
 
 # Set up a virtualenv
-make install_virtualenv_system
+sudo pip3 install virtualenv
 mkdir -p ~/.virtualenvs
 virtualenv -p python3 ~/.virtualenvs/opencraft
 source ~/.virtualenvs/opencraft/bin/activate
@@ -56,4 +56,4 @@ make create_db
 [ -e .env ] || grep -v '^BASE_HANDLERS' .env.test > .env
 
 # Run unit tests
-make test_unit
+make test.unit

@@ -31,5 +31,5 @@ test:
         timeout: 2800
         parallel: true
   post:
-    - make test_integration_cleanup:
+    - make test.integration_cleanup:
         timeout: 1200
