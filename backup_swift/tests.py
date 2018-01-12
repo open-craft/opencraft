@@ -262,10 +262,32 @@ class TestBackupSequence(TestCase):
 
     def test_swift_errors(self):
         """Test for case where some files couldn't be downloaded."""
-        self.openstack_download.return_value = [
-            FailedContainer('container-1', 10),
-            FailedContainer('container-2', 5)
+        download_return_value = [
+            FailedContainer(
+                'container-1', 1,
+                [
+                    {
+                        'path': 'non/existing/path', 'pseudodir': True,
+                        'error': 'TerribleError', 'traceback': 'No Traceback'
+                    }
+                ]
+            ),
+            FailedContainer(
+                'container-2', 2,
+                [
+                    {
+                        'path': 'existing/path', 'pseudodir': False,
+                        'error': 'MeaningFullError42', 'traceback': 'Very long traceback'
+                    },
+                    {
+                        'path': 'existing/path', 'pseudodir': False,
+                        'error': 'BizzareError', 'traceback': 'Not so very long traceback'
+                    }
+                ]
+            )
         ]
+        self.openstack_download.return_value = download_return_value
+
         self.tarsnap_backup.return_value = True
         do_backup_swift()
         self.openstack_download.assert_called_once_with('/var/cache/backups')
@@ -273,9 +295,14 @@ class TestBackupSequence(TestCase):
         self.heartbeat.assert_not_called()
         report = (
             'Following containers failed to download:\n'
-            '#. container-1; Failed files: 10.\n'
-            '#. container-2; Failed files: 5.\n'
+            '#. container-1; Failed files: 1.\n'
+            'Extra information: \n{extra_info1}'
+            '#. container-2; Failed files: 2.\n'
+            'Extra information: \n{extra_info2}'
             'Please check the server logs, they might contain more details.'
+        ).format(
+            extra_info1=download_return_value[0].extra_information,
+            extra_info2=download_return_value[1].extra_information
         )
         self.mail_admins.assert_called_once_with(
             'Error when backing up swift containers',
