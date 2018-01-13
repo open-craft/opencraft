@@ -1,3 +1,8 @@
+nav.top-bar {
+    position: fixed;
+    width: 100%;
+}
+
 .loading-msg {
     position: fixed;
     top: 3px;
@@ -21,6 +26,23 @@ ul.side-nav li.active {
 .content.instance-app {
     .row {
         max-width: none;
+    }
+
+    .scrollable {
+        overflow: auto;
+        height: calc(100vh - #{$header-height});
+    }
+
+    .scrollable::-webkit-scrollbar {
+        width: 1em;
+    }
+
+    .scrollable::-webkit-scrollbar-thumb {
+        background-color: lightgray;
+    }
+
+    .scrollable::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
     }
 
     .side-instance-list {
