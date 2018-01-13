@@ -14,10 +14,6 @@ body
     counter-reset: section-title;
 }
 
-header ~ main {
-    padding-top: $header-height;
-}
-
 a
 {
     color: currentColor;
