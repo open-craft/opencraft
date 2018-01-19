@@ -8,7 +8,7 @@
 
 <div class="row">
   <!-- Instances List -->
-  <div class="large-3 columns">
+  <div class="large-3 columns scrollable">
     <ul class="side-nav side-instance-list">
       <li ng-repeat="instance in instanceList"
           ng-class="{active: instance.id == state.params.instanceId}"
@@ -43,7 +43,7 @@
   </div>
 
   <!-- Selected instance details -->
-  <div class="large-9 columns">
+  <div class="large-9 columns scrollable">
     <div ui-view>
     </div>
   </div>

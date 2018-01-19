@@ -88,7 +88,7 @@ positional==1.1.1
 prettytable==0.7.2
 prompt-toolkit==1.0.9
 prospector==0.12.4
-psycopg2==2.6.2
+psycopg2==2.7.3.2
 ptyprocess==0.5.1
 pycodestyle==2.0.0
 pydocstyle==1.0.0
