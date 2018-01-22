@@ -234,14 +234,20 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "EDXAPP_MYSQL_PORT": self.mysql_server.port,
 
             # ecommerce
-            "ECOMMERCE_DEFAULT_DB_NAME": self._get_mysql_database_name("ecommerce"),
+            "ECOMMERCE_DATABASE_NAME": self._get_mysql_database_name("ecommerce"),
+            "ECOMMERCE_DATABASE_USER": self._get_mysql_user_name("ecommerce"),
+            "ECOMMERCE_DATABASE_PASSWORD": self._get_mysql_pass_from_dbname("ecommerce"),
+            "ECOMMERCE_DATABASE_HOST": self.mysql_server.hostname,
+
+            # Old ecommerce database settings kept around for compatibility with Ginkgo.
+            "ECOMMERCE_DEFAULT_DB_NAME": "{{ ECOMMERCE_DATABASE_NAME }}",
             "ECOMMERCE_DATABASES": {
                 "default": {
                     "ENGINE": 'django.db.backends.mysql',
-                    "NAME": self._get_mysql_database_name("ecommerce"),
-                    "USER": self._get_mysql_user_name("ecommerce"),
-                    "PASSWORD": self._get_mysql_pass_from_dbname("ecommerce"),
-                    "HOST": self.mysql_server.hostname,
+                    "NAME": "{{ ECOMMERCE_DATABASE_NAME }}",
+                    "USER": "{{ ECOMMERCE_DATABASE_USER }}",
+                    "PASSWORD": "{{ ECOMMERCE_DATABASE_PASSWORD }}",
+                    "HOST": "{{ ECOMMERCE_DATABASE_HOST }}",
                     "PORT": self.mysql_server.port,
                     "ATOMIC_REQUESTS": True,
                     "CONN_MAX_AGE": 60
