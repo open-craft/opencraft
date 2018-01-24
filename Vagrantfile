@@ -20,10 +20,15 @@ Vagrant.configure(2) do |config|
 
   config.ssh.forward_x11 = true
 
-  config.vm.provision 'shell',
-                      path: 'bin/bootstrap',
-                      privileged: false,
-                      keep_color: true
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "deploy/opencraft.yml"
+    ansible.raw_arguments = ["--extra-vars", "@deploy/vagrant_vars.yml"]
+    ["deploy/private.yml", "private.yml"].each { |private_vars_file|
+        if FileTest.exists?(private_vars_file)
+          ansible.raw_arguments << "--extra-vars" << ("@" + private_vars_file)
+        end
+    }
+  end
 
   config.vm.provider :virtualbox do |vb|
     vb.memory = 1024

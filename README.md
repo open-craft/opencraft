@@ -20,18 +20,33 @@ to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
 system.
 
-First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and
-[Vagrant](https://www.vagrantup.com/downloads.html). Then run:
+Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated 
+virtual machines with the developer environment set up. To provision and 
+configure the developer environment as needed Vagrant uses 
+[Ansible](https://www.ansible.com/). 
+
+You will need to install all these tools before you can set up your development 
+environment:
+ 
+- [Vagrant Download](https://www.vagrantup.com/downloads.html)
+- [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
+- [Ansible Download](http://docs.ansible.com/ansible/latest/intro_installation.html) 
+
+Once you have these tools installed, run the following in the directory where 
+you have cloned Ocim:
 
     vagrant up
 
 This will provision a virtual machine running Ubuntu 16.04, set up local
-Postgres, MySQL, MongoDB and Redis, install the dependencies and run the tests.
+Postgres, MySQL, MongoDB and Redis, and install the dependencies.
 
 Once the virtual machine is up and running, you can ssh into it with this
 command:
 
     vagrant ssh
+    
+To check if everything is set up properly you can run ``make test_unit`` inside
+your new environment.
 
 Vagrant will set up a VirtualBox share mapping your local development directory
 to `/vagrant` inside the virtual machine. Any changes you make locally will be
@@ -44,8 +59,8 @@ server at http://localhost:5000/ using your web browser.
 ### Local install (skip this step if using Vagrant)
 
 If you prefer not to use Vagrant, you can install OpenCraft manually. Refer to
-the [bootstrap](bin/bootstrap) script used by Vagrant for an example.
-Instructions based on Ubuntu 16.04.
+the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used 
+by Vagrant for an example. Instructions based on Ubuntu 16.04.
 
 Install the system package dependencies & virtualenv:
 
@@ -105,6 +120,25 @@ OPENSTACK_SANDBOX_SSH_KEYNAME='keypair-name'
 DEFAULT_INSTANCE_BASE_DOMAIN='example.com'
 GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
+```
+
+You can also configure the environment variables using a YAML file from which 
+Ansible can load these values. Create a file called ``private.yml`` and use the
+following contents as a starting point:
+
+```yaml
+OPENCRAFT_ENV_TOKENS:
+  SECRET_KEY: '...'
+  DATABASE_URL: 'postgres://localhost/opencraft'
+  OPENSTACK_USER: 'username'
+  OPENSTACK_PASSWORD: 'password'
+  OPENSTACK_TENANT: 'tenant-name'
+  OPENSTACK_AUTH_URL: 'https://auth.cloud.ovh.net/v2.0'
+  OPENSTACK_REGION: 'BHS1'
+  OPENSTACK_SANDBOX_SSH_KEYNAME: 'keypair-name'
+  DEFAULT_INSTANCE_BASE_DOMAIN: 'example.com'
+  GANDI_API_KEY: 'api-key'
+  GITHUB_ACCESS_TOKEN: 'github-token'
 ```
 
 ### A note on SSH keys

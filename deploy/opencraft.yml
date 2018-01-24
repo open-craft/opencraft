@@ -14,6 +14,9 @@
       UNATTENED_UPGRADES_ERRORS_RELAY_TO: "{{ inventory_hostname }}"
     - name: forward-server-mail
       FORWARD_MAIL_MYDOMAIN: "{{ inventory_hostname }}"
+      when: vagrant_mode is undefined or not vagrant_mode
     - name: geerlingguy.nginx
       nginx_remove_default_vhost: true
+      when: vagrant_mode is undefined or not vagrant_mode
     - opencraft
+    - pmbauer.tarsnap
