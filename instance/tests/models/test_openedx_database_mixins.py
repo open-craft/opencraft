@@ -321,12 +321,24 @@ class MySQLInstanceTestCase(TestCase):
                 database={"name": "edx_notes_api", "user": "notes"},
                 include_port=False
             ),
-            "ECOMMERCE_": make_nested_group_info(
-                ["DEFAULT_DB_NAME", "DATABASES"],
-                [{"name": "ecommerce", "user": "ecommerce", "additional_settings": {
-                    "ATOMIC_REQUESTS": True,
-                    "CONN_MAX_AGE": 60,
-                }}]
+            "ECOMMERCE_": {
+                "vars": ["DATABASES"],
+                "values": [{
+                    "default": {
+                        "ENGINE": 'django.db.backends.mysql',
+                        "NAME": "{{ ECOMMERCE_DATABASE_NAME }}",
+                        "USER": "{{ ECOMMERCE_DATABASE_USER }}",
+                        "PASSWORD": "{{ ECOMMERCE_DATABASE_PASSWORD }}",
+                        "HOST": "{{ ECOMMERCE_DATABASE_HOST }}",
+                        "PORT": expected_port,
+                        "ATOMIC_REQUESTS": True,
+                        "CONN_MAX_AGE": 60
+                    }
+                }]
+            },
+            "ECOMMERCE_DATABASE_": make_flat_group_info(
+                var_names=["NAME", "USER", "PASSWORD", "HOST"],
+                database={"name": "ecommerce", "user": "ecommerce"}
             ),
             "PROGRAMS_": make_nested_group_info(
                 ["DEFAULT_DB_NAME", "DATABASES"],
