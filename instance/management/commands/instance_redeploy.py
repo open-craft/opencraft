@@ -25,19 +25,17 @@ Instance app - Instance Redeployment management command
 import time
 import logging
 
-from django.core.management.base import BaseCommand
-
 from instance.ansible import load_yaml
 from instance.models.instance import InstanceTag
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.tasks import spawn_appserver
+from instance.management.commands.instance_filter import Command as InstanceFilterCommand
 
 LOG = logging.getLogger(__name__)
 
 # Classes #####################################################################
 
 
-class Command(BaseCommand):
+class Command(InstanceFilterCommand):
     """
     instance_redeploy management command class
     """
@@ -55,6 +53,7 @@ class Command(BaseCommand):
         """
         Add named arguments.
         """
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--tag',
             type=str,
@@ -62,21 +61,6 @@ class Command(BaseCommand):
             help='Base name of the tag used to mark instances for redeployment.  After the redeployment is complete, '
                  'all instances which are successfully redeployed will be marked with this tag.  Instances which '
                  'failed to redeploy will be marked with tag + "-failed".  E.g., zebrawood-redeployment-failed'
-        )
-        parser.add_argument(
-            '--filter',
-            type=load_yaml,
-            default='{}',
-            help='YAML containing the OpenEdXInstance queryset filter to use to select the instances to redeploy.'
-                 ' Pass @path/to/file.yml to read filters from a file. '
-                 ' Note that archived instances are automatically excluded. Omit to re-spawn all un-archived instances.'
-        )
-        parser.add_argument(
-            '--exclude',
-            type=load_yaml,
-            default='{}',
-            help='YAML containing the OpenEdXInstance exclusion queryset used to exclude instances for redeployment. '
-                 'Pass @path/to/file.yml to read exclusions from a file. '
         )
         parser.add_argument(
             '--update',
@@ -201,19 +185,11 @@ class Command(BaseCommand):
 
     def _pending_instances(self):
         """
-        Return a queryset containing the instances that need to be redeployed.
+        Return a queryset containing the instances that need to be redeployed,
 
-        These will match the options['filter'] (if given), and are not already tagged.
+        excluding any already tagged for redeployment.
         """
-        instance_filter = self.options.get('filter', {})
-        instance_exclusion = self.options.get('exclude', {})
-        return OpenEdXInstance.objects.filter(
-            **instance_filter
-        ).exclude(
-            **instance_exclusion
-        ).exclude(
-            ref_set__is_archived=True
-        ).exclude(
+        self.get_instances().exclude(
             tags__in=[
                 self.ongoing_tag,
                 self.success_tag,
