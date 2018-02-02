@@ -78,15 +78,16 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
 
+            "EDXAPP_GRADE_STORAGE_CLASS": 'storages.backends.s3boto.S3BotoStorage',
+            "EDXAPP_GRADE_STORAGE_KWARGS": {
+                "bucket": self.s3_bucket_name,
+                "location": '{}/{}'.format(self.swift_container_name, 'grades-download'),
+            },
 
             "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "XQUEUE_UPLOAD_BUCKET": self.s3_bucket_name,
             "XQUEUE_UPLOAD_PATH_PREFIX": '{}/{}'.format(self.swift_container_name, 'xqueue'),
-
-            "EDXAPP_GRADE_STORAGE_TYPE": 's3',
-            "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
-            "EDXAPP_GRADE_ROOT_PATH": '{}/{}'.format(self.swift_container_name, 'grades-download'),
 
             # Tracking logs
             "COMMON_OBJECT_STORE_LOG_SYNC": True,
