@@ -80,16 +80,16 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "XQUEUE_UPLOAD_BUCKET": self.s3_bucket_name,
-            "XQUEUE_UPLOAD_PATH_PREFIX": 'xqueue',
+            "XQUEUE_UPLOAD_PATH_PREFIX": '{}/{}'.format(self.swift_container_name, 'xqueue'),
 
             "EDXAPP_GRADE_STORAGE_TYPE": 's3',
             "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
-            "EDXAPP_GRADE_ROOT_PATH": 'grades-download',
+            "EDXAPP_GRADE_ROOT_PATH": '{}/{}'.format(self.swift_container_name, 'grades-download'),
 
             # Tracking logs
             "COMMON_OBJECT_STORE_LOG_SYNC": True,
             "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": self.s3_bucket_name,
-            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": 'logs/tracking/',
+            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": '{}/{}'.format(self.swift_container_name, 'logs/tracking/'),
             "AWS_S3_LOGS": True,
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
