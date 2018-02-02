@@ -47,17 +47,37 @@ class Command(InstanceFilterCommand):
         self.options = {}
         self.retried = {}
 
+    def add_arguments(self, parser):
+        """
+        Add named arguments.
+        """
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--active',
+            action='store_true',
+            help='Include only the active appservers in the generated list.'
+        )
+
     def handle(self, *args, **options):
         """
-        For each filtered instance, locate any running appservers and print their IP addresses.
+        For each filtered instance, get the filtered appservers and print their IP addresses.
         """
         self.options = options
         for instance in self.get_instances().all():
             public_domain = instance.external_lms_domain or instance.internal_lms_domain
             print("[{public_domain}]".format(public_domain=public_domain))
-            for appserver in instance.appserver_set.filter(server___status=ServerStatus.Ready.state_id):
+            for appserver in self.get_appservers(instance):
                 if appserver.server.public_ip:
                     print("{public_ip} # {appserver}".format(public_ip=appserver.server.public_ip,
                                                              appserver=appserver))
 
             print("")
+
+    def get_appservers(self, instance):
+        """
+        Return a queryset containing the `Ready` appservers selected by the given options.
+        """
+        appservers = instance.appserver_set.filter(server___status=ServerStatus.Ready.state_id)
+        if self.options['active']:
+            appservers = appservers.filter(_is_active=True)
+        return appservers

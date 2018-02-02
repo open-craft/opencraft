@@ -52,6 +52,7 @@ class Command(BaseCommand):
         """
         Add named arguments.
         """
+        super(Command, self).add_arguments(parser)
         parser.add_argument(
             '--filter',
             type=load_yaml,
