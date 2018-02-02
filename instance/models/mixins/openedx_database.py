@@ -377,6 +377,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "XQUEUE_RABBITMQ_HOSTNAME": self.rabbitmq_server.instance_host,
             "XQUEUE_RABBITMQ_PORT": self.rabbitmq_server.instance_port,
             "XQUEUE_RABBITMQ_TLS": True,
+            "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.file",
 
             "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
             "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
