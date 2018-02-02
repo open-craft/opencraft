@@ -68,7 +68,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             # using shared s3 buckets
             "AWS_S3_KEY_PREFIX": self.swift_container_name,
 
-            "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto3.S3Boto3Storage',
+            "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "EDXAPP_AUTH_EXTRA": {
