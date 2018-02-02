@@ -70,6 +70,8 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },
+            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
+            "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
 
             "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -84,6 +86,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "COMMON_OBJECT_STORE_LOG_SYNC": True,
             "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": self.s3_bucket_name,
             "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": 'logs/tracking/',
+            "AWS_S3_LOGS": True,
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
         }
