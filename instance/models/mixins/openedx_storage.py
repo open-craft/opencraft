@@ -66,9 +66,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
 
             # Required when s3 storage is the default for all Ocim beta instances,
             # using shared s3 buckets
-            "AWS_S3_KEY_PREFIX": self.swift_container_name,
-            "EDXAPP_AWS_LOCATION": '{{ AWS_S3_KEY_PREFIX }}',
-
+            "EDXAPP_AWS_LOCATION": self.swift_container_name,
             "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -77,6 +75,9 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             },
             "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
             "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
+            "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
+            "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
+
 
             "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
