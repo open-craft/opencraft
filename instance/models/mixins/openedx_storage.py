@@ -79,6 +79,9 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
 
             "EDXAPP_GRADE_STORAGE_CLASS": 'storages.backends.s3boto.S3BotoStorage',
+            "EDXAPP_GRADE_STORAGE_TYPE": 's3',
+            "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
+            "EDXAPP_GRADE_ROOT_PATH": '{}/{}'.format(self.swift_container_name, 'grades-download'),
             "EDXAPP_GRADE_STORAGE_KWARGS": {
                 "bucket": self.s3_bucket_name,
                 "location": '{}/{}'.format(self.swift_container_name, 'grades-download'),
