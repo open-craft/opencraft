@@ -43,7 +43,8 @@ class FactoriesTestCase(TestCase):
     CONFIGURATION_EXTRA_SETTINGS = (
         "{"
         "'demo_test_users': [],"
-        "'DEMO_CREATE_STAFF_USER': False"
+        "'DEMO_CREATE_STAFF_USER': False,"
+        "'SANDBOX_ENABLE_CERTIFICATES': False"
         "}"
     )
     SANDBOX_DEFAULTS = {
