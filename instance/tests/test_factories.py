@@ -40,7 +40,8 @@ class FactoriesTestCase(TestCase):
     Test cases for functions in the factories module
     """
 
-    CONFIGURATION_EXTRA_SETTINGS = "{'demo_test_users': [], 'DEMO_CREATE_STAFF_USER': False}"
+    CONFIGURATION_EXTRA_SETTINGS = "{'demo_test_users': [], 'DEMO_CREATE_STAFF_USER': False, "
+                                   "'SANDBOX_ENABLE_CERTIFICATES': False}"
     SANDBOX_DEFAULTS = {
         "use_ephemeral_databases": True,
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,

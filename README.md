@@ -735,6 +735,20 @@ activated.  To see the options available, run:
 
     make manage "instance_redeploy --help"
 
+Keep track of the number of redeployments running in a batch. If it is larger 
+than the number of workers available, then you will run into issues. You can
+check the number of regular workers with ``echo $WORKERS`` and the number of
+low-priority workers with ``echo $WORKERS_LOW_PRIORITY``. If those values are
+not set in the environment, then they have the default values defined in the
+[Makefile](Makefile).
+
+To ensure that people are still able to use the website to activate/deactivate 
+or launch AppServers you should probably run the redeployment command in the 
+low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_low_priority`` 
+before the redeployment command. For example:
+
+    HUEY_QUEUE_NAME=opencraft_low_priority make manage "instance_redeploy ..."
+
 
 Databases
 ---------
