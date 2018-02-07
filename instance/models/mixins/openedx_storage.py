@@ -64,26 +64,39 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "AWS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
 
-            "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto3.S3Boto3Storage',
+            # Required when s3 storage is the default for all Ocim beta instances,
+            # using shared s3 buckets
+            "EDXAPP_AWS_LOCATION": self.swift_container_name,
+            "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },
+            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
+            "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
+            "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
+            "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
+
+            "EDXAPP_GRADE_STORAGE_CLASS": 'storages.backends.s3boto.S3BotoStorage',
+            "EDXAPP_GRADE_STORAGE_TYPE": 's3',
+            "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
+            "EDXAPP_GRADE_ROOT_PATH": '{}/{}'.format(self.swift_container_name, 'grades-download'),
+            "EDXAPP_GRADE_STORAGE_KWARGS": {
+                "bucket": self.s3_bucket_name,
+                "location": '{}/{}'.format(self.swift_container_name, 'grades-download'),
+            },
 
             "XQUEUE_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "XQUEUE_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "XQUEUE_UPLOAD_BUCKET": self.s3_bucket_name,
-            "XQUEUE_UPLOAD_PATH_PREFIX": 'xqueue',
-
-            "EDXAPP_GRADE_STORAGE_TYPE": 's3',
-            "EDXAPP_GRADE_BUCKET": self.s3_bucket_name,
-            "EDXAPP_GRADE_ROOT_PATH": 'grades-download',
+            "XQUEUE_UPLOAD_PATH_PREFIX": '{}/{}'.format(self.swift_container_name, 'xqueue'),
 
             # Tracking logs
             "COMMON_OBJECT_STORE_LOG_SYNC": True,
             "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": self.s3_bucket_name,
-            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": 'logs/tracking/',
+            "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": '{}/{}'.format(self.swift_container_name, 'logs/tracking/'),
+            "AWS_S3_LOGS": True,
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
         }

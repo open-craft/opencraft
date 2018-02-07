@@ -129,6 +129,8 @@ def production_instance_factory(**kwargs):
         # Don't create default users on production instances
         "DEMO_CREATE_STAFF_USER": False,
         "demo_test_users": [],
+        # Disable certificates process to reduce load on RabbitMQ and MySQL
+        "SANDBOX_ENABLE_CERTIFICATES": False,
     }
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
     configuration_extra_settings = yaml.load(configuration_extra_settings) if configuration_extra_settings else {}
