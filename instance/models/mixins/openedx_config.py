@@ -4,6 +4,8 @@ Instance app model mixins - OpenEdX Instance Configuration
 
 # Imports #####################################################################
 
+from random import randint
+
 from django.db import models
 from django.conf import settings
 
@@ -64,6 +66,14 @@ class OpenEdXConfigMixin(models.Model):
             # Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
             # We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
             "EDXAPP_SESSION_COOKIE_DOMAIN": '',
+
+            # Run a command to delete expired sessions once a day. The time is random and different in each server
+            # to avoid the case when all servers connect to the database at exactly the same time.
+            # It's fine to use random numbers here because this function is called just once per appserver and the
+            # values don't need to be consistent between function calls.
+            "EDXAPP_CLEARSESSIONS_CRON_ENABLED": True,
+            "EDXAPP_CLEARSESSIONS_CRON_HOURS": randint(0, 23),
+            "EDXAPP_CLEARSESSIONS_CRON_MINUTES": randint(0, 59),
 
             # Nginx
             "NGINX_SET_X_FORWARDED_HEADERS": False,
