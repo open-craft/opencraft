@@ -137,6 +137,8 @@ class OpenEdXConfigMixin(models.Model):
             "edx_platform_repo": self.edx_platform_repository_url,
             # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
             "xqueue_source_repo": "https://github.com/open-craft/xqueue",
+            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
+            "CERTS_REPO": "https://github.com/open-craft/edx-certificates",
 
             # Pin down dependencies to specific (known to be compatible) commits.
             "edx_platform_version": self.edx_platform_commit,
@@ -144,7 +146,8 @@ class OpenEdXConfigMixin(models.Model):
             "forum_version": self.openedx_release,
             # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
             "xqueue_version": 'opencraft-release/ginkgo.1',
-            "certs_version": self.openedx_release,
+            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
+            "certs_version": "opencraft-release/ginkgo.1",
             "NOTIFIER_VERSION": self.openedx_release,
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
@@ -262,6 +265,11 @@ class OpenEdXConfigMixin(models.Model):
             "ECOMMERCE_PAYPAL_RECEIPT_URL": '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/receipt/',
             "ECOMMERCE_PAYPAL_CANCEL_URL": '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/cancel/',
             "ECOMMERCE_PAYPAL_ERROR_URL": '{{ ECOMMERCE_LMS_URL_ROOT }}/commerce/checkout/error/',
+
+            # Certs
+            # The certificate agent poll xqueue way too frequently for what we need by default (5 seconds).
+            # Make it poll less.
+            "CERTS_QUEUE_POLL_FREQUENCY": 60,
         }
 
         if self.smtp_relay_settings:
