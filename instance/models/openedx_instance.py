@@ -137,6 +137,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             domain=self.domain,
             http_auth_info_base64=self.http_auth_info_base64(),
             appservers=appserver_vars,
+            health_check=len(appserver_vars) > 1,
         ))
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
         backend_conf = [(backend_name, config)]
