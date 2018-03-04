@@ -79,7 +79,8 @@ class DatabaseServerManager(SharedServerManager):
                     username=username,
                     password=password,
                     port=port,
-                )
+                    accepts_new_clients=True,
+                ),
             )
             if not created and not database_server.settings_match(username, password, port):
                 logger.warning(
@@ -118,7 +119,7 @@ class DatabaseServer(ValidateModelMixin, TimeStampedModel):
     password = models.CharField(max_length=128, blank=True)
 
     # Does this database server currently accept new clients (i.e., instances)?
-    accepts_new_clients = models.BooleanField(default=True)
+    accepts_new_clients = models.BooleanField(default=False)
 
     @property
     def protocol(self):

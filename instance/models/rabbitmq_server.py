@@ -68,6 +68,7 @@ class RabbitMQServerManager(SharedServerManager):
                 'admin_password': api_url.password,
                 'instance_host': amqps_url.hostname,
                 'instance_port': amqps_url.port,
+                'accepts_new_clients': True,
             }
 
             if not all(defaults.values()):
@@ -118,7 +119,7 @@ class RabbitMQServer(ValidateModelMixin, TimeStampedModel):
     instance_port = models.PositiveIntegerField(default=DEFAULT_INSTANCE_RABBITMQ_PORT)
 
     # Does this database server currently accept new clients (i.e., instances)?
-    accepts_new_clients = models.BooleanField(default=True)
+    accepts_new_clients = models.BooleanField(default=False)
 
     def __str__(self):
         description = ''

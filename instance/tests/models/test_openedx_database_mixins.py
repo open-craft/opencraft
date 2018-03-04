@@ -652,7 +652,11 @@ class RabbitMQServerManagerTestCase(TestCase):
                 RabbitMQServer.objects._create_default()
         mock_logger.warning.assert_called_with(
             'RabbitMQServer for %s already exists, and its settings do not match the Django '
-            'settings: %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s',
-            'admin_password', 'pass2', 'admin_username', 'user2', 'api_url', 'http://doesnotexist.example.com:12345',
-            'instance_host', 'rabbitmq.example.com', 'instance_port', 5671
+            'settings: %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s',
+            'accepts_new_clients', True,
+            'admin_password', 'pass2',
+            'admin_username', 'user2',
+            'api_url', 'http://doesnotexist.example.com:12345',
+            'instance_host', 'rabbitmq.example.com',
+            'instance_port', 5671,
         )

@@ -58,7 +58,10 @@ class LoadBalancingServerManager(SharedServerManager):
             logger.info("Creating LoadBalancingServer %s", domain)
             server, created = self.get_or_create(
                 domain=domain,
-                defaults=dict(ssh_username=ssh_username),
+                defaults=dict(
+                    ssh_username=ssh_username,
+                    accepts_new_backends=True,
+                ),
             )
             if not created and server.ssh_username != ssh_username:
                 logger.warning(
@@ -107,7 +110,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
     )
 
     accepts_new_backends = models.BooleanField(
-        default=True,
+        default=False,
         help_text='Whether new backends can be assigned to this load-balancing server.'
     )
 
