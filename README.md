@@ -51,7 +51,7 @@ command:
 
     vagrant ssh
     
-To check if everything is set up properly you can run ``make test_unit`` inside
+To check if everything is set up properly you can run ``make test.unit`` inside
 your new environment.
 
 Vagrant will set up a VirtualBox share mapping your local development directory

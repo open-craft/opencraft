@@ -32,8 +32,8 @@ from instance.models.appserver import AppServer
 
 # Settings ####################################################################
 
-BETATEST_WELCOME_SUBJECT = 'Welcome to the OpenCraft Instance Manager beta test!'
-BETATEST_REJECT_SUBJECT = 'An update on your beta test application status for OpenCraft Instance Manager'
+BETATEST_WELCOME_SUBJECT = 'Welcome to the OpenCraft Instance Manager free 30-day trial!'
+BETATEST_REJECT_SUBJECT = 'An update on your free 30-day trial test application status for OpenCraft Instance Manager'
 
 # Functions ###################################################################
 

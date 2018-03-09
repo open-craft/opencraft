@@ -111,7 +111,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     # Fields that can be modified after the application has been submitted
     can_be_modified = {
         'full_name',
-        'project_description',
         'subscribe_to_updates',
         'main_color',
         'link_color',
@@ -171,10 +170,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     )
     accept_terms = forms.BooleanField(
         required=True,
-        help_text=('I understand that this is a beta test, that bugs and '
-                   'crashes are expected, and that the instance is provided '
-                   'for free for the duration of the beta-test, without any '
-                   'guarantee.'),
+        help_text=('I accept that this is a free trial, '
+                   'and that the instance is provided without any guarantee.'),
         error_messages={
             'required': 'You must accept these terms to register.',
         },
