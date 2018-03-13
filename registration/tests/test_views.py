@@ -65,7 +65,6 @@ class BetaTestApplicationViewTestMixin:
             'password': 'gryffindor',
             'password_strength': 3,
             'password_confirmation': 'gryffindor',
-            'project_description': 'Online courses in Witchcraft and Wizardry',
             'accept_terms': True,
             'subscribe_to_updates': False,
             'main_color': '#001122',
@@ -107,7 +106,7 @@ class BetaTestApplicationViewTestMixin:
         display the correct data for the registered user.
         """
         response_body = re.sub(r'\s+', ' ', response)
-        self.assertIn('Thank you for applying for the OpenCraft beta',
+        self.assertIn('Thank you for applying for the OpenCraft free 30-day trial',
                       response_body)
         self.assertIn('pending email confirmation', response_body)
         form_fields = {name: field
@@ -155,8 +154,7 @@ class BetaTestApplicationViewTestMixin:
         """
         for application_field in ('subdomain',
                                   'instance_name',
-                                  'public_contact_email',
-                                  'project_description'):
+                                  'public_contact_email'):
             self.assertEqual(getattr(application, application_field),
                              self.form_data[application_field])
         self.assertEqual(application.subscribe_to_updates,
@@ -271,7 +269,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain=self.form_data['subdomain'],
             instance_name='I got here first',
             public_contact_email='test@example.com',
-            project_description='test',
             user=User.objects.create(username='test'),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -317,7 +314,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That username is mine',
             public_contact_email='test@example.com',
-            project_description='test',
             user=User.objects.create(username=self.form_data['username']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -341,7 +337,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That email address is mine',
             public_contact_email='test@example.com',
-            project_description='test',
             user=User.objects.create(username='test', email=self.form_data['email']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -532,7 +527,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         # Modifying most fields shouldn't send an e-mail
         with self.assertTemplateNotUsed('registration/fields_changed_email.txt'):
             modified.update({
-                'project_description': 'Learn',
+                'full_name': 'Someone Else',
             })
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails)

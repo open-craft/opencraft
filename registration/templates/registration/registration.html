@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
-{% block title %}Register for Beta{% endblock title %}
+{% block title %}Register for free Open edX trial{% endblock title %}
 
 {% block content %}
 <div class="page-title text-xs-center color-white">
@@ -33,14 +33,14 @@
                     {% if application.status == 'pending' %}
                         <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
                             <p class="box-alert__content">
-                                Thank you for applying for the OpenCraft beta. We
+                                Thank you for applying for the OpenCraft free 30-day trial. We
                                 will contact you shortly.
                             </p>
                         </div>
                     {% elif application.status == 'accepted' %}
                         <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
                             <p class="box-alert__content">
-                                Thank you for applying for the OpenCraft beta. Your
+                                Thank you for applying for the OpenCraft free 30-day trial. Your
                                 application has been accepted!
                             </p>
                         </div>
@@ -48,6 +48,7 @@
                         <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
                             <p class="box-alert__content">
                                 Sorry, your application has been rejected.
+                                Please <a href="mailto:contact@opencraft.com">contact us</a> with any questions.
                             </p>
                         </div>
                     {% endif %}
@@ -66,7 +67,7 @@
                 {% else %}
                     <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
                         <p class="box-alert__content">
-                            This is the application form for the beta of the
+                            This is the registration form for the free 30-day trial of the
                             self-service hosting offered by OpenCraft.<br>
                             For enterprise or institutional offerings,
                             <a href="mailto:contact@opencraft.com">contact us</a>.

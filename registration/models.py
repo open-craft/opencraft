@@ -122,6 +122,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         verbose_name='your project',
         help_text=('What are you going to use the instance for? What are '
                    'your expectations?'),
+        blank=True, default=''
     )
 
     # Theme fields. They allow to define the design, e.g. choose colors and logo
@@ -192,9 +193,8 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
     subscribe_to_updates = models.BooleanField(
         default=False,
-        help_text=('I want OpenCraft to keep me updated about the progress '
-                   'of the beta test, and occasionally send me an email '
-                   'about it.'),
+        help_text=('I want OpenCraft to keep me updated about important news, '
+                   'tips, and new features, and occasionally send me an email about it.'),
     )
     status = models.CharField(
         max_length=255,

@@ -29,7 +29,6 @@
                 {% include row with field=form.password %}
                 {% include row with field=form.password_confirmation %}
             {% endif %}
-            {% include row with field=form.project_description %}
 
             {# design fields #}
             {% include row with field=form.main_color %}
@@ -54,7 +53,7 @@
             {% if form.instance.pk %}
             Update your details
             {% else %}
-            Apply for the beta test
+            Create your Open edX site
             {% endif %}
         </button>
     </div>
