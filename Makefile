@@ -63,7 +63,7 @@ install_system_dependencies: apt_get_update ## Install system-level dependencies
 	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
 
 create_db: ## Create blanket DBs, i.e. `opencraft`.
-	createdb --encoding utf-8 --template template0 opencraft || \
+	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \
 	    echo "Could not create database 'opencraft' - it probably already exists"
 
 .PHONY: static
@@ -100,7 +100,7 @@ test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
 test.unit: clean static_external ## Run all unit tests.
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*' ./manage.py test --noinput
+	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*,venv/*' ./manage.py test --noinput
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
