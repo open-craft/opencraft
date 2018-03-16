@@ -39,6 +39,10 @@
   src: https://github.com/open-craft/ansible-forward-server-mail
   version: origin/master
 
+- name: filebeat
+  src: https://github.com/open-craft/ansible-role-filebeat
+  version: uman/updates
+
 - name: opencraft
   src: https://github.com/open-craft/ansible-opencraft
   version: origin/master
