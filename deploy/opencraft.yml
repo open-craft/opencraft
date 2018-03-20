@@ -20,3 +20,4 @@
       when: vagrant_mode is undefined or not vagrant_mode
     - opencraft
     - pmbauer.tarsnap
+    - consul

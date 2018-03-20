@@ -39,6 +39,10 @@
   src: https://github.com/open-craft/ansible-forward-server-mail
   version: origin/master
 
+- name: consul
+  src: https://github.com/open-craft/ansible-role-consul
+  version: origin/master
+
 - name: opencraft
   src: https://github.com/open-craft/ansible-opencraft
   version: origin/master
