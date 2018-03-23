@@ -73,14 +73,6 @@ class OpenEdXThemeMixin(models.Model):
                     "value": application.link_color,
                 },
                 {
-                    "variable": "header-bg",
-                    "value": application.header_bg_color,
-                },
-                {
-                    "variable": "footer-bg",
-                    "value": application.footer_bg_color,
-                },
-                {
                     "variable": "button-color",
                     "value": application.main_color,
                 },
@@ -91,6 +83,13 @@ class OpenEdXThemeMixin(models.Model):
                 {
                     "variable": "action-secondary-bg",
                     "value": application.main_color,
+                },
+                {
+                    "variable": "theme-colors",
+                    "value": "(\"primary\": {primary}, \"secondary\": {secondary})".format(
+                        primary=application.main_color,
+                        secondary=application.main_color
+                    ),
                 },
             ],
             "SIMPLETHEME_STATIC_FILES_URLS": [
@@ -105,6 +104,14 @@ class OpenEdXThemeMixin(models.Model):
             ],
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+            "SIMPLETHEME_EXTRA_SASS": """
+                .global-header {{
+                    background: {header_bg};
+                }}
+                .wrapper-footer {{
+                    background: {footer_bg};
+                }}""".format(header_bg=application.header_bg_color,
+                             footer_bg=application.footer_bg_color)
         }
 
         return yaml.dump(settings, default_flow_style=False)
