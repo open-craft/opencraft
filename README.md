@@ -10,6 +10,49 @@ intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
 
 
+What does OpenCraft Instance Manager do and how to use it
+---------------------------------------------------------
+
+This section focuses on how to use the web interface, as opposed to how to install the code,
+debug it or develop it (see next sections for that).
+
+Ocim is a web interface to manage a list of Open edX servers. With some clicks you can create
+new servers, check their status and their configuration.
+It looks like this:
+
+![Ocim's main screen](documentation/ocim_main_screen.png)
+
+At the left there's a list of instances, and each instance has many appservers.
+We can create a new appserver through the **Launch new AppServer** button;
+it will automatically get the current configuration from the instance settings
+and use it for this server.
+After 1 to 2 hours, it will finish and then you need to **activate** the new one
+and **deactivate** the old one, to make the domain name direct to the new one.
+Normally we want just 1 active appserver per instance.
+Before activating a server, there's the option to test it through a password-protected link.
+
+Sometimes Open edX playbook fails, and then you need to read the log,
+which is shown in real-time in the web.
+You can fix the settings and then spawn another server.
+Failed servers are automatically cleaned up after some days.
+An important feature is that Ocim *grants SSH access to members of our organization* (OpenCraft)
+so you can always SSH to an appserver's IP, *even if Open edX's deployment failed*, and then debug it.
+You can use your GitHub username and key.
+
+To create a new instance, you use Django's admin and you need to fill in the domain name,
+the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
+and extra ansible variables to pass to Open edX's playbook (if any).
+The instance settings are used for new deployments only
+(changing the instance settings doesn't retroactively redeploy appservers).
+
+How do we use Ocim at OpenCraft, as of April 2018:
+we have two Ocim installations (stage and production), and
+we use non-ephemeral databases (that is, we use a shared DB for our Ocim servers).
+We use Ocim to deploy client instances (except the AWS ones),
+to test servers (when the specific configuration is hard to set up in a devstack),
+and to automatically deploy servers when we open PRs upstream, to facilitate code review.
+
+
 Install
 -------
 
