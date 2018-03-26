@@ -129,6 +129,19 @@ class GandiTestCase(TestCase):
         self.assertEqual(sleep.mock_calls, [call(1), call(2)])
 
     @patch('time.sleep')
+    def test_set_dns_record_timeout_retry_and_fail(self, sleep):
+        """
+        Test retry behaviour returns timeout exception. Fail all attempts.
+        """
+        self.api.client.make_version_creation_fail(10, timeout=True)
+        with self.assertRaises(TimeoutError):
+            self.api.set_dns_record(
+                'sub.domain.test.com',
+                type='A', value='192.168.99.99'
+            )
+        self.assertEqual(sleep.mock_calls, [call(1), call(2), call(4)])
+
+    @patch('time.sleep')
     def test_set_dns_record_error_retry_and_fail(self, sleep):
         """
         Test retry behaviour when setting a DNS record.  Fail all attempts.
