@@ -137,12 +137,14 @@ class FakeGandiClient:
         self.domain.zone.version.set.side_effect = self._domain_zone_version_set
         self._registry = {zone_id: FakeZone() for zone_id in self._DOMAINS_BY_ZONE_ID}
         self._version_creation_failures = 0
+        self.timeout = False
 
-    def make_version_creation_fail(self, times):
+    def make_version_creation_fail(self, times, timeout=False):
         """
         Make the call to domain.zone.version.new fail for the next `times` attempts.
         """
         self._version_creation_failures = times
+        self.timeout = timeout
 
     def list_records(self, domain):
         """
@@ -204,7 +206,10 @@ class FakeGandiClient:
         """
         if self._version_creation_failures:
             self._version_creation_failures -= 1
-            raise xmlrpc.client.Fault(581091, "Error")
+            if self.timeout:
+                raise TimeoutError()
+            else:
+                raise xmlrpc.client.Fault(581091, "Error")
         zone = self._get_zone(zone_id)
         return zone.new_version()
 

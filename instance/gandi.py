@@ -140,7 +140,7 @@ class GandiAPI():
                     result = callback(zone_id, new_zone_version)
                     self.set_zone_version(zone_id, new_zone_version)
                     break
-                except xmlrpc.client.Fault:
+                except (xmlrpc.client.Fault, TimeoutError):
                     if i == attempts:
                         raise
                     time.sleep(retry_delay)
