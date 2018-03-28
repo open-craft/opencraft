@@ -5,7 +5,7 @@ dodgy:
   enable: []
   options: {}
   run: null
-ignore-paths: ['migrations', 'deploy/roles']
+ignore-paths: ['migrations', 'deploy/roles', 'venv/']
 ignore-patterns: [^setup.py$, (^|/)\..+, '^docs?/']
 max-line-length: null
 mccabe:

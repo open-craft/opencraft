@@ -74,7 +74,8 @@ class MySQLInstanceTestCase(TestCase):
             # Pass password using MYSQL_PWD environment variable rather than the --password
             # parameter so that mysql command doesn't print a security warning.
             env = {'MYSQL_PWD': password}
-            mysql_cmd = "mysql -u {user} -e 'SHOW TABLES' {db_name}".format(user=user, db_name=database_name)
+            mysql_cmd = "mysql -h 127.0.0.1 -u {user} -e 'SHOW TABLES' {db_name}".format(user=user,
+                                                                                         db_name=database_name)
             tables = subprocess.call(mysql_cmd, shell=True, env=env)
             self.assertEqual(tables, 0)
 
@@ -85,7 +86,7 @@ class MySQLInstanceTestCase(TestCase):
         self.assertIs(self.instance.mysql_provisioned, True)
         self.assertTrue(self.instance.mysql_user)
         self.assertTrue(self.instance.mysql_pass)
-        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
+        databases = subprocess.check_output("mysql -h 127.0.0.1 -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_databases:
             # Check if database exists
             database_name = database["name"]
@@ -243,7 +244,7 @@ class MySQLInstanceTestCase(TestCase):
         self.instance.mysql_server = None
         self.instance.save()
         self.instance.provision_mysql()
-        databases = subprocess.check_output("mysql -u root -e 'SHOW DATABASES'", shell=True).decode()
+        databases = subprocess.check_output("mysql -h 127.0.0.1 -u root -e 'SHOW DATABASES'", shell=True).decode()
         for database in self.instance.mysql_databases:
             self.assertNotIn(database["name"], databases)
 

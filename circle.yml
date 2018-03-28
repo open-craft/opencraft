@@ -1,35 +1,81 @@
-machine:
-  python:
-    version: 3.5.3
-  services:
-    - redis
-  environment:
-    # Don't add sensitive information (e.g. passwords) here but in https://circleci.com/gh/open-craft/opencraft/edit#env-vars
-    DEBUG: 'true'
-    DEFAULT_FORK: 'open-craft/edx-platform'
-    INSTANCE_EPHEMERAL_DATABASES: 'false'
-    LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
-    TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
-dependencies:
-  pre:
-    - pip install --upgrade pip
-    - pip install --upgrade virtualenv
-    # Update python to latest 2.6.* release from the deadsnakes PPA.
-    # Ubuntu 14.04 which we currently use on CircleCI comes with 2.7.6 preinstalled,
-    # which does not support SNI. When CircleCI starts providing Ubuntu 16.04 images,
-    # this won't be needed anymore.
-    - sudo add-apt-repository ppa:fkrull/deadsnakes-python2.7 -y
-    - sudo apt-get update; sudo apt-get install python2.7 python2.7-dev
-  override:
-    - pip install -r requirements.txt
-database:
-  override:
-    - make create_db
-test:
-  override:
-    - bin/run-circleci-tests:
-        timeout: 2800
-        parallel: true
-  post:
-    - make test.integration_cleanup:
-        timeout: 1200
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.5.4-browsers
+        environment:
+          DEBUG: 'true'
+          DEFAULT_FORK: 'open-craft/edx-platform'
+          INSTANCE_EPHEMERAL_DATABASES: 'false'
+          LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+          TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
+      - image: redis
+      - image: mongo
+      - image: mysql
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: True
+      - image: circleci/postgres:10.1-alpine
+        environment:
+          PG_HOST: 127.0.0.1
+          POSTGRES_USER: circleci
+          POSTGRES_DB: circle_test
+    parallelism: 4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Wait for Redis
+          command: |
+            while ! nc -z localhost 6379; do
+              sleep 0.1
+            done
+      - run:
+          name: Wait for Postgres
+          command: |
+            while ! nc -z localhost 5432; do
+              sleep 0.1
+            done
+      - run:
+          name: Wait for MySQL
+          command: |
+            while ! nc -z localhost 3306; do
+              sleep 0.1
+            done
+      - run:
+          name: Wait for MongoDB
+          command: |
+            while ! nc -z localhost 27017; do
+              sleep 0.1
+            done
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade virtualenv
+            sudo apt-get update; sudo apt-get install python2.7-dev
+            sudo apt-get install mysql-client
+            pip install -r requirements.txt
+            sudo apt-get install postgresql-client
+      - save_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: Create Database
+          command: make create_db
+      - run:
+          name: Run Tests
+          command: |
+            . venv/bin/activate
+            bin/run-circleci-tests
+          no_output_timeout: 47m
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
+      - run:
+          name: Cleanup
+          command: make test.integration_cleanup
+          no_output_timeout: 20m
+
