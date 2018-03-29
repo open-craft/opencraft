@@ -212,6 +212,14 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         return self.domain
 
     @property
+    def first_activated(self):
+        """
+        Return the activation date for the first AppServer to activate.
+        """
+        if self.instance:
+            return self.instance.first_activated
+
+    @property
     def domain(self):
         """
         The full domain requested for this application.

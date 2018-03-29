@@ -30,7 +30,11 @@ from registration.models import BetaTestApplication
 # ModelAdmins #################################################################
 
 class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('user', 'domain')
+    list_display = ('user', 'domain', 'instance_name', 'public_contact_email',
+                    'status', 'first_activated')
+    list_filter = ('status',)
+    search_fields = ('user__username', 'subdomain', 'instance_name',
+                     'public_contact_email')
 
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)

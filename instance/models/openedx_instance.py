@@ -178,6 +178,22 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
         return self.ref.openedxappserver_set
 
+    @property
+    def first_activated(self):
+        """
+        Returns the activation date for the first activated ``AppServer`` for
+        this instance, or ``None`` if there is no AppServer, or no AppServer
+        has yet been activated.
+        :return: Union[None, datetime]
+        """
+        try:
+            first_activated_appserver = self.appserver_set.filter(
+                last_activated__isnull=False
+            ).earliest('last_activated')
+            return first_activated_appserver.last_activated
+        except models.ObjectDoesNotExist:
+            return
+
     @log_exception
     def spawn_appserver(self):
         """
