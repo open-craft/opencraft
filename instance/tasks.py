@@ -73,14 +73,12 @@ def spawn_appserver(
                 instance.tags.remove(failure_tag)
             if success_tag:
                 instance.tags.add(success_tag)
-            if mark_active_on_success:
-                # If the AppServer provisioned successfully, make it active.
-                make_appserver_active(
+            if mark_active_on_success and make_appserver_active(
                     appserver_id,
                     active=mark_active_on_success,
                     deactivate_others=deactivate_old_appservers
-                )
-            break
+            ):
+                break
     else:
         if failure_tag:
             instance.tags.add(failure_tag)
@@ -92,8 +90,19 @@ def spawn_appserver(
 def make_appserver_active(appserver_id, active=True, deactivate_others=False):
     """
     Mark an AppServer as active or inactive.
+
+    :returns
+        True if the appserver was made active,
+        False if the corresponding server was not healthy and thus the appserver was not made active.
     """
     appserver = OpenEdXAppServer.objects.get(pk=appserver_id)
+    if not appserver.server.status.is_healthy_state:
+        appserver.server.update_status()
+        if not appserver.server.status.is_healthy_state:
+            logger.info('Not %s %s: ID=%s since the server is not Ready.', "Activating" if active else "Deactivating",
+                        appserver, appserver_id)
+            return False
+
     logger.info('%s %s: ID=%s', "Activating" if active else "Deactivating", appserver, appserver_id)
     appserver.make_active(active=active)
     if active and deactivate_others:
@@ -101,6 +110,8 @@ def make_appserver_active(appserver_id, active=True, deactivate_others=False):
         for appserver_to_deactivate in other_appservers:
             logger.info('Deactivating %s [%s]', appserver_to_deactivate, appserver_to_deactivate.id)
             appserver_to_deactivate.make_active(active=False)
+
+    return True
 
 
 @db_task()

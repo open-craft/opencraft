@@ -23,7 +23,7 @@ Worker tasks - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
-from unittest.mock import call, patch
+from unittest.mock import call, patch, PropertyMock
 
 import ddt
 from django.utils import timezone
@@ -33,6 +33,7 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.server import ReadyOpenStackServerFactory, BootingOpenStackServerFactory
 from pr_watch.tests.factories import make_watched_pr_and_instance
 
 
@@ -50,9 +51,9 @@ class SpawnAppServerTestCase(TestCase):
         self.mock_spawn_appserver = patcher.start()
         self.mock_spawn_appserver.return_value = 10
 
-        patcher = patch('instance.tasks.make_appserver_active')
-        self.addCleanup(patcher.stop)
-        self.mock_make_appserver_active = patcher.start()
+        self.make_appserver_active_patcher = patch('instance.tasks.make_appserver_active')
+        self.mock_make_appserver_active = self.make_appserver_active_patcher.start()
+        self.addCleanup(self.make_appserver_active_patcher.stop)
 
     def test_provision_sandbox_instance(self):
         """
@@ -69,18 +70,37 @@ class SpawnAppServerTestCase(TestCase):
     @ddt.data(True, False)
     def test_mark_active_on_success(self, provisioning_succeeds):
         """
-        Test that we when mark_active_on_success=True, the spawn_appserver task will mark the
+        Test that when mark_active_on_success=True, the spawn_appserver task will mark the
         newly provisioned AppServer as active, if provisioning succeeded.
         """
-        self.mock_spawn_appserver.return_value = 10 if provisioning_succeeds else None
-
         instance = OpenEdXInstanceFactory()
+        server = ReadyOpenStackServerFactory()
+        appserver = make_test_appserver(instance=instance, server=server)
+
+        self.mock_spawn_appserver.return_value = appserver.pk if provisioning_succeeds else None
         tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         if provisioning_succeeds:
-            self.mock_make_appserver_active.assert_called_once_with(10, active=True, deactivate_others=False)
+            self.mock_make_appserver_active.assert_called_once_with(appserver.pk, active=True, deactivate_others=False)
         else:
             self.mock_make_appserver_active.assert_not_called()
+
+    def test_not_mark_active_if_pending(self):
+        """
+        Test that we when mark_active_on_success=True, the spawn_appserver task will not mark the
+        newly provisioned AppServer as active if the OpenStack server is not ready.
+        """
+        instance = OpenEdXInstanceFactory()
+        appserver = make_test_appserver(instance=instance)
+        appserver.server = BootingOpenStackServerFactory()
+        appserver.save()
+
+        self.mock_spawn_appserver.return_value = appserver.pk
+        self.make_appserver_active_patcher.stop()
+        self.addCleanup(self.make_appserver_active_patcher.start)
+
+        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
+        self.assertEqual(appserver.is_active, False)
 
     @ddt.data(True, False)
     def test_deactivate_old_appservers(self, provisioning_succeeds):
@@ -89,12 +109,15 @@ class SpawnAppServerTestCase(TestCase):
         the spawn appserver task will mark the newly provisioned AppServer as active, and deactivate
         old appservers, if provisioning succeeded.
         """
-        self.mock_spawn_appserver.return_value = 10 if provisioning_succeeds else None
         instance = OpenEdXInstanceFactory()
+        server = ReadyOpenStackServerFactory()
+        appserver = make_test_appserver(instance=instance, server=server)
+
+        self.mock_spawn_appserver.return_value = appserver.pk if provisioning_succeeds else None
         tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True, deactivate_old_appservers=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         if provisioning_succeeds:
-            self.mock_make_appserver_active.assert_called_once_with(10, active=True, deactivate_others=True)
+            self.mock_make_appserver_active.assert_called_once_with(appserver.pk, active=True, deactivate_others=True)
         else:
             self.mock_make_appserver_active.assert_not_called()
 
@@ -134,6 +157,7 @@ class MakeAppserverActiveTestCase(TestCase):
 
     def setUp(self):
         self.appserver = make_test_appserver()
+        self.appserver.server = ReadyOpenStackServerFactory()
         self.appserver.is_active = True
         self.appserver.save()
 
@@ -145,6 +169,25 @@ class MakeAppserverActiveTestCase(TestCase):
         """
         tasks.make_appserver_active(self.appserver.id, active=active)
         mock_make_active.assert_called_once_with(active=active)
+
+    @ddt.data([False, True], [False, False])
+    @patch('instance.models.server.OpenStackServer.update_status')
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
+    def test_make_appserver_active_server_unhealthy(self, health, mock_make_active, mock_update_status):
+        """
+        Test to activate the appserver where the associated server was unhealthy.
+        The server is checked for being healthy twice. If it was unhealthy
+        for both the calls, the appserver is not made active.
+        """
+        with patch('instance.models.server.OpenStackServer.Status.Ready.is_healthy_state',
+                   new_callable=PropertyMock) as mock_is_healthy_state:
+            mock_is_healthy_state.side_effect = health
+            tasks.make_appserver_active(self.appserver.id, active=True)
+            mock_update_status.assert_called_once_with()
+            if any(healthy for healthy in health):
+                mock_make_active.assert_called_once_with(active=True)
+            else:
+                mock_make_active.assert_not_called()
 
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
     def test_deactivate_others(self, mock_make_active):

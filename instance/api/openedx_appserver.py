@@ -96,11 +96,11 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         Add this AppServer to the list of active app server for the instance.
         """
         app_server = self.get_object()
-        if not app_server.status.is_healthy_state:
+        if not app_server.status.is_healthy_state or not make_appserver_active(app_server.pk):
             return Response(
                 {"error": "Cannot make an unhealthy app server active."}, status=status.HTTP_400_BAD_REQUEST
             )
-        make_appserver_active(app_server.pk)
+
         return Response({'status': 'App server activation initiated.'})
 
     @detail_route(methods=['post'])
