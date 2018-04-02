@@ -49,13 +49,6 @@ and extra ansible variables to pass to Open edX's playbook (if any).
 The instance settings are used for new deployments only
 (changing the instance settings doesn't retroactively redeploy appservers).
 
-How do we use Ocim at OpenCraft, as of April 2018:
-we have two Ocim installations (stage and production), and
-we use non-ephemeral databases (that is, we use a shared DB for our Ocim servers).
-We use Ocim to deploy client instances (except the AWS ones),
-to test servers (when the specific configuration is hard to set up in a devstack),
-and to automatically deploy servers when we open PRs upstream, to facilitate code review.
-
 
 Install
 -------
