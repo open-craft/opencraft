@@ -8,6 +8,9 @@ manage [Open edX](https://open.edx.org/) sandboxes on
 [OpenStack](https://www.openstack.org/) virtual machines. It is primarily
 intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
+It includes a web console where you can create new servers and check their status and configuration:
+
+![Ocim's main screen](documentation/ocim_main_screen.png)
 
 
 Using the Ocim web console
@@ -15,12 +18,6 @@ Using the Ocim web console
 
 This section focuses on how to use the web interface, as opposed to how to install, debug or develop Ocim;
 see the following sections for that.
-
-Ocim includes a web interface to manage a list of Open edX servers. With some clicks you can create
-new servers, check their status and their configuration.
-It looks like this:
-
-![Ocim's main screen](documentation/ocim_main_screen.png)
 
 At the left there's a list of instances, and each instance has many appservers.
 We can create a new appserver through the **Launch new AppServer** button;
