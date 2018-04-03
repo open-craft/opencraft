@@ -12,6 +12,13 @@ It includes a web console where you can create new servers and check their statu
 
 ![Ocim's main screen](documentation/ocim_main_screen.png)
 
+Jump to:
+[usage](#using-the-ocim-web-console),
+[installation](#install),
+[configuration](#configure),
+[how to run it](#run),
+[how to debug it](#debug),
+[tests](#running-the-tests).
 
 Using the Ocim web console
 --------------------------
