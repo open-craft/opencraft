@@ -63,7 +63,7 @@ Run the playbook
 
 4. Run the playbook:
 
-        ansible-playbook opencraft.yml -u ubuntu --extra-vars @private.yml -i your.host.name.here,
+        ansible-playbook opencraft.yml --extra-vars @private.yml -i your.host.name.here,
 
    (The trailing comma must be preserved.). Note: you can't pass naked ip address to -i switch, long 
    story short this will make `forward-server-mail` explode when configuring postfix. Please temporarily
