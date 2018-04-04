@@ -8,17 +8,27 @@ manage [Open edX](https://open.edx.org/) sandboxes on
 [OpenStack](https://www.openstack.org/) virtual machines. It is primarily
 intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
-It includes a web console where you can create new servers and check their status and configuration:
+
+It also includes a web console where you can create new servers and check their status and configuration.
 
 ![Ocim's main screen](documentation/ocim_main_screen.png)
 
-Jump to:
-[usage](#using-the-ocim-web-console),
-[installation](#install),
-[configuration](#configure),
-[how to run it](#run),
-[how to debug it](#debug),
-[tests](#running-the-tests).
+Table of Contents
+-----------------
+
+- [Using the Ocim web console](#using-the-ocim-web-console)
+- [Install](#install)
+- [Configure](#configure)
+- [Migrations](#migrations)
+- [Creating users](#creating-users)
+- [Run](#run)
+- [Process description](#process-description)
+- [Static asset collection](#static-assets-collection)
+- [Running the tests](#running-the-tests)
+- [Debug](#debug)
+- [Provisioning sandboxes](#provisioning-sandboxes)
+- [manage.py](#managepy)
+- [Databases](#databases)
 
 Using the Ocim web console
 --------------------------
