@@ -9,6 +9,60 @@ manage [Open edX](https://open.edx.org/) sandboxes on
 intended for testing new features, and can deploy sandboxes automatically from
 GitHub pull requests.
 
+It also includes a web console where you can create new servers and check their status and configuration.
+
+![Ocim's main screen](documentation/ocim_main_screen.png)
+
+Table of Contents
+-----------------
+
+- [Using the Ocim web console](#using-the-ocim-web-console)
+- [Install](#install)
+- [Configure](#configure)
+- [Migrations](#migrations)
+- [Creating users](#creating-users)
+- [Run](#run)
+- [Process description](#process-description)
+- [Static asset collection](#static-assets-collection)
+- [Running the tests](#running-the-tests)
+- [Debug](#debug)
+- [Provisioning sandboxes](#provisioning-sandboxes)
+- [manage.py](#managepy)
+- [Databases](#databases)
+
+Using the Ocim web console
+--------------------------
+
+This section focuses on how to use the web interface, as opposed to how to install, debug or develop Ocim;
+see the following sections for that.
+
+At the left there's a list of instances, and each instance has many appservers.
+We can create a new appserver through the **Launch new AppServer** button;
+it will automatically get the current configuration from the instance settings
+and use it for this server.
+After 1 to 2 hours, it will finish and then you need to **activate** the new one
+and **deactivate** the old one, to make the load balancer update its configuration
+so that the domain name of the instance directs to the new one.
+Normally we want just 1 active appserver per instance, but two or more active at once
+may be required in some high-resource-utilization cases
+Before activating a server, there's the option to test it through a
+basic-auth password-protected link in the "Authenticated Link" section
+(the username and password are embedded in the link).
+
+Sometimes Open edX playbook fails, and then you need to read the log,
+which is shown in real-time in the web console.
+You can fix the settings and then spawn another server.
+Failed and old inactive servers are automatically cleaned up after some configurable amount of days.
+An important feature is that Ocim *grants SSH access* to members of a configurable GitHub organization,
+so you can always SSH to an appserver's IP, *even if Open edX's deployment failed*, and then debug it.
+You can use your GitHub username and key.
+
+To create a new instance, you use Django's admin and you need to fill in the domain name,
+the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
+and extra ansible variables to pass to Open edX's playbook (if any).
+The instance settings are used for new deployments only
+(changing the instance settings doesn't retroactively redeploy appservers).
+
 
 Install
 -------
