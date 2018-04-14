@@ -99,6 +99,11 @@ class Command(BaseCommand):
             help='Pass --force to start redeployment without confirming first.'
         )
         parser.add_argument(
+            '--no-activate',
+            action='store_true',
+            help="When new appservers successfully spawn, don't activate them."
+        )
+        parser.add_argument(
             '--batch-size',
             type=int,
             default=2,
@@ -284,6 +289,7 @@ class Command(BaseCommand):
         batch_size = self.options['batch_size']
         update = self.options.get('update', {})
         sleep_seconds = self.options['batch_frequency']
+        activate_on_success = not self.options['no_activate']
 
         # Loop termination is handled at the end.
         while True:
@@ -321,8 +327,8 @@ class Command(BaseCommand):
                     success_tag=self.success_tag,
                     failure_tag=self.failure_tag,
                     num_attempts=num_attempts,
-                    mark_active_on_success=True,
-                    deactivate_old_appservers=True,
+                    mark_active_on_success=activate_on_success,
+                    deactivate_old_appservers=activate_on_success,
                 )
 
             # 3. Give a status update.
