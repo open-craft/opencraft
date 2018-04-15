@@ -44,6 +44,7 @@ class FactoriesTestCase(TestCase):
         "{"
         "'demo_test_users': [],"
         "'DEMO_CREATE_STAFF_USER': False"
+        "'SANDBOX_ENABLE_CERTIFICATES': False"
         "}"
     )
     SANDBOX_DEFAULTS = {
