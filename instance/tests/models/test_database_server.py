@@ -30,7 +30,7 @@ from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import override_settings
 
 from instance.models.database_server import (
-    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
+    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer, MongoDBReplicaSet
 )
 from instance.models.log_entry import LogEntry
 from instance.tests.base import TestCase
@@ -223,6 +223,50 @@ class MongoDBServerTest(TestCase):
         self.assertEqual(custom_mongodb_server.port, 1234)
 
 
+@override_settings(
+    DEFAULT_INSTANCE_MONGO_URL=None,
+    DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+    DEFAULT_MONGO_REPLICA_SET_USER="test",
+    DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+    DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+    DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+)
+class MongoDBReplicaSetManagerTest(TestCase):
+    """
+    Test cases for MongoDBReplicaSetManager.
+    """
+
+    def test__create_default_replica_set(self):
+        """
+        Test that `_create_default` uses default settings to create MongoDB Replica Set and Servers.
+        """
+        MongoDBReplicaSet.objects._create_default()
+
+        self.assertEqual(MongoDBServer.objects.filter(replica_set__isnull=False).count(), 3)
+        self.assertEqual(MongoDBReplicaSet.objects.count(), 1)
+        for server in MongoDBServer.objects.filter(replica_set__isnull=False):
+            self.assertEqual(server.username, "test")
+            self.assertEqual(server.password, "test")
+
+    @override_settings(
+        DEFAULT_MONGO_REPLICA_SET_USER=None
+    )
+    def test_select_random_fails(self):
+        """
+        Test that `select_random` returns DoesNotExist when one of the settings is not configured
+        """
+        with self.assertRaises(ImproperlyConfigured):
+            MongoDBReplicaSet.objects.select_random()
+        self.assertLogs("instance.models.database_server", "ERROR")
+
+    def test_select_random(self):
+        """
+        Test that `select_random` returns MongoDBReplicaSet created from default settings
+        """
+        mongodb_replica_set = MongoDBReplicaSet.objects.select_random()
+        self.assertEqual(mongodb_replica_set.name, "test_name")
+
+
 class DatabaseServerManagerTest(TestCase):
     """
     Test cases for DatabaseServerManager.
@@ -356,28 +400,6 @@ class DatabaseServerManagerTest(TestCase):
         # Number of database servers should not have changed
         self.assertEqual(MySQLServer.objects.count(), 1)
         self.assertEqual(MongoDBServer.objects.count(), 1)
-
-        # Log entries should contain two warnings about existing servers with different settings
-        log_entries = LogEntry.objects.all()
-        mysql_warning = (
-            'DatabaseServer for {hostname} already exists, '
-            'and its settings do not match the Django settings'.format(hostname=mysql_hostname)
-        )
-        if mysql_hostname == mongodb_hostname:
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mysql_warning in log_entry.text
-            ]), 2)
-        else:
-            mongodb_warning = (
-                'DatabaseServer for {hostname} already exists, '
-                'and its settings do not match the Django settings'.format(hostname=mongodb_hostname)
-            )
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mysql_warning in log_entry.text
-            ]), 1)
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mongodb_warning in log_entry.text
-            ]), 1)
 
     def test__create_default_ignores_name(self):
         """

@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='openedxinstance',
             name='mongodb_server',
-            field=models.ForeignKey(blank=True, default=instance.models.mixins.database.select_random_mongodb_server, null=True, on_delete=django.db.models.deletion.PROTECT, to='instance.MongoDBServer'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='instance.MongoDBServer'),
         ),
         migrations.AlterField(
             model_name='openedxinstance',

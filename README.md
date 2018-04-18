@@ -425,6 +425,16 @@ Required settings:
   and development environments.  It is mandatory to set this setting to run the
   initial migrations.
 
+#### MongoDB using a replica set by default
+
+Unset `DEFAULT_INSTANCE_MONGO_URL` and set the following settings:
+
+* `DEFAULT_MONGO_REPLICA_SET_NAME`: Name of the replica set as setup in MongoDB.
+* `DEFAULT_MONGO_REPLICA_SET_USER`: User used to connect to the MongoDB Servers.
+* `DEFAULT_MONGO_REPLICA_SET_PASSWORD`: Password used to connect to the MongoDB Servers.
+* `DEFAULT_MONGO_REPLICA_SET_PRIMARY`: Hostname of primary replica set instance.
+* `DEFAULT_MONGO_REPLICA_SET_HOSTS`: All hosts on the replica set (including the primary).
+
 ### External SMTP service settings
 
 If you want to use an external SMTP service for sending email from app servers,
