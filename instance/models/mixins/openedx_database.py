@@ -23,6 +23,7 @@ import hashlib
 import hmac
 import yaml
 
+from instance.models.database_server import MongoDBServer
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
 
@@ -351,19 +352,38 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         Return dictionary of mongodb settings
         """
+        if self.mongodb_replica_set:
+            mongodb_servers = MongoDBServer.objects.filter(
+                mongodb_replica_set=self.mongodb_replica_set
+            ).values_list('hostname')
+        elif self.mongodb_server:
+            mongodb_servers = [self.mongodb_server.hostname]
         return {
             "EDXAPP_MONGO_USER": self.mongo_user,
             "EDXAPP_MONGO_PASSWORD": self.mongo_pass,
-            "EDXAPP_MONGO_HOSTS": [self.mongodb_server.hostname],
+            "EDXAPP_MONGO_HOSTS": mongodb_servers,
             "EDXAPP_MONGO_PORT": self.mongodb_server.port,
             "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
+            "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
+            # Used only if EDXAPP_MONGO_REPLICA_SET is provided.
+            "EDXAPP_MONGO_CMS_READ_PREFERENCE": "PRIMARY",
+            "EDXAPP_MONGO_LMS_READ_PREFERENCE": "SECONDARY_PREFERRED",
+            "EDXAPP_LMS_DRAFT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_CMS_READ_PREFERENCE }}",
+            "EDXAPP_LMS_SPLIT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_LMS_READ_PREFERENCE }}",
 
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
-            "FORUM_MONGO_HOSTS": [self.mongodb_server.hostname],
+            # search for all servers in MongoDBServer(replica_set=...)
+            "FORUM_MONGO_HOSTS": mongodb_servers,
             "FORUM_MONGO_PORT": self.mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
-            "FORUM_REBUILD_INDEX": True
+            "FORUM_REBUILD_INDEX": True,
+            "FORUM_MONGO_URL": (
+                "mongodb://{{ FORUM_MONGO_USER }}:{{ FORUM_MONGO_PASSWORD }}"
+                "@{%- for host in FORUM_MONGO_HOSTS -%}{{ host }}:{{ FORUM_MONGO_PORT }}"
+                "{%- if not loop.last -%},{%- endif -%}{%- endfor -%}/{{ FORUM_MONGO_DATABASE }}"
+                "{%- if FORUM_MONGO_TAGS -%}?tags={{ FORUM_MONGO_TAGS }}{%- endif -%}"
+            )
         }
 
     def _get_rabbitmq_settings(self):
@@ -412,7 +432,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             new_settings.update(self._get_mysql_settings())
 
         # MongoDB:
-        if self.mongodb_server:
+        if self.mongodb_replica_set or self.mongodb_server:
             new_settings.update(self._get_mongo_settings())
 
         # RabbitMQ:
