@@ -70,6 +70,10 @@ class ServerState(ResourceState):
     # until the target server has reached one of these statuses.
     vm_available = False
 
+    # We can only reconfigure the load balancer in case the server is in Status.Ready.
+    # This field is to be set just in the Ready state and False in other states.
+    is_healthy_state = False
+
 
 class Status(ResourceState.Enum):
     """
@@ -94,6 +98,7 @@ class Status(ResourceState.Enum):
         is_steady_state = True
         accepts_ssh_commands = True
         vm_available = True
+        is_healthy_state = True
 
     class Terminated(ServerState):
         """ Stopped forever """

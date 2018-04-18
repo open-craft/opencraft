@@ -24,7 +24,7 @@ OpenEdXInstance model - Tests
 
 from datetime import timedelta
 import re
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, PropertyMock
 
 import ddt
 from django.conf import settings
@@ -41,6 +41,7 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
 from instance.models.server import OpenStackServer, Server, Status as ServerStatus
+from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -433,7 +434,6 @@ class OpenEdXInstanceTestCase(TestCase):
             "ecommerce-test.load_balancer.example.com",
             "discovery-test.load_balancer.example.com",
         ]
-
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()
         self._check_load_balancer_configuration(
@@ -444,20 +444,23 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         appserver.make_active()
-        backend_map, config = instance.get_load_balancer_configuration()
+        with patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock) as mock_public_ip:
+            mock_public_ip.side_effect = [None, "1.1.1.1", "1.1.1.1", "1.1.1.1"]
+            backend_map, config = instance.get_load_balancer_configuration()
         self._check_load_balancer_configuration(
             backend_map, config, domain_names, appserver.server.public_ip,
         )
 
         # Test configuration in case an active appserver doesn't have a public IP address anymore.
         # This might happen if the OpenStack server dies or gets modified from the outside, but it
-        # is not expected to happen under normal circumstances.  We deconfigure the backend and log
-        # an error in this case.
+        # is not expected to happen under normal circumstances.  In case the public IP address is not there,
+        # We log an Error, and call update_status(). In case the IP address is still not there, we stop further
+        # activity and raise an Exception.
         with patch('instance.openstack_utils.get_server_public_address', return_value=None), \
                 self.assertLogs("instance.models.instance", "ERROR"):
             appserver.server._public_ip = None
             appserver.server.save()
-            self.assertEqual(instance.get_load_balancer_configuration(), ([], []))
+            self.assertRaises(WrongStateException, instance.get_load_balancer_configuration)
 
     def test_get_load_balancer_config_ext_domains(self):
         """
@@ -733,9 +736,10 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
         self.assertTrue(instance.ref.is_archived)
 
+    @patch('instance.models.server.OpenStackServer.public_ip')
     @ddt.data(2, 5, 10)
     @patch_services
-    def test_terminate_obsolete_appservers(self, mock_services, days):
+    def test_terminate_obsolete_appservers(self, mock_services, days, mock_public_ip):
         """
         When there is an active appserver, test that `terminate_obsolete_appservers`
         correctly identifies and terminates app servers created more than `days` before now, except:

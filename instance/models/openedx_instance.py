@@ -40,6 +40,7 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
+from instance.models.utils import WrongStateException
 from instance.utils import sufficient_time_passed
 
 
@@ -116,13 +117,17 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         appserver_vars = []
         for appserver in active_appservers:
             server_name = "appserver-{}".format(appserver.pk)
-            ip_address = appserver.server.public_ip
-            if ip_address:
-                appserver_vars.append(dict(ip_address=ip_address, name=server_name))
-            else:
-                appserver.logger.error(
-                    "Active appserver does not have a public IP address. This should not happen."
+            if not appserver.server.public_ip:
+                self.logger.error(
+                    "Active appserver does not have a public IP address. This should not happen. "
+                    "Updating internal status to double check."
                 )
+                appserver.server.update_status()
+                if not appserver.server.public_ip:
+                    raise WrongStateException("Public IP still not available for active appserver. "
+                                              "Canceling reconfiguration process.")
+
+            appserver_vars.append(dict(ip_address=appserver.server.public_ip, name=server_name))
 
         if len(appserver_vars) == 0:
             self.logger.error(
@@ -182,7 +187,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
 
         # We unconditionally set the DNS records here, though this would only be strictly needed
         # when the first AppServer is spawned.  However, there is no easy way to tell whether the
-        # DNS records have already been successfully set, and it doesn't hurt to alway do it.
+        # DNS records have already been successfully set, and it doesn't hurt to always do it.
         self.set_dns_records()
 
         # Provision external databases:

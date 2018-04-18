@@ -28,7 +28,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 # Functions ###################################################################
 
 
-def make_test_appserver(instance=None):
+def make_test_appserver(instance=None, server=None):
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
     """
@@ -37,4 +37,10 @@ def make_test_appserver(instance=None):
     if not instance.load_balancing_server:
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
-    return instance._create_owned_appserver()
+    appserver = instance._create_owned_appserver()
+
+    if server:
+        appserver.server = server
+        appserver.save()
+
+    return appserver

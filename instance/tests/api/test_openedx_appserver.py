@@ -31,6 +31,7 @@ from django.conf import settings
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.server import ReadyOpenStackServerFactory
 from instance.tests.utils import patch_gandi, patch_url
 
 
@@ -187,8 +188,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
 
+    @patch_gandi
+    @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_active(self, mock_run_playbook):
+    def test_make_active(self, mock_run_playbook, mock_public_ip):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - Make this OpenEdXAppServer active
         for its given instance.
@@ -199,7 +202,8 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         """
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
-        app_server = make_test_appserver(instance)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())
 
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
@@ -231,8 +235,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.data, {'error': 'Cannot make an unhealthy app server active.'})
         self.assertEqual(mock_run_playbook.call_count, 0)
 
+    @patch_gandi
+    @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive(self, mock_run_playbook):
+    def test_make_inactive(self, mock_run_playbook, mock_public_ip):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - Make this OpenEdXAppServer inactive
         for its given instance.
@@ -241,7 +247,8 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         """
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
-        app_server = make_test_appserver(instance)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())
 
         # Make the server active
@@ -262,14 +269,17 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server.refresh_from_db()
         self.assertFalse(app_server.is_active)
 
+    @patch_gandi
+    @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive_unhealthy(self, mock_run_playbook):
+    def test_make_inactive_unhealthy(self, mock_run_playbook, mock_public_ip):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - unheahtly AppServers can be deactivated
         """
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
-        app_server = make_test_appserver(instance)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())
 
         # Make the server active
