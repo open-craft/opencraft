@@ -24,12 +24,12 @@ import yaml
 from django.conf import settings
 from django.db import models
 
-from .storage import SwiftContainerInstanceMixin
+from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin
 
 
 # Classes #####################################################################
 
-class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
+class OpenEdXStorageMixin(SwiftContainerInstanceMixin, S3BucketInstanceMixin):
     """
     Mixin that provides functionality required for the storage backends that an OpenEdX
     Instance uses (when not using ephemeral databases)
@@ -70,6 +70,7 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin):
             "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
+            "EDXAPP_AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },

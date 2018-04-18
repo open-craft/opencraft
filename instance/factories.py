@@ -43,8 +43,11 @@ def _check_environment():
     """
     Check environment and report potential problems for production instances
     """
-    if not settings.SWIFT_ENABLE:
-        logger.warning("Swift support is currently disabled. Adjust SWIFT_ENABLE setting.")
+    if not settings.SWIFT_ENABLE and not(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
+        logger.warning(
+            "Swift and AWS support is currently disabled. Add AWS_ACCESS_KEY_ID and "
+            "AWS_SECRET_ACCESS_KEY settings or adjust SWIFT_ENABLE setting."
+        )
         return
     if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:
         logger.warning(

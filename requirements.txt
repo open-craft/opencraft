@@ -3,6 +3,7 @@ astroid==1.4.8
 Babel==2.3.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.5.1
+boto==2.48.0
 chardet==2.3.0
 CherryPy==3.8.2
 click==6.6

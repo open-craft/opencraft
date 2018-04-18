@@ -581,3 +581,18 @@ DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=Non
 
 LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
 PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
+
+# AWS. Must be set if SWIFT_ENABLE = False"
+
+# Permissions required for this account are:
+# iam:PutUserPolicy
+# iam:CreateUser
+# iam:CreateAccessKey
+# iam:DeleteUser
+# iam:DeleteAccessKey
+# iam:DeleteUserPolicy
+
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default=None)
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default=None)
+AWS_S3_BUCKET_PREFIX = env('S3_BUCKET_PREFIX', default='ocim')
+AWS_IAM_USER_PREFIX = env('IAM_USER_PREFIX', default='ocim')
