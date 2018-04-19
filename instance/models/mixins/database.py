@@ -27,6 +27,7 @@ import inspect
 import string
 import warnings
 
+from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 import MySQLdb as mysql
@@ -136,14 +137,20 @@ def select_random_mongodb_server():
     """
     Helper for the field default of `mongodb_server`.
     """
-    return MongoDBServer.objects.select_random().pk
+    if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
+        return MongoDBServer.objects.select_random().pk
+    else:
+        return None
 
 
 def select_random_mongodb_replica_set():
     """
     Helper for the field default of `mongodb_server`.
     """
-    return MongoDBReplicaSet.objects.select_random().pk
+    if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
+        return None
+    else:
+        return MongoDBReplicaSet.objects.select_random().pk
 
 
 # Classes #####################################################################
@@ -246,6 +253,7 @@ class MongoDBInstanceMixin(models.Model):
         MongoDBServer,
         null=True,
         blank=True,
+        default=select_random_mongodb_server,
         on_delete=models.PROTECT
     )
 

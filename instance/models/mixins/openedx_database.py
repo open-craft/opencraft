@@ -352,24 +352,27 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         Return dictionary of mongodb settings
         """
+        extra_settings = {}
         if self.mongodb_replica_set:
             mongodb_servers = MongoDBServer.objects.filter(
                 mongodb_replica_set=self.mongodb_replica_set
-            ).values_list('hostname')
+            ).values_list('hostname', flat=True)
+            extra_settings = {
+                "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
+                # Used only if EDXAPP_MONGO_REPLICA_SET is provided.
+                "EDXAPP_MONGO_CMS_READ_PREFERENCE": "PRIMARY",
+                "EDXAPP_MONGO_LMS_READ_PREFERENCE": "SECONDARY_PREFERRED",
+                "EDXAPP_LMS_DRAFT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_CMS_READ_PREFERENCE }}",
+                "EDXAPP_LMS_SPLIT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_LMS_READ_PREFERENCE }}"
+            }
         elif self.mongodb_server:
             mongodb_servers = [self.mongodb_server.hostname]
-        return {
+        settings = {
             "EDXAPP_MONGO_USER": self.mongo_user,
             "EDXAPP_MONGO_PASSWORD": self.mongo_pass,
             "EDXAPP_MONGO_HOSTS": mongodb_servers,
             "EDXAPP_MONGO_PORT": self.mongodb_server.port,
             "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
-            "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
-            # Used only if EDXAPP_MONGO_REPLICA_SET is provided.
-            "EDXAPP_MONGO_CMS_READ_PREFERENCE": "PRIMARY",
-            "EDXAPP_MONGO_LMS_READ_PREFERENCE": "SECONDARY_PREFERRED",
-            "EDXAPP_LMS_DRAFT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_CMS_READ_PREFERENCE }}",
-            "EDXAPP_LMS_SPLIT_DOC_STORE_READ_PREFERENCE": "{{ EDXAPP_MONGO_LMS_READ_PREFERENCE }}",
 
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
@@ -385,6 +388,8 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 "{%- if FORUM_MONGO_TAGS -%}?tags={{ FORUM_MONGO_TAGS }}{%- endif -%}"
             )
         }
+        settings.update(extra_settings)
+        return settings
 
     def _get_rabbitmq_settings(self):
         """
