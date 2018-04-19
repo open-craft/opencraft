@@ -21,13 +21,15 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
-
 from unittest.mock import patch, call
 
+import boto
 import yaml
+
 from django.conf import settings
 from django.test.utils import override_settings
 
+from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -100,6 +102,79 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
 
 
+def get_s3_settings(instance):
+    """
+    Return expected s3 settings
+    """
+    return {
+        "COMMON_ENABLE_AWS_INTEGRATION": 'true',
+        "AWS_ACCESS_KEY_ID": instance.s3_access_key,
+        "AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
+
+        "EDXAPP_AWS_LOCATION": instance.swift_container_name,
+        "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
+        "EDXAPP_AWS_ACCESS_KEY_ID": instance.s3_access_key,
+        "EDXAPP_AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
+        "EDXAPP_AUTH_EXTRA": '\n  AWS_STORAGE_BUCKET_NAME: test\nEDXAPP_AWS_ACCESS_KEY_ID: test',
+        "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(instance.s3_bucket_name),
+        "EDXAPP_IMPORT_EXPORT_BUCKET": instance.s3_bucket_name,
+        "EDXAPP_FILE_UPLOAD_BUCKET_NAME": instance.s3_bucket_name,
+        "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(
+            instance.swift_container_name,
+            'submissions_attachments'
+        ),
+        "EDXAPP_GRADE_STORAGE_CLASS": 'storages.backends.s3boto.S3BotoStorage',
+        "EDXAPP_GRADE_STORAGE_TYPE": 's3',
+        "EDXAPP_GRADE_BUCKET": instance.s3_bucket_name,
+        "EDXAPP_GRADE_ROOT_PATH": '{}/{}'.format(instance.swift_container_name, 'grades-download'),
+        "EDXAPP_GRADE_STORAGE_KWARGS": (
+            '\n  bucket: test\n  location: {}/grades-download'.format(
+                instance.swift_container_name
+            )
+        ),
+        "XQUEUE_AWS_ACCESS_KEY_ID": instance.s3_access_key,
+        "XQUEUE_AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
+        "XQUEUE_UPLOAD_BUCKET": instance.s3_bucket_name,
+        "XQUEUE_UPLOAD_PATH_PREFIX": '{}/{}'.format(instance.swift_container_name, 'xqueue'),
+
+        "COMMON_OBJECT_STORE_LOG_SYNC": 'true',
+        "COMMON_OBJECT_STORE_LOG_SYNC_BUCKET": instance.s3_bucket_name,
+        "COMMON_OBJECT_STORE_LOG_SYNC_PREFIX": '{}/{}'.format(instance.swift_container_name, 'logs/tracking/'),
+        "AWS_S3_LOGS": 'true',
+        "AWS_S3_LOGS_ACCESS_KEY_ID": instance.s3_access_key,
+        "AWS_S3_LOGS_SECRET_KEY": instance.s3_secret_access_key,
+    }
+
+
+def get_swift_settings(instance):
+    """
+    Return expected Swift settings
+    """
+    return {
+        'EDXAPP_DEFAULT_FILE_STORAGE': 'swift.storage.SwiftStorage',
+        'EDXAPP_SWIFT_USERNAME': instance.swift_openstack_user,
+        'EDXAPP_SWIFT_KEY': instance.swift_openstack_password,
+        'EDXAPP_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
+        'EDXAPP_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
+        'EDXAPP_SWIFT_REGION_NAME': instance.swift_openstack_region,
+        'EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME': instance.swift_container_name,
+
+        'XQUEUE_SWIFT_USERNAME': instance.swift_openstack_user,
+        'XQUEUE_SWIFT_KEY': instance.swift_openstack_password,
+        'XQUEUE_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
+        'XQUEUE_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
+        'XQUEUE_SWIFT_REGION_NAME': instance.swift_openstack_region,
+        'XQUEUE_UPLOAD_BUCKET': instance.swift_container_name,
+
+        'SWIFT_LOG_SYNC_USERNAME': instance.swift_openstack_user,
+        'SWIFT_LOG_SYNC_PASSWORD': instance.swift_openstack_password,
+        'SWIFT_LOG_SYNC_TENANT_NAME': instance.swift_openstack_tenant,
+        'SWIFT_LOG_SYNC_AUTH_URL': instance.swift_openstack_auth_url,
+        'SWIFT_LOG_SYNC_REGION_NAME': instance.swift_openstack_region,
+        'COMMON_OBJECT_STORE_LOG_SYNC_BUCKET': instance.swift_container_name,
+    }
+
+
 class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
@@ -156,44 +231,25 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(create_swift_container.called)
 
-    def check_ansible_settings(self, appserver, expected=True):
+    def check_ansible_settings(self, appserver, expected=True, s3=False):
         """
         Verify the Ansible settings.
         """
         instance = appserver.instance
-        expected_settings = {
-            'EDXAPP_DEFAULT_FILE_STORAGE': 'swift.storage.SwiftStorage',
-            'EDXAPP_SWIFT_USERNAME': instance.swift_openstack_user,
-            'EDXAPP_SWIFT_KEY': instance.swift_openstack_password,
-            'EDXAPP_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
-            'EDXAPP_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
-            'EDXAPP_SWIFT_REGION_NAME': instance.swift_openstack_region,
-            'EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME': instance.swift_container_name,
+        if s3:
+            expected_settings = get_s3_settings(instance)
+        else:
+            expected_settings = get_swift_settings(instance)
 
-            'XQUEUE_SWIFT_USERNAME': instance.swift_openstack_user,
-            'XQUEUE_SWIFT_KEY': instance.swift_openstack_password,
-            'XQUEUE_SWIFT_TENANT_NAME': instance.swift_openstack_tenant,
-            'XQUEUE_SWIFT_AUTH_URL': instance.swift_openstack_auth_url,
-            'XQUEUE_SWIFT_REGION_NAME': instance.swift_openstack_region,
-            'XQUEUE_UPLOAD_BUCKET': instance.swift_container_name,
-
-            'COMMON_OBJECT_STORE_LOG_SYNC': 'true',
-            'SWIFT_LOG_SYNC_USERNAME': instance.swift_openstack_user,
-            'SWIFT_LOG_SYNC_PASSWORD': instance.swift_openstack_password,
-            'SWIFT_LOG_SYNC_TENANT_NAME': instance.swift_openstack_tenant,
-            'SWIFT_LOG_SYNC_AUTH_URL': instance.swift_openstack_auth_url,
-            'SWIFT_LOG_SYNC_REGION_NAME': instance.swift_openstack_region,
-            'COMMON_OBJECT_STORE_LOG_SYNC_BUCKET': instance.swift_container_name,
-        }
         # Replace any \' occurrences because some settings may have it while we do a blanket assertion without it.
         # For example: we assert "EDXAPP_SWIFT_TENANT_NAME: 9999999999" is in `ansible_vars`, which would have
         # "EDXAPP_SWIFT_TENANT_NAME: \'9999999999\'", causing a mismatch unless we strip the \'.
         ansible_vars = str(appserver.configuration_settings).replace("\'", '')
         for ansible_var, value in expected_settings.items():
             if expected:
-                self.assertIn('{}: {}'.format(ansible_var, value), ansible_vars)
+                self.assertRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
             else:
-                self.assertNotIn(ansible_var, ansible_vars)
+                self.assertNotRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
 
     def test_ansible_settings_swift(self):
         """
@@ -219,3 +275,157 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver, expected=False)
+
+    def test_ansible_settings_s3(self):
+        """
+        Verify Swift Ansible configuration when Swift is enabled.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        appserver = make_test_appserver(instance, s3=True)
+        self.check_ansible_settings(appserver, s3=True)
+
+    @override_settings(SWIFT_ENABLED=False, AWS_ACCESS_KEY='test', AWS_SECRET_ACCESS_KEY_ID='test')
+    def test_get_s3_connection(self):
+        """
+        Test get_s3 connection returns right instance
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        s3_connection = instance.get_s3_connection()
+        self.assertIsInstance(s3_connection, boto.s3.connection.S3Connection)
+
+    def test_get_s3_policy(self):
+        """
+        Verify S3 policy is set for correctly
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        policies = [
+            (
+                '"Action": [\n        "s3:ListBucket",\n        "s3:CreateBucket"'
+                ',\n        "s3:DeleteBucket",\n        "s3:PutBucketCORS"\n      ]'
+            ),
+            '"Resource": [\n        "arn:aws:s3:::{}"\n      ]'.format(instance.s3_bucket_name),
+            '"Action": [\n        "s3:*Object*"\n      ]',
+            '"Resource": [\n        "arn:aws:s3:::{}/*"\n      ]'.format(instance.s3_bucket_name)
+        ]
+        policy = instance.get_s3_policy()
+        for line in policies:
+            self.assertIn(line, policy)
+
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    @patch('boto.s3.bucket.Bucket.set_cors')
+    def test_provision_s3(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+        """
+        Test s3 provisioning succeeds
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        instance.provision_s3()
+        create_bucket.assert_called_once_with(instance.s3_bucket_name)
+
+    @patch('boto.connect_iam')
+    @patch('boto.s3.connection.S3Connection')
+    def test_deprovision_s3(self, s3_connection, iam_connection):
+        """
+        Test s3 deprovisioning succeeds
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        instance.deprovision_s3()
+        self.assertEqual(instance.s3_bucket_name, "")
+        self.assertEqual(instance.s3_access_key, "")
+        self.assertEqual(instance.s3_secret_access_key, "")
+
+    @patch('boto.connect_iam')
+    @patch('boto.s3.connection.S3Connection')
+    def test_deprovision_s3_delete_user_fails(self, s3_connection, connect_iam):
+        """
+        Test s3 deprovisioning fails on delete_user
+        """
+        iam_connection = connect_iam()
+        iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        with self.assertLogs("instance.models.instance"):
+            instance.deprovision_s3()
+        # Since it failed deleting the user, access_keys should not be empty
+        self.assertEqual(instance.s3_access_key, "test")
+        self.assertEqual(instance.s3_secret_access_key, "test")
+
+    @patch('boto.connect_iam')
+    @patch('boto.s3.connection.S3Connection')
+    def test_deprovision_s3_delete_bucket_fails(self, s3_connection, connect_iam):
+        """
+        Test s3 deprovisioning fails on delete_bucket
+        """
+        s3_connection = s3_connection()
+        s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        with self.assertLogs("instance.models.instance"):
+            instance.deprovision_s3()
+        # Since it failed deleting the bucket, s3_bucket_name should not be empty
+        self.assertEqual(instance.s3_bucket_name, "test")
+        self.assertEqual(instance.s3_secret_access_key, "")
+        self.assertEqual(instance.s3_access_key, "")
+
+    @patch('boto.connect_iam')
+    @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
+    def test_create_iam_user(self, connect_iam):
+        """
+        Test create_iam_user succeeds and sets the required attributes
+        """
+        access_keys = {
+            'create_access_key_response': {
+                'create_access_key_result': {
+                    'access_key': {
+                        'access_key_id': 'test',
+                        'secret_access_key': 'test'
+                    }
+                }
+            }
+        }
+        connect_iam().create_access_key.return_value = access_keys
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.create_iam_user()
+        self.assertEqual(instance.s3_access_key, 'test')
+        self.assertEqual(instance.s3_secret_access_key, 'test')
+
+    def test_get_s3_cors(self):
+        """
+        Test get_s3_config succeeds
+        """
+        s3_cors_config = get_s3_cors_config()
+        self.assertEqual(s3_cors_config[0].allowed_method, ['GET', 'PUT'])
+        self.assertEqual(s3_cors_config[0].allowed_header, ['*'])
+        self.assertEqual(s3_cors_config[0].allowed_origin, ['*'])
+
+    @patch('boto.connect_iam')
+    @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
+    def test_get_master_iam_connection(self, connect_iam):  # pylint: disable=no-self-use
+        """
+        Test get_s3_config succeeds
+        """
+        get_master_iam_connection()
+        connect_iam.assert_called_once_with('test', 'test')
+
+    def test_bucket_name(self):
+        """
+        Test bucket_name is correct
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.assertRegex(instance.bucket_name, r'ocim-instance[A-Za-z0-9]*-test-example-com')
+
+    def test_iam_username(self):
+        """
+        Test bucket_name is correct
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.assertRegex(instance.iam_username, r'ocim-instance[A-Za-z0-9]*_test_example_com')

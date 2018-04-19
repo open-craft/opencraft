@@ -43,7 +43,8 @@ class FactoriesTestCase(TestCase):
     CONFIGURATION_EXTRA_SETTINGS = (
         "{"
         "'demo_test_users': [],"
-        "'DEMO_CREATE_STAFF_USER': False"
+        "'DEMO_CREATE_STAFF_USER': False,"
+        "'SANDBOX_ENABLE_CERTIFICATES': False"
         "}"
     )
     SANDBOX_DEFAULTS = {
@@ -124,6 +125,7 @@ class FactoriesTestCase(TestCase):
         configuration_extra_settings = """
         DEMO_CREATE_STAFF_USER: false
         demo_test_users: []
+        SANDBOX_ENABLE_CERTIFICATES: false
         EXTRA_SETTINGS: false
         ADDITIONAL_SETTINGS: true
         """
@@ -145,30 +147,30 @@ class FactoriesTestCase(TestCase):
         MySQLServer.objects.all().delete()
         MongoDBServer.objects.all().delete()
 
-        for setting, value, warning in (
+        for custom_settings, warning in (
                 (
-                    'SWIFT_ENABLE',
-                    False,
-                    'Swift support is currently disabled. Adjust SWIFT_ENABLE setting.',
+                    {'SWIFT_ENABLE': False, 'AWS_ACCESS_KEY': None, 'AWS_SECRET_ACCESS_KEY': None},
+                    (
+                        "Swift and AWS support is currently disabled. Add AWS_ACCESS_KEY_ID and "
+                        "AWS_SECRET_ACCESS_KEY settings or adjust SWIFT_ENABLE setting."
+                    ),
                 ),
                 (
-                    'DEFAULT_INSTANCE_MYSQL_URL',
-                    None,
+                    {'DEFAULT_INSTANCE_MYSQL_URL': None},
                     (
                         "No MySQL servers configured, and default URL for external MySQL database is missing."
                         "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
                     ),
                 ),
                 (
-                    'DEFAULT_INSTANCE_MONGO_URL',
-                    None,
+                    {'DEFAULT_INSTANCE_MONGO_URL': None},
                     (
                         "No MongoDB servers configured, and default URL for external MongoDB database is missing."
                         "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
                     ),
                 ),
         ):
-            with override_settings(**{setting: value}):
+            with override_settings(**custom_settings):
                 sub_domain = "production-instance-doomed"
                 production_instance_factory(sub_domain=sub_domain)
                 log_entries = LogEntry.objects.filter(level="WARNING")

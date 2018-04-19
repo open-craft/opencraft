@@ -314,6 +314,23 @@ edit its security group rules to only allow access to VMs in the
 * `OPENSTACK_AUTH_URL`: Your openstack auth url (required)
 * `OPENSTACK_REGION`: The openstack region to deploy sandboxes in (required)
 
+### AWS S3 Storage
+
+Permissions required for master AWS account are:
+* iam:PutUserPolicy
+* iam:CreateUser
+* iam:CreateAccessKey
+* iam:DeleteUser
+* iam:DeleteAccessKey
+* iam:DeleteUserPolicy
+
+Required settings:
+* `SWIFT_ENABLE`: Default is True, it should be set to False when using s3.
+* `AWS_ACCESS_KEY_ID`: AWS Access Key Id from account with accesses listed above.
+* `AWS_SECRET_ACCESS_KEY`: AWS Secret Key with accesses listed above.
+* `AWS_S3_BUCKET_PREFIX`: Prefix used for bucket naming (default: "ocim")
+* `AWS_IAM_USER_PREFIX`: Prefix used for IAM username (default: "ocim")
+
 ### Load balancer settings
 * `DEFAULT_LOAD_BALANCING_SERVER`: The load-balancing server to be used in the
   form `ssh_username@domain.name`.  The server will be represented as an

@@ -100,6 +100,11 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
+        if not settings.SWIFT_ENABLE and not self.ref.is_archived:
+            if not self.s3_bucket_name:
+                self.s3_bucket_name = self.bucket_name
+            if not self.s3_access_key and not self.s3_secret_access_key:
+                self.create_iam_user()
         super().save(**kwargs)
 
     def get_load_balancer_configuration(self, triggered_by_instance=False):
@@ -200,6 +205,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.provision_mongo()
             self.logger.info('Provisioning Swift container...')
             self.provision_swift()
+            self.logger.info('Provisioning S3 bucket...')
+            self.provision_s3()
             self.logger.info('Provisioning RabbitMQ vhost...')
             self.provision_rabbitmq()
 
@@ -321,5 +328,6 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         self.deprovision_mysql()
         self.deprovision_mongo()
         self.deprovision_swift()
+        self.deprovision_s3()
         self.deprovision_rabbitmq()
         super().delete(*args, **kwargs)
