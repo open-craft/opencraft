@@ -217,6 +217,12 @@ class MongoDBReplicaSetManager(models.Manager):
     """
     Custom manager for the DatabaseServer model.
     """
+    def extra_args(self, host, primary):
+        primary = host == primary
+        extra_args = dict(
+            replica_set=replica_set,
+            primary=primary
+        )
     def _get_setting(self, field):
         """
         Get setting using prefix
@@ -248,12 +254,10 @@ class MongoDBReplicaSetManager(models.Manager):
         replica_settings = self.get_replica_set_settings()
         for setting in replica_settings:
             if setting not in optional_settings and replica_settings[setting] is None:
-                logger.error(
+                raise ImproperlyConfigured(
                     "Error creating the default servers for the replica set, please ensure that"
                     " all needed settings are configured."
                 )
-                return
-
         replica_set_hosts = [host.strip() for host in replica_settings['hosts'].split(',')]
         replica_set, _ = self.get_or_create(name=replica_settings['name'])
         for host in replica_set_hosts:
@@ -281,7 +285,7 @@ class MongoDBReplicaSetManager(models.Manager):
                 replica_set__isnull=False,
                 accepts_new_clients=True,
                 primary=True
-            ).distinct()
+            ).distinct().select_related('replica_set')
             count = mongodb_servers.count()
             if not count:
                 raise self.model.DoesNotExist(

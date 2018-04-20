@@ -354,26 +354,29 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         extra_settings = {}
         if self.mongodb_replica_set:
-            mongodb_servers = list(MongoDBServer.objects.filter(
+            mongodb_servers = MongoDBServer.objects.filter(
                 replica_set=self.mongodb_replica_set
-            ).values_list('hostname', flat=True))
+            )
+            mongodb_servers_list = list(mongodb_servers.all().values_list('hostname', flat=True))
+            primary_mongodb_server = mongodb_servers.filter(primary=True)[0]
             extra_settings = {
-                "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
+                "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name
             }
         elif self.mongodb_server:
-            mongodb_servers = [self.mongodb_server.hostname]
+            primary_mongodb_server = self.mongodb_server
+            mongodb_servers_list = [self.mongodb_server.hostname]
         settings = {
             "EDXAPP_MONGO_USER": self.mongo_user,
             "EDXAPP_MONGO_PASSWORD": self.mongo_pass,
-            "EDXAPP_MONGO_HOSTS": mongodb_servers,
-            "EDXAPP_MONGO_PORT": self.mongodb_server.port,
+            "EDXAPP_MONGO_HOSTS": mongodb_servers_list,
+            "EDXAPP_MONGO_PORT": primary_mongodb_server.port,
             "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
 
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
             # search for all servers in MongoDBServer(replica_set=...)
-            "FORUM_MONGO_HOSTS": mongodb_servers,
-            "FORUM_MONGO_PORT": self.mongodb_server.port,
+            "FORUM_MONGO_HOSTS": mongodb_servers_list,
+            "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
             "FORUM_REBUILD_INDEX": True
         }
