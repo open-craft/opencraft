@@ -24,6 +24,9 @@ security_sudoers_passwordless: [ 'vagrant' ]
 # Disable reporting to New Relic
 COMMON_SERVER_ENABLE_NEWRELIC: false
 
+# Do not install Certbot
+COMMON_SERVER_INSTALL_CERTBOT: false
+
 # The default .env file configuration for Vagrant. These settings can be
 # overridden in the private.yml file.
 OPENCRAFT_ENV_TOKENS:

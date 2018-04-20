@@ -1,23 +1,17 @@
-# Note: due to security concerns we prefer using git hashes than ansible versions.
+# Note: due to security concerns we prefer using git hashes than ansible versions for
+# roles not managed by OpenCraft.
 
-- name: geerlingguy.nginx
-  src: https://github.com/geerlingguy/ansible-role-nginx
-  version: e81825546577cfb300efbcaec32aae4716561385
-
-# Our fork of security, can be synced when this is merged: https://github.com/geerlingguy/ansible-role-security/pull/16
 - name: geerlingguy.security
-  src: https://github.com/open-craft/ansible-role-security
-  version: origin/jbzdak/notify-mail
+  src: https://github.com/geerlingguy/ansible-role-security
+  version: af8b13833290ccae2ce1d2c9cce78862ddd3666c
 
 - name: kamaln7.swapfile
   src: https://github.com/kamaln7/ansible-swapfile
   version: 8eb0e18d90a7f25b6658fbf56bcba01b84a664fc
 
-# Our fork of pmbauer tarsnap.
-# Can be cleared when this is closed: https://github.com/pmbauer/ansible-tarsnap/pull/3
 - name: pmbauer.tarsnap
-  src: https://github.com/open-craft/ansible-tarsnap
-  version: d96b1e69ae6b930e0841d7b025a3070c408a23f4
+  src: https://github.com/pmbauer/ansible-tarsnap
+  version: 7a625912409a0be2a3bf48967c60c5328ae2f3b2
 
 - name: backup-to-tarsnap
   src: https://github.com/open-craft/ansible-backup-to-tarsnap
