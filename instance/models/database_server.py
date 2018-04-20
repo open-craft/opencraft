@@ -244,16 +244,17 @@ class MongoDBReplicaSetManager(models.Manager):
         """
         Create the default database replica set configured in the Django settings, if any.
         """
+        optional_settings = ['port']
         replica_settings = self.get_replica_set_settings()
         for setting in replica_settings:
-            if setting != 'port' and replica_settings[setting] is None:
+            if not setting in optional_settings and replica_settings[setting] is None:
                 logger.error(
                     "Error creating the default servers for the replica set, please ensure that"
                     " all needed settings are configured."
                 )
                 return
 
-        replica_set_hosts = replica_settings['hosts'].split(',')
+        replica_set_hosts = [host.strip() for host in replica_settings['hosts'].split(',')]
         replica_set, _ = self.get_or_create(name=replica_settings['name'])
         for host in replica_set_hosts:
             MongoDBServer.objects.create_database_server(
@@ -295,18 +296,26 @@ class MongoDBReplicaSet(TimeStampedModel):
     """
     DEFAULT_SETTINGS_NAME = 'DEFAULT_MONGO_REPLICA_SET'
 
-    name = models.CharField(max_length=250, blank=True)
-
+    # Human readable identifier for MongoDB Replica Sets
+    name = models.CharField(
+        max_length=250,
+        blank=True,
+        help_text='Must match name in replicaset_name on a MongoDB server.'
+    )
+    description = models.CharField(max_length=250, blank=True)
     objects = MongoDBReplicaSetManager()
 
     class Meta:
         verbose_name = 'MongoDB Replica Set'
 
     def __str__(self):
-        """
-        String representation
-        """
-        return self.name
+        description = ''
+        if self.description:
+            description = ' ({description})'.format(description=self.description)
+        return '{name}{description}'.format(
+            name=self.name,
+            description=description
+        )
 
 
 class MongoDBServer(DatabaseServer):
@@ -316,8 +325,19 @@ class MongoDBServer(DatabaseServer):
     # Name of Django setting specifying field defaults for MongoDB database server (in the form of a URL).
     DEFAULT_SETTINGS_NAME = "DEFAULT_INSTANCE_MONGO_URL"
 
-    replica_set = models.ForeignKey(MongoDBReplicaSet, null=True, blank=True)
-    primary = models.BooleanField(default=False)
+    replica_set = models.ForeignKey(
+        MongoDBReplicaSet,
+        null=True,
+        blank=True,
+        help_text="Replica Set to which the server belongs to."
+    )
+    primary = models.BooleanField(
+        default=False,
+        help_text=(
+            "Indicates if the server is the primary server on a Replica Set, "
+            "only applies when replica_set is set."
+        )
+    )
 
     class Meta:
         verbose_name = 'MongoDB server'

@@ -257,7 +257,7 @@ class MongoDBReplicaSetManagerTest(TestCase):
         """
         with self.assertRaises(MongoDBReplicaSet.DoesNotExist):
             MongoDBReplicaSet.objects.select_random()
-        self.assertLogs("instance.models.database_server" "ERROR")
+        self.assertLogs("instance.models.database_server", "ERROR")
 
     def test_select_random(self):
         """

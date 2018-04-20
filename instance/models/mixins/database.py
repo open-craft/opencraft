@@ -291,11 +291,11 @@ class MongoDBInstanceMixin(models.Model):
         """
         Returns main database url from replica set, or url from signle server
         """
-        #if self.mongodb_replica_set:
-        #    return MongoDBServer.objects.get(
-        #        replica_set=self.mongodb_replica_set,
-        #        primary=True
-        #    ).url
+        if self.mongodb_replica_set:
+            return MongoDBServer.objects.get(
+                replica_set=self.mongodb_replica_set,
+                primary=True
+            ).url
         if self.mongodb_server:
             return self.mongodb_server.url
         return
