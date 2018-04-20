@@ -247,7 +247,7 @@ class MongoDBReplicaSetManager(models.Manager):
         optional_settings = ['port']
         replica_settings = self.get_replica_set_settings()
         for setting in replica_settings:
-            if not setting in optional_settings and replica_settings[setting] is None:
+            if setting not in optional_settings and replica_settings[setting] is None:
                 logger.error(
                     "Error creating the default servers for the replica set, please ensure that"
                     " all needed settings are configured."
