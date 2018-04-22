@@ -11,7 +11,7 @@ jobs:
           TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
       - image: redis
       - image: mongo
-      - image: mysql
+      - image: "circleci/mysql:5"
         environment:
           MYSQL_ALLOW_EMPTY_PASSWORD: True
       - image: circleci/postgres:10.1-alpine
