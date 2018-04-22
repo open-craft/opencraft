@@ -646,6 +646,50 @@ class OpenEdXInstanceTestCase(TestCase):
             server = OpenStackServer.objects.get(id=appserver.server.pk)
             self.assertEqual(server.status, expected_server_status)
 
+    def test_first_activated(self):
+        """
+        Test that the ``first_activated`` property correctly fetches the ``last_activated``
+        time for the first ``AppServer`` to activate.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
+        reference_date = timezone.now()
+
+        # If there are no ``AppServer``s associated with the instance, the
+        # ``first_activated`` property should be ``None``
+        self.assertEqual(instance.first_activated, None)
+
+        appserver_1 = self._create_running_appserver(instance)
+        appserver_2 = self._create_running_appserver(instance)
+        appserver_3 = self._create_running_appserver(instance)
+
+        # If there are no active ``AppServer``s associated with the instance,
+        # the ``first_activated`` property should be ``None``
+        self.assertEqual(instance.first_activated, None)
+
+        # Test the presence of a single active ``AppServer``
+        with freeze_time(reference_date):
+            appserver_1.is_active = True
+            appserver_1.save()
+        self.assertEqual(instance.first_activated, appserver_1.last_activated)
+
+        # Test multiple active ``AppServer``s
+        with freeze_time(reference_date - timedelta(days=1)):
+            appserver_2.is_active = True
+            appserver_2.save()
+        self.assertEqual(instance.first_activated, appserver_2.last_activated)
+
+        # The oldest activation time should be returned
+        with freeze_time(reference_date - timedelta(hours=1)):
+            appserver_3.is_active = True
+            appserver_3.save()
+        self.assertEqual(instance.first_activated, appserver_2.last_activated)
+
+        # Terminated ``AppServer``s should still be included
+        appserver_2._status_to_terminated()
+        self.assertEqual(instance.first_activated, appserver_2.last_activated)
+
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
@@ -888,6 +932,12 @@ class OpenEdXInstanceTestCase(TestCase):
         with self.assertRaisesRegex(AttributeError, msg):
             instance.shut_down()
 
+
+@ddt.ddt
+class OpenEdXInstanceDNSTestCase(TestCase):
+    """
+    DNS-related test cases for OpenEdXInstance models
+    """
     def _verify_vm_dns_records(self, domain, active_vm_ips):
         """
         Helper function to verify a set of DNS records for active VMs.

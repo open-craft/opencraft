@@ -63,7 +63,9 @@ class InstanceReference(TimeStampedModel):
     is_archived = models.BooleanField(default=False, help_text=(
         "When this Instance is no longer needed, it is shut down and marked as archived. "
         "Archived instances do not appear in the list of instances, but their data, "
-        "logs, and settings are preserved (including e.g. all MySQL and MongoDB data)."
+        "logs, and settings are preserved (including e.g. all MySQL and MongoDB data).<br/>"
+        "<strong>Note: You currently cannot archive an instance from the admin panel. You can "
+        "however un-archive an instance that was already archived.</strong>"
     ))
 
     class Meta:

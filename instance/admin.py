@@ -23,6 +23,7 @@ Admin for the instance app
 # Imports #####################################################################
 
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericStackedInline
 from django_extensions.db.fields.json import JSONField
 
 from instance.models.database_server import MySQLServer, MongoDBServer
@@ -51,13 +52,36 @@ class InstanceReferenceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstr
     list_display = ('id', 'instance', 'created', 'modified')
 
 
+class InlineInstanceReferenceAdmin(GenericStackedInline):  # pylint: disable=missing-docstring
+    model = InstanceReference
+    ct_field = 'instance_type'
+    ct_fk_field = 'instance_id'
+    max_num = 1
+    can_delete = False
+
+
 class InstanceTagAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('id', 'name', 'description')
 
 
 class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('internal_lms_domain', 'name', 'created', 'modified')
+    list_display = ('internal_lms_domain', 'name', 'created', 'modified',
+                    'successfully_provisioned')
+    search_fields = ('internal_lms_domain',)
     formfield_overrides = {JSONField: {'widget': JSONWidget}}
+    inlines = [
+        InlineInstanceReferenceAdmin,
+    ]
+
+    def get_inline_instances(self, request, obj=None):
+        """
+        Hides inlines while creating ``OpenEdXInstance``.
+        """
+        # Doesn't show the inline instance for new objects since we have custom
+        # logic for creating InstanceReference objects
+        if obj is None or obj.pk is None:
+            self.inlines = []
+        return super().get_inline_instances(request, obj)
 
 
 class OpenEdXAppServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
