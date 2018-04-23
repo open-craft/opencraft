@@ -11,9 +11,12 @@
   roles:
     - name: common-server
       COMMON_SERVER_NO_BACKUPS: true    # The instance manager VM is stateless
+      COMMON_SERVER_INSTALL_NODE_EXPORTER: false
       UNATTENED_UPGRADES_ERRORS_RELAY_TO: "{{ inventory_hostname }}"
     - name: forward-server-mail
       FORWARD_MAIL_MYDOMAIN: "{{ inventory_hostname }}"
       when: vagrant_mode is undefined or not vagrant_mode
     - opencraft
-    - consul
+    - name: node-exporter
+      NODE_EXPORTER_SSL_CERT: /etc/ssl/certs/ssl-cert.pem
+      NODE_EXPORTER_SSL_KEY: /etc/ssl/private/ssl-cert.key
