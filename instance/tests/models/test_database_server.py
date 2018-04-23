@@ -255,7 +255,7 @@ class MongoDBReplicaSetManagerTest(TestCase):
         """
         Test that `select_random` returns DoesNotExist when one of the settings is not configured
         """
-        with self.assertRaises(MongoDBReplicaSet.DoesNotExist):
+        with self.assertRaises(ImproperlyConfigured):
             MongoDBReplicaSet.objects.select_random()
         self.assertLogs("instance.models.database_server", "ERROR")
 
@@ -400,28 +400,6 @@ class DatabaseServerManagerTest(TestCase):
         # Number of database servers should not have changed
         self.assertEqual(MySQLServer.objects.count(), 1)
         self.assertEqual(MongoDBServer.objects.count(), 1)
-
-        # Log entries should contain two warnings about existing servers with different settings
-        log_entries = LogEntry.objects.all()
-        mysql_warning = (
-            'DatabaseServer for {hostname} already exists, '
-            'and its settings do not match the Django settings'.format(hostname=mysql_hostname)
-        )
-        if mysql_hostname == mongodb_hostname:
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mysql_warning in log_entry.text
-            ]), 2)
-        else:
-            mongodb_warning = (
-                'DatabaseServer for {hostname} already exists, '
-                'and its settings do not match the Django settings'.format(hostname=mongodb_hostname)
-            )
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mysql_warning in log_entry.text
-            ]), 1)
-            self.assertEqual(len([
-                log_entry for log_entry in log_entries if mongodb_warning in log_entry.text
-            ]), 1)
 
     def test__create_default_ignores_name(self):
         """

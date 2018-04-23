@@ -10,8 +10,6 @@ import instance.models.mixins.database
 
 class Migration(migrations.Migration):
 
-    replaces = [('instance', '0101_auto_20180418_1601'), ('instance', '0102_auto_20180419_1648'), ('instance', '0103_auto_20180420_1600')]
-
     dependencies = [
         ('instance', '0100_decline_new_clients_backends_default'),
     ]

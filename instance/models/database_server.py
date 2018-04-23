@@ -52,20 +52,21 @@ class DatabaseServerManager(SharedServerManager):
     """
     Custom manager for the DatabaseServer model.
     """
+
+    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+        """
+        Return extra attributes needed for database creation
+        """
+        return {}
+
     def create_database_server(self, host=None, user=None, password=None, port=None,
                                primary=None, replica_set=None):
         """
         Create MongoDB server
         """
         logger.info("Creating DatabaseServer %s", host)
-        extra_args = {}
-        if self.model._meta.model_name == 'mongodbserver':
-            primary = host == primary
-            extra_args = dict(
-                replica_set=replica_set,
-                primary=primary
-            )
-        database_server, created = self.get_or_create(
+        extra_args = self.extra_args(host, primary, replica_set)
+        self.update_or_create(
             hostname=host,
             defaults=dict(
                 name=host,
@@ -76,15 +77,6 @@ class DatabaseServerManager(SharedServerManager):
                 **extra_args
             ),
         )
-        if not created and not database_server.settings_match(user, password, port):
-            logger.warning(
-                "DatabaseServer for %s already exists, and its settings do not match "
-                "the Django settings: %s vs %s, %s vs %s, %s vs %s",
-                host,
-                database_server.username, user,
-                database_server.password, password,
-                database_server.port, port,
-            )
 
     def _create_default(self):
         """
@@ -217,33 +209,43 @@ class MongoDBReplicaSetManager(models.Manager):
     """
     Custom manager for the DatabaseServer model.
     """
-    def extra_args(self, host, primary):
+    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+        """
+        Return extra attributes needed for database creation
+        """
         primary = host == primary
-        extra_args = dict(
+        return dict(
             replica_set=replica_set,
             primary=primary
         )
+
     def _get_setting(self, field):
         """
         Get setting using prefix
         """
         return getattr(
             settings,
-            self.model.DEFAULT_SETTINGS_NAME + '_' + field,
+            self._get_setting_name(field),
             None
         )
+
+    def _get_setting_name(self, field):
+        """
+        Get setting name for field
+        """
+        return self.model.DEFAULT_SETTINGS_NAME + '_' + field.upper()
 
     def get_replica_set_settings(self):
         """
         Create dictionary with replica settings
         """
         return {
-            'user': self._get_setting('USER'),
-            'password': self._get_setting('PASSWORD'),
-            'name': self._get_setting('NAME'),
-            'primary': self._get_setting('PRIMARY'),
-            'hosts': self._get_setting('HOSTS'),
-            'port': self._get_setting('PORT')
+            'user': self._get_setting('user'),
+            'password': self._get_setting('password'),
+            'name': self._get_setting('name'),
+            'primary': self._get_setting('primary'),
+            'hosts': self._get_setting('hosts'),
+            'port': self._get_setting('port')
         }
 
     def _create_default(self):
@@ -255,8 +257,8 @@ class MongoDBReplicaSetManager(models.Manager):
         for setting in replica_settings:
             if setting not in optional_settings and replica_settings[setting] is None:
                 raise ImproperlyConfigured(
-                    "Error creating the default servers for the replica set, please ensure that"
-                    " all needed settings are configured."
+                    "Error creating the default servers for the replica set, please set"
+                    " {}.".format(self._get_setting_name(setting))
                 )
         replica_set_hosts = [host.strip() for host in replica_settings['hosts'].split(',')]
         replica_set, _ = self.get_or_create(name=replica_settings['name'])
@@ -286,6 +288,7 @@ class MongoDBReplicaSetManager(models.Manager):
                 accepts_new_clients=True,
                 primary=True
             ).distinct().select_related('replica_set')
+            logger.error(mongodb_servers)
             count = mongodb_servers.count()
             if not count:
                 raise self.model.DoesNotExist(
@@ -322,6 +325,21 @@ class MongoDBReplicaSet(TimeStampedModel):
         )
 
 
+class MongoDBServerManager(DatabaseServerManager):
+    """
+    MongoDB Server Manager
+    """
+    def extra_args(self, host, primary, replica_set):
+        """
+        Return extra attributes needed for database creation
+        """
+        primary = host == primary
+        return dict(
+            replica_set=replica_set,
+            primary=primary
+        )
+
+
 class MongoDBServer(DatabaseServer):
     """
     MongoDBServer: Represents a MongoDB server to be used by one or more instances.
@@ -342,6 +360,8 @@ class MongoDBServer(DatabaseServer):
             "only applies when replica_set is set."
         )
     )
+
+    objects = MongoDBServerManager()
 
     class Meta:
         verbose_name = 'MongoDB server'
