@@ -221,6 +221,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
+    INVENTORY_GROUP = 'openedx-app'
     CONFIGURATION_PLAYBOOK = 'playbooks/edx_sandbox.yml'
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
@@ -229,8 +230,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_storage_settings',
         'configuration_theme_settings',
         'configuration_secret_keys',
-        # The extra settings should stay at the end of this list to allow manual overrides of all
-        # settings.
+        # The extra settings should stay at the end of this list to allow manual overrides of all settings.
         'configuration_extra_settings',
     ]
 
@@ -291,11 +291,10 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Get the ansible playbooks used to provision this AppServer
         """
-        playbooks = super().get_playbooks()
-        playbooks.append(self.default_playbook())
+        playbooks = [self.default_playbook()]
         if self.lms_users.count():
             playbooks.append(self.lms_user_creation_playbook())
-        return playbooks
+        return playbooks + super().get_playbooks()
 
     def create_configuration_settings(self):
         """

@@ -78,4 +78,4 @@ jobs:
           name: Cleanup
           command: make test.integration_cleanup
           no_output_timeout: 20m
-
+          when: always

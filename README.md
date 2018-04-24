@@ -395,6 +395,21 @@ Required settings:
   Synthetics availability monitoring will be enabled. Downtime alerts are sent
   to the email addresses in `ADMINS`.
 
+## Prometheus settings
+
+* `NODE_EXPORTER_PASSWORD`: The basic auth password needed to access the node exporter.
+
+## Consul settings
+
+* `CONSUL_ENCRYPT`: The encryption key used to gossip in a Consul cluster.
+* `CONSUL_SERVERS`: The list of server agents in the Consul cluster.
+
+## Filebeat settings
+
+* `FILEBEAT_LOGSTASH_HOSTS`: The Logstash host to forward logs to.
+* `FILEBEAT_CA_CERT_URL`: The URL to retrieve the public CA certificate from.
+* `FILEBEAT_COMMON_PROSPECTOR_FIELDS`: Common fields for all Filebeat prospectors.
+
 ### Sandbox settings
 
 * `OPENSTACK_SANDBOX_FLAVOR`: A json string specifying the instance flavor to use

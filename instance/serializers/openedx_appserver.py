@@ -46,6 +46,7 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
             'configuration_database_settings',
             'configuration_storage_settings',
             'configuration_theme_settings',
+            'common_configuration_settings',
             'configuration_settings',
             'instance',
             'server',
