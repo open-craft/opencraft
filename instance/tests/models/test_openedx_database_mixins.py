@@ -496,6 +496,24 @@ class MongoDBInstanceTestCase(TestCase):
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
 
+    @override_settings(
+        DEFAULT_INSTANCE_MONGO_URL=None,
+        DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+        DEFAULT_MONGO_REPLICA_SET_USER="test",
+        DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+        DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+        DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+    )
+    def test__get_main_database_url(self):
+        """
+        Main database url should be extracted from primary replica set MongoDBServer
+        """
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.assertEqual(
+            self.instance._get_main_database_url(),
+            "mongodb://test:test@test.opencraft.hosting"
+        )
+
 
 @ddt.ddt
 class RabbitMQInstanceTestCase(TestCase):
