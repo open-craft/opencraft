@@ -115,6 +115,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         stat_result = stat_container(instance.swift_container_name)
         self.assertEqual(stat_result.read_acl, '.r:*')
+        # This will make the tests fail and hopefully AWS will be cleaned up after the test failure
+        self.assertEqual(100, 0)
 
     def assert_secret_keys(self, instance, appserver):
         """
