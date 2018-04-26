@@ -76,6 +76,8 @@ jobs:
             ANSIBLE_HOST_KEY_CHECKING: False
       - run:
           name: Cleanup
-          command: make test.integration_cleanup
+          command: |
+            . venv/bin/activate
+            make test.integration_cleanup
           no_output_timeout: 20m
           when: always
