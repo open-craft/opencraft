@@ -21,13 +21,11 @@ Vagrant.configure(2) do |config|
   config.ssh.forward_x11 = true
 
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "deploy/opencraft.yml"
-    ansible.raw_arguments = ["--extra-vars", "@deploy/vagrant_vars.yml"]
-    ["deploy/private.yml", "private.yml"].each { |private_vars_file|
-        if FileTest.exists?(private_vars_file)
-          ansible.raw_arguments << "--extra-vars" << ("@" + private_vars_file)
-        end
-    }
+    ansible.playbook = "deploy/playbooks/ocim-vagrant.yml"
+    private_vars_file = "private.yml"
+    if FileTest.exists?(private_vars_file)
+      ansible.raw_arguments = ["--extra-vars", "@" + private_vars_file]
+    end
   end
 
   config.vm.provider :virtualbox do |vb|
@@ -35,5 +33,7 @@ Vagrant.configure(2) do |config|
     # Allow DNS to work for Ubuntu host
     # http://askubuntu.com/questions/238040/how-do-i-fix-name-service-for-vagrant-client
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
   end
 end
