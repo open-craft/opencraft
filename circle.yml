@@ -74,8 +74,8 @@ jobs:
           no_output_timeout: 47m
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
+            ANSIBLE_PIPELINING: True
       - run:
           name: Cleanup
           command: make test.integration_cleanup
           no_output_timeout: 20m
-
