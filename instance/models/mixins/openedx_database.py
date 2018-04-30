@@ -378,7 +378,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             # Forum doesn't support replicasets, so just use primary host
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
-            "FORUM_MONGO_HOSTS": [primary_mongodb_server.host],
+            "FORUM_MONGO_HOSTS": [primary_mongodb_server.hostname],
             "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
             "FORUM_REBUILD_INDEX": True
