@@ -353,29 +353,32 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         Return dictionary of mongodb settings
         """
         extra_settings = {}
-        if self.mongodb_replica_set:
-            mongodb_servers = MongoDBServer.objects.filter(
-                replica_set=self.mongodb_replica_set
-            )
-            mongodb_servers_list = list(mongodb_servers.all().values_list('hostname', flat=True))
-            primary_mongodb_server = mongodb_servers.filter(primary=True)[0]
+        primary_mongodb_server = self.primary_mongodb_server
+
+        # Ginkgo (and previous) releases do not support replicasets, and require a list of hostnames.
+        if "ginkgo" in self.openedx_release or "ficus" in self.openedx_release:
+            edxapp_mongo_hosts = [primary_mongodb_server.hostname]
+
+        # Replicasets are supported by post-Ginkgo releases, and require a comma-separated string of hostnames.
+        elif self.mongodb_replica_set:
+            edxapp_mongo_hosts = ",".join(self.mongodb_servers.values_list('hostname', flat=True))
             extra_settings = {
                 "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name
             }
-        elif self.mongodb_server:
-            primary_mongodb_server = self.mongodb_server
-            mongodb_servers_list = [self.mongodb_server.hostname]
+        # If no replicaset is configured, use just the primary hostname
+        else:
+            edxapp_mongo_hosts = primary_mongodb_server.hostname
+
         settings = {
             "EDXAPP_MONGO_USER": self.mongo_user,
             "EDXAPP_MONGO_PASSWORD": self.mongo_pass,
-            "EDXAPP_MONGO_HOSTS": mongodb_servers_list,
+            "EDXAPP_MONGO_HOSTS": edxapp_mongo_hosts,
             "EDXAPP_MONGO_PORT": primary_mongodb_server.port,
             "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
-
+            # Forum doesn't support replicasets, so just use primary host
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
-            # search for all servers in MongoDBServer(replica_set=...)
-            "FORUM_MONGO_HOSTS": mongodb_servers_list,
+            "FORUM_MONGO_HOSTS": [primary_mongodb_server.host],
             "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
             "FORUM_REBUILD_INDEX": True

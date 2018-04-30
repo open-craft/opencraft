@@ -287,18 +287,36 @@ class MongoDBInstanceMixin(models.Model):
         """
         return NotImplementedError
 
-    def _get_main_database_url(self):
+    @property
+    def mongodb_servers(self):
         """
-        Returns main database url from replica set, or url from signle server
+        Return all mongodb servers, or just the primary(s) if requested.
+
+        If no replicaset configured, this is just the single mongodb server.
         """
         if self.mongodb_replica_set:
-            return MongoDBServer.objects.get(
+            mongodb_servers = MongoDBServer.objects.filter(
                 replica_set=self.mongodb_replica_set,
-                primary=True
-            ).url
-        if self.mongodb_server:
-            return self.mongodb_server.url
-        return
+            )
+        else:
+            mongodb_servers = [self.mongodb_server]
+        return mongodb_servers
+
+    @property
+    def primary_mongodb_server(self):
+        """
+        Returns the primary (or single) mongodb server.
+        """
+        mongodb_servers = self.mongodb_servers
+        if self.mongodb_replica_set:
+            mongodb_servers = mongodb_servers.filter(primary=True)
+        return mongodb_servers[0]
+
+    def _get_main_database_url(self):
+        """
+        Returns main database url from replica set, or url from single server
+        """
+        return self.primary_mongodb_server.url
 
     def provision_mongo(self):
         """
