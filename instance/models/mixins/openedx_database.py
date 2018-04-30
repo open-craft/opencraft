@@ -23,7 +23,6 @@ import hashlib
 import hmac
 import yaml
 
-from instance.models.database_server import MongoDBServer
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
 
@@ -354,10 +353,11 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         extra_settings = {}
         primary_mongodb_server = self.primary_mongodb_server
+        edxapp_mongo_hosts = ''
 
         # Ginkgo (and previous) releases do not support replicasets, and require a list of hostnames.
         if "ginkgo" in self.openedx_release or "ficus" in self.openedx_release:
-            edxapp_mongo_hosts = [primary_mongodb_server.hostname]
+            edxapp_mongo_hosts = [primary_mongodb_server.hostname]  # pylint: disable=redefined-variable-type
 
         # Replicasets are supported by post-Ginkgo releases, and require a comma-separated string of hostnames.
         elif self.mongodb_replica_set:
