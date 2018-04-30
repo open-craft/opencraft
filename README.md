@@ -86,14 +86,15 @@ environment:
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 - [Ansible Download](http://docs.ansible.com/ansible/latest/intro_installation.html) 
 
-Once you have these tools installed, you will need to download the Ansible
-roles used to build the Vagrant instance. Run the following in the ``deploy``
-folder in directory where you have cloned Ocim:
+Once you have these tools installed, you will need to download the [Ansible
+playbooks](https://github.com/openc-craft/ansible-playbooks) used to build the
+Vagrant instance.  If you haven't checked it out yet, you can clone it into the
+`deploy/` subdirectory using this command at the root of the repository:
 
-    ansible-galaxy install -r requirements.yml
+    git clone https://github.com/open-craft/ansible-playbooks deploy
 
-After the roles are downloaded you can now go back up to the directory in which
-you cloned Ocim and run:
+If you already have a clone of that repo, you can also create a symlink `deploy`
+pointing to your clone.  Now you can run
 
     vagrant up
 

@@ -71,6 +71,7 @@ target/
 
 # Vagrant
 .vagrant/
+/deploy
 
 # Ansible
 *.retry
