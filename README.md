@@ -91,7 +91,7 @@ playbooks](https://github.com/openc-craft/ansible-playbooks) used to build the
 Vagrant instance.  If you haven't checked it out yet, you can clone it into the
 `deploy/` subdirectory using this command at the root of the repository:
 
-    git clone https://github.com/openc-craft/ansible-playbooks/deploy
+    git clone https://github.com/open-craft/ansible-playbooks deploy
 
 If you already have a clone of that repo, you can also create a symlink `deploy`
 pointing to your clone.  Now you can run
