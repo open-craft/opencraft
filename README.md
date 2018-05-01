@@ -84,7 +84,6 @@ environment:
  
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
-- [Ansible Download](http://docs.ansible.com/ansible/latest/intro_installation.html) 
 
 Once you have these tools installed, you will need to download the [Ansible
 playbooks](https://github.com/openc-craft/ansible-playbooks) used to build the
@@ -94,7 +93,17 @@ Vagrant instance.  If you haven't checked it out yet, you can clone it into the
     git clone https://github.com/open-craft/ansible-playbooks deploy
 
 If you already have a clone of that repo, you can also create a symlink `deploy`
-pointing to your clone.  Now you can run
+pointing to your clone.
+
+Create a new virtualenv to install the dependencies of the `ansible-playbooks`
+repository – most notably Ansible:
+
+    virtualenv ~/venvs/ansible    # Adjust the path, or use mkvirtualenv
+                                  # if you have virtualenvwrapper installed.
+    ~/venvs/ansible/bin/activate
+    pip install -r deploy/requirements.txt
+
+Now you can run
 
     vagrant up
 
