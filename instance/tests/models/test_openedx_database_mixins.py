@@ -468,12 +468,11 @@ class MongoDBInstanceTestCase(TestCase):
         ansible_vars = appserver.configuration_settings
         self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_HOSTS: &id001\n- mongo.opencraft.com', ansible_vars)
+        self.assertIn('EDXAPP_MONGO_HOSTS: mongo.opencraft.com', ansible_vars)
         self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
         self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_HOSTS: *id001', ansible_vars)
         self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 

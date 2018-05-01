@@ -316,7 +316,10 @@ class MongoDBInstanceMixin(models.Model):
         """
         Returns main database url from replica set, or url from single server
         """
-        return self.primary_mongodb_server.url
+        try:
+            return self.primary_mongodb_server.url
+        except AttributeError:
+            return None
 
     def provision_mongo(self):
         """
