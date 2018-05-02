@@ -468,12 +468,39 @@ class MongoDBInstanceTestCase(TestCase):
         ansible_vars = appserver.configuration_settings
         self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_HOSTS:\n- mongo.opencraft.com', ansible_vars)
+        self.assertIn('EDXAPP_MONGO_HOSTS: mongo.opencraft.com', ansible_vars)
         self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
         self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_HOSTS:\n- mongo.opencraft.com', ansible_vars)
+        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+
+    @override_settings(
+        DEFAULT_INSTANCE_MONGO_URL=None,
+        DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+        DEFAULT_MONGO_REPLICA_SET_USER="test",
+        DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+        DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+        DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+    )
+    def test_ansible_settings_mongo_replica_set(self):
+        """
+        Add mongo ansible vars if instance has a MongoDB replica set
+        """
+        # Delete MongoDBServer object created during the migrations to allow the settings override
+        # to take effect.
+        MongoDBServer.objects.all().delete()
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        appserver = make_test_appserver(self.instance)
+        ansible_vars = appserver.configuration_settings
+        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_HOSTS: test.opencraft.hosting', ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
+        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
         self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 
@@ -495,6 +522,24 @@ class MongoDBInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
+
+    @override_settings(
+        DEFAULT_INSTANCE_MONGO_URL=None,
+        DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+        DEFAULT_MONGO_REPLICA_SET_USER="test",
+        DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+        DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+        DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+    )
+    def test__get_main_database_url(self):
+        """
+        Main database url should be extracted from primary replica set MongoDBServer
+        """
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.assertEqual(
+            self.instance._get_main_database_url(),
+            "mongodb://test:test@test.opencraft.hosting"
+        )
 
 
 @ddt.ddt

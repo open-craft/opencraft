@@ -21,13 +21,13 @@ Instance app models - Database Server models
 """
 
 # Imports #####################################################################
-
 import logging
+import random
 from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import models
+from django.db import models, transaction
 from django_extensions.db.models import TimeStampedModel
 
 from instance.models.shared_server import SharedServerManager
@@ -47,10 +47,36 @@ MONGODB_SERVER_DEFAULT_PORT = 27017
 
 # Models ######################################################################
 
+
 class DatabaseServerManager(SharedServerManager):
     """
     Custom manager for the DatabaseServer model.
     """
+
+    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+        """
+        Return extra attributes needed for database creation
+        """
+        return {}
+
+    def create_database_server(self, host=None, user=None, password=None, port=None,
+                               primary=None, replica_set=None):
+        """
+        Create database server
+        """
+        logger.info("Creating DatabaseServer %s", host)
+        extra_args = self.extra_args(host, primary, replica_set)
+        self.update_or_create(
+            hostname=host,
+            defaults=dict(
+                name=host,
+                username=user,
+                password=password,
+                port=port,
+                accepts_new_clients=True,
+                **extra_args
+            ),
+        )
 
     def _create_default(self):
         """
@@ -71,26 +97,7 @@ class DatabaseServerManager(SharedServerManager):
                         setting_name=self.model.DEFAULT_SETTINGS_NAME
                     )
                 )
-            logger.info("Creating DatabaseServer %s", hostname)
-            database_server, created = self.get_or_create(
-                hostname=hostname,
-                defaults=dict(
-                    name=hostname,
-                    username=username,
-                    password=password,
-                    port=port,
-                    accepts_new_clients=True,
-                ),
-            )
-            if not created and not database_server.settings_match(username, password, port):
-                logger.warning(
-                    "DatabaseServer for %s already exists, and its settings do not match "
-                    "the Django settings: %s vs %s, %s vs %s, %s vs %s",
-                    hostname,
-                    database_server.username, username,
-                    database_server.password, password,
-                    database_server.port, port,
-                )
+            self.create_database_server(host=hostname, user=username, password=password, port=port)
 
 
 class DatabaseServer(ValidateModelMixin, TimeStampedModel):
@@ -198,12 +205,163 @@ class MySQLServer(DatabaseServer):
         return MYSQL_SERVER_DEFAULT_PORT
 
 
+class MongoDBReplicaSetManager(models.Manager):
+    """
+    Custom manager for the DatabaseServer model.
+    """
+    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+        """
+        Return extra attributes needed for database creation
+        """
+        primary = host == primary
+        return dict(
+            replica_set=replica_set,
+            primary=primary
+        )
+
+    def _get_setting(self, field):
+        """
+        Get setting using prefix
+        """
+        return getattr(
+            settings,
+            self._get_setting_name(field),
+            None
+        )
+
+    def _get_setting_name(self, field):
+        """
+        Get setting name for field
+        """
+        return self.model.DEFAULT_SETTINGS_NAME + '_' + field.upper()
+
+    def get_replica_set_settings(self):
+        """
+        Create dictionary with replica settings
+        """
+        return {
+            'user': self._get_setting('user'),
+            'password': self._get_setting('password'),
+            'name': self._get_setting('name'),
+            'primary': self._get_setting('primary'),
+            'hosts': self._get_setting('hosts'),
+            'port': self._get_setting('port')
+        }
+
+    def _create_default(self):
+        """
+        Create the default database replica set configured in the Django settings, if any.
+        """
+        optional_settings = ['port']
+        replica_settings = self.get_replica_set_settings()
+        for setting in replica_settings:
+            if setting not in optional_settings and replica_settings[setting] is None:
+                raise ImproperlyConfigured(
+                    "Error creating the default servers for the replica set, please set"
+                    " {}.".format(self._get_setting_name(setting))
+                )
+        replica_set_hosts = [host.strip() for host in replica_settings['hosts'].split(',')]
+        replica_set, _ = self.get_or_create(name=replica_settings['name'])
+        for host in replica_set_hosts:
+            MongoDBServer.objects.create_database_server(
+                host=host,
+                user=replica_settings['user'],
+                password=replica_settings['password'],
+                port=replica_settings['port'],
+                primary=replica_settings['primary'],
+                replica_set=replica_set
+            )
+
+    def select_random(self):
+        """
+        Select a replica set for a new instance.
+        The current implementation selects one of the replica sets with servers that accept new clients at random.
+        If no database server accepts new clients, DoesNotExist is raised.
+        """
+        self._create_default()
+
+        # The set of servers might change between retrieving the server count and retrieving the random server,
+        # so we make this atomic.
+        with transaction.atomic():
+            mongodb_servers = MongoDBServer.objects.filter(
+                replica_set__isnull=False,
+                accepts_new_clients=True,
+                primary=True
+            ).distinct().select_related('replica_set')
+            logger.error(mongodb_servers)
+            count = mongodb_servers.count()
+            if not count:
+                raise self.model.DoesNotExist(
+                    "No server from the replica sets configured accepts new clients."
+                )
+            return mongodb_servers[random.randrange(count)].replica_set
+
+
+class MongoDBReplicaSet(TimeStampedModel):
+    """
+    MongoDBServer: Represents a MongoDB Replica Set to be used by one or more instances.
+    """
+    DEFAULT_SETTINGS_NAME = 'DEFAULT_MONGO_REPLICA_SET'
+
+    # Human readable identifier for MongoDB Replica Sets
+    name = models.CharField(
+        max_length=250,
+        blank=True,
+        help_text='Must match name in replicaset_name on a MongoDB server.'
+    )
+    description = models.CharField(max_length=250, blank=True)
+    objects = MongoDBReplicaSetManager()
+
+    class Meta:
+        verbose_name = 'MongoDB Replica Set'
+
+    def __str__(self):
+        description = ''
+        if self.description:
+            description = ' ({description})'.format(description=self.description)
+        return '{name}{description}'.format(
+            name=self.name,
+            description=description
+        )
+
+
+class MongoDBServerManager(DatabaseServerManager):
+    """
+    MongoDB Server Manager
+    """
+    def extra_args(self, host, primary, replica_set):
+        """
+        Return extra attributes needed for database creation
+        """
+        primary = host == primary
+        return dict(
+            replica_set=replica_set,
+            primary=primary
+        )
+
+
 class MongoDBServer(DatabaseServer):
     """
     MongoDBServer: Represents a MongoDB server to be used by one or more instances.
     """
     # Name of Django setting specifying field defaults for MongoDB database server (in the form of a URL).
     DEFAULT_SETTINGS_NAME = "DEFAULT_INSTANCE_MONGO_URL"
+
+    replica_set = models.ForeignKey(
+        MongoDBReplicaSet,
+        null=True,
+        blank=True,
+        help_text="Replica Set to which the server belongs."
+    )
+    primary = models.BooleanField(
+        default=False,
+        help_text=(
+            "Indicates if the server is the primary server on a Replica Set, "
+            "only applies when replica_set is set."
+        )
+    )
+
+    objects = MongoDBServerManager()
 
     class Meta:
         verbose_name = 'MongoDB server'

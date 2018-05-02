@@ -27,12 +27,13 @@ import inspect
 import string
 import warnings
 
+from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 import MySQLdb as mysql
 import pymongo
 
-from instance.models.database_server import MySQLServer, MongoDBServer
+from instance.models.database_server import MySQLServer, MongoDBServer, MongoDBReplicaSet
 
 
 # Functions ###################################################################
@@ -136,7 +137,20 @@ def select_random_mongodb_server():
     """
     Helper for the field default of `mongodb_server`.
     """
-    return MongoDBServer.objects.select_random().pk
+    if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
+        return MongoDBServer.objects.select_random().pk
+    else:
+        return None
+
+
+def select_random_mongodb_replica_set():
+    """
+    Helper for the field default of `mongodb_server`.
+    """
+    if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
+        return None
+    else:
+        return MongoDBReplicaSet.objects.select_random().pk
 
 
 # Classes #####################################################################
@@ -240,7 +254,15 @@ class MongoDBInstanceMixin(models.Model):
         null=True,
         blank=True,
         default=select_random_mongodb_server,
-        on_delete=models.PROTECT,
+        on_delete=models.PROTECT
+    )
+
+    mongodb_replica_set = models.ForeignKey(
+        MongoDBReplicaSet,
+        null=True,
+        blank=True,
+        default=select_random_mongodb_replica_set,
+        on_delete=models.PROTECT
     )
 
     mongo_user = models.CharField(
@@ -265,12 +287,47 @@ class MongoDBInstanceMixin(models.Model):
         """
         return NotImplementedError
 
+    @property
+    def mongodb_servers(self):
+        """
+        Return all mongodb servers, or just the primary(s) if requested.
+
+        If no replicaset configured, this is just the single mongodb server.
+        """
+        if self.mongodb_replica_set:
+            mongodb_servers = MongoDBServer.objects.filter(
+                replica_set=self.mongodb_replica_set,
+            )
+        else:
+            mongodb_servers = [self.mongodb_server]
+        return mongodb_servers
+
+    @property
+    def primary_mongodb_server(self):
+        """
+        Returns the primary (or single) mongodb server.
+        """
+        mongodb_servers = self.mongodb_servers
+        if self.mongodb_replica_set:
+            mongodb_servers = mongodb_servers.filter(primary=True)
+        return mongodb_servers[0]
+
+    def _get_main_database_url(self):
+        """
+        Returns main database url from replica set, or url from single server
+        """
+        try:
+            return self.primary_mongodb_server.url
+        except AttributeError:
+            return None
+
     def provision_mongo(self):
         """
         Create mongo user and databases
         """
-        if self.mongodb_server:
-            mongo = pymongo.MongoClient(self.mongodb_server.url)
+        database_url = self._get_main_database_url()
+        if database_url:
+            mongo = pymongo.MongoClient(database_url)
             for database in self.mongo_database_names:
                 # May update the password if the user already exists
                 mongo[database].add_user(self.mongo_user, self.mongo_pass)
@@ -281,8 +338,9 @@ class MongoDBInstanceMixin(models.Model):
         """
         Drop Mongo databases.
         """
-        if self.mongodb_server and self.mongo_provisioned:
-            mongo = pymongo.MongoClient(self.mongodb_server.url)
+        database_url = self._get_main_database_url()
+        if database_url and self.mongo_provisioned:
+            mongo = pymongo.MongoClient(database_url)
             for database in self.mongo_database_names:
                 # Dropping a non-existing database is a no-op.  Users are dropped together with the DB.
                 mongo.drop_database(database)

@@ -26,7 +26,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
 from django_extensions.db.fields.json import JSONField
 
-from instance.models.database_server import MySQLServer, MongoDBServer
+from instance.models.database_server import MySQLServer, MongoDBServer, MongoDBReplicaSet
 from instance.models.instance import InstanceReference, InstanceTag
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
@@ -96,7 +96,14 @@ class MySQLServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
 
 
 class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
+    list_display = (
+        'name', 'description', 'hostname',
+        'port', 'username', 'password', 'primary'
+    )
+
+
+class MongoDBReplicaSetAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('name',)
 
 
 class RabbitMQServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
@@ -115,5 +122,6 @@ admin.site.register(OpenEdXInstance, OpenEdXInstanceAdmin)
 admin.site.register(OpenEdXAppServer, OpenEdXAppServerAdmin)
 admin.site.register(MySQLServer, MySQLServerAdmin)
 admin.site.register(MongoDBServer, MongoDBServerAdmin)
+admin.site.register(MongoDBReplicaSet, MongoDBReplicaSetAdmin)
 admin.site.register(RabbitMQServer, RabbitMQServerAdmin)
 admin.site.register(LoadBalancingServer, LoadBalancingServerAdmin)
