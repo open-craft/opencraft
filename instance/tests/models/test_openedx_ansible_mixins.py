@@ -51,7 +51,13 @@ class AnsibleAppServerTestCase(TestCase):
 
         appserver = make_test_appserver()
         appserver.provision()  # This is when the server gets created
-        self.assertEqual(appserver.inventory_str, '[app]\n192.168.100.200')
+        self.assertEqual(
+            appserver.inventory_str,
+            '[openedx-app]\n'
+            '192.168.100.200\n'
+            '[app:children]\n'
+            'openedx-app'
+        )
 
     @patch_services
     def test_inventory_str_no_server(self, mocks):
@@ -60,7 +66,7 @@ class AnsibleAppServerTestCase(TestCase):
         """
         appserver = make_test_appserver()
         with self.assertRaises(RuntimeError) as context:
-            self.assertEqual(appserver.inventory_str, '[app]\n')
+            print(appserver.inventory_str)
         self.assertEqual(str(context.exception), "Cannot prepare to run playbooks when server has no public IP.")
 
     @ddt.data(0, 1)
@@ -69,10 +75,9 @@ class AnsibleAppServerTestCase(TestCase):
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.inventory_str')
     @patch('instance.models.mixins.ansible.open_repository')
     def test_provisioning(
-            self, playbook_returncode, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams):
-        """
-        Test instance provisioning
-        """
+            self, playbook_returncode, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams
+    ):
+        """The appserver gets provisioned with the appropriate playbooks. Failure causes later playbooks to not run."""
         appserver = make_test_appserver()
         working_dir = '/cloned/configuration-repo/path'
         mock_open_repo.return_value.__enter__.return_value.working_dir = working_dir
@@ -86,6 +91,16 @@ class AnsibleAppServerTestCase(TestCase):
             vars_str=appserver.configuration_settings,
             playbook_path='{}/playbooks'.format(working_dir),
             playbook_name='edx_sandbox.yml',
+            username='ubuntu',
+        ), mock_run_playbook.mock_calls)
+
+        assert_func = self.assertIn if playbook_returncode == 0 else self.assertNotIn
+        assert_func(call(
+            requirements_path='{}/requirements.txt'.format(working_dir),
+            inventory_str=mock_inventory,
+            vars_str=appserver.create_common_configuration_settings(),
+            playbook_path='{}/playbooks'.format(working_dir),
+            playbook_name='appserver.yml',
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 

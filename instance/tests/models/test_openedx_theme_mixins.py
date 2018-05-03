@@ -108,13 +108,10 @@ class OpenEdXThemeMixinTestCase(TestCase):
             files = parsed_vars['SIMPLETHEME_STATIC_FILES_URLS']
             self.assertEqual(len(files), 2)
             logo, favicon = files
-            # URL is something like https://storage.gra1.cloud.ovh.net/v1/AUTH_d63f739f98604...
-            # ...cb799e584eebbb6057d/daniel_testing_file_uploads_from_ocim/opencraft_logo_small.png
-            ovh_url_prefix = r'https://storage\.[a-z0-9]+\.cloud\.ovh\.net/v1/AUTH_[a-z0-9]+/[^/]+/'
             self.assertEqual(logo['dest'], 'lms/static/images/logo.png')
             self.assertEqual(favicon['dest'], 'lms/static/images/favicon.ico')
-            self.assertRegex(logo['url'], '^{}opencraft_logo_small.png$'.format(ovh_url_prefix))
-            self.assertRegex(favicon['url'], '^{}favicon.ico$'.format(ovh_url_prefix))
+            self.assertIn('opencraft_logo_small.png', logo['url'])
+            self.assertIn('favicon.ico', favicon['url'])
 
     def test_simpletheme_optout(self):
         """

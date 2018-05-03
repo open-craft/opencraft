@@ -24,6 +24,7 @@ Instance app model mixins - Ansible
 
 from collections import namedtuple
 import os
+import yaml
 
 from django.conf import settings
 from django.db import models
@@ -47,20 +48,43 @@ class AnsibleAppServerMixin(models.Model):
     """
     An AppServer that relies on Ansible to deploy its services
     """
+
+    common_configuration_settings = models.TextField(
+        blank=True,
+        help_text='YAML variables for commonly needed services.')
+
+    INVENTORY_GROUP = 'generic'
+
     class Meta:
         abstract = True
 
-    def get_playbooks(self):  # pylint: disable=no-self-use
+    def get_playbooks(self):
         """
         Get a list of Playbook objects which describe the playbooks to run in order to install
         apps onto this AppServer.
 
         Subclasses should override this like:
-            return super().get_playbooks + [
+            return [
                 Playbook(source_repo="...", ...)
-            ]
+            ] + super().get_playbooks()
         """
-        return []
+        return [
+            Playbook(
+                source_repo=settings.ANSIBLE_APPSERVER_REPO,
+                requirements_path=settings.ANSIBLE_APPSERVER_REQUIREMENTS_PATH,
+                playbook_path=settings.ANSIBLE_APPSERVER_PLAYBOOK,
+                version=settings.ANSIBLE_APPSERVER_VERSION,
+                variables=self.create_common_configuration_settings(),
+            ),
+        ]
+
+    def create_common_configuration_settings(self):
+        """
+        Generate YML settings for common Ansible configuration.
+
+        Note that this will bring in all configuration the particular appserver has to offer.
+        """
+        return yaml.dump(self._get_common_configuration_variables(), default_flow_style=False)
 
     @property
     def inventory_str(self):
@@ -70,7 +94,12 @@ class AnsibleAppServerMixin(models.Model):
         public_ip = self.server.public_ip
         if public_ip is None:
             raise RuntimeError("Cannot prepare to run playbooks when server has no public IP.")
-        return '[app]\n{server_ip}'.format(server_ip=public_ip)
+        return (
+            '[{group}]\n'
+            '{server_ip}\n'
+            '[app:children]\n'
+            '{group}'.format(group=self.INVENTORY_GROUP, server_ip=public_ip)
+        )
 
     def _run_playbook(self, working_dir, playbook):
         """
@@ -102,3 +131,9 @@ class AnsibleAppServerMixin(models.Model):
         else:
             self.logger.info('Playbooks completed for AppServer %s', self)
         return (log, returncode)
+
+    def save(self, *args, **kwargs):
+        """Save this AnsibleAppServer."""
+        if not self.pk:
+            self.common_configuration_settings = self.create_common_configuration_settings()
+        super().save(*args, **kwargs)

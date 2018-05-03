@@ -6,16 +6,18 @@ Instance app model mixins - OpenEdX Instance Configuration
 
 from random import randint
 
-from django.db import models
 from django.conf import settings
+
+from instance.models.mixins.common_config import ConfigMixinBase
 
 
 # Classes #####################################################################
 
-class OpenEdXConfigMixin(models.Model):
+class OpenEdXConfigMixin(ConfigMixinBase):
     """
     Stores the instance configuration template for ansible variables
     """
+
     class Meta:
         abstract = True
 
@@ -232,9 +234,9 @@ class OpenEdXConfigMixin(models.Model):
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
 
             # Monitoring
-            "COMMON_ENABLE_NEWRELIC": True if settings.NEWRELIC_LICENSE_KEY else False,
-            "COMMON_ENABLE_NEWRELIC_APP": True if settings.NEWRELIC_LICENSE_KEY else False,
-            "NEWRELIC_LICENSE_KEY": settings.NEWRELIC_LICENSE_KEY if settings.NEWRELIC_LICENSE_KEY else "",
+            "COMMON_ENABLE_NEWRELIC": bool(settings.NEWRELIC_LICENSE_KEY),
+            "COMMON_ENABLE_NEWRELIC_APP": bool(settings.NEWRELIC_LICENSE_KEY),
+            "NEWRELIC_LICENSE_KEY": settings.NEWRELIC_LICENSE_KEY or "",
 
             # Discovery
             "SANDBOX_ENABLE_DISCOVERY": False, # set to true to enable discovery
@@ -311,3 +313,62 @@ class OpenEdXConfigMixin(models.Model):
             })
 
         return template
+
+    def _get_prometheus_variables(self):
+        """Get all Prometheus-related ansible variables specific to Open edX appservers."""
+        return {
+            **super()._get_prometheus_variables(),
+            'NODE_EXPORTER_NGINX_CONFIG_PATH': '/edx/app/nginx/sites-available/node-exporter',
+            'NODE_EXPORTER_HTPASSWD_PATH': '/edx/app/nginx/nginx.htpasswd',
+            'NODE_EXPORTER_USE_SSL': False,
+        }
+
+    def _get_consul_variables(self):
+        """Get all Consul-related ansible variables specific to Open edX appservers."""
+        return {
+            **super()._get_consul_variables(),
+            'consul_service_config': {
+                'service': [
+                    {
+                        "id": self.server_hostname,
+                        "name": "edxapp-{}".format(self.instance.id),
+                        "port": 80,
+                        "tags": ["edxapp"],
+                        "enable_tag_override": True,
+                    },
+                ]
+            }
+        }
+
+    def _get_filebeat_variables(self):
+        """Get all Filebeat-related ansible variables specific to Open edX appservers."""
+        return {
+            **super()._get_filebeat_variables(),
+            'filebeat_prospectors': [
+                {
+                    'fields': {
+                        'type': 'edxapp',
+                        'host': self.instance.domain,
+                    },
+                    'paths': [
+                        '/edx/var/log/*/edx.log',
+                        '/edx/var/log/nginx/*.log',
+                    ],
+                },
+                {
+                    'fields': {
+                        'type': 'edxapp',
+                        'host': self.instance.domain,
+                        'level': 'error',
+                    },
+                    'paths': [
+                        '/edx/var/log/*/edx.log'
+                    ],
+                    'multiline': {
+                        'pattern': '^Traceback',
+                        'match': 'after',
+                        'negate': True,
+                    }
+                },
+            ],
+        }

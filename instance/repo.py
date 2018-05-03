@@ -40,15 +40,16 @@ logger = logging.getLogger(__name__)
 @contextmanager
 def open_repository(repo_url, ref='master'):
     """
-    Get a `Git` object for a repository URL and switch it to the branch `ref`
+    Get a `Git` object for a repository URL and switch it to the reference `ref`.
 
-    Note that this clones the repository locally
+    Note that this clones the repository locally.
     """
     repo_dir_path = tempfile.mkdtemp()
     logger.info('Cloning repository %s (ref=%s) in %s...', repo_url, ref, repo_dir_path)
 
-    git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
-    g = git.Git(repo_dir_path)
-    g.checkout(ref)
-    yield g
+    # We can technically clone into a branch directly, but that wouldn't work for arbitrary references.
+    repo = git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
+    repo.git.checkout(ref)
+    repo.submodule_update()
+    yield repo.git
     shutil.rmtree(repo_dir_path)

@@ -365,29 +365,52 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Each entry here must have the keys defined in instance.openstack_utils.SecurityGroupRuleDefinition.
     # The following allows all egress traffic, and only allows ingress on ports 22, 80, and 443
     {
-        "direction": "egress", "ether_type": "IPv4", "protocol": None,
-        "port_range_min": None, "port_range_max": None,
-        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None
+        "direction": "egress",
+        "ether_type": "IPv4",
+        "protocol": None,
+        "port_range_min": None,
+        "port_range_max": None,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None
     },
     {
-        "direction": "egress", "ether_type": "IPv6", "protocol": None,
-        "port_range_min": None, "port_range_max": None,
-        "remote_ip_prefix": "::/0", "remote_group_id": None,
+        "direction": "egress",
+        "ether_type": "IPv6",
+        "protocol": None,
+        "port_range_min": None,
+        "port_range_max": None,
+        "remote_ip_prefix": "::/0",
+        "remote_group_id": None,
     },
+    # SSH
     {
-        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
-        "port_range_min": 22, "port_range_max": 22,
-        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "tcp",
+        "port_range_min": 22,
+        "port_range_max": 22,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
     },
+    # HTTP
     {
-        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
-        "port_range_min": 80, "port_range_max": 80,
-        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "tcp",
+        "port_range_min": 80,
+        "port_range_max": 80,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
     },
+    # HTTPS
     {
-        "direction": "ingress", "ether_type": "IPv4", "protocol": "tcp",
-        "port_range_min": 443, "port_range_max": 443,
-        "remote_ip_prefix": "0.0.0.0/0", "remote_group_id": None,
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "tcp",
+        "port_range_min": 443,
+        "port_range_max": 443,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
     },
     {
         "direction": "ingress",
@@ -407,6 +430,36 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
         "remote_ip_prefix": "::/0",
         "remote_group_id": None,
     },
+    # Consul (TCP)
+    {
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "tcp",
+        "port_range_min": 8300,
+        "port_range_max": 8302,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
+    },
+    # Consul (UDP)
+    {
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "udp",
+        "port_range_min": 8300,
+        "port_range_max": 8302,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
+    },
+    # Prometheus Node Exporter
+    {
+        "direction": "ingress",
+        "ether_type": "IPv4",
+        "protocol": "tcp",
+        "port_range_min": 19100,
+        "port_range_max": 19100,
+        "remote_ip_prefix": "0.0.0.0/0",
+        "remote_group_id": None,
+    },
 ]
 
 # Ansible #####################################################################
@@ -419,6 +472,18 @@ ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=1500)  # 25 minut
 
 # Timeout in seconds for an entire Ansible playbook.
 ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 hours
+
+# The repository to pull the default Ansible playbook from.
+ANSIBLE_APPSERVER_REPO = env('ANSIBLE_APPSERVER_REPO', default='https://github.com/open-craft/ansible-playbooks.git')
+
+# The path to the common appserver playbook to run on all appservers.
+ANSIBLE_APPSERVER_PLAYBOOK = env('ANSIBLE_APPSERVER_PLAYBOOK', default='playbooks/appserver.yml')
+
+# The path to the requirements file for the common appserver playbook.
+ANSIBLE_APPSERVER_REQUIREMENTS_PATH = env('ANSIBLE_APPSERVER_REQUIREMENTS_PATH', default='requirements.txt')
+
+# The version of the Ansible playbook repository to checkout.
+ANSIBLE_APPSERVER_VERSION = env('ANSIBLE_APPSERVER_VERSION', default='master')
 
 # Emails ######################################################################
 
@@ -578,6 +643,8 @@ NEWRELIC_LICENSE_KEY = env('NEWRELIC_LICENSE_KEY', default=None)
 # with Synthetics
 NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 
+# The basic auth password needed to access the node exporter.
+NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default='set-me-please')
 
 # Load balancing ##############################################################
 
@@ -588,7 +655,9 @@ DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=Non
 LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
 PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
 
-# AWS. Must be set if SWIFT_ENABLE = False"
+# AWS #########################################################################
+
+# Must be set if `SWIFT_ENABLE = False`.
 
 # Permissions required for this account are:
 # iam:PutUserPolicy
@@ -602,3 +671,22 @@ AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default=None)
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default=None)
 AWS_S3_BUCKET_PREFIX = env('S3_BUCKET_PREFIX', default='ocim')
 AWS_IAM_USER_PREFIX = env('IAM_USER_PREFIX', default='ocim')
+
+# Consul ######################################################################
+
+# The encryption key used to gossip in a Consul cluster.
+CONSUL_ENCRYPT = env('CONSUL_ENCRYPT', default='')
+
+# The list of server agents in the Consul cluster.
+CONSUL_SERVERS = env.list('CONSUL_SERVERS', default=[])
+
+# Filebeat ####################################################################
+
+# The Logstash host to forward logs to.
+FILEBEAT_LOGSTASH_HOSTS = env.list('FILEBEAT_LOGSTASH_HOSTS', default=[])
+
+# The URL to retrieve the public CA certificate from.
+FILEBEAT_CA_CERT_URL = env('FILEBEAT_CA_CERT_URL', default='')
+
+# Common fields for all Filebeat prospectors.
+FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS', default={})
