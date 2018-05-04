@@ -166,6 +166,10 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
         env = dict(os.environ)
         env['TMPDIR'] = ansible_tmp_dir
 
+        # Disable SSH host key checking by Ansible – since IP addresses are constantly reused,
+        # changing host keys are expected.
+        env['ANSIBLE_HOST_KEY_CHECKING'] = 'false'
+
         yield subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
