@@ -216,8 +216,9 @@ class Command(BaseCommand):
             **instance_filter
         ).exclude(
             **instance_exclusion
-        ).exclude(
-            ref_set__is_archived=True
+        ).filter(
+            ref_set__is_archived=False,
+            successfully_provisioned=True,
         ).exclude(
             tags__in=[
                 self.ongoing_tag,

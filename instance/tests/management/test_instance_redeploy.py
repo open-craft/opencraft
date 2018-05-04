@@ -112,10 +112,14 @@ class InstanceRedeployTestCase(TestCase):
         """
         # Create test instances with known attributes, and mock out the appserver_set
         instances = {}
-        for label in 'ABCDEFG':
+        for label in 'ABCDEFGH':
 
             # Create an instance, with an appserver
-            instance = OpenEdXInstance.objects.create(sub_domain=label, openedx_release='z.1')
+            instance = OpenEdXInstance.objects.create(
+                sub_domain=label,
+                openedx_release='z.1',
+                successfully_provisioned=True
+            )
             appserver = make_test_appserver(instance)
 
             if success:
@@ -137,6 +141,10 @@ class InstanceRedeployTestCase(TestCase):
         # Archive Instance B, so it too won't match the filter
         instances['B']['instance'].ref.is_archived = True
         instances['B']['instance'].save()
+
+        # Pretend Instance H was never successfully provisioned, so it also won't match the filter.
+        instances['H']['instance'].successfully_provisioned = False
+        instances['H']['instance'].save()
 
         def _tag_instance(instance, tag_name):
             """
