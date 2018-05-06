@@ -67,7 +67,10 @@ def spawn_appserver(
         instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
         instance.logger.info('Spawning new AppServer, attempt %d of %d', i, num_attempts)
-        appserver_id = instance.spawn_appserver()
+        try:
+            appserver_id = instance.spawn_appserver()
+        except Exception:  # pylint: disable=broad-except
+            appserver_id = None
         if appserver_id:
             if failure_tag:
                 instance.tags.remove(failure_tag)
