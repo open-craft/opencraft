@@ -230,7 +230,7 @@ HUEY = {
     'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer': {'workers': 1, 'loglevel': logging.DEBUG},
+    'consumer': {'workers': 1, 'loglevel': logging.INFO},
 }
 
 
@@ -579,7 +579,7 @@ LOGGING = {
 
 if 'file' in HANDLERS:
     LOGGING['handlers']['file'] = {
-        'level': 'DEBUG',
+        'level': 'INFO',
         'class': 'opencraft.logging.GzipRotatingFileHandler',
         'filename': 'log/im.{}.log'.format(env('HONCHO_PROCESS_NAME', default='main')),
         'maxBytes': LOGGING_ROTATE_MAX_KBYTES * 1024,
