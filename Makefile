@@ -28,6 +28,8 @@ SHELL ?= /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
+GECKODRIVER_VERSION := 0.20.1
+GECKODRIVER_DOWNLOAD_URL := https://github.com/mozilla/geckodriver/releases/download/v$(GECKODRIVER_VERSION)/geckodriver-v$(GECKODRIVER_VERSION)-linux64.tar.gz
 
 # Parameters ##################################################################
 
@@ -61,6 +63,11 @@ install_system_db_dependencies: apt_get_update ## Install system-level DB depend
 
 install_system_dependencies: apt_get_update ## Install system-level dependencies from `debian_packages.lst`. Ignores comments.
 	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
+
+install_geckodriver:
+	wget -qO- $(GECKODRIVER_DOWNLOAD_URL) | tar xz -C /tmp/
+	sudo mv /tmp/geckodriver /usr/local/bin/geckodriver
+	chmod +x /usr/local/bin/geckodriver
 
 create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \

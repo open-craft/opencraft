@@ -126,7 +126,7 @@ requirements-detector==0.5.2
 responses==0.5.1
 rfc3986==0.4.1
 rjsmin==1.0.12
-selenium==2.53.6
+selenium==3.11.0
 setoptconf==0.2.0
 simplegeneric==0.8.1
 simplejson==3.10.0

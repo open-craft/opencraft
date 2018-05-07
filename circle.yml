@@ -59,6 +59,7 @@ jobs:
             sudo apt-get install mysql-client
             pip install -r requirements.txt
             sudo apt-get install postgresql-client
+            make install_geckodriver
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
           paths:
