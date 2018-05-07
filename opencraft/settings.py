@@ -644,7 +644,7 @@ NEWRELIC_LICENSE_KEY = env('NEWRELIC_LICENSE_KEY', default=None)
 NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 
 # The basic auth password needed to access the node exporter.
-NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default='set-me-please')
+NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default=None)
 
 # Load balancing ##############################################################
 
