@@ -58,10 +58,11 @@ jobs:
             pip install --upgrade virtualenv
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
-            wget -qO- "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" | tar xjv -C $HOME
             pip install -r requirements.txt
             sudo apt-get install postgresql-client
             make install_geckodriver
+            wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" -O /tmp/firefox.tar.bz2
+            tar xvf -C $HOME /tmp/firefox.tar.bz2
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
           paths:
