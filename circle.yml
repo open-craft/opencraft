@@ -19,7 +19,6 @@ jobs:
           PG_HOST: 127.0.0.1
           POSTGRES_USER: circleci
           POSTGRES_DB: circle_test
-          PATH: $HOME/firefox:$PATH
     parallelism: 4
     steps:
       - checkout
@@ -61,8 +60,8 @@ jobs:
             pip install -r requirements.txt
             sudo apt-get install postgresql-client
             make install_geckodriver
-            wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" -O /tmp/firefox.tar.bz2
-            tar xvf -C $HOME /tmp/firefox.tar.bz2
+            wget -qO- "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" | tar xjv -C $HOME
+            echo "export PATH=$HOME/firefox:$PATH" >> $BASH_ENV
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
           paths:
