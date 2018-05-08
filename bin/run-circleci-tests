@@ -3,7 +3,6 @@
 set -e
 
 make install_system_dependencies
-make install_geckodriver
 
 case $CIRCLE_NODE_INDEX in
     0)
