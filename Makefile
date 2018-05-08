@@ -27,7 +27,7 @@ WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
-RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
+RUN_JS_TESTS := xvfb-run --auto-servernum jasmine ci --logs --browser firefox
 GECKODRIVER_VERSION := 0.20.1
 GECKODRIVER_DOWNLOAD_URL := https://github.com/mozilla/geckodriver/releases/download/v$(GECKODRIVER_VERSION)/geckodriver-v$(GECKODRIVER_VERSION)-linux64.tar.gz
 
