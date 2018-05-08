@@ -19,6 +19,7 @@ jobs:
           PG_HOST: 127.0.0.1
           POSTGRES_USER: circleci
           POSTGRES_DB: circle_test
+          PATH: $HOME/firefox:$PATH
     parallelism: 4
     steps:
       - checkout
@@ -57,7 +58,7 @@ jobs:
             pip install --upgrade virtualenv
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
-            sudo apt-get --purge --reinstall install firefox
+            wget -qO- "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" | tar xjv -C $HOME
             pip install -r requirements.txt
             sudo apt-get install postgresql-client
             make install_geckodriver
