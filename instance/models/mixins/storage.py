@@ -215,7 +215,7 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create S3 Bucket if it doesn't exist
         """
-        if self.s3_access_key and self.s3_secret_access_key:
+        if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
             s3 = self.get_s3_connection()
             bucket = s3.create_bucket(self.s3_bucket_name)
             bucket.set_cors(get_s3_cors_config())
@@ -224,7 +224,7 @@ class S3BucketInstanceMixin(models.Model):
         """
         Deprovision S3 by deleting S3 bucket and IAM user
         """
-        if not(self.s3_access_key or self.s3_secret_access_key):
+        if not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
             return
         if self.s3_bucket_name:
             try:
