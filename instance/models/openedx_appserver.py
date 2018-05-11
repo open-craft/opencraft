@@ -21,6 +21,7 @@ Instance app models - Open EdX AppServer models
 """
 import yaml
 
+import requests
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -456,6 +457,10 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             """ Does server accept SSH commands? """
             return self.server.status.accepts_ssh_commands
 
+        def heartbeat_active():
+            """Is this server's /heartbeat returning 200s?"""
+            return requests.options('http://{}/heartbeat'.format(self.server.public_ip)).ok
+
         try:
             self.server.start(
                 security_groups=self.security_groups,
@@ -490,6 +495,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.logger.info('Rebooting server %s...', self.server)
             self.server.reboot()
             self.server.sleep_until(accepts_ssh_commands)
+            self.server.sleep_until(heartbeat_active)
 
             # Declare instance up and running
             self._status_to_running()
