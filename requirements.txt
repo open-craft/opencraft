@@ -52,7 +52,8 @@ ipython-genutils==0.1.0
 iso8601==0.1.11
 isort==4.2.5
 itsdangerous==0.24
-jasmine==3.1.0
+# Using master branch version that includes fix from PR#50, replace with v3.2 when released
+-e git+https://github.com/jasmine/jasmine-py.git@d26ce233d7ed8e9c636559e518efd9a9a8896167#egg=jasmine
 jasmine-core==3.1.0
 Jinja2==2.10
 jira==1.0.7

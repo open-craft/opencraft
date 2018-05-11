@@ -51,6 +51,7 @@ class BrowserTestMixin:
         except WebDriverException:
             time.sleep(1)
             self.client = webdriver.Firefox()
+        self.client.set_window_size(800, 600)
 
     def tearDown(self): # pylint: disable=invalid-name
         """
