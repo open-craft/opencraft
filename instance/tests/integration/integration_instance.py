@@ -385,12 +385,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
     @patch_git_checkout
-    def test_ansible_failignore(self, git_checkout, git_working_dir):
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
+    def test_ansible_failignore(self, heartbeat_active, git_checkout, git_working_dir):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
-
+        heartbeat_active.return_value = True
         instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failignore')
         with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failignore.yml"), \
                 self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
