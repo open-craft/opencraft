@@ -138,6 +138,23 @@ class SpawnAppServerTestCase(TestCase):
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
+    def test_num_attempts_successful(self):
+        """
+        Test that if num_attempts > 1, the spawn_appserver task will stop trying to provision
+        after a successful attempt.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        self.mock_spawn_appserver.return_value = 10  # Mock provisioning failure
+        tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
+
+        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        self.assertEqual(self.mock_make_appserver_active.call_count, 1)
+
+        self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
+        self.assertFalse(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
+        self.assertFalse(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
+
     def test_one_attempt_default(self):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning.

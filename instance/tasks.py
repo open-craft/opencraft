@@ -76,12 +76,13 @@ def spawn_appserver(
                 instance.tags.remove(failure_tag)
             if success_tag:
                 instance.tags.add(success_tag)
-            if mark_active_on_success and make_appserver_active(
+            if mark_active_on_success:
+                make_appserver_active(
                     appserver_id,
                     active=mark_active_on_success,
                     deactivate_others=deactivate_old_appservers
-            ):
-                break
+                )
+            break
     else:
         if failure_tag:
             instance.tags.add(failure_tag)

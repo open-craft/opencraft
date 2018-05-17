@@ -27,6 +27,7 @@ from unittest.mock import patch
 import ddt
 from rest_framework import status
 from django.conf import settings
+from instance.tasks import spawn_appserver
 
 from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -187,6 +188,23 @@ class OpenEdXAppServerAPITestCase(APITestCase):
 
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
+
+    @ddt.data(True, False)
+    @patch_gandi
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
+    @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
+    def test_spawn_appserver_break_on_success(self, mark_active, mock_run_playbook, mock_provision):
+        """
+        This test makes sure that upon a successful instance creation, further instances are not created
+        even when the num_attempts is more than 1.
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        self.assertEqual(instance.appserver_set.count(), 0)
+        self.assertFalse(instance.get_active_appservers().exists())
+
+        spawn_appserver(instance.ref.pk, mark_active_on_success=mark_active, num_attempts=4)
+        self.assertEqual(mock_provision.call_count, 1)
 
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
