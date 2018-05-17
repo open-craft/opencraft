@@ -282,6 +282,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # The certificate agent poll xqueue way too frequently for what we need by default (5 seconds).
             # Make it poll less.
             "CERTS_QUEUE_POLL_FREQUENCY": 60,
+
+            # Insights and analytics_api
+            "SANDBOX_ENABLE_ANALYTICS_API": False, # set to true to enable analytics_api
+            "SANDBOX_ENABLE_INSIGHTS": False # set to true to enable insights
         }
 
         if self.smtp_relay_settings:
