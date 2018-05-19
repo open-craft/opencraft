@@ -59,13 +59,16 @@ jobs:
             sudo apt-get install mysql-client
             pip install -r requirements.txt
             sudo apt-get install postgresql-client
-            make install_geckodriver
-            wget -qO- "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" | tar xjv -C $HOME
-            echo "export PATH=$HOME/firefox:$PATH" >> $BASH_ENV
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
           paths:
             - "venv"
+      - run:
+          name: Install Firefox and GeckoDriver
+          command: |
+            make install_geckodriver
+            wget -qO- "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-GB" | tar xjv -C $HOME
+            echo "export PATH=$HOME/firefox:$PATH" >> $BASH_ENV
       - run:
           name: Create Database
           command: make create_db
