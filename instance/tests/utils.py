@@ -144,7 +144,6 @@ def patch_services(func):
                 mock_disable_monitoring=stack_patch(
                     'instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring'
                 ),
-                mock_heartbeat_active=stack_patch('instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active')
             )
             stack.enter_context(patch_gandi())
             return func(self, mocks, *args, **kwargs)

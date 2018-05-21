@@ -20,7 +20,6 @@
 Instance app models - Open EdX AppServer models
 """
 import yaml
-import requests
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -428,13 +427,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         return '{}-{}'.format(self.server_name_prefix, slugify(self.name))
 
-    def heartbeat_active(self):
-        """Is this server's /heartbeat running ok (returning code < 400)"""
-        try:
-            return requests.options('http://{}/heartbeat'.format(self.server.public_ip)).ok
-        except requests.exceptions.ConnectionError:
-            return False
-
     @log_exception
     @AppServer.status.only_for(AppServer.Status.New)
     def provision(self):
@@ -497,7 +489,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.logger.info('Provisioning completed')
             self.logger.info('Rebooting server %s...', self.server)
             self.server.reboot()
-            self.server.sleep_until(self.heartbeat_active, timeout=1800)
+            self.server.sleep_until(accepts_ssh_commands)
 
             # Declare instance up and running
             self._status_to_running()
