@@ -22,6 +22,7 @@ Instance app model mixins - Database
 
 # Imports #####################################################################
 import json
+import time
 
 import boto
 
@@ -211,14 +212,31 @@ class S3BucketInstanceMixin(models.Model):
             self.s3_secret_access_key
         )
 
+    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=1):
+        """
+        Create bucket, retry up to defined attempts if it fails
+        """
+        time.sleep(retry_delay)
+        try:
+            s3 = self.get_s3_connection()
+            bucket = s3.create_bucket(self.s3_bucket_name)
+            bucket.set_cors(get_s3_cors_config())
+        except boto.exception.S3ResponseError:
+            if ongoing_attempt > attempts:
+                raise
+            self.logger.info(
+                'Retrying bucket creation. IAM keys are not propagated yet, attempt %s of %s.',
+                ongoing_attempt, attempts
+            )
+            ongoing_attempt += 1
+            self._create_bucket(attempts=attempts, ongoing_attempt=ongoing_attempt)
+
     def provision_s3(self):
         """
         Create S3 Bucket if it doesn't exist
         """
         if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
-            s3 = self.get_s3_connection()
-            bucket = s3.create_bucket(self.s3_bucket_name)
-            bucket.set_cors(get_s3_cors_config())
+            self._create_bucket()
 
     def deprovision_s3(self):
         """
