@@ -335,7 +335,7 @@ Permissions required for master AWS account are:
 * iam:DeleteUserPolicy
 
 Required settings:
-* `SWIFT_ENABLE`: Default is True, it should be set to False when using s3.
+* `INSTANCE_STORAGE_TYPE`: A choice between ('s3', 'swift', 'filesystem').
 * `AWS_ACCESS_KEY_ID`: AWS Access Key Id from account with accesses listed above.
 * `AWS_SECRET_ACCESS_KEY`: AWS Secret Key with accesses listed above.
 * `AWS_S3_BUCKET_PREFIX`: Prefix used for bucket naming (default: "ocim")
@@ -798,14 +798,14 @@ for appserver in instance.appserver_set.all():
 
 **To delete an instance in production**, use the `archive()` method. The `archive()`
 method will terminate all associated AppServers, remove DNS entries, disable monitoring,
-and remove instance from the UI, but will keep data in databases and SWIFT storage intact:
+and remove instance from the UI, but will keep data in databases and SWIFT/S3 storage intact:
 
 ```python
 instance.archive()
 ```
 
 **To completely delete an instance in development**, use the `delete()` method, which
-works just like `archive()` except that it also destroys all data (MySQL, mongo, SWIFT):
+works just like `archive()` except that it also destroys all data (MySQL, mongo, SWIFT/S3):
 
 ```python
 instance.delete()

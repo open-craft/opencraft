@@ -38,6 +38,7 @@ def make_test_appserver(instance=None, s3=False, server=None):
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
     if s3:
+        instance.storage_type = 's3'
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'

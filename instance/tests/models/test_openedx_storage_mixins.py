@@ -29,7 +29,7 @@ import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection
+from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -68,6 +68,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         AppServer
         """
         instance = OpenEdXInstanceFactory(
+            storage_type='s3',
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
@@ -82,6 +83,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         Test that get_storage_settings() does not include S3 vars when in ephemeral mode
         """
         instance = OpenEdXInstanceFactory(
+            storage_type='s3',
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
@@ -221,7 +223,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.check_swift(instance, create_swift_container)
 
     @patch('instance.openstack_utils.create_swift_container')
-    @override_settings(SWIFT_ENABLE=False)
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_swift_disabled(self, create_swift_container):
         """
         Verify disabling Swift provisioning works.
@@ -259,7 +261,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver)
 
-    @override_settings(SWIFT_ENABLE=False)
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_ansible_settings_swift_disabled(self):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
@@ -284,7 +286,8 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance, s3=True)
         self.check_ansible_settings(appserver, s3=True)
 
-    @override_settings(SWIFT_ENABLED=False, AWS_ACCESS_KEY='test', AWS_SECRET_ACCESS_KEY_ID='test')
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE, AWS_ACCESS_KEY='test',
+                       AWS_SECRET_ACCESS_KEY_ID='test')
     def test_get_s3_connection(self):
         """
         Test get_s3 connection returns right instance
@@ -318,6 +321,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 provisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = 's3'
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -331,6 +335,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 deprovisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = 's3'
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -348,6 +353,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         iam_connection = connect_iam()
         iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = 's3'
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -366,6 +372,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         s3_connection = s3_connection()
         s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = 's3'
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -394,6 +401,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         }
         connect_iam().create_access_key.return_value = access_keys
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = 's3'
         instance.create_iam_user()
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')

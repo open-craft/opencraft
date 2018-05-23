@@ -29,6 +29,7 @@ from django.conf import settings
 
 from instance import ansible
 from instance.models.database_server import MySQLServer, MongoDBServer
+from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -43,10 +44,11 @@ def _check_environment():
     """
     Check environment and report potential problems for production instances
     """
-    if not settings.SWIFT_ENABLE and not(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
+    if settings.INSTANCE_STORAGE_TYPE == StorageContainer.S3_STORAGE and \
+            not(settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY):
         logger.warning(
-            "Swift and AWS support is currently disabled. Add AWS_ACCESS_KEY_ID and "
-            "AWS_SECRET_ACCESS_KEY settings or adjust SWIFT_ENABLE setting."
+            "AWS support is currently enabled. Add AWS_ACCESS_KEY_ID and "
+            "AWS_SECRET_ACCESS_KEY settings or adjust INSTANCE_STORAGE_TYPE setting."
         )
         return
     if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:

@@ -55,6 +55,24 @@ def get_s3_cors_config():
 
 # Classes #####################################################################
 
+class StorageContainer(models.Model):
+    """
+    Base class selecting the storage type.
+    """
+    S3_STORAGE = 's3'
+    SWIFT_STORAGE = 'swift'
+    FILE_STORAGE = 'filesystem'
+
+    storage_type = models.CharField(
+        max_length=16,
+        blank=True,
+        default=default_setting("INSTANCE_STORAGE_TYPE")
+    )
+
+    class Meta:
+        abstract = True
+
+
 class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
@@ -99,7 +117,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Create the Swift containers if necessary.
         """
-        if settings.SWIFT_ENABLE:
+        if self.storage_type == self.SWIFT_STORAGE:
             for container_name in self.swift_container_names:
                 openstack_utils.create_swift_container(
                     container_name,
@@ -116,7 +134,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Delete the Swift containers.
         """
-        if settings.SWIFT_ENABLE and self.swift_provisioned:
+        if self.storage_type == self.SWIFT_STORAGE and self.swift_provisioned:
             for container_name in self.swift_container_names:
                 try:
                     openstack_utils.delete_swift_container(
@@ -215,7 +233,8 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create S3 Bucket if it doesn't exist
         """
-        if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
+        if self.storage_type == self.S3_STORAGE \
+                and self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
             s3 = self.get_s3_connection()
             bucket = s3.create_bucket(self.s3_bucket_name)
             bucket.set_cors(get_s3_cors_config())
@@ -224,7 +243,8 @@ class S3BucketInstanceMixin(models.Model):
         """
         Deprovision S3 by deleting S3 bucket and IAM user
         """
-        if not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
+        if not self.storage_type == self.S3_STORAGE or \
+                not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
             return
         if self.s3_bucket_name:
             try:
