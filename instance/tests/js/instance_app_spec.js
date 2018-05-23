@@ -316,7 +316,7 @@ describe('Instance app', function () {
 
         describe('$scope.refresh', function() {
             beforeEach(function() {
-                spyOn($scope, 'refresh').and.callThrough();
+                $scope.refresh = spyOn($scope, 'refresh').and.callThrough();
             });
 
             it('loads the AppServer details from the API on init', function() {
