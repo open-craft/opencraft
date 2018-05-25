@@ -233,11 +233,17 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create S3 Bucket if it doesn't exist
         """
-        if self.storage_type == self.S3_STORAGE \
-                and self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
-            s3 = self.get_s3_connection()
-            bucket = s3.create_bucket(self.s3_bucket_name)
-            bucket.set_cors(get_s3_cors_config())
+        if not self.storage_type == self.S3_STORAGE:
+            return
+
+        if not self.s3_bucket_name:
+            self.s3_bucket_name = self.bucket_name
+        if not self.s3_access_key and not self.s3_secret_access_key:
+            self.create_iam_user()
+
+        s3 = self.get_s3_connection()
+        bucket = s3.create_bucket(self.s3_bucket_name)
+        bucket.set_cors(get_s3_cors_config())
 
     def deprovision_s3(self):
         """

@@ -100,14 +100,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.edx_platform_commit = self.openedx_release
         if self.use_ephemeral_databases is None:
             self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
-        if not self.use_ephemeral_databases:
-            if self.storage_type is None:
-                self.storage_type = settings.INSTANCE_STORAGE_TYPE
-            if self.storage_type == self.S3_STORAGE:
-                if not self.s3_bucket_name:
-                    self.s3_bucket_name = self.bucket_name
-                if not self.s3_access_key and not self.s3_secret_access_key:
-                    self.create_iam_user()
+        if not self.use_ephemeral_databases and self.storage_type is None:
+            self.storage_type = settings.INSTANCE_STORAGE_TYPE
         super().save(**kwargs)
 
     def get_load_balancer_configuration(self, triggered_by_instance=False):

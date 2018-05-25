@@ -339,6 +339,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.provision_s3()
         instance.deprovision_s3()
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
