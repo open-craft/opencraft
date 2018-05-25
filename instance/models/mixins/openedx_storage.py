@@ -21,7 +21,6 @@ Open edX instance database mixin
 """
 import yaml
 
-from django.conf import settings
 from django.db import models
 
 from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, StorageContainer
