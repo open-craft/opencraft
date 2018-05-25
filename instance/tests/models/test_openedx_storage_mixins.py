@@ -321,7 +321,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 provisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.storage_type = 's3'
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -335,7 +335,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 deprovisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.storage_type = 's3'
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -354,7 +354,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         iam_connection = connect_iam()
         iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.storage_type = 's3'
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -373,7 +373,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         s3_connection = s3_connection()
         s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.storage_type = 's3'
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -402,7 +402,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         }
         connect_iam().create_access_key.return_value = access_keys
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
-        instance.storage_type = 's3'
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.create_iam_user()
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')
