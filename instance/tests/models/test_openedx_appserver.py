@@ -32,6 +32,8 @@ from django.test import override_settings
 from freezegun import freeze_time
 from pytz import utc
 import novaclient
+import requests
+import responses
 import yaml
 
 from instance.models.appserver import Status as AppServerStatus
@@ -674,3 +676,17 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(name, "debug.html")
         self.assertIn(exception_message, content)
         self.assertEqual(mime_type, "text/html")
+
+    @responses.activate
+    def test_hearbeat_active_succeeds(self):
+        """ Test that heartbeat_active method returns true when request to hearbeat is 200"""
+        appserver = make_test_appserver()
+        responses.add(responses.OPTIONS, 'http://{}/heartbeat'.format(appserver.server.public_ip), status=200)
+        self.assertTrue(appserver.heartbeat_active())
+
+    @patch('requests.options')
+    def test_heartbeat_active_fails(self, mock_requests_options):
+        """ Test that heartbeat_active method returns false when request to hearbeat fails"""
+        mock_requests_options.side_effect = requests.exceptions.ConnectionError()
+        appserver = make_test_appserver()
+        self.assertFalse(appserver.heartbeat_active())
