@@ -324,6 +324,30 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.provision_s3()
         create_bucket.assert_called_once_with(instance.s3_bucket_name)
 
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    def test__create_bucket_fails(self, create_bucket):
+        """
+        Test s3 provisioning fails on bucket creation, and retries up to 4 times
+        """
+        create_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        attempts = 4
+        with self.assertRaises(boto.exception.S3ResponseError):
+            with self.assertLogs('instance.models.instance', level='INFO') as cm:
+                instance._create_bucket(attempts=attempts)
+        base_log_text = (
+            'INFO:instance.models.instance:instance=%s (Test Instance 1) | Retrying bucket creation.'
+            ' IAM keys are not propagated yet, attempt {} of %s.' %
+            (instance.ref.pk, attempts)
+        )
+        self.assertEqual(
+            cm.output,
+            [base_log_text.format(i) for i in range(1, attempts + 1)]
+        )
+
     @patch('boto.connect_iam')
     @patch('boto.s3.connection.S3Connection')
     def test_deprovision_s3(self, s3_connection, iam_connection):
