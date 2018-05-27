@@ -262,7 +262,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
-        self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], True)
+        self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], False)
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC_APP'], True)
         self.assertEqual(configuration_vars['COMMON_ENVIRONMENT'], 'opencraft')
         self.assertEqual(configuration_vars['COMMON_DEPLOYMENT'], instance.internal_lms_domain)

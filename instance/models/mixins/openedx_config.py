@@ -234,7 +234,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
 
             # Monitoring
-            "COMMON_ENABLE_NEWRELIC": bool(settings.NEWRELIC_LICENSE_KEY),
+            "COMMON_ENABLE_NEWRELIC": False,
             "COMMON_ENABLE_NEWRELIC_APP": bool(settings.NEWRELIC_LICENSE_KEY),
             "NEWRELIC_LICENSE_KEY": settings.NEWRELIC_LICENSE_KEY or "",
 
@@ -245,6 +245,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "DISCOVERY_HOSTNAME": '~{}'.format(self.instance.discovery_domain_nginx_regex),
             "DISCOVERY_NGINX_PORT": 80,
             "DISCOVERY_SSL_NGINX_PORT": 443,
+
+            # RabbitMQ disabled locally
+            "SANBOX_ENABLE_RABBITMQ": False,
 
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
