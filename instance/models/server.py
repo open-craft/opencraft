@@ -199,7 +199,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
         """
         return 'server={} ({!s:.20})'.format(self.pk, self.name)
 
-    def sleep_until(self, condition, timeout=3600):
+    def sleep_until(self, condition, timeout=3600, steady_state_check=True):
         """
         Sleep in a loop until condition related to server status is fulfilled,
         or until timeout (provided in seconds) is reached.
@@ -231,7 +231,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
                 )
                 return
             else:
-                if self.status.is_steady_state:
+                if steady_state_check and self.status.is_steady_state:
                     raise SteadyStateException(
                         "The current status ({name}) does not fulfill the desired condition "
                         "and is not expected to change.".format(name=self.status.name)
