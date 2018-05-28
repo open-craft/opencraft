@@ -25,7 +25,6 @@ from unittest.mock import patch, call
 
 import boto
 import yaml
-
 from django.conf import settings
 from django.test.utils import override_settings
 
@@ -41,6 +40,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
     """
     Tests for OpenEdXStorageMixin
     """
+
     def check_s3_vars(self, yaml_vars_string):
         """
         Check the the given yaml string includes the expected Open edX S3-related vars/values
@@ -181,6 +181,7 @@ class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
     """
+
     def check_swift(self, instance, create_swift_container):
         """
         Verify Swift settings on the instance and the number of calls to the Swift API.
@@ -214,6 +215,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test provisioning Swift containers, and that they are provisioned only once.
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
 
@@ -221,6 +223,18 @@ class SwiftContainerInstanceTestCase(TestCase):
         create_swift_container.reset_mock()
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
+
+    @patch('instance.openstack_utils.create_swift_container')
+    def test_deprovision_swift(self, create_swift_container):
+        """
+        Test deprovisioning Swift containers.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
+        instance.provision_swift()
+        self.check_swift(instance, create_swift_container)
+        instance.deprovision_swift()
+        self.assertIs(instance.swift_provisioned, False)
 
     @patch('instance.openstack_utils.create_swift_container')
     @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
@@ -383,6 +397,33 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.s3_bucket_name, "test")
         self.assertEqual(instance.s3_secret_access_key, "")
         self.assertEqual(instance.s3_access_key, "")
+
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    @patch('boto.s3.bucket.Bucket.set_cors')
+    def test_provision_s3_swift(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+        """
+        Test s3 provisioning does nothing when SWIFT is enabled
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
+        instance.provision_s3()
+        self.assertEqual(instance.s3_bucket_name, '')
+        self.assertEqual(instance.s3_access_key, '')
+        self.assertEqual(instance.s3_secret_access_key, '')
+
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    @patch('boto.s3.bucket.Bucket.set_cors')
+    def test_provision_s3_unconfigured(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+        """
+        Test s3 provisioning works with default bucket and IAM
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
+        instance.provision_s3()
+        self.assertIsNotNone(instance.s3_bucket_name)
+        self.assertIsNotNone(instance.s3_access_key)
+        self.assertIsNotNone(instance.s3_secret_access_key)
+        create_bucket.assert_called_once_with(instance.s3_bucket_name)
 
     @patch('boto.connect_iam')
     @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
