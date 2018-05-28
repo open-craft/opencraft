@@ -26,6 +26,8 @@ from unittest.mock import patch, Mock
 
 import boto
 import novaclient
+import requests
+import responses
 import yaml
 from ddt import ddt, data
 from django.conf import settings
@@ -34,10 +36,6 @@ from django.core import mail as django_mail
 from django.test import override_settings
 from freezegun import freeze_time
 from pytz import utc
-import novaclient
-import requests
-import responses
-import yaml
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.mixins.storage import StorageContainer
@@ -51,7 +49,7 @@ from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
-
+# pylint: disable=too-many-public-methods
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
@@ -653,8 +651,8 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(mail.attachments[0], ("provision.log", "\n".join(log_lines), "text/plain"))
 
     @override_settings(ADMINS=(
-            ("admin1", "admin1@localhost"),
-            ("admin2", "admin2@localhost"),
+        ("admin1", "admin1@localhost"),
+        ("admin2", "admin2@localhost"),
     ))
     def test_provision_failed_exception_email(self):
         """

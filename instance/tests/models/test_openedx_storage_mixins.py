@@ -177,6 +177,7 @@ def get_swift_settings(instance):
     }
 
 
+# pylint: disable=too-many-public-methods
 class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
@@ -424,7 +425,7 @@ class SwiftContainerInstanceTestCase(TestCase):
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     @patch('boto.s3.bucket.Bucket.set_cors')
-    def test_provision_s3_swift(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+    def test_provision_s3_swift(self, set_cors, create_bucket):
         """
         Test s3 provisioning does nothing when SWIFT is enabled
         """
@@ -437,7 +438,7 @@ class SwiftContainerInstanceTestCase(TestCase):
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     @patch('boto.s3.bucket.Bucket.set_cors')
-    def test_provision_s3_unconfigured(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+    def test_provision_s3_unconfigured(self, set_cors, create_bucket):
         """
         Test s3 provisioning works with default bucket and IAM
         """
