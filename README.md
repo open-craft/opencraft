@@ -335,7 +335,7 @@ Permissions required for master AWS account are:
 * iam:DeleteUserPolicy
 
 Required settings:
-* `INSTANCE_STORAGE_TYPE`: A choice between ('s3', 'swift', 'filesystem').
+* `INSTANCE_STORAGE_TYPE`: A choice between "s3", "swift" and "filesystem" (default: "swift")
 * `AWS_ACCESS_KEY_ID`: AWS Access Key Id from account with accesses listed above.
 * `AWS_SECRET_ACCESS_KEY`: AWS Secret Key with accesses listed above.
 * `AWS_S3_BUCKET_PREFIX`: Prefix used for bucket naming (default: "ocim")
