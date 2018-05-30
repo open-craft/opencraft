@@ -24,7 +24,6 @@ OpenEdXAppServer model - Tests
 
 from unittest.mock import patch, Mock
 
-import boto
 import novaclient
 import requests
 import responses
@@ -38,7 +37,6 @@ from freezegun import freeze_time
 from pytz import utc
 
 from instance.models.appserver import Status as AppServerStatus
-from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
@@ -49,7 +47,6 @@ from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
-# pylint: disable=too-many-public-methods
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
@@ -472,18 +469,6 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
-
-    @patch_services
-    def test_spawn_s3(self, mocks):
-        """
-        Test make_active() and make_active(active=False)
-        """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.spawns3.opencraft.co.uk',
-                                          use_ephemeral_databases=False,
-                                          storage_type=StorageContainer.S3_STORAGE)
-
-        with self.assertRaises(boto.exception.S3ResponseError):
-            instance.spawn_appserver()
 
 
 @ddt
