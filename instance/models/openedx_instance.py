@@ -266,7 +266,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             # FIXME make make_active accept deactivate_others parameter
             app_server.make_active()
 
-        appserver_spawned.send(sender=self.__class__, instance=self, app_server=app_server)
+        appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server)
 
         return app_server.pk
 
