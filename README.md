@@ -74,14 +74,14 @@ to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
 system.
 
-Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated 
-virtual machines with the developer environment set up. To provision and 
-configure the developer environment as needed Vagrant uses 
-[Ansible](https://www.ansible.com/). 
+Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
+virtual machines with the developer environment set up. To provision and
+configure the developer environment as needed Vagrant uses
+[Ansible](https://www.ansible.com/).
 
-You will need to install all these tools before you can set up your development 
+You will need to install all these tools before you can set up your development
 environment:
- 
+
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
@@ -114,7 +114,7 @@ Once the virtual machine is up and running, you can ssh into it with this
 command:
 
     vagrant ssh
-    
+
 To check if everything is set up properly you can run ``make test.unit`` inside
 your new environment.
 
@@ -129,7 +129,7 @@ server at http://localhost:5000/ using your web browser.
 ### Local install (skip this step if using Vagrant)
 
 If you prefer not to use Vagrant, you can install OpenCraft manually. Refer to
-the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used 
+the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used
 by Vagrant for an example. Instructions based on Ubuntu 16.04.
 
 Install the system package dependencies & virtualenv:
@@ -192,7 +192,7 @@ GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 ```
 
-You can also configure the environment variables using a YAML file from which 
+You can also configure the environment variables using a YAML file from which
 Ansible can load these values. Create a file called ``private.yml`` and use the
 following contents as a starting point:
 
@@ -627,7 +627,7 @@ independently:
 
 JS tests can be run in your browser for debugging (run `make test.instance_js_web`
 or `make test.registration_js_web` and then go to http://localhost:8888/), or in a
-CI manner via selenium and `jasmine-ci` (run `make test.js`).
+CI manner via selenium and `jasmine ci` (run `make test.js`).
 
 Note that the integration tests aren't run by default, as they require a working
 OpenStack cluster configured. To run them, create a `.env.integration` file -
@@ -841,16 +841,16 @@ activated.  To see the options available, run:
 
     make manage "instance_redeploy --help"
 
-Keep track of the number of redeployments running in a batch. If it is larger 
+Keep track of the number of redeployments running in a batch. If it is larger
 than the number of workers available, then you will run into issues. You can
 check the number of regular workers with ``echo $WORKERS`` and the number of
 low-priority workers with ``echo $WORKERS_LOW_PRIORITY``. If those values are
 not set in the environment, then they have the default values defined in the
 [Makefile](Makefile).
 
-To ensure that people are still able to use the website to activate/deactivate 
-or launch AppServers you should probably run the redeployment command in the 
-low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_low_priority`` 
+To ensure that people are still able to use the website to activate/deactivate
+or launch AppServers you should probably run the redeployment command in the
+low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_low_priority``
 before the redeployment command. For example:
 
     HUEY_QUEUE_NAME=opencraft_low_priority make manage "instance_redeploy ..."

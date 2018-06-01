@@ -32,7 +32,7 @@ describe('Instance app', function () {
         // to $timeout which also need to be flushed.
         httpBackend.flush();
         $timeout.flush();
-    };
+    }
 
     beforeEach(function() {
         angular.mock.module('restangular');
@@ -300,7 +300,7 @@ describe('Instance app', function () {
             parentScope = rootScope.$new(); // Scope for the Instance "Details" controller
             parentScope.instance = jasmine.loadFixture('api/instance_detail.json');
             inject(function($q) {
-                // Mock tthe instance refresh() method and make sure to return a promise.
+                // Mock the instance refresh() method and make sure to return a promise.
                 parentScope.refresh = jasmine.createSpy('Instance refresh method').and.returnValue($q.when({}));
             });
 
@@ -308,13 +308,17 @@ describe('Instance app', function () {
             $scope = parentScope.$new();
             const stateParams = {
                 instanceId: 50,
-                appserverId: 8,
-            }
+                appserverId: 8
+            };
             $controller('OpenEdXAppServerDetails', {$scope: $scope, $stateParams: stateParams});
             flushHttpBackend(); // Clear calls from the controller init
         });
 
         describe('$scope.refresh', function() {
+            beforeEach(function() {
+                $scope.refresh = spyOn($scope, 'refresh').and.callThrough();
+            });
+
             it('loads the AppServer details from the API on init', function() {
                 expect(jasmine.sanitizeRestangularOne($scope.appserver)).toEqual(appServerDetail);
             });
