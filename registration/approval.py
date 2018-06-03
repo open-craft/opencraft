@@ -78,16 +78,17 @@ def on_appserver_spawned(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
+    application = instance.betatestapplication_set.first()  # There should only be one
 
-    if not instance.application_set:
-        return
-    application = instance.application_set.get() # There should only be one
-
-    if application.status != BetaTestApplication.PENDING:
+    if not application:
         return
 
-    if appserver is None:
+    elif application.status != BetaTestApplication.PENDING:
+        return
+
+    elif appserver is None:
         raise ApplicationNotReady('Provisioning of AppServer failed.')
+
     else:
         accept_application(application)
 
