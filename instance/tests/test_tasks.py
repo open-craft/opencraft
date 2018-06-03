@@ -63,7 +63,13 @@ class SpawnAppServerTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         tasks.spawn_appserver(instance.ref.pk)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
-        self.mock_spawn_appserver.assert_called_once_with(instance)
+        self.mock_spawn_appserver.assert_called_once_with(
+            instance,
+            failure_tag=None,
+            success_tag=None,
+            mark_active_on_success=False,
+            num_attempts=1
+        )
         # By default we don't mark_active_on_success:
         self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
