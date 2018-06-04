@@ -369,7 +369,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
-        result = instance.spawn_appserver()
+        result = instance.spawn_appserver(num_attempts=1)
         self.assertIsNone(result)
         self.assertFalse(instance.get_active_appservers().exists())
 
