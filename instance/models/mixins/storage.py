@@ -242,33 +242,36 @@ class S3BucketInstanceMixin(models.Model):
         """
         Deprovision S3 by deleting S3 bucket and IAM user
         """
-        if not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
-            return
-        if self.s3_bucket_name:
-            try:
-                s3 = self.get_s3_connection()
-                bucket = s3.get_bucket(self.s3_bucket_name)
-                for key in bucket:
-                    key.delete()
-                s3.delete_bucket(self.s3_bucket_name)
-                self.s3_bucket_name = ""
-                self.save()
-            except boto.exception.S3ResponseError:
-                self.logger.exception(
-                    'There was an error trying to remove S3 bucket "%s".',
-                    self.s3_bucket_name
-                )
-        try:
-            iam = get_master_iam_connection()
-            # Access keys and policies need to be deleted before removing the user
-            iam.delete_access_key(self.s3_access_key, user_name=self.iam_username)
-            iam.delete_user_policy(self.iam_username, 'allow_access_s3_bucket')
-            iam.delete_user(self.iam_username)
-            self.s3_access_key = ""
-            self.s3_secret_access_key = ""
-            self.save()
-        except boto.exception.BotoServerError:
-            self.logger.exception(
-                'There was an error trying to remove IAM user "%s".',
-                self.iam_username
-            )
+        self.logger.exception("Deprovisioning S3 right here")
+        raise NotImplementedError("Notifying everyone that this code is run. "
+                                  "Hopefully after a CircleCI test failure too")
+        # if not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
+        #     return
+        # if self.s3_bucket_name:
+        #     try:
+        #         s3 = self.get_s3_connection()
+        #         bucket = s3.get_bucket(self.s3_bucket_name)
+        #         for key in bucket:
+        #             key.delete()
+        #         s3.delete_bucket(self.s3_bucket_name)
+        #         self.s3_bucket_name = ""
+        #         self.save()
+        #     except boto.exception.S3ResponseError:
+        #         self.logger.exception(
+        #             'There was an error trying to remove S3 bucket "%s".',
+        #             self.s3_bucket_name
+        #         )
+        # try:
+        #     iam = get_master_iam_connection()
+        #     # Access keys and policies need to be deleted before removing the user
+        #     iam.delete_access_key(self.s3_access_key, user_name=self.iam_username)
+        #     iam.delete_user_policy(self.iam_username, 'allow_access_s3_bucket')
+        #     iam.delete_user(self.iam_username)
+        #     self.s3_access_key = ""
+        #     self.s3_secret_access_key = ""
+        #     self.save()
+        # except boto.exception.BotoServerError:
+        #     self.logger.exception(
+        #         'There was an error trying to remove IAM user "%s".',
+        #         self.iam_username
+        #     )
