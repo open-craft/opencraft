@@ -31,10 +31,11 @@ from registration.models import BetaTestApplication
 
 class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('user', 'domain', 'instance_name', 'public_contact_email',
-                    'status', 'first_activated')
-    list_filter = ('status',)
+                    'status', 'first_activated', 'created')
+    list_filter = ('status', 'subscribe_to_updates')
     search_fields = ('user__username', 'subdomain', 'instance_name',
                      'public_contact_email')
+    date_hierarchy = 'created'
 
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)
