@@ -259,7 +259,9 @@ OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
 # when Swift is enabled and INSTANCE_EPHEMERAL_DATABASES is disabled.
 
-SWIFT_ENABLE = env.bool('SWIFT_ENABLE', default=True)
+INSTANCE_STORAGE_TYPE = env('INSTANCE_STORAGE_TYPE', default='swift')  # Keeping the previous behaviour for SWIFT_ENABLE
+
+# SWIFT_ENABLE = env.bool('SWIFT_ENABLE', default=True)  # Not used any longer
 SWIFT_OPENSTACK_USER = env('SWIFT_OPENSTACK_USER', default=OPENSTACK_USER)
 SWIFT_OPENSTACK_PASSWORD = env('SWIFT_OPENSTACK_PASSWORD', default=OPENSTACK_PASSWORD)
 SWIFT_OPENSTACK_TENANT = env('SWIFT_OPENSTACK_TENANT', default=OPENSTACK_TENANT)
@@ -657,7 +659,7 @@ PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
 
 # AWS #########################################################################
 
-# Must be set if `SWIFT_ENABLE = False`.
+# Must be set if `INSTANCE_STORAGE_TYPE = 's3'`.
 
 # Permissions required for this account are:
 # iam:PutUserPolicy

@@ -25,11 +25,10 @@ from unittest.mock import patch, call
 
 import boto
 import yaml
-
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection
+from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -41,6 +40,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
     """
     Tests for OpenEdXStorageMixin
     """
+
     def check_s3_vars(self, yaml_vars_string):
         """
         Check the the given yaml string includes the expected Open edX S3-related vars/values
@@ -68,6 +68,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         AppServer
         """
         instance = OpenEdXInstanceFactory(
+            storage_type='s3',
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
@@ -82,6 +83,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         Test that get_storage_settings() does not include S3 vars when in ephemeral mode
         """
         instance = OpenEdXInstanceFactory(
+            storage_type='s3',
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
@@ -175,10 +177,12 @@ def get_swift_settings(instance):
     }
 
 
+# pylint: disable=too-many-public-methods
 class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
     """
+
     def check_swift(self, instance, create_swift_container):
         """
         Verify Swift settings on the instance and the number of calls to the Swift API.
@@ -212,6 +216,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test provisioning Swift containers, and that they are provisioned only once.
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
 
@@ -221,7 +226,19 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.check_swift(instance, create_swift_container)
 
     @patch('instance.openstack_utils.create_swift_container')
-    @override_settings(SWIFT_ENABLE=False)
+    def test_deprovision_swift(self, create_swift_container):
+        """
+        Test deprovisioning Swift containers.
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
+        instance.provision_swift()
+        self.check_swift(instance, create_swift_container)
+        instance.deprovision_swift()
+        self.assertIs(instance.swift_provisioned, False)
+
+    @patch('instance.openstack_utils.create_swift_container')
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_swift_disabled(self, create_swift_container):
         """
         Verify disabling Swift provisioning works.
@@ -259,7 +276,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver)
 
-    @override_settings(SWIFT_ENABLE=False)
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_ansible_settings_swift_disabled(self):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
@@ -284,7 +301,8 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance, s3=True)
         self.check_ansible_settings(appserver, s3=True)
 
-    @override_settings(SWIFT_ENABLED=False, AWS_ACCESS_KEY='test', AWS_SECRET_ACCESS_KEY_ID='test')
+    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE, AWS_ACCESS_KEY='test',
+                       AWS_SECRET_ACCESS_KEY_ID='test')
     def test_get_s3_connection(self):
         """
         Test get_s3 connection returns right instance
@@ -318,6 +336,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 provisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -355,9 +374,11 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 deprovisioning succeeds
         """
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.provision_s3()
         instance.deprovision_s3()
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
@@ -372,6 +393,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         iam_connection = connect_iam()
         iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -390,6 +412,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         s3_connection = s3_connection()
         s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -399,6 +422,33 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.s3_bucket_name, "test")
         self.assertEqual(instance.s3_secret_access_key, "")
         self.assertEqual(instance.s3_access_key, "")
+
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    @patch('boto.s3.bucket.Bucket.set_cors')
+    def test_provision_s3_swift(self, set_cors, create_bucket):
+        """
+        Test s3 provisioning does nothing when SWIFT is enabled
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.SWIFT_STORAGE
+        instance.provision_s3()
+        self.assertEqual(instance.s3_bucket_name, '')
+        self.assertEqual(instance.s3_access_key, '')
+        self.assertEqual(instance.s3_secret_access_key, '')
+
+    @patch('boto.s3.connection.S3Connection.create_bucket')
+    @patch('boto.s3.bucket.Bucket.set_cors')
+    def test_provision_s3_unconfigured(self, set_cors, create_bucket):
+        """
+        Test s3 provisioning works with default bucket and IAM
+        """
+        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
+        instance.provision_s3()
+        self.assertIsNotNone(instance.s3_bucket_name)
+        self.assertIsNotNone(instance.s3_access_key)
+        self.assertIsNotNone(instance.s3_secret_access_key)
+        create_bucket.assert_called_once_with(instance.s3_bucket_name)
 
     @patch('boto.connect_iam')
     @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
@@ -418,6 +468,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         }
         connect_iam().create_access_key.return_value = access_keys
         instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance.storage_type = StorageContainer.S3_STORAGE
         instance.create_iam_user()
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')

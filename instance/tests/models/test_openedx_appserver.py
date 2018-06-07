@@ -24,6 +24,10 @@ OpenEdXAppServer model - Tests
 
 from unittest.mock import patch, Mock
 
+import novaclient
+import requests
+import responses
+import yaml
 from ddt import ddt, data
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -31,10 +35,6 @@ from django.core import mail as django_mail
 from django.test import override_settings
 from freezegun import freeze_time
 from pytz import utc
-import novaclient
-import requests
-import responses
-import yaml
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
@@ -47,7 +47,6 @@ from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
-
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
@@ -562,7 +561,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
         Test that invalid status transitions raise exception
         """
         # TODO: Get pylint to see state as an iterable
-        invalid_from_states = (state for state in AppServerStatus.states #pylint: disable=not-an-iterable
+        invalid_from_states = (state for state in AppServerStatus.states  # pylint: disable=not-an-iterable
                                if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
             appserver = make_test_appserver()

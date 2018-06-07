@@ -96,15 +96,12 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
         # Set default field values from settings - using the `default` field attribute confuses
         # automatically generated migrations, generating a new one when settings don't match
-        if self.use_ephemeral_databases is None:
-            self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
-        if not settings.SWIFT_ENABLE and not self.ref.is_archived:
-            if not self.s3_bucket_name:
-                self.s3_bucket_name = self.bucket_name
-            if not self.s3_access_key and not self.s3_secret_access_key:
-                self.create_iam_user()
+        if self.use_ephemeral_databases is None:
+            self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
+        if not self.use_ephemeral_databases and self.storage_type is None:
+            self.storage_type = settings.INSTANCE_STORAGE_TYPE
         super().save(**kwargs)
 
     def get_load_balancer_configuration(self, triggered_by_instance=False):
@@ -219,10 +216,12 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.provision_mysql()
             self.logger.info('Provisioning MongoDB databases...')
             self.provision_mongo()
-            self.logger.info('Provisioning Swift container...')
-            self.provision_swift()
-            self.logger.info('Provisioning S3 bucket...')
-            self.provision_s3()
+            if self.storage_type == self.SWIFT_STORAGE:
+                self.logger.info('Provisioning Swift container...')
+                self.provision_swift()
+            elif self.storage_type == self.S3_STORAGE:
+                self.logger.info('Provisioning S3 bucket...')
+                self.provision_s3()
             self.logger.info('Provisioning RabbitMQ vhost...')
             self.provision_rabbitmq()
 

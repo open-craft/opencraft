@@ -110,7 +110,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Verify the Swift container for the instance has been provisioned successfully.
         """
-        if not settings.SWIFT_ENABLE:
+        if not instance.storage_type == instance.SWIFT_STORAGE:
             return
 
         stat_result = stat_container(instance.swift_container_name)

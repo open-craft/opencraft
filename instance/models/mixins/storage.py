@@ -56,6 +56,24 @@ def get_s3_cors_config():
 
 # Classes #####################################################################
 
+class StorageContainer(models.Model):
+    """
+    Base class selecting the storage type.
+    """
+    S3_STORAGE = 's3'
+    SWIFT_STORAGE = 'swift'
+    FILE_STORAGE = 'filesystem'
+
+    storage_type = models.CharField(
+        max_length=16,
+        blank=True,
+        default=default_setting("INSTANCE_STORAGE_TYPE")
+    )
+
+    class Meta:
+        abstract = True
+
+
 class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
@@ -100,7 +118,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Create the Swift containers if necessary.
         """
-        if settings.SWIFT_ENABLE:
+        if self.storage_type == self.SWIFT_STORAGE:
             for container_name in self.swift_container_names:
                 openstack_utils.create_swift_container(
                     container_name,
@@ -117,7 +135,7 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Delete the Swift containers.
         """
-        if settings.SWIFT_ENABLE and self.swift_provisioned:
+        if self.storage_type == self.SWIFT_STORAGE and self.swift_provisioned:
             for container_name in self.swift_container_names:
                 try:
                     openstack_utils.delete_swift_container(
@@ -139,6 +157,7 @@ class S3BucketInstanceMixin(models.Model):
     """
     Mixin to provision S3 bucket for an instance.
     """
+
     class Meta:
         abstract = True
 
@@ -189,7 +208,7 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create IAM user with access only to the s3 bucket set in s3_bucket_name
         """
-        if not(settings.AWS_ACCESS_KEY_ID or settings.AWS_SECRET_ACCESS_KEY):
+        if not (settings.AWS_ACCESS_KEY_ID or settings.AWS_SECRET_ACCESS_KEY):
             return
         iam = get_master_iam_connection()
         iam.create_user(self.iam_username)
@@ -235,14 +254,23 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create S3 Bucket if it doesn't exist
         """
-        if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
-            self._create_bucket()
+        if not self.storage_type == self.S3_STORAGE:
+            return
+
+        if not self.s3_bucket_name:
+            self.s3_bucket_name = self.bucket_name
+
+        if not self.s3_access_key and not self.s3_secret_access_key:
+            self.create_iam_user()
+
+        self._create_bucket()
 
     def deprovision_s3(self):
         """
         Deprovision S3 by deleting S3 bucket and IAM user
         """
-        if not(self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
+        if not self.storage_type == self.S3_STORAGE or \
+                not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
             return
         if self.s3_bucket_name:
             try:

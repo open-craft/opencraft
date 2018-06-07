@@ -21,15 +21,14 @@ Open edX instance database mixin
 """
 import yaml
 
-from django.conf import settings
 from django.db import models
 
-from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin
+from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, StorageContainer
 
 
 # Classes #####################################################################
 
-class OpenEdXStorageMixin(SwiftContainerInstanceMixin, S3BucketInstanceMixin):
+class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3BucketInstanceMixin):
     """
     Mixin that provides functionality required for the storage backends that an OpenEdX
     Instance uses (when not using ephemeral databases)
@@ -157,9 +156,9 @@ class OpenEdXStorageMixin(SwiftContainerInstanceMixin, S3BucketInstanceMixin):
             # caused by https://github.com/edx/edx-platform/pull/14552
             return yaml.dump({"EDXAPP_IMPORT_EXPORT_BUCKET": ""}, default_flow_style=False)
 
-        if self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
+        if self.storage_type == self.S3_STORAGE and \
+                self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
             return yaml.dump(self._get_s3_settings(), default_flow_style=False)
-        elif settings.SWIFT_ENABLE:
-            # Only enable Swift if S3 isn't configured
+        elif self.storage_type == self.SWIFT_STORAGE:
             return yaml.dump(self._get_swift_settings(), default_flow_style=False)
         return ""

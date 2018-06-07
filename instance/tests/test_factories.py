@@ -29,6 +29,7 @@ import yaml
 from instance.factories import instance_factory, production_instance_factory
 from instance.models.log_entry import LogEntry
 from instance.models.database_server import MySQLServer, MongoDBServer
+from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 
@@ -149,10 +150,14 @@ class FactoriesTestCase(TestCase):
 
         for custom_settings, warning in (
                 (
-                    {'SWIFT_ENABLE': False, 'AWS_ACCESS_KEY': None, 'AWS_SECRET_ACCESS_KEY': None},
+                    {
+                        'INSTANCE_STORAGE_TYPE': StorageContainer.S3_STORAGE,
+                        'AWS_ACCESS_KEY': None,
+                        'AWS_SECRET_ACCESS_KEY': None
+                    },
                     (
-                        "Swift and AWS support is currently disabled. Add AWS_ACCESS_KEY_ID and "
-                        "AWS_SECRET_ACCESS_KEY settings or adjust SWIFT_ENABLE setting."
+                        "AWS support is currently enabled. Add AWS_ACCESS_KEY_ID and "
+                        "AWS_SECRET_ACCESS_KEY settings or adjust INSTANCE_STORAGE_TYPE setting."
                     ),
                 ),
                 (
