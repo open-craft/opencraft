@@ -193,6 +193,16 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             return
 
     def _spawn_appserver(self):
+        """
+            Provision a new AppServer
+
+            Optionally mark the new AppServer as active when the provisioning completes.
+            Optionally retry up to 'num_attempts' times.
+            Optionally tag the instance with 'success_tag' when the deployment succeeds,
+            or failure_tag if it fails.
+
+            Returns the ID of the new AppServer on success or None on failure.
+        """
         if not self.load_balancing_server:
             self.load_balancing_server = LoadBalancingServer.objects.select_random()
             self.save()
@@ -231,21 +241,16 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
         Provision a new AppServer
 
-        Optionally mark the new AppServer as active when the provisioning completes.
-        Optionally retry up to 'num_attempts' times.
-        Optionally tag the instance with 'success_tag' when the deployment succeeds,
-        or failure_tag if it fails.
-
-        Returns the ID of the new AppServer on success or None on failure.
+        Wrapper around the spawning function to allow for multiple attempts
         """
-        for _ in range(num_attempts):
-
+        for attempt in range(num_attempts):
+            self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
             app_server = self._spawn_appserver()
 
-            if app_server.provision():
+            if app_server and app_server.provision():
                 break
-            else:
-                self.logger.error('Failed to provision new app server')
+
+            self.logger.error('Failed to provision new app server')
 
         else:
             self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
@@ -266,8 +271,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.tags.add(success_tag)
 
         if mark_active_on_success:
-            # FIXME merge make_appserver_active (from tasks) into make_active
-            # FIXME make make_active accept deactivate_others parameter
+            # use task.make_appserver_active to allow disabling others
             app_server.make_active()
 
         appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server)

@@ -64,13 +64,14 @@ def spawn_appserver(
     logger.info('Retrieving instance: ID=%s', instance_ref_id)
     instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
-    # FIXME use the parameter deactivate_old_appservers, e.g. to pass it to spawn_appserver
-    instance.spawn_appserver(
-        mark_active_on_success=mark_active_on_success,
+    appserver = instance.spawn_appserver(
         num_attempts=num_attempts,
         success_tag=success_tag,
         failure_tag=failure_tag
     )
+
+    if appserver and mark_active_on_success:
+        make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
 
 
 @db_task()

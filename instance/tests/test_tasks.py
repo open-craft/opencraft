@@ -46,9 +46,11 @@ class SpawnAppServerTestCase(TestCase):
     """
 
     def setUp(self):
-        patcher = patch('instance.models.openedx_instance.OpenEdXInstance.spawn_appserver', autospec=True)
-        self.addCleanup(patcher.stop)
-        self.mock_spawn_appserver = patcher.start()
+        self.spawn_appserver_patcher = patch(
+            'instance.models.openedx_instance.OpenEdXInstance.spawn_appserver',
+            autospec=True)
+        self.addCleanup(self.spawn_appserver_patcher.stop)
+        self.mock_spawn_appserver = self.spawn_appserver_patcher.start()
         self.mock_spawn_appserver.return_value = 10
 
         self.make_appserver_active_patcher = patch('instance.tasks.make_appserver_active')
@@ -67,7 +69,6 @@ class SpawnAppServerTestCase(TestCase):
             instance,
             failure_tag=None,
             success_tag=None,
-            mark_active_on_success=False,
             num_attempts=1
         )
         # By default we don't mark_active_on_success:
@@ -127,48 +128,84 @@ class SpawnAppServerTestCase(TestCase):
         else:
             self.mock_make_appserver_active.assert_not_called()
 
-    def test_num_attempts(self):
+    @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
+    def test_num_attempts(self, mock_spawn):
         """
         Test that if num_attempts > 1, the spawn_appserver task will automatically re-try
         provisioning.
         """
         instance = OpenEdXInstanceFactory()
 
-        self.mock_spawn_appserver.return_value = None  # Mock provisioning failure
+        # Disable mocking of retry-enabled spawn_appserver
+        self.spawn_appserver_patcher.stop()
+        self.addCleanup(self.spawn_appserver_patcher.start)
+
+        # Mock provisioning failure
+        mock_spawn.return_value = None
+
         tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
-        self.assertEqual(self.mock_spawn_appserver.call_count, 3)
+        # Check mocked functions call count
+        self.assertEqual(mock_spawn.call_count, 3)
         self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
+        # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
-    def test_num_attempts_successful(self):
+    @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    def test_num_attempts_successful(self, mock_provision, mock_spawn):
         """
         Test that if num_attempts > 1, the spawn_appserver task will stop trying to provision
         after a successful attempt.
         """
         instance = OpenEdXInstanceFactory()
 
-        self.mock_spawn_appserver.return_value = 10  # Mock provisioning failure
+        # Disable mocking of retry-enabled spawn_appserver
+        self.spawn_appserver_patcher.stop()
+        self.addCleanup(self.spawn_appserver_patcher.start)
+
+        # Mock successful provisioning
+        mock_provision.return_value = True
+        mock_spawn.return_value = make_test_appserver(instance)
+
         tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
-        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+        # Check mocked functions call count
+        self.assertEqual(mock_spawn.call_count, 1)
+        self.assertEqual(mock_provision.call_count, 1)
         self.assertEqual(self.mock_make_appserver_active.call_count, 1)
 
+        # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
         self.assertFalse(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertFalse(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
-    def test_one_attempt_default(self):
+    @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    def test_one_attempt_default(self, mock_provision, mock_spawn):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning.
         """
         instance = OpenEdXInstanceFactory()
-        self.mock_spawn_appserver.return_value = None  # Mock provisioning failure
+
+        # Disable mocking of retry-enabled spawn_appserver
+        self.spawn_appserver_patcher.stop()
+        self.addCleanup(self.spawn_appserver_patcher.start)
+
+        # Mock successful provisioning
+        mock_provision.return_value = True
+        mock_spawn.return_value = make_test_appserver(instance)
+
         tasks.spawn_appserver(instance.ref.pk)
-        self.assertEqual(self.mock_spawn_appserver.call_count, 1)
+
+        # Check mocked functions call count
+        self.assertEqual(mock_spawn.call_count, 1)
+        self.assertEqual(mock_provision.call_count, 1)
+
+        # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))
 
 
