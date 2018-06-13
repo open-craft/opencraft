@@ -1,0 +1,9 @@
+{% autoescape off %}
+Hi!
+
+The instance for {{ application.user.name }} failed to provision.
+
+Happy trails!
+
+{{ signature }}
+{% endautoescape %}

@@ -632,6 +632,7 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
 # Beta test email settings ####################################################
 
+BETATEST_EMAIL_ERROR = env('BETATEST_EMAIL_ERROR', default='help@example.com')
 BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.com')
 BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
 BETATEST_WELCOME_SUBJECT = env(

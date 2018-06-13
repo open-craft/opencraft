@@ -258,8 +258,9 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
                 self.tags.add(failure_tag)
             if success_tag:
                 self.tags.remove(success_tag)
-            # FIXME This will just raise an exception, either remove or change the behavior
-            # appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
+
+            # Warn spawn failed after given attempts
+            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
             return
 
         self.logger.info('Provisioned new app server, %s', app_server.name)

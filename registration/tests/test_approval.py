@@ -85,3 +85,10 @@ class ApprovalTestCase(TestCase):
         with mock.patch('registration.approval.accept_application') as mock_application:
             on_appserver_spawned(sender=None, instance=instance, appserver=appserver)
             self.assertEqual(mock_application.call_count, 1)
+
+        # Test failed spawning generates an email in case of pending application
+        with mock.patch('registration.approval.accept_application') as mock_application:
+            with mock.patch('registration.approval.send_mail') as mock_send_email:
+                on_appserver_spawned(sender=None, instance=instance, appserver=None)
+                mock_application.assert_not_called()
+                self.assertTrue(mock_send_email.called)

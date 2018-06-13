@@ -48,7 +48,23 @@ def _send_mail(application, template_name, subject):
         from_email=settings.BETATEST_EMAIL_SENDER,
         recipient_list=(application.user.email,),
     )
-    # TODO Might add Gabriel's address on bcc
+
+
+def _send_failure_mail(application):
+    """ Helper function to send an email to the user. """
+    # FIXME Update template
+    template_name = 'registration/failed_email.txt'
+    subject = 'Failed to provision AppServer'
+    template = get_template(template_name)
+    message = template.render(dict(
+        application=application,
+    ))
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.BETATEST_EMAIL_SENDER,
+        recipient_list=(settings.BETATEST_EMAIL_ERROR,),
+    )
 
 
 def accept_application(application):
@@ -80,15 +96,18 @@ def on_appserver_spawned(sender, **kwargs):
     instance = kwargs['instance']
     appserver = kwargs['appserver']
 
-    if instance is None or appserver is None:
-        raise ApplicationNotReady('Provisioning of AppServer failed.')
+    if instance is None:
+        raise ApplicationNotReady('No instance given.')
 
     application = instance.betatestapplication_set.first()  # There should only be one
 
     if not application or application.status != BetaTestApplication.PENDING:
         return
 
-    accept_application(application)
+    if not appserver:
+        _send_failure_mail(application)
+    else:
+        accept_application(application)
 
 
 # Exceptions ##################################################################
