@@ -48,6 +48,7 @@ def _send_mail(application, template_name, subject):
         from_email=settings.BETATEST_EMAIL_SENDER,
         recipient_list=(application.user.email,),
     )
+    # TODO Might add Gabriel's address on bcc
 
 
 def accept_application(application):
@@ -57,13 +58,13 @@ def accept_application(application):
     launched, activates it and sends an email to the user to notify them that their instance is
     ready.
     """
-    if application.instance is not None:
+    if application.instance is None:
         raise ApplicationNotReady('No instance provisioned yet.')
 
     appserver = application.instance.active_appserver
     if appserver is None:
         raise ApplicationNotReady('The instance does not have an active AppServer yet.')
-    if appserver.status != AppServer.Status.Running:
+    elif appserver.status != AppServer.Status.Running:
         raise ApplicationNotReady('The AppServer is not running yet.')
 
     _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
@@ -78,19 +79,16 @@ def on_appserver_spawned(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
-    application = instance.betatestapplication_set.first()  # There should only be one
 
-    if not application:
-        return
-
-    elif application.status != BetaTestApplication.PENDING:
-        return
-
-    elif appserver is None:
+    if instance is None or appserver is None:
         raise ApplicationNotReady('Provisioning of AppServer failed.')
 
-    else:
-        accept_application(application)
+    application = instance.betatestapplication_set.first()  # There should only be one
+
+    if not application or application.status != BetaTestApplication.PENDING:
+        return
+
+    accept_application(application)
 
 
 # Exceptions ##################################################################
