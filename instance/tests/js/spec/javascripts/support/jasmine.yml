@@ -20,7 +20,8 @@ src_files:
     - static/external/js/restangular.min.js
     - static/external/js/angular-mocks.js
     - static/external/js/jshint.js
-    - instance/static/js/src/*.js
+    - instance/static/js/src/instance.js
+    - instance/static/js/src/openedx_appserver.js
 
 # stylesheets
 #
