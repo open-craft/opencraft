@@ -61,11 +61,7 @@ class ApprovalTestCase(TestCase):
     def test_appserver_spawned(self):
         """ Basic test for appserver_spawned() failure and success behaviour """
 
-        # Test failure when missing instance
-        with self.assertRaises(ApplicationNotReady):
-            on_appserver_spawned(sender=None, instance=None, appserver=None)
-
-        # Test nothing happens when no application
+        # Test nothing happens without an application
         appserver = mock.Mock()
         instance = mock.Mock()
         instance.betatestapplication_set.first = lambda: None

@@ -80,7 +80,7 @@ def accept_application(application):
     appserver = application.instance.active_appserver
     if appserver is None:
         raise ApplicationNotReady('The instance does not have an active AppServer yet.')
-    elif appserver.status != AppServer.Status.Running:
+    if appserver.status != AppServer.Status.Running:
         raise ApplicationNotReady('The AppServer is not running yet.')
 
     _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
@@ -95,17 +95,17 @@ def on_appserver_spawned(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
-
-    if instance is None:
-        raise ApplicationNotReady('No instance given.')
-
     application = instance.betatestapplication_set.first()  # There should only be one
 
-    if not application or application.status != BetaTestApplication.PENDING:
+    if not application:
         return
 
-    if not appserver:
-        _send_failure_mail(application)
+    elif application.status != BetaTestApplication.PENDING:
+        return
+
+    elif appserver is None:
+        raise ApplicationNotReady('Provisioning of AppServer failed.')
+
     else:
         accept_application(application)
 
