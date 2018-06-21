@@ -50,23 +50,6 @@ def _send_mail(application, template_name, subject):
     )
 
 
-def _send_failure_mail(application):
-    """ Helper function to send an email to the user. """
-    # FIXME Update template
-    template_name = 'registration/failed_email.txt'
-    subject = 'Failed to provision AppServer'
-    template = get_template(template_name)
-    message = template.render(dict(
-        application=application,
-    ))
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.BETATEST_EMAIL_SENDER,
-        recipient_list=(settings.BETATEST_EMAIL_ERROR,),
-    )
-
-
 def accept_application(application):
     """Accept a beta test application.
 
