@@ -48,6 +48,13 @@ def _send_mail(application, template_name, subject):
         from_email=settings.BETATEST_EMAIL_SENDER,
         recipient_list=(application.user.email,),
     )
+    # Using a separate call to hide internal email
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.BETATEST_EMAIL_SENDER,
+        recipient_list=(settings.BETATEST_EMAIL_INTERNAL,),
+    )
 
 
 def accept_application(application):
