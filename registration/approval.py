@@ -57,7 +57,7 @@ def _send_mail(application, template_name, subject):
     )
 
 
-def accept_application(application):
+def accept_application(application, appserver):
     """Accept a beta test application.
 
     This helper function verifies that an AppServer for this application has been successfully
@@ -67,7 +67,6 @@ def accept_application(application):
     if application.instance is None:
         raise ApplicationNotReady('No instance provisioned yet.')
 
-    appserver = application.instance.active_appserver
     if appserver is None:
         raise ApplicationNotReady('The instance does not have an active AppServer yet.')
     if appserver.status != AppServer.Status.Running:
@@ -97,7 +96,7 @@ def on_appserver_spawned(sender, **kwargs):
         raise ApplicationNotReady('Provisioning of AppServer failed.')
 
     else:
-        accept_application(application)
+        accept_application(application, appserver)
 
 
 # Exceptions ##################################################################

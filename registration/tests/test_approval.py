@@ -42,19 +42,19 @@ class ApprovalTestCase(TestCase):
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         application = mock.Mock(user=user, subdomain='test')
 
-        # Test failure when no instance is given
+        # Test failure when no appserver is given
         with self.assertRaises(ApplicationNotReady):
-            accept_application(application)
+            accept_application(application, None)
 
         # Test failure when appserver isn't running
-        application.instance.active_appserver.status = AppServer.Status.Terminated
+        appserver = mock.Mock(status=AppServer.Status.Terminated)
         with self.assertRaises(ApplicationNotReady):
-            accept_application(application)
+            accept_application(application, appserver)
 
         # Test email is sent when everything is correct
-        application.instance.active_appserver.status = AppServer.Status.Running
+        appserver.status = AppServer.Status.Running
         with mock.patch('registration.approval.send_mail') as mock_send_mail:
-            accept_application(application)
+            accept_application(application, appserver)
             self.assertTrue(mock_send_mail.called)
         self.assertEqual(application.status, BetaTestApplication.ACCEPTED)
 

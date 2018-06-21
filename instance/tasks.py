@@ -73,6 +73,8 @@ def spawn_appserver(
     if appserver and mark_active_on_success:
         make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
 
+    return appserver
+
 
 @db_task()
 def make_appserver_active(appserver_id, active=True, deactivate_others=False):

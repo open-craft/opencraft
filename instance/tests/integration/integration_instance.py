@@ -45,6 +45,7 @@ from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tests.integration.utils import check_url_accessible, get_url_contents, is_port_open
 from instance.tasks import spawn_appserver
 from opencraft.tests.utils import shard
+from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
 
@@ -273,7 +274,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance_name=instance.name,
             public_contact_email='publicemail@example.com',
             project_description='I want to beta test OpenCraft IM',
-            status=BetaTestApplication.ACCEPTED,
+            status=BetaTestApplication.PENDING,
             # The presence of these colors will be checked later
             # Note: avoid string like #ffbb66 because it would be shortened to #fb6 and therefore
             # much harder to detect ("#ffbb66" wouldn't appear in CSS). Use e.g. #ffbb67
@@ -287,7 +288,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        appserver = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+
+        # Test accepting beta test application
+        on_appserver_spawned(None, instance=instance, appserver=appserver)
+        self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)
 
         self.assert_instance_up(instance)
         self.assert_appserver_firewalled(instance)
