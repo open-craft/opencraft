@@ -24,7 +24,7 @@ These functions are meant to be used manually from the interactive Python shell.
 # Imports #####################################################################
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.dispatch import receiver
 from django.template.loader import get_template
 
@@ -42,19 +42,13 @@ def _send_mail(application, template_name, subject):
         application=application,
         signature=settings.BETATEST_EMAIL_SIGNATURE,
     ))
-    send_mail(
+    EmailMessage(
         subject=subject,
-        message=message,
+        body=message,
         from_email=settings.BETATEST_EMAIL_SENDER,
-        recipient_list=(application.user.email,),
-    )
-    # Using a separate call to hide internal email
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.BETATEST_EMAIL_SENDER,
-        recipient_list=(settings.BETATEST_EMAIL_INTERNAL,),
-    )
+        to=(application.user.email,),
+        bcc=(settings.BETATEST_EMAIL_INTERNAL,)
+    ).send()
 
 
 def accept_application(application, appserver):
@@ -86,10 +80,7 @@ def on_appserver_spawned(sender, **kwargs):
     appserver = kwargs['appserver']
     application = instance.betatestapplication_set.first()  # There should only be one
 
-    if not application:
-        return
-
-    elif application.status != BetaTestApplication.PENDING:
+    if not application or application.status != BetaTestApplication.PENDING:
         return
 
     elif appserver is None:

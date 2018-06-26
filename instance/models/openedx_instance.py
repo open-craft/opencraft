@@ -196,11 +196,6 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
             Provision a new AppServer
 
-            Optionally mark the new AppServer as active when the provisioning completes.
-            Optionally retry up to 'num_attempts' times.
-            Optionally tag the instance with 'success_tag' when the deployment succeeds,
-            or failure_tag if it fails.
-
             Returns the ID of the new AppServer on success or None on failure.
         """
         if not self.load_balancing_server:
@@ -235,13 +230,20 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
     @log_exception
     def spawn_appserver(self,
                         mark_active_on_success=False,
-                        num_attempts=2,
+                        num_attempts=1,
                         success_tag=None,
                         failure_tag=None):
         """
         Provision a new AppServer
 
         Wrapper around the spawning function to allow for multiple attempts
+
+        Optionally mark the new AppServer as active when the provisioning completes.
+        Optionally retry up to 'num_attempts' times.
+        Optionally tag the instance with 'success_tag' when the deployment succeeds,
+        or failure_tag if it fails.
+
+        Returns the ID of the new AppServer or None in case of failure.
         """
         for attempt in range(num_attempts):
             self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))

@@ -637,7 +637,8 @@ BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default='betatest@example.c
 BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
 BETATEST_WELCOME_SUBJECT = env(
     'BETATEST_WELCOME_SUBJECT',
-    default='Welcome to the OpenCraft Instance Manager free 30-day trial!')
+    default='Welcome to the OpenCraft Instance Manager free 30-day trial!',
+)
 
 # Monitoring ##################################################################
 
