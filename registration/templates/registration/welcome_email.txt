@@ -1,7 +1,7 @@
 {% autoescape off %}
 Hi!
 
-Thank you very much for applying for a free 30-day trial of our self-hosting professional & teacher plan. You seem to have an interesting project - this is the type of initiative we are looking to help with this offer. 
+Thank you very much for registering for a free 30-day trial of our "Pro & Teacher" hosting plan for Open edX.
 
 Your instance is provisioned and ready to use:
 
@@ -11,11 +11,11 @@ The Studio interface used to create course materials is available at:
 
 {{ application.instance.studio_url }}
 
-To log in, use the email address {{ application.user.email }} and the password you provided in the application. If you don't remember it, you can reset your password by clicking the "Forgot password?" link on the login page:
+To log in, use the email address {{ application.user.email }} and the password you provided during registration. If you don't remember it, you can reset your password by clicking the "Forgot password?" link on the login page:
 
 {{ application.instance.url }}/login
 
-The professional & teacher self-hosting plan offers you a stable and powerful dedicated Open edX instance. If you would like to customize your site, or have access to great features like larger data storage, guaranteed availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask me about our institutional offering. Your questions are most welcome.
+The professional & teacher self-hosting plan offers you a stable and powerful dedicated Open edX instance. If you would like to customize your site, or have access to great features like more data storage, guaranteed availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask us about our institutional offering. Your questions are most welcome.
 
 
 Happy teaching!
