@@ -15,7 +15,7 @@ To log in, use the email address {{ application.user.email }} and the password y
 
 {{ application.instance.url }}/login
 
-The professional & teacher self-hosting plan offers you a stable and powerful dedicated Open edX instance. If you would like to customize your site, or have access to great features like more data storage, guaranteed availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask us about our institutional offering. Your questions are most welcome.
+The "Pro & Teacher" hosting plan offers you a stable and powerful dedicated Open edX instance. If you would like to customize your site, or have access to great features like more data storage, guaranteed availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask us about our institutional offering. Your questions are most welcome.
 
 
 Happy teaching!
