@@ -10,7 +10,7 @@ jobs:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
       - image: redis
-      - image: mongo
+      - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
         environment:
           MYSQL_ALLOW_EMPTY_PASSWORD: True
