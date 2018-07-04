@@ -24,19 +24,16 @@ These functions are meant to be used manually from the interactive Python shell.
 # Imports #####################################################################
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from django.dispatch import receiver
 from django.template.loader import get_template
 
 from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
+from instance.signals import appserver_spawned
 
-# Settings ####################################################################
-
-BETATEST_WELCOME_SUBJECT = 'Welcome to the OpenCraft Instance Manager free 30-day trial!'
-BETATEST_REJECT_SUBJECT = 'An update on your free 30-day trial test application status for OpenCraft Instance Manager'
 
 # Functions ###################################################################
-
 
 def _send_mail(application, template_name, subject):
     """Helper function to send an email to the user."""
@@ -45,39 +42,58 @@ def _send_mail(application, template_name, subject):
         application=application,
         signature=settings.BETATEST_EMAIL_SIGNATURE,
     ))
-    send_mail(
+    EmailMessage(
         subject=subject,
-        message=message,
+        body=message,
         from_email=settings.BETATEST_EMAIL_SENDER,
-        recipient_list=(application.user.email,),
-    )
+        to=(application.user.email,),
+        bcc=(settings.BETATEST_EMAIL_INTERNAL,)
+    ).send()
 
 
-def accept_application(application):
+def accept_application(application, appserver):
     """Accept a beta test application.
 
     This helper function verifies that an AppServer for this application has been successfully
     launched, activates it and sends an email to the user to notify them that their instance is
     ready.
     """
-    assert application.instance is not None, 'No instance provisioned yet.'
-    appserver = application.instance.active_appserver
-    assert appserver is not None, 'The instance does not have an active AppServer yet.'
-    assert appserver.status == AppServer.Status.Running, 'The AppServer is not running yet.'
-    _send_mail(application, 'registration/welcome_email.txt', BETATEST_WELCOME_SUBJECT)
+    if application.instance is None:
+        raise ApplicationNotReady('No instance provisioned yet.')
+
+    if appserver is None:
+        raise ApplicationNotReady('The instance does not have an active AppServer yet.')
+    if appserver.status != AppServer.Status.Running:
+        raise ApplicationNotReady('The AppServer is not running yet.')
+
+    _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED
     application.save()
 
 
-def reject_application(application):
-    """Reject a beta test application.
-
-    All servers associated with the application will be terminated, and an email is send to the
-    applicant to inform them that the application has been rejected.
+@receiver(appserver_spawned)
+def on_appserver_spawned(sender, **kwargs):
     """
-    if application.instance is not None:
-        for appserver in application.instance.appserver_set.iterator():
-            appserver.terminate_vm()
-    _send_mail(application, 'registration/reject_email.txt', BETATEST_REJECT_SUBJECT)
-    application.status = BetaTestApplication.REJECTED
-    application.save()
+    Monitor spawning of new appservers, to send the welcome email once it is ready.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+    application = instance.betatestapplication_set.first()  # There should only be one
+
+    if not application or application.status != BetaTestApplication.PENDING:
+        return
+
+    elif appserver is None:
+        raise ApplicationNotReady('Provisioning of AppServer failed.')
+
+    else:
+        accept_application(application, appserver)
+
+
+# Exceptions ##################################################################
+
+class ApplicationNotReady(Exception):
+    """
+    Raised when trying to process an application which isn't ready yet
+    """
+    pass

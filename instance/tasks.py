@@ -61,33 +61,19 @@ def spawn_appserver(
     Optionally tag the instance with 'success_tag' when the deployment succeeds,
     or failure_tag if it fails.
     """
-    for i in range(1, num_attempts + 1):
-        logger.info('Retrieving instance: ID=%s', instance_ref_id)
-        # Fetch the instance inside the loop, in case it has been updated
-        instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
+    logger.info('Retrieving instance: ID=%s', instance_ref_id)
+    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
-        instance.logger.info('Spawning new AppServer, attempt %d of %d', i, num_attempts)
-        try:
-            appserver_id = instance.spawn_appserver()
-        except Exception:  # pylint: disable=broad-except
-            appserver_id = None
-        if appserver_id:
-            if failure_tag:
-                instance.tags.remove(failure_tag)
-            if success_tag:
-                instance.tags.add(success_tag)
-            if mark_active_on_success:
-                make_appserver_active(
-                    appserver_id,
-                    active=mark_active_on_success,
-                    deactivate_others=deactivate_old_appservers
-                )
-            break
-    else:
-        if failure_tag:
-            instance.tags.add(failure_tag)
-        if success_tag:
-            instance.tags.remove(success_tag)
+    appserver = instance.spawn_appserver(
+        num_attempts=num_attempts,
+        success_tag=success_tag,
+        failure_tag=failure_tag
+    )
+
+    if appserver and mark_active_on_success:
+        make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
+
+    return appserver
 
 
 @db_task()

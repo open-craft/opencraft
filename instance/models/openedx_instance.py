@@ -29,6 +29,7 @@ from django.utils import timezone
 
 from instance import gandi
 from instance.logging import log_exception
+from instance.signals import appserver_spawned
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
@@ -191,12 +192,11 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         except models.ObjectDoesNotExist:
             return
 
-    @log_exception
-    def spawn_appserver(self):
+    def _spawn_appserver(self):
         """
-        Provision a new AppServer.
+            Provision a new AppServer
 
-        Returns the ID of the new AppServer on success or None on failure.
+            Returns the ID of the new AppServer on success or None on failure.
         """
         if not self.load_balancing_server:
             self.load_balancing_server = LoadBalancingServer.objects.select_random()
@@ -225,16 +225,62 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.logger.info('Provisioning RabbitMQ vhost...')
             self.provision_rabbitmq()
 
-        app_server = self._create_owned_appserver()
+        return self._create_owned_appserver()
 
-        if app_server.provision():
-            self.logger.info('Provisioned new app server, %s', app_server.name)
-            self.successfully_provisioned = True
-            self.save()
-            return app_server.pk
-        else:
+    @log_exception
+    def spawn_appserver(self,
+                        mark_active_on_success=False,
+                        num_attempts=1,
+                        success_tag=None,
+                        failure_tag=None):
+        """
+        Provision a new AppServer
+
+        Wrapper around the spawning function to allow for multiple attempts
+
+        Optionally mark the new AppServer as active when the provisioning completes.
+        Optionally retry up to 'num_attempts' times.
+        Optionally tag the instance with 'success_tag' when the deployment succeeds,
+        or failure_tag if it fails.
+
+        Returns the ID of the new AppServer or None in case of failure.
+        """
+        for attempt in range(num_attempts):
+            self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
+            app_server = self._spawn_appserver()
+
+            if app_server and app_server.provision():
+                break
+
             self.logger.error('Failed to provision new app server')
-            return None
+
+        else:
+            self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
+            if failure_tag:
+                self.tags.add(failure_tag)
+            if success_tag:
+                self.tags.remove(success_tag)
+
+            # Warn spawn failed after given attempts
+            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
+            return
+
+        self.logger.info('Provisioned new app server, %s', app_server.name)
+        self.successfully_provisioned = True
+        self.save()
+
+        if failure_tag:
+            self.tags.remove(failure_tag)
+        if success_tag:
+            self.tags.add(success_tag)
+
+        if mark_active_on_success:
+            # use task.make_appserver_active to allow disabling others
+            app_server.make_active()
+
+        appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server)
+
+        return app_server.pk
 
     def _create_owned_appserver(self):
         """

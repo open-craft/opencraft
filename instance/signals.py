@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2017 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,25 +17,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Admin for the registration app
+Instance app - Signals
 """
 
 # Imports #####################################################################
 
-from django.contrib import admin
-
-from registration.models import BetaTestApplication
+import django.dispatch
 
 
-# ModelAdmins #################################################################
+# Signals #####################################################################
 
-class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
-    list_display = ('user', 'domain', 'instance_name', 'public_contact_email',
-                    'status', 'first_activated', 'created')
-    list_filter = ('status', 'subscribe_to_updates')
-    search_fields = ('user__username', 'subdomain', 'instance_name',
-                     'public_contact_email')
-    date_hierarchy = 'created'
-
-
-admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)
+# Emitted after an appserver has been spawned
+# After all attempts have been tried, and the appserver activated if applicable
+appserver_spawned = django.dispatch.Signal(providing_args=['instance', 'appserver'])

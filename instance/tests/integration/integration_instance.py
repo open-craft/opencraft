@@ -45,6 +45,7 @@ from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tests.integration.utils import check_url_accessible, get_url_contents, is_port_open
 from instance.tasks import spawn_appserver
 from opencraft.tests.utils import shard
+from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
 
@@ -273,7 +274,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance_name=instance.name,
             public_contact_email='publicemail@example.com',
             project_description='I want to beta test OpenCraft IM',
-            status=BetaTestApplication.ACCEPTED,
+            status=BetaTestApplication.PENDING,
             # The presence of these colors will be checked later
             # Note: avoid string like #ffbb66 because it would be shortened to #fb6 and therefore
             # much harder to detect ("#ffbb66" wouldn't appear in CSS). Use e.g. #ffbb67
@@ -287,7 +288,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        appserver = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
         self.assert_instance_up(instance)
         self.assert_appserver_firewalled(instance)
@@ -297,6 +298,48 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_secret_keys(instance, appserver)
             self.assert_lms_users_provisioned(user, appserver)
             self.assert_theme_provisioned(instance, appserver, application)
+
+    @shard(1)
+    def test_betatest_accepted(self):
+        """
+        Provision an instance, spawn an AppServer and accepts the application.
+        """
+        OpenEdXInstanceFactory(
+            name='Integration - test_spawn_appserver',
+            deploy_simpletheme=True,
+        )
+        instance = OpenEdXInstance.objects.get()
+
+        # Add an lms user, as happens with beta registration
+        user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+
+        # Simulate that the application form was filled. This doesn't create another instance nor user
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='betatestdomain',
+            instance_name=instance.name,
+            public_contact_email='publicemail@example.com',
+            project_description='I want to beta test OpenCraft IM',
+            status=BetaTestApplication.PENDING,
+            # The presence of these colors will be checked later
+            # Note: avoid string like #ffbb66 because it would be shortened to #fb6 and therefore
+            # much harder to detect ("#ffbb66" wouldn't appear in CSS). Use e.g. #ffbb67
+            main_color='#13709b',
+            link_color='#14719c',
+            header_bg_color='#ffbb67',
+            footer_bg_color='#ddff89',
+            instance=instance,
+        )
+
+        # We don't want to simulate e-mail verification of the user who submitted the application,
+        # because that would start provisioning. Instead, we provision ourselves here.
+
+        appserver = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+
+        # Test accepting beta test application
+        on_appserver_spawned(None, instance=instance, appserver=appserver)
+        self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)
 
     @shard(2)
     def test_external_databases(self):
