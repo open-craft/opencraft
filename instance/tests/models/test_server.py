@@ -29,6 +29,7 @@ from unittest.mock import Mock, call, patch
 from ddt import ddt, data, unpack
 from django.conf import settings
 import novaclient
+import requests
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
@@ -384,6 +385,32 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
+
+    @data(
+        requests.RequestException('Error'),
+        novaclient.exceptions.ClientException('Error'),
+        novaclient.exceptions.EndpointNotFound('Error'),
+    )
+    def test_terminate_server_openstack_api_error(self, exception):
+        """
+        Terminate a server when there are errors connecting to the OpenStack API
+        """
+        server = OpenStackServerFactory()
+
+        def raise_openstack_api_error(): #pylint: disable=missing-docstring
+            raise exception
+
+        server.os_server.delete.side_effect = raise_openstack_api_error
+
+        server.logger = Mock()
+        mock_logger = server.logger
+
+        server.terminate()
+        self.assertEqual(server.status, ServerStatus.Unknown)
+        server.os_server.delete.assert_called_once_with()
+        mock_logger.error.assert_called_once_with(
+            AnyStringMatching('Unable to reach the OpenStack API due to'), exception
+        )
 
     def test_public_ip_new_server(self):
         """

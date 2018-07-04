@@ -436,10 +436,16 @@ class OpenStackServer(Server):
             self._status_to_terminated()
             return
 
-        self._status_to_terminated()
         try:
             self.os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
-        except (novaclient.exceptions.ClientException, novaclient.exceptions.EndpointNotFound) as exc:
+            self._status_to_terminated()
+        except (requests.RequestException,
+                novaclient.exceptions.ClientException,
+                novaclient.exceptions.EndpointNotFound) as exc:
             self.logger.error('Unable to reach the OpenStack API due to %s', exc)
+            if self.status != Status.Unknown:
+                self._status_to_unknown()
+        else:
+            self._status_to_terminated()
