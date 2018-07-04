@@ -245,6 +245,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "DISCOVERY_HOSTNAME": '~{}'.format(self.instance.discovery_domain_nginx_regex),
             "DISCOVERY_NGINX_PORT": 80,
             "DISCOVERY_SSL_NGINX_PORT": 443,
+            "DISCOVERY_VERSION": self.openedx_release,
 
             # RabbitMQ disabled locally
             "SANBOX_ENABLE_RABBITMQ": False,

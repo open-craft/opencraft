@@ -47,6 +47,8 @@ from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
+
+@ddt  # pylint: disable=too-many-public-methods
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
@@ -200,6 +202,52 @@ class OpenEdXAppServerTestCase(TestCase):
         instance = OpenEdXInstanceFactory(openstack_region="elsewhere")
         make_test_appserver(instance)
         mock_get_nova_client.assert_called_once_with("elsewhere")
+
+    @data(
+        'ANALYTICS_API_VERSION',
+        'DISCOVERY_VERSION',
+        'ECOMMERCE_VERSION',
+        'INSIGHTS_VERSION',
+        'NOTIFIER_VERSION',
+    )
+    def test_default_component_versions(self, component_version):
+        """
+        Test the default value of components' version
+        """
+        instance = OpenEdXInstanceFactory(
+            name='Vars Instance',
+            email='vars@example.com',
+            openedx_release='dummy-release'
+        )
+        appserver = make_test_appserver(instance)
+        self.assertIn(
+            '{}: dummy-release'.format(component_version), appserver.configuration_settings
+        )
+
+    @data(
+        'ANALYTICS_API_VERSION',
+        'DISCOVERY_VERSION',
+        'ECOMMERCE_VERSION',
+        'INSIGHTS_VERSION',
+        'NOTIFIER_VERSION',
+    )
+    def test_component_versions_on_override(self, component_version):
+        """
+        Test the components' version values on override
+        """
+        extra_configuration = """
+        {}: dummy-release
+        """.format(component_version)
+        instance = OpenEdXInstanceFactory(
+            name='Vars Instance',
+            email='vars@example.com',
+            openedx_release='open-release/ginkgo.2',
+            configuration_extra_settings=extra_configuration,
+        )
+        appserver = make_test_appserver(instance)
+        self.assertIn(
+            '{}: dummy-release'.format(component_version), appserver.configuration_settings
+        )
 
     def test_configuration_extra_settings(self):
         """
