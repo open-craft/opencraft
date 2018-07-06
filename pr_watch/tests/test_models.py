@@ -131,7 +131,6 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.ref_type, 'tag')
 
     @override_settings(
-        INSTANCE_EPHEMERAL_DATABASES=True,
         DEFAULT_INSTANCE_BASE_DOMAIN='basedomain.com',
         DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX='lms-preview.',
         DEFAULT_STUDIO_DOMAIN_PREFIX='studio-'
@@ -157,31 +156,10 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.internal_studio_domain, 'studio-{}'.format(internal_lms_domain))
         self.assertRegex(instance.name, r'^PR')
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
-        self.assertTrue(instance.use_ephemeral_databases)
 
         same_instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertEqual(instance, same_instance)
         self.assertFalse(created)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    def test_create_from_pr_ephemeral_databases(self):
-        """
-        Instances should use ephemeral databases if requested in the PR
-        """
-        pr = PRFactory(body='pr123.sandbox.example.com (ephemeral databases)', number=123)
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
-        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
-        self.assertTrue(instance.use_ephemeral_databases)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
-    def test_create_from_pr_persistent_databases(self):
-        """
-        Instances should use persistent databases if requested in the PR
-        """
-        pr = PRFactory(body='pr123.sandbox.example.com (persistent databases)', number=123)
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
-        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
-        self.assertFalse(instance.use_ephemeral_databases)
 
     def test_create_from_pr_and_watchedfork_values(self):
         """

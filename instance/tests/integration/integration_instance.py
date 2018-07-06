@@ -293,7 +293,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_instance_up(instance)
         self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
-        self.assertTrue(instance.require_user_creation_success())
         for appserver in instance.appserver_set.all():
             self.assert_secret_keys(instance, appserver)
             self.assert_lms_users_provisioned(user, appserver)
@@ -349,7 +348,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         if not settings.DEFAULT_INSTANCE_MYSQL_URL or not settings.DEFAULT_INSTANCE_MONGO_URL:
             print('External databases not configured, skipping integration test')
             return
-        OpenEdXInstanceFactory(name='Integration - test_external_databases', use_ephemeral_databases=False)
+        OpenEdXInstanceFactory(name='Integration - test_external_databases')
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
@@ -372,7 +371,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
         self.assertTrue(instance.successfully_provisioned)
-        self.assertTrue(instance.require_user_creation_success())
 
         user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
 

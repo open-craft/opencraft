@@ -87,28 +87,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.created, instance.ref.created)
         self.assertEqual(instance.modified, instance.ref.modified)
         self.assertEqual(instance.additional_security_groups, [])
-        self.assertEqual(instance.use_ephemeral_databases, settings.INSTANCE_EPHEMERAL_DATABASES)
         self.assertFalse(instance.deploy_simpletheme)
         self.assertTrue(instance.rabbitmq_vhost)
         self.assertTrue(instance.rabbitmq_consumer_user)
         self.assertTrue(instance.rabbitmq_provider_user)
 
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
         """
         Create an instance without specifying additional fields,
         leaving it up to the create method to set them
         """
         instance = OpenEdXInstance.objects.create(sub_domain='sandbox.defaults')
-        self._assert_defaults(instance)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    def test_create_defaults_persistent_databases(self):
-        """
-        Create an instance without specifying additional fields,
-        leaving it up to the create method to set them
-        """
-        instance = OpenEdXInstance.objects.create(sub_domain='production.defaults')
         self._assert_defaults(instance)
 
     def test_id_different_from_ref_id(self):
@@ -211,7 +200,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
 
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mock_provision.call_count, 1)
@@ -220,10 +209,10 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.appserver_set.count(), 1)
         self.assertFalse(instance.get_active_appservers().exists())
 
-        # We are using ephemeral databases:
-        self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
-        self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
-        self.assertEqual(mocks.mock_provision_swift.call_count, 0)
+        # Make sure databases were provisioned:
+        self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
+        self.assertEqual(mocks.mock_provision_swift.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
         dns_records = gandi.api.client.list_records('example.com')
@@ -243,9 +232,13 @@ class OpenEdXInstanceTestCase(TestCase):
                 getattr(instance, field_name),
                 getattr(appserver, field_name),
             )
-        self.assertEqual(appserver.configuration_database_settings, "")
-        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
-        self.assertEqual(appserver.configuration_storage_settings, ephemeral_settings)
+        storage_settings = {
+            'EDXAPP_DEFAULT_FILE_STORAGE: swift.storage.SwiftStorage',
+            'EDXAPP_GRADE_STORAGE_CLASS: swift.storage.SwiftStorage',
+            'VHOST_NAME: openstack',
+            'XQUEUE_SETTINGS: openstack_settings'
+        }
+        self.assertTrue(storage_settings <= set(appserver.configuration_storage_settings.split('\n')))
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
@@ -258,7 +251,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Check that newrelic ansible vars are set correctly
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.newrelic', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.newrelic')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
@@ -276,7 +269,6 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(
             sub_domain='test.spawn',
-            use_ephemeral_databases=True,
             external_lms_domain='lms.external.com',
             external_lms_preview_domain='lmspreview.external.com',
             external_studio_domain='cms.external.com'
@@ -296,7 +288,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence multiple times and check names of resulting app servers
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn_names', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn_names')
 
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -316,7 +308,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Provision an AppServer with a user added to lms_users.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
         appserver_id = instance.spawn_appserver()
@@ -341,10 +333,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
-        instance = OpenEdXInstanceFactory(
-            sub_domain='test.spawn',
-            use_ephemeral_databases=True,
-        )
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
         appserver_id = instance.spawn_appserver()
@@ -366,7 +355,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
         result = instance.spawn_appserver(num_attempts=1)
@@ -384,7 +373,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence, with external databases
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.persistent', use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory(sub_domain='test.persistent')
 
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
@@ -404,7 +393,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Ensure the FORUM_API_KEY matches EDXAPP_COMMENTS_SERVICE_KEY
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
@@ -426,7 +415,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test that the load balancer configuration gets generated correctly.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
         domain_names = [
             "test.load_balancer.example.com",
             "preview-test.load_balancer.example.com",
@@ -471,8 +460,7 @@ class OpenEdXInstanceTestCase(TestCase):
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           external_ecommerce_domain='ecom.myexternal.org',
-                                          external_discovery_domain='catalog.myexternal.org',
-                                          use_ephemeral_databases=True)
+                                          external_discovery_domain='catalog.myexternal.org')
         domain_names = [
             'test.load_balancer.opencraft.hosting',
             'preview-test.load_balancer.opencraft.hosting',
@@ -500,7 +488,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test that an instance can be deleted directly or by its InstanceReference.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.deletion')
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 

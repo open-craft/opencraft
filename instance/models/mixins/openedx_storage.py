@@ -31,7 +31,7 @@ from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, Storage
 class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3BucketInstanceMixin):
     """
     Mixin that provides functionality required for the storage backends that an OpenEdX
-    Instance uses (when not using ephemeral databases)
+    Instance uses
     """
     class Meta:
         abstract = True
@@ -151,11 +151,6 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         Get configuration_storage_settings to pass to a new AppServer
         """
-        if self.use_ephemeral_databases:
-            # Workaround for broken CMS course export/import
-            # caused by https://github.com/edx/edx-platform/pull/14552
-            return yaml.dump({"EDXAPP_IMPORT_EXPORT_BUCKET": ""}, default_flow_style=False)
-
         if self.storage_type == self.S3_STORAGE and \
                 self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
             return yaml.dump(self._get_s3_settings(), default_flow_style=False)

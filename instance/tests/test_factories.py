@@ -49,13 +49,11 @@ class FactoriesTestCase(TestCase):
         "}"
     )
     SANDBOX_DEFAULTS = {
-        "use_ephemeral_databases": True,
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,
         "openedx_release": settings.DEFAULT_OPENEDX_RELEASE,
         "configuration_extra_settings": "",
     }
     PRODUCTION_DEFAULTS = {
-        "use_ephemeral_databases": False,
         "configuration_version": settings.STABLE_CONFIGURATION_VERSION,
         "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
         "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
@@ -65,7 +63,6 @@ class FactoriesTestCase(TestCase):
             self,
             instance,
             sub_domain,
-            use_ephemeral_databases=SANDBOX_DEFAULTS["use_ephemeral_databases"],
             configuration_version=SANDBOX_DEFAULTS["configuration_version"],
             openedx_release=SANDBOX_DEFAULTS["openedx_release"],
             configuration_extra_settings=SANDBOX_DEFAULTS["configuration_extra_settings"]
@@ -76,7 +73,6 @@ class FactoriesTestCase(TestCase):
         self.assertEqual(instance.internal_lms_domain, '{}.example.com'.format(sub_domain))
         self.assertEqual(instance.internal_lms_preview_domain, 'preview-{}.example.com'.format(sub_domain))
         self.assertEqual(instance.internal_studio_domain, 'studio-{}.example.com'.format(sub_domain))
-        self.assertEqual(instance.use_ephemeral_databases, use_ephemeral_databases)
         self.assertEqual(instance.configuration_version, configuration_version)
         self.assertEqual(instance.openedx_release, openedx_release)
         extra_settings = yaml.load(instance.configuration_extra_settings)

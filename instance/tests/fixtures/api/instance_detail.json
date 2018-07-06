@@ -8,7 +8,6 @@
     "domain": "pr12338.sandbox.example.com",
     "is_archived": false,
     "email": "contact@example.com",
-    "use_ephemeral_databases": true,
     "github_admin_organizations": "[\"open-craft\"]",
     "github_admin_users": "[]",
     "internal_lms_domain": "pr12338.sandbox.example.com",

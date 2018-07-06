@@ -32,7 +32,7 @@ from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
 class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
-    OpenEdX Instance uses (when not using ephemeral databases)
+    OpenEdX Instance uses
 
     TODO: ElasticSearch?
     """
@@ -422,12 +422,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
     def get_database_settings(self):
         """
         Get configuration_database_settings to pass to a new AppServer
-
-        Only needed when not using ephemeral databases
         """
-        if self.use_ephemeral_databases:
-            return ''
-
         new_settings = {}
 
         # MySQL:

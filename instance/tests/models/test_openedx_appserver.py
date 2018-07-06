@@ -267,7 +267,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test that lms_user_settings are initialised correctly for new AppServers.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory()
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
         appserver = make_test_appserver(instance)
@@ -289,7 +289,6 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(
             sub_domain='test.postfix.queue',
-            use_ephemeral_databases=True,
             email='test.postfix@myinstance.org',
             external_lms_domain='lms.myinstance.org'
         )
@@ -310,7 +309,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Check that ansible vars for postfix_queue role are not present when SMTP relay host is not configured.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue')
         appserver = make_test_appserver(instance)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_HOST', configuration_vars)
@@ -324,7 +323,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Check that EDXAPP_YOUTUBE_API_KEY is set to None by default.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey')
         appserver = make_test_appserver(instance)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
@@ -454,8 +453,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test is_active property and setter
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
-                                          use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
 
@@ -488,8 +486,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test make_active() and make_active(active=False)
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
-                                          use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
         appserver = instance.appserver_set.get(pk=appserver_id)

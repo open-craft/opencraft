@@ -205,7 +205,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Provision mysql database
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -216,8 +216,7 @@ class MySQLInstanceTestCase(TestCase):
         sub_domain = 'really.really.really.really.long.subdomain'
         base_domain = 'this-is-a-really-unusual-domain-แปลกมาก.com'
         internal_lms_domain = '{}.{}'.format(sub_domain, base_domain)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               internal_lms_domain=internal_lms_domain)
+        self.instance = OpenEdXInstanceFactory(internal_lms_domain=internal_lms_domain)
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -225,7 +224,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Only create the database once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mysql()
         self.assertIs(self.instance.mysql_provisioned, True)
 
@@ -240,7 +239,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Don't provision a mysql database if instance has no MySQL server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mysql_server = None
         self.instance.save()
         self.instance.provision_mysql()
@@ -257,7 +256,7 @@ class MySQLInstanceTestCase(TestCase):
         # Delete MySQLServer object created during the migrations to allow the settings override to
         # take effect.
         MySQLServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         expected_host = "mysql.opencraft.com"
         expected_port = MYSQL_SERVER_DEFAULT_PORT
 
@@ -368,17 +367,9 @@ class MySQLInstanceTestCase(TestCase):
         """
         Don't add mysql ansible vars if instance has no MySQL server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mysql_server = None
         self.instance.save()
-        self.check_mysql_vars_not_set(self.instance)
-
-    @override_settings(DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@mysql.opencraft.com')
-    def test_ansible_settings_mysql_ephemeral(self):
-        """
-        Don't add mysql ansible vars for ephemeral databases
-        """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         self.check_mysql_vars_not_set(self.instance)
 
 
@@ -445,7 +436,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Provision mongo databases
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mongo()
         self.check_mongo()
 
@@ -453,7 +444,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Only create the databases once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mongo()
         self.assertIs(self.instance.mongo_provisioned, True)
 
@@ -469,7 +460,7 @@ class MongoDBInstanceTestCase(TestCase):
         Don't provision a mongo database if instance has no MongoDB server
         """
         mongo = pymongo.MongoClient(settings.DEFAULT_INSTANCE_MONGO_URL)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mongodb_server = None
         self.instance.save()
         self.instance.provision_mongo()
@@ -485,7 +476,7 @@ class MongoDBInstanceTestCase(TestCase):
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_set(appserver, expected_hosts='mongo.opencraft.com')
 
@@ -512,8 +503,7 @@ class MongoDBInstanceTestCase(TestCase):
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               openedx_release=openedx_release,
+        self.instance = OpenEdXInstanceFactory(openedx_release=openedx_release,
                                                configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_set(appserver, expected_hosts="\n- test.opencraft.hosting")
@@ -540,8 +530,7 @@ class MongoDBInstanceTestCase(TestCase):
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               openedx_release=openedx_release,
+        self.instance = OpenEdXInstanceFactory(openedx_release=openedx_release,
                                                configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_set(appserver,
@@ -554,18 +543,9 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Don't add mongo ansible vars if instance has no MongoDB server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mongodb_server = None
         self.instance.save()
-        appserver = make_test_appserver(self.instance)
-        self.check_mongo_vars_not_set(appserver)
-
-    @override_settings(DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@mongo.opencraft.com')
-    def test_ansible_settings_mongo_ephemeral(self):
-        """
-        Don't add mysql ansible vars for ephemeral databases
-        """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
 
@@ -581,7 +561,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Main database url should be extracted from primary replica set MongoDBServer
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.assertEqual(
             self.instance._get_main_database_url(),
             "mongodb://test:test@test.opencraft.hosting"
@@ -595,7 +575,7 @@ class RabbitMQInstanceTestCase(TestCase):
     """
     def setUp(self):
         super().setUp()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
 
     @responses.activate
     @ddt.data(
@@ -617,7 +597,7 @@ class RabbitMQInstanceTestCase(TestCase):
         # Mock the URL with a uniquely identifying body so that we can verify that the
         # correct URL is formed and called.
         responses.add(method, url, json=expected_body)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         response = self.instance._rabbitmq_request(method.lower(), *url_parts)
 
         self.assertDictEqual(

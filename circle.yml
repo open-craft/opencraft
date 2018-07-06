@@ -6,7 +6,6 @@ jobs:
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
-          INSTANCE_EPHEMERAL_DATABASES: 'false'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
       - image: redis
