@@ -47,6 +47,8 @@ class ConfigMixinBase(models.Model):
         """Get all Filebeat-related ansible variables."""
         return {
             'filebeat_logstash_hosts': settings.FILEBEAT_LOGSTASH_HOSTS,
-            'filebeat_ca_cert_url': settings.FILEBEAT_CA_CERT_URL,
+            'filebeat_ca_cert': settings.FILEBEAT_CA_CERT,
+            'filebeat_cert': settings.FILEBEAT_CERT,
+            'filebeat_key': settings.FILEBEAT_KEY,
             'filebeat_common_prospector_fields': settings.FILEBEAT_COMMON_PROSPECTOR_FIELDS,
         }

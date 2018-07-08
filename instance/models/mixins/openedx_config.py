@@ -356,7 +356,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 {
                     'fields': {
                         'type': 'edxapp',
-                        'host': self.instance.domain,
                     },
                     'paths': [
                         '/edx/var/log/*/edx.log',
@@ -366,7 +365,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 {
                     'fields': {
                         'type': 'edxapp',
-                        'host': self.instance.domain,
                         'level': 'error',
                     },
                     'paths': [
