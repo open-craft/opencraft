@@ -407,7 +407,9 @@ Required settings:
 ## Filebeat settings
 
 * `FILEBEAT_LOGSTASH_HOSTS`: The Logstash host to forward logs to.
-* `FILEBEAT_CA_CERT_URL`: The URL to retrieve the public CA certificate from.
+* `FILEBEAT_CA_CERT`: The CA certificate used to verify the Logstash host.
+* `FILEBEAT_CERT`: The TLS certificate used for client authentication against Logstash.
+* `FILEBEAT_KEY`: The TLS private key used for client authentication against Logstash.
 * `FILEBEAT_COMMON_PROSPECTOR_FIELDS`: Common fields for all Filebeat prospectors.
 
 ### Sandbox settings

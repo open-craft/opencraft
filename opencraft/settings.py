@@ -688,11 +688,13 @@ CONSUL_SERVERS = env.list('CONSUL_SERVERS', default=[])
 
 # Filebeat ####################################################################
 
-# The Logstash host to forward logs to.
+# The Logstash hosts to forward logs to.
 FILEBEAT_LOGSTASH_HOSTS = env.list('FILEBEAT_LOGSTASH_HOSTS', default=[])
 
-# The URL to retrieve the public CA certificate from.
-FILEBEAT_CA_CERT_URL = env('FILEBEAT_CA_CERT_URL', default='')
+# TLS details that Filebeat needs to connect to the Logstash hosts.
+FILEBEAT_CA_CERT = env('FILEBEAT_CA_CERT', default='')
+FILEBEAT_CERT = env('FILEBEAT_CERT', default='')
+FILEBEAT_KEY = env('FILEBEAT_KEY', default='')
 
 # Common fields for all Filebeat prospectors.
 FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS', default={})
