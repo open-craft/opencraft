@@ -221,6 +221,7 @@ class S3BucketInstanceMixin(models.Model):
         keys = key_response['create_access_key_response']['create_access_key_result']['access_key']
         self.s3_access_key = keys['access_key_id']
         self.s3_secret_access_key = keys['secret_access_key']
+        self.save()
 
     def get_s3_connection(self):
         """
@@ -231,7 +232,7 @@ class S3BucketInstanceMixin(models.Model):
             self.s3_secret_access_key
         )
 
-    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=1):
+    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=4):
         """
         Create bucket, retry up to defined attempts if it fails
         """
