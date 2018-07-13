@@ -249,7 +249,7 @@ class S3BucketInstanceMixin(models.Model):
                 ongoing_attempt, attempts
             )
             ongoing_attempt += 1
-            self._create_bucket(attempts=attempts, ongoing_attempt=ongoing_attempt)
+            self._create_bucket(attempts=attempts, ongoing_attempt=ongoing_attempt, retry_delay=retry_delay)
 
     def provision_s3(self):
         """
