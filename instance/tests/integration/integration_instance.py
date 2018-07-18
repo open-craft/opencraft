@@ -252,7 +252,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         self._assert_theme_favicon_in_html(instance, application, favicon_url)
 
-    @shard(1)
     def test_spawn_appserver(self):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
@@ -408,6 +407,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
+    @shard(3)
     @patch_git_checkout
     def test_ansible_failure(self, git_checkout, git_working_dir):
         """
@@ -425,6 +425,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
+    @shard(1)
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
     def test_ansible_failignore(self, heartbeat_active, git_checkout, git_working_dir):
@@ -444,6 +445,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
+    @shard(1)
     def test_openstack_server_terminated(self):
         """
         Test that OpenStackServer detects if the VM was terminated externally.
