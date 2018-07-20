@@ -221,6 +221,7 @@ class MySQLInstanceMixin(models.Model):
             _create_user(cursor, self.admin_user, self._get_mysql_pass(self.admin_user))
             _grant_privileges(cursor, "*", self.admin_user, "CREATE USER")
 
+            cursor.close()
             self.mysql_provisioned = True
             self.save()
 
