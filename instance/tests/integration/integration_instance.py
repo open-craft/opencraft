@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
+from django.test import override_settings
 from django.utils.six import StringIO
 import MySQLdb as mysql
 import pymongo
@@ -252,6 +253,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         self._assert_theme_favicon_in_html(instance, application, favicon_url)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_spawn_appserver(self):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
@@ -298,12 +300,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_theme_provisioned(instance, appserver, application)
 
     @shard(1)
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_betatest_accepted(self):
         """
         Provision an instance, spawn an AppServer and accepts the application.
         """
         OpenEdXInstanceFactory(
-            name='Integration - test_spawn_appserver',
+            name='Integration - test_betatest_accepted',
             deploy_simpletheme=True,
         )
         instance = OpenEdXInstance.objects.get()
@@ -340,6 +343,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)
 
     @shard(2)
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_external_databases(self):
         """
         Ensure that the instance can connect to external databases
@@ -361,11 +365,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_mongo_db_provisioned(instance)
 
     @shard(3)
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_activity_csv(self):
         """
         Run the activity_csv management command against a live instance.
         """
-        OpenEdXInstanceFactory(name='Integration - test_spawn_appserver')
+        OpenEdXInstanceFactory(name='Integration - test_activity_csv')
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
@@ -400,7 +405,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             '"Age (Days)"',
             out_lines[0]
         )
-        self.assertIn('"Integration - test_spawn_appserver"', out_lines[1])
+        self.assertIn('"Integration - test_activity_csv"', out_lines[1])
         self.assertIn('"betatest@example.com"', out_lines[1])
         self.assertNotIn('N/A', out_lines[1])
 
@@ -409,6 +414,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
     @shard(3)
     @patch_git_checkout
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failure(self, git_checkout, git_working_dir):
         """
         Ensure failures in the ansible flow are reflected in the instance
@@ -428,6 +434,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
     @shard(1)
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failignore(self, heartbeat_active, git_checkout, git_working_dir):
         """
         Ensure failures that are ignored aren't reflected in the instance
@@ -446,6 +453,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
     @shard(1)
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
         """
         Test that OpenStackServer detects if the VM was terminated externally.
