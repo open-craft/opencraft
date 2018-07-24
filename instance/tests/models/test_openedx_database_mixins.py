@@ -501,7 +501,6 @@ class MongoDBInstanceTestCase(TestCase):
         ('open-release/ficus', 'open-release/ficus'),
         ('open-release/ficus', 'opencraft-release/ficus'),
         ('open-release/ginkgo', 'open-release/ginkgo'),
-        ('open-release/ginkgo', 'opencraft-release/ginkgo'),
         (settings.OPENEDX_RELEASE_STABLE_REF, settings.STABLE_CONFIGURATION_VERSION),
     )
     @ddt.unpack
@@ -528,6 +527,7 @@ class MongoDBInstanceTestCase(TestCase):
         DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
     )
     @ddt.data(
+        ('open-release/ginkgo', 'opencraft-release/ginkgo'),
         (settings.DEFAULT_OPENEDX_RELEASE, settings.DEFAULT_CONFIGURATION_VERSION),
     )
     @ddt.unpack
