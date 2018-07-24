@@ -382,6 +382,7 @@ class MySQLInstanceTestCase(TestCase):
         self.check_mysql_vars_not_set(self.instance)
 
 
+@ddt.ddt
 class MongoDBInstanceTestCase(TestCase):
     """
     Test cases for MongoDBInstanceMixin and OpenEdXDatabaseMixin
@@ -418,6 +419,27 @@ class MongoDBInstanceTestCase(TestCase):
                     'FORUM_MONGO_PORT',
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, appserver.configuration_settings)
+
+    def check_mongo_vars_set(self, appserver, expected_hosts, expected_replica_set=None):
+        """
+        Check that the given OpenEdXAppServer is using the expected mongo settings.
+        """
+        ansible_vars = appserver.configuration_settings
+        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
+        # Use regex match, because sometimes the mongo hosts are unordered
+        self.assertRegex(ansible_vars, r"EDXAPP_MONGO_HOSTS:\s*{0}\n".format(expected_hosts))
+        if expected_replica_set:
+            self.assertIn('EDXAPP_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
+        else:
+            self.assertNotIn('EDXAPP_MONGO_REPLICA_SET', ansible_vars)
+
+        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
+        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 
     def test_provision_mongo(self):
         """
@@ -465,16 +487,7 @@ class MongoDBInstanceTestCase(TestCase):
         MongoDBServer.objects.all().delete()
         self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
         appserver = make_test_appserver(self.instance)
-        ansible_vars = appserver.configuration_settings
-        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_HOSTS: mongo.opencraft.com', ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
-        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+        self.check_mongo_vars_set(appserver, expected_hosts='mongo.opencraft.com')
 
     @override_settings(
         DEFAULT_INSTANCE_MONGO_URL=None,
@@ -484,28 +497,57 @@ class MongoDBInstanceTestCase(TestCase):
         DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
         DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
     )
-    def test_ansible_settings_mongo_replica_set(self):
+    @ddt.data(
+        ('open-release/ficus', 'open-release/ficus'),
+        ('open-release/ficus', 'opencraft-release/ficus'),
+        ('open-release/ginkgo', 'open-release/ginkgo'),
+        ('open-release/ginkgo', 'opencraft-release/ginkgo'),
+        (settings.OPENEDX_RELEASE_STABLE_REF, settings.STABLE_CONFIGURATION_VERSION),
+    )
+    @ddt.unpack
+    def test_ansible_settings_no_replica_set(self, openedx_release, configuration_version):
         """
-        Add mongo ansible vars if instance has a MongoDB replica set
+        Prior to Hawthorn, edx configuration does not support MongoDB replica sets,
+        and the mongo hosts must be a single host, provided as a list of strings.
         """
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
+                                               openedx_release=openedx_release,
+                                               configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
-        ansible_vars = appserver.configuration_settings
-        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertRegex(
-            ansible_vars,
-            r'EDXAPP_MONGO_HOSTS: test\d?.opencraft.hosting,test\d?.opencraft.hosting,test\d?.opencraft.hosting'
-        )
-        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
-        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+        self.check_mongo_vars_set(appserver, expected_hosts="\n- test.opencraft.hosting")
+
+    @override_settings(
+        DEFAULT_INSTANCE_MONGO_URL=None,
+        DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+        DEFAULT_MONGO_REPLICA_SET_USER="test",
+        DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+        DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+        DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+    )
+    @ddt.data(
+        (settings.DEFAULT_OPENEDX_RELEASE, settings.DEFAULT_CONFIGURATION_VERSION),
+    )
+    @ddt.unpack
+    def test_ansible_settings_use_replica_set(self, openedx_release, configuration_version):
+        """
+        Add mongo ansible vars if instance has a MongoDB replica set
+        Also, the mongo hosts are provied as a comma-separated string.
+        """
+        # Delete MongoDBServer object created during the migrations to allow the settings override
+        # to take effect.
+        MongoDBServer.objects.all().delete()
+        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
+                                               openedx_release=openedx_release,
+                                               configuration_version=configuration_version)
+        appserver = make_test_appserver(self.instance)
+        self.check_mongo_vars_set(appserver,
+                                  expected_hosts=r'test\d?.opencraft.hosting,'
+                                                 r'test\d?.opencraft.hosting,'
+                                                 r'test\d?.opencraft.hosting',
+                                  expected_replica_set='test_name')
 
     def test_ansible_settings_no_mongo_server(self):
         """
