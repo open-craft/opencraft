@@ -355,7 +355,9 @@ STABLE_EDX_PLATFORM_COMMIT = env('STABLE_EDX_PLATFORM_COMMIT', default=OPENEDX_R
 STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
-STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default=OPENEDX_RELEASE_STABLE_REF)
+# Note: until Hawthorn is released, OpenCraft uses their own ginkgo.1 configuration branch,
+# which includes backported replicaset support.
+STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/ginkgo.1')
 
 # The name of the security group to use for edxapp App servers.
 # This is used to set appropriate firewall rules to prevent external access to
