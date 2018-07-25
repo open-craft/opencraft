@@ -56,7 +56,7 @@ class FactoriesTestCase(TestCase):
     }
     PRODUCTION_DEFAULTS = {
         "use_ephemeral_databases": False,
-        "configuration_version": settings.OPENEDX_RELEASE_STABLE_REF,
+        "configuration_version": settings.STABLE_CONFIGURATION_VERSION,
         "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
         "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
     }

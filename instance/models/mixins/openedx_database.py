@@ -355,11 +355,14 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         primary_mongodb_server = self.primary_mongodb_server
         edxapp_mongo_hosts = ''
 
-        # Ginkgo (and previous) releases do not support replicasets, and require a list of hostnames.
-        if "ginkgo" in self.openedx_release or "ficus" in self.openedx_release:
+        # Upstream Ginkgo (and previous) releases do not support replicasets, and require a list of hostnames.
+        # OpenCraft backported replicaset support into Ginkgo release branches.
+        if (("ginkgo" in self.openedx_release and "opencraft" not in self.configuration_version) or
+                "ficus" in self.openedx_release):
             edxapp_mongo_hosts = [primary_mongodb_server.hostname]  # pylint: disable=redefined-variable-type
 
-        # Replicasets are supported by post-Ginkgo releases, and require a comma-separated string of hostnames.
+        # Replicasets are supported by OpenCraft's ginkgo, and upstream post-Ginkgo releases, and require a
+        # comma-separated string of hostnames.
         elif self.mongodb_replica_set:
             edxapp_mongo_hosts = ",".join(self.mongodb_servers.values_list('hostname', flat=True))
             extra_settings = {
