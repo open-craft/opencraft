@@ -18,6 +18,10 @@ job "memcached-1234" {
       config {
         command = "/usr/bin/memcached"
         args    = [
+          # Log to stdout
+          "-v",
+          # Listen only on localhost
+          "-l", "127.0.0.1",
           # TCP port
           "-p", "${NOMAD_PORT_cache}",
           # Memory limit.  The daemon won't use more than the limit, but may use significantly less.
@@ -25,10 +29,11 @@ job "memcached-1234" {
         ]
       }
       resources {
-        cpu    = 25 # MHz
+        cpu    = 20 # MHz
         # The daemon may grow bigger for some instances, capped at 64 MB, but will probably remain
         # smaller for most sandboxes and instances, so we don't want to make excessive allocations.
         memory = 32 # MB
+        disk = 0
         network {
           # Should be easily enough on average.  We don't want this to become a limiting factor for
           # scheduling.
@@ -36,16 +41,28 @@ job "memcached-1234" {
           port "cache" {}
         }
       }
-      # Register with Consul.
-      service {
-        name = "memcached-1234"
-        tags = ["memcached"]
-        port = "cache"
-        check {
-          name     = "alive"
-          type     = "tcp"
-          interval = "10s"
-          timeout  = "1s"
+    }
+    task "connect-proxy" {
+      driver = "exec"
+      config {
+        command = "/usr/local/bin/consul"
+        args    = [
+          "connect", "proxy",
+          "-service", "memcached-1234-${NOMAD_ALLOC_INDEX}",
+          "-service-addr", "127.0.0.1:${NOMAD_PORT_memcached_cache}",
+          "-listen", ":${NOMAD_PORT_cache}",
+          "-register",
+        ]
+      }
+      resources {
+        cpu = 20 # MHz
+        memory = 20 # MB
+        disk = 0
+        network {
+          # Should be easily enough on average.  We don't want this to become a limiting factor for
+          # scheduling.
+          mbits = 1
+          port "cache" {}
         }
       }
     }
