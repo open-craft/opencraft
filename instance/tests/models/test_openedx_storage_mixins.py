@@ -323,13 +323,12 @@ class SwiftContainerInstanceTestCase(TestCase):
             with self.assertLogs('instance.models.instance', level='INFO') as cm:
                 instance._create_bucket(attempts=attempts)
         base_log_text = (
-            'INFO:instance.models.instance:instance=%s (Test Instance 1) | Retrying bucket creation.'
-            ' IAM keys are not propagated yet, attempt {} of %s.' %
-            (instance.ref.pk, attempts)
+            'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation.'
+            ' IAM keys are not propagated yet, attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, attempts)
         )
         self.assertEqual(
             cm.output,
-            [base_log_text.format(i) for i in range(1, attempts + 1)]
+            [base_log_text % i for i in range(1, attempts + 1)]
         )
 
     @patch('boto.connect_iam')

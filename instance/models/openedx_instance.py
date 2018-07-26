@@ -24,6 +24,7 @@ import string
 from django.conf import settings
 from django.db import models, transaction
 from django.db.backends.utils import truncate_name
+from django.db.models import F
 from django.template import loader
 from django.utils import timezone
 
@@ -41,7 +42,7 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
-from instance.models.utils import WrongStateException
+from instance.models.utils import WrongStateException, ConsulAgent
 from instance.utils import sufficient_time_passed
 
 
@@ -101,7 +102,9 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.edx_platform_commit = self.openedx_release
         if self.storage_type is None:
             self.storage_type = settings.INSTANCE_STORAGE_TYPE
+
         super().save(**kwargs)
+        self.update_consul_metadata()
 
     def get_load_balancer_configuration(self, triggered_by_instance=False):
         """
@@ -354,7 +357,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
 
     def archive(self):
         """
-        Shut down this instance's app servers and mark it as archived.
+        Shut down this instance's app servers, mark it as archived and
+        remove its metadata from Consul.
         """
         self.disable_monitoring()
         self.remove_dns_records()
@@ -365,6 +369,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.reconfigure_load_balancer(load_balancer)
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
+        self.purge_consul_metadata()
         super().archive()
 
     @staticmethod
@@ -389,3 +394,97 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         self.deprovision_s3()
         self.deprovision_rabbitmq()
         super().delete(*args, **kwargs)
+
+    @property
+    def consul_prefix(self):
+        """
+        This is a property that helps determining a specific instance's rpefix in
+        Consul. The prefix helps in keeping different instances' configurations
+        separate from overridings and modifications.
+
+        :return: A unique Key-Value prefix for this instance in Consul.
+        """
+        return settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=self.id)
+
+    def _generate_consul_metadata(self):
+        """
+        Collects required configurations for this instance to reflect on Consul.
+        You can add, delete or alter configurations keys and values here which are
+        going to ve reflected in Consul immediately.
+
+        :return: A dict of the configurations.
+        """
+        active_servers = self.get_active_appservers()
+        basic_auth = self.http_auth_info_base64()
+        enable_health_checks = active_servers.count() > 1
+        active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
+
+        configurations = {
+            'name': self.name,
+            'domains': self.get_load_balanced_domains(),
+            'health_checks_enabled': enable_health_checks,
+            'basic_auth': basic_auth.decode(),
+            'active_app_servers': active_servers_data,
+        }
+
+        return configurations
+
+    def _write_metadata_to_consul(self, configurations):
+        """
+        Reflect passed configurations to Consul. Values on consul
+        will be updated only if they changed in this version of the
+        model using agent's `cas` parameter (Check-And-Set).
+
+        If we successfully updated at least one field in Consul
+        then the configurations' version number is gonna be incremented.
+
+        :note: This still doesn't apply removed-configurations case.
+        :param configurations: A dict object contains the configurations
+                               to be written on Consul.
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updated.
+        """
+        agent = ConsulAgent(prefix=self.consul_prefix)
+        version_updated = False
+
+        version_number = agent.get('version') or 0
+        for key, value in configurations.items():
+            index, stored_value = agent.get(key, index=True)
+            cas = index if stored_value else 0
+            agent.put(key, value, cas=cas)
+
+            if not version_updated and value != stored_value:
+                version_updated = True
+                version_number += 1
+                agent.put('version', version_number)
+
+        return version_number, version_updated
+
+    def update_consul_metadata(self):
+        """
+        This method is going over some pre-defined configurations fields
+        in this model to reflect their values on Consul.
+        If we successfully updated at least one field in Consul
+        then the configurations' version number is gonna be incremented.
+
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updated.
+        """
+        if not settings.CONSUL_ENABLED:
+            return 0, False
+
+        new_configurations = self._generate_consul_metadata()
+        version, updated = self._write_metadata_to_consul(new_configurations)
+
+        return version, updated
+
+    def purge_consul_metadata(self):
+        """
+        This method is responsible for purging all instances' metadata from
+        Consul if they exist.
+        """
+        if not settings.CONSUL_ENABLED:
+            return
+
+        agent = ConsulAgent(prefix=self.consul_prefix)
+        agent.purge()

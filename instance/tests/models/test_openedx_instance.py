@@ -21,16 +21,18 @@ OpenEdXInstance model - Tests
 """
 
 # Imports #####################################################################
-
-from datetime import timedelta
 import re
+from datetime import timedelta
 from unittest.mock import patch, Mock, PropertyMock
 
 import ddt
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.test import override_settings
 from django.utils import timezone
+
+import consul
 from freezegun import freeze_time
 import yaml
 
@@ -45,12 +47,12 @@ from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_services
+from instance.tests.utils import patch_services, skip_unless_consul_running
 
 
 # Tests #######################################################################
 
-@ddt.ddt
+@ddt.ddt # pylint: disable=too-many-lines
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -919,6 +921,160 @@ class OpenEdXInstanceTestCase(TestCase):
         msg = r"Use archive\(\) to shut down all of an instances app servers and remove it from the instance list."
         with self.assertRaisesRegex(AttributeError, msg):
             instance.shut_down()
+
+
+@skip_unless_consul_running()
+class OpenEdXInstanceConsulTestCase(TestCase):
+    """
+    Test cases for all Consul-related functionalities that resides in
+    OpenEdXInstance model
+    """
+    def setUp(self):
+        agent = consul.Consul()
+        if agent.kv.get('', recurse=True)[1]:
+            self.skipTest('Consul contains unknown values!')
+
+    def test_generate_consul_metadata(self):
+        """
+        Tests that the values and the keys we're storing in Consul are calculated as expected.
+        :return:
+        """
+        instance = OpenEdXInstanceFactory()
+        metadata = instance._generate_consul_metadata()
+
+        active_servers = instance.get_active_appservers()
+        basic_auth = instance.http_auth_info_base64()
+        enable_health_checks = active_servers.count() > 1
+        active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
+
+        expected_metadata = {
+            'name': instance.name,
+            'domains': instance.get_load_balanced_domains(),
+            'health_checks_enabled': enable_health_checks,
+            'basic_auth': basic_auth.decode(),
+            'active_app_servers': active_servers_data,
+        }
+
+        self.assertEqual(metadata, expected_metadata)
+        instance.purge_consul_metadata()
+
+    @override_settings(OCIM_ID='ocim-test')
+    def test_consul_prefix(self):
+        """
+        Each key we're saving in Consul contains a prefix that identifies the OCIM server
+        and the OpenEdx instance ID. The test insures that the prefix remains in the
+        expected shape.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.consul_prefix, '{}/instances/{}/'.format(settings.OCIM_ID, instance.pk))
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    def test_write_metadata_to_consul(self):
+        """
+        Tests that metadata actually reflected in a proper way on Consul.
+        - Metadata shouldn't be updated and the version must remain the same in every time
+          we saved the instance without modifying its Consul configurations.
+        - New values and extra fields should increment the configurations number in Consul.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        configs = {
+            'key1': 'value1',
+            'key2': 'value2',
+        }
+
+        # Writing new configurations to instance. (The first one ws written during the instance initialization)
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, True)
+
+        # Saving the same value again should not update Consul
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, False)
+
+        # Changing a value in the configs or adding a new one should should
+        # change the version
+        configs['key1'] = 'Key1 New Value'
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 3)
+        self.assertEqual(updated, True)
+
+        configs['newKey'] = 'New Value'
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 4)
+        self.assertEqual(updated, True)
+
+        instance.purge_consul_metadata()
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    def test_update_consul_metadata(self, metadata_mock):
+        """
+        Tests whether the wrapper built around Consul writer returns the expected results.
+        """
+        instance = OpenEdXInstanceFactory()
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+        }
+
+        # Initial store defaults
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 1)
+        self.assertEqual(updated, True)
+
+        # Test configurations changed
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+            'dummyKey3': 'dummyValue3',
+        }
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, True)
+
+        # Test configurations not changed
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, False)
+
+        instance.purge_consul_metadata()
+
+    @override_settings(CONSUL_ENABLED=False)
+    def test_update_consul_metadata_consul_disabled(self):
+        """
+        Tests functionality of disabling Consul from the settings
+        """
+        instance = OpenEdXInstanceFactory()
+
+        # Initial store defaults
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 0)
+        self.assertEqual(updated, False)
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    def test_purge_consul_metadata(self, metadata_mock):
+        """
+        Tests the functionality of deleting the Consul metadata for a specific instance
+        """
+        agent = consul.Consul()
+        instance = OpenEdXInstanceFactory()
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+        }
+
+        # Stored metadata in Consul should be fetched properly
+        instance.update_consul_metadata()
+        _, metadata = agent.kv.get('', recurse=True)
+        self.assertTrue(metadata)
+
+        # Purged metadata cannot be fetched
+        instance.purge_consul_metadata()
+        _, metadata = agent.kv.get('', recurse=True)
+        self.assertFalse(metadata)
 
 
 @ddt.ddt

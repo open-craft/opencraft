@@ -254,6 +254,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         if active:
             self.instance.enable_monitoring()
         self.instance.set_active_vm_dns_records()
+        self.instance.update_consul_metadata()
 
     @AppServer.status.only_for(AppServer.Status.New)
     def add_lms_users(self, lms_users):
