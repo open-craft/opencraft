@@ -99,9 +99,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         # automatically generated migrations, generating a new one when settings don't match
         if not self.edx_platform_commit:
             self.edx_platform_commit = self.openedx_release
-        if self.use_ephemeral_databases is None:
-            self.use_ephemeral_databases = settings.INSTANCE_EPHEMERAL_DATABASES
-        if not self.use_ephemeral_databases and self.storage_type is None:
+        if self.storage_type is None:
             self.storage_type = settings.INSTANCE_STORAGE_TYPE
         super().save(**kwargs)
 
@@ -209,21 +207,20 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         self.set_dns_records()
 
         # Provision external databases:
-        if not self.use_ephemeral_databases:
-            # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
-            # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
-            self.logger.info('Provisioning MySQL database...')
-            self.provision_mysql()
-            self.logger.info('Provisioning MongoDB databases...')
-            self.provision_mongo()
-            if self.storage_type == self.SWIFT_STORAGE:
-                self.logger.info('Provisioning Swift container...')
-                self.provision_swift()
-            elif self.storage_type == self.S3_STORAGE:
-                self.logger.info('Provisioning S3 bucket...')
-                self.provision_s3()
-            self.logger.info('Provisioning RabbitMQ vhost...')
-            self.provision_rabbitmq()
+        # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
+        # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
+        self.logger.info('Provisioning MySQL database...')
+        self.provision_mysql()
+        self.logger.info('Provisioning MongoDB databases...')
+        self.provision_mongo()
+        if self.storage_type == self.SWIFT_STORAGE:
+            self.logger.info('Provisioning Swift container...')
+            self.provision_swift()
+        elif self.storage_type == self.S3_STORAGE:
+            self.logger.info('Provisioning S3 bucket...')
+            self.provision_s3()
+        self.logger.info('Provisioning RabbitMQ vhost...')
+        self.provision_rabbitmq()
 
         return self._create_owned_appserver()
 
@@ -313,10 +310,10 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
         When provisioning users, we don't want to force incompatible changes (e.g., in email)
         if we've previously provisioned a database with the variables we were interested in initially.
-        This method returns false if a) we're using non-ephemeral databases and b) we've provisioned
-        an appserver (read: database) for this instance in the past.
+        This method returns false if we've provisioned an appserver (read: database) for this instance
+        in the past.
         """
-        return not self.successfully_provisioned or self.use_ephemeral_databases
+        return not self.successfully_provisioned
 
     def terminate_obsolete_appservers(self, days=2):
         """

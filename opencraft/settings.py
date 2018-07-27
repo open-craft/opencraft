@@ -257,7 +257,7 @@ OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='op
 OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
 
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
-# when Swift is enabled and INSTANCE_EPHEMERAL_DATABASES is disabled.
+# when Swift is enabled.
 
 INSTANCE_STORAGE_TYPE = env('INSTANCE_STORAGE_TYPE', default='swift')  # Keeping the previous behaviour for SWIFT_ENABLE
 
@@ -593,10 +593,6 @@ if 'file' in HANDLERS:
 
 
 # Instances ###################################################################
-
-# By default, instances use local mysql and mongo databases and local file storage.
-# Set this to False to use external databases and Swift object storage instead.
-INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=True)
 
 # Configure external databases here
 DEFAULT_INSTANCE_MYSQL_URL = env('DEFAULT_INSTANCE_MYSQL_URL', default=None)

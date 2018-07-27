@@ -99,19 +99,6 @@ def get_settings_from_pr_body(pr_body):
         return ''
 
 
-def is_pr_body_requesting_ephemeral_databases(pr_body, domain):
-    """
-    Return True if the PR body specified that the sandbox should use ephemeral
-    databases, False if it specifies persistent databases, or None otherwise
-    """
-    escaped_domain = re.escape(domain)
-    if re.search(r'{0}.*ephemeral databases?'.format(escaped_domain), pr_body):
-        return True
-    if re.search(r'{0}.*persistent databases?'.format(escaped_domain), pr_body):
-        return False
-    return None
-
-
 def get_pr_info_by_number(pr_target_fork_name, pr_number):
     """
     Return dict containing all available information about PR identified by `pr_target_fork_name` and `pr_number`.
@@ -249,12 +236,6 @@ class PR:
         Construct the URL for the pull request
         """
         return 'https://github.com/{repo_name}/pull/{number}'.format(repo_name=self.repo_name, number=self.number)
-
-    def use_ephemeral_databases(self, domain):
-        """
-        Does this PR request ephemeral databases?
-        """
-        return is_pr_body_requesting_ephemeral_databases(self.body, domain)
 
 
 class ObjectDoesNotExist(Exception):

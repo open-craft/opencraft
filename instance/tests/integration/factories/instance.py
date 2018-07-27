@@ -52,7 +52,6 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
-    use_ephemeral_databases = True
 
     # Versions to use for the integration tests.  The field "openedx_release" must be a commit name
     # that is valid for the forums, notifier, xqueue and certs, so usually only an official release

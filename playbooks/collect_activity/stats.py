@@ -17,7 +17,7 @@ LOG_PATH = '/edx/var/log/nginx'
 
 if __name__ == '__main__':
     # Set up the environment so that edX can be initialized as the LMS with the correct settings.
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lms.envs.aws')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lms.envs.openstack')
     os.environ.setdefault('SERVICE_VARIANT', 'lms')
     django.setup()
 

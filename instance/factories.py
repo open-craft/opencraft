@@ -87,13 +87,8 @@ def instance_factory(**kwargs):
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
 
-    # Ensure instance uses ephemeral databases by default,
-    # irrespective of current value of INSTANCE_EPHEMERAL_DATABASES setting
-    instance_kwargs = dict(use_ephemeral_databases=True)
-    instance_kwargs.update(kwargs)
-
     # Create instance
-    instance = OpenEdXInstance.objects.create(**instance_kwargs)
+    instance = OpenEdXInstance.objects.create(**kwargs)
     return instance
 
 
@@ -144,7 +139,6 @@ def production_instance_factory(**kwargs):
         default_flow_style=False
     )
     instance_kwargs = dict(
-        use_ephemeral_databases=False,
         edx_platform_repository_url=settings.STABLE_EDX_PLATFORM_REPO_URL,
         edx_platform_commit=settings.STABLE_EDX_PLATFORM_COMMIT,
         configuration_source_repo_url=settings.STABLE_CONFIGURATION_REPO_URL,

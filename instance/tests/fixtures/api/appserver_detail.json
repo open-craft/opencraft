@@ -17,7 +17,6 @@
     "edx_platform_repository_url": "https://github.com/open-craft/edx-platform.git",
     "edx_platform_commit": "073e9c56a8093691dea782c8b727d839260833b1",
     "openedx_release": "master",
-    "use_ephemeral_databases": true,
     "github_admin_organizations": "[\"open-craft\"]",
     "github_admin_users": "[]",
     "configuration_database_settings": "",

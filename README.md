@@ -425,17 +425,15 @@ Required settings:
   runs as.
 * `OPENSTACK_SANDBOX_SSH_USERNAME`: The user to run ansible playbooks as when
   provisioning the sandbox (default: `ubuntu`)
-* `INSTANCE_EPHEMERAL_DATABASES`: By default, instances use local mysql and mongo
-  databases. Set this to False to use external databases instead (default: True)
 * `DEFAULT_INSTANCE_MYSQL_URL`: The external MySQL database server to be used
-  by instances configured not to use ephemeral databases. The database server
+  by Open edX instances created via the instance manager. The database server
   will be represented as an instance of the `MySQLServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MySQL database server in testing
   and development environments.  It is mandatory to set this setting to run the
   initial migrations.
 * `DEFAULT_INSTANCE_MONGO_URL`: The external MongoDB database server to be used
-  by instances configured not to use ephemeral databases. The database server
+  by Open edX instances created via the instance manager. The database server
   will be represented as an instance of the `MongoDBServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MongoDB database server in testing
@@ -753,7 +751,6 @@ instance = OpenEdXInstance.objects.create(
     configuration_version='named-release/dogwood',
     configuration_source_repo_url='https://github.com/edx/configuration.git',
     configuration_extra_settings='',
-    use_ephemeral_databases=False,
 )
 
 # Optionally, set custom ansible variables/overrides:
@@ -861,21 +858,13 @@ before the redeployment command. For example:
 Databases
 ---------
 
-By default, instances will use local, ephemeral databases that are destroyed
-when app servers belonging to an instance are terminated. If you want to use
-external databases that can be used by any app server belonging to an instance,
-follow these steps:
+You must configure external databases that can be used by any app server belonging
+to an instance, following these steps:
 
-1. Change the `INSTANCE_EPHEMERAL_DATABASES` setting to False. Note that this is
-   only necessary if you want instances to use persistent databases by default.
-   If you only want a specific instance to use persistent databases, simply set
-   the value of the `use_ephemeral_databases` field to `True` and save the instance
-   (cf. below).
-
-2. Set up external mysql and mongo databases, making a note of hostname
+1. Set up external MySQL and MongoDB databases, making a note of hostname
    and authentication information (username, password) for each one of them.
 
-3. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
+2. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
    to URLs that point to the MySQL and MongoDB servers created in the previous step:
 
    ```
@@ -996,15 +985,3 @@ Useful references:
 * [Adding E-Commerce to the Open edX Platform](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html)
 * [edX Discovery Service](http://edx-discovery.readthedocs.io/)
 * [Setup Discovery Sandbox](https://openedx.atlassian.net/wiki/spaces/EDUCATOR/pages/162488548/Setup+Discovery+Sandbox)
-
-
-### Controlling persistence settings from PRs
-
-When provisioning an instance from a GitHub pull request, you can override the
-default behavior (as specified by `INSTANCE_EPHEMERAL_DATABASES`) by including
-`(ephemeral databases)` or `(persistent databases)` on the same line
-as the instance domain in the pull request description. For example:
-
-    This pull request adds reticulating splines to the LMS.
-
-    Test it here: pr99.sandbox.example.com (ephemeral databases)

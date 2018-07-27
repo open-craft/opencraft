@@ -151,7 +151,6 @@ class OpenEdXAppConfiguration(models.Model):
     )
 
     # Misc settings:
-    use_ephemeral_databases = models.BooleanField()
     github_admin_organizations = JSONField(
         max_length=256,
         blank=True,
@@ -332,10 +331,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                     for user in self.lms_users.all()
                 ],
                 "django_groups": [],
-                # We do not require users to be created successfully if we're using
-                # non-ephemeral databases and have successfully provisioned any
-                # appservers for this instance in the past; we assume we got it
-                # right the first time and don't worry about errors.
+                # We do not require users to be created successfully if we have
+                # successfully provisioned any app servers for this instance in the past;
+                # we assume we got it right the first time and don't worry about errors.
                 "ignore_user_creation_errors": not self.instance.require_user_creation_success()
             },
             default_flow_style=False

@@ -162,9 +162,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn('log_error_entries', data)
 
     @patch_gandi
+    @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver(self, mock_run_playbook, mock_provision):
+    def test_spawn_appserver(self, mock_run_playbook, mock_provision, mock_provision_rabbitmq):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
 
@@ -172,7 +173,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         spawned.
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
 
@@ -180,6 +181,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
+        self.assertEqual(mock_provision_rabbitmq.call_count, 1)
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)
@@ -191,20 +193,23 @@ class OpenEdXAppServerAPITestCase(APITestCase):
 
     @ddt.data(True, False)
     @patch_gandi
+    @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver_break_on_success(self, mark_active, mock_run_playbook, mock_provision):
+    def test_spawn_appserver_break_on_success(self, mark_active, mock_run_playbook, mock_provision,
+                                              mock_provision_rabbitmq):
         """
         This test makes sure that upon a successful instance creation, further instances are not created
         even when the num_attempts is more than 1.
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=mark_active, num_attempts=4)
         self.assertEqual(mock_provision.call_count, 1)
+        self.assertEqual(mock_provision_rabbitmq.call_count, 1)
 
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
@@ -219,7 +224,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         necessarily have to be fully provisioned and online.
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         server = ReadyOpenStackServerFactory()
         app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())
@@ -241,7 +246,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         to be activated
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         app_server = make_test_appserver(instance)
 
         # Move to unhealthy status
@@ -264,7 +269,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         AppServer does not need to be healty to be deactivated.
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         server = ReadyOpenStackServerFactory()
         app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())
@@ -295,7 +300,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         POST /api/v1/openedx_appserver/:id/make_inactive/ - unheahtly AppServers can be deactivated
         """
         self.api_client.login(username='user3', password='pass')
-        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40, use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         server = ReadyOpenStackServerFactory()
         app_server = make_test_appserver(instance=instance, server=server)
         self.assertFalse(instance.get_active_appservers().exists())

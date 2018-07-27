@@ -297,7 +297,6 @@ class WatchedPullRequest(models.Model):
             self.watched_fork.configuration_extra_settings,
             pr.extra_settings
         )
-        instance.use_ephemeral_databases = pr.use_ephemeral_databases(instance.domain)
         # Configuration repo and version and edx release follow this precedence:
         # 1) PR settings. 2) WatchedFork settings. 3) instance model defaults
         instance.configuration_source_repo_url = pr.get_extra_setting(
