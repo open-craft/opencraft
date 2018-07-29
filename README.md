@@ -86,7 +86,7 @@ environment:
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
 Once you have these tools installed, you will need to download the [Ansible
-playbooks](https://github.com/openc-craft/ansible-playbooks) used to build the
+playbooks](https://github.com/open-craft/ansible-playbooks) used to build the
 Vagrant instance.  If you haven't checked it out yet, you can clone it into the
 `deploy/` subdirectory using this command at the root of the repository:
 
