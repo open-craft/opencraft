@@ -106,6 +106,7 @@ pylint-plugin-utils==0.2.4
 pymongo==3.3.1
 pyparsing==2.1.10
 python-cinderclient==1.9.0
+python-consul==1.1.0
 python-dateutil==2.6.0
 python-glanceclient==2.5.0
 python-keystoneclient==3.8.0

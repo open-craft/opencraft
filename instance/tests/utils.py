@@ -21,12 +21,12 @@ Test utils
 """
 
 # Imports #####################################################################
-
 from contextlib import ExitStack
+import unittest
 from unittest.mock import Mock, patch
 import requests
 import responses
-
+import consul
 from instance import gandi
 from instance.tests.fake_gandi_client import FakeGandiClient
 from instance.tests.models.factories.server import OSServerMockManager
@@ -149,3 +149,17 @@ def patch_services(func):
             stack.enter_context(patch_gandi())
             return func(self, mocks, *args, **kwargs)
     return wrapper
+
+
+def skip_unless_consul_running():
+    """
+    Skips the test case if Consul is not running and accepts requests
+    """
+    c = consul.Consul()
+    consul_url = c.http.base_uri
+    try:
+        requests.get(consul_url)
+    except requests.exceptions.ConnectionError:
+        return unittest.skip('Consul is not running on: {}'.format(consul_url))
+
+    return lambda func: func
