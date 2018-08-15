@@ -153,6 +153,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "configuration_version": self.configuration_version,
             "forum_version": self.openedx_release,
             "xqueue_version": self.openedx_release,
+            "certs_version": self.openedx_release,
             "NOTIFIER_VERSION": self.openedx_release,
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
