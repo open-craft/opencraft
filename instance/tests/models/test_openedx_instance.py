@@ -265,11 +265,11 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_sandbox_services_disabled(self, mocks, mock_provision):
+    def test_appserver_services_disabled(self, mocks, mock_provision):
         """
-        Check that sandboxes are deployed with only the minimum services by default
+        Check that appservers are deployed with only the minimum services by default
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.sandbox_services')
+        instance = OpenEdXInstanceFactory(sub_domain='test.appserver_services')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
