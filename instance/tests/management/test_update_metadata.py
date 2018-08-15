@@ -33,8 +33,10 @@ import consul
 # Tests #######################################################################
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.utils import skip_unless_consul_running
 
 
+@skip_unless_consul_running()
 class UpdateMetadataTestCase(TestCase):
     """
     Test cases for the `update_metadata` management command.
