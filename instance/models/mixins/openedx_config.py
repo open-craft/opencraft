@@ -248,7 +248,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "DISCOVERY_VERSION": self.openedx_release,
 
             # RabbitMQ disabled locally
-            "SANBOX_ENABLE_RABBITMQ": False,
+            "SANDBOX_ENABLE_RABBITMQ": False,
 
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
