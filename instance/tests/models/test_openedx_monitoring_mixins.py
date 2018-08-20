@@ -155,8 +155,12 @@ class OpenEdXMonitoringTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         existing_monitor_ids = [str(uuid4()) for i in range(4)]
         existing_monitors = {}
-        existing_monitor_urls = [instance.url, instance.studio_url, instance.lms_preview_url,
-                                 instance.lms_extended_heartbeat_url]
+        existing_monitor_urls = [
+            instance.url,
+            instance.studio_url,
+            instance.lms_preview_url,
+            instance.lms_extended_heartbeat_url
+        ]
         for i in range(4):
             new_id = existing_monitor_ids[i]
             instance.new_relic_availability_monitors.create(pk=new_id)
