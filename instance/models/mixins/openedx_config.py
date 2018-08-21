@@ -226,13 +226,13 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Restart workers regularly to work around a memory leaks.
             #
             # Tailor the max_requests number to suit the average request load on the server.
-            # e.g if the instance receives an average of around 42000 requests per day,
-            # with 10% for static assets, restarting after 20000 requests means
-            # restarting each of the 3 LMS workers about every 1-2 days.
-            "EDXAPP_LMS_MAX_REQ": 20000,
+            # e.g if the instance receives an average of around 20000 requests per day,
+            # with 10% for static assets, restarting after 10000 requests means
+            # restarting each of the 3 LMS workers about every .8 days.
+            "EDXAPP_LMS_MAX_REQ": 5000,
 
             # Studio/CMS handles ~5% of the LMS requests with only 2 workers.
-            # Restart them every 1-2 days too.
+            # Restart them every 1-2 days.
             "EDXAPP_CMS_MAX_REQ": 1000,
 
             # Celery workers
