@@ -85,6 +85,13 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
+                    # TODO: These are specific to Ginkgo and can be removed
+                    # after Hawthorn upgrade
+                    {'variable': 'header-bg',
+                     'value': '#caaffe', },
+                    {'variable': 'footer-bg',
+                     'value': '#ffff11', },
+                    # END TODO
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',

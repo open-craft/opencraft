@@ -72,6 +72,17 @@ class OpenEdXThemeMixin(models.Model):
                     "variable": "link-color",
                     "value": application.link_color,
                 },
+                # TODO: These are specific to Ginkgo and can be removed
+                # after Hawthorn upgrade
+                {
+                    "variable": "header-bg",
+                    "value": application.header_bg_color,
+                },
+                {
+                    "variable": "footer-bg",
+                    "value": application.footer_bg_color,
+                },
+                # END TODO
                 {
                     "variable": "button-color",
                     "value": application.main_color,
