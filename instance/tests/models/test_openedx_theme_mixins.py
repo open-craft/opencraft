@@ -85,19 +85,24 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
-                    {'variable': 'header-bg',
-                     'value': '#caaffe', },
-                    {'variable': 'footer-bg',
-                     'value': '#ffff11', },
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',
                      'value': '#001122', },
                     {'variable': 'action-secondary-bg',
                      'value': '#001122', },
+                    {'variable': 'theme-colors',
+                     'value': '("primary": #001122, "secondary": #001122)'}
                 ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
+                'SIMPLETHEME_EXTRA_SASS': '''
+                .global-header {
+                    background: #caaffe;
+                }
+                .wrapper-footer {
+                    background: #ffff11;
+                }'''
             }
             for ansible_var, value in expected_settings.items():
                 self.assertEqual(value, parsed_vars[ansible_var])
