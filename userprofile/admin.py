@@ -26,7 +26,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from userprofile.models import UserProfile
+from userprofile.models import UserProfile, Organization
 
 
 # ModelAdmins #################################################################
@@ -43,3 +43,4 @@ class UserAdmin(BaseUserAdmin): #pylint: disable=missing-docstring
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+admin.site.register(Organization)

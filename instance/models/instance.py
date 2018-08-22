@@ -32,6 +32,8 @@ from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
+from userprofile.models import UserProfile, Organization
+
 from instance.models.log_entry import LogEntry
 from instance.models.utils import default_setting
 from instance.logging import ModelLoggerAdapter
@@ -67,6 +69,8 @@ class InstanceReference(TimeStampedModel):
         "<strong>Note: You currently cannot archive an instance from the admin panel. You can "
         "however un-archive an instance that was already archived.</strong>"
     ))
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-created']
