@@ -147,19 +147,13 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Repositories URLs
             "edx_ansible_source_repo": self.configuration_source_repo_url,
             "edx_platform_repo": self.edx_platform_repository_url,
-            # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
-            "xqueue_source_repo": "https://github.com/open-craft/xqueue",
-            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
-            "CERTS_REPO": "https://github.com/open-craft/edx-certificates",
 
             # Pin down dependencies to specific (known to be compatible) commits.
             "edx_platform_version": self.edx_platform_commit,
             "configuration_version": self.configuration_version,
             "forum_version": self.openedx_release,
-            # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
-            "xqueue_version": 'opencraft-release/ginkgo.1',
-            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
-            "certs_version": "opencraft-release/ginkgo.1",
+            "xqueue_version": self.openedx_release,
+            "certs_version": self.openedx_release,
             "NOTIFIER_VERSION": self.openedx_release,
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,

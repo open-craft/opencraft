@@ -492,7 +492,6 @@ class MongoDBInstanceTestCase(TestCase):
         ('open-release/ficus', 'open-release/ficus'),
         ('open-release/ficus', 'opencraft-release/ficus'),
         ('open-release/ginkgo', 'open-release/ginkgo'),
-        (settings.OPENEDX_RELEASE_STABLE_REF, 'open-release/ginkgo'),
     )
     @ddt.unpack
     def test_ansible_settings_no_replica_set(self, openedx_release, configuration_version):
