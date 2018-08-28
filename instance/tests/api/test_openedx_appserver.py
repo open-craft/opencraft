@@ -90,9 +90,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn(('status_description', 'Newly created'), data_entries)
         self.assertIn(('is_steady', True), data_entries)
         self.assertIn(('is_healthy', True), data_entries)
-        # Created/modified date:
+        # Created/modified/terminated date:
         self.assertIn('created', data)
         self.assertIn('modified', data)
+        self.assertIn('terminated', data)
         # Other details should not be in the list view:
         self.assertNotIn('instance', data)
         self.assertNotIn('server', data)
@@ -142,9 +143,10 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn(('status_description', 'Newly created'), data_entries)
         self.assertIn(('is_steady', True), data_entries)
         self.assertIn(('is_healthy', True), data_entries)
-        # Created/modified date:
+        # Created/modified/terminated date:
         self.assertIn('created', data)
         self.assertIn('modified', data)
+        self.assertIn('terminated', data)
         # Other details:
         instance_id = app_server.instance.ref.pk
         self.assertIn(
