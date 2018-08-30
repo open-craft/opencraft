@@ -157,9 +157,13 @@ class S3BucketInstanceMixin(models.Model):
     """
     Mixin to provision S3 bucket for an instance.
     """
-
     class Meta:
         abstract = True
+
+    s3_access_key = models.CharField(max_length=50, blank=True)
+    s3_secret_access_key = models.CharField(max_length=50, blank=True)
+    s3_bucket_name = models.CharField(max_length=50, blank=True)
+    s3_region = models.CharField(max_length=50, blank=True, default=default_setting('AWS_S3_DEFAULT_REGION'))
 
     def get_s3_policy(self):
         """
@@ -204,6 +208,17 @@ class S3BucketInstanceMixin(models.Model):
             length=50
         )
 
+    @property
+    def s3_hostname(self):
+        """
+        Return the S3 hostname to use when creating a connection.
+        """
+        s3_hostname = settings.AWS_S3_DEFAULT_HOSTNAME
+
+        if self.s3_region:
+            s3_hostname = settings.AWS_S3_CUSTOM_REGION_HOSTNAME.format(region=self.s3_region)
+        return s3_hostname
+
     def create_iam_user(self):
         """
         Create IAM user with access only to the s3 bucket set in s3_bucket_name
@@ -229,17 +244,30 @@ class S3BucketInstanceMixin(models.Model):
         """
         return boto.connect_s3(
             self.s3_access_key,
-            self.s3_secret_access_key
+            self.s3_secret_access_key,
+            # The host parameter is required when connecting to non-default regions and using
+            # AWS signature version 4.
+            host=self.s3_hostname
         )
 
-    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=4):
+    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=4, location=None):
         """
         Create bucket, retry up to defined attempts if it fails
+        If you specify a location (e.g. 'EU', 'us-west-1'), this method will use it. If the location is
+        not specified, the value of the instance's 's3_region' field is used.
         """
         time.sleep(retry_delay)
+        location = location or self.s3_region
         try:
             s3 = self.get_s3_connection()
-            bucket = s3.create_bucket(self.s3_bucket_name)
+            try:
+                bucket = s3.create_bucket(self.s3_bucket_name, location=location)
+            except boto.exception.S3CreateError as e:
+                if e.error_code == 'BucketAlreadyOwnedByYou':
+                    # Bucket already exists. Continue with set_cors
+                    bucket = s3.get_bucket(self.s3_bucket_name)
+                else:
+                    raise e
             bucket.set_cors(get_s3_cors_config())
         except boto.exception.S3ResponseError:
             if ongoing_attempt > attempts:
@@ -249,7 +277,12 @@ class S3BucketInstanceMixin(models.Model):
                 ongoing_attempt, attempts
             )
             ongoing_attempt += 1
-            self._create_bucket(attempts=attempts, ongoing_attempt=ongoing_attempt, retry_delay=retry_delay)
+            self._create_bucket(
+                attempts=attempts,
+                ongoing_attempt=ongoing_attempt,
+                retry_delay=retry_delay,
+                location=location
+            )
 
     def provision_s3(self):
         """
@@ -264,7 +297,7 @@ class S3BucketInstanceMixin(models.Model):
         if not self.s3_access_key and not self.s3_secret_access_key:
             self.create_iam_user()
 
-        self._create_bucket()
+        self._create_bucket(location=self.s3_region)
 
     def deprovision_s3(self):
         """

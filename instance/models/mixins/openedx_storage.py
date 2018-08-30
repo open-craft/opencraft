@@ -21,8 +21,6 @@ Open edX instance database mixin
 """
 import yaml
 
-from django.db import models
-
 from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, StorageContainer
 
 
@@ -35,10 +33,6 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
     """
     class Meta:
         abstract = True
-
-    s3_access_key = models.CharField(max_length=50, blank=True)
-    s3_secret_access_key = models.CharField(max_length=50, blank=True)
-    s3_bucket_name = models.CharField(max_length=50, blank=True)
 
     @property
     def swift_container_name(self):

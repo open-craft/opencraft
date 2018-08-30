@@ -690,6 +690,9 @@ PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default=None)
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default=None)
 AWS_S3_BUCKET_PREFIX = env('S3_BUCKET_PREFIX', default='ocim')
+AWS_S3_CUSTOM_REGION_HOSTNAME = 's3.{region}.amazonaws.com'
+AWS_S3_DEFAULT_HOSTNAME = 's3.amazonaws.com'
+AWS_S3_DEFAULT_REGION = env('AWS_S3_DEFAULT_REGION', default='')
 AWS_IAM_USER_PREFIX = env('IAM_USER_PREFIX', default='ocim')
 
 # Consul ######################################################################
