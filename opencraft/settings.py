@@ -260,6 +260,10 @@ OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default={"ram": 
 OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default={"name": "Ubuntu 16.04"})
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
 OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
+OPENSTACK_PRODUCTION_INSTANCE_FLAVOR = env.json(
+    'OPENSTACK_PRODUCTION_INSTANCE_FLAVOR',
+    default={"ram": 8192, "disk": 80}
+)
 
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
 # when Swift is enabled.
