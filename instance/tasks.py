@@ -25,10 +25,14 @@ Worker tasks for instance hosting & management
 from datetime import datetime
 import logging
 
+from django.conf import settings
+from django.db import connection
 from django.db.models import F
+from django.utils import timezone
 from huey.contrib.djhuey import crontab, db_task, db_periodic_task
 
 from instance.models.load_balancer import LoadBalancingServer
+from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import sufficient_time_passed
@@ -155,3 +159,25 @@ def reconfigure_dirty_load_balancers():
             configuration_version__gt=F('deployed_configuration_version')
     ):
         load_balancer.reconfigure(mark_dirty=False)
+
+
+@db_periodic_task(crontab(day='*/1', hour='0', minute='0'))
+def delete_old_logs():
+    """
+    Delete old log entries.
+
+    For performance reasons, we execute raw SQL against the LogEntry model's table.
+
+    This task runs every day.
+    """
+    cutoff = timezone.now() - timezone.timedelta(days=settings.LOG_DELETION_DAYS)
+    query = (
+        "DELETE FROM {table} "
+        "WHERE {table}.created < '{cutoff}'::timestamptz".format(
+            table=LogEntry._meta.db_table,
+            cutoff=cutoff.isoformat(),
+        )
+    )
+    logger.info(query)
+    with connection.cursor() as cursor:
+        cursor.execute(query)
