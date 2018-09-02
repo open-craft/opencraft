@@ -706,3 +706,13 @@ FILEBEAT_KEY = env('FILEBEAT_KEY', default='')
 
 # Common fields for all Filebeat prospectors.
 FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS', default={})
+
+# Nomad #######################################################################
+
+# The Nomad server in the format "hostname:port".
+NOMAD_SERVER = env('NOMAD_SERVER', default=None)
+
+# Paths of TLS certs for the connection to the Nomad server.
+NOMAD_CACERT = env('NOMAD_CACERT', default=None)
+NOMAD_CLIENT_CERT = env('NOMAD_CLIENT_CERT', default=None)
+NOMAD_CLIENT_KEY = env('NOMAD_CLIENT_KEY', default=None)
