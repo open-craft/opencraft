@@ -46,9 +46,9 @@ help: ## Display this help message.
 all: run.dev
 
 clean: ## Remove all temporary files.
-	find -name '*.pyc' -delete
-	find -name '*~' -delete
-	find -name '__pycache__' -type d -delete
+	find -name '*.pyc' -delete || true
+	find -name '*~' -delete || true
+	find -name '__pycache__' -type d -delete || true
 	rm -rf .coverage build
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete
 	find static/external -type d -empty -delete
