@@ -716,3 +716,7 @@ NOMAD_SERVER = env('NOMAD_SERVER', default=None)
 NOMAD_CACERT = env('NOMAD_CACERT', default=None)
 NOMAD_CLIENT_CERT = env('NOMAD_CLIENT_CERT', default=None)
 NOMAD_CLIENT_KEY = env('NOMAD_CLIENT_KEY', default=None)
+
+# Number of memcached jobs to launch per instance.  For production deployments, at least three are
+# recommended.
+INSTANCE_MEMCACHED_JOB_COUNT = env.int("INSTANCE_MEMCACHED_JOB_COUNT", default=1)

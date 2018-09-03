@@ -38,6 +38,7 @@ from instance.models.mixins.load_balanced import LoadBalancedInstance
 from instance.models.mixins.domain_names import DomainNameInstance
 from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
+from instance.models.mixins.openedx_nomad_jobs import OpenEdXNomadJobMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
@@ -50,7 +51,7 @@ from instance.utils import sufficient_time_passed
 
 class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
                       OpenEdXMonitoringMixin, OpenEdXStorageMixin, OpenEdXThemeMixin, SecretKeyInstanceMixin,
-                      Instance):
+                      OpenEdXNomadJobMixin, Instance):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -224,6 +225,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             self.provision_s3()
         self.logger.info('Provisioning RabbitMQ vhost...')
         self.provision_rabbitmq()
+        self.provision_nomad_jobs()
 
         return self._create_owned_appserver()
 
@@ -393,6 +395,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         self.deprovision_swift()
         self.deprovision_s3()
         self.deprovision_rabbitmq()
+        self.deprovision_nomad_jobs()
         super().delete(*args, **kwargs)
 
     @property
