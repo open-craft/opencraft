@@ -30,8 +30,20 @@ from instance.models.instance import InstanceReference
 # Permissions #################################################################
 
 class ApiInstanceManagerPermission(BasePermission):
-    """Restricts API access to instance manager users"""
+    """
+    Restricts API access to instance manager users.
+    See the definition of "instance manager" at InstanceReference.can_manage
+    """
 
     def has_permission(self, request, view):
         """Return True if user is an instance manager"""
         return InstanceReference.can_manage(request.user)
+
+
+class IsSuperUser(BasePermission):
+    """
+    Allows access only to superusers.
+    """
+
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser

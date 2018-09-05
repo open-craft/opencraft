@@ -22,6 +22,7 @@ Views - Tests
 
 # Imports #####################################################################
 
+import ddt
 from django.conf import settings
 from rest_framework import status
 
@@ -32,19 +33,27 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 
 # Tests #######################################################################
 
+@ddt.ddt
 class OpenEdXInstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls. Checks data that is specific to OpenEdXInstance
     """
-    def test_get_authenticated(self):
+
+    @ddt.data('user3', 'user4')
+    def test_get_authenticated(self, username):
         """
-        GET - Authenticated - instance manager user is allowed access
+        GET - Authenticated - instance manager user (superuser or not) is allowed access
         """
-        self.api_client.login(username='user3', password='pass')
+        self.api_client.login(username=username, password='pass')
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.data, [])
 
-        OpenEdXInstanceFactory(sub_domain='domain.api')
+        # Both user3 (superuser) and user4 (non-superuser) will see user4's instance
+        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
+        instance.ref.creator = self.user4.profile
+        instance.ref.owner = self.user4.profile.organization
+        instance.save()
+
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance_data = response.data[0].items()
@@ -56,6 +65,24 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('is_steady', None), instance_data)
         self.assertIn(('status_description', ''), instance_data)
         self.assertIn(('newest_appserver', None), instance_data)
+
+    def test_get_unauthenticated(self):
+        """
+        GET - Require to be authenticated in order to see the instance list.
+        """
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
+
+    @ddt.data('user1', 'user2')
+    def test_get_permission_denied(self, username):
+        """
+        GET - basic and staff users denied access to the instance list.
+        """
+        self.api_client.login(username=username, password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
     def add_active_appserver(self, sub_domain='domain.api'):
         """
@@ -98,6 +125,60 @@ class OpenEdXInstanceAPITestCase(APITestCase):
             )
         return response
 
+    def test_instance_list_admin(self):
+        """
+        Instance list should return all instances when queried from an admin
+        user.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com')
+        # User 3 belongs to organization 2
+        instance.ref.owner = self.organization2
+        instance.save()
+        instance2 = OpenEdXInstanceFactory(sub_domain='test2.com')
+        # ... not to organization 1
+        instance2.ref.owner = self.organization
+        instance2.save()
+        self.api_client.login(username='user3', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(len(response.data), 2)
+
+    def test_instance_list_non_admin_same_organization(self):
+        """
+        Instance list should return instance for the organization the
+        user belongs to.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com')
+        # User 4 belongs to organization 2
+        instance.ref.owner = self.organization2
+        instance.save()
+        self.api_client.login(username='user4', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(len(response.data), 1)
+
+    def test_instance_list_non_admin_different_org(self):
+        """
+        A non-admin user shouldn't see an instance which belongs to a different organization.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com')
+        # User 4 belongs to organization 2, but instance belongs to organization 1
+        instance.ref.owner = self.organization
+        instance.save()
+        self.api_client.login(username='user4', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(len(response.data), 0)
+
+    def test_instance_list_user_no_organization(self):
+        """
+        Instance list should be empty if user doesn't belong to an organization.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.com')
+        instance.ref.owner = self.organization
+        instance.save()
+        # User 5 doesn't belong to any organization
+        self.api_client.login(username='user5', password='pass')
+        response = self.api_client.get('/api/v1/instance/')
+        self.assertEqual(len(response.data), 0)
+
     def test_instance_list_efficiency(self):
         """
         The number of database queries required to fetch /api/v1/instance/
@@ -107,7 +188,11 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(len(response.data), 0)
 
-        queries_per_api_call = 9
+        # The 7 queries are:
+        # Session, User, InstanceReference, OpenEdXInstance, InstanceReference, OpenEdxAppServer, OpenEdxAppServer
+        # Because user3 is superuser, his UserProfile/Organization need not be fetched to detect he's admin,
+        # so in this test we save some queries compared to a non-superuser User.
+        queries_per_api_call = 7
 
         for num_instances in range(1, 4):
             self.add_active_appserver(sub_domain='api{}'.format(num_instances))

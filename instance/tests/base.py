@@ -30,6 +30,7 @@ from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase as DjangoTestCase
 
+from userprofile.models import UserProfile, Organization
 from ..models.instance import InstanceReference
 
 
@@ -70,6 +71,20 @@ def add_fixture_to_object(obj, fixture_filename):
     return obj
 
 
+def create_user_and_profile(username, email, password='pass', organization=None):
+    """
+    Create User and corresponding UserProfile.
+    """
+    user = User.objects.create_user(username, email, password)
+    UserProfile.objects.create(
+        full_name="Test User",
+        user=user,
+        organization=organization,
+        github_username=username,
+    )
+    return user
+
+
 # Classes #####################################################################
 
 class AnyStringMatching(str):
@@ -97,22 +112,67 @@ class WithUserTestCase(DjangoTestCase):
     """
     Base class for instance tests
     """
+
     def setUp(self):
         super().setUp()
 
-        # User1 is a basic user (no extra privileges)
-        self.user1 = User.objects.create_user('user1', 'user1@example.com', 'pass')
-        self.user1.save()
+        # Create admin organization
+        self.organization = Organization.objects.create(
+            name="test-org",
+            github_handle="test"
+        )
+
+        # User1 is a basic user (no extra privileges: can't log in to admin, can't manage instances)
+        # It could be a beta test user (whose organization we have manually written)
+        self.user1 = create_user_and_profile(
+            'user1',
+            'user1@example.com',
+            organization=self.organization
+        )
 
         # User2 is a Staff member
-        self.user2 = User.objects.create_user('user2', 'user2@example.com', 'pass')
+        self.user2 = create_user_and_profile(
+            'user2',
+            'user2@example.com',
+            organization=self.organization
+        )
         self.user2.is_staff = True
         self.user2.save()
 
-        # User3 has InstanceManager privileges
-        self.user3 = User.objects.create_user('user3', 'user3@example.com', 'pass')
+        # User3 is a superuser and therefore can manage all instances
+        # Being a superuser, no other permission is required (not even manage_own)
+        self.user3 = create_user_and_profile(
+            'user3',
+            'user3@example.com',
+            organization=self.organization
+        )
+        self.user3.is_staff = True
+        self.user3.is_superuser = True
+        self.user3.save()
+
+        # User 4 is a sandbox user, an instance manager (with permission to manage only their own instances)
+        # Note that staff permission is not required to manage instances
+        self.organization2 = Organization.objects.create(
+            name="test-org-not-admin",
+            github_handle="test-not-admin",
+        )
+        self.user4 = create_user_and_profile(
+            'user4',
+            'user4@example.com',
+            organization=self.organization2
+        )
         content_type = ContentType.objects.get_for_model(InstanceReference)
         permission = Permission.objects.get(
-            content_type=content_type, codename='manage_all')
-        self.user3.user_permissions.add(permission)
-        self.user3.save()
+            content_type=content_type, codename='manage_own')
+        self.user4.user_permissions.add(permission)
+        self.user4.save()
+
+        # User 5 has no organization (this isn't a common case).
+        # Even with the explicit permission to manage their own instances,
+        # this user shouldn't be able to see any instance.
+        self.user5 = create_user_and_profile(
+            'user5',
+            'user5@example.com'
+        )
+        self.user5.user_permissions.add(permission)
+        self.user5.save()

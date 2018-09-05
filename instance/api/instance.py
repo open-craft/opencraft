@@ -35,6 +35,8 @@ from instance.serializers.instance import (
     InstanceAppServerSerializer
 )
 
+from .filters import IsOrganizationOwnerFilterBackendInstance
+
 
 # Views - API #################################################################
 
@@ -66,12 +68,9 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = InstanceReference.objects.all()
     serializer_class = InstanceReferenceDetailedSerializer
+    filter_backends = (IsOrganizationOwnerFilterBackendInstance,)
 
-    def list(self, request):
-        """
-        List all instances. No App server list is returned in the list view, only the newest app server information.
-
-        """
+    def get_queryset(self):
         # Don't load all columns, because some of them have very big data
         appservers_few_columns = OpenEdXAppServer.objects.only('_is_active', '_status', 'id', 'name', 'owner_id',
                                                                'created', 'modified', 'terminated')
@@ -91,6 +90,14 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
                 to_attr='_cached_active_appservers'
             ),
         )
+        return queryset
+
+    def list(self, request):
+        """
+        List all instances. No App server list is returned in the list view, only the newest app server information.
+
+        """
+        queryset = self.filter_queryset(self.get_queryset())
         if 'include_archived' not in request.query_params:
             # By default, exclude archived instances from the list:
             queryset = queryset.filter(is_archived=False)

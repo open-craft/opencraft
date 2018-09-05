@@ -24,10 +24,10 @@ PR Watcher API
 
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import detail_route
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from pr_watch import github
+from pr_watch.filters import IsOrganizationOwnerFilterBackendWatchedPR
 from pr_watch.models import WatchedPullRequest
 from pr_watch.serializers import WatchedPullRequestSerializer
 
@@ -40,8 +40,8 @@ class WatchedPullRequestViewSet(viewsets.ReadOnlyModelViewSet):
     API to update instances from their PR
     """
     queryset = WatchedPullRequest.objects.all()
-    permission_classes = [IsAuthenticated]
     serializer_class = WatchedPullRequestSerializer
+    filter_backends = (IsOrganizationOwnerFilterBackendWatchedPR,)
 
     @detail_route(methods=['post'])
     def update_instance(self, request, pk):

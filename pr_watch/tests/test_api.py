@@ -24,17 +24,20 @@ Tests of the Pull Request Watcher API
 
 from unittest.mock import patch
 
+import ddt
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import WithUserTestCase
 from pr_watch import github
+from pr_watch.models import WatchedPullRequest
 from pr_watch.tests.factories import make_watched_pr_and_instance, PRFactory
 
 # Tests #######################################################################
 
 
+@ddt.ddt
 class APITestCase(WithUserTestCase):
     """
     Tests of the Pull Request Watcher API
@@ -60,15 +63,38 @@ class APITestCase(WithUserTestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, forbidden_message)
 
-    def test_get_authenticated(self):
+    @ddt.data('user1', 'user2')
+    def test_get_permission_denied(self, username):
         """
-        GET - Authenticated
+        GET - basic and staff users denied access
         """
-        self.api_client.login(username='user1', password='pass')
+        forbidden_message = {"detail": "You do not have permission to perform this action."}
+
+        self.api_client.login(username=username, password='pass')
+        response = self.api_client.get('/api/v1/pr_watch/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, forbidden_message)
+
+        watched_pr = make_watched_pr_and_instance()
+        response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=watched_pr.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, forbidden_message)
+
+    @ddt.data('user3', 'user4')
+    def test_get_authenticated(self, username):
+        """
+        GET - Authenticated - instance manager users (superuser or not) allowed access
+        """
+        self.api_client.login(username=username, password='pass')
         response = self.api_client.get('/api/v1/pr_watch/')
         self.assertEqual(response.data, [])
 
-        watched_pr = make_watched_pr_and_instance(branch_name='api-test-branch')
+        # This uses user4's organization. Both user3 and user4 will be able to see it later
+        watched_pr = make_watched_pr_and_instance(
+            branch_name='api-test-branch',
+            username='user4',
+            organization=self.organization2
+        )
 
         def check_output(data):
             """ Check that the data object passed matches expectations for 'watched_pr' """
@@ -90,15 +116,66 @@ class APITestCase(WithUserTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_output(response.data)
 
+    @patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40))
     @patch('pr_watch.github.get_pr_by_number')
-    def test_update_instance(self, mock_get_pr_by_number):
+    def test_get_filtered_by_organization(self, mock_get_pr_by_number, mock_get_commit_id_from_ref):
+        """
+        GET+POST - A user (instance manager) can only manage PRs from WF which belong to the user's organization.
+        """
+        wpr1 = make_watched_pr_and_instance(username='user1', organization=self.organization)
+        wpr2 = make_watched_pr_and_instance(username='user4', organization=self.organization2)
+        self.assertEqual(WatchedPullRequest.objects.count(), 2)
+
+        # We'll log in with user4, and we should only see pr2, but not pr1
+        self.api_client.login(username='user4', password='pass')
+
+        # Check the PR list
+        response = self.api_client.get('/api/v1/pr_watch/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(('id', wpr1.pk), response.data[0].items())
+        self.assertIn(('id', wpr2.pk), response.data[0].items())
+
+        # Also check the detailed view
+        response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=wpr1.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=wpr2.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Also check update_instance
+        mock_get_pr_by_number.return_value = PRFactory(number=wpr1.github_pr_number)
+        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=wpr1.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        mock_get_pr_by_number.return_value = PRFactory(number=wpr2.github_pr_number)
+        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=wpr2.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_organization(self):
+        """
+        GET+POST - An instance manager without an organization can't see/update any PR.
+        """
+        self.api_client.login(username='user5', password='pass')
+        watched_pr = make_watched_pr_and_instance(branch_name='api-test-branch')
+
+        response = self.api_client.get('/api/v1/pr_watch/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+        response = self.api_client.get('/api/v1/pr_watch/{pk}/'.format(pk=watched_pr.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=watched_pr.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch('pr_watch.github.get_pr_by_number')
+    @ddt.data('user3', 'user4')
+    def test_update_instance(self, username, mock_get_pr_by_number):
         """
         POST /pr_watch/:id/update_instance/ - Update instance with latest settings from the PR
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username=username, password='pass')
 
         # Create a WatchedPullRequest, and OpenEdXInstance:
-        watched_pr = make_watched_pr_and_instance()
+        watched_pr = make_watched_pr_and_instance(username='user4', organization=self.organization2)
 
         instance = OpenEdXInstance.objects.get(pk=watched_pr.instance_id)
         self.assertIn('fork/master (5555555)', instance.name)
@@ -121,6 +198,34 @@ class APITestCase(WithUserTestCase):
         )
         self.assertEqual(instance.edx_platform_commit, '6' * 40)
 
+    def test_update_unauthenticated(self):
+        """
+        POST /pr_watch/:id/update_instance/ - Denied to anonymous users
+        """
+        forbidden_message = {"detail": "Authentication credentials were not provided."}
+
+        # Create a WatchedPullRequest, and OpenEdXInstance:
+        watched_pr = make_watched_pr_and_instance()
+
+        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=watched_pr.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, forbidden_message)
+
+    @ddt.data('user1', 'user2')
+    def test_update_permission_denied(self, username):
+        """
+        POST /pr_watch/:id/update_instance/ - Denied to non instance managers (basic user and staff)
+        """
+        forbidden_message = {"detail": "You do not have permission to perform this action."}
+
+        self.api_client.login(username=username, password='pass')
+
+        # Create a WatchedPullRequest, and OpenEdXInstance:
+        watched_pr = make_watched_pr_and_instance()
+        response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=watched_pr.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, forbidden_message)
+
     @patch('pr_watch.github.get_commit_id_from_ref', side_effect=github.ObjectDoesNotExist)
     @patch('pr_watch.github.get_pr_by_number')
     def test_update_instance_branch_delete(self, mock_get_pr_by_number, mock_get_commit_id_from_ref):
@@ -134,7 +239,7 @@ class APITestCase(WithUserTestCase):
         this test won't be necessary since the PR API always contains the commit information
         (in ["head"]["sha"]) even if the branch has been deleted.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
 
         watched_pr = make_watched_pr_and_instance()
         mock_get_pr_by_number.return_value = PRFactory(number=watched_pr.github_pr_number)
