@@ -454,7 +454,7 @@ class DeleteOldLogsTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        self.now = timezone.datetime(2018, 8, 1, 7, 20, 12)
+        self.now = timezone.datetime(2018, 8, 1, 7, 20, 12, tzinfo=timezone.utc)
         self.before_cutoff = self.now - timezone.timedelta(days=settings.LOG_DELETION_DAYS + 1)
         self.log_deletion = self.now + timezone.timedelta(days=1)
 

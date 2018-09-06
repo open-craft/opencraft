@@ -613,8 +613,8 @@ DEFAULT_INSTANCE_RABBITMQ_URL = env('DEFAULT_INSTANCE_RABBITMQ_URL', default=Non
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
 
-# How old a log entry needs to be before its deleted.
-LOG_DELETION_DAYS = env.int('LOG_DELETION_DAYS', default=30)
+# How old a log entry needs to be before it's deleted.
+LOG_DELETION_DAYS = env.int('LOG_DELETION_DAYS', default=60)
 
 # When configured, email sent from instances is relayed via external SMTP provider.
 INSTANCE_SMTP_RELAY_HOST = env('INSTANCE_SMTP_RELAY_HOST', default=None)
