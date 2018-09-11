@@ -25,6 +25,7 @@ Convenience wrappers for calls to the Nomad REST API.
 import functools
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 import requests
 
 
@@ -32,6 +33,8 @@ import requests
 
 def request(method, *endpoint_parts, server=settings.NOMAD_SERVER, version="v1", **kwargs):
     """Send a REST API request to the Nomad API and return the Response object."""
+    if server is None:
+        raise ImproperlyConfigured("Please set NOMAD_SERVER in the Django settings.")
     url = "https://" + "/".join([server, version, *endpoint_parts])
     kwargs.setdefault("verify", settings.NOMAD_CACERT)
     kwargs.setdefault("cert", (settings.NOMAD_CLIENT_CERT, settings.NOMAD_CLIENT_KEY))
