@@ -420,6 +420,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
 
         configurations = {
+            'domain_slug': self.domain_slug,
+            'domain': self.domain,
             'name': self.name,
             'domains': self.get_load_balanced_domains(),
             'health_checks_enabled': enable_health_checks,

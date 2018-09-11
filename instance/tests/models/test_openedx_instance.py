@@ -964,6 +964,8 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
 
         expected_metadata = {
+            'domain_slug': instance.domain_slug,
+            'domain': instance.domain,
             'name': instance.name,
             'domains': instance.get_load_balanced_domains(),
             'health_checks_enabled': enable_health_checks,
