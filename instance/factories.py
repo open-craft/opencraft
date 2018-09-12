@@ -145,6 +145,9 @@ def production_instance_factory(**kwargs):
         configuration_version=settings.STABLE_CONFIGURATION_VERSION,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
+        # Allow production instances to use a different OpenStack instance flavor by default.
+        # This allows using a larger instance flavor for production instances.
+        openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     )
     instance_kwargs.update(kwargs)
 

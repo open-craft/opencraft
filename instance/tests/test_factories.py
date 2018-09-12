@@ -52,11 +52,13 @@ class FactoriesTestCase(TestCase):
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,
         "openedx_release": settings.DEFAULT_OPENEDX_RELEASE,
         "configuration_extra_settings": "",
+        "openstack_server_flavor": settings.OPENSTACK_SANDBOX_FLAVOR,
     }
     PRODUCTION_DEFAULTS = {
         "configuration_version": settings.STABLE_CONFIGURATION_VERSION,
         "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
         "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
+        "openstack_server_flavor": settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     }
 
     def _assert_field_values(
@@ -65,7 +67,8 @@ class FactoriesTestCase(TestCase):
             sub_domain,
             configuration_version=SANDBOX_DEFAULTS["configuration_version"],
             openedx_release=SANDBOX_DEFAULTS["openedx_release"],
-            configuration_extra_settings=SANDBOX_DEFAULTS["configuration_extra_settings"]
+            configuration_extra_settings=SANDBOX_DEFAULTS["configuration_extra_settings"],
+            openstack_server_flavor=SANDBOX_DEFAULTS["openstack_server_flavor"],
     ):
         """
         Assert that field values of `instance` match expected values
