@@ -44,7 +44,7 @@ After 1 to 2 hours, it will finish and then you need to **activate** the new one
 and **deactivate** the old one, to make the load balancer update its configuration
 so that the domain name of the instance directs to the new one.
 Normally we want just 1 active appserver per instance, but two or more active at once
-may be required in some high-resource-utilization cases
+may be required in some high-resource-utilization cases.
 Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
@@ -286,7 +286,7 @@ flavor:
 ### OpenStack Security Groups
 
 Every VM used to host Open edX will automatically be added to an OpenStack
-network security group, which is provides a firewall that limits what
+network security group, which provides a firewall that limits what
 ports/services on the VM are exposed to the Internet. The security group will
 automatically be created and managed by OpenCraft IM.
 
@@ -382,9 +382,7 @@ Required settings:
 
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens, and enable the `read:org` and
-  `read:user` scopes on the token. You will neet to set up a GitHub organization
-  and add a team called 'Sandbox'. The PRs by members of this team can be
-  configured to [automatically launch sandbox instances](#provisioning-sandboxes).
+  `read:user` scopes on the token.
 
 
 ### New Relic settings

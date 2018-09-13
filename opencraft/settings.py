@@ -343,9 +343,6 @@ DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', def
 DEFAULT_DISCOVERY_DOMAIN_PREFIX = env('DEFAULT_DISCOVERY_DOMAIN_PREFIX', default='discovery-')
 DEFAULT_ECOMMERCE_DOMAIN_PREFIX = env('DEFAULT_ECOMMERCE_DOMAIN_PREFIX', default='ecommerce-')
 
-# Default admin organization for instances (gets shell access)
-DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
-
 # Fork and branch of the Open edX configuration repo used for sandboxes created for PRs.
 DEFAULT_CONFIGURATION_REPO_URL = env(
     'DEFAULT_CONFIGURATION_REPO_URL', default='https://github.com/edx/configuration.git'

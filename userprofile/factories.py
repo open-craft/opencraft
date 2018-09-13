@@ -63,18 +63,26 @@ class OrganizationFactory(DjangoModelFactory):
     github_handle = "test-org"
 
 
-def make_user_and_organization(organization_name="Test Org", github_handle="test-org", github_username="edx"):
+def make_user_and_organization(username="testuser", org_name="Test Org", org_handle="test-org", github_username="edx"):
     """
-    Create user, userprofile and organization needed for reference on instances
+    Create User, UserProfile and Organization to reference from individual
+    instances.
+
+    :param username: The username of the User to create.
+    :param org_name: The name of the Organization to create. (The user to
+           create will be added to that organization.)
+    :param org_handle: The GitHub handle of the organization to create.
+    :param github_username: The GitHub username of the user to create.
+    :return: A tuple consisting of the created UserProfile and Organization.
     """
-    user = UserFactory()
+    user = UserFactory(username=username)
     organization = OrganizationFactory(
-        name=organization_name,
-        github_handle=github_handle
+        name=org_name,
+        github_handle=org_handle
     )
-    userprofile = UserProfileFactory(
+    user_profile = UserProfileFactory(
         organization=organization,
         user=user,
         github_username=github_username
     )
-    return userprofile, organization
+    return user_profile, organization
