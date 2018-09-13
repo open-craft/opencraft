@@ -307,7 +307,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 ),
             })
 
-        if self.github_admin_username_list:
+        if self.organization_users:
             template.update({
                 "COMMON_USER_INFO": [
                     {
@@ -315,7 +315,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         "github": True,
                         "type": "admin"
                     }
-                    for github_username in self.github_admin_username_list
+                    for github_username in self.organization_users
                 ],
             })
 

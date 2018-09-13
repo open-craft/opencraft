@@ -362,12 +362,29 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return None
 
     @property
+    def organization_users(self):
+        """
+        :return: Github usernames of the organization this instance owned by.
+        """
+        users = []
+        organization = self.instance.ref.owner
+        if organization:
+            org_github_handle = organization.github_handle
+            usernames = get_username_list_from_team(org_github_handle)
+            users += usernames if usernames else []
+
+        return users
+
+    @property
     def github_admin_username_list(self):
         """
         Returns the github usernames of this instance admins
 
         Admins are all users listed in github_admin_users and the members of the default team of the
         organizations in github_admin_organizations.
+
+        TODO: This method is stale now, consider removing it and combining the needed logic
+              with `github_admin_username_list` while working on OC-5237.
         """
         admin_users = []
         for org in self.github_admin_organizations:

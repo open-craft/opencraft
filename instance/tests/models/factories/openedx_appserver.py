@@ -28,7 +28,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 # Functions ###################################################################
 
 
-def make_test_appserver(instance=None, s3=False, server=None):
+def make_test_appserver(instance=None, s3=False, server=None, organization=None):
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
     """
@@ -43,6 +43,9 @@ def make_test_appserver(instance=None, s3=False, server=None):
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.save()
+    if organization:
+        instance.ref.owner = organization
+        instance.ref.save()
     appserver = instance._create_owned_appserver()
 
     if server:

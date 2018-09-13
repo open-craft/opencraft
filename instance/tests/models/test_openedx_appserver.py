@@ -44,6 +44,7 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
+from userprofile.factories import OrganizationFactory
 
 
 # Tests #######################################################################
@@ -132,6 +133,30 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
+    @patch('instance.models.openedx_appserver.get_username_list_from_team')
+    def test_organization_users(self, mock_get_username_list):
+        """
+        By default, all users that belong to an organization that owns the server
+        have access to the sandbox.
+        """
+        github_handle = 'test-org'
+        users = ['jane', 'joey']
+
+        mock_get_username_list.side_effect = {
+            github_handle: users,
+            'other-org': ['other-user', 'another-other-user'],
+        }.get
+
+        instance = OpenEdXInstanceFactory()
+        organization = OrganizationFactory(github_handle=github_handle)
+        appserver = make_test_appserver(instance, organization=organization)
+
+        self.assertEqual(appserver.organization_users, users)
+        ansible_settings = yaml.load(appserver.configuration_settings)
+        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
+            {'name': name, 'github': True, 'type': 'admin'} for name in users
+        ])
+
     def test_github_admin_username_list_default(self):
         """
         By default, no admin should be configured
@@ -141,27 +166,6 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(appserver.github_admin_users, [])
         self.assertEqual(appserver.github_admin_username_list, [])
         self.assertNotIn('COMMON_USER_INFO', appserver.configuration_settings)
-
-    @patch('instance.models.openedx_appserver.get_username_list_from_team')
-    def test_github_admin_username_list(self, mock_get_username_list):
-        """
-        When Github admin users are set, they should end up in the Ansible configuration.
-        """
-        mock_get_username_list.side_effect = {
-            'test-org1': ['jane', 'joey'],
-            'test-org2': ['jess', 'jack'],
-        }.get
-        instance = OpenEdXInstanceFactory(
-            github_admin_organizations=['test-org1', 'test-org2'],
-            github_admin_users=['jean', 'john'],
-        )
-        all_names = ['jane', 'joey', 'jess', 'jack', 'jean', 'john']
-        appserver = make_test_appserver(instance)
-        self.assertEqual(appserver.github_admin_username_list, all_names)
-        ansible_settings = yaml.load(appserver.configuration_settings)
-        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': name, 'github': True, 'type': 'admin'} for name in all_names
-        ])
 
     @patch_services
     def test_cannot_reprovision(self, mocks):

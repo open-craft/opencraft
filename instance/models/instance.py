@@ -69,8 +69,14 @@ class InstanceReference(TimeStampedModel):
         "<strong>Note: You currently cannot archive an instance from the admin panel. You can "
         "however un-archive an instance that was already archived.</strong>"
     ))
-    creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
-    owner = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE)
+    creator = models.ForeignKey(
+        UserProfile, null=True, on_delete=models.CASCADE,
+        help_text="The user who created the instance"
+    )
+    owner = models.ForeignKey(
+        Organization, null=True, on_delete=models.CASCADE,
+        help_text="The organization that owns the instance"
+    )
 
     class Meta:
         ordering = ['-created']
