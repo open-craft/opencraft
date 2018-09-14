@@ -31,12 +31,26 @@ from instance.models.utils import ValidateModelMixin
 
 # Models ######################################################################
 
+
+class Organization(ValidateModelMixin, TimeStampedModel):
+    """
+    Organizations model
+    """
+    name = models.CharField(max_length=255)
+    github_handle = models.CharField(unique=True, null=True, blank=True, max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class UserProfile(ValidateModelMixin, TimeStampedModel):
     """
     Profile information for users.
     """
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
+    github_username = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.full_name

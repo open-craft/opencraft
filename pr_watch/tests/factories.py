@@ -27,6 +27,9 @@ from unittest.mock import patch
 import factory
 
 from factory.django import DjangoModelFactory
+
+from userprofile.factories import make_user_and_organization
+
 from pr_watch import github
 from pr_watch.models import WatchedFork, WatchedPullRequest
 
@@ -57,7 +60,6 @@ class WatchedForkFactory(DjangoModelFactory):
         model = WatchedFork
 
     enabled = True
-    organization = 'test-org'
     fork = 'fork/repo'
 
 
@@ -69,7 +71,10 @@ def make_watched_pr_and_instance(**kwargs):
     Create a WatchedPullRequest and associated OpenEdXInstance
     """
     pr = PRFactory(**kwargs)
-    watched_fork = WatchedForkFactory(fork=pr.fork_name)
+
+    # creates user, user profile, and organization needed to be referenced
+    _, organization = make_user_and_organization()
+    watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
 
     watched_fork.save()
     with patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40)):

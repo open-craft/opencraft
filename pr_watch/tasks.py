@@ -26,12 +26,14 @@ import logging
 
 from huey.contrib.djhuey import crontab, db_periodic_task
 
+from userprofile.models import UserProfile
+
 from pr_watch.github import (
-    get_username_list_from_team,
     get_pr_list_from_usernames,
     RateLimitExceeded
 )
 from pr_watch.models import WatchedFork, WatchedPullRequest
+
 from instance.tasks import spawn_appserver
 
 
@@ -50,8 +52,17 @@ def watch_pr():
     """
     try:
         for watched_fork in WatchedFork.objects.filter(enabled=True):
-            team_username_list = get_username_list_from_team(watched_fork.organization)
-            for pr in get_pr_list_from_usernames(team_username_list, watched_fork.fork):
+            usernames = list(
+                UserProfile.objects.filter(
+                    organization=watched_fork.organization,
+                ).exclude(
+                    github_username__isnull=True,
+                ).values_list(
+                    'github_username',
+                    flat=True
+                )
+            )
+            for pr in get_pr_list_from_usernames(usernames, watched_fork.fork):
                 instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
                 if created:
                     logger.info('New PR found, creating sandbox: %s', pr)

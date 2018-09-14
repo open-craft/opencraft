@@ -28,6 +28,8 @@ import yaml
 
 from django.test import TestCase, override_settings
 
+from userprofile.factories import make_user_and_organization
+
 from pr_watch.models import WatchedPullRequest
 from pr_watch.tests.factories import PRFactory, WatchedForkFactory
 
@@ -47,12 +49,14 @@ class WatchedPullRequestTestCase(TestCase):
         self.addCleanup(patcher.stop)
         self.mock_get_commit_id_from_ref = patcher.start()
         self.mock_get_commit_id_from_ref.return_value = '9' * 40
+        _, self.organization = make_user_and_organization()
 
     def test_get_by_fork_name(self):
         """
         Use `fork_name` to get an instance object from the ORM
         """
-        watched_fork = WatchedForkFactory(organization='get-by', fork='fork-name')
+        _, organization = make_user_and_organization(organization_name="Get by", github_handle="get-by")
+        watched_fork = WatchedForkFactory(organization=organization, fork='fork-name')
         WatchedPullRequest.objects.create(
             github_organization_name='get-by',
             github_repository_name='fork-name',
@@ -83,7 +87,8 @@ class WatchedPullRequestTestCase(TestCase):
         """
         Set org & repo using the fork name
         """
-        watched_fork = WatchedForkFactory(organization='org2', fork='some-name')
+        _, organization = make_user_and_organization(organization_name="Org2", github_handle="org2")
+        watched_fork = WatchedForkFactory(organization=organization, fork='some-name')
         watched_pr = WatchedPullRequest(watched_fork=watched_fork)
         watched_pr.set_fork_name('org2/another-repo')
         self.assertEqual(watched_pr.github_organization_name, 'org2')
@@ -116,7 +121,8 @@ class WatchedPullRequestTestCase(TestCase):
         TODO: Is this 'ref_type' code used for anything?
         """
         self.mock_get_commit_id_from_ref.return_value = 'c' * 40
-        watched_fork = WatchedForkFactory(fork='org9/repo')
+        _, organization = make_user_and_organization(organization_name="Org9", github_handle="org9")
+        watched_fork = WatchedForkFactory(organization=organization, fork='org9/repo')
         instance = WatchedPullRequest.objects.create(
             fork_name='org9/repo',
             branch_name='new-tag',
@@ -140,7 +146,8 @@ class WatchedPullRequestTestCase(TestCase):
         Create an instance from a pull request
         """
         pr = PRFactory()
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
+        _, organization = make_user_and_organization()
+        watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
         instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertTrue(created)
 
@@ -166,8 +173,10 @@ class WatchedPullRequestTestCase(TestCase):
         Create an instance from a pull request, and check that the default values from the watched fork are used.
         """
         pr = PRFactory()
+        _, organization = make_user_and_organization()
         watched_fork = WatchedForkFactory(
             fork=pr.fork_name,
+            organization=organization,
             configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
             configuration_version='named-release/elder-fromwatchedfork',
             configuration_extra_settings=textwrap.dedent("""\
