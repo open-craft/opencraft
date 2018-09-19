@@ -7,6 +7,8 @@ Instance app model mixins - OpenEdX Instance Configuration
 from random import randint
 
 from django.conf import settings
+from django.db import models
+import yaml
 
 from instance.models.mixins.common_config import ConfigMixinBase
 
@@ -17,6 +19,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
     """
     Stores the instance configuration template for ansible variables
     """
+
+    appserver_init_settings = models.TextField(
+        blank=True,
+        help_text='YAML variables for the appserver-init playbook.')
+
+    appserver_settings = models.TextField(
+        blank=True,
+        help_text='YAML variables for the appserver playbook.')
 
     class Meta:
         abstract = True
@@ -347,6 +357,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             }
         }
 
+    def _get_consul_connect_variables(self):
+        """Get the variables for setting up the Consul Connect tunnels."""
+        return {
+            "consul_connect_instance_id": self.instance.id
+        }
+
     def _get_filebeat_variables(self):
         """Get all Filebeat-related ansible variables specific to Open edX appservers."""
         return {
@@ -377,3 +393,24 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 },
             ],
         }
+
+    def get_appserver_init_settings(self):
+        """Return the YAML-formatted settings for the appserver-init playbook."""
+        return yaml.dump({
+            **self._get_consul_variables(),
+            **self._get_consul_connect_variables(),
+        }, default_flow_style=False)
+
+    def get_appserver_settings(self):
+        """Return the YAML-formatted settings for the appserver playbook."""
+        return yaml.dump({
+            **self._get_prometheus_variables(),
+            **self._get_filebeat_variables(),
+        }, default_flow_style=False)
+
+    def save(self, *args, **kwargs):
+        """Store the Ansible settings for new app servers."""
+        if not self.pk:
+            self.appserver_init_settings = self.get_appserver_init_settings()
+            self.appserver_settings = self.get_appserver_settings()
+        super().save(*args, **kwargs)

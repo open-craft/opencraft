@@ -487,7 +487,10 @@ ANSIBLE_GLOBAL_TIMEOUT = env.int('ANSIBLE_GLOBAL_TIMEOUT', default=9000)  # 2.5 
 # The repository to pull the default Ansible playbook from.
 ANSIBLE_APPSERVER_REPO = env('ANSIBLE_APPSERVER_REPO', default='https://github.com/open-craft/ansible-playbooks.git')
 
-# The path to the common appserver playbook to run on all appservers.
+# The path to the common appserver playbook to run on all appservers before the main playbook.
+ANSIBLE_APPSERVER_INIT_PLAYBOOK = env('ANSIBLE_APPSERVER_INIT_PLAYBOOK', default='playbooks/appserver-init.yml')
+
+# The path to the common appserver playbook to run on all appservers after the main playbook.
 ANSIBLE_APPSERVER_PLAYBOOK = env('ANSIBLE_APPSERVER_PLAYBOOK', default='playbooks/appserver.yml')
 
 # The path to the requirements file for the common appserver playbook.

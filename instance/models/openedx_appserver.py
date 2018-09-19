@@ -265,17 +265,33 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         self.lms_user_settings = self.create_lms_user_settings()
         self.save()
 
-    def default_playbook(self):
+    def default_playbooks(self):
         """
-        Return a Playbook instance for the standard configuration playbook.
+        Return Playbook instances for the standard playbooks to set up an Open edX instance.
         """
-        return Playbook(
-            source_repo=self.configuration_source_repo_url,
-            requirements_path='requirements.txt',
-            playbook_path=self.CONFIGURATION_PLAYBOOK,
-            version=self.configuration_version,
-            variables=self.configuration_settings,
-        )
+        return [
+            Playbook(
+                source_repo=settings.ANSIBLE_APPSERVER_REPO,
+                requirements_path=settings.ANSIBLE_APPSERVER_REQUIREMENTS_PATH,
+                playbook_path=settings.ANSIBLE_APPSERVER_INIT_PLAYBOOK,
+                version=settings.ANSIBLE_APPSERVER_VERSION,
+                variables=self.appserver_init_settings,
+            ),
+            Playbook(
+                source_repo=self.configuration_source_repo_url,
+                requirements_path='requirements.txt',
+                playbook_path=self.CONFIGURATION_PLAYBOOK,
+                version=self.configuration_version,
+                variables=self.configuration_settings,
+            ),
+            Playbook(
+                source_repo=settings.ANSIBLE_APPSERVER_REPO,
+                requirements_path=settings.ANSIBLE_APPSERVER_REQUIREMENTS_PATH,
+                playbook_path=settings.ANSIBLE_APPSERVER_PLAYBOOK,
+                version=settings.ANSIBLE_APPSERVER_VERSION,
+                variables=self.appserver_settings,
+            ),
+        ]
 
     def lms_user_creation_playbook(self):
         """
@@ -293,10 +309,10 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Get the ansible playbooks used to provision this AppServer
         """
-        playbooks = [self.default_playbook()]
+        playbooks = self.default_playbooks()
         if self.lms_users.count():
             playbooks.append(self.lms_user_creation_playbook())
-        return playbooks + super().get_playbooks()
+        return super().get_playbooks() + playbooks
 
     def create_configuration_settings(self):
         """

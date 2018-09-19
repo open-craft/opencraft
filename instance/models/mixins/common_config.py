@@ -20,16 +20,6 @@ class ConfigMixinBase(models.Model):
     class Meta:
         abstract = True
 
-    def _get_common_configuration_variables(self):
-        """
-        Retrieve all common configuration variables.
-        """
-        return {
-            **self._get_prometheus_variables(),
-            **self._get_consul_variables(),
-            **self._get_filebeat_variables(),
-        }
-
     def _get_prometheus_variables(self):  # pylint: disable=no-self-use
         """Get all Prometheus-related ansible variables."""
         return {
