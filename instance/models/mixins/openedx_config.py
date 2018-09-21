@@ -259,6 +259,19 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # RabbitMQ disabled locally
             "SANDBOX_ENABLE_RABBITMQ": False,
 
+            # Memcached disabled locally
+            "SANDBOX_ENABLE_MEMCACHE": False,
+
+            # Xqueue
+            "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.cache",
+            "XQUEUE_CACHES": {
+                "default": {
+                    "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+                    "KEY_PREFIX": "xqueue",
+                    "LOCATION": "{{ EDXAPP_MEMCACHE }}",
+                },
+            },
+
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
             "ECOMMERCE_NGINX_PORT": 80,

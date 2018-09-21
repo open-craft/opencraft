@@ -389,51 +389,39 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         settings.update(extra_settings)
         return settings
 
-    def _get_rabbitmq_settings(self):
+    def _get_celery_broker_settings(self):
         """
-        Return dictionary of RabbitMQ Settings
+        Return dictionary of Celery broker settings.
         """
-        return {
-            "XQUEUE_RABBITMQ_USER": self.rabbitmq_provider_user.username,
-            "XQUEUE_RABBITMQ_PASS": self.rabbitmq_provider_user.password,
-            "XQUEUE_RABBITMQ_VHOST": self.rabbitmq_vhost,
-            "XQUEUE_RABBITMQ_HOSTNAME": self.rabbitmq_server.instance_host,
-            "XQUEUE_RABBITMQ_PORT": self.rabbitmq_server.instance_port,
-            "XQUEUE_RABBITMQ_TLS": True,
-            "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.cache",
-            "XQUEUE_CACHES": {
-                "default": {
-                    "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-                    "KEY_PREFIX": "xqueue",
-                    "LOCATION": "{{ EDXAPP_MEMCACHE }}",
-                },
-            },
-
-            "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
-            "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
-            "EDXAPP_CELERY_BROKER_VHOST": self.rabbitmq_vhost,
-            "EDXAPP_RABBIT_HOSTNAME": "{}:{}".format(
-                self.rabbitmq_server.instance_host,
-                self.rabbitmq_server.instance_port
-            ),
-            "EDXAPP_CELERY_BROKER_USE_SSL": True
-        }
+        if False:  # TODO(smarnach): Add transport to app server config.
+            return {
+                "EDXAPP_CELERY_BROKER_TRANSPORT": "amqp",
+                "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
+                "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
+                "EDXAPP_CELERY_BROKER_VHOST": self.rabbitmq_vhost,
+                "EDXAPP_CELERY_BROKER_HOSTNAME": "{}:{}".format(
+                    self.rabbitmq_server.instance_host,
+                    self.rabbitmq_server.instance_port
+                ),
+                "EDXAPP_CELERY_BROKER_USE_SSL": True
+            }
+        else:
+            return {
+                "EDXAPP_CELERY_BROKER_TRANSPORT": "redis",
+                "EDXAPP_CELERY_USER": "",
+                "EDXAPP_CELERY_PASSWORD": "",
+                "EDXAPP_CELERY_BROKER_HOSTNAME": "localhost",
+                "EDXAPP_CELERY_BROKER_VHOST": "0",
+            }
 
     def get_database_settings(self):
         """
         Get configuration_database_settings to pass to a new AppServer
         """
         new_settings = {}
-
-        # MySQL:
         if self.mysql_server:
             new_settings.update(self._get_mysql_settings())
-
-        # MongoDB:
         if self.mongodb_replica_set or self.mongodb_server:
             new_settings.update(self._get_mongo_settings())
-
-        # RabbitMQ:
-        new_settings.update(self._get_rabbitmq_settings())
-
+        new_settings.update(self._get_celery_broker_settings())
         return yaml.dump(new_settings, default_flow_style=False)
