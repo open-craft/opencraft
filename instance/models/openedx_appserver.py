@@ -41,13 +41,12 @@ from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
+from userprofile.models import UserProfile
 
 # Constants ###################################################################
 
 
 # OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
-from userprofile.models import UserProfile
-
 OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
     SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
