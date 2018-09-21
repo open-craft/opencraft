@@ -41,7 +41,6 @@ from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
-from pr_watch.github import get_username_list_from_team
 
 # Constants ###################################################################
 
@@ -377,23 +376,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             users += usernames if usernames else []
 
         return users
-
-    @property
-    def github_admin_username_list(self):
-        """
-        Returns the github usernames of this instance admins
-
-        Admins are all users listed in github_admin_users and the members of the default team of the
-        organizations in github_admin_organizations.
-
-        TODO: This method is stale now, consider removing it and combining the needed logic
-              with `github_admin_username_list` while working on OC-5237.
-        """
-        admin_users = []
-        for org in self.github_admin_organizations:
-            admin_users += get_username_list_from_team(org)
-        admin_users += self.github_admin_users
-        return admin_users
 
     @property
     def security_groups(self):

@@ -155,16 +155,6 @@ class OpenEdXAppServerTestCase(TestCase):
             {'name': name, 'github': True, 'type': 'admin'} for name in users
         ])
 
-    def test_github_admin_username_list_default(self):
-        """
-        By default, no admin should be configured
-        """
-        appserver = make_test_appserver()
-        self.assertEqual(appserver.github_admin_organizations, [])
-        self.assertEqual(appserver.github_admin_users, [])
-        self.assertEqual(appserver.github_admin_username_list, [])
-        self.assertNotIn('COMMON_USER_INFO', appserver.configuration_settings)
-
     @patch_services
     def test_cannot_reprovision(self, mocks):
         """

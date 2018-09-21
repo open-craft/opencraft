@@ -191,68 +191,6 @@ class GitHubTestCase(TestCase):
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146], ['edx/edx-platform', 15921]]
         )
 
-    @responses.activate
-    def test_get_username_list_from_team(self):
-        """
-        Get list of members in a team
-        """
-        responses.add(
-            responses.GET, 'https://api.github.com/orgs/open-craft/teams',
-            body=get_raw_fixture('github/api_teams.json'),
-            content_type='application/json; charset=utf8',
-            status=200)
-        responses.add(
-            responses.GET, 'https://api.github.com/teams/799617/members',
-            body=get_raw_fixture('github/api_members.json'),
-            content_type='application/json; charset=utf8',
-            status=200)
-
-        self.assertEqual(
-            github.get_username_list_from_team('open-craft', team_name='Owners'),
-            [
-                'antoviaque',
-                'bradenmacdonald',
-                'e-kolpakov',
-                'itsjeyd',
-                'Kelketek',
-                'mtyaka',
-                'smarnach',
-                'haikuginger'
-            ]
-        )
-
-    @responses.activate
-    def test_get_username_list_from_team_404(self):
-        """
-        Get list of open PR for non-existent team
-        """
-        responses.add(
-            responses.GET, 'https://api.github.com/orgs/open-craft/teams',
-            body=get_raw_fixture('github/api_teams.json'),
-            content_type='application/json; charset=utf8',
-            status=200)
-
-        with self.assertRaises(KeyError, msg='non-existent'):
-            github.get_username_list_from_team('open-craft', team_name='non-existent')
-
-    @responses.activate
-    def test_rate_limit_exceeded(self):
-        """
-        Get list of open PR for non-existent team
-        """
-        responses.add(
-            responses.GET, 'https://api.github.com/orgs/open-craft/teams',
-            body=get_raw_fixture('github/api_teams.json'),
-            content_type='application/json; charset=utf8',
-            status=403,
-            adding_headers={
-                'X-RateLimit-Remaining': '0'
-            }
-        )
-
-        with self.assertRaises(github.RateLimitExceeded):
-            github.get_username_list_from_team('open-craft', team_name='non-existent')
-
     def test_parse_date(self):
         """
         Parse string representing date in ISO 8601 format (as returned by GitHub).

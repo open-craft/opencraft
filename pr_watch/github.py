@@ -164,15 +164,6 @@ def get_team_from_organization(organization_name, team_name='Sandbox'):
     raise KeyError(team_name)
 
 
-def get_username_list_from_team(organization_name, team_name='Sandbox'):
-    """
-    Retrieve the usernames of a given team's members
-    """
-    team = get_team_from_organization(organization_name, team_name)
-    url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
-    return [user_dict['login'] for user_dict in get_object_from_url(url)]
-
-
 def parse_date(date):
     """
     Create datetime object from `date`.
