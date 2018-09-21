@@ -501,6 +501,8 @@ class ConsulAgent(object):
         if not is_left and force:
             return self.force_leave()
 
+        return is_left
+
     def force_leave(self):
         """
         This method will force the agent nodes to leave the cluster.
