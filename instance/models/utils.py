@@ -27,9 +27,10 @@ from weakref import WeakKeyDictionary
 
 from django.conf import settings
 
-import consul
 import requests
-from requests.exceptions import ConnectionError
+from requests import exceptions as requests_exceptions
+
+import consul
 
 # Exceptions ##################################################################
 
@@ -484,7 +485,7 @@ class ConsulAgent(object):
         """
         return self._client.kv.delete(self.prefix, recurse=True)
 
-    def leave(self, force=True):
+    def leave(self, force=False):
         """
         This method will request the agent to leave the cluster, if the
         operation wasn't completed successfully then it'll force nodes to
@@ -504,25 +505,24 @@ class ConsulAgent(object):
         """
         This method will force the agent nodes to leave the cluster.
         """
-        _, nodes = self._client.catalog.nodes()
-        for node in nodes:
-            self._client.agent.force_leave(node['Node'])
+        request_path = '/v1/agent/force-leave'
+        return self._api_request(request_path, method='put')
 
     def _api_request(self, path, method='get'):
         """
         This method serves a good need of making API requests to Consul
-        directly. This good in casae we need to make some advanced
+        directly. This good in case we need to make some advanced
         operations that are not supported from the library.
-        :param path:
-        :param method:
-        :return:
+        :param path: The API path you need to hit.
+        :param method: The HTTP request method this API should be listening to.
+        :return: True if the response is a 2XX status, False otherwise.
         """
         base_uri = self._client.http.base_uri
         url = '%s%s' % (base_uri, path)
 
         try:
             response = requests.request(method, url)
-        except ConnectionError:
+        except requests_exceptions.ConnectionError:
             return False
 
         return 200 <= response.status_code < 300
