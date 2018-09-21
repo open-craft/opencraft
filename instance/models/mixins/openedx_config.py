@@ -259,8 +259,11 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # RabbitMQ disabled locally
             "SANDBOX_ENABLE_RABBITMQ": False,
 
-            # Memcached disabled locally
+            # Memcache
             "SANDBOX_ENABLE_MEMCACHE": False,
+            "EDXAPP_MEMCACHE": [
+                "localhost:{}".format(port) for port in self._get_memcached_port_range()
+            ],
 
             # Xqueue
             "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.cache",
@@ -370,10 +373,15 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             }
         }
 
+    def _get_memcached_port_range(self):  # pylint: disable=no-self-use
+        """Return the list of memcached ports to use."""
+        return list(range(11211, 11211 + settings.INSTANCE_MEMCACHED_JOB_COUNT))
+
     def _get_consul_connect_variables(self):
         """Get the variables for setting up the Consul Connect tunnels."""
         return {
-            "consul_connect_instance_id": self.instance.id
+            "consul_connect_instance_id": self.instance.id,
+            "consul_connect_memcached_ports": self._get_memcached_port_range(),
         }
 
     def _get_filebeat_variables(self):
