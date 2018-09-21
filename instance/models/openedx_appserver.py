@@ -47,6 +47,8 @@ from pr_watch.github import get_username_list_from_team
 
 
 # OpenStack firewall rules (security group rules) to apply to the main security group of each AppServer:
+from userprofile.models import UserProfile
+
 OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
     SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
@@ -369,8 +371,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         users = []
         organization = self.instance.ref.owner
         if organization:
-            org_github_handle = organization.github_handle
-            usernames = get_username_list_from_team(org_github_handle)
+            usernames = UserProfile.objects.filter(
+                organization__github_handle=organization.github_handle
+            ).values_list('github_username', flat=True)
             users += usernames if usernames else []
 
         return users

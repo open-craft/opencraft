@@ -20,6 +20,7 @@
 Test factory: User, UserProfile, Organization
 """
 
+import factory
 from factory.django import DjangoModelFactory
 
 from django.contrib.auth.models import User
@@ -36,7 +37,7 @@ class UserFactory(DjangoModelFactory):
         model = User
         django_get_or_create = ('username',)
 
-    username = "edx"
+    username = factory.Sequence(lambda n: 'user_%d' % n)
 
 
 class UserProfileFactory(DjangoModelFactory):

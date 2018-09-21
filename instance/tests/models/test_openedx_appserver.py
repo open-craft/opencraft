@@ -44,7 +44,8 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
-from userprofile.factories import OrganizationFactory
+from userprofile.factories import make_user_and_organization
+from userprofile.models import Organization
 
 
 # Tests #######################################################################
@@ -133,23 +134,20 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
-    @patch('instance.models.openedx_appserver.get_username_list_from_team')
-    def test_organization_users(self, mock_get_username_list):
+    def test_organization_users(self):
         """
         By default, all users that belong to an organization that owns the server
         have access to the sandbox.
         """
-        github_handle = 'test-org'
+        handle = 'test-org'
         users = ['jane', 'joey']
 
-        mock_get_username_list.side_effect = {
-            github_handle: users,
-            'other-org': ['other-user', 'another-other-user'],
-        }.get
+        for user in reversed(users):
+            make_user_and_organization(github_handle=handle, github_username=user)
 
         instance = OpenEdXInstanceFactory()
-        organization = OrganizationFactory(github_handle=github_handle)
-        appserver = make_test_appserver(instance, organization=organization)
+        org = Organization.objects.get(github_handle=handle)
+        appserver = make_test_appserver(instance, organization=org)
 
         self.assertEqual(appserver.organization_users, users)
         ansible_settings = yaml.load(appserver.configuration_settings)
