@@ -28,7 +28,6 @@ from weakref import WeakKeyDictionary
 from django.conf import settings
 
 import requests
-from requests import exceptions as requests_exceptions
 
 import consul
 
@@ -526,7 +525,7 @@ class ConsulClient(object):
 
         try:
             response = requests.request(method, url)
-        except requests_exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError:
             return False
 
         return 200 <= response.status_code < 300

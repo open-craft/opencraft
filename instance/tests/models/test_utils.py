@@ -23,10 +23,16 @@ model utils - Tests, mostly for state machine
 # Imports #####################################################################
 import json
 from unittest import TestCase
-from unittest.mock import Mock
 
+from unittest.mock import Mock, patch, call
+
+from django.test import override_settings
+
+from django.conf import settings
 from django.db import models
+from django.http.response import HttpResponseBase
 
+import requests
 import consul
 
 from instance.models.utils import (
@@ -894,6 +900,82 @@ class ConsulClientTest(TestCase):
         self.assertFalse(self.client._is_json_serializable('nope'))
         self.assertFalse(self.client._is_json_serializable(1))
         self.assertFalse(self.client._is_json_serializable(1.1))
+
+    @override_settings(OCIM_ID='ocim_id')
+    @patch('instance.models.utils.ConsulClient._api_request')
+    def test_leave(self, api_request_mock):
+        """
+        Tests that `leave` make a request with correct parameters and the
+        expected order.
+        """
+        leave_api_path = '/v1/agent/leave'
+        force_leave_api_path = '/v1/agent/force-leave/{node}'.format(node=settings.OCIM_ID)
+
+        # False return without force
+        api_request_mock.return_value = False
+        self.assertFalse(self.client.leave())
+        api_request_mock.assert_called_with(leave_api_path, method='put')
+
+        # False return with force
+        self.assertFalse(self.client.leave(force=True))
+        api_request_mock.assert_has_calls([
+            call(leave_api_path, method='put'),
+            call(force_leave_api_path, method='put'),
+        ])
+
+        # True return without force
+        api_request_mock.return_value = True
+        self.assertTrue(self.client.leave())
+        api_request_mock.assert_called_with(leave_api_path, method='put')
+
+        # True return with force
+        self.assertTrue(self.client.leave(force=True))
+        api_request_mock.assert_called_with(leave_api_path, method='put')
+
+    @override_settings(OCIM_ID='ocim_id')
+    @patch('instance.models.utils.ConsulClient._api_request')
+    def test_force_leave(self, api_request_mock):
+        """
+        Tests that force_leave make a request with correct parameters
+        """
+        force_leave_api_path = '/v1/agent/force-leave/{node}'.format(node=settings.OCIM_ID)
+
+        api_request_mock.return_value = False
+        self.assertFalse(self.client.force_leave())
+        api_request_mock.assert_called_with(force_leave_api_path, method='put')
+
+        api_request_mock.return_value = True
+        self.assertTrue(self.client.force_leave())
+        api_request_mock.assert_called_with(force_leave_api_path, method='put')
+
+    @patch('instance.models.utils.requests.request')
+    def test_api_request(self, request_mock):
+        """
+        Tests api_request returns the expected responses
+        """
+        method = 'put'
+        path = '/some/path'
+        url = '%s%s' % (self.client._client.http.base_uri, path)
+
+        # 2XX status must return True.
+        request_mock.return_value = HttpResponseBase(status=200)
+        self.assertTrue(self.client._api_request(path, method=method))
+        request_mock.assert_called_with(method, url)
+
+        # Less than 2XX status must return False.
+        request_mock.return_value = HttpResponseBase(status=100)
+        self.assertFalse(self.client._api_request(path, method=method))
+        request_mock.assert_called_with(method, url)
+
+        # More than 2XX status must return False.
+        request_mock.return_value = HttpResponseBase(status=500)
+        self.assertFalse(self.client._api_request(path, method=method))
+        request_mock.assert_called_with(method, url)
+
+        # Connection Errors return False as well
+        request_mock.side_effect = requests.exceptions.ConnectionError
+        request_mock.assert_called_with(method, url)
+        self.assertFalse(self.client._api_request(path, method=method))
 
     def tearDown(self):
         self.lib_client.kv.delete('', recurse=True)
