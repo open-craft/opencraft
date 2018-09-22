@@ -362,6 +362,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         """
         self.disable_monitoring()
         self.remove_dns_records()
+        self.leave_consul_cluster()
         if self.load_balancing_server is not None:
             load_balancer = self.load_balancing_server
             self.load_balancing_server = None
@@ -490,3 +491,15 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
 
         agent = ConsulAgent(prefix=self.consul_prefix)
         agent.purge()
+
+    def leave_consul_cluster(self):
+        """
+        Will instruct the client to leave and shutdown from the cluster
+        it's connected to
+        :return: True if the operation completed successfully, False otherwise.
+        """
+        if not settings.CONSUL_ENABLED:
+            return
+
+        agent = ConsulAgent(prefix=self.consul_prefix)
+        return agent.leave()

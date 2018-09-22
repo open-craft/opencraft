@@ -52,11 +52,6 @@ DEBUG = env.bool('DEBUG', default=False)
 ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 
 
-# Consul #########################################################################
-CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
-OCIM_ID = env('OCIM_ID', default='ocim')
-CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}/')
-
 # Auth ########################################################################
 
 AUTHENTICATION_BACKENDS = (
@@ -687,6 +682,15 @@ AWS_S3_BUCKET_PREFIX = env('S3_BUCKET_PREFIX', default='ocim')
 AWS_IAM_USER_PREFIX = env('IAM_USER_PREFIX', default='ocim')
 
 # Consul ######################################################################
+
+# Determines whether Consul is enabled on this OCIM server or not.
+CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
+
+# The machine ID that Consul is gonna use to identify this deployment.
+OCIM_ID = env('OCIM_ID', default='ocim')
+
+# The prefix we're gonna use to store key-value records. It must contain `ocim` and `instance` placeholders.
+CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}/')
 
 # The encryption key used to gossip in a Consul cluster.
 CONSUL_ENCRYPT = env('CONSUL_ENCRYPT', default='')

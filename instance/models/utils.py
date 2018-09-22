@@ -505,9 +505,11 @@ class ConsulAgent(object):
 
     def force_leave(self):
         """
-        This method will force the agent nodes to leave the cluster.
+        This method will force the agent node of the current OCIM
+        deployment to leave the cluster.
+        :return: True if the operation went successfully, False otherwise.
         """
-        request_path = '/v1/agent/force-leave'
+        request_path = '/v1/agent/force-leave/{node}'.format(node=settings.OCIM_ID)
         return self._api_request(request_path, method='put')
 
     def _api_request(self, path, method='get'):
