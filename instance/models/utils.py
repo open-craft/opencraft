@@ -419,7 +419,7 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
         return new_state
 
 
-class ConsulAgent(object):
+class ConsulClient(object):
     """
     This class acts as a helper that simplifies the operations of getting, putting,
     and deleting keys from Consul. These operations are mainly dealing with data-types,

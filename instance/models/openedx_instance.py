@@ -42,7 +42,7 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
-from instance.models.utils import WrongStateException, ConsulAgent
+from instance.models.utils import WrongStateException, ConsulClient
 from instance.utils import sufficient_time_passed
 
 
@@ -447,19 +447,19 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        agent = ConsulAgent(prefix=self.consul_prefix)
+        client = ConsulClient(prefix=self.consul_prefix)
         version_updated = False
 
-        version_number = agent.get('version') or 0
+        version_number = client.get('version') or 0
         for key, value in configurations.items():
-            index, stored_value = agent.get(key, index=True)
+            index, stored_value = client.get(key, index=True)
             cas = index if stored_value else 0
-            agent.put(key, value, cas=cas)
+            client.put(key, value, cas=cas)
 
             if not version_updated and value != stored_value:
                 version_updated = True
                 version_number += 1
-                agent.put('version', version_number)
+                client.put('version', version_number)
 
         return version_number, version_updated
 
@@ -489,8 +489,8 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         if not settings.CONSUL_ENABLED:
             return
 
-        agent = ConsulAgent(prefix=self.consul_prefix)
-        agent.purge()
+        client = ConsulClient(prefix=self.consul_prefix)
+        client.purge()
 
     def leave_consul_cluster(self):
         """
@@ -501,5 +501,5 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         if not settings.CONSUL_ENABLED:
             return
 
-        agent = ConsulAgent(prefix=self.consul_prefix)
-        return agent.leave()
+        client = ConsulClient(prefix=self.consul_prefix)
+        return client.leave()
