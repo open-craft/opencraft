@@ -393,7 +393,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         Return dictionary of Celery broker settings.
         """
-        if False:  # TODO(smarnach): Add transport to app server config.
+        if self.celery_broker_transport == "amqp":
             return {
                 "EDXAPP_CELERY_BROKER_TRANSPORT": "amqp",
                 "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
@@ -405,7 +405,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 ),
                 "EDXAPP_CELERY_BROKER_USE_SSL": True
             }
-        else:
+        elif self.celery_broker_transport == "redis":
             return {
                 "EDXAPP_CELERY_BROKER_TRANSPORT": "redis",
                 "EDXAPP_CELERY_USER": "",
@@ -413,6 +413,9 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 "EDXAPP_CELERY_BROKER_HOSTNAME": "localhost",
                 "EDXAPP_CELERY_BROKER_VHOST": "0",
             }
+        raise ValueError(
+            "Unsupported value for 'celery_broker_transport': {}".format(self.celery_broker_transport)
+        )
 
     def get_database_settings(self):
         """

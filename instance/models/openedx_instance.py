@@ -223,8 +223,10 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         elif self.storage_type == self.S3_STORAGE:
             self.logger.info('Provisioning S3 bucket...')
             self.provision_s3()
-        self.logger.info('Provisioning RabbitMQ vhost...')
-        self.provision_rabbitmq()
+        if self.celery_broker_transport == "amqp":
+            self.logger.info('Provisioning RabbitMQ vhost...')
+            self.provision_rabbitmq()
+        self.logger.info('Provisioning Nomad jobs...')
         self.provision_nomad_jobs()
 
         return self._create_owned_appserver()

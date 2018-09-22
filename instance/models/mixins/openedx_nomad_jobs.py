@@ -114,39 +114,47 @@ class OpenEdXNomadJobMixin(NomadJobMixin):
     class Meta:
         abstract = True
 
+    def _get_redis_jobspec(self):
+        """Return a jobspec for the Redis job for this instance."""
+        return NomadJob(_jobspec(
+            job_id="redis-{}".format(self.id),
+            count=1,
+            server_command="/usr/bin/redis-server",
+            server_args=[
+                # Listen only on localhost
+                "--bind", "127.0.0.1",
+                # TCP port
+                "--port", "${NOMAD_PORT_main}",
+            ],
+        ))
+
+    def _get_memcached_jobspec(self):
+        """Return a jobspec for the memcached job for this instance."""
+        return NomadJob(_jobspec(
+            job_id="memcached-{}".format(self.id),
+            count=settings.INSTANCE_MEMCACHED_JOB_COUNT,
+            server_command="/usr/bin/memcached",
+            server_args=[
+                # Log to stdout
+                "-v",
+                # Listen only on localhost
+                "-l", "127.0.0.1",
+                # TCP port
+                "-p", "${NOMAD_PORT_main}",
+                # Memory limit.  The daemon won't use more than the limit, but may use significantly less.
+                "-m", "64", # MB
+                # Become user "memcache" after starting
+                "-u", "memcache",
+            ],
+            service_include_alloc_id=True,
+        ))
+
     def get_nomad_jobs(self):
         """Return an iterable of instance.nomad_client.NomadJob instances describing the job to run.
 
         This method should be overwritten in subclasses.
         """
-        return [
-            NomadJob(_jobspec(
-                job_id="redis-{}".format(self.id),
-                count=1,
-                server_command="/usr/bin/redis-server",
-                server_args=[
-                    # Listen only on localhost
-                    "--bind", "127.0.0.1",
-                    # TCP port
-                    "--port", "${NOMAD_PORT_main}",
-                ],
-            )),
-            NomadJob(_jobspec(
-                job_id="memcached-{}".format(self.id),
-                count=settings.INSTANCE_MEMCACHED_JOB_COUNT,
-                server_command="/usr/bin/memcached",
-                server_args=[
-                    # Log to stdout
-                    "-v",
-                    # Listen only on localhost
-                    "-l", "127.0.0.1",
-                    # TCP port
-                    "-p", "${NOMAD_PORT_main}",
-                    # Memory limit.  The daemon won't use more than the limit, but may use significantly less.
-                    "-m", "64", # MB
-                    # Become user "memcache" after starting
-                    "-u", "memcache",
-                ],
-                service_include_alloc_id=True,
-            )),
-        ]
+        jobs = [self._get_memcached_jobspec()]
+        if self.celery_broker_transport == "redis":
+            jobs.append(self._get_redis_jobspec())
+        return jobs

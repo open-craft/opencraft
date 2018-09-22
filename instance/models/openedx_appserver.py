@@ -189,6 +189,13 @@ class OpenEdXAppConfiguration(models.Model):
             "becomes unavailable."
         )
     )
+    celery_broker_transport = models.CharField(
+        max_length=16,
+        blank=False,
+        null=False,
+        default="redis",
+        help_text='The Celery broker transport to use.  Supported values include "redis" and "amqp".',
+    )
 
     @classmethod
     def get_config_fields(cls):
