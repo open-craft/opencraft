@@ -74,7 +74,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         """
         # Don't load all columns, because some of them have very big data
         appservers_few_columns = OpenEdXAppServer.objects.only('_is_active', '_status', 'id', 'name', 'owner_id',
-                                                               'created', 'modified')
+                                                               'created', 'modified', 'terminated')
         queryset = self.queryset.prefetch_related(
             # Use prefetching to make the number of database queries required to
             # generate this list O(1).

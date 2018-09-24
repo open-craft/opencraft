@@ -36,7 +36,7 @@ from django.test import override_settings
 from freezegun import freeze_time
 from pytz import utc
 
-from instance.models.appserver import Status as AppServerStatus
+from instance.models.appserver import Status as AppServerStatus, AppServer
 from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
@@ -514,6 +514,70 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
+
+    @patch_services
+    def test_terminate_vm(self, mocks):
+        """
+        Test AppServer termination
+        """
+        # Test New AppServer termination
+        appserver = make_test_appserver()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Waiting for server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Error server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_error()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Failed configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_configuration_failed()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            appserver.terminate_vm()
+        termination_time = utc.localize(freezed_time())
+
+        self.assertEqual(appserver.terminated, termination_time)
+
+        # Test terminated server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+
+        with freeze_time('2017-01-18 11:25:00') as freezed_time:
+            appserver.terminate_vm()
+        first_termination_time = utc.localize(freezed_time())
+
+        self.assertEqual(appserver.status, AppServer.Status.Terminated)
+        appserver.terminate_vm()
+        self.assertEqual(appserver.terminated, first_termination_time)
 
 
 @ddt

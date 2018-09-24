@@ -64,4 +64,5 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
 
         output['created'] = obj.created
         output['modified'] = obj.modified
+        output['terminated'] = obj.terminated
         return output
