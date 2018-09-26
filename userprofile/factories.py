@@ -20,7 +20,6 @@
 Test factory: User, UserProfile, Organization
 """
 
-import factory
 from factory.django import DjangoModelFactory
 
 from django.contrib.auth.models import User
@@ -66,7 +65,10 @@ class OrganizationFactory(DjangoModelFactory):
 
 def make_user_and_organization(organization_name="Test Org", github_handle="test-org", github_username="edx"):
     """
-    Create user, userprofile and organization needed for reference on instances
+    Create user, userprofile and organization needed for reference on instances.
+    We're using the github_username passed to this method to create User and
+    UserProfileFactory objects (Just in case you created another user with the
+    same username passed to this method and the tests are failing).
     """
     user = UserFactory(username=github_username)
     organization = OrganizationFactory(
