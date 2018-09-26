@@ -37,7 +37,7 @@ class UserFactory(DjangoModelFactory):
         model = User
         django_get_or_create = ('username',)
 
-    username = factory.Sequence(lambda n: 'user_%d' % n)
+    username = "edx"
 
 
 class UserProfileFactory(DjangoModelFactory):
@@ -68,7 +68,7 @@ def make_user_and_organization(organization_name="Test Org", github_handle="test
     """
     Create user, userprofile and organization needed for reference on instances
     """
-    user = UserFactory()
+    user = UserFactory(username=github_username)
     organization = OrganizationFactory(
         name=organization_name,
         github_handle=github_handle

@@ -370,7 +370,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         organization = self.instance.ref.owner
         if organization:
             usernames = UserProfile.objects.filter(
-                organization__github_handle=organization.github_handle
+                organization=organization
             ).values_list('github_username', flat=True)
             users += usernames if usernames else []
 
