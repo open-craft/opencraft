@@ -150,11 +150,12 @@ class OpenEdXAppServerTestCase(TestCase):
 
         admin_organization = OrganizationFactory(
             name='Admin Org',
-            github_handle=admin_org_handle)
+            github_handle=admin_org_handle
+        )
 
         for admin_user in admin_users:
             user = UserFactory(username=admin_user, is_superuser=True)
-            userprofile = UserProfileFactory(
+            UserProfileFactory(
                 organization=admin_organization,
                 user=user,
                 github_username=admin_user

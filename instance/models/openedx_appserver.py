@@ -364,12 +364,13 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     @property
     def organization_users(self):
         """
-        Returns the github usernames of this instance admins.
+        Return GitHub usernames of admin users for this instance.
 
-        Admins are all user with `is_superuser` flag as True and members of
-        the organization this instance is owned by.
+        Admins are all users with `is_superuser` set to `True`,
+        as well as all members of the organization that owns this instance.
         """
         users = []
+        # Add members of owning organization to the list of users that can administer this instance
         organization = self.instance.ref.owner
         if organization:
             usernames = UserProfile.objects.filter(
@@ -377,11 +378,11 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             ).values_list('github_username', flat=True)
             users += usernames if usernames else []
 
-        # add admin users
-        oc_usernames = UserProfile.objects.filter(
-            user__is_superuser=True).values_list(
-            'github_username', flat=True)
-        users += oc_usernames if oc_usernames else []
+        # Add superusers to the list of users that can administer this instance
+        usernames = UserProfile.objects.filter(
+            user__is_superuser=True
+        ).values_list('github_username', flat=True)
+        users += usernames if usernames else []
 
         return users
 
