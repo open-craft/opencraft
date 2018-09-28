@@ -44,7 +44,7 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
-from userprofile.factories import make_user_and_organization
+from userprofile.factories import make_user_and_organization, OrganizationFactory, UserFactory, UserProfileFactory
 from userprofile.models import Organization
 
 
@@ -141,18 +141,33 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         handle = 'test-org'
         users = ['jane', 'joey']
+        admin_org_handle = 'admin-org'
+        admin_users = ['james', 'john']
+        all_users = users + admin_users
 
         for user in reversed(users):
             make_user_and_organization(github_handle=handle, github_username=user)
+
+        admin_organization = OrganizationFactory(
+            name='Admin Org',
+            github_handle=admin_org_handle)
+
+        for admin_user in admin_users:
+            user = UserFactory(username=admin_user, is_superuser=True)
+            userprofile = UserProfileFactory(
+                organization=admin_organization,
+                user=user,
+                github_username=admin_user
+            )
 
         instance = OpenEdXInstanceFactory()
         org = Organization.objects.get(github_handle=handle)
         appserver = make_test_appserver(instance, organization=org)
 
-        self.assertEqual(appserver.organization_users, users)
+        self.assertCountEqual(appserver.organization_users, all_users)
         ansible_settings = yaml.load(appserver.configuration_settings)
-        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': name, 'github': True, 'type': 'admin'} for name in users
+        self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
+            {'name': name, 'github': True, 'type': 'admin'} for name in all_users
         ])
 
     @patch_services
