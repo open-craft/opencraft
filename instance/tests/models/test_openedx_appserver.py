@@ -134,7 +134,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
-    def test_organization_users(self):
+    def test_admin_users(self):
         """
         By default, all users that belong to an organization that owns the server
         have access to the sandbox.
@@ -165,7 +165,7 @@ class OpenEdXAppServerTestCase(TestCase):
         org = Organization.objects.get(github_handle=handle)
         appserver = make_test_appserver(instance, organization=org)
 
-        self.assertCountEqual(appserver.organization_users, all_users)
+        self.assertCountEqual(appserver.admin_users, all_users)
         ansible_settings = yaml.load(appserver.configuration_settings)
         self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
             {'name': name, 'github': True, 'type': 'admin'} for name in all_users

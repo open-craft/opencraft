@@ -362,7 +362,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return None
 
     @property
-    def organization_users(self):
+    def admin_users(self):
         """
         Return GitHub usernames of admin users for this instance.
 
