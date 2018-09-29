@@ -32,9 +32,10 @@ from django.db.models import F
 from django.test import override_settings
 from django.utils import timezone
 
-import consul
 from freezegun import freeze_time
 import yaml
+
+import consul
 
 from instance import gandi
 from instance.models.appserver import Status as AppServerStatus
