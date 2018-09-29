@@ -84,6 +84,7 @@ LOCAL_APPS = (
     'pr_watch',
     'userprofile',
     'registration',
+    'reports',
     'backup_swift'
 )
 
@@ -306,6 +307,11 @@ if MEDIAFILES_SWIFT_ENABLE:
 # RabbitMQ ####################################################################
 
 DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
+
+# Billing #####################################################################
+
+# This rate is per user per day in euros
+BILLING_RATE = env('BILLING_RATE', default=3)
 
 # DNS (Gandi) #################################################################
 
