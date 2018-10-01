@@ -151,19 +151,6 @@ class OpenEdXAppConfiguration(models.Model):
     )
 
     # Misc settings:
-    github_admin_organizations = JSONField(
-        max_length=256,
-        blank=True,
-        default=default_admin_organizations,
-        help_text='A list of GitHub organizations; the members of the "Sandbox" team in these '
-        "organizations will be given SSH admin access to this instance's VMs.",
-    )
-    github_admin_users = JSONField(
-        max_length=256,
-        blank=True,
-        default=[],
-        help_text="A list of Github users who will be given SSH admin access to this instance's VMs.",
-    )
     lms_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
