@@ -427,17 +427,25 @@ class OpenStackServer(Server):
 
     def terminate(self):
         """
-        Terminate the server
+        Stop and terminate the server.
+
+        We explicitly stop and wait for a graceful shutdown of the server before terminating it.
+        This ensures any daemons that need to perform cleanup tasks can do so, or that any
+        shutdown scripts/tasks get executed.
         """
-        self.logger.info('Terminating server (status=%s)...', self.status)
         if self.status == Status.Terminated:
             return
-        elif not self.vm_created:
+
+        self.logger.info('Terminating server (status=%s)...', self.status)
+        if not self.vm_created:
+            self.logger.info('Note: server was not created when terminated.')
             self._status_to_terminated()
             return
 
         try:
-            self.os_server.delete()
+            os_server = self.os_server
+            self._shutdown(os_server)
+            os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
             self._status_to_terminated()
@@ -449,3 +457,17 @@ class OpenStackServer(Server):
                 self._status_to_unknown()
         else:
             self._status_to_terminated()
+
+    def _shutdown(self, os_server, poll_interval=10, max_wait=600):
+        """
+        Shutdown the server and wait to return until shutdown or wait threshold reached.
+
+        We don't have an explicit state for this and don't catch exceptions, which is why this is private.
+        The caller is expected to handle any exceptions and retry if necessary.
+        """
+        os_server.stop()
+        while max_wait and os_server.status != 'SHUTOFF':
+            time.sleep(poll_interval)
+            max_wait -= poll_interval
+            os_server = self.os_server
+        return os_server.status == 'SHUTOFF'
