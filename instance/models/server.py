@@ -458,14 +458,16 @@ class OpenStackServer(Server):
         else:
             self._status_to_terminated()
 
-    def _shutdown(self, os_server, poll_interval=10, max_wait=600):
+    def _shutdown(self, os_server, poll_interval=10):
         """
         Shutdown the server and wait to return until shutdown or wait threshold reached.
 
         We don't have an explicit state for this and don't catch exceptions, which is why this is private.
         The caller is expected to handle any exceptions and retry if necessary.
         """
+        max_wait = settings.SHUTDOWN_TIMEOUT
         os_server.stop()
+
         while max_wait and os_server.status != 'SHUTOFF':
             time.sleep(poll_interval)
             max_wait -= poll_interval

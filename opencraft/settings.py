@@ -327,6 +327,9 @@ DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
 # Open edX Instance and App Server Settings  ##################################
 
+# Time in seconds to wait before making a force termination for servers.
+SHUTDOWN_TIMEOUT = env.int('SHUTDOWN_TIMEOUT', default=600)  # 10 minutes
+
 # Instances will be created as subdomains of this domain by default
 DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
 DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='studio-')
