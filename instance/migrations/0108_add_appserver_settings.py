@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0106_introduce_instance_ownership_20180821'),
+        ('instance', '0107_openedxappserver_terminated'),
     ]
 
     operations = [

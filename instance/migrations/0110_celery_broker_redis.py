@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0108_add_celery_broker_transport'),
+        ('instance', '0109_add_celery_broker_transport'),
     ]
 
     operations = [

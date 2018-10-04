@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0107_add_appserver_settings'),
+        ('instance', '0108_add_appserver_settings'),
     ]
 
     operations = [
