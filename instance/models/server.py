@@ -444,7 +444,10 @@ class OpenStackServer(Server):
 
         try:
             os_server = self.os_server
-            self._shutdown(os_server)
+            server_closed = self._shutdown(os_server)
+
+            if not server_closed:
+                self.logger.warning("Server has not reached SHUTOFF state after max wait time; terminating forcefully.")
             os_server.delete()
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
@@ -458,16 +461,14 @@ class OpenStackServer(Server):
         else:
             self._status_to_terminated()
 
-    def _shutdown(self, os_server, poll_interval=10):
+    def _shutdown(self, os_server, poll_interval=10, max_wait=settings.SHUTDOWN_TIMEOUT):
         """
         Shutdown the server and wait to return until shutdown or wait threshold reached.
 
         We don't have an explicit state for this and don't catch exceptions, which is why this is private.
         The caller is expected to handle any exceptions and retry if necessary.
         """
-        max_wait = settings.SHUTDOWN_TIMEOUT
         os_server.stop()
-
         while max_wait and os_server.status != 'SHUTOFF':
             time.sleep(poll_interval)
             max_wait -= poll_interval
