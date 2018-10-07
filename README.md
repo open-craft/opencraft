@@ -286,7 +286,7 @@ flavor:
 ### OpenStack Security Groups
 
 Every VM used to host Open edX will automatically be added to an OpenStack
-network security group, which is provides a firewall that limits what
+network security group, which provides a firewall that limits what
 ports/services on the VM are exposed to the Internet. The security group will
 automatically be created and managed by OpenCraft IM.
 
