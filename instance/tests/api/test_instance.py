@@ -50,14 +50,13 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
-    @ddt.data(
-        'user1', 'user2',
-    )
+    @ddt.data('user1', 'user2')
     def test_get_permission_denied(self, username):
         """
         GET - basic and staff users denied access
         """
         self.api_client.login(username=username, password='pass')
+        OpenEdXInstanceFactory()
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
@@ -184,6 +183,44 @@ class InstanceAPITestCase(APITestCase):
             self.assertEqual(expected_entry['level'], log_entry['level'])
             self.assertEqual(expected_entry['text'].format(inst_id=instance.ref.pk), log_entry['text'])
             self.assertEqual(expected_entry['text'].format(inst_id=instance.ref.pk), log_entry['text'])
+
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_get_logs_permission_denied(self, username, message):
+        """
+        GET - Basic users and anonymous can't get log entries
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+        instance = OpenEdXInstanceFactory()
+        response = self.api_client.get('/api/v1/instance/{pk}/logs/'.format(pk=instance.ref.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
+    def test_get_logs_different_organization(self):
+        """
+        GET - An instance manager can't get logs of an instance which belongs to a different organization.
+        """
+        self.api_client.login(username='user4', password='pass')
+        instance = OpenEdXInstanceFactory()
+        instance.ref.creator = self.user1.profile
+        instance.ref.owner = self.user1.profile.organization
+        instance.save()
+        response = self.api_client.get('/api/v1/instance/{pk}/logs/'.format(pk=instance.ref.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_logs_no_organization(self):
+        """
+        GET - An instance manager without an organization can't get logs of any instance.
+        """
+        self.api_client.login(username='user5', password='pass')
+        instance = OpenEdXInstanceFactory()
+        response = self.api_client.get('/api/v1/instance/{pk}/logs/'.format(pk=instance.ref.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     @override_settings(NUM_INITIAL_APPSERVERS_SHOWN=5)
     def test_get_app_servers_list(self):

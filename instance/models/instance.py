@@ -75,8 +75,9 @@ class InstanceReference(TimeStampedModel):
     class Meta:
         ordering = ['-created']
         unique_together = ('instance_type', 'instance_id')
+        # Check InstanceReference.can_manage for a description of what this permission means
         permissions = (
-            ("manage_all", "Can manage all instances."),
+            ("manage_own", "Can manage own instances."),
         )
 
     def __str__(self):
@@ -106,10 +107,14 @@ class InstanceReference(TimeStampedModel):
     @classmethod
     def can_manage(cls, user):
         """
-        Returns true if the user has "instance.manage_all" permission
+        Returns true if the user is an instance manager.
+
+        Instance managers are those users that can see a list of instances (at least their own).
+        Superusers are automatically instance managers and will see all instances.
+        Normal users become instance managers when they're granted the "instance.manage_all" permission.
         """
-        permission = '{}.{}'.format(cls._meta.app_label, "manage_all")
-        return user.has_perm(permission)
+        permission = '{}.{}'.format(cls._meta.app_label, "manage_own")
+        return user.is_superuser or user.has_perm(permission)
 
     @property
     def log_entries(self):
@@ -194,6 +199,21 @@ class Instance(ValidateModelMixin, models.Model):
     def modified(self):
         """ Get this instance's modified date, which is stored in the InstanceReference """
         return self.ref.modified
+
+    @property
+    def creator_username(self):
+        """Get the username of the Ocim user who created the instance."""
+        if self.ref.creator:
+            return self.ref.creator.user.username
+
+    @property
+    def owner_organization(self):
+        """
+        Get the name of the Ocim organization who owns the instance.
+        Relevant for sandboxes.
+        """
+        if self.ref.owner:
+            return self.ref.owner.name
 
     def save(self, *args, **kwargs):
         """ Save this Instance """

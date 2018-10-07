@@ -103,6 +103,8 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'deploy_simpletheme',
             'github_admin_organizations',
             'github_admin_users',
+            'creator_username',
+            'owner_organization',
             'internal_lms_domain',
             'url',
             'studio_url',

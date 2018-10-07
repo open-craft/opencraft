@@ -49,5 +49,6 @@ class WatchedPullRequestSerializer(serializers.ModelSerializer):
         Add additional fields/data to the output
         """
         output = super().to_representation(obj)
-        output['instance_id'] = obj.instance.ref.id  # The API must only expose InstanceReference IDs, not Instance ID
+        # The API must only expose InstanceReference IDs, not Instance ID
+        output['instance_id'] = obj.instance.ref.id if obj.instance else None
         return output

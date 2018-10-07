@@ -33,7 +33,7 @@ from instance.models.instance import InstanceReference
 def instance_manager_required(function=None, redirect_to=None, raise_exception=False):
     """
     View decorator that checks whether the user is an InstanceManager, i.e.
-      if user.is_staff or has the InstanceManagerPermission enabled.
+      has the permission to browse their own instances or all instances.
 
     Modeled on django.contrib.auth.decorators.permission_required().
 

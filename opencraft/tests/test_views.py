@@ -62,7 +62,7 @@ class IndexViewTestCase(WithUserTestCase):
         """
         Index view - Authenticated, staff or instance manager user
         """
-        self.client.login(username='user3', password='pass')
+        self.client.login(username='user4', password='pass')
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, self.instance_url)
         self.assertContains(response, 'ng-app="InstanceApp"')
@@ -76,16 +76,17 @@ class IndexViewTestCase(WithUserTestCase):
         response = self.client.post(self.login_url, login_data, follow=True)
         self.assertRedirects(response, self.register_url)
 
-    def test_login_instance_manager(self):
+    @ddt.data('user3', 'user4')
+    def test_login_instance_manager(self, username):
         """
-        Login view - Authenticate an instance manager user
+        Login view - Authenticate an instance manager user (superuser or not)
         """
         response = self.client.get(self.login_url)
-        login_data = dict(username='user3', password='pass')
+        login_data = dict(username=username, password='pass')
         response = self.client.post(self.login_url, login_data, follow=True)
         self.assertRedirects(response, self.instance_url)
 
-    @ddt.data(None, 'user1', 'user3')
+    @ddt.data(None, 'user1', 'user4')
     def test_admin_permission_denied(self, username):
         """
         Admin view - anonymous, basic and instance manager users go to login page
@@ -95,10 +96,11 @@ class IndexViewTestCase(WithUserTestCase):
         response = self.client.get(self.admin_url, follow=True)
         self.assertRedirects(response, self.admin_login_url)
 
-    def test_admin_staff(self):
+    @ddt.data('user2', 'user3')
+    def test_admin_staff(self, username):
         """
-        Index view - staff users see the admin page
+        Index view - staff and superusers see the admin page
         """
-        self.client.login(username='user2', password='pass')
+        self.client.login(username=username, password='pass')
         response = self.client.get(self.admin_url, follow=True)
         self.assertEqual(response.status_code, 200)

@@ -46,11 +46,11 @@ class OpenStackServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
-    def test_get_authenticated(self):
+    def test_get_superuser(self):
         """
-        GET - Authenticated access
+        GET - Authenticated access through a superuser account.
         """
-        self.api_client.login(username='user1', password='pass')
+        self.api_client.login(username='user3', password='pass')
         response = self.api_client.get('/api/v1/openstackserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
@@ -59,6 +59,15 @@ class OpenStackServerAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/openstackserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_server(response.data[0], server)
+
+    def test_non_superuser(self):
+        """
+        GET - Test with an authenticated user without superuser privileges.
+        """
+        self.api_client.login(username='user1', password='pass')
+        response = self.api_client.get('/api/v1/openstackserver/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': 'You do not have permission to perform this action.'})
 
     def test_get_details(self):
         """

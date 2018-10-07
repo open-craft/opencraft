@@ -39,9 +39,9 @@ from instance.tests.utils import patch_gandi, patch_url
 # Tests #######################################################################
 
 @ddt.ddt
-class OpenEdXAppServerAPITestCase(APITestCase):
+class OpenEdXAppServerAPIAcessTestCase(APITestCase):
     """
-    Test cases for OpenEdXAppServer API calls
+    Test cases for OpenEdXAppServer API calls related to getting server information.
     """
     def test_get_unauthenticated(self):
         """
@@ -51,9 +51,7 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
-    @ddt.data(
-        'user1', 'user2',
-    )
+    @ddt.data('user1', 'user2')
     def test_get_permission_denied(self, username):
         """
         GET - basic and staff users denied access
@@ -63,16 +61,24 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
-    def test_get_authenticated(self):
+    @ddt.data('user3', 'user4')
+    def test_get_authenticated(self, username):
         """
-        GET - Authenticated - instance manager users allowed access
+        GET - Authenticated - instance manager users (superuser or not) allowed access
         """
-        self.api_client.login(username='user3', password='pass')
+        self.api_client.login(username=username, password='pass')
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
 
-        app_server = make_test_appserver()
+        # user4 is instance manager but not superuser
+        # Both user3 and user4 should be able to see user4's instance and server in the same way
+        instance = OpenEdXInstanceFactory()
+        instance.ref.creator = self.user4.profile
+        instance.ref.owner = self.user4.profile.organization
+        instance.save()
+        app_server = make_test_appserver(instance=instance)
+
         response = self.api_client.get('/api/v1/openedx_appserver/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -120,11 +126,12 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertEqual(response.data, {'detail': message})
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
-    def test_get_details(self):
+    @ddt.data('user3', 'user4')
+    def test_get_details(self, username):
         """
-        GET - Detailed attributes - instance manager allowed access
+        GET - Detailed attributes - instance manager (superuser or not) allowed access
         """
-        self.api_client.login(username='user3', password='pass')
+        self.api_client.login(username=username, password='pass')
         app_server = make_test_appserver()
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -162,6 +169,46 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         self.assertIn(('status', 'failed'), server_data)
         self.assertIn('log_entries', data)
         self.assertIn('log_error_entries', data)
+
+    def test_get_servers_from_different_org(self):
+        """
+        GET - A non-superuser instance manager from organization 1 can't find servers from organization 2
+        (that is, servers belonging to instances owned by organization 2).
+        """
+        self.api_client.login(username='user4', password='pass')
+
+        # Instance 1 belongs to user4's organization (which is organization2)
+        instance1 = OpenEdXInstanceFactory()
+        instance1.ref.creator = self.user4.profile
+        instance1.ref.owner = self.organization2
+        instance1.save()
+        app_server_i1 = make_test_appserver(instance=instance1)
+
+        # Instance 2 doesn't belong to user4's organization (organization2). It was created by another user (user1)
+        instance2 = OpenEdXInstanceFactory()
+        instance2.ref.creator = self.user1.profile
+        instance2.ref.owner = self.organization
+        instance2.save()
+        app_server_i2 = make_test_appserver(instance=instance2)
+
+        # Only the first server should be listed
+        response = self.api_client.get('/api/v1/openedx_appserver/')
+        data_entries = response.data[0].items()
+        self.assertIn(('id', app_server_i1.pk), data_entries)
+        self.assertNotIn(('id', app_server_i2.pk), data_entries)
+
+        # Only the first server should be directly accessible
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server_i1.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/'.format(pk=app_server_i2.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+@ddt.ddt
+class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
+    """
+    Test cases for OpenEdXAppServer API calls related to spawning new servers.
+    """
 
     @patch_gandi
     @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
@@ -212,6 +259,56 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         spawn_appserver(instance.ref.pk, mark_active_on_success=mark_active, num_attempts=4)
         self.assertEqual(mock_provision.call_count, 1)
         self.assertEqual(mock_provision_rabbitmq.call_count, 1)
+
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_spawn_appserver_denied(self, username, message):
+        """
+        POST - Anonymous, basic, and staff users (without manage_own permission) can't spawn servers.
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+        instance = OpenEdXInstanceFactory()
+        response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
+    def test_spawn_appserver_no_organization(self):
+        """
+        POST - An instance manager user without an organization can't spawn servers
+        (because they can't see any instance either).
+        """
+        self.api_client.login(username='user5', password='pass')
+        instance = OpenEdXInstanceFactory()
+        response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_spawn_appserver_different_org(self):
+        """
+        POST - An instance manager can't spawn a server in an organization they don't belong to.
+        """
+        self.api_client.login(username='user4', password='pass')
+        # This instance does not belong to user4's organization (organization2)
+        instance = OpenEdXInstanceFactory()
+        instance.ref.creator = self.user1.profile
+        instance.ref.owner = self.organization
+        instance.save()
+
+        response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
+        # Not found (instead of: forbidden), because this server was never visible to user4
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(instance.appserver_set.count(), 0)
+
+
+@ddt.ddt
+class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
+    """
+    Test cases for OpenEdXAppServer API calls related to activation/deactivation of servers.
+    """
 
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
@@ -329,6 +426,75 @@ class OpenEdXAppServerAPITestCase(APITestCase):
         app_server.refresh_from_db()
         self.assertFalse(app_server.is_active)
 
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_make_active_permission_denied(self, username, message):
+        """
+        POST - Anonymous, basic, and staff users (without manage_own permission) can't make servers active/inactive.
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
+    def test_make_active_no_organization(self):
+        """
+        POST - An instance manager user without an organization can't activate/deactivate servers
+        (since they don't belong to the user's organization, because there isn't one).
+        """
+        self.api_client.login(username='user5', password='pass')
+
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_make_active_different_org(self):
+        """
+        POST - An instance manager can't activate/deactive a server in an organization they don't belong to.
+        """
+        self.api_client.login(username='user4', password='pass')
+
+        # user4 won't be able to access this instance because it belongs to user1's organization
+        instance = OpenEdXInstanceFactory()
+        instance.ref.creator = self.user1.profile
+        instance.ref.owner = self.user1.profile.organization
+        instance.save()
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_active/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+@ddt.ddt
+class OpenEdXAppServerAPILogsTestCase(APITestCase):
+    """
+    Test cases for OpenEdXAppServer API calls related to logs
+    """
+
     @patch_url(settings.OPENSTACK_AUTH_URL)
     def test_get_log_entries(self):
         """
@@ -443,3 +609,53 @@ class OpenEdXAppServerAPITestCase(APITestCase):
             expected_list, response.data['log_error_entries'],
             inst_id=instance.ref.id, as_id=app_server.pk, server_id=server.pk, server_name=server.name,
         )
+
+    @ddt.data(
+        (None, 'Authentication credentials were not provided.'),
+        ('user1', 'You do not have permission to perform this action.'),
+        ('user2', 'You do not have permission to perform this action.'),
+    )
+    @ddt.unpack
+    def test_get_logs_permission_denied(self, username, message):
+        """
+        GET - Basic users and anonymous can't get an appserver's log entries.
+        """
+        if username:
+            self.api_client.login(username=username, password='pass')
+        instance = OpenEdXInstanceFactory()
+        app_server = make_test_appserver(instance)
+        server = app_server.server
+        app_server.logger.info("info")
+        server.logger.info("info")
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/logs/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data, {'detail': message})
+
+    def test_get_logs_different_organization(self):
+        """
+        GET - An instance manager can't get appserver logs if the instance belongs to a different organization.
+        """
+        self.api_client.login(username='user4', password='pass')
+        instance = OpenEdXInstanceFactory()
+        instance.ref.creator = self.user1.profile
+        instance.ref.owner = self.user1.profile.organization
+        instance.save()
+        app_server = make_test_appserver(instance)
+        server = app_server.server
+        app_server.logger.info("info")
+        server.logger.info("info")
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/logs/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_logs_no_organization(self):
+        """
+        GET - An instance manager without an organization can't get logs of any appserver.
+        """
+        self.api_client.login(username='user5', password='pass')
+        instance = OpenEdXInstanceFactory()
+        app_server = make_test_appserver(instance)
+        server = app_server.server
+        app_server.logger.info("info")
+        server.logger.info("info")
+        response = self.api_client.get('/api/v1/openedx_appserver/{pk}/logs/'.format(pk=app_server.pk))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

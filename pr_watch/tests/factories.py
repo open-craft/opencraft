@@ -66,14 +66,17 @@ class WatchedForkFactory(DjangoModelFactory):
 # Functions ###################################################################
 
 
-def make_watched_pr_and_instance(**kwargs):
+def make_watched_pr_and_instance(organization=None, **kwargs):
     """
     Create a WatchedPullRequest and associated OpenEdXInstance
+    It associates them to the given organization if given, otherwise creates a new one (plus a user).
     """
     pr = PRFactory(**kwargs)
 
-    # creates user, user profile, and organization needed to be referenced
-    _, organization = make_user_and_organization()
+    if not organization:
+        # creates user, user profile, and organization needed to be referenced
+        _, organization = make_user_and_organization()
+
     watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
 
     watched_fork.save()

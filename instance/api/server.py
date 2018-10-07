@@ -23,8 +23,8 @@ Instance views
 # Imports #####################################################################
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 
+from instance.api.permissions import IsSuperUser
 from instance.models.server import OpenStackServer
 from instance.serializers.server import OpenStackServerSerializer
 
@@ -34,7 +34,9 @@ from instance.serializers.server import OpenStackServerSerializer
 class OpenStackServerViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This API allows you retrieve information about OpenStackServer objects (OpenStack VMs).
+    It is visible only to superusers because if we open it to instance managers we need to filter
+    VMs by organization. Since this API isn't used by the UI, for now we keep it internal and superuser only.
     """
     queryset = OpenStackServer.objects.all()
     serializer_class = OpenStackServerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsSuperUser]
