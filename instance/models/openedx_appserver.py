@@ -28,10 +28,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.utils.text import slugify
-# FIXME want to use django.contrib.postgres.fields.JSONField instead,
-# but this requires upgrading to PostgreSQL ≥ 9.4
-# ref https://docs.djangoproject.com/en/1.10/ref/contrib/postgres/fields/#django.contrib.postgres.fields.JSONField
-from django_extensions.db.fields.json import JSONField
+from django.contrib.postgres.fields import JSONField
 from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import ansible
