@@ -53,18 +53,6 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
 ]
 
 
-# Functions ###################################################################
-
-def default_admin_organizations():
-    """
-    Helper function to set the default value for the field `github_admin_organizations`.
-    """
-    default = settings.DEFAULT_ADMIN_ORGANIZATION
-    if default:
-        return [default]
-    return []
-
-
 # Models ######################################################################
 
 class OpenEdXAppConfiguration(models.Model):
