@@ -21,26 +21,57 @@ Admin for the userprofile app
 """
 
 # Imports #####################################################################
-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from django.utils import timezone
+from django.utils.html import format_html
 
 from userprofile.models import UserProfile, Organization
 
 
 # ModelAdmins #################################################################
 
-class UserProfileInline(admin.TabularInline): #pylint: disable=missing-docstring
+class UserProfileInline(admin.TabularInline):  # pylint: disable=missing-docstring
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'profile'
 
 
-class UserAdmin(BaseUserAdmin): #pylint: disable=missing-docstring
+class UserAdmin(BaseUserAdmin):  # pylint: disable=missing-docstring
     inlines = (UserProfileInline,)
+
+
+class OrganizationAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+    list_display = (
+        'github_handle',
+        'account_actions',
+    )
+
+    def account_actions(self, obj):  # pylint: disable=no-self-use
+        """
+        This method will extract actions in the admin panel for each record. Currently
+        the only action we're generating is a link to the report.
+        :param obj: The instance we this action is related to
+        :return: An HTML of the actions we want to display.
+        """
+        now = timezone.now()
+
+        if obj and obj.github_handle:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Invoice Report</a>',
+                reverse('reports:report', kwargs={
+                    'organization': obj.github_handle,
+                    'year': now.year,
+                    'month': now.month
+                }),
+            )
+
+    account_actions.short_description = 'Account Actions'
+    account_actions.allow_tags = True
 
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-admin.site.register(Organization)
+admin.site.register(Organization, OrganizationAdmin)

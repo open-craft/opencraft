@@ -536,103 +536,32 @@ class OpenEdXInstanceTestCase(TestCase):
             appserver.refresh_from_db()
 
     @staticmethod
-    def _set_appserver_terminated(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Terminated.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_running()
-        appserver._status_to_terminated()
-
-    @staticmethod
-    def _set_appserver_running(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Running.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_running()
-
-    @staticmethod
-    def _set_appserver_configuration_failed(appserver):
-        """
-        Transition `appserver` to AppServerStatus.ConfigurationFailed.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_configuration_failed()
-
-    @staticmethod
-    def _set_appserver_errored(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Error.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_error()
-
-    @staticmethod
-    def _set_server_ready(server):
-        """
-        Transition `server` to Status.Ready.
-        """
-        server._status_to_building()
-        server._status_to_booting()
-        server._status_to_ready()
-
-    @staticmethod
-    def _set_server_terminated(server):
-        """
-        Transition `server` to Status.Terminated.
-
-        Note that servers are allowed to transition to ServerStatus.Terminated from any state,
-        so it is not necessary to transition to another status first.
-        """
-        server._status_to_terminated()
-
-    def _create_appserver(self, instance, status):
-        """
-        Return appserver for `instance` that has `status`
-
-        Note that this method does not set the status of the VM (OpenStackServer)
-        that is associated with the app server.
-
-        Client code is expected to take care of that itself (if necessary).
-        """
-        appserver = make_test_appserver(instance)
-        if status == AppServerStatus.Running:
-            self._set_appserver_running(appserver)
-        if status == AppServerStatus.ConfigurationFailed:
-            self._set_appserver_configuration_failed(appserver)
-        elif status == AppServerStatus.Error:
-            self._set_appserver_errored(appserver)
-        elif status == AppServerStatus.Terminated:
-            self._set_appserver_terminated(appserver)
-        return appserver
-
-    def _create_running_appserver(self, instance):
+    def _create_running_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Running
         """
-        return self._create_appserver(instance, AppServerStatus.Running)
+        return make_test_appserver(instance, status=AppServerStatus.Running)
 
-    def _create_failed_appserver(self, instance, with_running_server=False):
+    @staticmethod
+    def _create_failed_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed
         """
-        return self._create_appserver(instance, AppServerStatus.ConfigurationFailed)
+        return make_test_appserver(instance, status=AppServerStatus.ConfigurationFailed)
 
-    def _create_errored_appserver(self, instance):
+    @staticmethod
+    def _create_errored_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Error
         """
-        return self._create_appserver(instance, AppServerStatus.Error)
+        return make_test_appserver(instance, status=AppServerStatus.Error)
 
-    def _create_terminated_appserver(self, instance):
+    @staticmethod
+    def _create_terminated_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Terminated
         """
-        return self._create_appserver(instance, AppServerStatus.Terminated)
+        return make_test_appserver(instance, status=AppServerStatus.Terminated)
 
     def _assert_status(self, appservers):
         """

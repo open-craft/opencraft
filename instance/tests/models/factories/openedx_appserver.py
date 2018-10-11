@@ -22,15 +22,28 @@ OpenEdXAppServer model - Factories
 
 # Imports #####################################################################
 
+from instance.models.appserver import Status as AppServerStatus
 from instance.models.load_balancer import LoadBalancingServer
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 # Functions ###################################################################
 
 
-def make_test_appserver(instance=None, s3=False, server=None):
+def make_test_appserver(instance=None, s3=False, server=None, status=None):
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
+
+    Note that this method does not set the status of the VM (OpenStackServer)
+    that is associated with the app server.
+    Client code is expected to take care of that itself (if necessary).
+
+    :param instance: The OpenEdx instance to create an AppServer for, if not
+                     given will create a new instance.
+    :param s3: Will configure S3 storage for the OpenEdXInstance the AppServer
+               belongs to.
+    :param server: The OpenStackServer to associate with this AppServer.
+    :param status: Will move an AppServer to the specified state
+    :return: appserver for `instance`
     """
     if not instance:
         instance = OpenEdXInstanceFactory()
@@ -49,4 +62,49 @@ def make_test_appserver(instance=None, s3=False, server=None):
         appserver.server = server
         appserver.save()
 
+    if status == AppServerStatus.Running:
+        _set_appserver_running(appserver)
+    if status == AppServerStatus.ConfigurationFailed:
+        _set_appserver_configuration_failed(appserver)
+    elif status == AppServerStatus.Error:
+        _set_appserver_errored(appserver)
+    elif status == AppServerStatus.Terminated:
+        _set_appserver_terminated(appserver)
+
     return appserver
+
+
+def _set_appserver_terminated(appserver):
+    """
+    Transition `appserver` to AppServerStatus.Terminated.
+    """
+    appserver._status_to_waiting_for_server()
+    appserver._status_to_configuring_server()
+    appserver._status_to_running()
+    appserver._status_to_terminated()
+
+
+def _set_appserver_running(appserver):
+    """
+    Transition `appserver` to AppServerStatus.Running.
+    """
+    appserver._status_to_waiting_for_server()
+    appserver._status_to_configuring_server()
+    appserver._status_to_running()
+
+
+def _set_appserver_configuration_failed(appserver):
+    """
+    Transition `appserver` to AppServerStatus.ConfigurationFailed.
+    """
+    appserver._status_to_waiting_for_server()
+    appserver._status_to_configuring_server()
+    appserver._status_to_configuration_failed()
+
+
+def _set_appserver_errored(appserver):
+    """
+    Transition `appserver` to AppServerStatus.Error.
+    """
+    appserver._status_to_waiting_for_server()
+    appserver._status_to_error()

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% include staticfiles %}
+
+{% block title %}{{ month_name }} {{ year }} invoice for {{ organization.name }}{% endblock title %}
+
+{% block content %}
+  <div class="page-title text-xs-center color-white">
+    <h1 class="page-title__text">Invoice</h1>
+  </div>
+
+  <div class="row small-collapse page-content clearfix">
+    <div class="page-content__inner small-12 medium-10 medium-offset-1 columns background-white">
+      <div class="page-content__header small-10 small-offset-1 columns">
+        <div class="box-alert background-cyan-very-very-dark-desaturated color-white">
+          <p class="box-alert__content text-center">
+            Invoice for {{ month_name }} {{ year }} for {{ organization.name }}
+          </p>
+        </div>
+        {% for fork, fork_data in billing_data.items %}
+          <div>
+            <strong>For watched fork:</strong> {{ fork.fork }}
+          </div>
+          <table style="table-layout: fixed; width: 100%;">
+            <thead>
+            <tr>
+              <th></th>
+              <th>First billed day</th>
+              <th>Last billed day</th>
+              <th>Days</th>
+              <th>Charge</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for instance, appservers in fork_data.instances.items %}
+              <tr>
+                <td style="text-align: left;">{{ instance }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              {% for appserver in appservers %}
+                <tr>
+                  <td style="text-align: center;">{{ appserver.name }}</td>
+                  <td>{{ appserver.billing_start | date:"D, d M Y" }}</td>
+                  <td>{{ appserver.billing_end | date:"D, d M Y" }}</td>
+                  <td>{{ appserver.days }}</td>
+                  <td>{{ appserver.charge }} €</td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>TOTAL for fork</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ fork_data.total }} €</td>
+              </tr>
+            </tfoot>
+          </table>
+        {% endfor %}
+        <div>TOTAL including all forks: {{ total }} €</div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
