@@ -153,17 +153,6 @@ def get_pr_list_from_usernames(user_names, fork_name):
     return pr_list
 
 
-def get_team_from_organization(organization_name, team_name='Sandbox'):
-    """
-    Retrieve a team by organization & team name
-    """
-    url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
-    for team_dict in get_object_from_url(url):
-        if team_dict['name'] == team_name:
-            return team_dict
-    raise KeyError(team_name)
-
-
 def parse_date(date):
     """
     Create datetime object from `date`.
