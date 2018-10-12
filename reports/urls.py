@@ -31,5 +31,5 @@ from reports import views
 
 app_name = 'reports'
 urlpatterns = [
-    url(r'^(?P<organization>\w+)/(?P<year>[0-9]{4})/(?P<month>[0-9]{1,2})/$', views.report, name='report'),
+    url(r'^(?P<organization>[-\w]+)/(?P<year>[0-9]{4})/(?P<month>[0-9]{1,2})/$', views.report, name='report'),
 ]

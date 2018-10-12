@@ -111,7 +111,7 @@ class InstanceReference(TimeStampedModel):
 
         Instance managers are those users that can see a list of instances (at least their own).
         Superusers are automatically instance managers and will see all instances.
-        Normal users become instance managers when they're granted the "instance.manage_all" permission.
+        Normal users become instance managers when they're granted the "instance.manage_own" permission.
         """
         permission = '{}.{}'.format(cls._meta.app_label, "manage_own")
         return user.is_superuser or user.has_perm(permission)
