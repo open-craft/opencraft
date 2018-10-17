@@ -288,7 +288,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # Insights and analytics_api
             "SANDBOX_ENABLE_ANALYTICS_API": False, # set to true to enable analytics_api
-            "SANDBOX_ENABLE_INSIGHTS": False # set to true to enable insights
+            "SANDBOX_ENABLE_INSIGHTS": False, # set to true to enable insights
+
+            # Journal dependency work-around
+            "JOURNALS_API_URL": '{{ EDXAPP_LMS_BASE_SCHEME }}://journals-{{ EDXAPP_LMS_BASE }}/api/v1/',
         }
 
         if self.smtp_relay_settings:
