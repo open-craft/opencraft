@@ -44,6 +44,8 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
+from userprofile.factories import make_user_and_organization, OrganizationFactory
+from userprofile.models import Organization
 
 
 # Tests #######################################################################
@@ -132,35 +134,48 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
-    def test_github_admin_username_list_default(self):
+    def test_admin_users(self):
         """
-        By default, no admin should be configured
+        By default, all users that belong to an organization that owns the
+        server and OCIM admins have access to the sandbox.
         """
-        appserver = make_test_appserver()
-        self.assertEqual(appserver.github_admin_organizations, [])
-        self.assertEqual(appserver.github_admin_users, [])
-        self.assertEqual(appserver.github_admin_username_list, [])
-        self.assertNotIn('COMMON_USER_INFO', appserver.configuration_settings)
+        admin_org_handle = 'admin-org'
+        OrganizationFactory(name=admin_org_handle, github_handle=admin_org_handle)
 
-    @patch('instance.models.openedx_appserver.get_username_list_from_team')
-    def test_github_admin_username_list(self, mock_get_username_list):
-        """
-        When Github admin users are set, they should end up in the Ansible configuration.
-        """
-        mock_get_username_list.side_effect = {
-            'test-org1': ['jane', 'joey'],
-            'test-org2': ['jess', 'jack'],
-        }.get
-        instance = OpenEdXInstanceFactory(
-            github_admin_organizations=['test-org1', 'test-org2'],
-            github_admin_users=['jean', 'john'],
-        )
-        all_names = ['jane', 'joey', 'jess', 'jack', 'jean', 'john']
-        appserver = make_test_appserver(instance)
-        self.assertEqual(appserver.github_admin_username_list, all_names)
+        users = [
+            ('user', 'user', admin_org_handle),
+            ('admin2', 'admin2', admin_org_handle),
+            ('no_github_handle', '', admin_org_handle),
+            ('another_org', 'another_org', 'another_org'),
+            ('no_org_1', 'no_org_1', ''),
+            ('no_org_2', 'no_org_2', None),
+        ]
+        admin_users = [
+            ('admin1', 'admin1', admin_org_handle),
+            ('admin3', 'admin3', 'another_org'),
+            ('admin4', 'admin4', ''),
+            ('admin5', 'admin5', None),
+            ('admin_no_org', '', admin_org_handle),
+        ]
+
+        expected_admin_users = ['user', 'admin1', 'admin2', 'admin3', 'admin4', 'admin5']
+
+        for username, github_handle, org_handle in users:
+            make_user_and_organization(username, github_username=github_handle, org_handle=org_handle)
+
+        for username, github_handle, org_handle in admin_users:
+            profile, _ = make_user_and_organization(username, github_username=github_handle, org_handle=org_handle)
+            profile.user.is_superuser = True
+            profile.user.save()
+
+        instance = OpenEdXInstanceFactory()
+        organization = Organization.objects.get(github_handle=admin_org_handle)
+        appserver = make_test_appserver(instance, organization=organization)
+
+        self.assertEqual(len(appserver.admin_users), len(expected_admin_users))
         ansible_settings = yaml.load(appserver.configuration_settings)
-        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': name, 'github': True, 'type': 'admin'} for name in all_names
+        self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
+            {'name': name, 'github': True, 'type': 'admin'} for name in expected_admin_users
         ])
 
     @patch_services

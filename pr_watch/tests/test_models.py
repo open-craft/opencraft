@@ -55,7 +55,7 @@ class WatchedPullRequestTestCase(TestCase):
         """
         Use `fork_name` to get an instance object from the ORM
         """
-        _, organization = make_user_and_organization(organization_name="Get by", github_handle="get-by")
+        _, organization = make_user_and_organization(org_name="Get by", org_handle="get-by")
         watched_fork = WatchedForkFactory(organization=organization, fork='fork-name')
         WatchedPullRequest.objects.create(
             github_organization_name='get-by',
@@ -87,7 +87,7 @@ class WatchedPullRequestTestCase(TestCase):
         """
         Set org & repo using the fork name
         """
-        _, organization = make_user_and_organization(organization_name="Org2", github_handle="org2")
+        _, organization = make_user_and_organization(org_name="Org2", org_handle="org2")
         watched_fork = WatchedForkFactory(organization=organization, fork='some-name')
         watched_pr = WatchedPullRequest(watched_fork=watched_fork)
         watched_pr.set_fork_name('org2/another-repo')
@@ -121,7 +121,7 @@ class WatchedPullRequestTestCase(TestCase):
         TODO: Is this 'ref_type' code used for anything?
         """
         self.mock_get_commit_id_from_ref.return_value = 'c' * 40
-        _, organization = make_user_and_organization(organization_name="Org9", github_handle="org9")
+        _, organization = make_user_and_organization(org_name="Org9", org_handle="org9")
         watched_fork = WatchedForkFactory(organization=organization, fork='org9/repo')
         instance = WatchedPullRequest.objects.create(
             fork_name='org9/repo',

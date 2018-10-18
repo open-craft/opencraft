@@ -26,6 +26,7 @@ import requests
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Q
 from django.utils.text import slugify
 # FIXME want to use django.contrib.postgres.fields.JSONField instead,
 # but this requires upgrading to PostgreSQL ≥ 9.4
@@ -41,7 +42,7 @@ from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
-from pr_watch.github import get_username_list_from_team
+from userprofile.models import UserProfile
 
 # Constants ###################################################################
 
@@ -51,18 +52,6 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
     SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 ]
-
-
-# Functions ###################################################################
-
-def default_admin_organizations():
-    """
-    Helper function to set the default value for the field `github_admin_organizations`.
-    """
-    default = settings.DEFAULT_ADMIN_ORGANIZATION
-    if default:
-        return [default]
-    return []
 
 
 # Models ######################################################################
@@ -151,19 +140,6 @@ class OpenEdXAppConfiguration(models.Model):
     )
 
     # Misc settings:
-    github_admin_organizations = JSONField(
-        max_length=256,
-        blank=True,
-        default=default_admin_organizations,
-        help_text='A list of GitHub organizations; the members of the "Sandbox" team in these '
-        "organizations will be given SSH admin access to this instance's VMs.",
-    )
-    github_admin_users = JSONField(
-        max_length=256,
-        blank=True,
-        default=[],
-        help_text="A list of Github users who will be given SSH admin access to this instance's VMs.",
-    )
     lms_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -362,18 +338,31 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             return None
 
     @property
-    def github_admin_username_list(self):
+    def admin_users(self):
         """
-        Returns the github usernames of this instance admins
+        Retrieve all users that fulfill requirements defined via `admin_user_query`,
+        excluding any users that don't have a meaningful GitHub username.
+        (Without a meaningful GitHub username it won't be possible
+        to correctly set up SSH access to a given sandbox.)
 
-        Admins are all users listed in github_admin_users and the members of the default team of the
-        organizations in github_admin_organizations.
+        Admins are all users with `is_superuser` set to `True`,
+        as well as all members of the organization that owns this instance.
+
+        :return: GitHub usernames, if exists, of admin users for this instance.
         """
-        admin_users = []
-        for org in self.github_admin_organizations:
-            admin_users += get_username_list_from_team(org)
-        admin_users += self.github_admin_users
-        return admin_users
+        admin_user_query = Q(user__is_superuser=True)
+
+        # Add members of owning organization to the list of users that can administer this instance
+        organization = self.instance.ref.owner
+        if organization:
+            admin_user_query = admin_user_query | Q(organization=organization)
+
+        users = UserProfile.objects \
+            .filter(admin_user_query) \
+            .exclude(Q(github_username__isnull=True) | Q(github_username__exact='')) \
+            .values_list('github_username', flat=True)
+
+        return list(users)
 
     @property
     def security_groups(self):

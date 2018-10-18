@@ -79,8 +79,6 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
         self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
-        self.assertEqual(instance.github_admin_organizations, [])
-        self.assertEqual(instance.github_admin_users, [])
         self.assertNotEqual(instance.secret_key_b64encoded, '')
         self.assertEqual(instance.openstack_region, settings.OPENSTACK_REGION)
         self.assertEqual(instance.openstack_server_base_image, settings.OPENSTACK_SANDBOX_BASE_IMAGE)

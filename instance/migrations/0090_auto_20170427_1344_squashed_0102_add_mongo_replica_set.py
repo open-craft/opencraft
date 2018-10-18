@@ -78,12 +78,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='openedxappserver',
             name='github_admin_organizations',
-            field=django_extensions.db.fields.json.JSONField(blank=True, default=instance.models.openedx_appserver.default_admin_organizations, help_text='A list of GitHub organizations; the members of the "Sandbox" team in these organizations will be given SSH admin access to this instance\'s VMs.', max_length=256),
+            field=django_extensions.db.fields.json.JSONField(blank=True, default=[], help_text='A list of GitHub organizations; the members of the "Sandbox" team in these organizations will be given SSH admin access to this instance\'s VMs.', max_length=256),
         ),
         migrations.AlterField(
             model_name='openedxinstance',
             name='github_admin_organizations',
-            field=django_extensions.db.fields.json.JSONField(blank=True, default=instance.models.openedx_appserver.default_admin_organizations, help_text='A list of GitHub organizations; the members of the "Sandbox" team in these organizations will be given SSH admin access to this instance\'s VMs.', max_length=256),
+            field=django_extensions.db.fields.json.JSONField(blank=True, default=[], help_text='A list of GitHub organizations; the members of the "Sandbox" team in these organizations will be given SSH admin access to this instance\'s VMs.', max_length=256),
         ),
         migrations.AlterField(
             model_name='openedxappserver',
