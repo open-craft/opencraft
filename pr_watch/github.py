@@ -59,7 +59,7 @@ def get_object_from_url(url):
     """
     logger.info('GET URL %s', url)
     r = requests.get(url, headers=GH_HEADERS)
-    logger.info('Response body: %s', r.text)
+    logger.debug('Response body: %s', r.text)
     if r.status_code == 404:
         raise ObjectDoesNotExist('404 response from {0}'.format(url))
     if r.status_code == 403 and r.headers.get('X-RateLimit-Remaining', '') == '0':
