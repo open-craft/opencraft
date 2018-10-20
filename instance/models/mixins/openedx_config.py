@@ -327,12 +327,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 ],
             })
 
-        if self.instance.s3_region:
-            template.update({
-                "EDXAPP_AWS_S3_HOST": self.instance.s3_hostname,
-                "XQUEUE_AWS_S3_HOST": self.instance.s3_hostname,
-            })
-
         return template
 
     def _get_prometheus_variables(self):

@@ -52,7 +52,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         Return dictionary of S3 Ansible settings.
         """
-        return {
+        settings = {
             "COMMON_ENABLE_AWS_INTEGRATION": True,
             "AWS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -67,7 +67,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },
-            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
+            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.{}".format(self.s3_bucket_name, self.s3_hostname),
             "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
@@ -94,6 +94,14 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
         }
+
+        if self.s3_region:
+            settings.update({
+                "EDXAPP_AWS_S3_HOST": self.s3_hostname,
+                "XQUEUE_AWS_S3_REGION_NAME": self.s3_region, # boto3 requires region name.
+            })
+
+        return settings
 
     def _get_swift_settings(self):
         """
