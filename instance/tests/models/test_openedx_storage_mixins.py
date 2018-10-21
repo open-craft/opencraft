@@ -29,6 +29,7 @@ import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -121,10 +122,10 @@ def get_s3_settings(instance):
         "AWS_S3_LOGS_ACCESS_KEY_ID": instance.s3_access_key,
         "AWS_S3_LOGS_SECRET_KEY": instance.s3_secret_access_key,
     }
+
     if instance.s3_region:
         s3_settings.update({
-            'EDXAPP_AWS_S3_HOST': instance.s3_hostname,
-            'XQUEUE_AWS_S3_HOST': instance.s3_hostname
+            "aws_region": instance.s3_region,
         })
 
     return s3_settings
@@ -270,7 +271,7 @@ class SwiftContainerInstanceTestCase(TestCase):
 
     @ddt.data(
         '',
-        'eu-west-3',
+        'eu-west-1',
     )
     def test_ansible_settings_s3(self, s3_region):
         """
@@ -480,6 +481,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.create_iam_user()
+        instance = OpenEdXInstance.objects.get(id=instance.id)
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')
 
