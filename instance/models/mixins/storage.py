@@ -163,7 +163,14 @@ class S3BucketInstanceMixin(models.Model):
     s3_access_key = models.CharField(max_length=50, blank=True)
     s3_secret_access_key = models.CharField(max_length=50, blank=True)
     s3_bucket_name = models.CharField(max_length=50, blank=True)
-    s3_region = models.CharField(max_length=50, blank=True, default=default_setting('AWS_S3_DEFAULT_REGION'))
+    s3_region = models.CharField(
+        max_length=50, blank=True, default=default_setting('AWS_S3_DEFAULT_REGION'),
+        help_text=(
+            'The region must support Signature Version 2.'
+            ' See https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region for options.'
+            ' When set empty, the bucket is created in the default region us-east-1.'
+        )
+    )
 
     def get_s3_policy(self):
         """

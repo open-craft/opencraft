@@ -379,6 +379,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.s3_region = 'test'
         instance.provision_s3()
         instance.deprovision_s3()
+        instance = OpenEdXInstance.objects.get(id=instance.id)
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
         self.assertEqual(instance.s3_secret_access_key, "")
@@ -420,6 +421,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.s3_region = 'test'
         with self.assertLogs("instance.models.instance"):
             instance.deprovision_s3()
+        instance = OpenEdXInstance.objects.get(id=instance.id)
         # Since it failed deleting the bucket, s3_bucket_name should not be empty
         self.assertEqual(instance.s3_bucket_name, "test")
         # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
@@ -437,6 +439,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_s3()
+        instance = OpenEdXInstance.objects.get(id=instance.id)
         self.assertEqual(instance.s3_bucket_name, '')
         self.assertEqual(instance.s3_access_key, '')
         self.assertEqual(instance.s3_secret_access_key, '')
@@ -452,14 +455,16 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.provision_s3()
+        create_bucket.assert_called_once_with(
+            instance.s3_bucket_name,
+            location=settings.AWS_S3_DEFAULT_REGION
+        )
+        instance = OpenEdXInstance.objects.get(id=instance.id)
         self.assertIsNotNone(instance.s3_bucket_name)
         self.assertIsNotNone(instance.s3_access_key)
         self.assertIsNotNone(instance.s3_secret_access_key)
         self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)
         self.assertEqual(instance.s3_hostname, settings.AWS_S3_DEFAULT_HOSTNAME)
-        create_bucket.assert_called_once_with(
-            instance.s3_bucket_name,
-            location=settings.AWS_S3_DEFAULT_REGION)
 
     @patch('boto.connect_iam')
     @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
