@@ -85,7 +85,7 @@ class OpenEdXMonitoringMixin:
         """
         The urls to monitor for this instance.
         """
-        return {self.url, self.studio_url, self.lms_preview_url}
+        return {self.url, self.studio_url, self.lms_preview_url, self.lms_extended_heartbeat_url}
 
 
 class NewRelicAvailabilityMonitor(models.Model):

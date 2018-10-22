@@ -213,6 +213,13 @@ class DomainNameInstance(models.Model):
         """
         return u'https://{}/'.format(self.lms_preview_domain)
 
+    @property
+    def lms_extended_heartbeat_url(self):
+        """
+        LMS extended heartbeat URL.
+        """
+        return u'{}/heartbeat?extended'.format(self.url)
+
     def save(self, **kwargs):
         """
         Set default values before saving the instance.

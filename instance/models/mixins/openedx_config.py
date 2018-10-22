@@ -50,6 +50,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # edxapp
             "EDXAPP_PLATFORM_NAME": self.instance.name,
             "EDXAPP_SITE_NAME": self.instance.domain,
+            "EDXAPP_LMS_ENV_EXTRA": {
+                "ADDL_INSTALLED_APPS": [
+                    "openedx.core.djangoapps.heartbeat",
+                ],
+                "HEARTBEAT_EXTENDED_CHECKS": [
+                    "lms.lib.comment_client.utils.check_forum_heartbeat",
+                ],
+            },
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
