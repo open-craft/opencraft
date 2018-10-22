@@ -29,7 +29,6 @@ import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -379,7 +378,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.s3_region = 'test'
         instance.provision_s3()
         instance.deprovision_s3()
-        instance = OpenEdXInstance.objects.get(id=instance.id)
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
         self.assertEqual(instance.s3_secret_access_key, "")
@@ -421,7 +420,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance.s3_region = 'test'
         with self.assertLogs("instance.models.instance"):
             instance.deprovision_s3()
-        instance = OpenEdXInstance.objects.get(id=instance.id)
+        instance.refresh_from_db()
         # Since it failed deleting the bucket, s3_bucket_name should not be empty
         self.assertEqual(instance.s3_bucket_name, "test")
         # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
@@ -439,7 +438,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_s3()
-        instance = OpenEdXInstance.objects.get(id=instance.id)
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_bucket_name, '')
         self.assertEqual(instance.s3_access_key, '')
         self.assertEqual(instance.s3_secret_access_key, '')
@@ -459,7 +458,7 @@ class SwiftContainerInstanceTestCase(TestCase):
             instance.s3_bucket_name,
             location=settings.AWS_S3_DEFAULT_REGION
         )
-        instance = OpenEdXInstance.objects.get(id=instance.id)
+        instance.refresh_from_db()
         self.assertIsNotNone(instance.s3_bucket_name)
         self.assertIsNotNone(instance.s3_access_key)
         self.assertIsNotNone(instance.s3_secret_access_key)
@@ -486,7 +485,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.create_iam_user()
-        instance = OpenEdXInstance.objects.get(id=instance.id)
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')
 
