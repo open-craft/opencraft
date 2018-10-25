@@ -24,7 +24,6 @@ Admin for the instance app
 
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
-from django_extensions.db.fields.json import JSONField
 
 from instance.models.database_server import MySQLServer, MongoDBServer, MongoDBReplicaSet
 from instance.models.instance import InstanceReference, InstanceTag
@@ -34,7 +33,6 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.rabbitmq_server import RabbitMQServer
 from instance.models.server import OpenStackServer
-from instance.widgets import JSONWidget
 
 
 # ModelAdmins #################################################################
@@ -68,7 +66,6 @@ class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstrin
     list_display = ('internal_lms_domain', 'name', 'created', 'modified',
                     'successfully_provisioned')
     search_fields = ('internal_lms_domain',)
-    formfield_overrides = {JSONField: {'widget': JSONWidget}}
     inlines = [
         InlineInstanceReferenceAdmin,
     ]
