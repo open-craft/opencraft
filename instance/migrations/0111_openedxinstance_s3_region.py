@@ -10,7 +10,7 @@ import instance.models.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0109_remove_github_admin_fields'),
+        ('instance', '0110_auto_20181019_0407'),
     ]
 
     operations = [
