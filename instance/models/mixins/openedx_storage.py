@@ -21,8 +21,6 @@ Open edX instance database mixin
 """
 import yaml
 
-from django.db import models
-
 from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, StorageContainer
 
 
@@ -35,10 +33,6 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
     """
     class Meta:
         abstract = True
-
-    s3_access_key = models.CharField(max_length=50, blank=True)
-    s3_secret_access_key = models.CharField(max_length=50, blank=True)
-    s3_bucket_name = models.CharField(max_length=50, blank=True)
 
     @property
     def swift_container_name(self):
@@ -58,7 +52,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         Return dictionary of S3 Ansible settings.
         """
-        return {
+        s3_settings = {
             "COMMON_ENABLE_AWS_INTEGRATION": True,
             "AWS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -100,6 +94,13 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
         }
+
+        if self.s3_region:
+            s3_settings.update({
+                "aws_region": self.s3_region,
+            })
+
+        return s3_settings
 
     def _get_swift_settings(self):
         """
