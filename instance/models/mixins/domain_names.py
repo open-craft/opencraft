@@ -218,7 +218,7 @@ class DomainNameInstance(models.Model):
         """
         LMS extended heartbeat URL.
         """
-        return u'{}/heartbeat?extended'.format(self.url)
+        return u'{}heartbeat?extended'.format(self.url)
 
     def save(self, **kwargs):
         """
