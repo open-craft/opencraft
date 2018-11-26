@@ -295,7 +295,7 @@ class Command(BaseCommand):
         # Loop termination is handled at the end.
         while True:
             # 1. Log instances that failed or succeeded.
-            for instance in self.ongoing_tag.openedxinstance_set.iterator():
+            for instance in self.ongoing_tag.openedxinstance_set.order_by('id').iterator():
                 instance_tags = instance.tags.all()
                 if self.success_tag in instance_tags:
                     LOG.info("SUCCESS: %s [%s]", instance, instance.id)
