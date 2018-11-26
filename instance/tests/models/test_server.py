@@ -28,6 +28,7 @@ from unittest.mock import Mock, call, patch
 
 from ddt import ddt, data, unpack
 from django.conf import settings
+from django.test import override_settings
 import novaclient
 import requests
 
@@ -331,6 +332,7 @@ class OpenStackServerTestCase(TestCase):
         server = OpenStackServerFactory(status=server_status)
         self.assertFalse(server.vm_created)
 
+    @override_settings(SHUTDOWN_TIMEOUT=1)
     @data(
         ('building-server-id', ServerStatus.Building),
         ('booting-server-id', ServerStatus.Booting),
@@ -346,6 +348,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
 
+    @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
         ServerStatus.Pending,
         ServerStatus.Building,  # Edge case: Server has status 'building' but no OpenStack ID yet
@@ -364,6 +367,7 @@ class OpenStackServerTestCase(TestCase):
         else:
             self.assertEqual(server.status, ServerStatus.Terminated)
 
+    @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
         ('booting-server-id', ServerStatus.Booting),
         ('ready-server-id', ServerStatus.Ready),
@@ -386,6 +390,7 @@ class OpenStackServerTestCase(TestCase):
         server.os_server.delete.assert_called_once_with()
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
 
+    @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
         requests.RequestException('Error'),
         novaclient.exceptions.ClientException('Error'),
