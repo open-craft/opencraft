@@ -225,7 +225,7 @@ class Command(BaseCommand):
                 self.success_tag,
                 self.failure_tag,
             ]
-        )
+        ).order_by('id')
 
     def _failed_instances(self):
         """
