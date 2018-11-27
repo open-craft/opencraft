@@ -6,8 +6,7 @@ unless Vagrant.has_plugin?("vagrant-vbguest")
 end
 
 Vagrant.configure(2) do |config|
-  # TODO: Switch back to the official box once it is released
-  config.vm.box = 'opencraft/xenial64'
+  config.vm.box = 'ubuntu/xenial64'
   config.vm.synced_folder '.', '/vagrant', disabled: true
   config.vm.synced_folder '.', '/home/vagrant/opencraft'
 
