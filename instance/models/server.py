@@ -468,6 +468,8 @@ class OpenStackServer(Server):
         We don't have an explicit state for this and don't catch exceptions, which is why this is private.
         The caller is expected to handle any exceptions and retry if necessary.
         """
+        # We purposely check for `None` rather than generically for falseness
+        # because it allows `max_wait = 0`.
         max_wait = max_wait if max_wait is not None else settings.SHUTDOWN_TIMEOUT
 
         os_server.stop()
