@@ -313,7 +313,7 @@ class SwiftContainerInstanceTestCase(TestCase):
             (
                 '"Action": [\n        "s3:ListBucket",\n        "s3:CreateBucket"'
                 ',\n        "s3:DeleteBucket",\n        "s3:PutBucketCORS",\n        "s3:PutBucketVersioning"'
-                ',\n        "s3:PutBucketLifecycle"\n      ]'
+                ',\n        "s3:PutBucketLifecycle",\n        "s3:PutLifecycleConfiguration",      ]'
             ),
             '"Resource": [\n        "arn:aws:s3:::{}"\n      ]'.format(instance.s3_bucket_name),
             '"Action": [\n        "s3:*Object*"\n      ]',
