@@ -335,6 +335,7 @@ class S3BucketInstanceMixin(models.Model):
                 bucket = s3.get_bucket(self.s3_bucket_name)
                 for key in bucket:
                     key.delete()
+                bucket.object_versions.delete()
                 s3.delete_bucket(self.s3_bucket_name)
                 self.s3_bucket_name = ""
                 self.save()
