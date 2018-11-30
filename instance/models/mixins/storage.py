@@ -187,7 +187,8 @@ class S3BucketInstanceMixin(models.Model):
                         "s3:CreateBucket",
                         "s3:DeleteBucket",
                         "s3:PutBucketCORS",
-                        "s3:PutBucketVersioning"],
+                        "s3:PutBucketVersioning",
+                        "s3:PutBucketLifecycle"],
                     "Resource": ["arn:aws:s3:::{}".format(self.s3_bucket_name)]
                 },
                 {
