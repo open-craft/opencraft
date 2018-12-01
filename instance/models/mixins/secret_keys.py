@@ -26,7 +26,11 @@ import functools
 import os
 import hashlib
 import hmac
+import json
 from base64 import b64encode, b64decode
+from collections import namedtuple
+from Cryptodome.PublicKey import RSA
+from jwkest import jwk
 
 from django.db import models
 import yaml
@@ -49,6 +53,14 @@ def generate_secret_key(char_length):
     random_string = b64encode(random_bytes)
     # ...and return!
     return random_string
+
+
+def generate_rsa_key(key_size):
+    """
+    Creates a key_size-bit RSA key and returns private key
+    """
+    rsa_key = RSA.generate(key_size)
+    return rsa_key.exportKey()
 
 
 # Constants ###################################################################
@@ -104,6 +116,17 @@ class SecretKeyInstanceMixin(models.Model):
         ),
     )
 
+    secret_key_rsa_private = models.TextField(
+        default=functools.partial(generate_rsa_key, 2048),
+        blank=True,
+        verbose_name='Instance-specific private RSA key',
+        help_text=(
+            "This field holds a RSA private key that is generated "
+            "when the instance is created, and is used to generate public "
+            "and private JWK for individual services on each appserver."
+        ),
+    )
+
     class Meta:
         abstract = True
 
@@ -114,11 +137,44 @@ class SecretKeyInstanceMixin(models.Model):
         """
         return b64decode(self.secret_key_b64encoded)
 
+    @property
+    def rsa_key(self):
+        """
+        Return the RSA key as a Cryptodome.RSA object.
+        """
+        if not self.secret_key_rsa_private:
+            self.secret_key_rsa_private = generate_rsa_key(2048)
+            self.save()
+
+        return RSA.importKey(self.secret_key_rsa_private)
+
     def get_secret_key_for_var(self, var_name):
         """
         Return the secret key for the given variable name.
         """
         return hmac.new(self.secret_key, msg=var_name.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
+
+    def get_jwk_key_pair(self):
+        """
+        Returns the asymmetric JWT signing keys required
+        """
+        rsa_jwk = jwk.RSAKey(kid="opencraft", key=self.rsa_key)
+
+        # Serialize public JWT signing keys
+        public_keys = jwk.KEYS()
+        public_keys.append(rsa_jwk)
+        serialized_public_keys_json = public_keys.dump_jwks()
+
+        # Serialize private JWT signing keys
+        serialized_keypair = rsa_jwk.serialize(private=True)
+        serialized_keypair_json = json.dumps(serialized_keypair)
+
+        # Named tuple for storing public and private JWT key pair
+        jwk_key_pair = namedtuple('JWK_KEY_PAIR', ['public', 'private'])
+        jwk_key_pair.public = serialized_public_keys_json
+        jwk_key_pair.private = serialized_keypair_json
+
+        return jwk_key_pair
 
     def get_secret_key_settings(self):
         """
@@ -134,6 +190,12 @@ class SecretKeyInstanceMixin(models.Model):
         keys = {var: self.get_secret_key_for_var(var) for var in OPENEDX_SECRET_KEYS}
         for to_var, from_var in OPENEDX_SHARED_KEYS.items():
             keys[to_var] = keys[from_var]
+
+        # Add JWK key pair to dict
+        jwk_key_pair = self.get_jwk_key_pair()
+        keys['COMMON_JWT_PUBLIC_SIGNING_JWK_SET'] = jwk_key_pair.public
+        keys['EDXAPP_JWT_PRIVATE_SIGNING_JWK'] = jwk_key_pair.private
+
         return yaml.dump(keys)
 
     @property
