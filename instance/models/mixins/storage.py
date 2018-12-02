@@ -183,14 +183,8 @@ class S3BucketInstanceMixin(models.Model):
                 {
                     "Effect": "Allow",
                     "Action": [
-                        "s3:ListBucket",
-                        "s3:CreateBucket",
-                        "s3:DeleteBucket",
-                        "s3:PutBucketCORS",
-                        "s3:PutBucketVersioning",
-                        "s3:PutBucketLifecycle",
-                        "s3:PutLifecycleConfiguration",
-                        "s3:ListBucketVersions"],
+                        "s3:*"
+                    ],
                     "Resource": ["arn:aws:s3:::{}".format(self.s3_bucket_name)]
                 },
                 {
