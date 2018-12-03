@@ -190,7 +190,7 @@ class S3BucketInstanceMixin(models.Model):
                         "s3:PutBucketVersioning",
                         "s3:PutBucketLifecycle",
                         "s3:PutLifecycleConfiguration",
-                        "s3:ListBucketVersions",],
+                        "s3:ListBucketVersions", ],
                     "Resource": ["arn:aws:s3:::{}".format(self.s3_bucket_name)]
                 },
                 {
