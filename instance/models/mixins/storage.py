@@ -183,8 +183,14 @@ class S3BucketInstanceMixin(models.Model):
                 {
                     "Effect": "Allow",
                     "Action": [
-                        "s3:*"
-                    ],
+                        "s3:ListBucket",
+                        "s3:CreateBucket",
+                        "s3:DeleteBucket",
+                        "s3:PutBucketCORS",
+                        "s3:PutBucketVersioning",
+                        "s3:PutBucketLifecycle",
+                        "s3:PutLifecycleConfiguration",
+                        "s3:ListBucketVersions",],
                     "Resource": ["arn:aws:s3:::{}".format(self.s3_bucket_name)]
                 },
                 {
@@ -330,8 +336,14 @@ class S3BucketInstanceMixin(models.Model):
                 bucket = s3.get_bucket(self.s3_bucket_name)
                 for key in bucket:
                     key.delete()
-                for version in bucket.list_versions():
-                    version.delete()
+                keys = []
+                for key in bucket.list_versions():
+                    keys.append(key)
+                    # Doing it in chunks since sending huge amounts of keys might cause problems with AWS.
+                    if len(keys) > 1000:
+                        bucket.delete_keys(keys)
+                        keys = []
+                bucket.delete_keys(keys)
                 s3.delete_bucket(self.s3_bucket_name)
                 self.s3_bucket_name = ""
                 self.save()
