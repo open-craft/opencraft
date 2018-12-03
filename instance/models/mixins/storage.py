@@ -25,8 +25,7 @@ import json
 import time
 
 import boto
-import boto3
-
+from boto.s3.lifecycle import Lifecycle, Expiration, Rule
 
 from django.db.backends.utils import truncate_name
 from django.conf import settings
@@ -286,24 +285,14 @@ class S3BucketInstanceMixin(models.Model):
                 else:
                     raise e
             bucket.set_cors(get_s3_cors_config())
+            bucket.configure_versioning(versioning=True)
 
-            s3 = boto3.resource('s3')
-            bucket_lifecycle_configuration = s3.BucketLifecycleConfiguration(self.s3_bucket_name)
-            bucket_lifecycle_configuration.put(
-                LifecycleConfiguration={
-                    'Rules': [
-                        {
-                            'Expiration': {
-                                'ExpiredObjectDeleteMarker': True
-                            },
-                            'NoncurrentVersionExpiration': {
-                                'NoncurrentDays': 30
-                            },
-                            'Status': 'Enabled',
-                        }
-                    ]
-                }
-            )
+            expiration = Expiration(days=30)
+            rule = Rule(id='30day-expiration', status='Enabled', expiration=expiration)
+            lifecycle = Lifecycle()
+            lifecycle.append(rule)
+
+            bucket.configure_lifecycle(lifecycle_config=lifecycle)
         except boto.exception.S3ResponseError:
             if ongoing_attempt > attempts:
                 raise
