@@ -298,7 +298,8 @@ class S3BucketInstanceMixin(models.Model):
                             },
                             'NoncurrentVersionExpiration': {
                                 'NoncurrentDays': 30
-                            }
+                            },
+                            'Status': 'Enabled',
                         }
                     ]
                 }
