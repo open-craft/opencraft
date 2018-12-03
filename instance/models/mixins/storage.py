@@ -25,7 +25,6 @@ import json
 import time
 
 import boto
-from boto.s3.lifecycle import Lifecycle, Expiration, Rule
 import boto3
 
 
@@ -290,7 +289,7 @@ class S3BucketInstanceMixin(models.Model):
 
             s3 = boto3.resource('s3')
             bucket_lifecycle_configuration = s3.BucketLifecycleConfiguration(self.s3_bucket_name)
-            response = bucket_lifecycle_configuration.put(
+            bucket_lifecycle_configuration.put(
                 LifecycleConfiguration={
                     'Rules': [
                         {
