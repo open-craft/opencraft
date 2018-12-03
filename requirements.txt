@@ -1,9 +1,14 @@
 appdirs==1.4.0
 astroid==1.4.8
+attrs==18.2.0
 Babel==2.3.4
+backcall==0.1.0
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.5.1
 boto==2.48.0
+boto3==1.9.57
+botocore==1.12.57
+certifi==2018.11.29
 chardet==2.3.0
 CherryPy==3.8.2
 click==6.6
@@ -27,8 +32,10 @@ django-grappelli==2.8.3
 django-libsass==0.7
 django-redis==4.6.0
 django-simple-email-confirmation==0.21
+django-storage-swift==1.2.17
 django-zurb-foundation==5.5.0
 djangorestframework==3.5.3
+docutils==0.14
 dodgy==0.1.9
 factory-boy==2.7.0
 fake-factory==0.7.2
@@ -40,7 +47,6 @@ gitdb2==2.0.0
 GitPython==2.1.0
 glob2==0.5
 gunicorn==19.6.0
-# Using patched honcho that includes: https://github.com/nickstenning/honcho/pull/179
 -e git+https://github.com/open-craft/honcho.git@00c8f0d6c55ba1e9ec18470e942e47b07617099a#egg=honcho
 huey==1.2.2
 idna==2.1
@@ -52,8 +58,10 @@ isort==4.2.5
 itsdangerous==0.24
 jasmine==2.5.0
 jasmine-core==2.5.2
+jedi==0.13.1
 Jinja2==2.8
 jira==1.0.7
+jmespath==0.9.3
 jsonpatch==1.14
 jsonpointer==1.10
 jsonschema==2.5.1
@@ -65,19 +73,23 @@ Markdown==2.6.7
 MarkupSafe==0.23
 mccabe==0.5.2
 monotonic==1.2
+msgpack==0.6.0
 msgpack-python==0.4.8
 mysqlclient==1.3.9
 netaddr==0.7.19
 netifaces==0.10.5
 oauthlib==2.0.0
+olefile==0.46
 openstacksdk==0.9.12
 ordereddict==1.1
 os-client-config==1.22.0
+os-service-types==1.3.0
 osc-lib==1.2.0
 oslo.config==3.19.0
 oslo.i18n==3.10.0
 oslo.serialization==2.14.0
 oslo.utils==3.18.0
+parso==0.3.1
 path.py==8.2.1
 pbr==1.10.0
 pep257==0.7.0
@@ -85,6 +97,7 @@ pep8==1.7.0
 pep8-naming==0.4.1
 pexpect==4.2.1
 pickleshare==0.7.4
+Pillow==4.3.0
 positional==1.1.1
 prettytable==0.7.2
 prompt-toolkit==1.0.9
@@ -95,8 +108,6 @@ pycodestyle==2.0.0
 pydocstyle==1.0.0
 pyflakes==1.3.0
 Pygments==2.1.3
-# Pylint 1.6.* does not work with prospector 0.12.4, so we have to use 1.5.6 for now.
-# See: https://github.com/landscapeio/prospector/issues/183
 pylint==1.5.6
 pylint-celery==0.3
 pylint-common==0.2.2
@@ -105,11 +116,13 @@ pylint-flask==0.5
 pylint-plugin-utils==0.2.4
 pymongo==3.3.1
 pyparsing==2.1.10
+pyperclip==1.7.0
 python-cinderclient==1.9.0
 python-consul==1.1.0
 python-dateutil==2.6.0
 python-glanceclient==2.5.0
 python-keystoneclient==3.8.0
+python-magic==0.4.15
 python-neutronclient==6.0.0
 python-novaclient==6.0.0
 python-openstackclient==3.6.0
@@ -127,6 +140,7 @@ requirements-detector==0.5.2
 responses==0.5.1
 rfc3986==0.4.1
 rjsmin==1.0.12
+s3transfer==0.1.13
 selenium==2.53.6
 setoptconf==0.2.0
 simplegeneric==0.8.1
@@ -144,11 +158,11 @@ tlslite==0.4.9
 tornado==4.4.2
 tornado-redis==2.4.18
 traitlets==4.3.1
+typed-ast==1.1.0
 unicodecsv==0.14.1
+urllib3==1.24.1
 virtualenv==15.0.3
 warlock==1.2.0
 wcwidth==0.1.7
 Werkzeug==0.11.1
 wrapt==1.10.8
-Pillow==4.3.0
-django_storage_swift==1.2.17
