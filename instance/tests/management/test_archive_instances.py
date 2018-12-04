@@ -21,6 +21,8 @@ Instance - Archive instances command unit tests
 """
 # Imports #####################################################################
 
+import os
+
 from unittest.mock import patch, MagicMock
 
 from django.core.management import call_command, CommandError
@@ -29,6 +31,7 @@ from django.test import TestCase
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.base import get_fixture_filepath
 
 
 # Tests #######################################################################
@@ -49,7 +52,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         Verify that the command correctly requires at least one domain parameter.
         """
-        with self.assertRaisesRegex(CommandError, 'Error: the following arguments are required: domain'):
+        with self.assertRaisesRegex(CommandError, 'Error: either domain or --file are required'):
             call_command('archive_instances')
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='no'))
@@ -92,9 +95,9 @@ class ArchiveInstancesTestCase(TestCase):
         out = StringIO()
         call_command('archive_instances', 'A.example.com', '--force', stdout=out)
         self.assertRegex(out.getvalue(), 'Archived 1 instances.')
-        instancea = instances['A']['instance']
-        instancea.refresh_from_db()
-        self.assertTrue(instancea.ref.is_archived)
+        instance = instances['A']['instance']
+        instance.refresh_from_db()
+        self.assertTrue(instance.ref.is_archived)
         self.assertEqual(mock_deprovision_rabbitmq.call_count, 1)
 
         # archive multiple instances
@@ -108,6 +111,31 @@ class ArchiveInstancesTestCase(TestCase):
             self.assertTrue(instance.ref.is_archived)
         self.assertEqual(mock_deprovision_rabbitmq.call_count, 3)
 
+        # archive using a file
+        out = StringIO()
+        fp = get_fixture_filepath(os.path.join('management', 'archive_instances.txt'))
+        call_command('archive_instances', '--file=%s' % fp, '--force', stdout=out)
+        self.assertRegex(out.getvalue(), 'Archived 3 instances.')
+        for label in 'EFG':
+            instance = instances[label]['instance']
+            instance.refresh_from_db()
+            self.assertTrue(instance.ref.is_archived)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 6)
+
+        # archive using a file, domain positional arg is ignored
+        out = StringIO()
+        fp = get_fixture_filepath(os.path.join('management', 'archive_instances2.txt'))
+        call_command('archive_instances', 'I.example.com', '--file=%s' % fp, '--force', stdout=out)
+        self.assertRegex(out.getvalue(), 'Archived 1 instances.')
+        instance = instances['H']['instance']
+        instance.refresh_from_db()
+        self.assertTrue(instance.ref.is_archived)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 7)
+
+        instance = instances['I']['instance']
+        instance.refresh_from_db()
+        self.assertFalse(instance.ref.is_archived)
+
     @staticmethod
     def create_test_instances():
         """
@@ -115,7 +143,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         # Create test instances with known attributes, and mock out the appserver_set
         instances = {}
-        for label in 'ABCDEFGH':
+        for label in 'ABCDEFGHI':
 
             # Create an instance, with an appserver
             instance = OpenEdXInstance.objects.create(

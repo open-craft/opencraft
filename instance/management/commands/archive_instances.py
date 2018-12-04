@@ -25,6 +25,7 @@ Instance app - Archive one or more instances by their domains
 import logging
 
 from django.core.management.base import BaseCommand
+from django.core.management import CommandError
 
 from instance.models.openedx_instance import OpenEdXInstance
 
@@ -40,7 +41,10 @@ class Command(BaseCommand):
     help = 'Archive instances specified by their internal LMS domain.'
 
     def add_arguments(self, parser):
-        parser.add_argument('domain', nargs='+', help='Instance domain')
+        parser.add_argument('domain', nargs='*', help='Instance domain')
+        parser.add_argument(
+            '--file',
+            help='File containing newline-separated list of instance domains')
         parser.add_argument(
             '--force',
             action='store_true',
@@ -49,7 +53,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         domains = options['domain']
+        infile = options['file']
         force = options['force']
+
+        if not domains and not infile:
+            raise CommandError('Error: either domain or --file are required')
+
+        if infile:
+            # if a file is provided, ignore positional arg domains and use the domains in the file
+            with open(infile, 'r') as f:
+                domains = f.readlines()
+                domains = [d.strip() for d in domains]
 
         instances = OpenEdXInstance.objects.filter(
             internal_lms_domain__in=domains,
