@@ -21,20 +21,23 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
-from unittest.mock import patch, call
+import re
+from unittest.mock import call, patch
 
 import boto
 import ddt
 import yaml
 from django.conf import settings
 from django.test.utils import override_settings
-import re
-import textwrap
 
-from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
+from instance.models.mixins.storage import (StorageContainer,
+                                            get_master_iam_connection,
+                                            get_s3_cors_config)
 from instance.tests.base import TestCase
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_appserver import \
+    make_test_appserver
+from instance.tests.models.factories.openedx_instance import \
+    OpenEdXInstanceFactory
 
 
 # Tests #######################################################################
@@ -72,7 +75,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(opts['access_key'], 'test-s3-access-key')
         self.assertEqual(opts['bucket'], 'test-s3-bucket-name')
         self.assertEqual(opts['custom_domain'], 'test-s3-bucket-name.s3.amazonaws.com')
-        self.assertEqual(opts['headers'], { 'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}' })
+        self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
         self.assertEqual(opts['secret_key'], 'test-s3-secret-access-key')
 
         self.assertTrue(
@@ -94,22 +97,25 @@ class OpenEdXStorageMixinTestCase(TestCase):
         appserver = make_test_appserver(instance)
         self.check_s3_vars(appserver.configuration_settings)
 
+
 def get_s3_settings_profile_image(instance):
     """
     Return expected s3 settings related to profile image backend
     """
-    s3_settings = ('\n  class: storages.backends.s3boto.S3BotoStorage'
-    '\n  options:'
-    '\n    access_key: {instance.s3_access_key}'
-    '\n    bucket: {instance.s3_bucket_name}'
-    '\n    custom_domain: {instance.s3_custom_domain}'
-    '\n    headers:'
-    '\n      Cache-Control: max-age-{{{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}}}'
-    '\n    location: {instance.swift_container_name}/profile-images'
-    '\n    secret_key: {instance.s3_secret_access_key}'
+    s3_settings = (
+        '\n  class: storages.backends.s3boto.S3BotoStorage'
+        '\n  options:'
+        '\n    access_key: {instance.s3_access_key}'
+        '\n    bucket: {instance.s3_bucket_name}'
+        '\n    custom_domain: {instance.s3_custom_domain}'
+        '\n    headers:'
+        '\n      Cache-Control: max-age-{{{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}}}'
+        '\n    location: {instance.swift_container_name}/profile-images'
+        '\n    secret_key: {instance.s3_secret_access_key}'
     ).format(instance=instance)
 
     return s3_settings
+
 
 def get_s3_settings(instance):
     """

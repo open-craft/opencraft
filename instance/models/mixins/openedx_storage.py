@@ -50,6 +50,9 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
 
     @property
     def s3_custom_domain(self):
+        """
+        The custom domain name built based on the bucket name.
+        """
         return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
 
     def _get_s3_settings(self):
