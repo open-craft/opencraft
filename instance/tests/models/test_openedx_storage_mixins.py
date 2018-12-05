@@ -21,7 +21,6 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
-import re
 from unittest.mock import call, patch
 
 import boto
@@ -77,10 +76,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(opts['custom_domain'], 'test-s3-bucket-name.s3.amazonaws.com')
         self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
         self.assertEqual(opts['secret_key'], 'test-s3-secret-access-key')
-
-        self.assertTrue(
-            re.match(r"instance[\w]+_test_example_com/profile-images", opts['location'])
-        )
+        self.assertRegex(opts['location'], r'instance[\w]+_test_example_com/profile-images')
 
     def test_ansible_s3_settings(self):
         """
