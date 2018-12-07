@@ -1,24 +1,27 @@
-import os
 from datetime import datetime
 from novaclient import client
 
 
 class OpenStackCleanupInstance:
-    def __init__(self, age_limit, auth_url, username, api_key,
-                 project_id, region_name, dry_run=False):
+    """
+    Handles the search and cleanup of all unused OpenStack resources used
+    by CircleCI
+    """
+    def __init__(self, age_limit, openstack_settings, dry_run=False):
         """
         Set's up Nova client
         """
         self.dry_run = dry_run
         self.age_limit = age_limit
+        self.cleaned_ips = []
 
         self.nova = client.Client(
             "2.0",
-            auth_url=auth_url,
-            username=username,
-            api_key=api_key,
-            project_id=project_id,
-            region_name=region_name
+            auth_url=openstack_settings['auth_url'],
+            username=openstack_settings['username'],
+            api_key=openstack_settings['api_key'],
+            project_id=openstack_settings['project_id'],
+            region_name=openstack_settings['region_name']
         )
 
     def get_active_circle_ci_instances(self):
@@ -37,6 +40,7 @@ class OpenStackCleanupInstance:
         Runs the cleanup of OpenStack provider
         """
         ci_instances = self.get_active_circle_ci_instances()
+        print("Found {} active instances using CircleCI keys...".format(len(ci_instances)))
 
         for instance in ci_instances:
             print("Checking instance {}...".format(instance.name))
@@ -68,6 +72,9 @@ class OpenStackCleanupInstance:
                 ))
                 if not self.dry_run:
                     instance.delete()
+                    # TODO: Append deleted ips
+                    # instance.accessIPv4 doesn't have any IP's
+                    # self.cleaned_ips.append()
             else:
                 print("  > SKIPPING: Instance is only {} seconds old (age threshold is {} seconds).".format(
                     instance_age,

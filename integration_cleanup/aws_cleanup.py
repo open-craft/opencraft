@@ -1,8 +1,11 @@
 import boto3
-from datetime import datetime, timedelta
 
 class AwsCleanupInstance:
-    def __init__(self, age_limit, policy_name, dry_run=False):
+    """
+    Handles the cleanup of IAM users, Policies and Buckets related to CircleCI
+    """
+    def __init__(self, age_limit, aws_access_key_id, aws_secret_access_key,
+                 policy_name, dry_run=False):
         """
         Set's up AWS connections and clients
         """
@@ -10,17 +13,21 @@ class AwsCleanupInstance:
         self.dry_run = dry_run
         self.policy_name = policy_name
 
-        self.iam_client = boto3.client('iam')
-        self.s3_client = boto3.client('s3')
-        self.s3 = boto3.resource('s3')
+        self.session = boto3.Session(
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+        )
+        self.iam_client = self.session.client('iam')
+        self.s3_client = self.session.client('s3')
+        self.s3_resource = self.session.resource('s3')
 
-    def delete_bucket(self, bucket_name, dry_run):
+    def delete_bucket(self, bucket_name):
         """
         Deletes a S3 bucket and all of it's files
         """
         print("Deleting {} bucket.".format(bucket_name))
         if not self.dry_run:
-            bucket = self.s3.Bucket(bucket_name)
+            bucket = self.s3_resource.Bucket(bucket_name)
             bucket.objects.all().delete()
             bucket.delete()
 
@@ -104,8 +111,6 @@ class AwsCleanupInstance:
             # Get last_used date of user key
             last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key)
             last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
-            if last_used_date is None:
-                last_used_date = create_date
 
             if last_used_date and (last_used_date < self.age_limit):
                 old_keys.append(access_key)
@@ -121,7 +126,8 @@ class AwsCleanupInstance:
             PolicyName=policy_name
         )
 
-    def get_bucket_names_from_policy(self, policy):
+    @staticmethod
+    def get_bucket_names_from_policy(policy):
         """
         Lists all bucket names related to a policy
         """

@@ -17,6 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+"""
+Integration cleanup script
+
+Cleans up all AWS, Openstack and DNS resources left behind by CircleCI
+cancelled runs
+"""
 
 import argparse
 from datetime import datetime, timedelta
@@ -50,18 +56,31 @@ def main():
     aws_cleanup = AwsCleanupInstance(
         age_limit=default_age_limit,
         policy_name=default_policy_name,
+        aws_access_key_id=env('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=env('AWS_SECRET_ACCESS_KEY'),
         dry_run=True
     )
     aws_cleanup.run_cleanup()
 
     # Clean up OpenStack provider
+    openstack_settings = {
+        'auth_url': env('OPENSTACK_AUTH_URL'),
+        'username': env('OPENSTACK_USER'),
+        'api_key': env('OPENSTACK_PASSWORD'),
+        'project_id': env('OPENSTACK_TENANT'),
+        'region_name': env('OPENSTACK_REGION'),
+    }
     os_cleanup = OpenStackCleanupInstance(
         age_limit=default_age_limit,
+        openstack_settings=openstack_settings,
         dry_run=True
     )
     os_cleanup.run_cleanup()
+    cleaned_up_ip_adresses = os_cleanup.cleaned_ips
 
     # TODO: Add dns cleanup
+    # Didn't figure out how to do this yet
+    print(cleaned_up_ip_adresses)
 
 
 if __name__ == "__main__":
