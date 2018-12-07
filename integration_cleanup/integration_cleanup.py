@@ -29,8 +29,8 @@ from datetime import datetime, timedelta
 import environ
 from pytz import UTC
 
-from .aws_cleanup import AwsCleanupInstance
-from .openstack_cleanup import OpenStackCleanupInstance
+from integration_cleanup.aws_cleanup import AwsCleanupInstance
+from integration_cleanup.openstack_cleanup import OpenStackCleanupInstance
 
 
 env = environ.Env()
