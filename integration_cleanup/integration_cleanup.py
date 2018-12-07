@@ -29,8 +29,8 @@ from datetime import datetime, timedelta
 import environ
 from pytz import UTC
 
-from integration_cleanup.aws_cleanup import AwsCleanupInstance
-from integration_cleanup.openstack_cleanup import OpenStackCleanupInstance
+from aws_cleanup import AwsCleanupInstance
+from openstack_cleanup import OpenStackCleanupInstance
 
 
 env = environ.Env()
@@ -63,18 +63,18 @@ def main():
     aws_cleanup.run_cleanup()
 
     # Clean up OpenStack provider
-    openstack_settings = {
-        'auth_url': env('OPENSTACK_AUTH_URL'),
-        'username': env('OPENSTACK_USER'),
-        'api_key': env('OPENSTACK_PASSWORD'),
-        'project_id': env('OPENSTACK_TENANT'),
-        'region_name': env('OPENSTACK_REGION'),
-    }
-    os_cleanup = OpenStackCleanupInstance(
-        age_limit=default_age_limit,
-        openstack_settings=openstack_settings,
-        dry_run=True
-    )
+openstack_settings = {
+    'auth_url': env('OPENSTACK_AUTH_URL'),
+    'username': env('OPENSTACK_USER'),
+    'api_key': env('OPENSTACK_PASSWORD'),
+    'project_id': env('OPENSTACK_TENANT'),
+    'region_name': env('OPENSTACK_REGION'),
+}
+os_cleanup = OpenStackCleanupInstance(
+    age_limit=default_age_limit,
+    openstack_settings=openstack_settings,
+    dry_run=True
+)
     os_cleanup.run_cleanup()
     cleaned_up_ip_adresses = os_cleanup.cleaned_ips
 

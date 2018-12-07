@@ -1,5 +1,6 @@
 from datetime import datetime
 from novaclient import client
+import pytz
 
 
 class OpenStackCleanupInstance:
@@ -28,12 +29,18 @@ class OpenStackCleanupInstance:
         """
         Returns list of active instances running on the OpenStack provider
         that have been created by CircleCI
+
+        Note: key_name parameter is useless if ran with a user that is not an
+              admin. It's good to check twice somewhere else.
         """
-        return self.nova.servers.list(
+        server_list = self.nova.servers.list(
             search_opts={
                 'key_name': 'circleci'
             }
         )
+        server_list = [s for s in server_list if s.key_name == 'circleci']
+
+        return server_list
 
     def run_cleanup(self):
         """
@@ -56,12 +63,13 @@ class OpenStackCleanupInstance:
                 ))
                 continue
 
-            # Check if it's a valid date
+            # Check if it's a valid date and add UTC timezone
             try:
-                instance_age = datetime.strptime(
+                instance_age_unaware = datetime.strptime(
                     instance.created,
                     '%Y-%m-%dT%H:%M:%SZ'
                 )
+                instance_age = instance_age_unaware.replace(tzinfo=pytz.UTC)
             except ValueError:
                 instance_age = None
 
