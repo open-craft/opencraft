@@ -25,44 +25,55 @@ class AwsCleanupInstance:
         """
         Deletes a S3 bucket and all of it's files
         """
-        print("Deleting {} bucket.".format(bucket_name))
         if not self.dry_run:
+            print("Deleting bucket {}.".format(bucket_name))
             bucket = self.s3_resource.Bucket(bucket_name)
             bucket.objects.all().delete()
             bucket.delete()
+        else:
+            print("DRY_RUN: Deleting bucket {}.".format(bucket_name))
 
     def delete_user_policy(self, username, policy_name):
         """
         Deletes policy associated to user
         """
-        print("Deleting {} policy from user {}.".format(policy_name, username))
         if not self.dry_run:
+            print("Deleting policy {} from user {}.".format(policy_name, username))
             self.iam_client.delete_user_policy(
                 UserName=username,
                 PolicyName=policy_name
             )
+        else:
+            print("DRY_RUN: Deleting policy {} from user {}.".format(policy_name, username))
 
     def delete_user_access_key(self, username, access_key):
         """
         Deletes a user's access key
         """
-        print("Deleting {} access key from user {}.".format(
-            access_key,
-            username
-        ))
         if not self.dry_run:
+            print("Deleting access key {}  from user {}.".format(
+                access_key,
+                username
+            ))
             self.iam_client.delete_access_key(
                 UserName=username,
                 AccessKeyId=access_key['AccessKeyId']
             )
+        else:
+            print("DRY_RUN: Deleting access key {}  from user {}.".format(
+                access_key,
+                username
+            ))
 
     def delete_user(self, username):
         """
         Deletes a IAM user
         """
-        print("Deleting user {}.".format(username))
         if not self.dry_run:
+            print("Deleting user {}.".format(username))
             self.iam_client.delete_user(UserName=username)
+        else:
+            print("DRY_RUN: Deleting user {}.".format(username))
 
     def get_iam_users(self):
         """
@@ -109,7 +120,7 @@ class AwsCleanupInstance:
         user_access_keys = self.get_iam_user_access_keys(username)
         for access_key in user_access_keys:
             # Get last_used date of user key
-            last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key)
+            last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key['AccessKeyId'])
             last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
 
             if last_used_date and (last_used_date < self.age_limit):

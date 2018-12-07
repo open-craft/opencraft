@@ -66,15 +66,20 @@ class OpenStackCleanupInstance:
                 instance_age = None
 
             if instance_age and instance_age < self.age_limit:
-                print("  > TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
-                    instance_age,
-                    self.age_limit
-                ))
                 if not self.dry_run:
+                    print("  > TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
+                        instance_age,
+                        self.age_limit
+                    ))
                     instance.delete()
                     # TODO: Append deleted ips
                     # instance.accessIPv4 doesn't have any IP's
                     # self.cleaned_ips.append()
+                else:
+                    print("  > DRY_RUN: TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
+                        instance_age,
+                        self.age_limit
+                    ))
             else:
                 print("  > SKIPPING: Instance is only {} seconds old (age threshold is {} seconds).".format(
                     instance_age,
