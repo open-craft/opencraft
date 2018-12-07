@@ -48,13 +48,6 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         return [self.swift_container_name]
 
-    @property
-    def s3_custom_domain(self):
-        """
-        The custom domain name built based on the bucket name.
-        """
-        return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
-
     def _get_s3_settings(self):
         """
         Return dictionary of S3 Ansible settings.
@@ -70,15 +63,10 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
 
             # Set up S3 image backend
-            # https://github.com/edx/configuration/blob/master/playbooks/roles/edxapp/defaults/main.yml#L688
             "EDXAPP_PROFILE_IMAGE_BACKEND": {
                 "class": "storages.backends.s3boto.S3BotoStorage",
                 "options": {
-                    "bucket": self.s3_bucket_name,
                     "location": '{}/{}'.format(self.swift_container_name, 'profile-images'),
-                    "custom_domain": self.s3_custom_domain,
-                    "access_key": self.s3_access_key,
-                    "secret_key": self.s3_secret_access_key,
                     "headers": {
                         "Cache-Control": "max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}",
                     },
