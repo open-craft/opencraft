@@ -50,9 +50,9 @@ class OpenStackCleanupInstance:
                 instance.created
             ))
             # Double-check to make sure that the instance is using the circleci keypair.
-            if instance.key_pair != 'circleci':
+            if instance.key_name != 'circleci':
                 print("  > SKIPPING: Instance keypair name {} != 'circleci'!".format(
-                    instance.key_pair
+                    instance.key_name
                 ))
                 continue
 
