@@ -26,15 +26,13 @@ cancelled runs
 
 import argparse
 from datetime import datetime, timedelta
-import environ
+import os
 from pytz import UTC
 
 from aws_cleanup import AwsCleanupInstance
 from openstack_cleanup import OpenStackCleanupInstance
 from dns_cleanup import DnsCleanupInstance
 
-
-env = environ.Env()
 
 default_age_limit = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
 default_policy_name = 'allow_access_s3_bucket'
@@ -57,19 +55,19 @@ def main():
     aws_cleanup = AwsCleanupInstance(
         age_limit=default_age_limit,
         policy_name=default_policy_name,
-        aws_access_key_id=env('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=env('AWS_SECRET_ACCESS_KEY'),
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
         dry_run=True
     )
     aws_cleanup.run_cleanup()
 
     # Clean up OpenStack provider
     openstack_settings = {
-        'auth_url': env('OPENSTACK_AUTH_URL'),
-        'username': env('OPENSTACK_USER'),
-        'api_key': env('OPENSTACK_PASSWORD'),
-        'project_id': env('OPENSTACK_TENANT'),
-        'region_name': env('OPENSTACK_REGION'),
+        'auth_url': os.environ['OPENSTACK_AUTH_URL'],
+        'username': os.environ['OPENSTACK_USER'],
+        'api_key': os.environ['OPENSTACK_PASSWORD'],
+        'project_id': os.environ['OPENSTACK_TENANT'],
+        'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(
         age_limit=default_age_limit,
@@ -80,8 +78,8 @@ def main():
 
     # Run DNS cleanup
     dns_cleanup = DnsCleanupInstance(
-        zone_id=env('GANDI_ZONE_ID'),
-        api_key=env('GANDI_API_KEY'),
+        zone_id=int(os.environ['GANDI_ZONE_ID']),
+        api_key=os.environ['GANDI_API_KEY'],
         dry_run=True
     )
     # Run DNS cleanup erasing only DNS entries related to the cleaned VM's

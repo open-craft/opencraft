@@ -41,7 +41,7 @@ class DnsCleanupInstance:
             if record['value'] in ip_addresses.IPv4:
                 records_to_delete.append(record)
 
-        print("Found {} entries related to old instances...".fomat(len(records_to_delete)))
+        print("Found {} entries related to old instances...".format(len(records_to_delete)))
 
         # Delete entries
         for record in records_to_delete:
