@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime
 from novaclient import client
 import pytz
@@ -14,7 +15,9 @@ class OpenStackCleanupInstance:
         """
         self.dry_run = dry_run
         self.age_limit = age_limit
-        self.cleaned_ips = []
+        self.cleaned_ips = namedtuple('ServerIps', ['IPv4', 'IPv6'])
+        self.cleaned_ips.IPv4 = []
+        self.cleaned_ips.IPv6 = []
 
         self.nova = client.Client(
             "2.0",
@@ -42,6 +45,24 @@ class OpenStackCleanupInstance:
         # was ignored
         server_list = [s for s in server_list if s.key_name == 'circleci']
         return server_list
+
+    def get_server_ips(self, server_id):
+        """
+        Returns IP's associated with the server from OpenStack provider
+        """
+        server_ips = namedtuple('ServerIps', ['IPv4', 'IPv6'])
+        server_ips.IPv4 = []
+        server_ips.IPv6 = []
+
+        # Adds all IP addresses related to that instance to list
+        ips = self.nova.servers.ips(server_id)
+        for address in ips.get('Ext-Net', []):
+            if address['version'] == 4:
+                server_ips.IPv4.append(address['addr'])
+            else:
+                server_ips.IPv6.append(address['addr'])
+
+        return server_ips
 
     def run_cleanup(self):
         """
@@ -74,17 +95,25 @@ class OpenStackCleanupInstance:
             except ValueError:
                 instance_age = None
 
+            # If instance is older than age limit
             if instance_age and instance_age < self.age_limit:
+                # Saves instance related IP's (both IPv4 and IPv6) so we
+                # can erase them later from the DNS without guessing
+                instance_ips = self.get_server_ips(instance.id)
+                self.cleaned_ips.IPv4 += instance_ips.IPv4
+                self.cleaned_ips.IPv6 += instance_ips.IPv6
+                print("  > Instance IP's: IPv4={}, IPv6={}".format(
+                    instance_ips.IPv4,
+                    instance_ips.IPv6
+                ))
+
+                # Terminate the servers
                 if not self.dry_run:
                     print("  > TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
                         instance_age,
                         self.age_limit
                     ))
                     instance.delete()
-                    print(instance.accessIPv4)
-                    # TODO: Append deleted ips
-                    # instance.accessIPv4 doesn't have any IP's
-                    # self.cleaned_ips.append()
                 else:
                     print("  > DRY_RUN: TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
                         instance_age,

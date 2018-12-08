@@ -31,6 +31,7 @@ from pytz import UTC
 
 from aws_cleanup import AwsCleanupInstance
 from openstack_cleanup import OpenStackCleanupInstance
+from dns_cleanup import DnsCleanupInstance
 
 
 env = environ.Env()
@@ -63,24 +64,28 @@ def main():
     aws_cleanup.run_cleanup()
 
     # Clean up OpenStack provider
-openstack_settings = {
-    'auth_url': env('OPENSTACK_AUTH_URL'),
-    'username': env('OPENSTACK_USER'),
-    'api_key': env('OPENSTACK_PASSWORD'),
-    'project_id': env('OPENSTACK_TENANT'),
-    'region_name': env('OPENSTACK_REGION'),
-}
-os_cleanup = OpenStackCleanupInstance(
-    age_limit=default_age_limit,
-    openstack_settings=openstack_settings,
-    dry_run=True
-)
+    openstack_settings = {
+        'auth_url': env('OPENSTACK_AUTH_URL'),
+        'username': env('OPENSTACK_USER'),
+        'api_key': env('OPENSTACK_PASSWORD'),
+        'project_id': env('OPENSTACK_TENANT'),
+        'region_name': env('OPENSTACK_REGION'),
+    }
+    os_cleanup = OpenStackCleanupInstance(
+        age_limit=default_age_limit,
+        openstack_settings=openstack_settings,
+        dry_run=True
+    )
     os_cleanup.run_cleanup()
-    cleaned_up_ip_adresses = os_cleanup.cleaned_ips
 
-    # TODO: Add dns cleanup
-    # Didn't figure out how to do this yet
-    print(cleaned_up_ip_adresses)
+    # Run DNS cleanup
+    dns_cleanup = DnsCleanupInstance(
+        zone_id=env('GANDI_ZONE_ID'),
+        api_key=env('GANDI_API_KEY'),
+        dry_run=True
+    )
+    # Run DNS cleanup erasing only DNS entries related to the cleaned VM's
+    dns_cleanup.run_cleanup(os_cleanup.cleaned_ips)
 
 
 if __name__ == "__main__":
