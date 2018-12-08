@@ -38,8 +38,9 @@ class OpenStackCleanupInstance:
                 'key_name': 'circleci'
             }
         )
+        # Filter any keys that are not from circleci in case our query
+        # was ignored
         server_list = [s for s in server_list if s.key_name == 'circleci']
-
         return server_list
 
     def run_cleanup(self):
@@ -80,6 +81,7 @@ class OpenStackCleanupInstance:
                         self.age_limit
                     ))
                     instance.delete()
+                    print(instance.accessIPv4)
                     # TODO: Append deleted ips
                     # instance.accessIPv4 doesn't have any IP's
                     # self.cleaned_ips.append()
