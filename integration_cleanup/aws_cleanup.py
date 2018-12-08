@@ -61,7 +61,7 @@ class AwsCleanupInstance:
             )
         else:
             print("DRY_RUN: Deleting access key {}  from user {}.".format(
-                access_key,
+                access_key['AccessKeyId'],
                 username
             ))
 
@@ -101,20 +101,6 @@ class AwsCleanupInstance:
         """
         Lists all IAM user access keys and returns only the ones that haven't
         been used in at least age_limit
-        [
-            {
-                'UserName': 'string',
-                'AccessKeyId': 'string',
-                'Status': 'Active'|'Inactive',
-                'CreateDate': datetime(2015, 1, 1)
-            },
-            {
-                'UserName': 'string',
-                'AccessKeyId': 'string',
-                'Status': 'Active'|'Inactive',
-                'CreateDate': datetime(2015, 1, 1)
-            },
-        ]
         """
         old_keys = []
         user_access_keys = self.get_iam_user_access_keys(username)

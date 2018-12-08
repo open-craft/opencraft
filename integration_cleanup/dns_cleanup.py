@@ -19,7 +19,7 @@ class DnsCleanupInstance:
         """
         Returns list of all DNS entries for the specified zone
         """
-        return client.domain.zone.record.list(self.api_key, self.zone_id, 0)
+        return self.client.domain.zone.record.list(self.api_key, self.zone_id, 0)
 
     def run_cleanup(self, ip_addresses):
         """
