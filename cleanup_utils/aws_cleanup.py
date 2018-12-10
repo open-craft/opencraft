@@ -22,8 +22,9 @@ S3 Cleanup Script
 Cleans up all AWS IAM Users, Policies, Access Keys and Buckets
 """
 
-import boto3
 import logging
+import boto3
+import botocore
 
 
 # Constants ###################################################################
@@ -65,14 +66,21 @@ class AwsCleanupInstance:
         if self.dry_run:
             return
         try:
-            logger.info("Deleting bucket {}.".format(bucket_name))
+            logger.info("Deleting bucket %s.", bucket_name)
             bucket = self.s3_resource.Bucket(bucket_name)
             bucket.object_versions.delete()
             bucket.objects.all().delete()
             bucket.delete()
         except self.s3_client.exceptions.NoSuchBucket:
             # Ignore if the bucket doesn't exist
-            pass
+            logger.warning("The bucket %s did not exist, skipping.", bucket_name)
+        except botocore.exceptions.ClientError as e:
+            # Ignore if the bucket doesn't exist
+            logger.error(
+                "Untreated error when deleting %s: %s",
+                bucket_name,
+                e.response['Error']['Message']
+            )
 
     def delete_user_policy(self, username, policy_name):
         """
@@ -168,7 +176,7 @@ class AwsCleanupInstance:
         for user in self.get_iam_users():
             # Check if user has 'integration' on name
             if 'integration' not in user['UserName']:
-                logger.info("  > Skipping user {} as it's not related to integration...".format(user['UserName']))
+                logger.info("  > Skipping user %s as it's not related to integration...", user['UserName'])
                 continue
 
             old_keys = self.get_iam_user_old_access_keys(
@@ -184,30 +192,32 @@ class AwsCleanupInstance:
                 if user_policy:
                     buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
 
-                    logger.info("  > Cleaning up stuff from user {}.".format(user['UserName']))
+                    logger.info("  > Cleaning up stuff from user %s.", user['UserName'])
 
                     # Delete buckets, user policy, access keys and the iam user
                     for bucket_name in buckets_to_delete:
-                        logger.info("    * Deleting bucket {}.".format(bucket_name))
+                        logger.info("    * Deleting bucket %s.", bucket_name)
                         self.delete_bucket(bucket_name)
 
-                    logger.info("    * Deleting policy {} from user {}.".format(
+                    logger.info(
+                        "    * Deleting policy %s from user %s.",
                         DEFAULT_POLICY_NAME,
                         user['UserName']
-                    ))
+                    )
                     self.delete_user_policy(user['UserName'], DEFAULT_POLICY_NAME)
 
                     for access_key in old_keys:
-                        logger.info("    * Deleting access key {}  from user {}.".format(
+                        logger.info(
+                            "    * Deleting access key %s  from user %s.",
                             access_key['AccessKeyId'],
                             user['UserName']
-                        ))
+                        )
                         self.delete_user_access_key(
                             username=user['UserName'],
                             access_key=access_key
                         )
 
-                    logger.info("    * Deleting user {}.".format(user['UserName']))
+                    logger.info("    * Deleting user %s.", user['UserName'])
                     self.delete_user(username=user['UserName'])
 
                     # Saves hashes from user name

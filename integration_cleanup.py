@@ -30,9 +30,9 @@ import logging
 import os
 from pytz import UTC
 
-from integration_cleanup.aws_cleanup import AwsCleanupInstance
-from integration_cleanup.openstack_cleanup import OpenStackCleanupInstance
-from integration_cleanup.dns_cleanup import DnsCleanupInstance
+from cleanup_utils.aws_cleanup import AwsCleanupInstance
+from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
+from cleanup_utils.dns_cleanup import DnsCleanupInstance
 
 
 # Constants ###################################################################

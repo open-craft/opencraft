@@ -78,25 +78,27 @@ class OpenStackCleanupInstance:
         """
         Runs the cleanup of OpenStack provider
         """
-        print("\n --- Starting OpenStack Provider Cleanup ---")
+        logger.info("\n --- Starting OpenStack Provider Cleanup ---")
         if self.dry_run:
-            print("Running in DRY_RUN mode, no actions will be taken.")
+            logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
         ci_instances = self.get_active_circle_ci_instances()
-        print("Found {} active instances using CircleCI keys...".format(len(ci_instances)))
+        logger.info("Found %s active instances using CircleCI keys...", len(ci_instances))
 
         for instance in ci_instances:
-            print("  > Checking instance {}...".format(instance.name))
-            print("    * id={}, key_name={}, created={}".format(
+            logger.info("  > Checking instance %s...", instance.name)
+            logger.info(
+                "    * id=%s, key_name=%s, created=%s",
                 instance.id,
                 instance.key_name,
                 instance.created
-            ))
+            )
             # Double-check to make sure that the instance is using the circleci keypair.
             if instance.key_name != 'circleci':
-                print("    * SKIPPING: Instance keypair name {} != 'circleci'!".format(
+                logger.info(
+                    "    * SKIPPING: Instance keypair name %s != 'circleci'!",
                     instance.key_name
-                ))
+                )
                 continue
 
             # Check if it's a valid date and add UTC timezone
@@ -117,15 +119,17 @@ class OpenStackCleanupInstance:
                 )
 
                 # Terminate the servers
-                print("    * TERMINATING instance (age: {} seconds, age threshold: {} seconds)...".format(
+                logger.info(
+                    "    * TERMINATING instance (age: %s seconds, age threshold: %s seconds)...",
                     instance_age,
                     self.age_limit
-                ))
+                )
                 if not self.dry_run:
                     instance.delete()
 
             else:
-                print("    * SKIPPING: Instance is only {} seconds old (age threshold is {} seconds).".format(
+                logger.info(
+                    "    * SKIPPING: Instance is only %s seconds old (age threshold is %s seconds).",
                     instance_age,
                     self.age_limit
-                ))
+                )

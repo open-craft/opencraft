@@ -22,8 +22,8 @@ Gandi DNS Cleanup Script
 Cleans up all DNS entries left behind from CI
 """
 
-from instance.gandi import GandiAPI
 import logging
+from instance.gandi import GandiAPI
 
 # Logging #####################################################################
 
@@ -92,7 +92,7 @@ class DnsCleanupInstance(GandiAPI):
 
         # Get DNS records
         dns_records = self.get_dns_record_list(self.zone_id)
-        logger.info("Found {} DNS entries...".format(len(dns_records)))
+        logger.info("Found %s DNS entries...", dns_records)
 
         # Add all records with hashes of recourses that are marked for deletion
         # or have been marked for deletion
@@ -101,16 +101,17 @@ class DnsCleanupInstance(GandiAPI):
                 dns_records.remove(record)
                 records_to_delete.add(record['name'])
 
-        logger.info("Found {} entries related to old instances. Starting deletion process...".format(
+        logger.info(
+            "Found %i entries related to old instances. Starting deletion process...",
             len(records_to_delete)
-        ))
+        )
 
         # Create new zone version
         new_zone_version = self.create_new_zone_version(self.zone_id)
 
         # Delete entries
         for record in records_to_delete:
-            logger.info("  > DELETING DNS entries for {}...".format(record))
+            logger.info("  > DELETING DNS entries for %s...", record)
             # Delete record
             self.delete_dns_record(
                 zone_id=self.zone_id,
