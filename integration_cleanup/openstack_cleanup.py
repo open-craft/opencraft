@@ -15,9 +15,13 @@ class OpenStackCleanupInstance:
         """
         self.dry_run = dry_run
         self.age_limit = age_limit
-        self.cleaned_ips = namedtuple('ServerIps', ['IPv4', 'IPv6'])
+        self.cleaned_ips = namedtuple('CleanedServerIps', ['IPv4', 'IPv6'])
         self.cleaned_ips.IPv4 = []
         self.cleaned_ips.IPv6 = []
+        self.active_servers = namedtuple('ActiveServerIps', ['IPv4', 'IPv6'])
+        self.cleaned_ips.IPv4 = []
+        self.cleaned_ips.IPv6 = []
+
 
         self.nova = client.Client(
             "2.0",
@@ -120,6 +124,14 @@ class OpenStackCleanupInstance:
                         self.age_limit
                     ))
             else:
+                # Save active server IP's
+                instance_ips = self.get_server_ips(instance.id)
+                self.active_servers.IPv4 += instance_ips.IPv4
+                self.active_servers.IPv6 += instance_ips.IPv6
+                print("  > Instance IP's: IPv4={}, IPv6={}".format(
+                    instance_ips.IPv4,
+                    instance_ips.IPv6
+                ))
                 print("  > SKIPPING: Instance is only {} seconds old (age threshold is {} seconds).".format(
                     instance_age,
                     self.age_limit

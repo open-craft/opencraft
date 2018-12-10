@@ -83,7 +83,7 @@ def main():
         dry_run=True
     )
     # Run DNS cleanup erasing only DNS entries related to the cleaned VM's
-    dns_cleanup.run_cleanup(os_cleanup.cleaned_ips)
+    dns_cleanup.run_cleanup(os_cleanup.active_servers)
 
 
 if __name__ == "__main__":
