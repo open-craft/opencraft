@@ -38,6 +38,7 @@ class DnsCleanupInstance:
 
         # Find DNS entries related to ip_addresses input
         for record in dns_records:
+            import pdb; pdb.set_trace()
             if record['value'] in ip_addresses.IPv4:
                 records_to_delete.append(record)
 
