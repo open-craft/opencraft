@@ -23,9 +23,20 @@ Cleans up all AWS IAM Users, Policies, Access Keys and Buckets
 """
 
 import boto3
+import logging
+
+
+# Constants ###################################################################
 
 DEFAULT_POLICY_NAME = "allow_access_s3_bucket"
 
+
+# Logging #####################################################################
+
+logger = logging.getLogger('integration_cleanup')
+
+
+# Classes #####################################################################
 
 class AwsCleanupInstance:
     """
@@ -54,7 +65,7 @@ class AwsCleanupInstance:
         if self.dry_run:
             return
         try:
-            print("Deleting bucket {}.".format(bucket_name))
+            logger.info("Deleting bucket {}.".format(bucket_name))
             bucket = self.s3_resource.Bucket(bucket_name)
             bucket.object_versions.delete()
             bucket.objects.all().delete()
@@ -149,15 +160,15 @@ class AwsCleanupInstance:
         """
         Runs the cleanup of the AWS buckets, IAM users and their policies
         """
-        print("\n --- Starting AWS Cleanup ---")
+        logger.info("\n --- Starting AWS Cleanup ---")
         if self.dry_run:
-            print("Running in DRY_RUN mode, no actions will be taken.")
+            logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
         # Iterates over all IAM users
         for user in self.get_iam_users():
             # Check if user has 'integration' on name
             if 'integration' not in user['UserName']:
-                print("  > Skipping user {} as it's not related to integration...".format(user['UserName']))
+                logger.info("  > Skipping user {} as it's not related to integration...".format(user['UserName']))
                 continue
 
             old_keys = self.get_iam_user_old_access_keys(
@@ -173,21 +184,21 @@ class AwsCleanupInstance:
                 if user_policy:
                     buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
 
-                    print("  > Cleaning up stuff from user {}.".format(user['UserName']))
+                    logger.info("  > Cleaning up stuff from user {}.".format(user['UserName']))
 
                     # Delete buckets, user policy, access keys and the iam user
                     for bucket_name in buckets_to_delete:
-                        print("    * Deleting bucket {}.".format(bucket_name))
+                        logger.info("    * Deleting bucket {}.".format(bucket_name))
                         self.delete_bucket(bucket_name)
 
-                    print("    * Deleting policy {} from user {}.".format(
+                    logger.info("    * Deleting policy {} from user {}.".format(
                         DEFAULT_POLICY_NAME,
                         user['UserName']
                     ))
                     self.delete_user_policy(user['UserName'], DEFAULT_POLICY_NAME)
 
                     for access_key in old_keys:
-                        print("    * Deleting access key {}  from user {}.".format(
+                        logger.info("    * Deleting access key {}  from user {}.".format(
                             access_key['AccessKeyId'],
                             user['UserName']
                         ))
@@ -196,7 +207,7 @@ class AwsCleanupInstance:
                             access_key=access_key
                         )
 
-                    print("    * Deleting user {}.".format(user['UserName']))
+                    logger.info("    * Deleting user {}.".format(user['UserName']))
                     self.delete_user(username=user['UserName'])
 
                     # Saves hashes from user name

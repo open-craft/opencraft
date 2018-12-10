@@ -23,9 +23,16 @@ Cleans up all OpenStack VM's left behind by the CI
 """
 
 from datetime import datetime
+import logging
 from novaclient import client
 import pytz
 
+# Logging #####################################################################
+
+logger = logging.getLogger('integration_cleanup')
+
+
+# Classes #####################################################################
 
 class OpenStackCleanupInstance:
     """

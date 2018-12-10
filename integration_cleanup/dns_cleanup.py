@@ -23,7 +23,14 @@ Cleans up all DNS entries left behind from CI
 """
 
 from instance.gandi import GandiAPI
+import logging
 
+# Logging #####################################################################
+
+logger = logging.getLogger('integration_cleanup')
+
+
+# Classes #####################################################################
 
 class DnsCleanupInstance(GandiAPI):
     """
@@ -73,9 +80,9 @@ class DnsCleanupInstance(GandiAPI):
         cleaned_up_hashes: List of hashes deleted on the previous steps of the
         cleanup
         """
-        print("\n --- Starting  Gandi DNS Cleanup ---")
+        logger.info("\n --- Starting  Gandi DNS Cleanup ---")
         if self.dry_run:
-            print("Running in DRY_RUN mode, no actions will be taken.")
+            logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
         records_to_delete = set()
         hashes_to_clean = []
@@ -85,7 +92,7 @@ class DnsCleanupInstance(GandiAPI):
 
         # Get DNS records
         dns_records = self.get_dns_record_list(self.zone_id)
-        print("Found {} DNS entries...".format(len(dns_records)))
+        logger.info("Found {} DNS entries...".format(len(dns_records)))
 
         # Add all records with hashes of recourses that are marked for deletion
         # or have been marked for deletion
@@ -94,7 +101,7 @@ class DnsCleanupInstance(GandiAPI):
                 dns_records.remove(record)
                 records_to_delete.add(record['name'])
 
-        print("Found {} entries related to old instances. Starting deletion process...".format(
+        logger.info("Found {} entries related to old instances. Starting deletion process...".format(
             len(records_to_delete)
         ))
 
@@ -103,7 +110,7 @@ class DnsCleanupInstance(GandiAPI):
 
         # Delete entries
         for record in records_to_delete:
-            print("  > DELETING DNS entries for {}...".format(record))
+            logger.info("  > DELETING DNS entries for {}...".format(record))
             # Delete record
             self.delete_dns_record(
                 zone_id=self.zone_id,

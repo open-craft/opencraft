@@ -26,6 +26,7 @@ cancelled runs
 
 import argparse
 from datetime import datetime, timedelta
+import logging
 import os
 from pytz import UTC
 
@@ -34,7 +35,26 @@ from integration_cleanup.openstack_cleanup import OpenStackCleanupInstance
 from integration_cleanup.dns_cleanup import DnsCleanupInstance
 
 
+# Constants ###################################################################
+
 DEFAULT_AGE_LIMIT = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger('integration_cleanup')
+
+file_handler = logging.FileHandler('integration_cleanup.log')
+file_handler.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+
+# Classes #####################################################################
 
 
 def main():
@@ -52,10 +72,11 @@ def main():
         help='sum the integers (default: find the max)'
     )
     args = parser.parse_args()
+    logger.setLevel(logging.DEBUG)
 
-    print("Running integration cleanup tool...")
+    logger.info("Running integration cleanup tool...")
     if args.dry_run:
-        print(
+        logger.info(
             "  > Using DRY_RUN mode: no actual changes will be done to any "
             "resources."
         )
@@ -97,7 +118,7 @@ def main():
         cleaned_up_hashes=cleaned_up_hashes
     )
 
-    print("\nIntegration cleanup tool finished.")
+    logger.info("\nIntegration cleanup tool finished.")
 
 
 if __name__ == "__main__":
