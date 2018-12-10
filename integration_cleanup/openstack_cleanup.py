@@ -1,4 +1,27 @@
-from collections import namedtuple
+# -*- coding: utf-8 -*-
+#
+# OpenCraft -- tools to aid developing and hosting free software projects
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+"""
+OpenStack Cleanup Script
+
+Cleans up all OpenStack VM's left behind by the CI
+"""
+
 from datetime import datetime
 from novaclient import client
 import pytz
@@ -16,9 +39,6 @@ class OpenStackCleanupInstance:
         self.dry_run = dry_run
         self.age_limit = age_limit
         self.cleaned_up_hashes = []
-        self.active_servers = namedtuple('ActiveServerIps', ['IPv4', 'IPv6'])
-        self.active_servers.IPv4 = []
-        self.active_servers.IPv6 = []
 
         self.nova = client.Client(
             "2.0",
@@ -46,24 +66,6 @@ class OpenStackCleanupInstance:
         # was ignored
         server_list = [s for s in server_list if s.key_name == 'circleci']
         return server_list
-
-    def get_server_ips(self, server_id):
-        """
-        Returns IP's associated with the server from OpenStack provider
-        """
-        server_ips = namedtuple('ServerIps', ['IPv4', 'IPv6'])
-        server_ips.IPv4 = []
-        server_ips.IPv6 = []
-
-        # Adds all IP addresses related to that instance to list
-        ips = self.nova.servers.ips(server_id)
-        for address in ips.get('Ext-Net', []):
-            if address['version'] == 4:
-                server_ips.IPv4.append(address['addr'])
-            else:
-                server_ips.IPv6.append(address['addr'])
-
-        return server_ips
 
     def run_cleanup(self):
         """
@@ -116,14 +118,6 @@ class OpenStackCleanupInstance:
                     instance.delete()
 
             else:
-                # Save active server IP's
-                instance_ips = self.get_server_ips(instance.id)
-                self.active_servers.IPv4 += instance_ips.IPv4
-                self.active_servers.IPv6 += instance_ips.IPv6
-                print("    * Instance IP's: IPv4={}, IPv6={}".format(
-                    instance_ips.IPv4,
-                    instance_ips.IPv6
-                ))
                 print("    * SKIPPING: Instance is only {} seconds old (age threshold is {} seconds).".format(
                     instance_age,
                     self.age_limit

@@ -29,13 +29,12 @@ from datetime import datetime, timedelta
 import os
 from pytz import UTC
 
-from aws_cleanup import AwsCleanupInstance
-from openstack_cleanup import OpenStackCleanupInstance
-from dns_cleanup import DnsCleanupInstance
+from integration_cleanup.aws_cleanup import AwsCleanupInstance
+from integration_cleanup.openstack_cleanup import OpenStackCleanupInstance
+from integration_cleanup.dns_cleanup import DnsCleanupInstance
 
 
-default_age_limit = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
-default_policy_name = 'allow_access_s3_bucket'
+DEFAULT_AGE_LIMIT = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
 
 
 def main():
@@ -63,8 +62,7 @@ def main():
 
     # Clean up AWS
     aws_cleanup = AwsCleanupInstance(
-        age_limit=default_age_limit,
-        policy_name=default_policy_name,
+        age_limit=DEFAULT_AGE_LIMIT,
         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
         dry_run=args.dry_run
@@ -80,7 +78,7 @@ def main():
         'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(
-        age_limit=default_age_limit,
+        age_limit=DEFAULT_AGE_LIMIT,
         openstack_settings=openstack_settings,
         dry_run=args.dry_run
     )
@@ -96,7 +94,6 @@ def main():
     # the deletion_blacklist
     cleaned_up_hashes = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
     dns_cleanup.run_cleanup(
-        deletion_blacklist=os_cleanup.active_servers,
         cleaned_up_hashes=cleaned_up_hashes
     )
 
