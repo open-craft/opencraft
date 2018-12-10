@@ -1,5 +1,6 @@
 import boto3
 
+
 class AwsCleanupInstance:
     """
     Handles the cleanup of IAM users, Policies and Buckets related to CircleCI
@@ -12,6 +13,7 @@ class AwsCleanupInstance:
         self.age_limit = age_limit
         self.dry_run = dry_run
         self.policy_name = policy_name
+        self.cleaned_up_hashes = []
 
         self.session = boto3.Session(
             aws_access_key_id=aws_access_key_id,
@@ -25,55 +27,39 @@ class AwsCleanupInstance:
         """
         Deletes a S3 bucket and all of it's files
         """
-        if not self.dry_run:
+        try:
             print("Deleting bucket {}.".format(bucket_name))
             bucket = self.s3_resource.Bucket(bucket_name)
+            bucket.object_versions.delete()
             bucket.objects.all().delete()
             bucket.delete()
-        else:
-            print("DRY_RUN: Deleting bucket {}.".format(bucket_name))
+        except self.s3_client.exceptions.NoSuchBucket:
+            # Ignore if the bucket doesn't exist
+            pass
 
     def delete_user_policy(self, username, policy_name):
         """
         Deletes policy associated to user
         """
-        if not self.dry_run:
-            print("Deleting policy {} from user {}.".format(policy_name, username))
-            self.iam_client.delete_user_policy(
-                UserName=username,
-                PolicyName=policy_name
-            )
-        else:
-            print("DRY_RUN: Deleting policy {} from user {}.".format(policy_name, username))
+        self.iam_client.delete_user_policy(
+            UserName=username,
+            PolicyName=policy_name
+        )
 
     def delete_user_access_key(self, username, access_key):
         """
         Deletes a user's access key
         """
-        if not self.dry_run:
-            print("Deleting access key {}  from user {}.".format(
-                access_key,
-                username
-            ))
-            self.iam_client.delete_access_key(
-                UserName=username,
-                AccessKeyId=access_key['AccessKeyId']
-            )
-        else:
-            print("DRY_RUN: Deleting access key {}  from user {}.".format(
-                access_key['AccessKeyId'],
-                username
-            ))
+        self.iam_client.delete_access_key(
+            UserName=username,
+            AccessKeyId=access_key['AccessKeyId']
+        )
 
     def delete_user(self, username):
         """
         Deletes a IAM user
         """
-        if not self.dry_run:
-            print("Deleting user {}.".format(username))
-            self.iam_client.delete_user(UserName=username)
-        else:
-            print("DRY_RUN: Deleting user {}.".format(username))
+        self.iam_client.delete_user(UserName=username)
 
     def get_iam_users(self):
         """
@@ -143,8 +129,17 @@ class AwsCleanupInstance:
         """
         Runs the cleanup of the AWS buckets, IAM users and their policies
         """
+        print("\n --- Starting AWS Cleanup ---")
+        if self.dry_run:
+            print("Running in DRY_RUN mode, no actions will be taken.")
+
         # Iterates over all IAM users
         for user in self.get_iam_users():
+            # Check if user has 'integration' on name
+            if not 'integration' in user['UserName']:
+                print("  > Skipping user {} as it's not related to integration...".format(user['UserName']))
+                continue
+
             old_keys = self.get_iam_user_old_access_keys(
                 username=user['UserName']
             )
@@ -158,15 +153,38 @@ class AwsCleanupInstance:
                 if user_policy:
                     buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
 
+                    print("  > Cleaning up stuff from user {}.".format(user['UserName']))
+
                     # Delete buckets, user policy, access keys and the iam user
                     for bucket_name in buckets_to_delete:
-                        self.delete_bucket(bucket_name)
+                        print("    * Deleting bucket {}.".format(bucket_name))
+                        if not self.dry_run:
+                            self.delete_bucket(bucket_name)
 
-                    self.delete_user_policy(user['UserName'], self.policy_name)
+                    print("    * Deleting policy {} from user {}.".format(
+                        self.policy_name,
+                        user['UserName'])
+                    )
+                    if not self.dry_run:
+                        self.delete_user_policy(user['UserName'], self.policy_name)
 
                     for access_key in old_keys:
-                        self.delete_user_access_key(
-                            username=user['UserName'],
-                            access_key=access_key
-                        )
-                    self.delete_user(username=user['UserName'])
+                        print("    * Deleting access key {}  from user {}.".format(
+                            access_key['AccessKeyId'],
+                            user['UserName']
+                        ))
+                        if not self.dry_run:
+                            self.delete_user_access_key(
+                                username=user['UserName'],
+                                access_key=access_key
+                            )
+
+                    print("    * Deleting user {}.".format(user['UserName']))
+                    if not self.dry_run:
+                        self.delete_user(username=user['UserName'])
+
+                    # Saves hashes from user name
+                    # ocim-HASH_integration_plebia_net.
+                    self.cleaned_up_hashes.append(
+                        user['UserName'].split('_')[0][5:]
+                    )

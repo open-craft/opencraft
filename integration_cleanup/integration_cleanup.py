@@ -37,6 +37,7 @@ from dns_cleanup import DnsCleanupInstance
 default_age_limit = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
 default_policy_name = 'allow_access_s3_bucket'
 
+
 def main():
     """
     Main function responsible for the cleanup
@@ -48,8 +49,17 @@ def main():
     parser.add_argument(
         '--dry_run',
         action='store_true',
+        default=False,
         help='sum the integers (default: find the max)'
     )
+    args = parser.parse_args()
+
+    print("Running integration cleanup tool...")
+    if args.dry_run:
+        print(
+            "  > Using DRY_RUN mode: no actual changes will be done to any "
+            "resources."
+        )
 
     # Clean up AWS
     aws_cleanup = AwsCleanupInstance(
@@ -57,7 +67,7 @@ def main():
         policy_name=default_policy_name,
         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-        dry_run=True
+        dry_run=args.dry_run
     )
     aws_cleanup.run_cleanup()
 
@@ -72,7 +82,7 @@ def main():
     os_cleanup = OpenStackCleanupInstance(
         age_limit=default_age_limit,
         openstack_settings=openstack_settings,
-        dry_run=True
+        dry_run=args.dry_run
     )
     os_cleanup.run_cleanup()
 
@@ -80,10 +90,17 @@ def main():
     dns_cleanup = DnsCleanupInstance(
         zone_id=int(os.environ['GANDI_ZONE_ID']),
         api_key=os.environ['GANDI_API_KEY'],
-        dry_run=True
+        dry_run=args.dry_run
     )
-    # Run DNS cleanup erasing only DNS entries related to the cleaned VM's
-    dns_cleanup.run_cleanup(os_cleanup.active_servers)
+    # Run DNS cleanup erasing all integration entries except for those on
+    # the deletion_blacklist
+    cleaned_up_hashes = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
+    dns_cleanup.run_cleanup(
+        deletion_blacklist=os_cleanup.active_servers,
+        cleaned_up_hashes=cleaned_up_hashes
+    )
+
+    print("\nIntegration cleanup tool finished.")
 
 
 if __name__ == "__main__":
