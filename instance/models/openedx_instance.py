@@ -48,9 +48,18 @@ from instance.utils import sufficient_time_passed
 
 # Models ######################################################################
 
-class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfiguration, OpenEdXDatabaseMixin,
-                      OpenEdXMonitoringMixin, OpenEdXStorageMixin, OpenEdXThemeMixin, SecretKeyInstanceMixin,
-                      Instance):
+
+class OpenEdXInstance(
+        DomainNameInstance,
+        LoadBalancedInstance,
+        OpenEdXAppConfiguration,
+        OpenEdXDatabaseMixin,
+        OpenEdXMonitoringMixin,
+        OpenEdXStorageMixin,
+        OpenEdXThemeMixin,
+        SecretKeyInstanceMixin,
+        Instance
+):
     """
     OpenEdXInstance: represents a website or set of affiliated websites powered by the same
     OpenEdX installation.
@@ -360,6 +369,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         Shut down this instance's app servers, mark it as archived and
         remove its metadata from Consul.
         """
+        self.logger.info('Archiving instance started.')
         self.disable_monitoring()
         self.remove_dns_records()
         if self.load_balancing_server is not None:
@@ -371,6 +381,7 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
             appserver.terminate_vm()
         self.purge_consul_metadata()
         super().archive()
+        self.logger.info('Archiving instance finished.')
 
     @staticmethod
     def shut_down():
@@ -386,13 +397,29 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
 
         This is handy for development but should not be used in production - just use archive() instead.
+
+        Note:
+            There is no boolean flag to ignore Swift or S3 errors
+            because when calling `self.deprovision_swfit()` or
+            `self.deprovision_s3()` errors are logged but not raised.
+
+        Arguments:
+            ignore_errors (bool): Ignore all errors if `True`.
+            ignore_mysql_errros (bool): Ignore MySQL errors.
+            ignore_mongo_errors (bool): Ignore Mongo errors.
+            ignore_rabbitmq_errors (bool): Ignore RabbitMQ errors.
         """
+        self.logger.info('Deleting instance: %s.', str(self))
+
+        ignore_errors = kwargs.pop('ignore_errors', False)
+
         self.archive()
-        self.deprovision_mysql()
-        self.deprovision_mongo()
+        self.deprovision_mysql(ignore_errors=kwargs.pop('ignore_mysql_errors', ignore_errors))
+        self.deprovision_mongo(ignore_errors=kwargs.pop('ignore_mongo_errors', ignore_errors))
         self.deprovision_swift()
         self.deprovision_s3()
-        self.deprovision_rabbitmq()
+        self.deprovision_rabbitmq(ignore_errors=kwargs.pop('ignore_rabbitmq_errors', ignore_errors))
+
         super().delete(*args, **kwargs)
 
     @property
@@ -488,5 +515,6 @@ class OpenEdXInstance(DomainNameInstance, LoadBalancedInstance, OpenEdXAppConfig
         if not settings.CONSUL_ENABLED:
             return
 
+        self.logger.info('Purging consul metadata with prefix: %s.', self.consul_prefix)
         agent = ConsulAgent(prefix=self.consul_prefix)
         agent.purge()

@@ -52,7 +52,7 @@ from instance.tests.utils import patch_services, skip_unless_consul_running
 
 # Tests #######################################################################
 
-@ddt.ddt # pylint: disable=too-many-lines
+@ddt.ddt  # pylint: disable=too-many-lines
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -500,6 +500,8 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.database.MySQLInstanceMixin.deprovision_mysql')
     @patch('instance.models.mixins.database.MongoDBInstanceMixin.deprovision_mongo')
     @patch('instance.models.mixins.storage.SwiftContainerInstanceMixin.deprovision_swift')
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.deprovision_s3')
+    @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
     def test_delete_instance(self, mocks, delete_by_ref, *mock_methods):
         """
         Test that an instance can be deleted directly or by its InstanceReference.

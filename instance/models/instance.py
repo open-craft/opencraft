@@ -88,7 +88,7 @@ class InstanceReference(TimeStampedModel):
         Delete this InstanceReference and the associated Instance.
         """
         if not kwargs.pop('instance_already_deleted', False):
-            self.instance.delete(ref_already_deleted=True)
+            self.instance.delete(ref_already_deleted=True, **kwargs)
         super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
@@ -277,7 +277,7 @@ class Instance(ValidateModelMixin, models.Model):
         This will delete the InstanceReference at the same time.
         """
         if not kwargs.pop('ref_already_deleted', False):
-            self.ref.delete(instance_already_deleted=True)
+            self.ref.delete(instance_already_deleted=True, **kwargs)
         super().delete(*args, **kwargs)
 
 

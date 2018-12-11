@@ -65,6 +65,7 @@ class LoadBalancedInstance(models.Model):
         Delete the DNS records for this instance.
         """
         for domain in self.get_managed_domains():
+            self.logger.info('Removing domain "%s" from DNS Records.', domain)
             gandi.api.remove_dns_record(domain)
 
     def reconfigure_load_balancer(self, load_balancing_server=None):
