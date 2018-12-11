@@ -73,7 +73,7 @@ class DnsCleanupInstance(GandiAPI):
 
         return dns_entries
 
-    def run_cleanup(self, cleaned_up_hashes=None):
+    def run_cleanup(self, hashes_to_clean):
         """
         Runs Gandi's DNS cleanup using XMLRPC client using their API
 
@@ -85,10 +85,6 @@ class DnsCleanupInstance(GandiAPI):
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
         records_to_delete = set()
-        hashes_to_clean = []
-
-        if cleaned_up_hashes:
-            hashes_to_clean += cleaned_up_hashes
 
         # Get DNS records
         dns_records = self.get_dns_record_list(self.zone_id)

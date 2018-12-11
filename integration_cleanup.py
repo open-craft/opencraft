@@ -113,9 +113,9 @@ def main():
     )
     # Run DNS cleanup erasing all integration entries except for those on
     # the deletion_blacklist
-    cleaned_up_hashes = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
+    hashes_to_clean = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
     dns_cleanup.run_cleanup(
-        cleaned_up_hashes=cleaned_up_hashes
+        hashes_to_clean=cleaned_up_hashes
     )
 
     logger.info("\nIntegration cleanup tool finished.")
