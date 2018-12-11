@@ -3,7 +3,7 @@ branch = True
 omit =
     /*/migrations/*
     /playbooks/collect_activity/stats.py
-    /cleanup_utils/*
+    cleanup_utils/*
     integration_cleanup.py
 
 [html]
