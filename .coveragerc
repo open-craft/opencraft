@@ -3,6 +3,8 @@ branch = True
 omit =
     /*/migrations/*
     /playbooks/collect_activity/stats.py
+    /cleanup_utils/*
+    integration_cleanup.py
 
 [html]
 directory = build/coverage
