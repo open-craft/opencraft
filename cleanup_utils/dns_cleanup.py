@@ -30,6 +30,11 @@ from instance.gandi import GandiAPI
 logger = logging.getLogger('integration_cleanup')
 
 
+# Constants ###################################################################
+
+BATCH_SIZE = 200
+
+
 # Classes #####################################################################
 
 class DnsCleanupInstance(GandiAPI):
@@ -60,13 +65,13 @@ class DnsCleanupInstance(GandiAPI):
         dns_entries = []
         dns_entry_count = self.client.domain.zone.record.count(self.api_key, self.zone_id, 0)
 
-        for page_num in range(int(dns_entry_count / 100) + 1):
+        for page_num in range(int(dns_entry_count / BATCH_SIZE) + 1):
             dns_entries += self.client.domain.zone.record.list(
                 self.api_key,
                 self.zone_id,
                 0,
                 {
-                    'items_per_page': 200,
+                    'items_per_page': BATCH_SIZE,
                     'page': page_num
                 }
             )
