@@ -93,7 +93,7 @@ class DnsCleanupInstance(GandiAPI):
 
         # Get DNS records
         dns_records = self.get_dns_record_list(self.zone_id)
-        logger.info("Found %s DNS entries...", dns_records)
+        logger.info("Found %s DNS entries...", len(dns_records))
 
         # Add all records with hashes of recourses that are marked for deletion
         # or have been marked for deletion
