@@ -23,6 +23,7 @@ Cleans up all DNS entries left behind from CI
 """
 
 import logging
+import xmlrpc
 from instance.gandi import GandiAPI
 
 # Logging #####################################################################
@@ -114,11 +115,14 @@ class DnsCleanupInstance(GandiAPI):
         for record in records_to_delete:
             logger.info("  > DELETING DNS entries for %s...", record)
             # Delete record
-            self.delete_dns_record(
-                zone_id=self.zone_id,
-                zone_version_id=new_zone_version,
-                record_name=record
-            )
+            try:
+                self.delete_dns_record(
+                    zone_id=self.zone_id,
+                    zone_version_id=999999999,
+                    record_name=record
+                )
+            except xmlrpc.client.Fault:
+                logger.info("  > FAILED Deleting DNS entries for %s...", record)
 
         # Set new zone as current
         if not self.dry_run:

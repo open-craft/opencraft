@@ -131,9 +131,15 @@ class OpenStackCleanupInstance:
                 if not self.dry_run:
                     instance.delete()
 
-            else:
+            elif instance_age:
                 logger.info(
                     "    * SKIPPING: Instance is only %s seconds old (age threshold is %s seconds).",
+                    instance_age,
+                    self.age_limit
+                )
+            else:
+                logger.info(
+                    "    * SKIPPING: Couldn't parse instance age.",
                     instance_age,
                     self.age_limit
                 )
