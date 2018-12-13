@@ -128,16 +128,20 @@ class AwsCleanupInstance:
         """
         old_keys = []
 
+        def is_key_old(access_key):
+            """
+            Check if key is older than age limit
+            """
+            last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key['AccessKeyId'])
+            last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
+            if last_used_date and (last_used_date < self.age_limit):
+                return True
+            return False
+
         # Get all user access keys
         paginator = self.iam_client.get_paginator('list_access_keys')
         for page in paginator.paginate(UserName=username):
-            for access_key in page['AccessKeyMetadata']:
-                # Get last_used date of user key
-                last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key['AccessKeyId'])
-                last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
-
-                if last_used_date and (last_used_date < self.age_limit):
-                    old_keys.append(access_key)
+            old_keys.extend([key for key in page['AccessKeyMetadata'] if is_key_old(key)])
 
         return old_keys
 

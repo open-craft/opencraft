@@ -109,6 +109,10 @@ class OpenStackCleanupInstance:
                 )
                 instance_age = instance_age_unaware.replace(tzinfo=pytz.UTC)
             except ValueError:
+                logger.info(
+                    "    * WARNING: Coudn't parse instance age (%s)! This instance will be skipped.",
+                    instance.created
+                )
                 instance_age = None
 
             # If instance is older than age limit
