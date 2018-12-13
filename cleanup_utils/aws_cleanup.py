@@ -75,9 +75,8 @@ class AwsCleanupInstance:
             # Ignore if the bucket doesn't exist
             logger.warning("The bucket %s did not exist, skipping.", bucket_name)
         except botocore.exceptions.ClientError as e:
-            # Ignore if the bucket doesn't exist
             logger.error(
-                "Untreated error when deleting %s: %s",
+                "Unknown error when deleting %s: %s",
                 bucket_name,
                 e.response['Error']['Message']
             )
@@ -119,8 +118,7 @@ class AwsCleanupInstance:
         users = []
         paginator = self.iam_client.get_paginator('list_users')
         for page in paginator.paginate():
-            for user in page['Users']:
-                users.append(user)
+            users.extend(page['Users'])
         return users
 
     def get_iam_user_old_access_keys(self, username):
@@ -129,22 +127,17 @@ class AwsCleanupInstance:
         been used in at least age_limit
         """
         old_keys = []
-        user_access_keys = []
 
         # Get all user access keys
         paginator = self.iam_client.get_paginator('list_access_keys')
         for page in paginator.paginate(UserName=username):
             for access_key in page['AccessKeyMetadata']:
-                user_access_keys.append(access_key)
+                # Get last_used date of user key
+                last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key['AccessKeyId'])
+                last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
 
-        # Check when last used and return only oldest ones
-        for access_key in user_access_keys:
-            # Get last_used date of user key
-            last_used = self.iam_client.get_access_key_last_used(AccessKeyId=access_key['AccessKeyId'])
-            last_used_date = last_used.get('AccessKeyLastUsed', {}).get('LastUsedDate')
-
-            if last_used_date and (last_used_date < self.age_limit):
-                old_keys.append(access_key)
+                if last_used_date and (last_used_date < self.age_limit):
+                    old_keys.append(access_key)
 
         return old_keys
 
