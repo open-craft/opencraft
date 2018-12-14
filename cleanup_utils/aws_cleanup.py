@@ -143,7 +143,7 @@ class AwsCleanupInstance:
             for page in paginator.paginate(UserName=username):
                 old_keys.extend([key for key in page['AccessKeyMetadata'] if is_key_old(key)])
         except botocore.exceptions.NoSuchEntityException:
-            logger.info("Error retrying user keys, user %s will be skipped...", user['UserName'])
+            logger.info("Error retrying user keys, user %s will be skipped...", username)
 
         return old_keys
 

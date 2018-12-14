@@ -123,6 +123,7 @@ class DnsCleanupInstance(GandiAPI):
                 )
             except xmlrpc.client.Fault as e:
                 logger.info("  > FAILED Deleting DNS entries for %s...", record)
+                logger.info("  > ERROR: %s", e)
 
         # Set new zone as current
         if not self.dry_run:
