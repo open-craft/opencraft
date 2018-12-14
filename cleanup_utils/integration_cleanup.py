@@ -63,7 +63,7 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Cleanup all unused resources from integration runs that "
-                    "have been cancelled or failed."
+                    "might have been left behind."
     )
     parser.add_argument(
         '--dry_run',
