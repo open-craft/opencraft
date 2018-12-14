@@ -66,7 +66,6 @@ class AwsCleanupInstance:
         if self.dry_run:
             return
         try:
-            logger.info("Deleting bucket %s.", bucket_name)
             bucket = self.s3_resource.Bucket(bucket_name)
             bucket.object_versions.delete()
             bucket.objects.all().delete()
@@ -139,9 +138,12 @@ class AwsCleanupInstance:
             return False
 
         # Get all user access keys
-        paginator = self.iam_client.get_paginator('list_access_keys')
-        for page in paginator.paginate(UserName=username):
-            old_keys.extend([key for key in page['AccessKeyMetadata'] if is_key_old(key)])
+        try:
+            paginator = self.iam_client.get_paginator('list_access_keys')
+            for page in paginator.paginate(UserName=username):
+                old_keys.extend([key for key in page['AccessKeyMetadata'] if is_key_old(key)])
+        except botocore.exceptions.NoSuchEntityException:
+            logger.info("Error retrying user keys, user %s will be skipped...", user['UserName'])
 
         return old_keys
 
