@@ -104,30 +104,32 @@ class DnsCleanupInstance(GandiAPI):
                 records_to_delete.add(record['name'])
 
         logger.info(
-            "Found %i entries related to old instances. Starting deletion process...",
+            "Found %i entries related to old instances.",
             len(records_to_delete)
         )
 
-        # Create new zone version
-        new_zone_version = self.create_new_zone_version(self.zone_id)
+        if len(records_to_delete):
+            logger.info("Starting cleanup...")
+            # Create new zone version
+            new_zone_version = self.create_new_zone_version(self.zone_id)
 
-        # Delete entries
-        for record in records_to_delete:
-            logger.info("  > DELETING DNS entries for %s...", record)
-            # Delete record
-            try:
-                self.delete_dns_record(
+            # Delete entries
+            for record in records_to_delete:
+                logger.info("  > DELETING DNS entries for %s...", record)
+                # Delete record
+                try:
+                    self.delete_dns_record(
+                        zone_id=self.zone_id,
+                        zone_version_id=new_zone_version,
+                        record_name=record
+                    )
+                except xmlrpc.client.Fault as e:
+                    logger.error("  > FAILED Deleting DNS entries for %s...", record)
+                    logger.error("  > ERROR: %s", e)
+
+            # Set new zone as current
+            if not self.dry_run:
+                self.set_zone_version(
                     zone_id=self.zone_id,
-                    zone_version_id=new_zone_version,
-                    record_name=record
+                    zone_version_id=new_zone_version
                 )
-            except xmlrpc.client.Fault as e:
-                logger.info("  > FAILED Deleting DNS entries for %s...", record)
-                logger.info("  > ERROR: %s", e)
-
-        # Set new zone as current
-        if not self.dry_run:
-            self.set_zone_version(
-                zone_id=self.zone_id,
-                zone_version_id=new_zone_version
-            )

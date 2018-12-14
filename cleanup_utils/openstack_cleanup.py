@@ -109,7 +109,7 @@ class OpenStackCleanupInstance:
                 )
                 instance_age = instance_age_unaware.replace(tzinfo=pytz.UTC)
             except ValueError:
-                logger.info(
+                logger.warning(
                     "    * WARNING: Coudn't parse instance age (%s)! This instance will be skipped.",
                     instance.created
                 )
@@ -124,7 +124,7 @@ class OpenStackCleanupInstance:
 
                 # Terminate the servers
                 logger.info(
-                    "    * TERMINATING instance (age: %s seconds, age threshold: %s seconds)...",
+                    "    * TERMINATING instance (created at: %s, termination threshold: %s)...",
                     instance_age,
                     self.age_limit
                 )
@@ -133,7 +133,7 @@ class OpenStackCleanupInstance:
 
             else:
                 logger.info(
-                    "    * SKIPPING: Instance is only %s seconds old (age threshold is %s seconds).",
+                    "    * SKIPPING: Instance was created at %s but the cut-off age threshold is %s.",
                     instance_age,
                     self.age_limit
                 )
