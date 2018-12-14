@@ -118,10 +118,10 @@ class DnsCleanupInstance(GandiAPI):
             try:
                 self.delete_dns_record(
                     zone_id=self.zone_id,
-                    zone_version_id=999999999,
+                    zone_version_id=new_zone_version,
                     record_name=record
                 )
-            except xmlrpc.client.Fault:
+            except xmlrpc.client.Fault as e:
                 logger.info("  > FAILED Deleting DNS entries for %s...", record)
 
         # Set new zone as current
