@@ -28,6 +28,8 @@ import sys
 
 # Main ########################################################################
 
+print("sdfasd"); print("sdfasd"); print("sdfasd");
+
 if __name__ == "__main__":
     sys.path.append('opencraft')
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "opencraft.settings")

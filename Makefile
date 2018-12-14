@@ -126,17 +126,6 @@ endif
 test.integration_cleanup: clean ## Run the integration cleanup script.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration test cleanup script with credentials from .env.integration file..."
-	honcho -e .env.integration run bin/integration-cleanup
-else ifdef OPENSTACK_USER
-	echo -e "\nRunning integration test cleanup script with credentials from environment variables..."
-	bin/integration-cleanup
-else
-	echo -e "\nIntegration test cleanup script skipped (create a '.env.integration' file to run them)"
-endif
-
-test.new_integration_cleanup: clean ## Run the integration cleanup script.
-ifneq ($(wildcard .env.integration),)
-	echo -e "\nRunning integration test cleanup script with credentials from .env.integration file..."
 	PYTHONPATH=$PYTHONPATH:$(pwd) honcho -e .env.integration run python3 cleanup_utils/integration_cleanup.py --dry_run
 else ifdef OPENSTACK_USER
 	echo -e "\nRunning integration test cleanup script with credentials from environment variables..."
