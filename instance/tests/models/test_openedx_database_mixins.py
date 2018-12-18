@@ -332,7 +332,7 @@ class MySQLInstanceTestCase(TestCase):
                         "HOST": "{{ ECOMMERCE_DATABASE_HOST }}",
                         "PORT": expected_port,
                         "ATOMIC_REQUESTS": True,
-                        "CONN_MAX_AGE": 60
+                        "CONN_MAX_AGE": 0
                     }
                 }]
             },
@@ -344,7 +344,7 @@ class MySQLInstanceTestCase(TestCase):
                 ["DEFAULT_DB_NAME", "DATABASES"],
                 [{"name": "programs", "user": "program", "additional_settings": {
                     "ATOMIC_REQUESTS": True,
-                    "CONN_MAX_AGE": 60,
+                    "CONN_MAX_AGE": 0,
                 }}]
             ),
             "INSIGHTS_": make_nested_group_info(
