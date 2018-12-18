@@ -497,7 +497,7 @@ class ConsulAgent(object):
         :return: The casted value if the data-type identified, an str object of
                  the value if not
         """
-        value = value.decode('utf-8') if value else None
+        value = value.decode('latin-1') if value else None
 
         try:
             return int(value)

@@ -871,7 +871,7 @@ class ConsulAgentTest(TestCase):
         floats, lists, dictionaries and strings
         """
         self.assertEqual(self.agent._cast_value(b'string'), 'string')
-        self.assertEqual(self.agent._cast_value('utf-8 ãáé string'), 'utf-8 ãáé string')
+        self.assertEqual(self.agent._cast_value(bytes('ãáé string', 'latin-1')), 'ãáé string')
         self.assertEqual(self.agent._cast_value(b'1'), 1)
         self.assertEqual(self.agent._cast_value(b'1.3'), 1.3)
 
