@@ -21,7 +21,7 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
-from unittest.mock import patch, call
+from unittest.mock import call, patch
 
 import boto
 import ddt
@@ -29,7 +29,7 @@ import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
+from instance.models.mixins.storage import StorageContainer, get_master_iam_connection, get_s3_cors_config
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -63,6 +63,13 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(parsed_vars['AWS_S3_LOGS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['AWS_S3_LOGS_SECRET_KEY'], 'test-s3-secret-access-key')
 
+        # Profile image backend
+        self.assertEqual(parsed_vars['EDXAPP_PROFILE_IMAGE_BACKEND']['class'], 'storages.backends.s3boto.S3BotoStorage')
+
+        opts = parsed_vars['EDXAPP_PROFILE_IMAGE_BACKEND']['options']
+        self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
+        self.assertRegex(opts['location'], r'instance[\w]+_test_example_com/profile-images')
+
     def test_ansible_s3_settings(self):
         """
         Test that get_storage_settings() includes S3 vars, and that they get passed on to the
@@ -77,6 +84,21 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.check_s3_vars(instance.get_storage_settings())
         appserver = make_test_appserver(instance)
         self.check_s3_vars(appserver.configuration_settings)
+
+
+def get_s3_settings_profile_image(instance):
+    """
+    Return expected s3 settings related to profile image backend
+    """
+    s3_settings = (
+        '\n  class: storages.backends.s3boto.S3BotoStorage'
+        '\n  options:'
+        '\n    headers:'
+        '\n      Cache-Control: max-age-{{{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}}}'
+        '\n    location: {instance.swift_container_name}/profile-images'
+    ).format(instance=instance)
+
+    return s3_settings
 
 
 def get_s3_settings(instance):
@@ -120,6 +142,8 @@ def get_s3_settings(instance):
         "AWS_S3_LOGS": 'true',
         "AWS_S3_LOGS_ACCESS_KEY_ID": instance.s3_access_key,
         "AWS_S3_LOGS_SECRET_KEY": instance.s3_secret_access_key,
+
+        "EDXAPP_PROFILE_IMAGE_BACKEND": get_s3_settings_profile_image(instance),
     }
 
     if instance.s3_region:
