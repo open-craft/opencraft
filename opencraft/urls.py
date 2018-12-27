@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^api/', include('api.urls', namespace='api')),
     url(r'^instance/', include('instance.urls', namespace='instance')),
     url(r'^registration/', include('registration.urls', namespace='registration')),
+    url(r'^reports/', include('reports.urls', namespace='reports')),
     url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),

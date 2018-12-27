@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,16 +21,18 @@ OpenEdXInstance model - Tests
 """
 
 # Imports #####################################################################
-
-from datetime import timedelta
 import re
+from datetime import timedelta
 from unittest.mock import patch, Mock, PropertyMock
 
 import ddt
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.test import override_settings
 from django.utils import timezone
+
+import consul
 from freezegun import freeze_time
 import yaml
 
@@ -45,12 +47,12 @@ from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_services
+from instance.tests.utils import patch_services, skip_unless_consul_running
 
 
 # Tests #######################################################################
 
-@ddt.ddt
+@ddt.ddt # pylint: disable=too-many-lines
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -77,8 +79,6 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
         self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
-        self.assertEqual(instance.github_admin_organizations, [])
-        self.assertEqual(instance.github_admin_users, [])
         self.assertNotEqual(instance.secret_key_b64encoded, '')
         self.assertEqual(instance.openstack_region, settings.OPENSTACK_REGION)
         self.assertEqual(instance.openstack_server_base_image, settings.OPENSTACK_SANDBOX_BASE_IMAGE)
@@ -87,28 +87,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.created, instance.ref.created)
         self.assertEqual(instance.modified, instance.ref.modified)
         self.assertEqual(instance.additional_security_groups, [])
-        self.assertEqual(instance.use_ephemeral_databases, settings.INSTANCE_EPHEMERAL_DATABASES)
         self.assertFalse(instance.deploy_simpletheme)
         self.assertTrue(instance.rabbitmq_vhost)
         self.assertTrue(instance.rabbitmq_consumer_user)
         self.assertTrue(instance.rabbitmq_provider_user)
 
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
     def test_create_defaults(self):
         """
         Create an instance without specifying additional fields,
         leaving it up to the create method to set them
         """
         instance = OpenEdXInstance.objects.create(sub_domain='sandbox.defaults')
-        self._assert_defaults(instance)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    def test_create_defaults_persistent_databases(self):
-        """
-        Create an instance without specifying additional fields,
-        leaving it up to the create method to set them
-        """
-        instance = OpenEdXInstance.objects.create(sub_domain='production.defaults')
         self._assert_defaults(instance)
 
     def test_id_different_from_ref_id(self):
@@ -211,7 +200,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
 
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mock_provision.call_count, 1)
@@ -220,10 +209,10 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.appserver_set.count(), 1)
         self.assertFalse(instance.get_active_appservers().exists())
 
-        # We are using ephemeral databases:
-        self.assertEqual(mocks.mock_provision_mysql.call_count, 0)
-        self.assertEqual(mocks.mock_provision_mongo.call_count, 0)
-        self.assertEqual(mocks.mock_provision_swift.call_count, 0)
+        # Make sure databases were provisioned:
+        self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
+        self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
+        self.assertEqual(mocks.mock_provision_swift.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
         dns_records = gandi.api.client.list_records('example.com')
@@ -243,9 +232,13 @@ class OpenEdXInstanceTestCase(TestCase):
                 getattr(instance, field_name),
                 getattr(appserver, field_name),
             )
-        self.assertEqual(appserver.configuration_database_settings, "")
-        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
-        self.assertEqual(appserver.configuration_storage_settings, ephemeral_settings)
+        storage_settings = {
+            'EDXAPP_DEFAULT_FILE_STORAGE: swift.storage.SwiftStorage',
+            'EDXAPP_GRADE_STORAGE_CLASS: swift.storage.SwiftStorage',
+            'VHOST_NAME: openstack',
+            'XQUEUE_SETTINGS: openstack_settings'
+        }
+        self.assertTrue(storage_settings <= set(appserver.configuration_storage_settings.split('\n')))
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
@@ -258,7 +251,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Check that newrelic ansible vars are set correctly
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.newrelic', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.newrelic')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
@@ -270,13 +263,28 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
+    def test_appserver_services_disabled(self, mocks, mock_provision):
+        """
+        Check that appservers are deployed with only the minimum services by default
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.appserver_services')
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        configuration_vars = yaml.load(appserver.configuration_settings)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_RABBITMQ'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_DISCOVERY'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_ECOMMERCE'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_ANALYTICS_API'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_INSIGHTS'], False)
+
+    @patch_services
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_domains(self, mocks, mock_provision):
         """
         Test that relevant configuration variables use external domains when provisioning a new app server.
         """
         instance = OpenEdXInstanceFactory(
             sub_domain='test.spawn',
-            use_ephemeral_databases=True,
             external_lms_domain='lms.external.com',
             external_lms_preview_domain='lmspreview.external.com',
             external_studio_domain='cms.external.com'
@@ -296,7 +304,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence multiple times and check names of resulting app servers
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn_names', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn_names')
 
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -316,7 +324,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Provision an AppServer with a user added to lms_users.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
         appserver_id = instance.spawn_appserver()
@@ -341,10 +349,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
-        instance = OpenEdXInstanceFactory(
-            sub_domain='test.spawn',
-            use_ephemeral_databases=True,
-        )
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
         appserver_id = instance.spawn_appserver()
@@ -366,7 +371,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
         mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
 
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
         self.assertEqual(instance.appserver_set.count(), 0)
         self.assertFalse(instance.get_active_appservers().exists())
         result = instance.spawn_appserver(num_attempts=1)
@@ -384,7 +389,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence, with external databases
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.persistent', use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory(sub_domain='test.persistent')
 
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
@@ -404,7 +409,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Ensure the FORUM_API_KEY matches EDXAPP_COMMENTS_SERVICE_KEY
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings)
@@ -426,7 +431,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test that the load balancer configuration gets generated correctly.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
         domain_names = [
             "test.load_balancer.example.com",
             "preview-test.load_balancer.example.com",
@@ -471,8 +476,7 @@ class OpenEdXInstanceTestCase(TestCase):
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           external_ecommerce_domain='ecom.myexternal.org',
-                                          external_discovery_domain='catalog.myexternal.org',
-                                          use_ephemeral_databases=True)
+                                          external_discovery_domain='catalog.myexternal.org')
         domain_names = [
             'test.load_balancer.opencraft.hosting',
             'preview-test.load_balancer.opencraft.hosting',
@@ -500,7 +504,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Test that an instance can be deleted directly or by its InstanceReference.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.deletion', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.deletion')
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
 
@@ -530,103 +534,32 @@ class OpenEdXInstanceTestCase(TestCase):
             appserver.refresh_from_db()
 
     @staticmethod
-    def _set_appserver_terminated(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Terminated.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_running()
-        appserver._status_to_terminated()
-
-    @staticmethod
-    def _set_appserver_running(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Running.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_running()
-
-    @staticmethod
-    def _set_appserver_configuration_failed(appserver):
-        """
-        Transition `appserver` to AppServerStatus.ConfigurationFailed.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_configuring_server()
-        appserver._status_to_configuration_failed()
-
-    @staticmethod
-    def _set_appserver_errored(appserver):
-        """
-        Transition `appserver` to AppServerStatus.Error.
-        """
-        appserver._status_to_waiting_for_server()
-        appserver._status_to_error()
-
-    @staticmethod
-    def _set_server_ready(server):
-        """
-        Transition `server` to Status.Ready.
-        """
-        server._status_to_building()
-        server._status_to_booting()
-        server._status_to_ready()
-
-    @staticmethod
-    def _set_server_terminated(server):
-        """
-        Transition `server` to Status.Terminated.
-
-        Note that servers are allowed to transition to ServerStatus.Terminated from any state,
-        so it is not necessary to transition to another status first.
-        """
-        server._status_to_terminated()
-
-    def _create_appserver(self, instance, status):
-        """
-        Return appserver for `instance` that has `status`
-
-        Note that this method does not set the status of the VM (OpenStackServer)
-        that is associated with the app server.
-
-        Client code is expected to take care of that itself (if necessary).
-        """
-        appserver = make_test_appserver(instance)
-        if status == AppServerStatus.Running:
-            self._set_appserver_running(appserver)
-        if status == AppServerStatus.ConfigurationFailed:
-            self._set_appserver_configuration_failed(appserver)
-        elif status == AppServerStatus.Error:
-            self._set_appserver_errored(appserver)
-        elif status == AppServerStatus.Terminated:
-            self._set_appserver_terminated(appserver)
-        return appserver
-
-    def _create_running_appserver(self, instance):
+    def _create_running_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Running
         """
-        return self._create_appserver(instance, AppServerStatus.Running)
+        return make_test_appserver(instance, status=AppServerStatus.Running)
 
-    def _create_failed_appserver(self, instance, with_running_server=False):
+    @staticmethod
+    def _create_failed_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.ConfigurationFailed
         """
-        return self._create_appserver(instance, AppServerStatus.ConfigurationFailed)
+        return make_test_appserver(instance, status=AppServerStatus.ConfigurationFailed)
 
-    def _create_errored_appserver(self, instance):
+    @staticmethod
+    def _create_errored_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Error
         """
-        return self._create_appserver(instance, AppServerStatus.Error)
+        return make_test_appserver(instance, status=AppServerStatus.Error)
 
-    def _create_terminated_appserver(self, instance):
+    @staticmethod
+    def _create_terminated_appserver(instance):
         """
         Return app server for `instance` that has `status` AppServerStatus.Terminated
         """
-        return self._create_appserver(instance, AppServerStatus.Terminated)
+        return make_test_appserver(instance, status=AppServerStatus.Terminated)
 
     def _assert_status(self, appservers):
         """
@@ -931,6 +864,162 @@ class OpenEdXInstanceTestCase(TestCase):
         msg = r"Use archive\(\) to shut down all of an instances app servers and remove it from the instance list."
         with self.assertRaisesRegex(AttributeError, msg):
             instance.shut_down()
+
+
+@skip_unless_consul_running()
+class OpenEdXInstanceConsulTestCase(TestCase):
+    """
+    Test cases for all Consul-related functionalities that resides in
+    OpenEdXInstance model
+    """
+    def setUp(self):
+        agent = consul.Consul()
+        if agent.kv.get('', recurse=True)[1]:
+            self.skipTest('Consul contains unknown values!')
+
+    def test_generate_consul_metadata(self):
+        """
+        Tests that the values and the keys we're storing in Consul are calculated as expected.
+        :return:
+        """
+        instance = OpenEdXInstanceFactory()
+        metadata = instance._generate_consul_metadata()
+
+        active_servers = instance.get_active_appservers()
+        basic_auth = instance.http_auth_info_base64()
+        enable_health_checks = active_servers.count() > 1
+        active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
+
+        expected_metadata = {
+            'domain_slug': instance.domain_slug,
+            'domain': instance.domain,
+            'name': instance.name,
+            'domains': instance.get_load_balanced_domains(),
+            'health_checks_enabled': enable_health_checks,
+            'basic_auth': basic_auth.decode(),
+            'active_app_servers': active_servers_data,
+        }
+
+        self.assertEqual(metadata, expected_metadata)
+        instance.purge_consul_metadata()
+
+    @override_settings(OCIM_ID='ocim-test')
+    def test_consul_prefix(self):
+        """
+        Each key we're saving in Consul contains a prefix that identifies the OCIM server
+        and the OpenEdx instance ID. The test insures that the prefix remains in the
+        expected shape.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.consul_prefix, '{}/instances/{}/'.format(settings.OCIM_ID, instance.pk))
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    def test_write_metadata_to_consul(self):
+        """
+        Tests that metadata actually reflected in a proper way on Consul.
+        - Metadata shouldn't be updated and the version must remain the same in every time
+          we saved the instance without modifying its Consul configurations.
+        - New values and extra fields should increment the configurations number in Consul.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        configs = {
+            'key1': 'value1',
+            'key2': 'value2',
+        }
+
+        # Writing new configurations to instance. (The first one ws written during the instance initialization)
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, True)
+
+        # Saving the same value again should not update Consul
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, False)
+
+        # Changing a value in the configs or adding a new one should should
+        # change the version
+        configs['key1'] = 'Key1 New Value'
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 3)
+        self.assertEqual(updated, True)
+
+        configs['newKey'] = 'New Value'
+        version, updated = instance._write_metadata_to_consul(configs)
+        self.assertEqual(version, 4)
+        self.assertEqual(updated, True)
+
+        instance.purge_consul_metadata()
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    def test_update_consul_metadata(self, metadata_mock):
+        """
+        Tests whether the wrapper built around Consul writer returns the expected results.
+        """
+        instance = OpenEdXInstanceFactory()
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+        }
+
+        # Initial store defaults
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 1)
+        self.assertEqual(updated, True)
+
+        # Test configurations changed
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+            'dummyKey3': 'dummyValue3',
+        }
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, True)
+
+        # Test configurations not changed
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 2)
+        self.assertEqual(updated, False)
+
+        instance.purge_consul_metadata()
+
+    @override_settings(CONSUL_ENABLED=False)
+    def test_update_consul_metadata_consul_disabled(self):
+        """
+        Tests functionality of disabling Consul from the settings
+        """
+        instance = OpenEdXInstanceFactory()
+
+        # Initial store defaults
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 0)
+        self.assertEqual(updated, False)
+
+    @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
+    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    def test_purge_consul_metadata(self, metadata_mock):
+        """
+        Tests the functionality of deleting the Consul metadata for a specific instance
+        """
+        agent = consul.Consul()
+        instance = OpenEdXInstanceFactory()
+        metadata_mock.return_value = {
+            'dummyKey1': 'dummyValue1',
+            'dummyKey2': 'dummyValue2',
+        }
+
+        # Stored metadata in Consul should be fetched properly
+        instance.update_consul_metadata()
+        _, metadata = agent.kv.get('', recurse=True)
+        self.assertTrue(metadata)
+
+        # Purged metadata cannot be fetched
+        instance.purge_consul_metadata()
+        _, metadata = agent.kv.get('', recurse=True)
+        self.assertFalse(metadata)
 
 
 @ddt.ddt

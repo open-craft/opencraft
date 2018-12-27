@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2017 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -72,6 +72,8 @@ class OpenEdXThemeMixin(models.Model):
                     "variable": "link-color",
                     "value": application.link_color,
                 },
+                # TODO: These are specific to Ginkgo and can be removed
+                # after Hawthorn upgrade
                 {
                     "variable": "header-bg",
                     "value": application.header_bg_color,
@@ -80,6 +82,7 @@ class OpenEdXThemeMixin(models.Model):
                     "variable": "footer-bg",
                     "value": application.footer_bg_color,
                 },
+                # END TODO
                 {
                     "variable": "button-color",
                     "value": application.main_color,
@@ -91,6 +94,13 @@ class OpenEdXThemeMixin(models.Model):
                 {
                     "variable": "action-secondary-bg",
                     "value": application.main_color,
+                },
+                {
+                    "variable": "theme-colors",
+                    "value": "(\"primary\": {primary}, \"secondary\": {secondary})".format(
+                        primary=application.main_color,
+                        secondary=application.main_color
+                    ),
                 },
             ],
             "SIMPLETHEME_STATIC_FILES_URLS": [
@@ -105,6 +115,14 @@ class OpenEdXThemeMixin(models.Model):
             ],
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+            "SIMPLETHEME_EXTRA_SASS": """
+                .global-header {{
+                    background: {header_bg};
+                }}
+                .wrapper-footer {{
+                    background: {footer_bg};
+                }}""".format(header_bg=application.header_bg_color,
+                             footer_bg=application.footer_bg_color)
         }
 
         return yaml.dump(settings, default_flow_style=False)

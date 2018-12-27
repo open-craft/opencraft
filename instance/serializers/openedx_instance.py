@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -100,10 +100,9 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         model = OpenEdXInstanceBasicSerializer.Meta.model
         fields = OpenEdXInstanceBasicSerializer.Meta.fields + (
             'email',
-            'use_ephemeral_databases',
             'deploy_simpletheme',
-            'github_admin_organizations',
-            'github_admin_users',
+            'creator_username',
+            'owner_organization',
             'internal_lms_domain',
             'url',
             'studio_url',

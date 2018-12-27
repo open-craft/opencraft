@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -70,7 +70,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         monitors for each of the instance's public urls, and enables email
         alerts.
         """
-        monitor_ids = [str(uuid4()) for i in range(3)]
+        monitor_ids = [str(uuid4()) for i in range(4)]
         mock_newrelic.get_synthetics_monitor.return_value = []
         mock_newrelic.get_synthetics_notification_emails.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
@@ -84,6 +84,7 @@ class OpenEdXMonitoringTestCase(TestCase):
             call(instance.url),
             call(instance.studio_url),
             call(instance.lms_preview_url),
+            call(instance.lms_extended_heartbeat_url),
         ], any_order=True)
         self.assertCountEqual(
             instance.new_relic_availability_monitors.values_list('pk', flat=True),
@@ -129,7 +130,7 @@ class OpenEdXMonitoringTestCase(TestCase):
                 raise Exception("404")
 
         mock_newrelic.get_synthetics_monitor.side_effect = mock_get_synthetics_monitor
-        new_ids = [str(uuid4()) for i in range(2)]
+        new_ids = [str(uuid4()) for i in range(3)]
         mock_newrelic.create_synthetics_monitor.side_effect = new_ids
         instance.enable_monitoring()
 
@@ -152,10 +153,15 @@ class OpenEdXMonitoringTestCase(TestCase):
         'additional_monitoring_emails' to the existing monitors.
         """
         instance = OpenEdXInstanceFactory()
-        existing_monitor_ids = [str(uuid4()) for i in range(3)]
+        existing_monitor_ids = [str(uuid4()) for i in range(4)]
         existing_monitors = {}
-        existing_monitor_urls = [instance.url, instance.studio_url, instance.lms_preview_url]
-        for i in range(3):
+        existing_monitor_urls = [
+            instance.url,
+            instance.studio_url,
+            instance.lms_preview_url,
+            instance.lms_extended_heartbeat_url
+        ]
+        for i in range(4):
             new_id = existing_monitor_ids[i]
             instance.new_relic_availability_monitors.create(pk=new_id)
             existing_monitors[new_id] = {'id': new_id, 'uri': existing_monitor_urls[i]}

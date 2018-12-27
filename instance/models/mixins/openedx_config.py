@@ -50,6 +50,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # edxapp
             "EDXAPP_PLATFORM_NAME": self.instance.name,
             "EDXAPP_SITE_NAME": self.instance.domain,
+            "EDXAPP_LMS_ENV_EXTRA": {
+                "ADDL_INSTALLED_APPS": [
+                    "openedx.core.djangoapps.heartbeat",
+                ],
+                "HEARTBEAT_EXTENDED_CHECKS": [
+                    "lms.lib.comment_client.utils.check_forum_heartbeat",
+                ],
+            },
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
@@ -148,19 +156,13 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Repositories URLs
             "edx_ansible_source_repo": self.configuration_source_repo_url,
             "edx_platform_repo": self.edx_platform_repository_url,
-            # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
-            "xqueue_source_repo": "https://github.com/open-craft/xqueue",
-            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
-            "CERTS_REPO": "https://github.com/open-craft/edx-certificates",
 
             # Pin down dependencies to specific (known to be compatible) commits.
             "edx_platform_version": self.edx_platform_commit,
             "configuration_version": self.configuration_version,
             "forum_version": self.openedx_release,
-            # Temporary: We want a configurable `XQUEUE_SESSION_ENGINE` ASAP but it's not in upstream Ginkgo.
-            "xqueue_version": 'opencraft-release/ginkgo.1',
-            # Temporary: We want a configurable `CERTS_QUEUE_POLL_FREQUENCY` ASAP but it's not in upstream Ginkgo.
-            "certs_version": "opencraft-release/ginkgo.1",
+            "xqueue_version": self.openedx_release,
+            "certs_version": self.openedx_release,
             "NOTIFIER_VERSION": self.openedx_release,
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
@@ -224,12 +226,17 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "cms": 2,
             },
 
-            # Restart workers regularly to work around a memory leak
+            # Restart workers regularly to work around a memory leaks.
+            #
             # Tailor the max_requests number to suit the average request load on the server.
-            # e.g if the instance receives an average of around 42000 requests per day,
-            # with 10% for static assets, restarting after 20000 requests means
-            # restarting each of the 4 LMS workers about every 2-3 days.
-            "EDXAPP_LMS_MAX_REQ": 20000,
+            # e.g if the instance receives an average of around 20000 requests per day,
+            # with 10% for static assets, restarting after 10000 requests means
+            # restarting each of the 3 LMS workers about every .8 days.
+            "EDXAPP_LMS_MAX_REQ": 5000,
+
+            # Studio/CMS handles ~5% of the LMS requests with only 2 workers.
+            # Restart them every 1-2 days.
+            "EDXAPP_CMS_MAX_REQ": 1000,
 
             # Celery workers
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
@@ -249,7 +256,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "DISCOVERY_VERSION": self.openedx_release,
 
             # RabbitMQ disabled locally
-            "SANBOX_ENABLE_RABBITMQ": False,
+            "SANDBOX_ENABLE_RABBITMQ": False,
 
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
@@ -309,7 +316,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 ),
             })
 
-        if self.github_admin_username_list:
+        if self.admin_users:
             template.update({
                 "COMMON_USER_INFO": [
                     {
@@ -317,7 +324,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         "github": True,
                         "type": "admin"
                     }
-                    for github_username in self.github_admin_username_list
+                    for github_username in self.admin_users
                 ],
             })
 

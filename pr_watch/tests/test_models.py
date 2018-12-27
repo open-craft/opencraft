@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,8 @@ import yaml
 
 from django.test import TestCase, override_settings
 
+from userprofile.factories import make_user_and_organization
+
 from pr_watch.models import WatchedPullRequest
 from pr_watch.tests.factories import PRFactory, WatchedForkFactory
 
@@ -47,12 +49,14 @@ class WatchedPullRequestTestCase(TestCase):
         self.addCleanup(patcher.stop)
         self.mock_get_commit_id_from_ref = patcher.start()
         self.mock_get_commit_id_from_ref.return_value = '9' * 40
+        _, self.organization = make_user_and_organization()
 
     def test_get_by_fork_name(self):
         """
         Use `fork_name` to get an instance object from the ORM
         """
-        watched_fork = WatchedForkFactory(organization='get-by', fork='fork-name')
+        _, organization = make_user_and_organization(org_name="Get by", org_handle="get-by")
+        watched_fork = WatchedForkFactory(organization=organization, fork='fork-name')
         WatchedPullRequest.objects.create(
             github_organization_name='get-by',
             github_repository_name='fork-name',
@@ -83,7 +87,8 @@ class WatchedPullRequestTestCase(TestCase):
         """
         Set org & repo using the fork name
         """
-        watched_fork = WatchedForkFactory(organization='org2', fork='some-name')
+        _, organization = make_user_and_organization(org_name="Org2", org_handle="org2")
+        watched_fork = WatchedForkFactory(organization=organization, fork='some-name')
         watched_pr = WatchedPullRequest(watched_fork=watched_fork)
         watched_pr.set_fork_name('org2/another-repo')
         self.assertEqual(watched_pr.github_organization_name, 'org2')
@@ -116,7 +121,8 @@ class WatchedPullRequestTestCase(TestCase):
         TODO: Is this 'ref_type' code used for anything?
         """
         self.mock_get_commit_id_from_ref.return_value = 'c' * 40
-        watched_fork = WatchedForkFactory(fork='org9/repo')
+        _, organization = make_user_and_organization(org_name="Org9", org_handle="org9")
+        watched_fork = WatchedForkFactory(organization=organization, fork='org9/repo')
         instance = WatchedPullRequest.objects.create(
             fork_name='org9/repo',
             branch_name='new-tag',
@@ -131,7 +137,6 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.ref_type, 'tag')
 
     @override_settings(
-        INSTANCE_EPHEMERAL_DATABASES=True,
         DEFAULT_INSTANCE_BASE_DOMAIN='basedomain.com',
         DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX='lms-preview.',
         DEFAULT_STUDIO_DOMAIN_PREFIX='studio-'
@@ -141,7 +146,8 @@ class WatchedPullRequestTestCase(TestCase):
         Create an instance from a pull request
         """
         pr = PRFactory()
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
+        _, organization = make_user_and_organization()
+        watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
         instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertTrue(created)
 
@@ -157,39 +163,20 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.internal_studio_domain, 'studio-{}'.format(internal_lms_domain))
         self.assertRegex(instance.name, r'^PR')
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
-        self.assertTrue(instance.use_ephemeral_databases)
 
         same_instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertEqual(instance, same_instance)
         self.assertFalse(created)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=False)
-    def test_create_from_pr_ephemeral_databases(self):
-        """
-        Instances should use ephemeral databases if requested in the PR
-        """
-        pr = PRFactory(body='pr123.sandbox.example.com (ephemeral databases)', number=123)
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
-        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
-        self.assertTrue(instance.use_ephemeral_databases)
-
-    @override_settings(INSTANCE_EPHEMERAL_DATABASES=True)
-    def test_create_from_pr_persistent_databases(self):
-        """
-        Instances should use persistent databases if requested in the PR
-        """
-        pr = PRFactory(body='pr123.sandbox.example.com (persistent databases)', number=123)
-        watched_fork = WatchedForkFactory(fork=pr.fork_name)
-        instance, _ = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
-        self.assertFalse(instance.use_ephemeral_databases)
 
     def test_create_from_pr_and_watchedfork_values(self):
         """
         Create an instance from a pull request, and check that the default values from the watched fork are used.
         """
         pr = PRFactory()
+        _, organization = make_user_and_organization()
         watched_fork = WatchedForkFactory(
             fork=pr.fork_name,
+            organization=organization,
             configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
             configuration_version='named-release/elder-fromwatchedfork',
             configuration_extra_settings=textwrap.dedent("""\

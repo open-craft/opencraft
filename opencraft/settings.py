@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -52,6 +52,11 @@ DEBUG = env.bool('DEBUG', default=False)
 ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 
 
+# Consul #########################################################################
+CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
+OCIM_ID = env('OCIM_ID', default='ocim')
+CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}/')
+
 # Auth ########################################################################
 
 AUTHENTICATION_BACKENDS = (
@@ -79,6 +84,7 @@ LOCAL_APPS = (
     'pr_watch',
     'userprofile',
     'registration',
+    'reports',
     'backup_swift'
 )
 
@@ -255,9 +261,13 @@ OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default={"ram": 
 OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default={"name": "Ubuntu 16.04"})
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
 OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
+OPENSTACK_PRODUCTION_INSTANCE_FLAVOR = env.json(
+    'OPENSTACK_PRODUCTION_INSTANCE_FLAVOR',
+    default={"ram": 8192, "disk": 80}
+)
 
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
-# when Swift is enabled and INSTANCE_EPHEMERAL_DATABASES is disabled.
+# when Swift is enabled.
 
 INSTANCE_STORAGE_TYPE = env('INSTANCE_STORAGE_TYPE', default='swift')  # Keeping the previous behaviour for SWIFT_ENABLE
 
@@ -298,6 +308,11 @@ if MEDIAFILES_SWIFT_ENABLE:
 
 DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 
+# Billing #####################################################################
+
+# This rate is per user per day in euros
+BILLING_RATE = env('BILLING_RATE', default=3)
+
 # DNS (Gandi) #################################################################
 
 # See https://www.gandi.net/admin/api_key
@@ -318,15 +333,15 @@ DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
 # Open edX Instance and App Server Settings  ##################################
 
+# Time in seconds to wait before making a force termination for servers.
+SHUTDOWN_TIMEOUT = env.int('SHUTDOWN_TIMEOUT', default=600)  # 10 minutes
+
 # Instances will be created as subdomains of this domain by default
 DEFAULT_INSTANCE_BASE_DOMAIN = env('DEFAULT_INSTANCE_BASE_DOMAIN')
 DEFAULT_STUDIO_DOMAIN_PREFIX = env('DEFAULT_STUDIO_DOMAIN_PREFIX', default='studio-')
 DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX = env('DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX', default='preview-')
 DEFAULT_DISCOVERY_DOMAIN_PREFIX = env('DEFAULT_DISCOVERY_DOMAIN_PREFIX', default='discovery-')
 DEFAULT_ECOMMERCE_DOMAIN_PREFIX = env('DEFAULT_ECOMMERCE_DOMAIN_PREFIX', default='ecommerce-')
-
-# Default admin organization for instances (gets shell access)
-DEFAULT_ADMIN_ORGANIZATION = env('DEFAULT_ADMIN_ORGANIZATION', default='')
 
 # Fork and branch of the Open edX configuration repo used for sandboxes created for PRs.
 DEFAULT_CONFIGURATION_REPO_URL = env(
@@ -343,7 +358,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEF
 
 # Git ref for stable Open edX release. Used as a default refspec for
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
-OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/ginkgo.1')
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/hawthorn.1')
 
 # The edx-platform repository used by default for production instances
 STABLE_EDX_PLATFORM_REPO_URL = env(
@@ -355,7 +370,7 @@ STABLE_EDX_PLATFORM_COMMIT = env('STABLE_EDX_PLATFORM_COMMIT', default=OPENEDX_R
 STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
-STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default=OPENEDX_RELEASE_STABLE_REF)
+STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/hawthorn.1')
 
 # The name of the security group to use for edxapp App servers.
 # This is used to set appropriate firewall rules to prevent external access to
@@ -592,10 +607,6 @@ if 'file' in HANDLERS:
 
 # Instances ###################################################################
 
-# By default, instances use local mysql and mongo databases and local file storage.
-# Set this to False to use external databases and Swift object storage instead.
-INSTANCE_EPHEMERAL_DATABASES = env.bool('INSTANCE_EPHEMERAL_DATABASES', default=True)
-
 # Configure external databases here
 DEFAULT_INSTANCE_MYSQL_URL = env('DEFAULT_INSTANCE_MYSQL_URL', default=None)
 DEFAULT_INSTANCE_MONGO_URL = env('DEFAULT_INSTANCE_MONGO_URL', default=None)
@@ -611,6 +622,9 @@ DEFAULT_INSTANCE_RABBITMQ_URL = env('DEFAULT_INSTANCE_RABBITMQ_URL', default=Non
 
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
+
+# How old a log entry needs to be before it's deleted.
+LOG_DELETION_DAYS = env.int('LOG_DELETION_DAYS', default=60)
 
 # When configured, email sent from instances is relayed via external SMTP provider.
 INSTANCE_SMTP_RELAY_HOST = env('INSTANCE_SMTP_RELAY_HOST', default=None)
@@ -676,6 +690,9 @@ PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default=None)
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default=None)
 AWS_S3_BUCKET_PREFIX = env('S3_BUCKET_PREFIX', default='ocim')
+AWS_S3_CUSTOM_REGION_HOSTNAME = 's3.{region}.amazonaws.com'
+AWS_S3_DEFAULT_HOSTNAME = 's3.amazonaws.com'
+AWS_S3_DEFAULT_REGION = env('AWS_S3_DEFAULT_REGION', default='')
 AWS_IAM_USER_PREFIX = env('IAM_USER_PREFIX', default='ocim')
 
 # Consul ######################################################################

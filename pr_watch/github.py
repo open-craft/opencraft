@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -59,7 +59,7 @@ def get_object_from_url(url):
     """
     logger.info('GET URL %s', url)
     r = requests.get(url, headers=GH_HEADERS)
-    logger.info('Response body: %s', r.text)
+    logger.debug('Response body: %s', r.text)
     if r.status_code == 404:
         raise ObjectDoesNotExist('404 response from {0}'.format(url))
     if r.status_code == 403 and r.headers.get('X-RateLimit-Remaining', '') == '0':
@@ -97,19 +97,6 @@ def get_settings_from_pr_body(pr_body):
         return m.groups()[0]
     else:
         return ''
-
-
-def is_pr_body_requesting_ephemeral_databases(pr_body, domain):
-    """
-    Return True if the PR body specified that the sandbox should use ephemeral
-    databases, False if it specifies persistent databases, or None otherwise
-    """
-    escaped_domain = re.escape(domain)
-    if re.search(r'{0}.*ephemeral databases?'.format(escaped_domain), pr_body):
-        return True
-    if re.search(r'{0}.*persistent databases?'.format(escaped_domain), pr_body):
-        return False
-    return None
 
 
 def get_pr_info_by_number(pr_target_fork_name, pr_number):
@@ -164,26 +151,6 @@ def get_pr_list_from_usernames(user_names, fork_name):
         logger.debug('Received PR for user %s: %s', pr_dict['user']['login'], pr_dict)
         pr_list.append(get_pr_by_number(fork_name, pr_dict['number']))
     return pr_list
-
-
-def get_team_from_organization(organization_name, team_name='Sandbox'):
-    """
-    Retrieve a team by organization & team name
-    """
-    url = 'https://api.github.com/orgs/{org}/teams'.format(org=organization_name)
-    for team_dict in get_object_from_url(url):
-        if team_dict['name'] == team_name:
-            return team_dict
-    raise KeyError(team_name)
-
-
-def get_username_list_from_team(organization_name, team_name='Sandbox'):
-    """
-    Retrieve the usernames of a given team's members
-    """
-    team = get_team_from_organization(organization_name, team_name)
-    url = 'https://api.github.com/teams/{team_id}/members'.format(team_id=team['id'])
-    return [user_dict['login'] for user_dict in get_object_from_url(url)]
 
 
 def parse_date(date):
@@ -249,12 +216,6 @@ class PR:
         Construct the URL for the pull request
         """
         return 'https://github.com/{repo_name}/pull/{number}'.format(repo_name=self.repo_name, number=self.number)
-
-    def use_ephemeral_databases(self, domain):
-        """
-        Does this PR request ephemeral databases?
-        """
-        return is_pr_body_requesting_ephemeral_databases(self.body, domain)
 
 
 class ObjectDoesNotExist(Exception):

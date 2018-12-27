@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,6 +39,7 @@ from instance.serializers.openedx_appserver import (
 )
 from instance.tasks import make_appserver_active, spawn_appserver
 
+from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
 
 # Views - API #################################################################
 
@@ -48,6 +49,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
     API to list and manipulate Open edX AppServers.
     """
     queryset = OpenEdXAppServer.objects.all()
+    filter_backends = (IsOrganizationOwnerFilterBackendAppServer,)
 
     def get_serializer_class(self):
         """
@@ -71,8 +73,15 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         instance_id = serializer.validated_data['instance_id']
 
+        # Limit by organization. Instance managers can't spawn servers for other organizations
+        filtered_instances = IsOrganizationOwnerFilterBackendInstance().filter_queryset(
+            request,
+            InstanceReference.objects.all(),
+            view=None,
+        )
+
         try:
-            instance_ref = InstanceReference.objects.get(pk=instance_id)
+            instance_ref = filtered_instances.get(pk=instance_id)
         except ObjectDoesNotExist:
             raise NotFound('InstanceReference with ID {} not found.'.format(instance_id))
 

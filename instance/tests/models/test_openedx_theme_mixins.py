@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -85,19 +85,31 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
+                    # TODO: These are specific to Ginkgo and can be removed
+                    # after Hawthorn upgrade
                     {'variable': 'header-bg',
                      'value': '#caaffe', },
                     {'variable': 'footer-bg',
                      'value': '#ffff11', },
+                    # END TODO
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',
                      'value': '#001122', },
                     {'variable': 'action-secondary-bg',
                      'value': '#001122', },
+                    {'variable': 'theme-colors',
+                     'value': '("primary": #001122, "secondary": #001122)'}
                 ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
+                'SIMPLETHEME_EXTRA_SASS': '''
+                .global-header {
+                    background: #caaffe;
+                }
+                .wrapper-footer {
+                    background: #ffff11;
+                }'''
             }
             for ansible_var, value in expected_settings.items():
                 self.assertEqual(value, parsed_vars[ansible_var])

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -85,7 +85,7 @@ class OpenEdXMonitoringMixin:
         """
         The urls to monitor for this instance.
         """
-        return {self.url, self.studio_url, self.lms_preview_url}
+        return {self.url, self.studio_url, self.lms_preview_url, self.lms_extended_heartbeat_url}
 
 
 class NewRelicAvailabilityMonitor(models.Model):

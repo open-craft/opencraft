@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -165,6 +165,8 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     owner = models.ForeignKey(InstanceReference, on_delete=models.CASCADE, related_name='%(class)s_set')
     # When this AppServer was last made the active AppServer of its instance
     last_activated = models.DateTimeField(null=True, blank=True)
+    # Used for billing to determine the server running period
+    terminated = models.DateTimeField(null=True, blank=True)
     _is_active = models.BooleanField(default=False, db_column="is_active")
 
     class Meta:
@@ -242,6 +244,8 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         self.server.terminate()
         if self.status == Status.Running:
             self._status_to_terminated()
+            self.terminated = timezone.now()
+            self.save()
         elif self.status == Status.ConfiguringServer:
             self._status_to_configuration_failed()
         elif self.status == Status.WaitingForServer:

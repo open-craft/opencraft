@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,6 +31,8 @@ from django.db import models
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from swampdragon.pubsub_providers.data_publisher import publish_data
+
+from userprofile.models import UserProfile, Organization
 
 from instance.models.log_entry import LogEntry
 from instance.models.utils import default_setting
@@ -67,12 +69,15 @@ class InstanceReference(TimeStampedModel):
         "<strong>Note: You currently cannot archive an instance from the admin panel. You can "
         "however un-archive an instance that was already archived.</strong>"
     ))
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-created']
         unique_together = ('instance_type', 'instance_id')
+        # Check InstanceReference.can_manage for a description of what this permission means
         permissions = (
-            ("manage_all", "Can manage all instances."),
+            ("manage_own", "Can manage own instances."),
         )
 
     def __str__(self):
@@ -102,10 +107,14 @@ class InstanceReference(TimeStampedModel):
     @classmethod
     def can_manage(cls, user):
         """
-        Returns true if the user has "instance.manage_all" permission
+        Returns true if the user is an instance manager.
+
+        Instance managers are those users that can see a list of instances (at least their own).
+        Superusers are automatically instance managers and will see all instances.
+        Normal users become instance managers when they're granted the "instance.manage_own" permission.
         """
-        permission = '{}.{}'.format(cls._meta.app_label, "manage_all")
-        return user.has_perm(permission)
+        permission = '{}.{}'.format(cls._meta.app_label, "manage_own")
+        return user.is_superuser or user.has_perm(permission)
 
     @property
     def log_entries(self):
@@ -190,6 +199,21 @@ class Instance(ValidateModelMixin, models.Model):
     def modified(self):
         """ Get this instance's modified date, which is stored in the InstanceReference """
         return self.ref.modified
+
+    @property
+    def creator_username(self):
+        """Get the username of the Ocim user who created the instance."""
+        if self.ref.creator:
+            return self.ref.creator.user.username
+
+    @property
+    def owner_organization(self):
+        """
+        Get the name of the Ocim organization who owns the instance.
+        Relevant for sandboxes.
+        """
+        if self.ref.owner:
+            return self.ref.owner.name
 
     def save(self, *args, **kwargs):
         """ Save this Instance """

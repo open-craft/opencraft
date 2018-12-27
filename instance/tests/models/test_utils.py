@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,20 +21,24 @@ model utils - Tests, mostly for state machine
 """
 
 # Imports #####################################################################
-
+import json
 from unittest import TestCase
 from unittest.mock import Mock
 
 from django.db import models
+
+import consul
 
 from instance.models.utils import (
     ResourceState,
     ResourceStateDescriptor,
     ModelResourceStateDescriptor,
     WrongStateException,
+    ConsulAgent,
 )
 
 # Tests #######################################################################
+from instance.tests.utils import skip_unless_consul_running
 
 
 class ResourceStateTests(TestCase):
@@ -518,3 +522,378 @@ class DjangoResourceTest(SimpleResourceTestCase):
         self.assertEqual(res.state, State3)
         self.assertEqual(self.make_resource.save.call_count, 3)
         self.make_resource.save.assert_called_with(update_fields=['backing_field'])
+
+
+@skip_unless_consul_running()
+class ConsulAgentTest(TestCase):
+    """
+    A Test Case for ConsulAgent class that acts as a helper between this
+    code base and consul client'
+    """
+    def setUp(self):
+        self.prefix = 'this/dummy/prefix/'
+        self.client = consul.Consul()
+        self.agent = ConsulAgent()
+        self.prefixed_agent = ConsulAgent(prefix=self.prefix)
+
+        if self.client.kv.get('', recurse=True)[1]:
+            self.skipTest('Consul contains unknown values!')
+
+    def test_init(self):
+        """
+        Tests ConsulAgent's init method and the data it's expected to receive and set.
+        """
+        agent = ConsulAgent()
+        self.assertEqual(agent.prefix, '')
+        self.assertIsInstance(agent._client, consul.Consul)
+
+        # With custom parameters
+        prefix = 'custom_prefix'
+        agent = ConsulAgent(prefix=prefix)
+        self.assertEqual(agent.prefix, prefix)
+        self.assertIsInstance(agent._client, consul.Consul)
+
+    def test_get_no_prefix(self):
+        """
+        Tests getting bare keys of different data types from Consul's Key-Value store.
+        """
+        agent = ConsulAgent()
+
+        # Test string values
+        key = 'string_key'
+        stored_value = 'String Value'
+        self.client.kv.put(key, stored_value)
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, str)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test integer values
+        key = 'int_key'
+        stored_value = 23  # pylint: disable=redefined-variable-type
+        self.client.kv.put(key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, int)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test float values
+        key = 'float_key'
+        stored_value = 23.23
+        self.client.kv.put(key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, float)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test list values
+        key = 'list_key'
+        stored_value = [{'nice': 'good'}, {'awesome': 'things'}]
+        self.client.kv.put(key, json.dumps(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, list)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test dict values
+        key = 'dict_key'
+        stored_value = {'nice': 'good', 'awesome': 'things'}
+        self.client.kv.put(key, json.dumps(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, dict)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test other (boolean) objects
+        key = 'random_key'
+        stored_value = True
+        self.client.kv.put(key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, str)
+        self.assertEqual(fetched_value, str(stored_value))
+
+    def test_get_with_prefix(self):
+        """
+        Tests getting a prefixed key of different data types from Consul's KEy-Value store.
+        """
+        prefix = 'some-dummy/prefix/'
+        agent = ConsulAgent(prefix=prefix)
+
+        # Test string values
+        key = 'string_key'
+        stored_value = 'String Value'
+        self.client.kv.put(prefix + key, stored_value)
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, str)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test integer values
+        key = 'int_key'
+        stored_value = 23  # pylint: disable=redefined-variable-type
+        self.client.kv.put(prefix + key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, int)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test float values
+        key = 'float_key'
+        stored_value = 23.23
+        self.client.kv.put(prefix + key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, float)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test list values
+        key = 'list_key'
+        stored_value = [{'nice': 'good'}, {'awesome': 'things'}]
+        self.client.kv.put(prefix + key, json.dumps(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, list)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test dict values
+        key = 'dict_key'
+        stored_value = {'nice': 'good', 'awesome': 'things'}
+        self.client.kv.put(prefix + key, json.dumps(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, dict)
+        self.assertEqual(fetched_value, stored_value)
+
+        # Test other (boolean) objects
+        key = 'random_key'
+        stored_value = True
+        self.client.kv.put(prefix + key, str(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertIsInstance(fetched_value, str)
+        self.assertEqual(fetched_value, str(stored_value))
+
+    def test_put_no_prefix(self):
+        """
+        Will test the put functionality on Consul with different data types with no prefix on keys.
+        """
+        agent = ConsulAgent()
+
+        # Put string values
+        key = 'key'
+        value = 'value'
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, value)
+
+        # Put int values
+        key = 'key'
+        value = 1  # pylint: disable=redefined-variable-type
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, str(value))
+
+        # Put float values
+        key = 'key'
+        value = 1.1
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, str(value))
+
+        # Put list values
+        key = 'key'
+        value = [1, 2, 3, 5]
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+        # Put dict values
+        key = 'key'
+        value = {'key': 'value', 'another_key': 12}
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+        # Put other values
+        key = 'key'
+        value = False
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+    def test_put_with_prefix(self):
+        """
+        Will test the put functionality on Consul with different data types after prefixing the keys.
+        """
+        prefix = 'some/testing-prefix'
+        agent = ConsulAgent(prefix=prefix)
+        # Put string values
+        key = 'key'
+        value = 'value'
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, value)
+
+        # Put int values
+        key = 'key'
+        value = 1  # pylint: disable=redefined-variable-type
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, str(value))
+
+        # Put float values
+        key = 'key'
+        value = 1.1
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, str(value))
+
+        # Put list values
+        key = 'key'
+        value = [1, 2, 3, 5]
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+        # Put dict values
+        key = 'key'
+        value = {'key': 'value', 'another_key': 12}
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+        # Put other values
+        key = 'key'
+        value = False
+        agent.put(key, value)
+
+        _, data = self.client.kv.get(prefix + key)
+        fetched_value = data['Value'].decode()
+        self.assertEqual(fetched_value, json.dumps(value))
+
+    def test_delete_no_prefix(self):
+        """
+        Will test whether a key is gonna be deleted or not from the Key-Value store.
+        """
+        agent = ConsulAgent()
+        self.client.kv.put('key', 'value')
+        self.client.kv.put('another_key', 'another value')
+        self.client.kv.put('dummy_key', '1')
+
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 3)
+
+        agent.delete('key')
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 2)
+
+    def test_delete_with_prefix(self):
+        """
+        Delete with prefix will delete the given key from a prefixed agent.
+        """
+        prefix = 'nice-prefix'
+        agent = ConsulAgent(prefix=prefix)
+        self.client.kv.put(prefix + 'key', 'value')
+        self.client.kv.put(prefix + 'another_key', 'another value')
+        self.client.kv.put('dummy_key', '1')
+
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 3)
+
+        agent.delete('key')
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 2)
+
+        agent.delete('dummy_key')
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 2)
+
+    def test_purge_no_prefix(self):
+        """
+        Purging with no prefix will remove all of the keys from Consul's Key-Value store
+        """
+        agent = ConsulAgent()
+        self.client.kv.put('key', 'value')
+        self.client.kv.put('another_key', 'another value')
+        self.client.kv.put('dummy_key', '1')
+
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 3)
+
+        agent.purge()
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertIsNone(values)
+
+    def test_purge_with_prefix(self):
+        """
+        Purging with prefix should only remove the prefixed keys with the given prefix.
+        All other values must not be touched.
+        """
+        prefix = 'nice-prefix'
+        agent = ConsulAgent(prefix=prefix)
+        self.client.kv.put(prefix + 'key', 'value')
+        self.client.kv.put(prefix + 'another_key', 'another value')
+        self.client.kv.put('dummy_key', '1')
+
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 3)
+
+        agent.purge()
+        _, values = self.client.kv.get('', recurse=True)
+        self.assertEqual(len(values), 1)
+
+    def test_cast_value(self):
+        """
+        Test the supported casted values in our Consul agent. Currently supporting integers,
+        floats, lists, dictionaries and strings
+        """
+        self.assertEqual(self.agent._cast_value(b'string'), 'string')
+        self.assertEqual(self.agent._cast_value(b'1'), 1)
+        self.assertEqual(self.agent._cast_value(b'1.3'), 1.3)
+
+        list_value = [{'test': 'value'}, {'another': 'test'}]
+        fetched_value = json.dumps(list_value).encode()
+        self.assertEqual(self.agent._cast_value(fetched_value), list_value)
+
+        dict_value = {'test': 'value', 'another': 'test'}
+        fetched_value = json.dumps(dict_value).encode()
+        self.assertEqual(self.agent._cast_value(fetched_value), dict_value)
+        self.assertIsNone(self.agent._cast_value(None))
+
+    def test_is_json_serializable(self):
+        """
+        Tests that lists and dicts are identified as json objects or not.
+        """
+        self.assertTrue(self.agent._is_json_serializable([1, 2, 3, 4, 5]))
+        self.assertTrue(self.agent._is_json_serializable({'key': 'value'}))
+        self.assertTrue(self.agent._is_json_serializable(False))
+
+        self.assertFalse(self.agent._is_json_serializable('nope'))
+        self.assertFalse(self.agent._is_json_serializable(1))
+        self.assertFalse(self.agent._is_json_serializable(1.1))
+
+    def tearDown(self):
+        self.client.kv.delete('', recurse=True)

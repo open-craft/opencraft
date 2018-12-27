@@ -7,6 +7,7 @@ from django.db import migrations
 
 import environ
 
+
 class Migration(migrations.Migration):
 
     def create_watchedforks(apps, schema_editor):
@@ -25,7 +26,7 @@ class Migration(migrations.Migration):
         # the .env file if they are still there (this will be the case when migrating instances which had PRs watcher).
         # After WATCH_FORK and WATCH_ORGANIZATION are removed from .env, we fall back to other sensible defaults
         fork_name = env("WATCH_FORK", default=getattr(settings, 'DEFAULT_FORK', None) or 'edx/edx-platform')
-        organization = env("WATCH_ORGANIZATION", default=getattr(settings, 'DEFAULT_ADMIN_ORGANIZATION', None) or 'edx')
+        organization = env("WATCH_ORGANIZATION", default='edx')
         default_fork = WatchedFork.objects.create(
             enabled=True,
             fork=fork_name,

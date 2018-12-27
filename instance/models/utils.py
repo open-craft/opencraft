@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,9 +21,13 @@ Models Utils
 """
 import functools
 import inspect
+import json
+from json import JSONDecodeError
 from weakref import WeakKeyDictionary
 
 from django.conf import settings
+
+import consul
 
 # Exceptions ##################################################################
 
@@ -410,3 +414,112 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
         # Save changes to this one field only
         resource.save(update_fields=[self.model_field_name])
         return new_state
+
+
+class ConsulAgent(object):
+    """
+    This class acts as a helper that simplifies the operations of getting, putting,
+    and deleting keys from Consul. These operations are mainly dealing with data-types,
+    managing prefixes, and reduces the call size to the main needed things with a
+    possibility to expand it for more advanced queries.
+    """
+    def __init__(self, prefix=''):
+        self._client = consul.Consul()
+        self.prefix = prefix
+
+    def get(self, key, index=False, **kwargs):
+        """
+        Get's a key value from Consul's Key-Value store after casting it to
+        the proper identified data-type.
+
+        :param key: The key its value to be fetched
+        :param index: If True then the return value will be a tuple of (index, value)
+                      where index is the current Consul index, suitable for making subsequent
+                      calls to wait for changes since this query was last run.
+        :param kwargs: Consul.kv.delete specific options
+        :return: The value or the the tuple of (index, value) of the specified key.
+        """
+        key = self.prefix + key
+        data_index, data = self._client.kv.get(key, **kwargs)
+
+        stored_value = data['Value'] if data else None
+        value = self._cast_value(stored_value)
+
+        if index:
+            return data_index, value
+
+        return value
+
+    def put(self, key, value, **kwargs):
+        """
+        Will put the given value of the key/prefixed-key in Consul's Key-Value
+        store. It'll dump lists and dictionaries first before storing them
+        :param key: The key its value to be updated.
+        :param value: The value given to the specified key.
+        :param kwargs: Consul.kv.put specific options
+        :return: Either True or False. If False is returned, then the update has not taken place.
+        """
+        consul_key = self.prefix + key
+        value = json.dumps(value) if self._is_json_serializable(value) else str(value)
+
+        return self._client.kv.put(consul_key, value, **kwargs)
+
+    def delete(self, key, **kwargs):
+        """
+        Will delete the given key/prefixed-key value from Consul's Key-Value store.
+
+        :param key: The key we want to delete.
+        :param kwargs: Consul.kv.delete specific options
+        :return: True if the operation succeeded, False otherwise.
+        """
+        key = self.prefix + key
+        self._client.kv.delete(key, **kwargs)
+
+    def purge(self):
+        """
+        Will simply removes all keys/prefixed-keys from Key-Value store.
+        :return: True if the operation succeeded, False otherwise.
+        """
+        return self._client.kv.delete(self.prefix, recurse=True)
+
+    @staticmethod
+    def _cast_value(value):
+        """
+        Will decode the value to make it a string object, then tries to cast it
+        the proper data-type as we're expecting.
+        Currently supporting the following data-types:
+            * int
+            * float
+            * list
+            * dict
+            * string
+        :param value: The fetched value from Consul to be checked.
+        :return: The casted value if the data-type identified, an str object of
+                 the value if not
+        """
+        value = value.decode() if value else None
+
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            pass
+
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            pass
+
+        try:
+            return json.loads(value)
+        except (JSONDecodeError, TypeError):
+            pass
+
+        return value
+
+    @staticmethod
+    def _is_json_serializable(obj):
+        """
+        :param obj: Object to check
+        :return: Boolean True if object is list or dictionary, False otherwise.
+        """
+        return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)

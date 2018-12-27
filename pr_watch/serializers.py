@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -49,5 +49,6 @@ class WatchedPullRequestSerializer(serializers.ModelSerializer):
         Add additional fields/data to the output
         """
         output = super().to_representation(obj)
-        output['instance_id'] = obj.instance.ref.id  # The API must only expose InstanceReference IDs, not Instance ID
+        # The API must only expose InstanceReference IDs, not Instance ID
+        output['instance_id'] = obj.instance.ref.id if obj.instance else None
         return output

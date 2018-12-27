@@ -44,7 +44,7 @@ After 1 to 2 hours, it will finish and then you need to **activate** the new one
 and **deactivate** the old one, to make the load balancer update its configuration
 so that the domain name of the instance directs to the new one.
 Normally we want just 1 active appserver per instance, but two or more active at once
-may be required in some high-resource-utilization cases
+may be required in some high-resource-utilization cases.
 Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
@@ -86,7 +86,7 @@ environment:
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
 Once you have these tools installed, you will need to download the [Ansible
-playbooks](https://github.com/openc-craft/ansible-playbooks) used to build the
+playbooks](https://github.com/open-craft/ansible-playbooks) used to build the
 Vagrant instance.  If you haven't checked it out yet, you can clone it into the
 `deploy/` subdirectory using this command at the root of the repository:
 
@@ -286,7 +286,7 @@ flavor:
 ### OpenStack Security Groups
 
 Every VM used to host Open edX will automatically be added to an OpenStack
-network security group, which is provides a firewall that limits what
+network security group, which provides a firewall that limits what
 ports/services on the VM are exposed to the Internet. The security group will
 automatically be created and managed by OpenCraft IM.
 
@@ -382,9 +382,7 @@ Required settings:
 
 * `GITHUB_ACCESS_TOKEN`: Your GitHub access token (required). Get it from
   https://github.com/settings/tokens, and enable the `read:org` and
-  `read:user` scopes on the token. You will neet to set up a GitHub organization
-  and add a team called 'Sandbox'. The PRs by members of this team can be
-  configured to [automatically launch sandbox instances](#provisioning-sandboxes).
+  `read:user` scopes on the token.
 
 
 ### New Relic settings
@@ -425,17 +423,15 @@ Required settings:
   runs as.
 * `OPENSTACK_SANDBOX_SSH_USERNAME`: The user to run ansible playbooks as when
   provisioning the sandbox (default: `ubuntu`)
-* `INSTANCE_EPHEMERAL_DATABASES`: By default, instances use local mysql and mongo
-  databases. Set this to False to use external databases instead (default: True)
 * `DEFAULT_INSTANCE_MYSQL_URL`: The external MySQL database server to be used
-  by instances configured not to use ephemeral databases. The database server
+  by Open edX instances created via the instance manager. The database server
   will be represented as an instance of the `MySQLServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MySQL database server in testing
   and development environments.  It is mandatory to set this setting to run the
   initial migrations.
 * `DEFAULT_INSTANCE_MONGO_URL`: The external MongoDB database server to be used
-  by instances configured not to use ephemeral databases. The database server
+  by Open edX instances created via the instance manager. The database server
   will be represented as an instance of the `MongoDBServer` model in the database.
   It is possible to create multiple instances of that model. This setting
   exists mainly to make it easier to add a MongoDB database server in testing
@@ -527,9 +523,12 @@ superuser by running:
 Once created, you will be able to login with the username and password you set
 up.
 
+Superusers can manage all instances and use all APIs.
+
 ### Instance Manager users
 
 Instance manager users can manage instances and use the API, but are not permitted in the Admin area.
+They are limited to manage instances of their own organization.
 
 To create an instance manager user:
 
@@ -538,10 +537,12 @@ To create an instance manager user:
     In [1]: from django.contrib.auth.models import User, Permission
     In [2]: from django.contrib.contenttypes.models import ContentType
     In [3]: content_type = ContentType.objects.get_for_model(InstanceReference)
-    In [4]: permission = Permission.objects.get(content_type=content_type, codename='manage_all')
+    In [4]: permission = Permission.objects.get(content_type=content_type, codename='manage_own')
     In [5]: user = User.objects.create(username='instance_manager', password='password')
     In [6]: user.user_permissions.add(permission)
     In [7]: user.save()
+
+And set `Organization` and `UserProfile` to the right values.
 
 ### Staff users
 
@@ -753,7 +754,6 @@ instance = OpenEdXInstance.objects.create(
     configuration_version='named-release/dogwood',
     configuration_source_repo_url='https://github.com/edx/configuration.git',
     configuration_extra_settings='',
-    use_ephemeral_databases=False,
 )
 
 # Optionally, set custom ansible variables/overrides:
@@ -861,21 +861,13 @@ before the redeployment command. For example:
 Databases
 ---------
 
-By default, instances will use local, ephemeral databases that are destroyed
-when app servers belonging to an instance are terminated. If you want to use
-external databases that can be used by any app server belonging to an instance,
-follow these steps:
+You must configure external databases that can be used by any app server belonging
+to an instance, following these steps:
 
-1. Change the `INSTANCE_EPHEMERAL_DATABASES` setting to False. Note that this is
-   only necessary if you want instances to use persistent databases by default.
-   If you only want a specific instance to use persistent databases, simply set
-   the value of the `use_ephemeral_databases` field to `True` and save the instance
-   (cf. below).
-
-2. Set up external mysql and mongo databases, making a note of hostname
+1. Set up external MySQL and MongoDB databases, making a note of hostname
    and authentication information (username, password) for each one of them.
 
-3. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
+2. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
    to URLs that point to the MySQL and MongoDB servers created in the previous step:
 
    ```
@@ -996,15 +988,3 @@ Useful references:
 * [Adding E-Commerce to the Open edX Platform](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html)
 * [edX Discovery Service](http://edx-discovery.readthedocs.io/)
 * [Setup Discovery Sandbox](https://openedx.atlassian.net/wiki/spaces/EDUCATOR/pages/162488548/Setup+Discovery+Sandbox)
-
-
-### Controlling persistence settings from PRs
-
-When provisioning an instance from a GitHub pull request, you can override the
-default behavior (as specified by `INSTANCE_EPHEMERAL_DATABASES`) by including
-`(ephemeral databases)` or `(persistent databases)` on the same line
-as the instance domain in the pull request description. For example:
-
-    This pull request adds reticulating splines to the LMS.
-
-    Test it here: pr99.sandbox.example.com (ephemeral databases)

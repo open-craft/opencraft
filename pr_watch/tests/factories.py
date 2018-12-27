@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,6 +27,9 @@ from unittest.mock import patch
 import factory
 
 from factory.django import DjangoModelFactory
+
+from userprofile.factories import make_user_and_organization
+
 from pr_watch import github
 from pr_watch.models import WatchedFork, WatchedPullRequest
 
@@ -57,19 +60,24 @@ class WatchedForkFactory(DjangoModelFactory):
         model = WatchedFork
 
     enabled = True
-    organization = 'test-org'
     fork = 'fork/repo'
 
 
 # Functions ###################################################################
 
 
-def make_watched_pr_and_instance(**kwargs):
+def make_watched_pr_and_instance(organization=None, **kwargs):
     """
     Create a WatchedPullRequest and associated OpenEdXInstance
+    It associates them to the given organization if given, otherwise creates a new one (plus a user).
     """
     pr = PRFactory(**kwargs)
-    watched_fork = WatchedForkFactory(fork=pr.fork_name)
+
+    if not organization:
+        # creates user, user profile, and organization needed to be referenced
+        _, organization = make_user_and_organization()
+
+    watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
 
     watched_fork.save()
     with patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40)):

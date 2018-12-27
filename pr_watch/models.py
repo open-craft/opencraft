@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,6 +31,9 @@ from instance.ansible import yaml_merge
 from instance.logging import ModelLoggerAdapter
 from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
+
+from userprofile.models import UserProfile, Organization
+
 from pr_watch import github
 from pr_watch.github import fork_name2tuple
 
@@ -53,11 +56,15 @@ class WatchedFork(models.Model):
     # uses internal id key
     enabled = models.BooleanField(default=True)
     # This is the old .env variable WATCH_ORGANIZATION
-    organization = models.CharField(
-        max_length=200,
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
         db_index=True,
-        help_text=("Watched GitHub organization. E.g.: open-craft. PRs against the watched fork "
-                   "made by members of this organization will trigger a sandbox build"),
+        null=True,
+        help_text=(
+            'Organization to watch. PRs against the watched fork made by members '
+            'of this organization will trigger a sandbox build.'
+        ),
     )
     # This is the old .env variable WATCH_FORK
     fork = models.CharField(
@@ -297,7 +304,10 @@ class WatchedPullRequest(models.Model):
             self.watched_fork.configuration_extra_settings,
             pr.extra_settings
         )
-        instance.use_ephemeral_databases = pr.use_ephemeral_databases(instance.domain)
+        if not instance.ref.creator or not instance.ref.owner:
+            user = UserProfile.objects.get(github_username=pr.username)
+            instance.ref.creator = user
+            instance.ref.owner = user.organization
         # Configuration repo and version and edx release follow this precedence:
         # 1) PR settings. 2) WatchedFork settings. 3) instance model defaults
         instance.configuration_source_repo_url = pr.get_extra_setting(

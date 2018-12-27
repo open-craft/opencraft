@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -221,6 +221,7 @@ class MySQLInstanceMixin(models.Model):
             _create_user(cursor, self.admin_user, self._get_mysql_pass(self.admin_user))
             _grant_privileges(cursor, "*", self.admin_user, "CREATE USER")
 
+            cursor.close()
             self.mysql_provisioned = True
             self.save()
 

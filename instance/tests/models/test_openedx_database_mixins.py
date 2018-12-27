@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -205,7 +205,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Provision mysql database
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -216,8 +216,7 @@ class MySQLInstanceTestCase(TestCase):
         sub_domain = 'really.really.really.really.long.subdomain'
         base_domain = 'this-is-a-really-unusual-domain-แปลกมาก.com'
         internal_lms_domain = '{}.{}'.format(sub_domain, base_domain)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False,
-                                               internal_lms_domain=internal_lms_domain)
+        self.instance = OpenEdXInstanceFactory(internal_lms_domain=internal_lms_domain)
         self.instance.provision_mysql()
         self.check_mysql()
 
@@ -225,7 +224,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Only create the database once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mysql()
         self.assertIs(self.instance.mysql_provisioned, True)
 
@@ -240,7 +239,7 @@ class MySQLInstanceTestCase(TestCase):
         """
         Don't provision a mysql database if instance has no MySQL server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mysql_server = None
         self.instance.save()
         self.instance.provision_mysql()
@@ -257,7 +256,7 @@ class MySQLInstanceTestCase(TestCase):
         # Delete MySQLServer object created during the migrations to allow the settings override to
         # take effect.
         MySQLServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         expected_host = "mysql.opencraft.com"
         expected_port = MYSQL_SERVER_DEFAULT_PORT
 
@@ -333,7 +332,7 @@ class MySQLInstanceTestCase(TestCase):
                         "HOST": "{{ ECOMMERCE_DATABASE_HOST }}",
                         "PORT": expected_port,
                         "ATOMIC_REQUESTS": True,
-                        "CONN_MAX_AGE": 60
+                        "CONN_MAX_AGE": 0
                     }
                 }]
             },
@@ -345,7 +344,7 @@ class MySQLInstanceTestCase(TestCase):
                 ["DEFAULT_DB_NAME", "DATABASES"],
                 [{"name": "programs", "user": "program", "additional_settings": {
                     "ATOMIC_REQUESTS": True,
-                    "CONN_MAX_AGE": 60,
+                    "CONN_MAX_AGE": 0,
                 }}]
             ),
             "INSIGHTS_": make_nested_group_info(
@@ -368,20 +367,13 @@ class MySQLInstanceTestCase(TestCase):
         """
         Don't add mysql ansible vars if instance has no MySQL server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mysql_server = None
         self.instance.save()
         self.check_mysql_vars_not_set(self.instance)
 
-    @override_settings(DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@mysql.opencraft.com')
-    def test_ansible_settings_mysql_ephemeral(self):
-        """
-        Don't add mysql ansible vars for ephemeral databases
-        """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        self.check_mysql_vars_not_set(self.instance)
 
-
+@ddt.ddt
 class MongoDBInstanceTestCase(TestCase):
     """
     Test cases for MongoDBInstanceMixin and OpenEdXDatabaseMixin
@@ -419,11 +411,32 @@ class MongoDBInstanceTestCase(TestCase):
                     'FORUM_MONGO_DATABASE'):
             self.assertNotIn(var, appserver.configuration_settings)
 
+    def check_mongo_vars_set(self, appserver, expected_hosts, expected_replica_set=None):
+        """
+        Check that the given OpenEdXAppServer is using the expected mongo settings.
+        """
+        ansible_vars = appserver.configuration_settings
+        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
+        # Use regex match, because sometimes the mongo hosts are unordered
+        self.assertRegex(ansible_vars, r"EDXAPP_MONGO_HOSTS:\s*{0}\n".format(expected_hosts))
+        if expected_replica_set:
+            self.assertIn('EDXAPP_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
+        else:
+            self.assertNotIn('EDXAPP_MONGO_REPLICA_SET', ansible_vars)
+
+        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
+        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
+        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
+        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+
     def test_provision_mongo(self):
         """
         Provision mongo databases
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mongo()
         self.check_mongo()
 
@@ -431,7 +444,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Only create the databases once
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.provision_mongo()
         self.assertIs(self.instance.mongo_provisioned, True)
 
@@ -447,7 +460,7 @@ class MongoDBInstanceTestCase(TestCase):
         Don't provision a mongo database if instance has no MongoDB server
         """
         mongo = pymongo.MongoClient(settings.DEFAULT_INSTANCE_MONGO_URL)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mongodb_server = None
         self.instance.save()
         self.instance.provision_mongo()
@@ -463,18 +476,9 @@ class MongoDBInstanceTestCase(TestCase):
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         appserver = make_test_appserver(self.instance)
-        ansible_vars = appserver.configuration_settings
-        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_HOSTS: mongo.opencraft.com', ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
-        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+        self.check_mongo_vars_set(appserver, expected_hosts='mongo.opencraft.com')
 
     @override_settings(
         DEFAULT_INSTANCE_MONGO_URL=None,
@@ -484,45 +488,63 @@ class MongoDBInstanceTestCase(TestCase):
         DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
         DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
     )
-    def test_ansible_settings_mongo_replica_set(self):
+    @ddt.data(
+        ('open-release/ficus', 'open-release/ficus'),
+        ('open-release/ficus', 'opencraft-release/ficus'),
+        ('open-release/ginkgo', 'open-release/ginkgo'),
+    )
+    @ddt.unpack
+    def test_ansible_settings_no_replica_set(self, openedx_release, configuration_version):
         """
-        Add mongo ansible vars if instance has a MongoDB replica set
+        Prior to Hawthorn, edx configuration does not support MongoDB replica sets,
+        and the mongo hosts must be a single host, provided as a list of strings.
         """
         # Delete MongoDBServer object created during the migrations to allow the settings override
         # to take effect.
         MongoDBServer.objects.all().delete()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory(openedx_release=openedx_release,
+                                               configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
-        ansible_vars = appserver.configuration_settings
-        self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertRegex(
-            ansible_vars,
-            r'EDXAPP_MONGO_HOSTS: test\d?.opencraft.hosting,test\d?.opencraft.hosting,test\d?.opencraft.hosting'
-        )
-        self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
-        self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
-        self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
-        self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
-        self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
+        self.check_mongo_vars_set(appserver, expected_hosts="\n- test.opencraft.hosting")
+
+    @override_settings(
+        DEFAULT_INSTANCE_MONGO_URL=None,
+        DEFAULT_MONGO_REPLICA_SET_NAME="test_name",
+        DEFAULT_MONGO_REPLICA_SET_USER="test",
+        DEFAULT_MONGO_REPLICA_SET_PASSWORD="test",
+        DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
+        DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
+    )
+    @ddt.data(
+        ('open-release/ginkgo', 'opencraft-release/ginkgo'),
+        (settings.OPENEDX_RELEASE_STABLE_REF, settings.STABLE_CONFIGURATION_VERSION),
+        (settings.DEFAULT_OPENEDX_RELEASE, settings.DEFAULT_CONFIGURATION_VERSION),
+    )
+    @ddt.unpack
+    def test_ansible_settings_use_replica_set(self, openedx_release, configuration_version):
+        """
+        Add mongo ansible vars if instance has a MongoDB replica set
+        Also, the mongo hosts are provied as a comma-separated string.
+        """
+        # Delete MongoDBServer object created during the migrations to allow the settings override
+        # to take effect.
+        MongoDBServer.objects.all().delete()
+        self.instance = OpenEdXInstanceFactory(openedx_release=openedx_release,
+                                               configuration_version=configuration_version)
+        appserver = make_test_appserver(self.instance)
+        self.check_mongo_vars_set(appserver,
+                                  expected_hosts=r'test\d?.opencraft.hosting,'
+                                                 r'test\d?.opencraft.hosting,'
+                                                 r'test\d?.opencraft.hosting',
+                                  expected_replica_set='test_name')
 
     def test_ansible_settings_no_mongo_server(self):
         """
         Don't add mongo ansible vars if instance has no MongoDB server
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.instance.mongodb_server = None
         self.instance.save()
-        appserver = make_test_appserver(self.instance)
-        self.check_mongo_vars_not_set(appserver)
-
-    @override_settings(DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@mongo.opencraft.com')
-    def test_ansible_settings_mongo_ephemeral(self):
-        """
-        Don't add mysql ansible vars for ephemeral databases
-        """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_not_set(appserver)
 
@@ -538,7 +560,7 @@ class MongoDBInstanceTestCase(TestCase):
         """
         Main database url should be extracted from primary replica set MongoDBServer
         """
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         self.assertEqual(
             self.instance._get_main_database_url(),
             "mongodb://test:test@test.opencraft.hosting"
@@ -552,7 +574,7 @@ class RabbitMQInstanceTestCase(TestCase):
     """
     def setUp(self):
         super().setUp()
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
 
     @responses.activate
     @ddt.data(
@@ -574,7 +596,7 @@ class RabbitMQInstanceTestCase(TestCase):
         # Mock the URL with a uniquely identifying body so that we can verify that the
         # correct URL is formed and called.
         responses.add(method, url, json=expected_body)
-        self.instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        self.instance = OpenEdXInstanceFactory()
         response = self.instance._rabbitmq_request(method.lower(), *url_parts)
 
         self.assertDictEqual(

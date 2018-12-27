@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -225,7 +225,7 @@ class Command(BaseCommand):
                 self.success_tag,
                 self.failure_tag,
             ]
-        )
+        ).order_by('id')
 
     def _failed_instances(self):
         """
@@ -295,7 +295,7 @@ class Command(BaseCommand):
         # Loop termination is handled at the end.
         while True:
             # 1. Log instances that failed or succeeded.
-            for instance in self.ongoing_tag.openedxinstance_set.iterator():
+            for instance in self.ongoing_tag.openedxinstance_set.order_by('id').iterator():
                 instance_tags = instance.tags.all()
                 if self.success_tag in instance_tags:
                     LOG.info("SUCCESS: %s [%s]", instance, instance.id)

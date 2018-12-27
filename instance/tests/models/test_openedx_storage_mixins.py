@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,14 +21,15 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
-from unittest.mock import patch, call
+from unittest.mock import call, patch
 
 import boto
+import ddt
 import yaml
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.mixins.storage import get_s3_cors_config, get_master_iam_connection, StorageContainer
+from instance.models.mixins.storage import StorageContainer, get_master_iam_connection, get_s3_cors_config
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -62,6 +63,13 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(parsed_vars['AWS_S3_LOGS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['AWS_S3_LOGS_SECRET_KEY'], 'test-s3-secret-access-key')
 
+        # Profile image backend
+        self.assertEqual(parsed_vars['EDXAPP_PROFILE_IMAGE_BACKEND']['class'], 'storages.backends.s3boto.S3BotoStorage')
+
+        opts = parsed_vars['EDXAPP_PROFILE_IMAGE_BACKEND']['options']
+        self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
+        self.assertRegex(opts['location'], r'instance[\w]+_test_example_com/profile-images')
+
     def test_ansible_s3_settings(self):
         """
         Test that get_storage_settings() includes S3 vars, and that they get passed on to the
@@ -72,43 +80,32 @@ class OpenEdXStorageMixinTestCase(TestCase):
             s3_access_key='test-s3-access-key',
             s3_secret_access_key='test-s3-secret-access-key',
             s3_bucket_name='test-s3-bucket-name',
-            use_ephemeral_databases=False,
         )
         self.check_s3_vars(instance.get_storage_settings())
         appserver = make_test_appserver(instance)
         self.check_s3_vars(appserver.configuration_settings)
 
-    def test_ansible_s3_settings_ephemeral(self):
-        """
-        Test that get_storage_settings() does not include S3 vars when in ephemeral mode
-        """
-        instance = OpenEdXInstanceFactory(
-            storage_type='s3',
-            s3_access_key='test-s3-access-key',
-            s3_secret_access_key='test-s3-secret-access-key',
-            s3_bucket_name='test-s3-bucket-name',
-            use_ephemeral_databases=True,
-        )
-        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
-        self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
 
-    def test_import_export_bucket_setting_ephemeral(self):
-        """
-        Test that get_storage_settings() sets EDXAPP_IMPORT_EXPORT_BUCKET to an empty string
-        when in ephemeral mode
-        """
-        instance = OpenEdXInstanceFactory(
-            use_ephemeral_databases=True,
-        )
-        ephemeral_settings = "EDXAPP_IMPORT_EXPORT_BUCKET: ''\n"
-        self.assertEqual(instance.get_storage_settings(), ephemeral_settings)
+def get_s3_settings_profile_image(instance):
+    """
+    Return expected s3 settings related to profile image backend
+    """
+    s3_settings = (
+        '\n  class: storages.backends.s3boto.S3BotoStorage'
+        '\n  options:'
+        '\n    headers:'
+        '\n      Cache-Control: max-age-{{{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}}}'
+        '\n    location: {instance.swift_container_name}/profile-images'
+    ).format(instance=instance)
+
+    return s3_settings
 
 
 def get_s3_settings(instance):
     """
     Return expected s3 settings
     """
-    return {
+    s3_settings = {
         "COMMON_ENABLE_AWS_INTEGRATION": 'true',
         "AWS_ACCESS_KEY_ID": instance.s3_access_key,
         "AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
@@ -145,7 +142,16 @@ def get_s3_settings(instance):
         "AWS_S3_LOGS": 'true',
         "AWS_S3_LOGS_ACCESS_KEY_ID": instance.s3_access_key,
         "AWS_S3_LOGS_SECRET_KEY": instance.s3_secret_access_key,
+
+        "EDXAPP_PROFILE_IMAGE_BACKEND": get_s3_settings_profile_image(instance),
     }
+
+    if instance.s3_region:
+        s3_settings.update({
+            "aws_region": instance.s3_region,
+        })
+
+    return s3_settings
 
 
 def get_swift_settings(instance):
@@ -178,6 +184,7 @@ def get_swift_settings(instance):
 
 
 # pylint: disable=too-many-public-methods
+@ddt.ddt
 class SwiftContainerInstanceTestCase(TestCase):
     """
     Tests for Swift container provisioning.
@@ -215,7 +222,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Test provisioning Swift containers, and that they are provisioned only once.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
@@ -230,7 +237,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Test deprovisioning Swift containers.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_swift()
         self.check_swift(instance, create_swift_container)
@@ -243,7 +250,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Verify disabling Swift provisioning works.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.provision_swift()
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(create_swift_container.called)
@@ -272,7 +279,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Verify Swift Ansible configuration when Swift is enabled.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver)
 
@@ -281,41 +288,51 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver, expected=False)
 
-    def test_ansible_settings_swift_ephemeral(self):
+    @ddt.data(
+        '',
+        'eu-west-1',
+    )
+    def test_ansible_settings_s3(self, s3_region):
         """
-        Verify Swift Ansible configuration is not included when using ephemeral databases.
+        Verify S3 Ansible configuration when S3 is enabled.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
-        appserver = make_test_appserver(instance)
-        self.check_ansible_settings(appserver, expected=False)
-
-    def test_ansible_settings_s3(self):
-        """
-        Verify Swift Ansible configuration when Swift is enabled.
-        """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
+        instance.s3_region = s3_region
         appserver = make_test_appserver(instance, s3=True)
         self.check_ansible_settings(appserver, s3=True)
 
-    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE, AWS_ACCESS_KEY='test',
-                       AWS_SECRET_ACCESS_KEY_ID='test')
-    def test_get_s3_connection(self):
+    @override_settings(
+        AWS_ACCESS_KEY='test',
+        AWS_SECRET_ACCESS_KEY_ID='test',
+        AWS_S3_DEFAULT_HOSTNAME='s3.test.host',
+        AWS_S3_CUSTOM_REGION_HOSTNAME='s3.{region}.test.host',
+        INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE,
+    )
+    @ddt.data(
+        ('', 's3.test.host'),
+        ('region', 's3.region.test.host'),
+        ('eu-central-1', 's3.eu-central-1.test.host'),
+    )
+    @ddt.unpack
+    def test_get_s3_connection(self, s3_region, expected_hostname):
         """
         Test get_s3 connection returns right instance
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
+        instance.s3_region = s3_region
         s3_connection = instance.get_s3_connection()
         self.assertIsInstance(s3_connection, boto.s3.connection.S3Connection)
+        self.assertEqual(s3_connection.host, expected_hostname)
 
     def test_get_s3_policy(self):
         """
         Verify S3 policy is set for correctly
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         policies = [
             (
                 '"Action": [\n        "s3:ListBucket",\n        "s3:CreateBucket"'
@@ -331,17 +348,22 @@ class SwiftContainerInstanceTestCase(TestCase):
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     @patch('boto.s3.bucket.Bucket.set_cors')
-    def test_provision_s3(self, set_cors, create_bucket):  # pylint: disable=no-self-use
+    def test_provision_s3(self, set_cors, create_bucket):
         """
         Test s3 provisioning succeeds
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.s3_region = 'test'
         instance.provision_s3()
-        create_bucket.assert_called_once_with(instance.s3_bucket_name)
+        create_bucket.assert_called_once_with(instance.s3_bucket_name, location=instance.s3_region)
+        self.assertEqual(
+            instance.s3_hostname,
+            settings.AWS_S3_CUSTOM_REGION_HOSTNAME.format(region=instance.s3_region)
+        )
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     def test__create_bucket_fails(self, create_bucket):
@@ -349,7 +371,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         Test s3 provisioning fails on bucket creation, and retries up to 4 times
         """
         create_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
@@ -358,13 +380,12 @@ class SwiftContainerInstanceTestCase(TestCase):
             with self.assertLogs('instance.models.instance', level='INFO') as cm:
                 instance._create_bucket(attempts=attempts)
         base_log_text = (
-            'INFO:instance.models.instance:instance=%s (Test Instance 1) | Retrying bucket creation.'
-            ' IAM keys are not propagated yet, attempt {} of %s.' %
-            (instance.ref.pk, attempts)
+            'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation.'
+            ' IAM keys are not propagated yet, attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, attempts)
         )
         self.assertEqual(
             cm.output,
-            [base_log_text.format(i) for i in range(1, attempts + 1)]
+            [base_log_text % i for i in range(1, attempts + 1)]
         )
 
     @patch('boto.connect_iam')
@@ -373,16 +394,20 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Test s3 deprovisioning succeeds
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.s3_region = 'test'
         instance.provision_s3()
         instance.deprovision_s3()
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
         self.assertEqual(instance.s3_secret_access_key, "")
+        # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
+        self.assertEqual(instance.s3_region, "test")
 
     @patch('boto.connect_iam')
     @patch('boto.s3.connection.S3Connection')
@@ -392,7 +417,7 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         iam_connection = connect_iam()
         iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
@@ -411,44 +436,58 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         s3_connection = s3_connection()
         s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.s3_region = 'test'
         with self.assertLogs("instance.models.instance"):
             instance.deprovision_s3()
+        instance.refresh_from_db()
         # Since it failed deleting the bucket, s3_bucket_name should not be empty
         self.assertEqual(instance.s3_bucket_name, "test")
+        # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
+        self.assertEqual(instance.s3_region, "test")
         self.assertEqual(instance.s3_secret_access_key, "")
         self.assertEqual(instance.s3_access_key, "")
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     @patch('boto.s3.bucket.Bucket.set_cors')
+    @override_settings(AWS_S3_DEFAULT_REGION='test')
     def test_provision_s3_swift(self, set_cors, create_bucket):
         """
         Test s3 provisioning does nothing when SWIFT is enabled
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.SWIFT_STORAGE
         instance.provision_s3()
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_bucket_name, '')
         self.assertEqual(instance.s3_access_key, '')
         self.assertEqual(instance.s3_secret_access_key, '')
+        self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)
 
     @patch('boto.s3.connection.S3Connection.create_bucket')
     @patch('boto.s3.bucket.Bucket.set_cors')
+    @override_settings(AWS_S3_DEFAULT_REGION='')
     def test_provision_s3_unconfigured(self, set_cors, create_bucket):
         """
         Test s3 provisioning works with default bucket and IAM
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.provision_s3()
+        create_bucket.assert_called_once_with(
+            instance.s3_bucket_name,
+            location=settings.AWS_S3_DEFAULT_REGION
+        )
+        instance.refresh_from_db()
         self.assertIsNotNone(instance.s3_bucket_name)
         self.assertIsNotNone(instance.s3_access_key)
         self.assertIsNotNone(instance.s3_secret_access_key)
-        create_bucket.assert_called_once_with(instance.s3_bucket_name)
+        self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)
+        self.assertEqual(instance.s3_hostname, settings.AWS_S3_DEFAULT_HOSTNAME)
 
     @patch('boto.connect_iam')
     @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
@@ -467,9 +506,10 @@ class SwiftContainerInstanceTestCase(TestCase):
             }
         }
         connect_iam().create_access_key.return_value = access_keys
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
         instance.create_iam_user()
+        instance.refresh_from_db()
         self.assertEqual(instance.s3_access_key, 'test')
         self.assertEqual(instance.s3_secret_access_key, 'test')
 
@@ -495,12 +535,19 @@ class SwiftContainerInstanceTestCase(TestCase):
         """
         Test bucket_name is correct
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         self.assertRegex(instance.bucket_name, r'ocim-instance[A-Za-z0-9]*-test-example-com')
 
     def test_iam_username(self):
         """
         Test bucket_name is correct
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=False)
+        instance = OpenEdXInstanceFactory()
         self.assertRegex(instance.iam_username, r'ocim-instance[A-Za-z0-9]*_test_example_com')
+
+    def test_s3_region_default_value(self):
+        """
+        Test the default value for the S3 region
+        """
+        instance = OpenEdXInstanceFactory()
+        self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)

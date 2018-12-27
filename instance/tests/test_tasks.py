@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,9 +26,13 @@ from datetime import timedelta
 from unittest.mock import call, patch, PropertyMock
 
 import ddt
+import freezegun
+from django.conf import settings
+from django.test import override_settings
 from django.utils import timezone
 
 from instance import tasks
+from instance.models.log_entry import LogEntry
 from instance.tests.base import TestCase
 from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
@@ -441,3 +445,47 @@ class ReconfigureDirtyLoadBalancersTestCase(TestCase):
 
         tasks.reconfigure_dirty_load_balancers()
         self.assertEqual(mock_reconfigure.call_count, 3)
+
+
+class DeleteOldLogsTestCase(TestCase):
+    """
+    Test cases for periodic task that deletes old logs.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.now = timezone.datetime(2018, 8, 1, 7, 20, 12, tzinfo=timezone.utc)
+        self.before_cutoff = self.now - timezone.timedelta(days=settings.LOG_DELETION_DAYS + 1)
+        self.log_deletion = self.now + timezone.timedelta(days=1)
+
+        # Some Django start-up tasks produce logs which interfere with our tests.
+        LogEntry.objects.all().delete()
+
+    @override_settings(LOG_DELETION_DAYS=30)
+    def test_delete_old_logs(self):
+        """
+        Only logs created before a cutoff date are deleted.
+        """
+        with freezegun.freeze_time(self.before_cutoff):
+            instance = OpenEdXInstanceFactory()
+            for i in range(1, 4):
+                instance.logger.info('old log {}'.format(i))
+        with freezegun.freeze_time(self.now):
+            instance.logger.info('new log')
+        with freezegun.freeze_time(self.log_deletion):
+            total_logs = LogEntry.objects.count()
+            total_logs_deleted = LogEntry.objects.filter(created__lte=self.before_cutoff).count()
+            tasks.delete_old_logs()
+
+        remaining_logs = LogEntry.objects.order_by('created')
+        # 1 extra log was generated to write the deletion query.
+        self.assertEqual(remaining_logs.count(), total_logs - total_logs_deleted + 1)
+        # The last created log is indeed the deletion query.
+        self.assertEqual(
+            remaining_logs.last().text,
+            "instance.tasks            "
+            "| DELETE FROM instance_logentry WHERE instance_logentry.created < '2018-07-03T07:20:12+00:00'::timestamptz"
+        )
+        # Only the new log remains.
+        self.assertFalse(remaining_logs.filter(text__contains='old log').exists())
+        self.assertTrue(remaining_logs.filter(text__contains='new log').exists())

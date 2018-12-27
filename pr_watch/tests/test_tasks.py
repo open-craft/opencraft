@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,6 +29,9 @@ import yaml
 from django.test import TestCase, override_settings
 
 from instance.models.openedx_instance import OpenEdXInstance
+
+from userprofile.factories import make_user_and_organization
+
 from pr_watch import tasks
 from pr_watch.github import RateLimitExceeded
 from pr_watch.models import WatchedPullRequest
@@ -45,9 +48,8 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.spawn_appserver')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
-    @patch('pr_watch.tasks.get_username_list_from_team')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
-    def test_watch_pr_new(self, mock_get_username_list, mock_get_pr_list_from_usernames,
+    def test_watch_pr_new(self, mock_get_pr_list_from_usernames,
                           mock_spawn_appserver, mock_get_commit_id_from_ref):
         """
         New PR created on the watched repo
@@ -57,8 +59,8 @@ class TasksTestCase(TestCase):
             edx_ansible_source_repo: https://github.com/open-craft/configuration
             configuration_version: named-release/elder
         """)
-        mock_get_username_list.return_value = ['itsjeyd']
-        WatchedForkFactory(fork='source/repo')
+        _, organization = make_user_and_organization(github_username='bradenmacdonald')
+        WatchedForkFactory(organization=organization, fork='source/repo')
         pr = PRFactory(
             number=234,
             source_fork_name='fork/repo',
@@ -107,11 +109,9 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.spawn_appserver')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
-    @patch('pr_watch.tasks.get_username_list_from_team')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_pr_rate_limit_exceeded(
             self,
-            mock_get_username_list,
             mock_get_pr_list_from_usernames,
             mock_spawn_appserver,
             mock_get_commit_id_from_ref
@@ -124,7 +124,6 @@ class TasksTestCase(TestCase):
             edx_ansible_source_repo: https://github.com/open-craft/configuration
             configuration_version: named-release/elder
         """)
-        mock_get_username_list.return_value = ['itsjeyd']
         pr = PRFactory(
             number=234,
             source_fork_name='fork/repo',
@@ -147,9 +146,8 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.spawn_appserver')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
-    @patch('pr_watch.tasks.get_username_list_from_team')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
-    def test_watch_several_forks(self, mock_get_username_list, mock_get_pr_list_from_usernames,
+    def test_watch_several_forks(self, mock_get_pr_list_from_usernames,
                                  mock_spawn_appserver, mock_get_commit_id_from_ref):
         """
         Create 2 watched forks with different settings, do a PR on each and check that both are seen and set up.
@@ -166,8 +164,9 @@ class TasksTestCase(TestCase):
                 edx_ansible_source_repo: https://github.com/open-craft/configuration
                 configuration_version: named-release/elder
             """.format(number))
+            _, organization = make_user_and_organization(github_username='bradenmacdonald')
             wf = WatchedForkFactory(
-                organization='test-organization',
+                organization=organization,
                 fork='source/repo{}'.format(number),
                 # These 2 values will be replaced by the ones from the PR because the PR ones have more precedence
                 configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
@@ -223,7 +222,6 @@ class TasksTestCase(TestCase):
                 raise NotImplementedError()
 
         # Substitute GitHub API calls by our results
-        mock_get_username_list.return_value = ['itsjeyd']
         mock_get_pr_list_from_usernames.side_effect = fake_pr_list_from_usernames
         # Commit ID is the same in both PRs
         mock_get_commit_id_from_ref.return_value = '7' * 40
@@ -279,9 +277,8 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.spawn_appserver')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
-    @patch('pr_watch.tasks.get_username_list_from_team')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
-    def test_disabled_watchedfork(self, mock_get_username_list, mock_get_pr_list_from_usernames,
+    def test_disabled_watchedfork(self, mock_get_pr_list_from_usernames,
                                   mock_spawn_appserver, mock_get_commit_id_from_ref):
         """
         Creates WatchedFork with the 'enabled' field set to false and checks that its PRs are not watched.
@@ -292,9 +289,9 @@ class TasksTestCase(TestCase):
             edx_ansible_source_repo: https://github.com/open-craft/configuration
             configuration_version: named-release/elder
         """)
-        mock_get_username_list.return_value = ['itsjeyd']
+        _, organization = make_user_and_organization()
         wf = WatchedForkFactory(
-            organization='test-organization',
+            organization=organization,
             fork='source/repo',
             enabled=False,
         )

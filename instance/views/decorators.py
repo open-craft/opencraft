@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,7 +33,7 @@ from instance.models.instance import InstanceReference
 def instance_manager_required(function=None, redirect_to=None, raise_exception=False):
     """
     View decorator that checks whether the user is an InstanceManager, i.e.
-      if user.is_staff or has the InstanceManagerPermission enabled.
+      has the permission to browse their own instances or all instances.
 
     Modeled on django.contrib.auth.decorators.permission_required().
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,7 +36,7 @@ from django.test import override_settings
 from freezegun import freeze_time
 from pytz import utc
 
-from instance.models.appserver import Status as AppServerStatus
+from instance.models.appserver import Status as AppServerStatus, AppServer
 from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
@@ -44,6 +44,8 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
+from userprofile.factories import make_user_and_organization, OrganizationFactory
+from userprofile.models import Organization
 
 
 # Tests #######################################################################
@@ -132,35 +134,48 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
-    def test_github_admin_username_list_default(self):
+    def test_admin_users(self):
         """
-        By default, no admin should be configured
+        By default, all users that belong to an organization that owns the
+        server and OCIM admins have access to the sandbox.
         """
-        appserver = make_test_appserver()
-        self.assertEqual(appserver.github_admin_organizations, [])
-        self.assertEqual(appserver.github_admin_users, [])
-        self.assertEqual(appserver.github_admin_username_list, [])
-        self.assertNotIn('COMMON_USER_INFO', appserver.configuration_settings)
+        admin_org_handle = 'admin-org'
+        OrganizationFactory(name=admin_org_handle, github_handle=admin_org_handle)
 
-    @patch('instance.models.openedx_appserver.get_username_list_from_team')
-    def test_github_admin_username_list(self, mock_get_username_list):
-        """
-        When Github admin users are set, they should end up in the Ansible configuration.
-        """
-        mock_get_username_list.side_effect = {
-            'test-org1': ['jane', 'joey'],
-            'test-org2': ['jess', 'jack'],
-        }.get
-        instance = OpenEdXInstanceFactory(
-            github_admin_organizations=['test-org1', 'test-org2'],
-            github_admin_users=['jean', 'john'],
-        )
-        all_names = ['jane', 'joey', 'jess', 'jack', 'jean', 'john']
-        appserver = make_test_appserver(instance)
-        self.assertEqual(appserver.github_admin_username_list, all_names)
+        users = [
+            ('user', 'user', admin_org_handle),
+            ('admin2', 'admin2', admin_org_handle),
+            ('no_github_handle', '', admin_org_handle),
+            ('another_org', 'another_org', 'another_org'),
+            ('no_org_1', 'no_org_1', ''),
+            ('no_org_2', 'no_org_2', None),
+        ]
+        admin_users = [
+            ('admin1', 'admin1', admin_org_handle),
+            ('admin3', 'admin3', 'another_org'),
+            ('admin4', 'admin4', ''),
+            ('admin5', 'admin5', None),
+            ('admin_no_org', '', admin_org_handle),
+        ]
+
+        expected_admin_users = ['user', 'admin1', 'admin2', 'admin3', 'admin4', 'admin5']
+
+        for username, github_handle, org_handle in users:
+            make_user_and_organization(username, github_username=github_handle, org_handle=org_handle)
+
+        for username, github_handle, org_handle in admin_users:
+            profile, _ = make_user_and_organization(username, github_username=github_handle, org_handle=org_handle)
+            profile.user.is_superuser = True
+            profile.user.save()
+
+        instance = OpenEdXInstanceFactory()
+        organization = Organization.objects.get(github_handle=admin_org_handle)
+        appserver = make_test_appserver(instance, organization=organization)
+
+        self.assertEqual(len(appserver.admin_users), len(expected_admin_users))
         ansible_settings = yaml.load(appserver.configuration_settings)
-        self.assertEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': name, 'github': True, 'type': 'admin'} for name in all_names
+        self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
+            {'name': name, 'github': True, 'type': 'admin'} for name in expected_admin_users
         ])
 
     @patch_services
@@ -267,7 +282,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test that lms_user_settings are initialised correctly for new AppServers.
         """
-        instance = OpenEdXInstanceFactory(use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory()
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
         appserver = make_test_appserver(instance)
@@ -289,7 +304,6 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(
             sub_domain='test.postfix.queue',
-            use_ephemeral_databases=True,
             email='test.postfix@myinstance.org',
             external_lms_domain='lms.myinstance.org'
         )
@@ -310,7 +324,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Check that ansible vars for postfix_queue role are not present when SMTP relay host is not configured.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue')
         appserver = make_test_appserver(instance)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_HOST', configuration_vars)
@@ -324,7 +338,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Check that EDXAPP_YOUTUBE_API_KEY is set to None by default.
         """
-        instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey', use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey')
         appserver = make_test_appserver(instance)
         configuration_vars = yaml.load(appserver.configuration_settings)
         self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
@@ -454,8 +468,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test is_active property and setter
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
-                                          use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
 
@@ -488,8 +501,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         Test make_active() and make_active(active=False)
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk',
-                                          use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -517,6 +529,70 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
+
+    @patch_services
+    def test_terminate_vm(self, mocks):
+        """
+        Test AppServer termination
+        """
+        # Test New AppServer termination
+        appserver = make_test_appserver()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Waiting for server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Error server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_error()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Failed configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_configuration_failed()
+        appserver.terminate_vm()
+        self.assertIsNone(appserver.terminated)
+
+        # Test Configuring server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            appserver.terminate_vm()
+        termination_time = utc.localize(freezed_time())
+
+        self.assertEqual(appserver.terminated, termination_time)
+
+        # Test terminated server AppServer termination
+        appserver = make_test_appserver()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_configuring_server()
+        appserver._status_to_running()
+
+        with freeze_time('2017-01-18 11:25:00') as freezed_time:
+            appserver.terminate_vm()
+        first_termination_time = utc.localize(freezed_time())
+
+        self.assertEqual(appserver.status, AppServer.Status.Terminated)
+        appserver.terminate_vm()
+        self.assertEqual(appserver.terminated, first_termination_time)
 
 
 @ddt

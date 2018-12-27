@@ -75,16 +75,12 @@
           <td>{{ appserver.email }}</td>
         </tr>
         <tr>
-          <td>Use ephemeral databases</td>
-          <td>{{ appserver.use_ephemeral_databases }}</td>
+          <td>Owner organization</td>
+          <td>{{ instance.owner_organization }}</td>
         </tr>
         <tr>
-          <td>GitHub admin organizations</td>
-          <td>{{ appserver.github_admin_organizations }}</td>
-        </tr>
-        <tr>
-          <td>GitHub admin users</td>
-          <td>{{ appserver.github_admin_users }}</td>
+          <td>Instance creator (OCIM user)</td>
+          <td>{{ instance.creator_username }}</td>
         </tr>
         <tr>
           <td>Additional security groups</td>
@@ -154,6 +150,7 @@
           <td>Combined ansible vars:</td>
           <td><pre>{{ appserver.configuration_settings }}</pre></td>
         </tr>
+
       </tbody>
     </table>
   </accordion-group>

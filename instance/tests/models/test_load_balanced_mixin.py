@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -58,8 +58,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         Test set_dns_records() without external domains.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.example.com',
-                                          use_ephemeral_databases=True)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.example.com')
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
         instance.set_dns_records()
@@ -74,8 +73,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.co.uk',
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
-                                          external_studio_domain='studio.myexternal.org',
-                                          use_ephemeral_databases=True)
+                                          external_studio_domain='studio.myexternal.org')
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.save()
         instance.set_dns_records()

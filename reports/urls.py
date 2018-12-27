@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,26 +17,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Django widgets
+URL Patterns for the `reports` app
 """
-from django.forms import Textarea
-from django.core.serializers.json import DjangoJSONEncoder
+
+# Imports #####################################################################
+
+from django.conf.urls import url
+
+from reports import views
 
 
-class JSONWidget(Textarea):
-    """
-    A widget for displaying and encoding JSON correctly.
+# URL Patterns ################################################################
 
-    Note:
-    This widget is only needed until a postgresql upgrade occurs and
-    the django_extensions JSONField is replaced with the Django field.
-
-    """
-
-    def render(self, name, value, attrs=None):
-        """
-        Renders the json correctly.
-        """
-        if not isinstance(value, str):
-            value = DjangoJSONEncoder().encode(value)
-        return super(JSONWidget, self).render(name, value, attrs)
+app_name = 'reports'
+urlpatterns = [
+    url(r'^(?P<organization>[-\w]+)/(?P<year>[0-9]{4})/(?P<month>[0-9]{1,2})/$', views.report, name='report'),
+]

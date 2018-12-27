@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,8 +30,20 @@ from instance.models.instance import InstanceReference
 # Permissions #################################################################
 
 class ApiInstanceManagerPermission(BasePermission):
-    """Restricts API access to instance manager users"""
+    """
+    Restricts API access to instance manager users.
+    See the definition of "instance manager" at InstanceReference.can_manage
+    """
 
     def has_permission(self, request, view):
         """Return True if user is an instance manager"""
         return InstanceReference.can_manage(request.user)
+
+
+class IsSuperUser(BasePermission):
+    """
+    Allows access only to superusers.
+    """
+
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,6 +35,8 @@ from instance.serializers.instance import (
     InstanceAppServerSerializer
 )
 
+from .filters import IsOrganizationOwnerFilterBackendInstance
+
 
 # Views - API #################################################################
 
@@ -66,15 +68,12 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = InstanceReference.objects.all()
     serializer_class = InstanceReferenceDetailedSerializer
+    filter_backends = (IsOrganizationOwnerFilterBackendInstance,)
 
-    def list(self, request):
-        """
-        List all instances. No App server list is returned in the list view, only the newest app server information.
-
-        """
+    def get_queryset(self):
         # Don't load all columns, because some of them have very big data
         appservers_few_columns = OpenEdXAppServer.objects.only('_is_active', '_status', 'id', 'name', 'owner_id',
-                                                               'created', 'modified')
+                                                               'created', 'modified', 'terminated')
         queryset = self.queryset.prefetch_related(
             # Use prefetching to make the number of database queries required to
             # generate this list O(1).
@@ -91,6 +90,14 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
                 to_attr='_cached_active_appservers'
             ),
         )
+        return queryset
+
+    def list(self, request):
+        """
+        List all instances. No App server list is returned in the list view, only the newest app server information.
+
+        """
+        queryset = self.filter_queryset(self.get_queryset())
         if 'include_archived' not in request.query_params:
             # By default, exclude archived instances from the list:
             queryset = queryset.filter(is_archived=False)

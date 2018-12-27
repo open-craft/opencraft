@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,15 +23,26 @@ OpenEdXInstance secret key mixins - Tests
 # Imports #####################################################################
 
 import codecs
+import json
 import re
 import yaml
 import six
+from Cryptodome.PublicKey import RSA
 
 from instance.models.mixins.secret_keys import OPENEDX_SECRET_KEYS, OPENEDX_SHARED_KEYS
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.utils import patch_services
+
+
+# Constants ####################################################################
+
+
+JWK_SET_KEY_NAMES = [
+    'COMMON_JWT_PUBLIC_SIGNING_JWK_SET',
+    'EDXAPP_JWT_PRIVATE_SIGNING_JWK'
+]
 
 
 # Tests #######################################################################
@@ -69,9 +80,16 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         secret_key_settings = yaml.load(instance.get_secret_key_settings())
 
-        # Test that all keys are hex-encoded strings.
-        for secret_key in secret_key_settings.values():
-            codecs.decode(secret_key, "hex")
+        # Test that all keys are hex-encoded strings,
+        # except for the JWK keys, wich must be valid JSON strings
+        for secret_key_name in secret_key_settings.keys():
+            if secret_key_name not in JWK_SET_KEY_NAMES:
+                codecs.decode(
+                    secret_key_settings[secret_key_name],
+                    "hex"
+                )
+            else:
+                json.loads(secret_key_settings[secret_key_name])
 
         # Make sure all independent secret keys are all different
         independent_secrets = set(secret_key_settings[var] for var in OPENEDX_SECRET_KEYS)
@@ -121,3 +139,80 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         # is named differently between Py2k and Py3k.
         with six.assertRaisesRegex(self, ValueError, expected_error_string):
             instance.spawn_appserver()
+
+    def test_rsa_key_creation(self):
+        """
+        Test that we can produce public and private key pair for an
+        instance with a particular existing secret key.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.secret_key_rsa_private = """-----BEGIN RSA PRIVATE KEY-----
+MIICWwIBAAKBgQDEXX4rFLFl/eT3NJD8Y8rDcS39ynIjdYxaOHx6Q+PszU4YR6M0
+3k3oMyDboIju6R8zim2JR9FWlOZTNN1MVSPOvu51CD4igNh5o+mgeBhVc+eatbvC
+boDDtk/kHO0DEyebzO8oIortnh2pXF+Oyu3MdcyMFeF5xVEKqD0HQ9d05QIDAQAB
+AoGAVDl9umC/zm1eXiHv5jGvcLEE9wx0dH0g3DnKOm8QPiu5SXTArhaD+AqmF03+
+LetT9Ll1TiK9yZNIT3wnR2xlVLH6VuwcZ07KMUtvYLiuVGIAVf1TLs2E3zxRcrHb
+TMsg15QnMFsat9yqMXSNPbqrs9tHU4hBv1k3uvkB4KWJVakCQQDjBYPaxmo8jyyJ
+QzdLDh/cv20t4Q5LGB/XbfHTfJmnamToto6hEfG3Coy3/bbYhwFrWK53iKQpvkzg
+vxNMlQoLAkEA3W4093Nai0V+YHVzI3fGqciSYrR4klYACqnIb+OlmLaT+Zj3Uv+d
+P9BDy7frzRX9hYPQXMhYVxQBZtcF/CjCzwJADYUjkCDm7MpeDaKqJVcnAJ+J4gSY
+NFKwesT6dOzjvbuxXMaage8upQcE0GRUwlpv9DOo2EeT90R1EaFvhc0OdwJAK7eV
+d4Frz/FheRPXLpp4O48g76Hn6CRYj8Jjk0ujpxns7yt3MQjMeAvbRr5CLNR5oEGd
+AqR/ZHnLqQ0s3lMB2wJAM3JaM2LtR3XhvQqT2vBteGB+iIWSh8cSxfWcd/vVSKIk
+yF9iraiA2UvfpdwQSgXWsm7/+70kzVsb/MGl3rn63A==
+-----END RSA PRIVATE KEY-----"""
+        instance.save()
+
+        jwk_key_pair = instance.get_jwk_key_pair()
+
+        self.assertEqual(
+            json.loads(jwk_key_pair.private),
+            {
+                "n": "xF1-KxSxZf3k9zSQ_GPKw3Et_cpyI3WMWjh8ekPj7M1OGEejNN5N6DMg"
+                     "26CI7ukfM4ptiUfRVpTmUzTdTFUjzr7udQg-IoDYeaPpoHgYVXPnmrW7"
+                     "wm6Aw7ZP5BztAxMnm8zvKCKK7Z4dqVxfjsrtzHXMjBXhecVRCqg9B0PX"
+                     "dOU",
+                "kid": "opencraft",
+                "kty": "RSA",
+                "d": "VDl9umC_zm1eXiHv5jGvcLEE9wx0dH0g3DnKOm8QPiu5SXTArhaD-Aqm"
+                     "F03-LetT9Ll1TiK9yZNIT3wnR2xlVLH6VuwcZ07KMUtvYLiuVGIAVf1T"
+                     "Ls2E3zxRcrHbTMsg15QnMFsat9yqMXSNPbqrs9tHU4hBv1k3uvkB4KWJ"
+                     "Vak",
+                "p": "4wWD2sZqPI8siUM3Sw4f3L9tLeEOSxgf123x03yZp2pk6LaOoRHxtwqM"
+                     "t_222IcBa1iud4ikKb5M4L8TTJUKCw",
+                "q": "3W4093Nai0V-YHVzI3fGqciSYrR4klYACqnIb-OlmLaT-Zj3Uv-dP9BD"
+                     "y7frzRX9hYPQXMhYVxQBZtcF_CjCzw",
+                "e": "AQAB"
+            }
+        )
+        self.assertEqual(
+            json.loads(jwk_key_pair.public),
+            {
+                "keys": [{
+                    "e": "AQAB",
+                    "kty": "RSA",
+                    "kid": "opencraft",
+                    "n": "xF1-KxSxZf3k9zSQ_GPKw3Et_cpyI3WMWjh8ekPj7M1OGEejNN5N"
+                         "6DMg26CI7ukfM4ptiUfRVpTmUzTdTFUjzr7udQg-IoDYeaPpoHgY"
+                         "VXPnmrW7wm6Aw7ZP5BztAxMnm8zvKCKK7Z4dqVxfjsrtzHXMjBXh"
+                         "ecVRCqg9B0PXdOU"
+                }]
+            },
+        )
+
+    def test_get_generate_rsa_if_empty(self):
+        """
+        Test if a RSA key is generated when it's request if theres no RSA keys
+        stored
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.secret_key_rsa_private = ""
+        instance.save()
+
+        rsa_key = instance.rsa_key
+        self.assertTrue(bool(rsa_key))
+        self.assertTrue(isinstance(rsa_key, RSA.RsaKey))
+
+        instance.refresh_from_db()
+
+        self.assertIsNotNone(instance.secret_key_rsa_private)

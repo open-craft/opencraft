@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -204,8 +204,8 @@ class InstanceRedeployTestCase(TestCase):
             'Number of upgrade attempts per instance: 1',
 
             '** Starting redeployment **',
+            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
             'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 1',
@@ -213,9 +213,9 @@ class InstanceRedeployTestCase(TestCase):
             'Failed to redeploy: 1',
             'Successfully redeployed (done): 3',
             'Sleeping for 0:00:01',
+            'SUCCESS: {0} [{0.id}]'.format(instances['E']['instance']),
             'SUCCESS: {0} [{0.id}]'.format(instances['F']['instance']),
-            'SUCCESS: {0} [{0.id}]'.format(instances['G']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
@@ -223,7 +223,7 @@ class InstanceRedeployTestCase(TestCase):
             'Failed to redeploy: 1',
             'Successfully redeployed (done): 4',
             'Sleeping for 0:00:01',
-            'SUCCESS: {0} [{0.id}]'.format(instances['E']['instance']),
+            'SUCCESS: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
@@ -287,7 +287,7 @@ class InstanceRedeployTestCase(TestCase):
             'Number of upgrade attempts per instance: 1',
 
             '** Starting redeployment **',
-            'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 2',
@@ -295,8 +295,8 @@ class InstanceRedeployTestCase(TestCase):
             'Failed to redeploy: 2',
             'Successfully redeployed (done): 1',
             'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
+            'FAILED: {0} [{0.id}]'.format(instances['E']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 1',
@@ -304,8 +304,8 @@ class InstanceRedeployTestCase(TestCase):
             'Failed to redeploy: 3',
             'Successfully redeployed (done): 1',
             'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['G']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
+            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
+            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',
@@ -313,7 +313,7 @@ class InstanceRedeployTestCase(TestCase):
             'Failed to redeploy: 4',
             'Successfully redeployed (done): 1',
             'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['E']['instance']),
+            'FAILED: {0} [{0.id}]'.format(instances['G']['instance']),
 
             '******* Status *******',
             'Instances pending redeployment: 0',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -49,26 +49,26 @@ class FactoriesTestCase(TestCase):
         "}"
     )
     SANDBOX_DEFAULTS = {
-        "use_ephemeral_databases": True,
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,
         "openedx_release": settings.DEFAULT_OPENEDX_RELEASE,
         "configuration_extra_settings": "",
+        "openstack_server_flavor": settings.OPENSTACK_SANDBOX_FLAVOR,
     }
     PRODUCTION_DEFAULTS = {
-        "use_ephemeral_databases": False,
-        "configuration_version": settings.OPENEDX_RELEASE_STABLE_REF,
+        "configuration_version": settings.STABLE_CONFIGURATION_VERSION,
         "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
         "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
+        "openstack_server_flavor": settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     }
 
     def _assert_field_values(
             self,
             instance,
             sub_domain,
-            use_ephemeral_databases=SANDBOX_DEFAULTS["use_ephemeral_databases"],
             configuration_version=SANDBOX_DEFAULTS["configuration_version"],
             openedx_release=SANDBOX_DEFAULTS["openedx_release"],
-            configuration_extra_settings=SANDBOX_DEFAULTS["configuration_extra_settings"]
+            configuration_extra_settings=SANDBOX_DEFAULTS["configuration_extra_settings"],
+            openstack_server_flavor=SANDBOX_DEFAULTS["openstack_server_flavor"],
     ):
         """
         Assert that field values of `instance` match expected values
@@ -76,7 +76,6 @@ class FactoriesTestCase(TestCase):
         self.assertEqual(instance.internal_lms_domain, '{}.example.com'.format(sub_domain))
         self.assertEqual(instance.internal_lms_preview_domain, 'preview-{}.example.com'.format(sub_domain))
         self.assertEqual(instance.internal_studio_domain, 'studio-{}.example.com'.format(sub_domain))
-        self.assertEqual(instance.use_ephemeral_databases, use_ephemeral_databases)
         self.assertEqual(instance.configuration_version, configuration_version)
         self.assertEqual(instance.openedx_release, openedx_release)
         extra_settings = yaml.load(instance.configuration_extra_settings)

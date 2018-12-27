@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -87,13 +87,8 @@ def instance_factory(**kwargs):
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
 
-    # Ensure instance uses ephemeral databases by default,
-    # irrespective of current value of INSTANCE_EPHEMERAL_DATABASES setting
-    instance_kwargs = dict(use_ephemeral_databases=True)
-    instance_kwargs.update(kwargs)
-
     # Create instance
-    instance = OpenEdXInstance.objects.create(**instance_kwargs)
+    instance = OpenEdXInstance.objects.create(**kwargs)
     return instance
 
 
@@ -144,13 +139,15 @@ def production_instance_factory(**kwargs):
         default_flow_style=False
     )
     instance_kwargs = dict(
-        use_ephemeral_databases=False,
         edx_platform_repository_url=settings.STABLE_EDX_PLATFORM_REPO_URL,
         edx_platform_commit=settings.STABLE_EDX_PLATFORM_COMMIT,
         configuration_source_repo_url=settings.STABLE_CONFIGURATION_REPO_URL,
         configuration_version=settings.STABLE_CONFIGURATION_VERSION,
         openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
         configuration_extra_settings=extra_settings,
+        # Allow production instances to use a different OpenStack instance flavor by default.
+        # This allows using a larger instance flavor for production instances.
+        openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     )
     instance_kwargs.update(kwargs)
 

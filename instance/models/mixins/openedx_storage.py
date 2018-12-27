@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2016 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,8 +21,6 @@ Open edX instance database mixin
 """
 import yaml
 
-from django.db import models
-
 from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, StorageContainer
 
 
@@ -31,14 +29,10 @@ from .storage import SwiftContainerInstanceMixin, S3BucketInstanceMixin, Storage
 class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3BucketInstanceMixin):
     """
     Mixin that provides functionality required for the storage backends that an OpenEdX
-    Instance uses (when not using ephemeral databases)
+    Instance uses
     """
     class Meta:
         abstract = True
-
-    s3_access_key = models.CharField(max_length=50, blank=True)
-    s3_secret_access_key = models.CharField(max_length=50, blank=True)
-    s3_bucket_name = models.CharField(max_length=50, blank=True)
 
     @property
     def swift_container_name(self):
@@ -58,7 +52,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         Return dictionary of S3 Ansible settings.
         """
-        return {
+        s3_settings = {
             "COMMON_ENABLE_AWS_INTEGRATION": True,
             "AWS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -67,13 +61,24 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             # using shared s3 buckets
             "EDXAPP_AWS_LOCATION": self.swift_container_name,
             "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
+
+            # Set up S3 image backend
+            "EDXAPP_PROFILE_IMAGE_BACKEND": {
+                "class": "storages.backends.s3boto.S3BotoStorage",
+                "options": {
+                    "location": '{}/{}'.format(self.swift_container_name, 'profile-images'),
+                    "headers": {
+                        "Cache-Control": "max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}",
+                    },
+                },
+            },
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "EDXAPP_AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },
-            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
+            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": self.s3_custom_domain,
             "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),
@@ -100,6 +105,13 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             "AWS_S3_LOGS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_S3_LOGS_SECRET_KEY": self.s3_secret_access_key,
         }
+
+        if self.s3_region:
+            s3_settings.update({
+                "aws_region": self.s3_region,
+            })
+
+        return s3_settings
 
     def _get_swift_settings(self):
         """
@@ -151,11 +163,6 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         Get configuration_storage_settings to pass to a new AppServer
         """
-        if self.use_ephemeral_databases:
-            # Workaround for broken CMS course export/import
-            # caused by https://github.com/edx/edx-platform/pull/14552
-            return yaml.dump({"EDXAPP_IMPORT_EXPORT_BUCKET": ""}, default_flow_style=False)
-
         if self.storage_type == self.S3_STORAGE and \
                 self.s3_access_key and self.s3_secret_access_key and self.s3_bucket_name:
             return yaml.dump(self._get_s3_settings(), default_flow_style=False)
