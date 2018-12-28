@@ -226,6 +226,13 @@ class S3BucketInstanceMixin(models.Model):
             s3_hostname = settings.AWS_S3_CUSTOM_REGION_HOSTNAME.format(region=self.s3_region)
         return s3_hostname
 
+    @property
+    def s3_custom_domain(self):
+        """
+        The custom domain name built based on the bucket name.
+        """
+        return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
+
     def create_iam_user(self):
         """
         Create IAM user with access only to the s3 bucket set in s3_bucket_name

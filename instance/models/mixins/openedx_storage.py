@@ -61,13 +61,24 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
             # using shared s3 buckets
             "EDXAPP_AWS_LOCATION": self.swift_container_name,
             "EDXAPP_DEFAULT_FILE_STORAGE": 'storages.backends.s3boto.S3BotoStorage',
+
+            # Set up S3 image backend
+            "EDXAPP_PROFILE_IMAGE_BACKEND": {
+                "class": "storages.backends.s3boto.S3BotoStorage",
+                "options": {
+                    "location": '{}/{}'.format(self.swift_container_name, 'profile-images'),
+                    "headers": {
+                        "Cache-Control": "max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}",
+                    },
+                },
+            },
             "EDXAPP_AWS_ACCESS_KEY_ID": self.s3_access_key,
             "EDXAPP_AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
             "EDXAPP_AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_AUTH_EXTRA": {
                 "AWS_STORAGE_BUCKET_NAME": self.s3_bucket_name,
             },
-            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(self.s3_bucket_name),
+            "EDXAPP_AWS_S3_CUSTOM_DOMAIN": self.s3_custom_domain,
             "EDXAPP_IMPORT_EXPORT_BUCKET": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_BUCKET_NAME": self.s3_bucket_name,
             "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(self.swift_container_name, 'submissions_attachments'),

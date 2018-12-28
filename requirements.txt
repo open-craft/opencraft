@@ -154,3 +154,4 @@ Pillow==4.3.0
 django_storage_swift==1.2.17
 pycryptodomex==3.7.0
 pyjwkest==1.4.0
+boto3==1.9.61

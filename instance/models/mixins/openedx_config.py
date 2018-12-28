@@ -144,6 +144,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "NOTIFIER_DIGEST_EMAIL_SENDER": self.email,
             "NOTIFIER_LMS_URL_BASE": 'https://{}'.format(self.instance.domain),
             "NOTIFIER_LOGO_IMAGE_URL": 'https://{}/static/images/logo.png'.format(self.instance.domain),
+            "NOTIFIER_POLLING_INTERVAL": 60,
 
             "NOTIFIER_EMAIL_BACKEND": 'smtp',
             "NOTIFIER_EMAIL_HOST": 'localhost',
