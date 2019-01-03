@@ -26,14 +26,22 @@ import functools
 import inspect
 import string
 import warnings
+import logging
 
 from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 import MySQLdb as mysql
+from MySQLdb import Error as MySQLError
 import pymongo
+from pymongo.errors import PyMongoError
 
 from instance.models.database_server import MySQLServer, MongoDBServer, MongoDBReplicaSet
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Functions ###################################################################
@@ -62,12 +70,16 @@ def _get_mysql_cursor(mysql_server):
     """
     Get a database cursor.
     """
-    connection = mysql.connect(
-        host=mysql_server.hostname,
-        user=mysql_server.username,
-        passwd=mysql_server.password,
-        port=mysql_server.port,
-    )
+    try:
+        connection = mysql.connect(
+            host=mysql_server.hostname,
+            user=mysql_server.username,
+            passwd=mysql_server.password,
+            port=mysql_server.port,
+        )
+    except MySQLError as exc:
+        logger.exception('Cannot get MySQL cursor: %s. %s', mysql_server, exc)
+        raise
     return connection.cursor()
 
 
@@ -76,6 +88,7 @@ def _create_database(cursor, database):
     """
     Create MySQL database, if it doesn't already exist.
     """
+    logger.info('Creating MySQL database: %s', database)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cursor.execute('CREATE DATABASE IF NOT EXISTS `{db}` DEFAULT CHARACTER SET utf8'.format(db=database))
@@ -90,6 +103,7 @@ def _create_user(cursor, user, password):
     # so we need to use a different approach for now:
     user_exists = cursor.execute("SELECT 1 FROM mysql.user WHERE user = %s", (user,))
     if not user_exists:
+        logger.info('Creating mysql user: %s', user)
         cursor.execute('CREATE USER %s IDENTIFIED BY %s', (user, password,))
 
 
@@ -111,7 +125,12 @@ def _drop_database(cursor, database):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        cursor.execute('DROP DATABASE IF EXISTS `{database}`'.format(database=database))
+        logger.info('Dropping mysql db: %s', database)
+        try:
+            cursor.execute('DROP DATABASE IF EXISTS `{db}`'.format(db=database))
+        except MySQLError as exc:
+            logger.exception('Cannot drop MySQL database: %s. %s', database, exc)
+            raise
 
 
 def _drop_user(cursor, user):
@@ -123,7 +142,12 @@ def _drop_user(cursor, user):
     # so we need to use a different approach for now:
     user_exists = cursor.execute("SELECT 1 FROM mysql.user WHERE user = %s", (user,))
     if user_exists:
-        cursor.execute('DROP USER %s', (user,))
+        logger.info('Dropping mysql user: %s.', user)
+        try:
+            cursor.execute('DROP USER %s', (user,))
+        except MySQLError as exc:
+            logger.exception('Cannot drop MySQL user: %s. %s', user, exc)
+            raise
 
 
 def select_random_mysql_server():
@@ -225,25 +249,30 @@ class MySQLInstanceMixin(models.Model):
             self.mysql_provisioned = True
             self.save()
 
-    def deprovision_mysql(self):
+    def deprovision_mysql(self, ignore_errors=False):
         """
         Drop all MySQL databases and users.
         """
+        self.logger.info('Deprovisioning MySQL started.')
         if self.mysql_server and self.mysql_provisioned:
-            cursor = _get_mysql_cursor(self.mysql_server)
+            try:
+                cursor = _get_mysql_cursor(self.mysql_server)
 
-            # Drop default databases and users
-            for database in self.mysql_databases:
-                database_name = database["name"]
-                _drop_database(cursor, database_name)
-                _drop_user(cursor, database["user"])
-
-            # Drop users with global privileges
-            for user in self.global_users:
-                _drop_user(cursor, user)
+                # Drop default databases and users
+                for database in self.mysql_databases:
+                    database_name = database["name"]
+                    _drop_database(cursor, database_name)
+                    _drop_user(cursor, database["user"])
+                # Drop users with global privileges
+                for user in self.global_users:
+                    _drop_user(cursor, user)
+            except MySQLError:
+                if not ignore_errors:
+                    raise
 
             self.mysql_provisioned = False
             self.save()
+        self.logger.info('Deprovisioning MySQL finished.')
 
 
 class MongoDBInstanceMixin(models.Model):
@@ -331,19 +360,28 @@ class MongoDBInstanceMixin(models.Model):
             mongo = pymongo.MongoClient(database_url)
             for database in self.mongo_database_names:
                 # May update the password if the user already exists
+                self.logger.info('Creating mongo db: %s', database)
                 mongo[database].add_user(self.mongo_user, self.mongo_pass)
             self.mongo_provisioned = True
             self.save()
 
-    def deprovision_mongo(self):
+    def deprovision_mongo(self, ignore_errors=False):
         """
         Drop Mongo databases.
         """
+        self.logger.info('Deprovisioning Mongo started.')
         database_url = self._get_main_database_url()
         if database_url and self.mongo_provisioned:
             mongo = pymongo.MongoClient(database_url)
             for database in self.mongo_database_names:
                 # Dropping a non-existing database is a no-op.  Users are dropped together with the DB.
-                mongo.drop_database(database)
+                self.logger.info('Dropping mongo db: %s.', database)
+                try:
+                    mongo.drop_database(database)
+                except PyMongoError as exc:
+                    self.logger.exception('Cannot drop Mongo database: %s. %s', database, exc)
+                    if not ignore_errors:
+                        raise
             self.mongo_provisioned = False
             self.save()
+        self.logger.info('Deprovisioning Mongo finished.')

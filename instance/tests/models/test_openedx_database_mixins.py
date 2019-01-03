@@ -23,16 +23,19 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import urllib
 
 import ddt
 import pymongo
+from pymongo.errors import PyMongoError
 import responses
 import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test.utils import override_settings
+
+from MySQLdb import Error as MySQLError
 
 from instance.models.database_server import (
     MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
@@ -372,6 +375,34 @@ class MySQLInstanceTestCase(TestCase):
         self.instance.save()
         self.check_mysql_vars_not_set(self.instance)
 
+    @patch('instance.models.mixins.database._get_mysql_cursor', return_value=Mock())
+    @patch('instance.models.mixins.database._drop_database')
+    @patch('instance.models.mixins.database._drop_user')
+    def test_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor):
+        """
+        Test deprovision_mysql does correct calls.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        self.instance.mysql_provisioned = True
+        self.instance.deprovision_mysql()
+        for database in self.instance.mysql_databases:
+            mock_drop_database.assert_any_call(mock_get_cursor(), database["name"])
+            mock_drop_user.assert_any_call(mock_get_cursor(), database["user"])
+        for user in self.instance.global_users:
+            mock_drop_user.assert_any_call(mock_get_cursor(), user)
+
+    @patch('instance.models.mixins.database._get_mysql_cursor', return_value=Mock())
+    @patch('instance.models.mixins.database._drop_database', side_effect=MySQLError())
+    @patch('instance.models.mixins.database._drop_user')
+    def test_ignore_errors_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor):
+        """
+        Test mysql is set as deprovision when ignoring errors.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        self.instance.mysql_provisioned = True
+        self.instance.deprovision_mysql(ignore_errors=True)
+        self.assertFalse(self.instance.mysql_provisioned)
+
 
 @ddt.ddt
 class MongoDBInstanceTestCase(TestCase):
@@ -566,6 +597,30 @@ class MongoDBInstanceTestCase(TestCase):
             "mongodb://test:test@test.opencraft.hosting"
         )
 
+    @patch('instance.models.mixins.database.MongoDBInstanceMixin._get_main_database_url')
+    @patch('instance.models.mixins.database.pymongo.MongoClient', autospec=True)
+    def test_deprovision_mongo(self, mock_mongo_client_cls, mock_get_main_db_url):
+        """
+        Test deprovision_mongo calls drop_database.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        self.instance.mongo_provisioned = True
+        self.instance.deprovision_mongo()
+        for database in self.instance.mongo_database_names:
+            mock_mongo_client_cls().drop_database.assert_any_call(database)
+
+    @patch('instance.models.mixins.database.pymongo.MongoClient', autospec=True)
+    @patch('instance.models.mixins.database.MongoDBInstanceMixin._get_main_database_url')
+    @patch('instance.models.mixins.database.pymongo.MongoClient.drop_database', side_effect=PyMongoError())
+    def test_ignore_errors_deprovision_mongo(self, mock_mongo_client_cls, *mock_methods):
+        """
+        Test mongo is set as deprovision when ignoring errors.
+        """
+        self.instance = OpenEdXInstanceFactory()
+        self.instance.mongo_provisioned = True
+        self.instance.deprovision_mongo(ignore_errors=True)
+        self.assertFalse(self.instance.mongo_provisioned)
+
 
 @ddt.ddt
 class RabbitMQInstanceTestCase(TestCase):
@@ -687,6 +742,26 @@ class RabbitMQInstanceTestCase(TestCase):
             setattr(rabbitmq, name, value)
         rabbitmq.save()
         self.assertEqual(str(rabbitmq), representation)
+
+    @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin._rabbitmq_request')
+    def test_deprovision_rabbitmq(self, mock_rabbitmq_request):
+        """
+        Test deprovision_rabbitmq does correct calls.
+        """
+        self.instance.rabbitmq_provisioned = True
+        self.instance.deprovision_rabbitmq()
+        mock_rabbitmq_request.assert_any_call('delete', 'vhosts', self.instance.rabbitmq_vhost)
+        mock_rabbitmq_request.assert_any_call('delete', 'users', self.instance.rabbitmq_consumer_user.username)
+        mock_rabbitmq_request.assert_any_call('delete', 'users', self.instance.rabbitmq_provider_user.username)
+
+    @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin._rabbitmq_request', side_effect=RabbitMQAPIError())
+    def test_ignore_errors_deprovision_rabbitmq(self, mock_rabbitmq_request):
+        """
+        Test rabbitmq is set as deprovision when ignoring errors.
+        """
+        self.instance.rabbitmq_provisioned = True
+        self.instance.deprovision_rabbitmq(ignore_errors=True)
+        self.assertFalse(self.instance.rabbitmq_provisioned)
 
 
 class RabbitMQServerManagerTestCase(TestCase):

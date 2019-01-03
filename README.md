@@ -813,6 +813,18 @@ works just like `archive()` except that it also destroys all data (MySQL, mongo,
 instance.delete()
 ```
 
+Use `delete(ignore_errors=True)` in case some of the resources related
+to an instance were deleted or modified and "forcing" deletion is necessary.
+
+It is possible to ignore errors for specific resources when deleting an instance:
+
+- `delete(ignore_mysql_errors=True)` to ignore MySQL errors.
+- `delete(ignore_mongo_errors=True)` to ignore Mongo errors.
+- `delete(ignore_rabbitmq_errors=True)` to ignore RabbitMQ errors.
+
+> **Note:** Any errors raised and its stacktrace will be logged in case
+> there's need for more information.
+
 **Do not use delete() in production!**
 
 
