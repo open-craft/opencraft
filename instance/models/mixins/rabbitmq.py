@@ -40,9 +40,8 @@ def generate_random_vhost():
     """
     Helper function for the default value of the field `rabbitmq_vhost`.
     """
-    return '/{id}'.format(
-        id=get_random_string(length=14, allowed_chars=string.ascii_lowercase)
-    )
+    vhost_id = get_random_string(length=14, allowed_chars=string.ascii_lowercase)
+    return '/{id}'.format(id=vhost_id)
 
 
 def new_rabbitmq_user():
@@ -134,8 +133,37 @@ class RabbitMQInstanceMixin(models.Model):
                 action,
                 response.status_code
             )
-            raise RabbitMQAPIError
+            raise RabbitMQAPIError('{reason}: {content}'.format(reason=response.reason, content=response.text))
         return response
+
+    def _delete_rabbitmq_user(self, user, ignore_errors=False):
+        """Deletes a rabbitmq user.
+
+        Arguments:
+            user (RabbitMQUser): User instance.
+            ignore_errors (bool): If True RabbitMQAPIError exceptions will not be raised.
+        """
+        self.logger.info('Deleting rabbitmq user: %s', user.username)
+        try:
+            self._rabbitmq_request('delete', 'users', user.username)
+        except RabbitMQAPIError as exc:
+            self.logger.exception('Cannot delete rabbitmq user: %s. %s', user.username, exc)
+            if not ignore_errors:
+                raise
+
+    def _delete_rabbitmq_vhost(self, ignore_errors=False):
+        """Delete rabbitmq vhost for this instance.
+
+        Arguments:
+            ignore_errors (bool): If true RabbitMQAPIError exceptions will not be raised.
+        """
+        self.logger.info('Deleting rabbitmq vhost: %s', self.rabbitmq_vhost)
+        try:
+            self._rabbitmq_request('delete', 'vhosts', self.rabbitmq_vhost)
+        except RabbitMQAPIError as exc:
+            self.logger.exception('Cannot delete rabbitmq vhost: %s. %s', self.rabbitmq_vhost, exc)
+            if not ignore_errors:
+                raise
 
     def provision_rabbitmq(self):
         """
@@ -157,13 +185,17 @@ class RabbitMQInstanceMixin(models.Model):
         self.rabbitmq_provisioned = True
         self.save()
 
-    def deprovision_rabbitmq(self):
+    def deprovision_rabbitmq(self, ignore_errors=False):
         """
         Deletes the RabbitMQ vhost and users.
         """
+        self.logger.info('Deprovisioning RabbitMQ started.')
         if self.rabbitmq_provisioned:
-            self._rabbitmq_request('delete', 'vhosts', self.rabbitmq_vhost)
+            self._delete_rabbitmq_vhost(ignore_errors=ignore_errors)
+
             for user in [self.rabbitmq_consumer_user, self.rabbitmq_provider_user]:
-                self._rabbitmq_request('delete', 'users', user.username)
+                self._delete_rabbitmq_user(user, ignore_errors=ignore_errors)
+
         self.rabbitmq_provisioned = False
         self.save()
+        self.logger.info('Deprovisioning RabbitMQ finished.')

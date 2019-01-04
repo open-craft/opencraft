@@ -135,8 +135,10 @@ class SwiftContainerInstanceMixin(models.Model):
         """
         Delete the Swift containers.
         """
+        self.logger.info('Deprovisioning swift started.')
         if self.storage_type == self.SWIFT_STORAGE and self.swift_provisioned:
             for container_name in self.swift_container_names:
+                self.logger.info('Deleting swift container: %s', container_name)
                 try:
                     openstack_utils.delete_swift_container(
                         container_name,
@@ -151,6 +153,7 @@ class SwiftContainerInstanceMixin(models.Model):
                     self.logger.exception('Could not delete Swift container "%s".', container_name)
             self.swift_provisioned = False
             self.save()
+        self.logger.info('Deprovisioning swift finished.')
 
 
 class S3BucketInstanceMixin(models.Model):
@@ -317,24 +320,25 @@ class S3BucketInstanceMixin(models.Model):
         """
         Deprovision S3 by deleting S3 bucket and IAM user
         """
-        if not self.storage_type == self.S3_STORAGE or \
-                not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name):
+        self.logger.info('Deprovisioning S3 started.')
+        if (not self.storage_type == self.S3_STORAGE or
+                not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name)):
             return
+
         if self.s3_bucket_name:
             try:
                 s3 = self.get_s3_connection()
                 bucket = s3.get_bucket(self.s3_bucket_name)
+                self.logger.info('Deleting s3 bucket: %s', self.s3_bucket_name)
                 for key in bucket:
                     key.delete()
                 s3.delete_bucket(self.s3_bucket_name)
                 self.s3_bucket_name = ""
                 self.save()
             except boto.exception.S3ResponseError:
-                self.logger.exception(
-                    'There was an error trying to remove S3 bucket "%s".',
-                    self.s3_bucket_name
-                )
+                self.logger.exception('There was an error trying to remove S3 bucket "%s".', self.s3_bucket_name)
         try:
+            self.logger.info('Deleting IAM user: %s', self.iam_username)
             iam = get_master_iam_connection()
             # Access keys and policies need to be deleted before removing the user
             iam.delete_access_key(self.s3_access_key, user_name=self.iam_username)
@@ -344,7 +348,5 @@ class S3BucketInstanceMixin(models.Model):
             self.s3_secret_access_key = ""
             self.save()
         except boto.exception.BotoServerError:
-            self.logger.exception(
-                'There was an error trying to remove IAM user "%s".',
-                self.iam_username
-            )
+            self.logger.exception('There was an error trying to remove IAM user "%s".', self.iam_username)
+        self.logger.info('Deprovisioning S3 finished.')
