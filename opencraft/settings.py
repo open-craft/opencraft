@@ -718,3 +718,6 @@ FILEBEAT_KEY = env('FILEBEAT_KEY', default='')
 
 # Common fields for all Filebeat prospectors.
 FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS', default={})
+
+# AWS S3
+S3_VERSION_EXPIRATION = env.json('S3_VERSION_EXPIRATION', default=30)

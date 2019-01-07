@@ -24,7 +24,8 @@ Instance app model mixins - Database
 import json
 import time
 
-import boto
+import boto3
+from botocore.exceptions import ClientError
 
 from django.db.backends.utils import truncate_name
 from django.conf import settings
@@ -34,24 +35,28 @@ from swiftclient.exceptions import ClientException as SwiftClientException
 from instance import openstack_utils
 from instance.models.utils import default_setting
 
+S3_LIFECYCLE = {
+    'Rules': [
+        {
+            'NoncurrentVersionExpiration': {
+                'NoncurrentDays': settings.S3_VERSION_EXPIRATION
+            },
+            'Prefix': '',
+            'Status': 'Enabled',
+        },
+    ]
+}
 
-def get_master_iam_connection():
-    """
-    Create connection to IAM service
-    """
-    return boto.connect_iam(
-        settings.AWS_ACCESS_KEY_ID,
-        settings.AWS_SECRET_ACCESS_KEY
-    )
+S3_CORS = {
+    'CORSRules': [{
+        'AllowedHeaders': ['*'],
+        'AllowedMethods': ['GET', 'PUT'],
+        'AllowedOrigins': ['*'],
+        'ExposeHeaders': ['GET', 'PUT'],
+    }]
+}
 
-
-def get_s3_cors_config():
-    """
-    Create CORS config needed for ORA2 File uploads
-    """
-    cors_config = boto.s3.cors.CORSConfiguration()
-    cors_config.add_rule(allowed_method=['GET', 'PUT'], allowed_header=["*"], allowed_origin=["*"])
-    return cors_config
+USER_POLICY_NAME = 'allow_access_s3_bucket'
 
 
 # Classes #####################################################################
@@ -175,16 +180,33 @@ class S3BucketInstanceMixin(models.Model):
         )
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._iam_client = None
+        self._s3_client = None
+
     def get_s3_policy(self):
         """
         Return s3 policy with access to create and update bucket
         """
-        policy = {
+        return {
             "Version": "2012-10-17",
             "Statement": [
                 {
                     "Effect": "Allow",
-                    "Action": ["s3:ListBucket", "s3:CreateBucket", "s3:DeleteBucket", "s3:PutBucketCORS"],
+                    "Action": [
+                        "s3:CreateBucket",
+                        "s3:DeleteBucket",
+                        "s3:DeleteObjects",
+                        "s3:GetBucketCORS",
+                        "s3:GetBucketVersioning",
+                        "s3:GetLifecycleConfiguration",
+                        "s3:ListBucket",
+                        "s3:ListBucketVersions",
+                        "s3:PutBucketCORS",
+                        "s3:PutBucketVersioning",
+                        "s3:PutLifecycleConfiguration",
+                    ],
                     "Resource": ["arn:aws:s3:::{}".format(self.s3_bucket_name)]
                 },
                 {
@@ -196,7 +218,6 @@ class S3BucketInstanceMixin(models.Model):
                 }
             ]
         }
-        return json.dumps(policy, indent=2)
 
     @property
     def bucket_name(self):
@@ -236,70 +257,113 @@ class S3BucketInstanceMixin(models.Model):
         """
         return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
 
+    @property
+    def iam(self):
+        """
+        Create connection to S3 service
+        """
+        if self._iam_client is None:
+            self._iam_client = boto3.client(
+                service_name='iam',
+                region_name=self.s3_region or None,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            )
+        return self._iam_client
+
     def create_iam_user(self):
         """
         Create IAM user with access only to the s3 bucket set in s3_bucket_name
         """
-        if not (settings.AWS_ACCESS_KEY_ID or settings.AWS_SECRET_ACCESS_KEY):
-            return
-        iam = get_master_iam_connection()
-        iam.create_user(self.iam_username)
-        iam.put_user_policy(
-            self.iam_username,
-            'allow_access_s3_bucket',
-            self.get_s3_policy()
+        self.iam.create_user(
+            UserName=self.iam_username,
         )
-        key_response = iam.create_access_key(self.iam_username)
-        keys = key_response['create_access_key_response']['create_access_key_result']['access_key']
-        self.s3_access_key = keys['access_key_id']
-        self.s3_secret_access_key = keys['secret_access_key']
+        access_key = self.iam.create_access_key(UserName=self.iam_username)['AccessKey']
+        self.s3_access_key = access_key['AccessKeyId']
+        self.s3_secret_access_key = access_key['SecretAccessKey']
         self.save()
 
-    def get_s3_connection(self):
+    @property
+    def s3(self):  # pylint: disable=invalid-name
         """
         Create connection to S3 service
         """
-        return boto.connect_s3(
-            self.s3_access_key,
-            self.s3_secret_access_key,
-            # The host parameter is required when connecting to non-default regions and using
-            # AWS signature version 4.
-            host=self.s3_hostname
-        )
+        if self._s3_client is None:
+            self._s3_client = boto3.client(
+                service_name='s3',
+                region_name=self.s3_region or None,
+                aws_access_key_id=self.s3_access_key,
+                aws_secret_access_key=self.s3_secret_access_key
+            )
+        return self._s3_client
 
-    def _create_bucket(self, attempts=4, ongoing_attempt=1, retry_delay=4, location=None):
+    def _create_bucket(self, max_tries=4, retry_delay=4, location=None):
         """
         Create bucket, retry up to defined attempts if it fails
         If you specify a location (e.g. 'EU', 'us-west-1'), this method will use it. If the location is
         not specified, the value of the instance's 's3_region' field is used.
         """
-        time.sleep(retry_delay)
-        location = location or self.s3_region
-        try:
-            s3 = self.get_s3_connection()
+        attempt, bucket = 1, None
+        location_constraint = location or self.s3_region
+        while not bucket:
             try:
-                bucket = s3.create_bucket(self.s3_bucket_name, location=location)
-            except boto.exception.S3CreateError as e:
-                if e.error_code == 'BucketAlreadyOwnedByYou':
-                    # Bucket already exists. Continue with set_cors
-                    bucket = s3.get_bucket(self.s3_bucket_name)
+                if not location_constraint or location_constraint == 'us-east-1':
+                    # oddly enough, boto3 uses 'us-east-1' as default and doesn't accept it explicitly
+                    # https://github.com/boto/boto3/issues/125
+                    bucket = self.s3.create_bucket(Bucket=self.s3_bucket_name)
                 else:
-                    raise e
-            bucket.set_cors(get_s3_cors_config())
-        except boto.exception.S3ResponseError:
-            if ongoing_attempt > attempts:
-                raise
-            self.logger.info(
-                'Retrying bucket creation. IAM keys are not propagated yet, attempt %s of %s.',
-                ongoing_attempt, attempts
-            )
-            ongoing_attempt += 1
-            self._create_bucket(
-                attempts=attempts,
-                ongoing_attempt=ongoing_attempt,
-                retry_delay=retry_delay,
-                location=location
-            )
+                    bucket = self.s3.create_bucket(
+                        Bucket=self.s3_bucket_name,
+                        CreateBucketConfiguration={
+                            'LocationConstraint': location_constraint
+                        },
+                    )
+            except ClientError as e:
+                if e.response.get('Error', {}).get('Code') == 'EntityAlreadyExists':
+                    self.logger.info(
+                        'Bucket %s already exists',
+                        self.s3_bucket_name
+                    )
+                    break
+                self.logger.info(
+                    'Retrying bucket creation. IAM keys are not propagated yet, attempt %s of %s.',
+                    attempt, max_tries
+                )
+                time.sleep(retry_delay)
+                attempt += 1
+                if attempt > max_tries:
+                    raise
+
+        # Set bucket cors
+        self.s3.put_bucket_cors(
+            Bucket=self.s3_bucket_name,
+            CORSConfiguration=S3_CORS
+        )
+
+        # Enable bucket lifecycle
+        self.s3.put_bucket_lifecycle_configuration(
+            Bucket=self.s3_bucket_name,
+            LifecycleConfiguration=S3_LIFECYCLE
+        )
+
+        # Enable bucket versioning
+        self.s3.put_bucket_versioning(
+            Bucket=self.s3_bucket_name,
+            VersioningConfiguration={
+                'Status': 'Enabled'
+            }
+        )
+
+    def _update_iam_policy(self):
+        """
+        Update S3 IAM user policy
+        """
+        self.iam.put_user_policy(
+            UserName=self.iam_username,
+            PolicyName=USER_POLICY_NAME,
+            PolicyDocument=json.dumps(self.get_s3_policy())
+        )
+        self._s3_client = None
 
     def provision_s3(self):
         """
@@ -314,7 +378,15 @@ class S3BucketInstanceMixin(models.Model):
         if not self.s3_access_key and not self.s3_secret_access_key:
             self.create_iam_user()
 
+        self._update_iam_policy()
         self._create_bucket(location=self.s3_region)
+
+    def _get_bucket_objects(self):
+        """
+        Get list of objects in bucket for deletion
+        """
+        response = self.s3.list_object_versions(Bucket=self.s3_bucket_name)
+        return response.get('Versions', []) + response.get('DeleteMarkers', [])
 
     def deprovision_s3(self):
         """
@@ -325,28 +397,39 @@ class S3BucketInstanceMixin(models.Model):
                 not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name)):
             return
 
-        if self.s3_bucket_name:
-            try:
-                s3 = self.get_s3_connection()
-                bucket = s3.get_bucket(self.s3_bucket_name)
-                self.logger.info('Deleting s3 bucket: %s', self.s3_bucket_name)
-                for key in bucket:
-                    key.delete()
-                s3.delete_bucket(self.s3_bucket_name)
-                self.s3_bucket_name = ""
-                self.save()
-            except boto.exception.S3ResponseError:
-                self.logger.exception('There was an error trying to remove S3 bucket "%s".', self.s3_bucket_name)
         try:
-            self.logger.info('Deleting IAM user: %s', self.iam_username)
-            iam = get_master_iam_connection()
+            to_delete = self._get_bucket_objects()
+            while to_delete:
+                self.s3.delete_objects(
+                    Bucket=self.s3_bucket_name,
+                    Delete={
+                        'Objects': [{'Key': d['Key'], 'VersionId': d['VersionId']} for d in to_delete]
+                    }
+                )
+                to_delete = self._get_bucket_objects()
+            # Remove bucket
+            self.s3.delete_bucket(Bucket=self.s3_bucket_name)
+        except ClientError as e:
+            if e.response['Error']['Code'] != '404':
+                self.logger.exception(
+                    'There was an error trying to remove S3 bucket "%s".',
+                    self.s3_bucket_name
+                )
+        else:
+            self.s3_bucket_name = ""
+            self.save()
+
+        try:
             # Access keys and policies need to be deleted before removing the user
-            iam.delete_access_key(self.s3_access_key, user_name=self.iam_username)
-            iam.delete_user_policy(self.iam_username, 'allow_access_s3_bucket')
-            iam.delete_user(self.iam_username)
+            self.iam.delete_access_key(UserName=self.iam_username, AccessKeyId=self.s3_access_key)
+            self.iam.delete_user_policy(UserName=self.iam_username, PolicyName=USER_POLICY_NAME)
+            self.iam.delete_user(UserName=self.iam_username)
             self.s3_access_key = ""
             self.s3_secret_access_key = ""
             self.save()
-        except boto.exception.BotoServerError:
-            self.logger.exception('There was an error trying to remove IAM user "%s".', self.iam_username)
+        except ClientError:
+            self.logger.exception(
+                'There was an error trying to remove IAM user "%s".',
+                self.iam_username
+            )
         self.logger.info('Deprovisioning S3 finished.')
