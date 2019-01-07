@@ -88,3 +88,36 @@ jobs:
             make test.integration_cleanup
           no_output_timeout: 20m
           when: always
+  cleanup:
+    docker:
+      - image: circleci/python:3.5.4-browsers
+        environment:
+          DEFAULT_FORK: 'open-craft/edx-platform'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade virtualenv
+            pip install -r requirements.txt
+      - run:
+          name: Cleanup
+          command: |
+            . venv/bin/activate
+            make test.integration_cleanup
+          no_output_timeout: 20m
+          when: always
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      # - build
+      - cleanup
+      # - cleanup:
+      #     requires:
+      #       - build
