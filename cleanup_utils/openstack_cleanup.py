@@ -131,7 +131,7 @@ class OpenStackCleanupInstance:
                 if not self.dry_run:
                     try:
                         instance.delete()
-                    except Exception as e:
+                    except Exception as e: # pylint: disable=broad-except
                         logger.warning(
                             "    * WARNING: Unable to delete instance. Error: %s.",
                             e,

@@ -90,10 +90,15 @@ class DnsCleanupInstance():
         """
         Delete a record from a version of the domain
         """
-        self.client_zone.record.delete(self.api_key, zone_id, zone_version_id, {
-            'type': ['A', 'CNAME'],
-            'name': record_name,
-        })
+        # Delete record
+        try:
+            self.client_zone.record.delete(self.api_key, zone_id, zone_version_id, {
+                'type': ['A', 'CNAME'],
+                'name': record_name,
+            })
+        except xmlrpc.client.Fault as e:
+            logger.error("  > FAILED Deleting DNS entries for %s...", record_name)
+            logger.error("  > ERROR: %s", e)
 
     def create_new_zone_version(self, zone_id):
         """
@@ -106,7 +111,11 @@ class DnsCleanupInstance():
         """
         Set a version of the domain per id
         """
-        return self.client_zone.version.set(self.api_key, zone_id, zone_version_id)
+        try:
+            return self.client_zone.version.set(self.api_key, zone_id, zone_version_id)
+        except xmlrpc.client.Fault as e:
+            logger.error("FAILED updating DNS entries.")
+            logger.error("ERROR: %s", e)
 
     def run_cleanup(self, hashes_to_clean):
         """
@@ -146,23 +155,15 @@ class DnsCleanupInstance():
             for record in records_to_delete:
                 logger.info("  > DELETING DNS entries for %s...", record)
                 # Delete record
-                try:
-                    self.delete_dns_record(
-                        zone_id=self.zone_id,
-                        zone_version_id=new_zone_version,
-                        record_name=record
-                    )
-                except xmlrpc.client.Fault as e:
-                    logger.error("  > FAILED Deleting DNS entries for %s...", record)
-                    logger.error("  > ERROR: %s", e)
+                self.delete_dns_record(
+                    zone_id=self.zone_id,
+                    zone_version_id=new_zone_version,
+                    record_name=record
+                )
 
             # Set new zone as current
             if not self.dry_run:
-                try:
-                    self.set_zone_version(
-                        zone_id=self.zone_id,
-                        zone_version_id=new_zone_version
-                    )
-                except xmlrpc.client.Fault as e:
-                    logger.error("FAILED updating DNS entries.")
-                    logger.error("ERROR: %s", e)
+                self.set_zone_version(
+                    zone_id=self.zone_id,
+                    zone_version_id=new_zone_version
+                )
