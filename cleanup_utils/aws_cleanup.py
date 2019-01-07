@@ -204,7 +204,7 @@ class AwsCleanupInstance:
                 if user_policy:
                     buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
                     logger.info("  > Cleaning up stuff from user %s.", user['UserName'])
-                    
+
                     # Delete buckets, user policy, access keys and the iam user
                     for bucket_name in buckets_to_delete:
                         logger.info("    * Deleting bucket %s.", bucket_name)
