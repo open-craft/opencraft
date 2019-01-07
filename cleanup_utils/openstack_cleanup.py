@@ -51,7 +51,7 @@ class OpenStackCleanupInstance:
             "2.0",
             auth_url=openstack_settings['auth_url'],
             username=openstack_settings['username'],
-            api_key=openstack_settings['api_key'],
+            password=openstack_settings['password'],
             project_id=openstack_settings['project_id'],
             region_name=openstack_settings['region_name']
         )

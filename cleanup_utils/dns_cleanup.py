@@ -59,6 +59,13 @@ class DnsCleanupInstance():
         """
         return self.gandi_api_key
 
+    @property
+    def client_zone(self):
+        """
+        Client domain zone API endpoint
+        """
+        return self.client.domain.zone
+
     def get_dns_record_list(self, zone_id):
         """
         Returns list of all DNS entries for the specified zone
