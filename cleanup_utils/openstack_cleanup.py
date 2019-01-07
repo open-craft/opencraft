@@ -129,7 +129,13 @@ class OpenStackCleanupInstance:
                     self.age_limit
                 )
                 if not self.dry_run:
-                    instance.delete()
+                    try:
+                        instance.delete()
+                    except Exception as e:
+                        logger.warning(
+                            "    * WARNING: Unable to delete instance. Error: %s.",
+                            e,
+                        )
 
             else:
                 logger.info(

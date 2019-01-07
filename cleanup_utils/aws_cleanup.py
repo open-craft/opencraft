@@ -120,6 +120,22 @@ class AwsCleanupInstance:
             users.extend(page['Users'])
         return users
 
+    def get_user_policy(self, username):
+        """
+        Get policy for a username
+        """
+        try:
+            return self.iam_client.get_user_policy(
+                UserName=username,
+                PolicyName=DEFAULT_POLICY_NAME
+            )
+        except botocore.exceptions.NoSuchEntityException:
+            logger.error(
+                "User policy not found: %s",
+                username,
+            )
+            return None
+
     def get_iam_user_old_access_keys(self, username):
         """
         Lists all IAM user access keys and returns only the ones that haven't
@@ -183,10 +199,7 @@ class AwsCleanupInstance:
             )
             # If the user has any old keys, proceed with deletion
             if old_keys:
-                user_policy = self.iam_client.get_user_policy(
-                    UserName=user['UserName'],
-                    PolicyName=DEFAULT_POLICY_NAME
-                )
+                user_policy = self.get_user_policy(user['UserName'])
                 # If user policy exists
                 if user_policy:
                     buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
