@@ -90,9 +90,7 @@ jobs:
           when: always
   cleanup:
     docker:
-      - image: circleci/python:3.5.4-browsers
-        environment:
-          DEFAULT_FORK: 'open-craft/edx-platform'
+      - image: circleci/python:3.5.4
     steps:
       - checkout
       - restore_cache:
