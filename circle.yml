@@ -114,7 +114,8 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - build
-      - cleanup:
-          requires:
-            - build
+      - cleanup
+      # - build
+      # - cleanup:
+      #     requires:
+      #       - build
