@@ -100,9 +100,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install --upgrade pip
-            pip install --upgrade virtualenv
-            pip install -r requirements.txt
+            pip install -r cleanup_utils/requirements.txt
       - run:
           name: Cleanup
           command: |
@@ -115,6 +113,4 @@ workflows:
   build-test-and-deploy:
     jobs:
       - build
-      - cleanup:
-          requires:
-            - build
+      - cleanup
