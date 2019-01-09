@@ -4,8 +4,6 @@ set -e
 
 make install_system_dependencies
 
-asdfasdf
-
 case $CIRCLE_NODE_INDEX in
     0)
         make test
