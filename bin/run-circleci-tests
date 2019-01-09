@@ -2,14 +2,13 @@
 
 set -e
 
-echo "Hi"
-# make install_system_dependencies
-#
-# case $CIRCLE_NODE_INDEX in
-#     0)
-#         make test
-#         ;;
-#     *)
-#         make test.integration
-#         ;;
-# esac
+make install_system_dependencies
+
+case $CIRCLE_NODE_INDEX in
+    0)
+        make test
+        ;;
+    *)
+        make test.integration
+        ;;
+esac

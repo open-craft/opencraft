@@ -24,15 +24,15 @@ Cleans up all AWS, Openstack and DNS resources left behind by CircleCI
 cancelled runs
 """
 
-# import argparse
-# from datetime import datetime, timedelta
-# import logging
-# import os
-# from pytz import UTC
-#
-# from cleanup_utils.aws_cleanup import AwsCleanupInstance
-# from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
-# from cleanup_utils.dns_cleanup import DnsCleanupInstance
+import argparse
+from datetime import datetime, timedelta
+import logging
+import os
+from pytz import UTC
+
+from cleanup_utils.aws_cleanup import AwsCleanupInstance
+from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
+from cleanup_utils.dns_cleanup import DnsCleanupInstance
 
 
 # Constants ###################################################################
