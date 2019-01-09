@@ -71,12 +71,14 @@ class Command(BaseCommand):
         )
         instance_count = instances.count()
 
-        self.stdout.write('Archiving %s instances...' % instance_count)
+        self.stdout.write('Archiving %s instances (from %s domains) ...' % (instance_count, len(domains)))
         if self.confirm(force):
             for instance in instances:
                 self.stdout.write('Archiving %s...' % instance.internal_lms_domain)
                 self.archive_instance(instance)
-            self.stdout.write(self.style.SUCCESS('Archived %s instances.' % instance_count))
+            self.stdout.write(
+                self.style.SUCCESS('Archived %s instances (from %s domains).' % (instance_count, len(domains)))
+            )
         else:
             self.stdout.write('Cancelled')
 
