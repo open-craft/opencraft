@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Tasks #######################################################################
 
-@db_periodic_task(crontab(hour='*/2'))
+@db_periodic_task(crontab(hour='*/4'))
 def deploy_edx_edxplatform():
     """
     Automatically deploy a new server with the latest version of Open edX.
@@ -55,14 +55,14 @@ def deploy_edx_edxplatform():
 
     instance, created = OpenEdXInstance.objects.get_or_create(
         internal_lms_domain=generate_internal_lms_domain('master'), # FIXME just pass subdomain='master' or similar
-        # github_admin_organizations=['open-craft'], # FIXME reenable, but it needs a GitHub user with API access to it
-        use_ephemeral_databases=False, # FIXME this is causing a problem with SWIFT because the "openstack" role is not in edx_sandbox.yml; see discovery document. Setting it to True probably avoids the error
+        # github_admin_organizations=['open-craft'], # FIXME remove if possible, or assign OpenCraft organization. In any case, check that Ocim superusers still have SSH access (should always happen after sandboxes)
+        use_ephemeral_databases=False, # FIXME this set to False was causing a problem with SWIFT because the "openstack" role wasn't in edx_sandbox.yml; see discovery document. Probably fixed; check
         edx_platform_repository_url='https://github.com/edx/edx-platform',
         configuration_source_repo_url='https://github.com/edx/configuration',
         configuration_version='master',
         edx_platform_commit='master',
         openedx_release='master',
-        deploy_simpletheme=True, # FIXME add extra configuration variables that actually change some color
+        deploy_simpletheme=True, # FIXME add extra configuration variables that actually change some color, or disable 
     )
     if created:
         # Name is set separately because it's stored in InstanceReference
@@ -74,6 +74,6 @@ def deploy_edx_edxplatform():
     spawn_appserver(instance.ref.pk, mark_active_on_success=False)
 
 
-# FIXME add another function to test other branches:
+# TODO (after deploying 'master' works): add a similar function to deploy other branches
+# E.g. apart from 'master', deploy and test also 'open-release/hawthorn.1'
 # "cf OC-3150 – also add a second VM run that checks the stable branches used for beta instances are still working. Be sure to include an additional test lms_user, to mimic the beta instance creation logic."
-# But first finish deploy_edx_platform and make it correctly deploy
