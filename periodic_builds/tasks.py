@@ -73,6 +73,7 @@ def deploy_edx_edxplatform():
     # see in send_emails_on_deployment_failure
     spawn_appserver(instance.ref.pk, mark_active_on_success=False)
 
+    # The servers will be automatically cleaned by a periodic task after some days
 
 # TODO (after deploying 'master' works): add a similar function to deploy other branches
 # E.g. apart from 'master', deploy and test also 'open-release/hawthorn.1'

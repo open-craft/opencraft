@@ -28,6 +28,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import get_template
 
+
 def send_emails_on_deployment_failure(method):
     """
     Decorator around spawn_appserver that catches all the emited exceptions and notifies by email
@@ -41,14 +42,14 @@ def send_emails_on_deployment_failure(method):
     them by e-mail when a deployment finished with or without error.
     """
     @wraps(method)
-    def wrapper(self, *args, **kwds): #pylint: disable=missing-docstring
+    def wrapper(self, *args, **kwds):  #pylint: disable=missing-docstring
 
         try:
             result = method(self, *args, **kwds)
         except Exception as e:
             # This means that the deployment failed due to infrastructure problems (which raise exceptions), e.g.
             # OVH down, or an incorrect MySQL/MongoDB login/password, etc.
-            # Notify OpenCraft
+            # Notify OpenCraft.  FIXME here and below, don't mention OpenCraft by name but say ~~~ "the devops team"
             if settings.INFRASTRUCTURE_DEPLOYMENT_PROBLEMS_EMAIL:
                 stacktrace = traceback.format_exc()
                 context = {
