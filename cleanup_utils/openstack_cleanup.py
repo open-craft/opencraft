@@ -105,13 +105,6 @@ class OpenStackCleanupInstance:
                 instance.key_name,
                 instance.created
             )
-            # Double-check to make sure that the instance is using the circleci keypair.
-            if instance.key_name != 'circleci':
-                logger.info(
-                    "    * SKIPPING: Instance keypair name %s != 'circleci'!",
-                    instance.key_name
-                )
-                continue
 
             # Check if it's a valid date and add UTC timezone
             try:
