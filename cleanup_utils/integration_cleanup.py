@@ -120,7 +120,10 @@ if __name__ == "__main__":
         '--dry_run',
         action='store_true',
         default=False,
-        help='sum the integers (default: find the max)'
+        help="""
+            Runs this script in read only mode, not actually cleaning up the resources.
+            Useful for checking if changes in the script are working correctly.
+        """
     )
     args = parser.parse_args()
 
