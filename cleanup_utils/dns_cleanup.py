@@ -105,7 +105,12 @@ class DnsCleanupInstance():
         Create a new version of the domain, based on the current version
         Returns the `version_id` of the version
         """
-        return self.client_zone.version.new(self.api_key, zone_id)
+        try:
+            return self.client_zone.version.new(self.api_key, zone_id)
+        except xmlrpc.client.Fault as e:
+            logger.error("FAILED Creating a new DNS zone.")
+            logger.error("ERROR: %s", e)
+            return None
 
     def set_zone_version(self, zone_id, zone_version_id):
         """
@@ -151,19 +156,20 @@ class DnsCleanupInstance():
             # Create new zone version
             new_zone_version = self.create_new_zone_version(self.zone_id)
 
-            # Delete entries
-            for record in records_to_delete:
-                logger.info("  > DELETING DNS entries for %s...", record)
-                # Delete record
-                self.delete_dns_record(
-                    zone_id=self.zone_id,
-                    zone_version_id=new_zone_version,
-                    record_name=record
-                )
+            if new_zone_version:
+                # Delete entries
+                for record in records_to_delete:
+                    logger.info("  > DELETING DNS entries for %s...", record)
+                    # Delete record
+                    self.delete_dns_record(
+                        zone_id=self.zone_id,
+                        zone_version_id=new_zone_version,
+                        record_name=record
+                    )
 
-            # Set new zone as current
-            if not self.dry_run:
-                self.set_zone_version(
-                    zone_id=self.zone_id,
-                    zone_version_id=new_zone_version
-                )
+                # Set new zone as current
+                if not self.dry_run:
+                    self.set_zone_version(
+                        zone_id=self.zone_id,
+                        zone_version_id=new_zone_version
+                    )
