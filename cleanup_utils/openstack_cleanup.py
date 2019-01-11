@@ -57,7 +57,7 @@ class OpenStackCleanupInstance:
                 project_id=openstack_settings['project_id'],
                 region_name=openstack_settings['region_name']
             )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             logger.error("ERROR: %s", e)
             self.openstack_online = False
 
