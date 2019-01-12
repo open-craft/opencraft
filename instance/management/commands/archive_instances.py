@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,7 +25,6 @@ Instance app - Archive one or more instances by their domains
 import logging
 
 from django.core.management.base import BaseCommand
-from django.core.management import CommandError
 
 from instance.models.openedx_instance import OpenEdXInstance
 
@@ -41,43 +40,50 @@ class Command(BaseCommand):
     help = 'Archive instances specified by their internal LMS domain.'
 
     def add_arguments(self, parser):
-        parser.add_argument('domain', nargs='*', help='Instance domain')
-        parser.add_argument(
-            '--file',
-            help='File containing newline-separated list of instance domains')
-        parser.add_argument(
-            '--force',
-            action='store_true',
-            help='Pass --force to archive without confirming first.'
+        """
+        Add mutually exclusive required arguments --domains and --file to parser.
+        """
+        domains_source_group = parser.add_mutually_exclusive_group(required=True)
+        domains_source_group.add_argument(
+            '--domains', help='Comma-separated list of domains'
+        )
+        domains_source_group.add_argument(
+            '--file', help='File containing newline-separated list of instance domains'
         )
 
     def handle(self, *args, **options):
-        domains = options['domain']
+        """
+        Archive instances from a list of domains or from a file.
+        """
+        domains = options['domains']
         infile = options['file']
-        force = options['force']
-
-        if not domains and not infile:
-            raise CommandError('Error: either domain or --file are required')
 
         if infile:
-            # if a file is provided, ignore positional arg domains and use the domains in the file
             with open(infile, 'r') as f:
-                domains = f.readlines()
-                domains = [d.strip() for d in domains]
+                domains = [line.strip() for line in f.readlines()]
+        else:
+            domains = domains.split(',')
 
         instances = OpenEdXInstance.objects.filter(
             internal_lms_domain__in=domains,
             ref_set__is_archived=False
         )
         instance_count = instances.count()
+        domains_count = len(domains)
 
-        self.stdout.write('Archiving %s instances (from %s domains) ...' % (instance_count, len(domains)))
-        if self.confirm(force):
+        if instance_count == 0:
+            self.stdout.write('No unarchived instances found (from %s domains).' % domains_count)
+            return
+
+        self.stdout.write('Found %s instances (from %s domains) to be archived...' % (instance_count, domains_count))
+        for instance in instances:
+            self.stdout.write('- %s' % instance.internal_lms_domain)
+        if self.confirm():
             for instance in instances:
                 self.stdout.write('Archiving %s...' % instance.internal_lms_domain)
                 self.archive_instance(instance)
             self.stdout.write(
-                self.style.SUCCESS('Archived %s instances (from %s domains).' % (instance_count, len(domains)))
+                self.style.SUCCESS('Archived %s instances (from %s domains).' % (instance_count, domains_count))
             )
         else:
             self.stdout.write('Cancelled')
@@ -90,14 +96,10 @@ class Command(BaseCommand):
         instance.archive()
         instance.deprovision_rabbitmq()
 
-    def confirm(self, force):
+    def confirm(self):
         """
-        Confirm with the user that archiving should proceed, unless force is True.
+        Confirm with the user that archiving should proceed.
         """
-        if force:
-            answer = 'yes'
-        else:
-            self.stdout.write('Are you sure you want to continue? [yes/No]')
-            answer = input()
-
+        self.stdout.write('Are you sure you want to continue? [yes/No]')
+        answer = input()
         return answer.lower().startswith('y')
