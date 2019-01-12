@@ -114,8 +114,8 @@ class ArchiveInstancesTestCase(TestCase):
         self.assertRegex(out.getvalue(), r'.*Archived 1 instances \(from 1 domains\).*')
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
-    @ddt.data([['A.example.com'], 1])
-    @ddt.data([['B.example.com', 'C.example.com', 'D.example.com'], 2])
+    @ddt.data([['A.example.com'], 1],
+              [['B.example.com', 'C.example.com', 'D.example.com'], 2])
     @ddt.unpack
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -127,7 +127,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         Test archiving single and multiple instances by passing invidividual domains.
         """
-        instances = self.create_test_instances('ABCDEFG')
+        instances = self.create_test_instances('ABCDEFGH')
         # Mark instance B as archived, so it won't match the filter
         instances['B.example.com']['instance'].ref.is_archived = True
         instances['B.example.com']['instance'].save()
@@ -148,8 +148,8 @@ class ArchiveInstancesTestCase(TestCase):
         self.assertEqual(mock_deprovision_rabbitmq.call_count, expected_archived_count)
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
-    @ddt.data(['archive_instances.txt', 3])
-    @ddt.data(['archive_instances2.txt', 1])
+    @ddt.data(['archive_instances.txt', 3],
+              ['archive_instances2.txt', 1])
     @ddt.unpack
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -161,10 +161,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         Test archiving instances from domains listed in a file.
         """
-        instances = self.create_test_instances('ABCDEFG')
-        # Mark instance B as archived, so it won't match the filter
-        instances['B.example.com']['instance'].ref.is_archived = True
-        instances['B.example.com']['instance'].save()
+        instances = self.create_test_instances('ABCDEFGH')
 
         patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
         out = StringIO()
