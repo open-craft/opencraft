@@ -57,6 +57,7 @@ jobs:
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
             pip install -r requirements.txt
+            pip install -r cleanup_utils/requirements.txt
             sudo apt-get install postgresql-client
             sudo apt-get install unzip
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
