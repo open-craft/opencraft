@@ -517,6 +517,7 @@ EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX', default='[OpenCraft] ')
 # Destination e-mail for notifications like "The user changed the logo"
 VARIABLES_NOTIFICATION_EMAIL = env('VARIABLES_NOTIFICATION_EMAIL', default=None)
 
+# FIXME consider renaming these variables, or at least document them. One (infrastructure) is due to devops problems here, the other one is due to the upstream playbook or code. The former should notify us, the latter should notify edX. (Also check that they're correctly used in the code)
 # Destination e-mail for notifications like "OVH failed when deploying a server"
 INFRASTRUCTURE_DEPLOYMENT_PROBLEMS_EMAIL = env('INFRASTRUCTURE_DEPLOYMENT_PROBLEMS_EMAIL', default=None)
 # Destination e-mail for notifications like "The ansible playbook to deploy Open edX failed"
