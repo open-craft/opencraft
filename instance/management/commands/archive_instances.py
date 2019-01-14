@@ -23,6 +23,7 @@ Instance app - Archive one or more instances by their domains
 # Imports #####################################################################
 
 import logging
+import traceback
 
 from django.core.management.base import BaseCommand
 
@@ -60,7 +61,7 @@ class Command(BaseCommand):
 
         if infile:
             with open(infile, 'r') as f:
-                domains = [line.strip() for line in f.readlines()]
+                domains = [line.strip() for line in f]
         else:
             domains = domains.split(',')
 
@@ -72,29 +73,42 @@ class Command(BaseCommand):
         domains_count = len(domains)
 
         if instance_count == 0:
-            self.stdout.write('No unarchived instances found (from %s domains).' % domains_count)
+            self.stdout.write('No active instances found (from %s domains).' % domains_count)
             return
 
         self.stdout.write('Found %s instances (from %s domains) to be archived...' % (instance_count, domains_count))
         for instance in instances:
             self.stdout.write('- %s' % instance.internal_lms_domain)
         if self.confirm():
+            archived_count = 0
             for instance in instances:
                 self.stdout.write('Archiving %s...' % instance.internal_lms_domain)
-                self.archive_instance(instance)
+                archived = self.archive_instance(instance)
+                if archived:
+                    archived_count += 1
             self.stdout.write(
-                self.style.SUCCESS('Archived %s instances (from %s domains).' % (instance_count, domains_count))
+                self.style.SUCCESS('Archived %s instances (from %s domains).' % (archived_count, domains_count))
             )
         else:
             self.stdout.write('Cancelled')
 
-    @staticmethod
-    def archive_instance(instance):
+    def archive_instance(self, instance):
         """
-        Archive a single OpenEdXInstance.
+        Archive a single OpenEdXInstance. If archiving fails for any
+        reason, handle the exception and log it so other the instances
+        can proceed.
         """
-        instance.archive()
-        instance.deprovision_rabbitmq()
+        try:
+            instance.archive()
+            instance.deprovision_rabbitmq()
+            return True
+        except Exception:  # noqa
+            tb = traceback.format_exc()
+            message = 'Failed to archive %s.' % instance.internal_lms_domain
+            LOG.exception(message)
+            self.stdout.write(self.style.ERROR(message))
+            self.stdout.write(self.style.ERROR(tb))
+            return False
 
     def confirm(self):
         """

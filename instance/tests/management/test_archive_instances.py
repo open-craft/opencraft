@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -83,7 +83,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         out = StringIO()
         call_command('archive_instances', '--domains=X.example.com', stdout=out)
-        self.assertEqual(out.getvalue().strip(), 'No unarchived instances found (from 1 domains).')
+        self.assertEqual(out.getvalue().strip(), 'No active instances found (from 1 domains).')
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='no'))
     def test_cancel_archive(self):
@@ -163,7 +163,6 @@ class ArchiveInstancesTestCase(TestCase):
         """
         instances = self.create_test_instances('ABCDEFGH')
 
-        patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
         out = StringIO()
         fp = get_fixture_filepath(os.path.join('management', filename))
         with open(fp, 'r') as f:
@@ -180,3 +179,32 @@ class ArchiveInstancesTestCase(TestCase):
             instance.refresh_from_db()
             self.assertTrue(instance.ref.is_archived)
         self.assertEqual(mock_deprovision_rabbitmq.call_count, expected_archived_count)
+
+    @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
+    def test_archive_exception_handling(self, mock_remove_dns_records, mock_disable_monitoring,
+                                        mock_reconfigure, mock_deprovision_rabbitmq):
+        """
+        Verify that if an instance fails to be archived, the other instances are still being archived.
+        """
+        instances = self.create_test_instances('ABCD')
+        domains = instances.keys()
+
+        # mock instance.disable_monitoring() method to raise exception for the first instance
+        mock_disable_monitoring.side_effect = [Exception('disable_monitoring'), None, None, None]
+
+        out = StringIO()
+        call_command(
+            'archive_instances',
+            '--domains=%s' % ','.join(domains),
+            stdout=out
+        )
+        self.assertRegex(out.getvalue(), r'.*Archived 3 instances \(from 4 domains\).')
+        self.assertRegex(out.getvalue(), r'.*Failed to archive A.example.com.')
+        self.assertEqual(
+            OpenEdXInstance.objects.filter(internal_lms_domain__in=domains, ref_set__is_archived=True).count(),
+            3
+        )
