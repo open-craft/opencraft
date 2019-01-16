@@ -106,6 +106,14 @@ def main():
     )
     os_cleanup.run_cleanup()
 
+    # Run MySQL cleanup
+    mysql_cleanup = MySqlCleanupInstance(
+        age_limit=DEFAULT_AGE_LIMIT,
+        url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
+        dry_run=args.dry_run
+    )
+    mysql_cleanup.run_cleanup()
+
     # Run DNS cleanup
     dns_cleanup = DnsCleanupInstance(
         zone_id=int(os.environ['GANDI_ZONE_ID']),
@@ -114,18 +122,12 @@ def main():
     )
     # Run DNS cleanup erasing all integration entries except for those on
     # the deletion_blacklist
-    hashes_to_clean = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
+    hashes_to_clean = (
+        aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes +
+        mysql_cleanup.cleaned_up_hashes)
     dns_cleanup.run_cleanup(
         hashes_to_clean=hashes_to_clean
     )
-
-    # Run MySQL cleanup
-    mysql_cleanup = MySqlCleanupInstance(
-        age_limit=DEFAULT_AGE_LIMIT,
-        url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
-        dry_run=args.dry_run
-    )
-    mysql_cleanup.run_cleanup()
 
     logger.info("\nIntegration cleanup tool finished.")
 
