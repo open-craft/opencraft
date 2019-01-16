@@ -639,10 +639,12 @@ your development environment is likely a good starting point:
     cp .env .env.integration
 
 
-There is also a cleanup routine intended for use by CI services to check for and
-clean up any dangling OpenStack VMs past a certain age threshold. While it isn't
-necessary in the usual case, old integration tests that were killed without cleanup
-can be cleaned up after four hours by running the make target:
+There is also a cleanup routine intended for use by CI services to check for
+and clean up any dangling OpenStack VMs and MySQL databases past a certain age
+threshold. While it isn't necessary in the usual case, old integration tests
+that were killed without cleanup that are older than four hours, and old MySQL
+databases that are older than three days can be cleaned up by running the make
+target:
 
     make test.integration_cleanup
 

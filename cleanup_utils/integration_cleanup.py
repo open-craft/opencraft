@@ -31,8 +31,9 @@ import os
 from pytz import UTC
 
 from cleanup_utils.aws_cleanup import AwsCleanupInstance
-from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 from cleanup_utils.dns_cleanup import DnsCleanupInstance
+from cleanup_utils.mysql_cleanup import MySqlCleanupInstance
+from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 
 
 # Constants ###################################################################
@@ -117,6 +118,14 @@ def main():
     dns_cleanup.run_cleanup(
         hashes_to_clean=hashes_to_clean
     )
+
+    # Run MySQL cleanup
+    mysql_cleanup = MySqlCleanupInstance(
+        age_limit=DEFAULT_AGE_LIMIT,
+        url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
+        dry_run=args.dry_run
+    )
+    mysql_cleanup.run_cleanup()
 
     logger.info("\nIntegration cleanup tool finished.")
 
