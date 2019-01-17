@@ -38,7 +38,10 @@ from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 
 # Constants ###################################################################
 
-DEFAULT_AGE_LIMIT = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
+# Default age at which things should be cleaned up, in days
+DEFAULT_AGE_LIMIT = 3
+DEFAULT_CUTOFF_TIME = (
+    datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=DEFAULT_AGE_LIMIT))
 
 
 # Logging #####################################################################
@@ -84,7 +87,7 @@ def main():
 
     # Clean up AWS
     aws_cleanup = AwsCleanupInstance(
-        age_limit=DEFAULT_AGE_LIMIT,
+        age_limit=DEFAULT_CUTOFF_TIME,
         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
         dry_run=args.dry_run
@@ -100,7 +103,7 @@ def main():
         'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(
-        age_limit=DEFAULT_AGE_LIMIT,
+        age_limit=DEFAULT_CUTOFF_TIME,
         openstack_settings=openstack_settings,
         dry_run=args.dry_run
     )
@@ -110,6 +113,7 @@ def main():
     mysql_cleanup = MySqlCleanupInstance(
         age_limit=DEFAULT_AGE_LIMIT,
         url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
+        domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
         dry_run=args.dry_run
     )
     mysql_cleanup.run_cleanup()
