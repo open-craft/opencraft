@@ -51,7 +51,7 @@ def _get_cursor(url):
             port=database_url_obj.port or 3306,
         )
     except MySQLError as exc:
-        logger.excecption('Cannot get MySQL cursor: %s', exc)
+        logger.exception('Cannot get MySQL cursor: %s', exc)
         raise
     return connection.cursor()
 
@@ -68,9 +68,13 @@ class MySqlCleanupInstance:
         """
         self.age_limit = age_limit
         self.cleaned_up_hashes = []
-        self.cursor = _get_cursor(url)
         self.domain_suffix = domain.replace('.', '_')
         self.dry_run = dry_run
+        try:
+            self.cursor = _get_cursor(url)
+        except Exception:  # pylint: disable=broad-except
+            # Exception has already been logged
+            self.cursor = None
 
     def _get_old_databases(self):
         """
@@ -93,6 +97,13 @@ class MySqlCleanupInstance:
         Runs the cleanup of MySQL databases older than the age limit
         """
         logger.info("\n --- Starting MySQL Cleanup ---")
+        if not self.cursor:
+            logger.error(
+                'ERROR: Not connected to the database, '
+                'MySQL cleanup will be skipped.'
+            )
+            return
+
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
@@ -101,8 +112,7 @@ class MySqlCleanupInstance:
 
         for (database, create_date) in databases:
             logger.info('  > Considering database %s', database)
-            instance_database_re = r'^([0-9a-f]{8})([_0-9a-z]+)?_%s' % (
-                self.domain_suffix,)
+            instance_database_re = r'^([0-9a-f]{8})([_0-9a-z]+)?_%s' % (self.domain_suffix,)
             match = re.match(instance_database_re, database)
             if not match:
                 logger.info(
@@ -117,8 +127,10 @@ class MySqlCleanupInstance:
             if not self.dry_run:
                 try:
                     self.cursor.execute(
-                        'DROP DATABASE IF EXISTS {}'.format(database))
+                        'DROP DATABASE IF EXISTS {}'.format(database)
+                    )
                     self.cleaned_up_hashes.append(match.groups()[0])
                 except MySQLError as exc:
                     logger.exception(
-                        'Unable to remove MySQL DB: %s. %s', database, exc)
+                        'Unable to remove MySQL DB: %s. %s', database, exc
+                    )
