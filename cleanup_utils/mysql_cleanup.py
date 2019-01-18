@@ -36,6 +36,26 @@ from MySQLdb import Error as MySQLError
 logger = logging.getLogger('integration_cleanup')
 
 
+# Functions ##################################################################
+
+def _get_cursor(url):
+    """
+    Returns a cursor on the database
+    """
+    database_url_obj = urlparse(url)
+    try:
+        connection = mysql.connect(
+            host=database_url_obj.hostname,
+            user=database_url_obj.username or '',
+            passwd=database_url_obj.password or '',
+            port=database_url_obj.port or 3306,
+        )
+    except MySQLError as exc:
+        logger.excecption('Cannot get MySQL cursor: %s', exc)
+        raise
+    return connection.cursor()
+
+
 # Classes ####################################################################
 
 class MySqlCleanupInstance:
@@ -48,28 +68,14 @@ class MySqlCleanupInstance:
         """
         self.age_limit = age_limit
         self.cleaned_up_hashes = []
-        self.cursor = self._get_cursor(url)
+        self.cursor = _get_cursor(url)
         self.domain_suffix = domain.replace('.', '_')
         self.dry_run = dry_run
 
-    def _get_cursor(self, url):
-        """
-        Returns a cursor on the database
-        """
-        database_url_obj = urlparse(url)
-        try:
-            connection = mysql.connect(
-                host=database_url_obj.hostname,
-                user=database_url_obj.username or '',
-                passwd=database_url_obj.password or '',
-                port=database_url_obj.port or 3306,
-            )
-        except MySQLError as exc:
-            logger.excecption('Cannot get MySQL cursor: %s', exc)
-            raise
-        return connection.cursor()
-
     def _get_old_databases(self):
+        """
+        Returns a list of databases older than the age limit
+        """
         query = """SELECT table_schema, MAX(create_time) AS create_time
             FROM information_schema.tables
             WHERE create_time <= DATE_SUB(NOW(), INTERVAL %(age_limit)s DAY)
@@ -94,17 +100,21 @@ class MySqlCleanupInstance:
         logger.info('Found %d old databases', len(databases))
 
         for (database, create_date) in databases:
+            logger.info('  > Considering database %s', database)
             match = re.match('^([0-9a-f]{8})_%s' % (self.domain_suffix,),
                              database)
-            if match:
-                logger.info(
-                    'Dropping MySQL DB `%s` created at %s', database,
-                    datetime.strftime(create_date, '%Y-%m-%dT%H:%M:%SZ'))
-                if not self.dry_run:
-                    try:
-                        self.cursor.execute('DROP DATABASE IF EXISTS {}'.format(database))
-                        self.cleaned_up_hashes.append(match.groups()[0])
-                    except MySQLError as exc:
-                        logger.exception(
-                            'Unable to remove MySQL DB: %s. %s', database, exc)
-                        raise
+            if not match:
+                logger.info('    * SKIPPING: Did not match expected format.')
+                continue
+
+            logger.info(
+                '    * Dropping MySQL DB `%s` created at %s', database,
+                datetime.strftime(create_date, '%Y-%m-%dT%H:%M:%SZ'))
+            if not self.dry_run:
+                try:
+                    self.cursor.execute(
+                        'DROP DATABASE IF EXISTS {}'.format(database))
+                    self.cleaned_up_hashes.append(match.groups()[0])
+                except MySQLError as exc:
+                    logger.exception(
+                        'Unable to remove MySQL DB: %s. %s', database, exc)
