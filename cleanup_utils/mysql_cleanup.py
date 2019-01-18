@@ -101,10 +101,13 @@ class MySqlCleanupInstance:
 
         for (database, create_date) in databases:
             logger.info('  > Considering database %s', database)
-            match = re.match('^([0-9a-f]{8})_%s' % (self.domain_suffix,),
-                             database)
+            instance_database_re = '^([0-9a-f]{8})_%s' % (self.domain_suffix,)
+            match = re.match(instance_database_re, database)
             if not match:
-                logger.info('    * SKIPPING: Did not match expected format.')
+                logger.info(
+                    '    * SKIPPING: Did not match expected format %r.',
+                    instance_database_re
+                )
                 continue
 
             logger.info(
