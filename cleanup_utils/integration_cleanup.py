@@ -58,28 +58,18 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-# Classes #####################################################################
+# Functions ###################################################################
 
 
-def main():
+def run_integration_cleanup(dry_run=False):
     """
     Main function responsible for the cleanup
+    Calls each cleanup module to be executed
     """
-    parser = argparse.ArgumentParser(
-        description="Cleanup all unused resources from integration runs that "
-                    "might have been left behind."
-    )
-    parser.add_argument(
-        '--dry_run',
-        action='store_true',
-        default=False,
-        help='sum the integers (default: find the max)'
-    )
-    args = parser.parse_args()
     logger.setLevel(logging.DEBUG)
 
     logger.info("Running integration cleanup tool...")
-    if args.dry_run:
+    if dry_run:
         logger.info(
             "  > Using DRY_RUN mode: no actual changes will be done to any "
             "resources."
@@ -90,7 +80,7 @@ def main():
         age_limit=DEFAULT_CUTOFF_TIME,
         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-        dry_run=args.dry_run
+        dry_run=dry_run
     )
     aws_cleanup.run_cleanup()
 
@@ -98,14 +88,14 @@ def main():
     openstack_settings = {
         'auth_url': os.environ['OPENSTACK_AUTH_URL'],
         'username': os.environ['OPENSTACK_USER'],
-        'api_key': os.environ['OPENSTACK_PASSWORD'],
+        'password': os.environ['OPENSTACK_PASSWORD'],
         'project_id': os.environ['OPENSTACK_TENANT'],
         'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(
         age_limit=DEFAULT_CUTOFF_TIME,
         openstack_settings=openstack_settings,
-        dry_run=args.dry_run
+        dry_run=dry_run
     )
     os_cleanup.run_cleanup()
 
@@ -122,7 +112,7 @@ def main():
     dns_cleanup = DnsCleanupInstance(
         zone_id=int(os.environ['GANDI_ZONE_ID']),
         api_key=os.environ['GANDI_API_KEY'],
-        dry_run=args.dry_run
+        dry_run=dry_run
     )
     # Run DNS cleanup erasing all integration entries except for those on
     # the deletion_blacklist
@@ -137,4 +127,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Cleanup all unused resources from integration runs that "
+                    "might have been left behind."
+    )
+    parser.add_argument(
+        '--dry_run',
+        action='store_true',
+        default=False,
+        help="""
+            Runs this script in read only mode, not actually cleaning up the resources.
+            Useful for checking if changes in the script are working correctly.
+        """
+    )
+    args = parser.parse_args()
+
+    run_integration_cleanup(args.dry_run)

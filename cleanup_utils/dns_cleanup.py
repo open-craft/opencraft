@@ -24,7 +24,6 @@ Cleans up all DNS entries left behind from CI
 
 import logging
 import xmlrpc
-from instance.gandi import GandiAPI
 
 # Logging #####################################################################
 
@@ -38,11 +37,11 @@ BATCH_SIZE = 200
 
 # Classes #####################################################################
 
-class DnsCleanupInstance(GandiAPI):
+class DnsCleanupInstance():
     """
     Handles the cleanup of dangling DNS entries
     """
-    def __init__(self, zone_id, api_key, dry_run):
+    def __init__(self, zone_id, api_key, dry_run, api_url='https://rpc.gandi.net/xmlrpc/'):
         """
         Set up variables needed for cleanup
         """
@@ -50,7 +49,8 @@ class DnsCleanupInstance(GandiAPI):
         self.gandi_api_key = api_key
         self.zone_id = zone_id
 
-        super(DnsCleanupInstance, self).__init__()
+        # Gandi's XMLRPC API
+        self.client = xmlrpc.client.ServerProxy(api_url)
 
     @property
     def api_key(self):
@@ -58,6 +58,13 @@ class DnsCleanupInstance(GandiAPI):
         Gandi API key
         """
         return self.gandi_api_key
+
+    @property
+    def client_zone(self):
+        """
+        Client domain zone API endpoint
+        """
+        return self.client.domain.zone
 
     def get_dns_record_list(self, zone_id):
         """
@@ -78,6 +85,42 @@ class DnsCleanupInstance(GandiAPI):
             )
 
         return dns_entries
+
+    def delete_dns_record(self, zone_id, zone_version_id, record_name):
+        """
+        Delete a record from a version of the domain
+        """
+        # Delete record
+        try:
+            self.client_zone.record.delete(self.api_key, zone_id, zone_version_id, {
+                'type': ['A', 'CNAME'],
+                'name': record_name,
+            })
+        except xmlrpc.client.Fault as e:
+            logger.error("  > FAILED Deleting DNS entries for %s...", record_name)
+            logger.error("  > ERROR: %s", e)
+
+    def create_new_zone_version(self, zone_id):
+        """
+        Create a new version of the domain, based on the current version
+        Returns the `version_id` of the version
+        """
+        try:
+            return self.client_zone.version.new(self.api_key, zone_id)
+        except xmlrpc.client.Fault as e:
+            logger.error("FAILED Creating a new DNS zone.")
+            logger.error("ERROR: %s", e)
+            return None
+
+    def set_zone_version(self, zone_id, zone_version_id):
+        """
+        Set a version of the domain per id
+        """
+        try:
+            return self.client_zone.version.set(self.api_key, zone_id, zone_version_id)
+        except xmlrpc.client.Fault as e:
+            logger.error("FAILED updating DNS entries.")
+            logger.error("ERROR: %s", e)
 
     def run_cleanup(self, hashes_to_clean):
         """
@@ -113,23 +156,20 @@ class DnsCleanupInstance(GandiAPI):
             # Create new zone version
             new_zone_version = self.create_new_zone_version(self.zone_id)
 
-            # Delete entries
-            for record in records_to_delete:
-                logger.info("  > DELETING DNS entries for %s...", record)
-                # Delete record
-                try:
+            if new_zone_version:
+                # Delete entries
+                for record in records_to_delete:
+                    logger.info("  > DELETING DNS entries for %s...", record)
+                    # Delete record
                     self.delete_dns_record(
                         zone_id=self.zone_id,
                         zone_version_id=new_zone_version,
                         record_name=record
                     )
-                except xmlrpc.client.Fault as e:
-                    logger.error("  > FAILED Deleting DNS entries for %s...", record)
-                    logger.error("  > ERROR: %s", e)
 
-            # Set new zone as current
-            if not self.dry_run:
-                self.set_zone_version(
-                    zone_id=self.zone_id,
-                    zone_version_id=new_zone_version
-                )
+                # Set new zone as current
+                if not self.dry_run:
+                    self.set_zone_version(
+                        zone_id=self.zone_id,
+                        zone_version_id=new_zone_version
+                    )

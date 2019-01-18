@@ -46,15 +46,20 @@ class OpenStackCleanupInstance:
         self.dry_run = dry_run
         self.age_limit = age_limit
         self.cleaned_up_hashes = []
+        self.openstack_online = True
 
-        self.nova = client.Client(
-            "2.0",
-            auth_url=openstack_settings['auth_url'],
-            username=openstack_settings['username'],
-            api_key=openstack_settings['api_key'],
-            project_id=openstack_settings['project_id'],
-            region_name=openstack_settings['region_name']
-        )
+        try:
+            self.nova = client.Client(
+                "2.0",
+                auth_url=openstack_settings['auth_url'],
+                username=openstack_settings['username'],
+                password=openstack_settings['password'],
+                project_id=openstack_settings['project_id'],
+                region_name=openstack_settings['region_name']
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("ERROR: %s", e)
+            self.openstack_online = False
 
     def get_active_circle_ci_instances(self):
         """
@@ -79,6 +84,13 @@ class OpenStackCleanupInstance:
         Runs the cleanup of OpenStack provider
         """
         logger.info("\n --- Starting OpenStack Provider Cleanup ---")
+        if not self.openstack_online:
+            logger.error(
+                "ERROR: The OpenStack provider couldn't be reached,"
+                " the cleanup of these resources won't be executed."
+            )
+            return
+
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
@@ -93,13 +105,6 @@ class OpenStackCleanupInstance:
                 instance.key_name,
                 instance.created
             )
-            # Double-check to make sure that the instance is using the circleci keypair.
-            if instance.key_name != 'circleci':
-                logger.info(
-                    "    * SKIPPING: Instance keypair name %s != 'circleci'!",
-                    instance.key_name
-                )
-                continue
 
             # Check if it's a valid date and add UTC timezone
             try:
@@ -129,7 +134,13 @@ class OpenStackCleanupInstance:
                     self.age_limit
                 )
                 if not self.dry_run:
-                    instance.delete()
+                    try:
+                        instance.delete()
+                    except Exception as e: # pylint: disable=broad-except
+                        logger.warning(
+                            "    * WARNING: Unable to delete instance. Error: %s.",
+                            e,
+                        )
 
             else:
                 logger.info(
