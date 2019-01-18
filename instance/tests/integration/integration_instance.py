@@ -24,7 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -35,7 +35,7 @@ from django.utils.six import StringIO
 import MySQLdb as mysql
 import pymongo
 
-from instance.models.appserver import Status as AppServerStatus
+from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
@@ -323,20 +323,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             public_contact_email='publicemail@example.com',
             project_description='I want to beta test OpenCraft IM',
             status=BetaTestApplication.PENDING,
-            # The presence of these colors will be checked later
-            # Note: avoid string like #ffbb66 because it would be shortened to #fb6 and therefore
-            # much harder to detect ("#ffbb66" wouldn't appear in CSS). Use e.g. #ffbb67
-            main_color='#13709b',
-            link_color='#14719c',
-            header_bg_color='#ffbb67',
-            footer_bg_color='#ddff89',
             instance=instance,
         )
 
-        # We don't want to simulate e-mail verification of the user who submitted the application,
-        # because that would start provisioning. Instead, we provision ourselves here.
-
-        appserver = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        appserver = MagicMock()
+        appserver.status = AppServer.Status.Running
+        instance.refresh_from_db()
 
         # Test accepting beta test application
         on_appserver_spawned(None, instance=instance, appserver=appserver)
