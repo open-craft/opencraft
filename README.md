@@ -49,13 +49,13 @@ Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
 
-Sometimes Open edX playbook fails, and then you need to read the log,
-which is shown in real-time in the web console.
-You can fix the settings and then spawn another server.
-Failed and old inactive servers are automatically cleaned up after some configurable amount of days.
-An important feature is that Ocim *grants SSH access* to members of a configurable GitHub organization,
-so you can always SSH to an appserver's IP, *even if Open edX's deployment failed*, and then debug it.
-You can use your GitHub username and key.
+Sometimes Open edX playbook fails, and then you need to read the log, which is
+shown in real-time in the web console.  You can fix the settings and then spawn
+another server.  Failed and old inactive servers and MySQL databases are
+automatically cleaned up after three days.  An important feature is that Ocim
+*grants SSH access* to members of a configurable GitHub organization, so you
+can always SSH to an appserver's IP, *even if Open edX's deployment failed*,
+and then debug it.  You can use your GitHub username and key.
 
 To create a new instance, you use Django's admin and you need to fill in the domain name,
 the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
@@ -638,24 +638,13 @@ your development environment is likely a good starting point:
 
     cp .env .env.integration
 
-
 There is also a cleanup routine intended for use by CI services to check for
 and clean up any dangling OpenStack VMs and MySQL databases past a certain age
 threshold. While it isn't necessary in the usual case, old integration tests
-that were killed without cleanup that are older than four hours, and old MySQL
-databases that are older than three days can be cleaned up by running the make
-target:
+that were killed without cleanup and old MySQL databases that are older than
+three days can be cleaned up by running the make target:
 
     make test.integration_cleanup
-
-The age threshold for the cleanup script defaults to four hours, but this can be
-adjusted by setting `INSTANCE_AGE_THRESHOLD` to a number (in seconds) in the
-`.env.integration` file.
-
-Note that, if executing locally and with the same environment as Circle CI, setting
-the `INSTANCE_AGE_THRESHOLD` to a number too low may result in interrupted
-integration test builds on Circle CI.
-
 
 Debug
 -----
