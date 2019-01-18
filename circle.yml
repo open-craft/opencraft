@@ -57,6 +57,7 @@ jobs:
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
             pip install -r requirements.txt
+            pip install -r cleanup_utils/requirements.txt
             sudo apt-get install postgresql-client
             sudo apt-get install unzip
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
@@ -81,6 +82,19 @@ jobs:
           no_output_timeout: 47m
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
+  cleanup:
+    docker:
+      - image: circleci/python:3.5.4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r cleanup_utils/requirements.txt
       - run:
           name: Cleanup
           command: |
@@ -88,3 +102,9 @@ jobs:
             make test.integration_cleanup
           no_output_timeout: 20m
           when: always
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - build
+      - cleanup
