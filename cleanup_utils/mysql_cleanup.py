@@ -115,6 +115,11 @@ class MySqlCleanupInstance:
         logger.info('Found %d old databases', len(databases))
 
         for (database, create_date) in databases:
+            # The regex match here serves a dual purpose: firstly, it acts as
+            # an additional precaution against removing databases not related
+            # to CI. Secondly, it allows us to gather the hashes of the removed
+            # databases so they can be returned to the calling script and used
+            # in DNS cleanup.
             logger.info('  > Considering database %s', database)
             instance_database_re = r'^([0-9a-f]{8})([_0-9a-z]+)?_%s' % (self.domain_suffix,)
             match = re.match(instance_database_re, database)
