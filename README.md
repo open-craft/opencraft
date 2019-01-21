@@ -49,13 +49,13 @@ Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
 
-Sometimes Open edX playbook fails, and then you need to read the log, which is
-shown in real-time in the web console.  You can fix the settings and then spawn
-another server.  Failed and old inactive servers and MySQL databases are
-automatically cleaned up after three days.  An important feature is that Ocim
-*grants SSH access* to members of a configurable GitHub organization, so you
-can always SSH to an appserver's IP, *even if Open edX's deployment failed*,
-and then debug it.  You can use your GitHub username and key.
+Sometimes Open edX playbook fails, and then you need to read the log,
+which is shown in real-time in the web console.
+You can fix the settings and then spawn another server.
+Failed and old inactive servers are automatically cleaned up after some configurable amount of days.
+An important feature is that Ocim *grants SSH access* to members of a configurable GitHub organization,
+so you can always SSH to an appserver's IP, *even if Open edX's deployment failed*, and then debug it.
+You can use your GitHub username and key.
 
 To create a new instance, you use Django's admin and you need to fill in the domain name,
 the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
