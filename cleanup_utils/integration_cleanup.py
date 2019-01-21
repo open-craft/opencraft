@@ -41,7 +41,8 @@ from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 # Default age at which things should be cleaned up, in days
 DEFAULT_AGE_LIMIT = 3
 DEFAULT_CUTOFF_TIME = (
-    datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=DEFAULT_AGE_LIMIT))
+    datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=DEFAULT_AGE_LIMIT)
+)
 
 
 # Logging #####################################################################
@@ -118,7 +119,8 @@ def run_integration_cleanup(dry_run=False):
     # the deletion_blacklist
     hashes_to_clean = (
         aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes +
-        mysql_cleanup.cleaned_up_hashes)
+        mysql_cleanup.cleaned_up_hashes
+    )
     dns_cleanup.run_cleanup(
         hashes_to_clean=hashes_to_clean
     )

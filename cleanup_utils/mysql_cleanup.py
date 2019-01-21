@@ -89,7 +89,11 @@ class MySqlCleanupInstance:
             'age_limit': self.age_limit,
             'domain_filter': '%_{}_%'.format(self.domain_suffix)
         }
-        self.cursor.execute(query, params)
+        try:
+            self.cursor.execute(query, params)
+        except MySQLError as exc:
+            logger.exception('Unable to retrieve old databases: %s', exc)
+            return []
         return self.cursor.fetchall()
 
     def run_cleanup(self):
@@ -123,7 +127,8 @@ class MySqlCleanupInstance:
 
             logger.info(
                 '    * Dropping MySQL DB `%s` created at %s', database,
-                datetime.strftime(create_date, '%Y-%m-%dT%H:%M:%SZ'))
+                datetime.strftime(create_date, '%Y-%m-%dT%H:%M:%SZ')
+            )
             if not self.dry_run:
                 try:
                     self.cursor.execute(
