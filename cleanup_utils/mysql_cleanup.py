@@ -80,6 +80,10 @@ class MySqlCleanupInstance:
         """
         Returns a list of databases older than the age limit
         """
+        if not self.cursor:
+            logger.error('ERROR: Not connected to the database')
+            return []
+
         query = """SELECT table_schema, MAX(create_time) AS create_time
             FROM information_schema.tables
             WHERE create_time <= DATE_SUB(NOW(), INTERVAL %(age_limit)s DAY)
@@ -101,12 +105,6 @@ class MySqlCleanupInstance:
         Runs the cleanup of MySQL databases older than the age limit
         """
         logger.info("\n --- Starting MySQL Cleanup ---")
-        if not self.cursor:
-            logger.error(
-                'ERROR: Not connected to the database, '
-                'MySQL cleanup will be skipped.'
-            )
-            return
 
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
