@@ -307,7 +307,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # and that too mostly to get around issues with RabbitMQ behind a load-balancer,
             # which is not our setup.
             # Disabling heartbeats can have a drastic reduction RabbitMQ usage.
-            "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEAT,
+            "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
         }
 
         if self.smtp_relay_settings:
