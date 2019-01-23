@@ -105,7 +105,7 @@ def run_integration_cleanup(dry_run=False):
         age_limit=DEFAULT_AGE_LIMIT,
         url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
         domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
-        dry_run=args.dry_run
+        dry_run=dry_run
     )
     mysql_cleanup.run_cleanup()
 
