@@ -479,6 +479,9 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     },
 ]
 
+# Enable or disable celery heartbeats on instances managed by Ocim
+EDX_WORKERS_ENABLE_CELERY_HEARTBEAT = env.bool('EDX_WORKERS_ENABLE_CELERY_HEARTBEAT', default=False)
+
 # Ansible #####################################################################
 
 # Ansible requires a Python 2 interpreter
