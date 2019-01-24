@@ -31,13 +31,18 @@ import os
 from pytz import UTC
 
 from cleanup_utils.aws_cleanup import AwsCleanupInstance
-from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 from cleanup_utils.dns_cleanup import DnsCleanupInstance
+from cleanup_utils.mysql_cleanup import MySqlCleanupInstance
+from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 
 
 # Constants ###################################################################
 
-DEFAULT_AGE_LIMIT = datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=3)
+# Default age at which things should be cleaned up, in days
+DEFAULT_AGE_LIMIT = 3
+DEFAULT_CUTOFF_TIME = (
+    datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=DEFAULT_AGE_LIMIT)
+)
 
 
 # Logging #####################################################################
@@ -73,7 +78,7 @@ def run_integration_cleanup(dry_run=False):
 
     # Clean up AWS
     aws_cleanup = AwsCleanupInstance(
-        age_limit=DEFAULT_AGE_LIMIT,
+        age_limit=DEFAULT_CUTOFF_TIME,
         aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
         dry_run=dry_run
@@ -89,11 +94,20 @@ def run_integration_cleanup(dry_run=False):
         'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(
-        age_limit=DEFAULT_AGE_LIMIT,
+        age_limit=DEFAULT_CUTOFF_TIME,
         openstack_settings=openstack_settings,
         dry_run=dry_run
     )
     os_cleanup.run_cleanup()
+
+    # Run MySQL cleanup
+    mysql_cleanup = MySqlCleanupInstance(
+        age_limit=DEFAULT_AGE_LIMIT,
+        url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
+        domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
+        dry_run=dry_run
+    )
+    mysql_cleanup.run_cleanup()
 
     # Run DNS cleanup
     dns_cleanup = DnsCleanupInstance(
@@ -103,7 +117,10 @@ def run_integration_cleanup(dry_run=False):
     )
     # Run DNS cleanup erasing all integration entries except for those on
     # the deletion_blacklist
-    hashes_to_clean = aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes
+    hashes_to_clean = (
+        aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes +
+        mysql_cleanup.cleaned_up_hashes
+    )
     dns_cleanup.run_cleanup(
         hashes_to_clean=hashes_to_clean
     )
