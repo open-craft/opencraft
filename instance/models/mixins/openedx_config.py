@@ -302,10 +302,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Disable celery heartbeats
             # The current default setup of Celery in Open edX uses something called
             # heartbeats to detect connection drops to the celery broker (RabbitMQ).
-            # With as many 15 celery processes running on Open edX servers this can mean
-            # a lot of the RabbitMQ usage is used up just to check for connection drops,
-            # and that too mostly to get around issues with RabbitMQ behind a load-balancer,
-            # which is not our setup.
+            # With as many 15 celery processes running on each Open edX AppServer this
+            # can mean that a lot of the RabbitMQ capacity is used just to check
+            # for connection drops, and that's mostly to get around issues with
+            # RabbitMQ behind a load-balancer, which is not our setup.
             # Disabling heartbeats can have a drastic reduction RabbitMQ usage.
             "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
         }
