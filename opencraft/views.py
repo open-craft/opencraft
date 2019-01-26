@@ -23,7 +23,7 @@ OpenCraft views
 # Imports #####################################################################
 
 from django.views.generic.base import RedirectView
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from instance.models.instance import InstanceReference
 
