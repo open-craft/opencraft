@@ -26,7 +26,7 @@ from collections import defaultdict
 import re
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from registration.tests.test_views import BetaTestApplicationViewTestMixin
 from registration.tests.utils import BrowserTestMixin

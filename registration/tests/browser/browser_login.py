@@ -23,7 +23,7 @@ Login browser tests
 # Imports #####################################################################
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from registration.tests.utils import BrowserTestMixin, UserMixin
 

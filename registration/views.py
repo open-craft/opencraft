@@ -23,8 +23,8 @@ Registration views
 # Imports #####################################################################
 
 from django.contrib.auth import authenticate, login
-from django.core.urlresolvers import reverse_lazy
 from django.db import transaction
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic.edit import UpdateView
