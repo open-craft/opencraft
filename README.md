@@ -495,6 +495,10 @@ set the following configuration variables:
 * `OPENEDX_APPSERVER_SECURITY_GROUP_RULES`: This specifies the firewall rules
   that the above security group will have. The default allows ingress on ports
   22, 80, and 443 only.
+* `EDX_WORKERS_ENABLE_CELERY_HEARTBEATS`: Switch to enable/disable celery
+  heartbeats used to detect connection drops. Disabling heartbeats can have a
+  drastic reduction RabbitMQ usage. This setting sets
+  `worker_django_enable_heartbeats` on supported playbooks. Defaults to `False`.
 
 Migrations
 ----------

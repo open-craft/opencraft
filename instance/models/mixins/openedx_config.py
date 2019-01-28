@@ -297,7 +297,18 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # Insights and analytics_api
             "SANDBOX_ENABLE_ANALYTICS_API": False, # set to true to enable analytics_api
-            "SANDBOX_ENABLE_INSIGHTS": False # set to true to enable insights
+            "SANDBOX_ENABLE_INSIGHTS": False, # set to true to enable insights
+
+            # Disable celery heartbeats
+            # The current default setup of Celery in Open edX uses something called
+            # heartbeats to detect connection drops to the celery broker (RabbitMQ).
+            # With as many 15 celery processes running on each Open edX AppServer this
+            # can mean that a lot of the RabbitMQ capacity is used just to check
+            # for connection drops. That's mostly to get around issues when using
+            # the RabbitMQ server behind a load-balancer, which is not the case
+            # in Ocim deployments.
+            # Disabling heartbeats can have a drastic reduction RabbitMQ usage.
+            "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
         }
 
         if self.smtp_relay_settings:
