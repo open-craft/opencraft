@@ -28,6 +28,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+from registration.models import BetaTestApplication
 from instance.models.instance import InstanceReference
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
@@ -89,7 +90,18 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         if not isinstance(instance, OpenEdXInstance):
             raise serializers.ValidationError('Invalid InstanceReference ID: Not an OpenEdXInstance.')
 
-        spawn_appserver(instance_id)
+        # Automatically marks AppServer as active if it's the first one spawned
+        # and if the instance belongs to a beta testing user
+        mark_active = False
+        if instance.betatestapplication_set.all():
+            application = instance.betatestapplication_set.first()
+            # Check if application is pending
+            if application and application.status == BetaTestApplication.PENDING:
+                # Check if this is the first appserver to be activated
+                if not instance.first_activated:
+                    mark_active = True
+
+        spawn_appserver(instance_id, mark_active_on_success=mark_active)
         return Response({'status': 'Instance provisioning started'})
 
     @detail_route(methods=['get'])

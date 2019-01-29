@@ -27,6 +27,7 @@ from unittest.mock import patch
 import ddt
 from rest_framework import status
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from instance.tasks import spawn_appserver
 
 from instance.tests.api.base import APITestCase
@@ -34,6 +35,7 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import ReadyOpenStackServerFactory
 from instance.tests.utils import patch_gandi, patch_url
+from registration.models import BetaTestApplication
 
 
 # Tests #######################################################################
@@ -234,11 +236,41 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)
-        # Even though provisioning succeeded, the API does not make app servers active automatically:
+        # Even though provisioning succeeded, the API does not make app servers active automatically
+        # unless its the first appserver of a beta testing user
         self.assertFalse(instance.get_active_appservers().exists())
 
         app_server = instance.appserver_set.first()
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
+
+    @patch_gandi
+    @patch('instance.tasks.spawn_appserver', return_value=True)
+    def test_spawn_first_appserver_beta_tester(self, mock_spawn_appserver):
+        """
+        POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
+
+        Test if the first manually spawned instance of a beta tester user is
+        automatically marked as active.
+        """
+        user = get_user_model().objects.get(username='user3')
+        self.api_client.login(username=user.username, password='pass')
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            instance=instance
+        )
+        self.assertEqual(instance.appserver_set.count(), 0)
+        self.assertFalse(instance.get_active_appservers().exists())
+
+        response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'Instance provisioning started'})
+        self.assertTrue(mock_spawn_appserver.called)
+        self.assertTrue(mock_spawn_appserver.call_args[1]['mark_active_on_success'])
 
     @ddt.data(True, False)
     @patch_gandi
