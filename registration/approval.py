@@ -58,13 +58,18 @@ def accept_application(application, appserver):
     launched, activates it and sends an email to the user to notify them that their instance is
     ready.
     """
-    if application.instance is None:
+    instance = application.instance
+    if instance is None:
         raise ApplicationNotReady('No instance provisioned yet.')
 
     if appserver is None:
         raise ApplicationNotReady('The instance does not have an active AppServer yet.')
     if appserver.status != AppServer.Status.Running:
         raise ApplicationNotReady('The AppServer is not running yet.')
+
+    # Automatically activates AppServer if it's the first one from the instance
+    if not instance.first_activated:
+        appserver.make_active()
 
     _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
     application.status = BetaTestApplication.ACCEPTED

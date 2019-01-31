@@ -125,3 +125,19 @@ class ApprovalTestCase(TestCase):
             with self.assertRaises(ApplicationNotReady):
                 on_appserver_spawned(sender=None, instance=instance, appserver=None)
             mock_application.assert_not_called()
+
+    def test_first_appserver_is_active(self):
+        """
+        Check if the the first Appserver is correctly activated even when
+        spawned manually
+        """
+        appserver = mock.Mock(status=AppServer.Status.Running)
+        instance = mock.Mock(first_activated=None)
+        application = mock.Mock(status=BetaTestApplication.PENDING)
+
+        application.instance = instance
+        instance.betatestapplication_set.first = lambda: application
+
+        # Test accepted application does nothing
+        on_appserver_spawned(sender=None, instance=instance, appserver=appserver)
+        self.assertEqual(appserver.make_active.call_count, 1)
