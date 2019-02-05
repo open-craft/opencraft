@@ -57,6 +57,8 @@ An important feature is that Ocim *grants SSH access* to members of a configurab
 so you can always SSH to an appserver's IP, *even if Open edX's deployment failed*, and then debug it.
 You can use your GitHub username and key.
 
+-- update documentation here
+
 To create a new instance, you use Django's admin and you need to fill in the domain name,
 the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
 and extra ansible variables to pass to Open edX's playbook (if any).
@@ -212,6 +214,8 @@ OPENCRAFT_ENV_TOKENS:
 ```
 
 ### A note on SSH keys
+
+update here ...
 
 The instance manager uses [Ansible](https://www.ansible.com/) to provision
 openedx sandboxes. Ansible uses SSH to run commands on remote servers, so you
