@@ -103,6 +103,16 @@ class OpenEdXThemeMixin(models.Model):
                     ),
                 },
             ],
+            "SIMPLETHEME_SASS_OVERRIDES": [
+                {
+                    "variable": "primary",
+                    "value": application.main_color,
+                },
+                {
+                    "variable": "secondary",
+                    "value": application.main_color,
+                },
+            ],
             "SIMPLETHEME_STATIC_FILES_URLS": [
                 {
                     "url": application.logo.url,
@@ -116,13 +126,118 @@ class OpenEdXThemeMixin(models.Model):
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
             "SIMPLETHEME_EXTRA_SASS": """
-                .global-header {{
-                    background: {header_bg};
-                }}
-                .wrapper-footer {{
-                    background: {footer_bg};
-                }}""".format(header_bg=application.header_bg_color,
-                             footer_bg=application.footer_bg_color)
+                .global-header {
+                    background: {header_bg}; // Header color
+
+                    span {
+                      color: {link_color}; // Link Color
+                    }
+
+                    .nav-links .secondary {
+                       a.sign-in-btn {
+                        // Fixed main color for button bg
+                        color: #ffffff !important;
+                      }
+                      a.sign-in-btn:hover {
+                       color: {link_color} !important; // Link Color
+                     }
+
+                      .nav-item a {
+                        color: {link_color}; // Link Color
+                      }
+
+                      .dropdown-user-menu .dropdown-item a {
+                         // Dropdown color fixed to black
+                        color: #000000;
+                      }
+                    }
+                }
+                .wrapper-footer {
+                    background: {footer_bg}; // Footer color
+
+                    footer#footer-openedx {
+                      .colophon .nav-colophon li a, .copyright, a {
+                        color: {link_color}; // Link Color
+                      }
+                    }
+                }
+                .view-profile .wrapper-profile-section-container-one .wrapper-profile-section-one {
+                  border-top-color: {link_color}; // Link Color
+                }
+
+                // Login and registration buttons
+                #forgot-password-modal #password-reset .form-actions button[type="submit"]:hover,
+                .view-register .form-actions button[type="submit"]:hover,
+                .view-login .form-actions button[type="submit"]:hover {
+                    box-shadow: 0 0 0 0;
+                    color: {link_color}; // Link Color
+                    border: 1px solid #006400;
+                    background: rgba(255, 255, 255, 1);
+                }
+
+                .view-register .form-actions button[type="submit"],
+                .view-passwordreset .form-actions button[type="submit"],
+                .view-login .form-actions button[type="submit"] {
+                  box-shadow: 0 0 0 0;
+                }
+
+                .view-register .introduction header .title .title-super,
+                .view-login .introduction header .title .title-super,
+                .view-passwordreset .introduction header .title .title-super
+                {
+                  color: {link_color} !important; // Link Color
+                }
+
+                // Fixing colors on registration page
+                .register {
+                  aside .btn-login h3.title {
+                    color: rgba(255, 255, 255, 1);
+                  }
+                  aside .btn-login:hover {
+                    h3.title {
+                      color: {link_color}; // Link Color
+                    }
+                  }
+
+                  aside .btn-login .btn-login-action {
+                    color: {link_color}; // Link Color
+                    background: rgba(255, 255, 255, 1);
+                  }
+                  aside .btn-login .btn-login-action:hover {
+                    color: rgba(255, 255, 255, 1);
+                    background: {link_color}; // Link Color
+                  }
+                }
+
+                .btn-primary:hover, .btn-brand:hover, .btn-primary.is-hovered
+                {
+                  background: rgba(255, 255, 255, 1);
+                }
+
+                // Override for components that always stay on white bg
+                .wrapper-course-material .course-tabs .tab a.active,
+                .wiki-wrapper section.wiki .nav-tabs li.active a,
+                .content-wrapper .course-tabs .nav-item.active .nav-link,
+                {
+                  color: #000000 !important;
+                  font-weight: bold !important;
+                }
+                .content-wrapper .course-tabs .nav-item .nav-link
+                {
+                    color: #000000 !important;
+                }
+                .fa-chevron-right:before {
+                  border-top-color: {main_color}; // Main Color
+                }
+                .date-summary-container .date-summary-todays-date {
+                  border-left-color: {link_color}; // Link Color
+                }
+            """.format(
+                link_color=application.link_color,
+                main_color=application.main_color,
+                header_bg=application.header_bg_color,
+                footer_bg=application.footer_bg_color
+            )
         }
 
         return yaml.dump(settings, default_flow_style=False)
