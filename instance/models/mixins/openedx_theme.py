@@ -103,7 +103,7 @@ class OpenEdXThemeMixin(models.Model):
                     ),
                 },
             ],
-            "SIMPLETHEME_SASS_OVERRIDES": [
+            "SIMPLETHEME_SASS_BOOTSTRAP_OVERRIDES": [
                 {
                     "variable": "primary",
                     "value": application.main_color,
