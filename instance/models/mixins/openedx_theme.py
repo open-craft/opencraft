@@ -134,13 +134,20 @@ class OpenEdXThemeMixin(models.Model):
                     }}
 
                     .nav-links .secondary {{
-                       a.sign-in-btn {{
-                        // Fixed main color for button bg
-                        color: #ffffff !important;
+                      a.sign-in-btn,
+                      a.register-btn:hover
+                      {{
+                        color: {main_color} !important; // Main color
+                        background: {link_color} !important; // Link color
+                        border-color: {main_color} !important; // Main color
                       }}
-                      a.sign-in-btn:hover {{
-                       color: {link_color} !important; // Link Color
-                     }}
+                      a.register-btn,
+                      a.sign-in-btn:hover
+                      {{
+                        color: {link_color} !important; // Link color
+                        background: {main_color} !important; // Main color
+                        border-color: {link_color} !important; // Link color
+                      }}
 
                       .nav-item a {{
                         color: {link_color}; // Link Color
@@ -161,57 +168,26 @@ class OpenEdXThemeMixin(models.Model):
                       }}
                     }}
                 }}
+                // User profile photo bar
                 .view-profile .wrapper-profile-section-container-one .wrapper-profile-section-one {{
                   border-top-color: {link_color}; // Link Color
                 }}
 
-                // Login and registration buttons
-                #forgot-password-modal #password-reset .form-actions button[type="submit"]:hover,
-                .view-register .form-actions button[type="submit"]:hover,
-                .view-login .form-actions button[type="submit"]:hover {{
-                    box-shadow: 0 0 0 0;
-                    color: {link_color}; // Link Color
-                    border: 1px solid #006400;
-                    background: rgba(255, 255, 255, 1);
+                // Login and registration fixes
+                .login-register-content h2 {{
+                  color: {main_color} !important; // Main Color
                 }}
-
-                .view-register .form-actions button[type="submit"],
-                .view-passwordreset .form-actions button[type="submit"],
-                .view-login .form-actions button[type="submit"] {{
-                  box-shadow: 0 0 0 0;
-                }}
-
-                .view-register .introduction header .title .title-super,
-                .view-login .introduction header .title .title-super,
-                .view-passwordreset .introduction header .title .title-super
+                .login-register .action-primary
                 {{
-                  color: {link_color} !important; // Link Color
+                  color: {main_color} !important; // Main color
+                  background: {link_color} !important; // Link color
+                  border-color: {main_color} !important; // Main color
                 }}
-
-                // Fixing colors on registration page
-                .register {{
-                  aside .btn-login h3.title {{
-                    color: rgba(255, 255, 255, 1);
-                  }}
-                  aside .btn-login:hover {{
-                    h3.title {{
-                      color: {link_color}; // Link Color
-                    }}
-                  }}
-
-                  aside .btn-login .btn-login-action {{
-                    color: {link_color}; // Link Color
-                    background: rgba(255, 255, 255, 1);
-                  }}
-                  aside .btn-login .btn-login-action:hover {{
-                    color: rgba(255, 255, 255, 1);
-                    background: {link_color}; // Link Color
-                  }}
-                }}
-
-                .btn-primary:hover, .btn-brand:hover, .btn-primary.is-hovered
+                .login-register .action-primary:hover
                 {{
-                  background: rgba(255, 255, 255, 1);
+                  color: {link_color} !important; // Link color
+                  background: {main_color} !important; // Main color
+                  border-color: {link_color} !important; // Link color
                 }}
 
                 // Override for components that always stay on white bg
@@ -222,12 +198,13 @@ class OpenEdXThemeMixin(models.Model):
                   color: #000000 !important;
                   font-weight: bold !important;
                 }}
-                .content-wrapper .course-tabs .nav-item .nav-link
+                .content-wrapper .course-tabs .nav-item .nav-link,
+                .wrapper-course-material .course-tabs .tab a:hover
                 {{
                     color: #000000 !important;
                 }}
-                .fa-chevron-right:before {{
-                  border-top-color: {main_color}; // Main Color
+                .fa-chevron-right {{
+                  color: {main_color} !important; // Main Color
                 }}
                 .date-summary-container .date-summary-todays-date {{
                   border-left-color: {link_color}; // Link Color
