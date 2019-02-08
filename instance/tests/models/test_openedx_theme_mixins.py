@@ -101,15 +101,103 @@ class OpenEdXThemeMixinTestCase(TestCase):
                     {'variable': 'theme-colors',
                      'value': '("primary": #001122, "secondary": #001122)'}
                 ],
+                'SIMPLETHEME_SASS_BOOTSTRAP_OVERRIDES': [
+                    {
+                        'variable': 'primary',
+                        'value': '#001122',
+                    },
+                    {
+                        'variable': 'secondary',
+                        'value': '#001122',
+                    }
+                ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
-                'SIMPLETHEME_EXTRA_SASS': '''
+                'SIMPLETHEME_EXTRA_SASS': """
                 .global-header {
-                    background: #caaffe;
+                    background: #caaffe; // Header color
+
+                    span {
+                      color: #003344; // Link Color
+                    }
+
+                    .nav-links .secondary {
+                      a.sign-in-btn,
+                      a.register-btn:hover
+                      {
+                        color: #001122 !important; // Main color
+                        background: #003344 !important; // Link color
+                        border-color: #001122 !important; // Main color
+                      }
+                      a.register-btn,
+                      a.sign-in-btn:hover
+                      {
+                        color: #003344 !important; // Link color
+                        background: #001122 !important; // Main color
+                        border-color: #003344 !important; // Link color
+                      }
+
+                      .nav-item a {
+                        color: #003344; // Link Color
+                      }
+
+                      .dropdown-user-menu .dropdown-item a {
+                         // Dropdown color fixed to black
+                        color: #000000;
+                      }
+                    }
                 }
                 .wrapper-footer {
-                    background: #ffff11;
-                }'''
+                    background: #ffff11; // Footer color
+
+                    footer#footer-openedx {
+                      .colophon .nav-colophon li a, .copyright, a {
+                        color: #003344; // Link Color
+                      }
+                    }
+                }
+                // User profile photo bar
+                .view-profile .wrapper-profile-section-container-one .wrapper-profile-section-one {
+                  border-top-color: #003344; // Link Color
+                }
+
+                // Login and registration fixes
+                .login-register-content h2 {
+                  color: #001122 !important; // Main Color
+                }
+                .login-register .action-primary
+                {
+                  color: #001122 !important; // Main color
+                  background: #003344 !important; // Link color
+                  border-color: #001122 !important; // Main color
+                }
+                .login-register .action-primary:hover
+                {
+                  color: #003344 !important; // Link color
+                  background: #001122 !important; // Main color
+                  border-color: #003344 !important; // Link color
+                }
+
+                // Override for components that always stay on white bg
+                .wrapper-course-material .course-tabs .tab a.active,
+                .wiki-wrapper section.wiki .nav-tabs li.active a,
+                .content-wrapper .course-tabs .nav-item.active .nav-link,
+                {
+                  color: #000000 !important;
+                  font-weight: bold !important;
+                }
+                .content-wrapper .course-tabs .nav-item .nav-link,
+                .wrapper-course-material .course-tabs .tab a:hover
+                {
+                    color: #000000 !important;
+                }
+                .fa-chevron-right {
+                  color: #001122 !important; // Main Color
+                }
+                .date-summary-container .date-summary-todays-date {
+                  border-left-color: #003344; // Link Color
+                }
+            """
             }
             for ansible_var, value in expected_settings.items():
                 self.assertEqual(value, parsed_vars[ansible_var])
