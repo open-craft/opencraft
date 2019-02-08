@@ -137,15 +137,15 @@ class OpenEdXThemeMixin(models.Model):
                       a.sign-in-btn,
                       a.register-btn:hover
                       {{
-                        color: {main_color} !important; // Main color
+                        color: {header_bg} !important; // Header color
                         background: {link_color} !important; // Link color
-                        border-color: {main_color} !important; // Main color
+                        border-color: {header_bg} !important; // Header color
                       }}
                       a.register-btn,
                       a.sign-in-btn:hover
                       {{
                         color: {link_color} !important; // Link color
-                        background: {main_color} !important; // Main color
+                        background: {header_bg} !important; // Header color
                         border-color: {link_color} !important; // Link color
                       }}
 
@@ -179,14 +179,14 @@ class OpenEdXThemeMixin(models.Model):
                 }}
                 .login-register .action-primary
                 {{
-                  color: {main_color} !important; // Main color
+                  color: {header_bg} !important; // Header color
                   background: {link_color} !important; // Link color
-                  border-color: {main_color} !important; // Main color
+                  border-color: {header_bg} !important; // Header color
                 }}
                 .login-register .action-primary:hover
                 {{
                   color: {link_color} !important; // Link color
-                  background: {main_color} !important; // Main color
+                  background: {header_bg} !important; // Header color
                   border-color: {link_color} !important; // Link color
                 }}
 

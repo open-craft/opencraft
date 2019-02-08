@@ -125,15 +125,15 @@ class OpenEdXThemeMixinTestCase(TestCase):
                       a.sign-in-btn,
                       a.register-btn:hover
                       {
-                        color: #001122 !important; // Main color
+                        color: #caaffe !important; // Header color
                         background: #003344 !important; // Link color
-                        border-color: #001122 !important; // Main color
+                        border-color: #caaffe !important; // Header color
                       }
                       a.register-btn,
                       a.sign-in-btn:hover
                       {
                         color: #003344 !important; // Link color
-                        background: #001122 !important; // Main color
+                        background: #caaffe !important; // Header color
                         border-color: #003344 !important; // Link color
                       }
 
@@ -167,14 +167,14 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 }
                 .login-register .action-primary
                 {
-                  color: #001122 !important; // Main color
+                  color: #caaffe !important; // Header color
                   background: #003344 !important; // Link color
-                  border-color: #001122 !important; // Main color
+                  border-color: #caaffe !important; // Header color
                 }
                 .login-register .action-primary:hover
                 {
                   color: #003344 !important; // Link color
-                  background: #001122 !important; // Main color
+                  background: #caaffe !important; // Header color
                   border-color: #003344 !important; // Link color
                 }
 
