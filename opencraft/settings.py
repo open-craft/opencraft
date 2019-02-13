@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'foundation',
     'compressor',
+    'easy_thumbnails',
     'djng',
     'rest_framework',
     'huey.contrib.djhuey',
