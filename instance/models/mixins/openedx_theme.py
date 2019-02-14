@@ -127,7 +127,7 @@ class OpenEdXThemeMixin(models.Model):
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
             "SIMPLETHEME_EXTRA_SASS": """
                 .global-header {{
-                    background: {header_bg_color};
+                    background: {header_bg};
 
                     span {{
                       color: {link_color}; // Link Color
@@ -140,8 +140,8 @@ class OpenEdXThemeMixin(models.Model):
                     }}
                 }}
                 .wrapper-footer {{
-                    background: {footer_bg_color}; // Footer color
-                    background-color: {footer_bg_color} !important; // Footer color
+                    background: {footer_bg}; // Footer color
+                    background-color: {footer_bg} !important; // Footer color
 
                     p.copyright
                     {{

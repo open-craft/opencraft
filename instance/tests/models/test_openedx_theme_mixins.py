@@ -115,40 +115,31 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
                 'SIMPLETHEME_EXTRA_SASS': """
                 .global-header {
-                    background: #caaffe; // Header color
+                    background: #caaffe;
 
                     span {
                       color: #003344; // Link Color
                     }
 
                     .nav-links .secondary {
-                      a.sign-in-btn,
-                      a.register-btn:hover
-                      {
-                        color: #caaffe !important; // Header color
-                        background: #003344 !important; // Link color
-                        border-color: #caaffe !important; // Header color
-                      }
-                      a.register-btn,
-                      a.sign-in-btn:hover
-                      {
-                        color: #003344 !important; // Link color
-                        background: #caaffe !important; // Header color
-                        border-color: #003344 !important; // Link color
-                      }
-
-                      .nav-item a {
-                        color: #003344; // Link Color
-                      }
-
-                      .dropdown-user-menu .dropdown-item a {
-                         // Dropdown color fixed to black
-                        color: #000000;
+                      .secondary .nav-item a, .dropdown-user-menu .dropdown-item a {
+                        color: #003344;
                       }
                     }
                 }
                 .wrapper-footer {
                     background: #ffff11; // Footer color
+                    background-color: #ffff11 !important; // Footer color
+
+                    p.copyright
+                    {
+                      color: #001122; // Link color
+                    }
+
+                    footer .site-nav .nav-item .nav-link
+                    {
+                      color: #003344 !important; // Link color
+                    }
 
                     footer#footer-openedx {
                       .colophon .nav-colophon li a, .copyright, a {
@@ -166,36 +157,9 @@ class OpenEdXThemeMixinTestCase(TestCase):
                   color: #001122 !important; // Main Color
                 }
                 .login-register .action-primary
-                {
-                  color: #caaffe !important; // Header color
-                  background: #003344 !important; // Link color
-                  border-color: #caaffe !important; // Header color
-                }
                 .login-register .action-primary:hover
                 {
-                  color: #003344 !important; // Link color
-                  background: #caaffe !important; // Header color
-                  border-color: #003344 !important; // Link color
-                }
-
-                // Override for components that always stay on white bg
-                .wrapper-course-material .course-tabs .tab a.active,
-                .wiki-wrapper section.wiki .nav-tabs li.active a,
-                .content-wrapper .course-tabs .nav-item.active .nav-link,
-                {
-                  color: #000000 !important;
-                  font-weight: bold !important;
-                }
-                .content-wrapper .course-tabs .nav-item .nav-link,
-                .wrapper-course-material .course-tabs .tab a:hover
-                {
-                    color: #000000 !important;
-                }
-                .fa-chevron-right {
-                  color: #001122 !important; // Main Color
-                }
-                .date-summary-container .date-summary-todays-date {
-                  border-left-color: #003344; // Link Color
+                  background: #001122 !important; // Link color
                 }
             """
             }
