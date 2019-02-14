@@ -73,8 +73,6 @@ class OpenEdXThemeMixin(models.Model):
                     "variable": "link-color",
                     "value": application.link_color,
                 },
-                # TODO: These are specific to Ginkgo and can be removed
-                # after Hawthorn upgrade
                 {
                     "variable": "header-bg",
                     "value": application.header_bg_color,
@@ -83,7 +81,6 @@ class OpenEdXThemeMixin(models.Model):
                     "variable": "footer-bg",
                     "value": application.footer_bg_color,
                 },
-                # END TODO
                 {
                     "variable": "button-color",
                     "value": application.main_color,
@@ -102,16 +99,6 @@ class OpenEdXThemeMixin(models.Model):
                         primary=application.main_color,
                         secondary=application.main_color
                     ),
-                },
-            ],
-            "SIMPLETHEME_SASS_BOOTSTRAP_OVERRIDES": [
-                {
-                    "variable": "primary",
-                    "value": application.main_color,
-                },
-                {
-                    "variable": "secondary",
-                    "value": application.main_color,
                 },
             ],
             "SIMPLETHEME_STATIC_FILES_URLS": [
