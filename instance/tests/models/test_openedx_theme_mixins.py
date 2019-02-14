@@ -85,13 +85,10 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
-                    # TODO: These are specific to Ginkgo and can be removed
-                    # after Hawthorn upgrade
                     {'variable': 'header-bg',
                      'value': '#caaffe', },
                     {'variable': 'footer-bg',
                      'value': '#ffff11', },
-                    # END TODO
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',
@@ -101,66 +98,13 @@ class OpenEdXThemeMixinTestCase(TestCase):
                     {'variable': 'theme-colors',
                      'value': '("primary": #001122, "secondary": #001122)'}
                 ],
-                'SIMPLETHEME_SASS_BOOTSTRAP_OVERRIDES': [
-                    {
-                        'variable': 'primary',
-                        'value': '#001122',
-                    },
-                    {
-                        'variable': 'secondary',
-                        'value': '#001122',
-                    }
-                ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
                 'SIMPLETHEME_EXTRA_SASS': """
-                .global-header {
-                    background: #caaffe;
-
-                    span {
-                      color: #003344; // Link Color
-                    }
-
-                    .nav-links .secondary {
-                      .secondary .nav-item a, .dropdown-user-menu .dropdown-item a {
-                        color: #003344;
-                      }
-                    }
-                }
-                .wrapper-footer {
-                    background: #ffff11; // Footer color
-                    background-color: #ffff11 !important; // Footer color
-
-                    p.copyright
-                    {
-                      color: #001122; // Link color
-                    }
-
-                    footer .site-nav .nav-item .nav-link
-                    {
-                      color: #003344 !important; // Link color
-                    }
-
-                    footer#footer-openedx {
-                      .colophon .nav-colophon li a, .copyright, a {
-                        color: #003344; // Link Color
-                      }
-                    }
-                }
-                // User profile photo bar
-                .view-profile .wrapper-profile-section-container-one .wrapper-profile-section-one {
-                  border-top-color: #003344; // Link Color
-                }
-
-                // Login and registration fixes
-                .login-register-content h2 {
-                  color: #001122 !important; // Main Color
-                }
-                .login-register .action-primary
-                .login-register .action-primary:hover
-                {
-                  background: #001122 !important; // Link color
-                }
+                $main-color: #001122;
+                $link-color: #003344;
+                $header-bg: #caaffe;
+                $footer-bg: #ffff11;
             """
             }
             for ansible_var, value in expected_settings.items():

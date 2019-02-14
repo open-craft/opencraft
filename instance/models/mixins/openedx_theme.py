@@ -22,6 +22,7 @@ Open edX instance theme mixin, e.g. for simple_theme related settings
 import yaml
 
 from django.db import models
+from django.conf import settings
 
 
 # Classes #####################################################################
@@ -65,7 +66,7 @@ class OpenEdXThemeMixin(models.Model):
             return ""
 
         # These settings set the values required by simple_theme
-        settings = {
+        theme_settings = {
             # This block defines our theme by applying the chosen colors to SASS-defined color variables
             "SIMPLETHEME_SASS_OVERRIDES": [
                 {
@@ -125,54 +126,13 @@ class OpenEdXThemeMixin(models.Model):
             ],
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO,
+            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.EDXAPP_COMPREHENSIVE_THEME_VERSION,
             "SIMPLETHEME_EXTRA_SASS": """
-                .global-header {{
-                    background: {header_bg};
-
-                    span {{
-                      color: {link_color}; // Link Color
-                    }}
-
-                    .nav-links .secondary {{
-                      .secondary .nav-item a, .dropdown-user-menu .dropdown-item a {{
-                        color: {link_color};
-                      }}
-                    }}
-                }}
-                .wrapper-footer {{
-                    background: {footer_bg}; // Footer color
-                    background-color: {footer_bg} !important; // Footer color
-
-                    p.copyright
-                    {{
-                      color: {main_color}; // Link color
-                    }}
-
-                    footer .site-nav .nav-item .nav-link
-                    {{
-                      color: {link_color} !important; // Link color
-                    }}
-
-                    footer#footer-openedx {{
-                      .colophon .nav-colophon li a, .copyright, a {{
-                        color: {link_color}; // Link Color
-                      }}
-                    }}
-                }}
-                // User profile photo bar
-                .view-profile .wrapper-profile-section-container-one .wrapper-profile-section-one {{
-                  border-top-color: {link_color}; // Link Color
-                }}
-
-                // Login and registration fixes
-                .login-register-content h2 {{
-                  color: {main_color} !important; // Main Color
-                }}
-                .login-register .action-primary
-                .login-register .action-primary:hover
-                {{
-                  background: {main_color} !important; // Link color
-                }}
+                $main-color: {main_color};
+                $link-color: {link_color};
+                $header-bg: {header_bg};
+                $footer-bg: {footer_bg};
             """.format(
                 link_color=application.link_color,
                 main_color=application.main_color,
@@ -181,4 +141,4 @@ class OpenEdXThemeMixin(models.Model):
             )
         }
 
-        return yaml.dump(settings, default_flow_style=False)
+        return yaml.dump(theme_settings, default_flow_style=False)
