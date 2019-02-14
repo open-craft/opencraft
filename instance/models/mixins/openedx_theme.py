@@ -127,40 +127,31 @@ class OpenEdXThemeMixin(models.Model):
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
             "SIMPLETHEME_EXTRA_SASS": """
                 .global-header {{
-                    background: {header_bg}; // Header color
+                    background: {header_bg_color};
 
                     span {{
                       color: {link_color}; // Link Color
                     }}
 
                     .nav-links .secondary {{
-                      a.sign-in-btn,
-                      a.register-btn:hover
-                      {{
-                        color: {header_bg} !important; // Header color
-                        background: {link_color} !important; // Link color
-                        border-color: {header_bg} !important; // Header color
-                      }}
-                      a.register-btn,
-                      a.sign-in-btn:hover
-                      {{
-                        color: {link_color} !important; // Link color
-                        background: {header_bg} !important; // Header color
-                        border-color: {link_color} !important; // Link color
-                      }}
-
-                      .nav-item a {{
-                        color: {link_color}; // Link Color
-                      }}
-
-                      .dropdown-user-menu .dropdown-item a {{
-                         // Dropdown color fixed to black
-                        color: #000000;
+                      .secondary .nav-item a, .dropdown-user-menu .dropdown-item a {{
+                        color: {link_color};
                       }}
                     }}
                 }}
                 .wrapper-footer {{
-                    background: {footer_bg}; // Footer color
+                    background: {footer_bg_color}; // Footer color
+                    background-color: {footer_bg_color} !important; // Footer color
+
+                    p.copyright
+                    {{
+                      color: {main_color}; // Link color
+                    }}
+
+                    footer .site-nav .nav-item .nav-link
+                    {{
+                      color: {link_color} !important; // Link color
+                    }}
 
                     footer#footer-openedx {{
                       .colophon .nav-colophon li a, .copyright, a {{
@@ -178,36 +169,9 @@ class OpenEdXThemeMixin(models.Model):
                   color: {main_color} !important; // Main Color
                 }}
                 .login-register .action-primary
-                {{
-                  color: {header_bg} !important; // Header color
-                  background: {link_color} !important; // Link color
-                  border-color: {header_bg} !important; // Header color
-                }}
                 .login-register .action-primary:hover
                 {{
-                  color: {link_color} !important; // Link color
-                  background: {header_bg} !important; // Header color
-                  border-color: {link_color} !important; // Link color
-                }}
-
-                // Override for components that always stay on white bg
-                .wrapper-course-material .course-tabs .tab a.active,
-                .wiki-wrapper section.wiki .nav-tabs li.active a,
-                .content-wrapper .course-tabs .nav-item.active .nav-link,
-                {{
-                  color: #000000 !important;
-                  font-weight: bold !important;
-                }}
-                .content-wrapper .course-tabs .nav-item .nav-link,
-                .wrapper-course-material .course-tabs .tab a:hover
-                {{
-                    color: #000000 !important;
-                }}
-                .fa-chevron-right {{
-                  color: {main_color} !important; // Main Color
-                }}
-                .date-summary-container .date-summary-todays-date {{
-                  border-left-color: {link_color}; // Link Color
+                  background: {main_color} !important; // Link color
                 }}
             """.format(
                 link_color=application.link_color,
