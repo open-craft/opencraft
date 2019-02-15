@@ -416,14 +416,43 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                     instance._create_bucket(max_tries=max_tries)
 
             base_log_text = (
-                'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation.'
-                ' IAM keys are not propagated yet, attempt %s of {}.'.format(instance.ref.pk, instance.ref.name,
-                                                                             max_tries)
+                'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation'
+                ' due to "", attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, max_tries)
             )
             self.assertEqual(
                 cm.output,
                 [base_log_text % i for i in range(1, max_tries + 1)]
             )
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test__update_bucket_fails(self):
+        """
+        Test s3 provisioning fails on bucket update, and retries up to 4 times
+        This can happen when the IAM is updated but the propagation is delayed
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        max_tries = 4
+        stubber = S3Stubber(s3_client)
+        stubber.stub_create_bucket(location='')
+        for _ in range(max_tries):
+            stubber.stub_put_cors()
+            stubber.add_client_error('put_bucket_lifecycle_configuration')
+        with self.assertLogs('instance.models.instance', level='INFO') as cm:
+            with stubber, self.assertRaises(ClientError):
+                instance._create_bucket(max_tries=max_tries)
+
+            base_log_text = (
+                'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket configuration'
+                ' due to "", attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, max_tries)
+            )
+            for i in range(1, 1 + max_tries):
+                self.assertIn(
+                    base_log_text % i,
+                    cm.output,
+                )
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)

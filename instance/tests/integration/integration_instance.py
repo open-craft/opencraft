@@ -271,7 +271,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 break
         self.assertEqual(settings.S3_VERSION_EXPIRATION, days)
 
-
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @shard(1)
     def test_spawn_appserver(self):

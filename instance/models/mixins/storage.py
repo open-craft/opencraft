@@ -303,56 +303,103 @@ class S3BucketInstanceMixin(models.Model):
         If you specify a location (e.g. 'EU', 'us-west-1'), this method will use it. If the location is
         not specified, the value of the instance's 's3_region' field is used.
         """
-        attempt, bucket = 1, None
         location_constraint = location or self.s3_region
-        while not bucket:
+        for attempt in range(1, max_tries + 1):
             try:
-                if not location_constraint or location_constraint == 'us-east-1':
-                    # oddly enough, boto3 uses 'us-east-1' as default and doesn't accept it explicitly
-                    # https://github.com/boto/boto3/issues/125
-                    bucket = self.s3.create_bucket(Bucket=self.s3_bucket_name)
-                else:
-                    bucket = self.s3.create_bucket(
-                        Bucket=self.s3_bucket_name,
-                        CreateBucketConfiguration={
-                            'LocationConstraint': location_constraint
-                        },
-                    )
+                self._perform_create_bucket(location_constraint)
+                # Log success
+                self.logger.info(
+                    'Successfully created S3 bucket.',
+                )
+                break
             except ClientError as e:
                 if e.response.get('Error', {}).get('Code') == 'EntityAlreadyExists':
+                    # Continue if bucket already exists, i.e. reprovisioning
                     self.logger.info(
                         'Bucket %s already exists',
                         self.s3_bucket_name
                     )
                     break
+                # Retry up to `max_tries` times
                 self.logger.info(
-                    'Retrying bucket creation. IAM keys are not propagated yet, attempt %s of %s.',
-                    attempt, max_tries
+                    'Retrying bucket creation due to "%s", attempt %s of %s.',
+                    e.response.get('Error', {}).get('Code'), attempt, max_tries
                 )
-                time.sleep(retry_delay)
-                attempt += 1
-                if attempt > max_tries:
+                if attempt == max_tries:
                     raise
+                time.sleep(retry_delay)
 
-        # Set bucket cors
-        self.s3.put_bucket_cors(
-            Bucket=self.s3_bucket_name,
-            CORSConfiguration=S3_CORS
-        )
+        for attempt in range(1, max_tries + 1):
+            try:
+                # Update bucket cors
+                self._update_bucket_cors()
 
-        # Enable bucket lifecycle
-        self.s3.put_bucket_lifecycle_configuration(
-            Bucket=self.s3_bucket_name,
-            LifecycleConfiguration=S3_LIFECYCLE
-        )
+                # Update bucket lifecycle configuration
+                self._update_bucket_lifecycle()
 
-        # Enable bucket versioning
+                # Enable bucket versioning
+                self._enable_bucket_versioning()
+
+                # Log success
+                self.logger.info(
+                    'Successfully updated bucket policies.',
+                )
+                return
+            except ClientError as e:
+                self.logger.info(
+                    'Retrying bucket configuration due to "%s", attempt %s of %s.',
+                    e.response.get('Error', {}).get('Code'), attempt, max_tries
+                )
+                if attempt == max_tries:
+                    raise
+                time.sleep(retry_delay)
+
+    def _enable_bucket_versioning(self):
+        """
+        Enable S3 bucket versioning for instance
+        """
         self.s3.put_bucket_versioning(
             Bucket=self.s3_bucket_name,
             VersioningConfiguration={
                 'Status': 'Enabled'
             }
         )
+
+    def _update_bucket_lifecycle(self):
+        """
+        Update lifecycle configuration for instance S3 bucket
+        """
+        self.s3.put_bucket_lifecycle_configuration(
+            Bucket=self.s3_bucket_name,
+            LifecycleConfiguration=S3_LIFECYCLE
+        )
+
+    def _update_bucket_cors(self):
+        """
+        Update S3 bucket CORS configuration for instance
+        """
+        self.s3.put_bucket_cors(
+            Bucket=self.s3_bucket_name,
+            CORSConfiguration=S3_CORS
+        )
+
+    def _perform_create_bucket(self, location_constraint):
+        """
+        Helper method to create S3 bucket
+        :param location_constraint: AWS location or ''
+        """
+        if not location_constraint or location_constraint == 'us-east-1':
+            # oddly enough, boto3 uses 'us-east-1' as default and doesn't accept it explicitly
+            # https://github.com/boto/boto3/issues/125
+            bucket = self.s3.create_bucket(Bucket=self.s3_bucket_name)
+        else:
+            bucket = self.s3.create_bucket(
+                Bucket=self.s3_bucket_name,
+                CreateBucketConfiguration={
+                    'LocationConstraint': location_constraint
+                },
+            )
+        return bucket
 
     def _update_iam_policy(self):
         """
@@ -363,6 +410,7 @@ class S3BucketInstanceMixin(models.Model):
             PolicyName=USER_POLICY_NAME,
             PolicyDocument=json.dumps(self.get_s3_policy())
         )
+        # Force a new connection with the updated policy
         self._s3_client = None
 
     def provision_s3(self):
