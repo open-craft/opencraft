@@ -131,10 +131,10 @@ class OpenEdXInstanceTestCase(TestCase):
             internal_lms_domain='sample.example.org', name='Sample Instance'
         )
         internal_lms_domain = 'sample.example.org'
-        internal_lms_preview_domain = 'preview-sample.example.org'
-        internal_studio_domain = 'studio-sample.example.org'
-        internal_ecom_domain = 'ecommerce-sample.example.org'
-        internal_discovery_domain = 'discovery-sample.example.org'
+        internal_lms_preview_domain = 'preview.sample.example.org'
+        internal_studio_domain = 'studio.sample.example.org'
+        internal_ecom_domain = 'ecommerce.sample.example.org'
+        internal_discovery_domain = 'discovery.sample.example.org'
         self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
         self.assertEqual(instance.internal_lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.internal_studio_domain, internal_studio_domain)
@@ -146,9 +146,9 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.domain, internal_lms_domain)
         self.assertEqual(instance.lms_preview_domain, internal_lms_preview_domain)
         self.assertEqual(instance.studio_domain, internal_studio_domain)
-        self.assertEqual(instance.studio_domain_nginx_regex, r'^(studio\-sample\.example\.org)$')
-        self.assertEqual(instance.ecommerce_domain_nginx_regex, r'^(ecommerce\-sample\.example\.org)$')
-        self.assertEqual(instance.discovery_domain_nginx_regex, r'^(discovery\-sample\.example\.org)$')
+        self.assertEqual(instance.studio_domain_nginx_regex, r'^(studio\.sample\.example\.org)$')
+        self.assertEqual(instance.ecommerce_domain_nginx_regex, r'^(ecommerce\.sample\.example\.org)$')
+        self.assertEqual(instance.discovery_domain_nginx_regex, r'^(discovery\.sample\.example\.org)$')
         self.assertEqual(instance.url, 'https://{}/'.format(internal_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(internal_lms_preview_domain))
         self.assertEqual(instance.studio_url, 'https://{}/'.format(internal_studio_domain))
@@ -177,17 +177,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.studio_domain, external_studio_domain)
         self.assertEqual(
             instance.studio_domain_nginx_regex,
-            r'^(external\-studio\.domain\.com|studio\-sample\.example\.org)$'
+            r'^(external\-studio\.domain\.com|studio\.sample\.example\.org)$'
         )
         self.assertEqual(instance.ecommerce_domain, external_ecom_domain)
         self.assertEqual(
             instance.ecommerce_domain_nginx_regex,
-            r'^(external\-ecommerce\.domain\.com|ecommerce\-sample\.example\.org)$'
+            r'^(external\-ecommerce\.domain\.com|ecommerce\.sample\.example\.org)$'
         )
         self.assertEqual(instance.discovery_domain, external_discovery_domain)
         self.assertEqual(
             instance.discovery_domain_nginx_regex,
-            r'^(external\-discovery\.domain\.com|discovery\-sample\.example\.org)$'
+            r'^(external\-discovery\.domain\.com|discovery\.sample\.example\.org)$'
         )
         self.assertEqual(instance.url, 'https://{}/'.format(external_lms_domain))
         self.assertEqual(instance.lms_preview_url, 'https://{}/'.format(external_lms_preview_domain))
@@ -218,10 +218,10 @@ class OpenEdXInstanceTestCase(TestCase):
         dns_records = gandi.api.client.list_records('example.com')
         self.assertCountEqual(dns_records, [
             dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='preview-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='studio-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='ecommerce-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='discovery-test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='preview.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='studio.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='ecommerce.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
+            dict(name='discovery.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
         ])
 
         appserver = instance.appserver_set.get(pk=appserver_id)
@@ -426,18 +426,37 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertRegex(config_str, r"\bserver\b.*\b{}:80\b".format(ip_address))
         self.assertCountEqual(backend_map, [(domain, backend) for domain in domain_names])
 
+    def _check_load_balancer_configuration_prefix_domains(self,  # pylint: disable=invalid-name
+                                                          backend_map,
+                                                          config,
+                                                          domain_names,
+                                                          ip_address):
+        """
+        Verify the load balancer configuration given in backend_map and config when the instance has prefix domains.
+        """
+        default_backend_map, _ = backend_map[:-4], backend_map[-4:]
+        default_config, redirect_config = config[:1], config[1:]
+        [(backend, config_str)] = redirect_config
+        self._check_load_balancer_configuration(default_backend_map, default_config, domain_names, ip_address)
+        expected_config = 'http-request redirect code 301 prefix http://%[var(txn.prefix)].{}'.format(domain_names[0])
+        self.assertIn('be-redirect-edxins', backend)
+        self.assertIn(expected_config, config_str)
+
+    @ddt.data(False, True)
     @patch_services
-    def test_get_load_balancer_configuration(self, mocks):
+    def test_get_load_balancer_configuration(self, mocks, enable_prefix_domains_redirect):
         """
         Test that the load balancer configuration gets generated correctly.
         """
         instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
+        instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
+        instance.save()
         domain_names = [
             "test.load_balancer.example.com",
-            "preview-test.load_balancer.example.com",
-            "studio-test.load_balancer.example.com",
-            "ecommerce-test.load_balancer.example.com",
-            "discovery-test.load_balancer.example.com",
+            "preview.test.load_balancer.example.com",
+            "studio.test.load_balancer.example.com",
+            "ecommerce.test.load_balancer.example.com",
+            "discovery.test.load_balancer.example.com",
         ]
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()
@@ -452,7 +471,12 @@ class OpenEdXInstanceTestCase(TestCase):
         with patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock) as mock_public_ip:
             mock_public_ip.side_effect = [None, "1.1.1.1", "1.1.1.1", "1.1.1.1"]
             backend_map, config = instance.get_load_balancer_configuration()
-        self._check_load_balancer_configuration(
+
+        check_configuration_method = (
+            self._check_load_balancer_configuration_prefix_domains if enable_prefix_domains_redirect
+            else self._check_load_balancer_configuration
+        )
+        check_configuration_method(
             backend_map, config, domain_names, appserver.server.public_ip,
         )
 
@@ -467,22 +491,26 @@ class OpenEdXInstanceTestCase(TestCase):
             appserver.server.save()
             self.assertRaises(WrongStateException, instance.get_load_balancer_configuration)
 
-    def test_get_load_balancer_config_ext_domains(self):
+    @ddt.data(False, True)
+    @patch_services
+    def test_get_load_balancer_config_ext_domains(self, mocks, enable_prefix_domains_redirect):
         """
         Test the load balancer configuration when external domains are set.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.load_balancer.opencraft.hosting',
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.load_balancer.opencraft.co.uk',
                                           external_lms_domain='courses.myexternal.org',
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org',
                                           external_ecommerce_domain='ecom.myexternal.org',
                                           external_discovery_domain='catalog.myexternal.org')
+        instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
+        instance.save()
         domain_names = [
-            'test.load_balancer.opencraft.hosting',
-            'preview-test.load_balancer.opencraft.hosting',
-            'studio-test.load_balancer.opencraft.hosting',
-            'ecommerce-test.load_balancer.opencraft.hosting',
-            'discovery-test.load_balancer.opencraft.hosting',
+            'test.load_balancer.opencraft.co.uk',
+            'preview.test.load_balancer.opencraft.co.uk',
+            'studio.test.load_balancer.opencraft.co.uk',
+            'ecommerce.test.load_balancer.opencraft.co.uk',
+            'discovery.test.load_balancer.opencraft.co.uk',
             'courses.myexternal.org',
             'preview.myexternal.org',
             'studio.myexternal.org',
@@ -490,9 +518,36 @@ class OpenEdXInstanceTestCase(TestCase):
             'catalog.myexternal.org',
         ]
         backend_map, config = instance.get_load_balancer_configuration()
+
         self._check_load_balancer_configuration(
             backend_map, config, domain_names, settings.PRELIMINARY_PAGE_SERVER_IP
         )
+        # Test configuration for active appserver
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        appserver.make_active()
+        with patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock) as mock_public_ip:
+            mock_public_ip.side_effect = [None, "1.1.1.1", "1.1.1.1", "1.1.1.1"]
+            backend_map, config = instance.get_load_balancer_configuration()
+
+        check_configuration_method = (
+            self._check_load_balancer_configuration_prefix_domains if enable_prefix_domains_redirect
+            else self._check_load_balancer_configuration
+        )
+        check_configuration_method(
+            backend_map, config, domain_names, appserver.server.public_ip,
+        )
+
+        # Test configuration in case an active appserver doesn't have a public IP address anymore.
+        # This might happen if the OpenStack server dies or gets modified from the outside, but it
+        # is not expected to happen under normal circumstances.  In case the public IP address is not there,
+        # We log an Error, and call update_status(). In case the IP address is still not there, we stop further
+        # activity and raise an Exception.
+        with patch('instance.openstack_utils.get_server_public_address', return_value=None), \
+                self.assertLogs("instance.models.instance", "ERROR"):
+            appserver.server._public_ip = None
+            appserver.server.save()
+            self.assertRaises(WrongStateException, instance.get_load_balancer_configuration)
 
     @ddt.data(True, False)
     @patch_services

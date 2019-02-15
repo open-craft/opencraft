@@ -82,8 +82,8 @@ class TasksTestCase(TestCase):
         new_instance_ref_id = mock_spawn_appserver.mock_calls[0][1][0]
         instance = OpenEdXInstance.objects.get(ref_set__pk=new_instance_ref_id)
         self.assertEqual(instance.internal_lms_domain, 'pr234.sandbox.awesome.hosting.org')
-        self.assertEqual(instance.internal_lms_preview_domain, 'preview-pr234.sandbox.awesome.hosting.org')
-        self.assertEqual(instance.internal_studio_domain, 'studio-pr234.sandbox.awesome.hosting.org')
+        self.assertEqual(instance.internal_lms_preview_domain, 'preview.pr234.sandbox.awesome.hosting.org')
+        self.assertEqual(instance.internal_studio_domain, 'studio.pr234.sandbox.awesome.hosting.org')
         self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
         self.assertEqual(instance.edx_platform_commit, '7' * 40)
         self.assertEqual(instance.openedx_release, 'master')
@@ -243,9 +243,9 @@ class TasksTestCase(TestCase):
             subdomain_part = 'pr2300{}'.format(pr_number) # e.g. pr23001, pr23002, etc.
             self.assertEqual(instance.internal_lms_domain, '{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.internal_lms_preview_domain,
-                             'preview-{}.sandbox.awesome.hosting.org'.format(subdomain_part))
+                             'preview.{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.internal_studio_domain,
-                             'studio-{}.sandbox.awesome.hosting.org'.format(subdomain_part))
+                             'studio.{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
             self.assertEqual(instance.edx_platform_commit, '7' * 40)
             self.assertEqual(instance.openedx_release, 'ginkgo.8') # from WatchedFork

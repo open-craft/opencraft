@@ -22,6 +22,7 @@ Load-balanced instance mixin - tests
 
 # Imports #####################################################################
 
+import ddt
 from django.test import override_settings
 
 from instance import gandi
@@ -34,38 +35,51 @@ from instance.tests.utils import patch_gandi, patch_services
 
 # Tests #######################################################################
 
+@ddt.ddt
 class LoadBalancedInstanceTestCase(TestCase):
     """
     Tests for OpenEdXStorageMixin
     """
+    dns_domains = [
+        'test.dns',
+        'preview.test.dns',
+        'studio.test.dns',
+        'ecommerce.test.dns',
+        'discovery.test.dns'
+    ]
+    dns_domains_with_prefix_domains = dns_domains + [
+        'studio-test.dns',
+        'preview-test.dns',
+        'discovery-test.dns',
+        'ecommerce-test.dns',
+    ]
 
-    def _verify_dns_records(self, instance, domain):
+    def _verify_dns_records(self, instance, domain, expected_domains=()):
         """
         Verify that DNS records have been set correctly for the given domain.
         """
         lb_domain = instance.load_balancing_server.domain + '.'
+        expected_records = [dict(name=domain, type='CNAME', value=lb_domain, ttl=1200) for domain in expected_domains]
         dns_records = gandi.api.client.list_records(domain)
-        self.assertCountEqual(dns_records, [
-            dict(name='test.dns', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='preview-test.dns', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='studio-test.dns', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='ecommerce-test.dns', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='discovery-test.dns', type='CNAME', value=lb_domain, ttl=1200),
-        ])
+        self.assertCountEqual(dns_records, expected_records)
 
+    @ddt.data(False, True)
     @patch_gandi
-    def test_set_dns_records(self):
+    def test_set_dns_records(self, enable_prefix_domains_redirect):
         """
         Test set_dns_records() without external domains.
         """
         instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.example.com')
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
         instance.set_dns_records()
-        self._verify_dns_records(instance, 'example.com')
+        expected_domains = self.dns_domains_with_prefix_domains if enable_prefix_domains_redirect else self.dns_domains
+        self._verify_dns_records(instance, 'example.com', expected_domains)
 
+    @ddt.data(False, True)
     @patch_gandi
-    def test_set_dns_records_external_domain(self):
+    def test_set_dns_records_external_domain(self, enable_prefix_domains_redirect):
         """
         Test set_dns_records() with custom external domains.
         Ensure that the DNS records are only created for the internal domains.
@@ -75,9 +89,11 @@ class LoadBalancedInstanceTestCase(TestCase):
                                           external_lms_preview_domain='preview.myexternal.org',
                                           external_studio_domain='studio.myexternal.org')
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
         instance.set_dns_records()
-        self._verify_dns_records(instance, 'opencraft.co.uk')
+        expected_domains = self.dns_domains_with_prefix_domains if enable_prefix_domains_redirect else self.dns_domains
+        self._verify_dns_records(instance, 'opencraft.co.uk', expected_domains)
 
     @patch_gandi
     def test_remove_dns_records(self):

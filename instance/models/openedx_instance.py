@@ -159,6 +159,16 @@ class OpenEdXInstance(
         ))
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
         backend_conf = [(backend_name, config)]
+
+        if self.enable_prefix_domains_redirect:
+            redirect_backend_name = "be-redirect-{}".format(self.domain_slug)
+            redirect_template = loader.get_template('instance/haproxy/redirect.conf')
+            redirect_config = redirect_template.render(dict(
+                domain=self.internal_lms_domain
+            ))
+            backend_map += [(domain, redirect_backend_name) for domain in self.get_prefix_domain_names()]
+            backend_conf += [(redirect_backend_name, redirect_config)]
+
         if triggered_by_instance:
             self.logger.info(
                 "New load-balancer configuration:\n    backend map: %s\n   configuration: %s",
