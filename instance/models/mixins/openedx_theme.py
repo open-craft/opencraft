@@ -20,6 +20,7 @@
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
 import yaml
+from colour import Color
 
 from django.db import models
 from django.conf import settings
@@ -119,13 +120,44 @@ class OpenEdXThemeMixin(models.Model):
                 $main-color: {main_color};
                 $link-color: {link_color};
                 $header-bg: {header_bg};
+                $header-font-color {header_font_color};
                 $footer-bg: {footer_bg};
+                $footer-font-color {footer_font_color};
             """.format(
                 link_color=application.link_color,
                 main_color=application.main_color,
                 header_bg=application.header_bg_color,
-                footer_bg=application.footer_bg_color
+                header_font_color=self.get_contrasting_font_color(
+                    application.header_bg_color
+                ),
+                footer_bg=application.footer_bg_color,
+                footer_font_color=self.get_contrasting_font_color(
+                    application.footer_bg_color
+                ),
             )
         }
 
         return yaml.dump(theme_settings, default_flow_style=False)
+
+    @staticmethod
+    def get_contrasting_font_color(background_color):
+        """
+        Takes in a hexcolor code and returns black or white, depending
+        which gives the better contrast
+        """
+        try:
+            color = Colour(background_color)
+        except ValueError:
+            return "#000000"
+
+        # Using Web Content Accessibility Guidelines (WCAG) 2.0 and comparing
+        # the background to the black color we can define which is the best color
+        # to improve readability on the page
+        # Following the given formula using L2 as black (0 luminance):
+        # (L1 + 0.05) / (L2 + 0.05) = sqrt(1.05 * 0.05) - 0.05 ~~ 0.179
+        # More info:
+        # https://www.w3.org/TR/WCAG20/
+        if color.luminance > 0.179:
+            return '#000000'
+        else:
+            return '#ffffff'
