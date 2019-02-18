@@ -104,7 +104,9 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 $main-color: #001122;
                 $link-color: #003344;
                 $header-bg: #caaffe;
+                $header-font-color: #000000;
                 $footer-bg: #ffff11;
+                $footer-font-color: #000000;
             """
             }
             for ansible_var, value in expected_settings.items():

@@ -140,24 +140,22 @@ class OpenEdXThemeMixin(models.Model):
         return yaml.dump(theme_settings, default_flow_style=False)
 
     @staticmethod
-    def get_contrasting_font_color(background_color):
+    def get_contrasting_font_color(background_color, delta=0.5):
         """
         Takes in a hexcolor code and returns black or white, depending
         which gives the better contrast
         """
         try:
-            color = Colour(background_color)
+            color = Color(background_color)
         except ValueError:
             return "#000000"
 
         # Using Web Content Accessibility Guidelines (WCAG) 2.0 and comparing
-        # the background to the black color we can define which is the best color
-        # to improve readability on the page
-        # Following the given formula using L2 as black (0 luminance):
-        # (L1 + 0.05) / (L2 + 0.05) = sqrt(1.05 * 0.05) - 0.05 ~~ 0.179
+        # the background to the black color we can define which is the
+        # best color to improve readability on the page
         # More info:
         # https://www.w3.org/TR/WCAG20/
-        if color.luminance > 0.179:
+        if color.luminance > delta:
             return '#000000'
         else:
             return '#ffffff'
