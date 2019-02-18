@@ -434,7 +434,7 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Verify the load balancer configuration given in backend_map and config when the instance has prefix domains.
         """
-        default_backend_map, _ = backend_map[:-4], backend_map[-4:]
+        default_backend_map = backend_map[:-4]
         default_config, redirect_config = config[:1], config[1:]
         [(backend, config_str)] = redirect_config
         self._check_load_balancer_configuration(default_backend_map, default_config, domain_names, ip_address)

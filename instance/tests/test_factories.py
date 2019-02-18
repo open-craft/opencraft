@@ -39,7 +39,7 @@ from instance.tests.base import TestCase
 class FactoriesTestCase(TestCase):
     """
     Test cases for functions in the factories module
-    # """
+    """
 
     CONFIGURATION_EXTRA_SETTINGS = (
         "{"
