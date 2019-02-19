@@ -120,9 +120,9 @@ class OpenEdXThemeMixin(models.Model):
                 $main-color: {main_color};
                 $link-color: {link_color};
                 $header-bg: {header_bg};
-                $header-font-color {header_font_color};
+                $header-font-color: {header_font_color};
                 $footer-bg: {footer_bg};
-                $footer-font-color {footer_font_color};
+                $footer-font-color: {footer_font_color};
             """.format(
                 link_color=application.link_color,
                 main_color=application.main_color,
