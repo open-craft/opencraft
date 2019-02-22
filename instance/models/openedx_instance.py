@@ -479,7 +479,7 @@ class OpenEdXInstance(
         version_number = agent.get('version') or 0
         for key, value in configurations.items():
             index, stored_value = agent.get(key, index=True)
-            cas = index if stored_value else 0
+            cas = index if stored_value is not None else 0
             agent.put(key, value, cas=cas)
 
             if not version_updated and value != stored_value:
