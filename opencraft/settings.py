@@ -483,7 +483,7 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
 EDX_WORKERS_ENABLE_CELERY_HEARTBEATS = env.bool('EDX_WORKERS_ENABLE_CELERY_HEARTBEATS', default=False)
 
 # Open EdX Instance custom theme for Ocim Managed client instances
-# The `simple-theme` ansible role uses the below repository as a skeleton theme
+# The `simple-theme` ansible role uses the below repository as a skeleton
 SIMPLE_THEME_SKELETON_THEME_REPO = env(
     'SIMPLE_THEME_SKELETON_THEME_REPO',
     default='https://github.com/open-craft/edx-simple-theme/'
