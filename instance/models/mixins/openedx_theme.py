@@ -145,9 +145,13 @@ class OpenEdXThemeMixin(models.Model):
         Takes in a hexcolor code and returns black or white, depending
         which gives the better contrast
         """
+        # Return black if background_color not set
+        if not background_color:
+            return "#000000"
+
         try:
             color = Color(background_color)
-        except ValueError:
+        except (ValueError, AttributeError):
             return "#000000"
 
         # Using Web Content Accessibility Guidelines (WCAG) 2.0 and comparing

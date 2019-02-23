@@ -144,3 +144,31 @@ class OpenEdXThemeMixinTestCase(TestCase):
             self.assertNotIn('SIMPLETHEME_ENABLE_DEPLOY', parsed_vars)
             self.assertNotIn('SIMPLETHEME_SASS_OVERRIDES', parsed_vars)
             self.assertNotIn('EDXAPP_DEFAULT_SITE_THEME', parsed_vars)
+
+    def test_get_contrasting_font_color(self):
+        """
+        Tests if the automatic font color selection is working properly
+        """
+        # Create objects
+        OpenEdXInstanceFactory(name='Integration - test_colors_applied', deploy_simpletheme=True)
+        instance = OpenEdXInstance.objects.get()
+
+        # Test if the font color is correctly returned depending on the background color
+        test_colors = [
+            # Invalid or empty color returns black
+            ('', '#000000'),
+            ('#@!Vb]´', '#000000'),
+            ('#zzzzzz', '#000000'),
+            # Check for some colors
+            ('#ffffff', '#000000'),    # white, black
+            ('#4286f4', '#000000'), # light blue, black
+            ('#45e052', '#000000'), # light green, black
+            ('#000000', '#ffffff'),    # black, white
+            ('#1f365b', '#ffffff'),    # dark blue, white
+            ('#7c702f', '#ffffff'),    # dark gold, white
+        ]
+        for bg_color, font_color in test_colors:
+            self.assertEqual(
+                instance.get_contrasting_font_color(bg_color),
+                font_color
+            )
