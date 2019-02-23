@@ -106,8 +106,8 @@ class OpenEdXThemeMixin(models.Model):
             ],
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
-            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO,
-            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.EDXAPP_COMPREHENSIVE_THEME_VERSION,
+            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
+            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
             "SIMPLETHEME_EXTRA_SASS": """
                 $main-color: {main_color};
                 $link-color: {link_color};
