@@ -75,14 +75,6 @@ class OpenEdXThemeMixin(models.Model):
                     "value": application.link_color,
                 },
                 {
-                    "variable": "header-bg",
-                    "value": application.header_bg_color,
-                },
-                {
-                    "variable": "footer-bg",
-                    "value": application.footer_bg_color,
-                },
-                {
                     "variable": "button-color",
                     "value": application.main_color,
                 },

@@ -85,10 +85,6 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
-                    {'variable': 'header-bg',
-                     'value': '#caaffe', },
-                    {'variable': 'footer-bg',
-                     'value': '#ffff11', },
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',
