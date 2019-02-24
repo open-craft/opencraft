@@ -488,7 +488,10 @@ SIMPLE_THEME_SKELETON_THEME_REPO = env(
     'SIMPLE_THEME_SKELETON_THEME_REPO',
     default='https://github.com/open-craft/edx-simple-theme/'
 )
-SIMPLE_THEME_SKELETON_THEME_VERSION = env('SIMPLE_THEME_SKELETON_THEME_VERSION', default='giovanni/bb-834-improve-simple-theme')
+SIMPLE_THEME_SKELETON_THEME_VERSION = env(
+    'SIMPLE_THEME_SKELETON_THEME_VERSION',
+    default='giovanni/bb-834-improve-simple-theme'
+)
 
 # Ansible #####################################################################
 
