@@ -75,7 +75,8 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
             # We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
-            "EDXAPP_SESSION_COOKIE_DOMAIN": '',
+            "EDXAPP_SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
+            "EDXAPP_LOGIN_REDIRECT_WHITELIST": [self.instance.studio_domain, ],
 
             # Run a command to delete expired sessions once a day. The time is random and different in each server
             # to avoid the case when all servers connect to the database at exactly the same time.

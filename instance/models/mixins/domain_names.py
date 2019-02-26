@@ -86,6 +86,8 @@ class DomainNameInstance(models.Model):
     external_discovery_domain = models.CharField(max_length=100, blank=True)
     external_ecommerce_domain = models.CharField(max_length=100, blank=True)
 
+    enable_prefix_domains_redirect = models.BooleanField(default=False)
+
     class Meta:
         abstract = True
 
@@ -154,6 +156,13 @@ class DomainNameInstance(models.Model):
         choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
         return '^({})$'.format(choices)
 
+    def get_prefix_domain_names(self):
+        """
+        Return an iterable of domain names using prefixes for Studio, Preview, Discovery, E-Commerce
+        """
+        prefixes = ['studio', 'preview', 'discovery', 'ecommerce']
+        return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in prefixes]
+
     def get_load_balanced_domains(self):
         """
         Return an iterable of domains that should be handled by the load balancer.
@@ -176,13 +185,16 @@ class DomainNameInstance(models.Model):
         """
         Return an iterable of domains that we  manage DNS entries for.
         """
-        return [
+        managed_domains = [
             self.internal_lms_domain,
             self.internal_lms_preview_domain,
             self.internal_studio_domain,
             self.internal_discovery_domain,
             self.internal_ecommerce_domain,
         ]
+        if self.enable_prefix_domains_redirect:
+            managed_domains += self.get_prefix_domain_names()
+        return managed_domains
 
     @property
     def domain_slug(self):
