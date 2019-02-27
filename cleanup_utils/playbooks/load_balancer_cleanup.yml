@@ -9,10 +9,11 @@
     FRAGMENT_PATTERN: "integration*"
     REMOVE_FRAGMENTS: false
   tasks:
-    - name: Find load balancer fragment files older than 'DAYS_OLDER_THAN'
+    - name: Find load balancer fragment files older than "{{ DAYS_OLDER_THAN }}" days
       find:
         paths: "{{ FRAGMENT_DIR }}"
         age: "{{ DAYS_OLDER_THAN }}d"
+        patterns: FRAGMENT_PATTERN
       register: stale_fragment_files
 
     - name: Debug print the stale fragment files found

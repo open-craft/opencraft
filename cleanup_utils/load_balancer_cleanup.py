@@ -26,12 +26,13 @@ import os
 import pathlib
 
 from instance import ansible
+
 # Logging #####################################################################
 
 logger = logging.getLogger('integration_cleanup')
 
-
 # Classes #####################################################################
+
 
 class LoadBalancerCleanup:
     """
@@ -48,17 +49,22 @@ class LoadBalancerCleanup:
         """Run the actual cleanup"""
         logger.info("\n --- Starting Load balancer fragments cleanup ---")
 
+        if self.dry_run:
+            logger.info("Running in DRY_RUN mode, no actions will be taken")
+
         playbook_path = pathlib.Path(
             os.path.abspath(os.path.dirname(__file__))
         ) / "playbooks/load_balancer_cleanup.yml"
+
         ansible_vars = (
             "DAYS_OLDER_THAN: {age_limit}\n"
             "FRAGMENT_PATTERN: {fragment_prefix}*\n"
-            "REMOVE_FRAGMENTS: true\n"
-        ).format(age_limit=self.age_limit, fragment_prefix=self.fragment_prefix)
-        if self.dry_run:
-            logger.info("Running in DRY_RUN mode, no actions will be taken")
-            ansible_vars += "REMOVE_FRAGMENTS: false\n"
+            "REMOVE_FRAGMENTS: {remove_fragments}\n"
+        ).format(
+            age_limit=self.age_limit,
+            fragment_prefix=self.fragment_prefix,
+            remove_fragments='true' if self.dry_run else 'false'
+        )
 
         return_code = ansible.capture_playbook_output(
             requirements_path=str(playbook_path.parent / "requirements.txt"),
@@ -69,6 +75,4 @@ class LoadBalancerCleanup:
             logger_=logger,
         )
         if return_code != 0:
-            msg = "Playbook to remove stale load balancer fragments failed"
-            logger.error(msg)
-            raise Exception(msg)
+            raise Exception("Playbook to remove stale load balancer fragments failed")
