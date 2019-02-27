@@ -1,0 +1,27 @@
+---
+# Playbook to remove the stale load balancer fragments
+
+- hosts: all
+  become: True
+  vars:
+    DAYS_OLDER_THAN: 3
+    FRAGMENT_DIR: /etc/haproxy/conf.d
+    FRAGMENT_PATTERN: "integration*"
+    REMOVE_FRAGMENTS: false
+  tasks:
+    - name: Find load balancer fragment files older than 'DAYS_OLDER_THAN'
+      find:
+        paths: "{{ FRAGMENT_DIR }}"
+        age: "{{ DAYS_OLDER_THAN }}d"
+      register: stale_fragment_files
+
+    - name: Debug print the stale fragment files found
+      debug:
+        msg: "Found '{{ item.path }}'"
+      with_items: "{{ stale_fragment_files.files }}"
+
+    - name: Remove the stale fragment files
+      command: >
+        haproxy-config remove "{{ item.path.split("/")[-1] }}"
+      with_items: "{{ stale_fragment_files.files }}"
+      when: REMOVE_FRAGMENTS

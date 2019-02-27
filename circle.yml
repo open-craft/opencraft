@@ -85,6 +85,9 @@ jobs:
   cleanup:
     docker:
       - image: circleci/python:3.5.4
+        environment:
+          LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+          DJANGO_SETTINGS_MODULE: 'opencraft.settings'
     steps:
       - checkout
       - restore_cache:
@@ -94,6 +97,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            sudo apt-get install libpython2.7-dev
             pip install -r cleanup_utils/requirements.txt
       - run:
           name: Cleanup

@@ -32,6 +32,7 @@ from pytz import UTC
 
 from cleanup_utils.aws_cleanup import AwsCleanupInstance
 from cleanup_utils.dns_cleanup import DnsCleanupInstance
+from cleanup_utils.load_balancer_cleanup import LoadBalancerCleanup
 from cleanup_utils.mysql_cleanup import MySqlCleanupInstance
 from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 
@@ -124,6 +125,15 @@ def run_integration_cleanup(dry_run=False):
     dns_cleanup.run_cleanup(
         hashes_to_clean=hashes_to_clean
     )
+
+    load_balancer_cleanup = LoadBalancerCleanup(
+        load_balancer_address=os.environ['DEFAULT_LOAD_BALANCING_SERVER'].partition('@')[-1],
+        fragment_prefix=os.environ.get('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', 'integration-'),
+        age_limit=DEFAULT_AGE_LIMIT,
+        dry_run=dry_run,
+    )
+
+    load_balancer_cleanup.run_cleanup()
 
     logger.info("\nIntegration cleanup tool finished.")
 
