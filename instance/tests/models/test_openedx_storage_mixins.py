@@ -23,19 +23,29 @@ OpenEdXInstance Storage Mixins - Tests
 # Imports #####################################################################
 from unittest.mock import call, patch
 
-import boto
+import boto3
 import ddt
 import yaml
+from botocore.exceptions import ClientError
+from botocore.session import get_session
+from botocore.stub import Stubber
 from django.conf import settings
 from django.test.utils import override_settings
 
-from instance.models.mixins.storage import StorageContainer, get_master_iam_connection, get_s3_cors_config
+from instance.models.mixins import storage
+from instance.models.mixins.storage import StorageContainer, S3_CORS
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.utils import S3Stubber, IAMStubber
 
+
+# Clients #####################################################################
+iam_client = get_session().create_client('iam')
+s3_client = get_session().create_client('s3')
 
 # Tests #######################################################################
+
 
 class OpenEdXStorageMixinTestCase(TestCase):
     """
@@ -183,9 +193,33 @@ def get_swift_settings(instance):
     }
 
 
-# pylint: disable=too-many-public-methods
+class ContainerTestCase(TestCase):
+    """
+    Tests for provisioning settings
+    """
+    def check_ansible_settings(self, appserver, expected=True, s3=False):
+        """
+        Verify the Ansible settings.
+        """
+        instance = appserver.instance
+        if s3:
+            expected_settings = get_s3_settings(instance)
+        else:
+            expected_settings = get_swift_settings(instance)
+
+        # Replace any \' occurrences because some settings may have it while we do a blanket assertion without it.
+        # For example: we assert "EDXAPP_SWIFT_TENANT_NAME: 9999999999" is in `ansible_vars`, which would have
+        # "EDXAPP_SWIFT_TENANT_NAME: \'9999999999\'", causing a mismatch unless we strip the \'.
+        ansible_vars = str(appserver.configuration_settings).replace("\'", '')
+        for ansible_var, value in expected_settings.items():
+            if expected:
+                self.assertRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
+            else:
+                self.assertNotRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
+
+
 @ddt.ddt
-class SwiftContainerInstanceTestCase(TestCase):
+class SwiftContainerInstanceTestCase(ContainerTestCase):
     """
     Tests for Swift container provisioning.
     """
@@ -255,26 +289,6 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(create_swift_container.called)
 
-    def check_ansible_settings(self, appserver, expected=True, s3=False):
-        """
-        Verify the Ansible settings.
-        """
-        instance = appserver.instance
-        if s3:
-            expected_settings = get_s3_settings(instance)
-        else:
-            expected_settings = get_swift_settings(instance)
-
-        # Replace any \' occurrences because some settings may have it while we do a blanket assertion without it.
-        # For example: we assert "EDXAPP_SWIFT_TENANT_NAME: 9999999999" is in `ansible_vars`, which would have
-        # "EDXAPP_SWIFT_TENANT_NAME: \'9999999999\'", causing a mismatch unless we strip the \'.
-        ansible_vars = str(appserver.configuration_settings).replace("\'", '')
-        for ansible_var, value in expected_settings.items():
-            if expected:
-                self.assertRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
-            else:
-                self.assertNotRegex(ansible_vars, r'{}:\s*{}'.format(ansible_var, value))
-
     def test_ansible_settings_swift(self):
         """
         Verify Swift Ansible configuration when Swift is enabled.
@@ -292,6 +306,19 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver, expected=False)
 
+
+@ddt.ddt
+@override_settings(
+    AWS_ACCESS_KEY='test',
+    AWS_SECRET_ACCESS_KEY_ID='test',
+    INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE,
+)
+class S3ContainerInstanceTestCase(ContainerTestCase):
+    """
+    Tests for S3 Storage
+    """
+    default_region = boto3.client('s3').meta.config.region_name
+
     @ddt.data(
         '',
         'eu-west-1',
@@ -305,103 +332,192 @@ class SwiftContainerInstanceTestCase(TestCase):
         appserver = make_test_appserver(instance, s3=True)
         self.check_ansible_settings(appserver, s3=True)
 
-    @override_settings(
-        AWS_ACCESS_KEY='test',
-        AWS_SECRET_ACCESS_KEY_ID='test',
-        AWS_S3_DEFAULT_HOSTNAME='s3.test.host',
-        AWS_S3_CUSTOM_REGION_HOSTNAME='s3.{region}.test.host',
-        INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE,
-    )
     @ddt.data(
-        ('', 's3.test.host'),
-        ('region', 's3.region.test.host'),
-        ('eu-central-1', 's3.eu-central-1.test.host'),
+        ('', default_region),
+        ('region', 'region'),
+        ('eu-central-1', 'eu-central-1'),
     )
     @ddt.unpack
-    def test_get_s3_connection(self, s3_region, expected_hostname):
+    def test_get_s3_connection(self, s3_region, expected_region):
         """
         Test get_s3 connection returns right instance
         """
         instance = OpenEdXInstanceFactory()
         instance.s3_region = s3_region
-        s3_connection = instance.get_s3_connection()
-        self.assertIsInstance(s3_connection, boto.s3.connection.S3Connection)
-        self.assertEqual(s3_connection.host, expected_hostname)
+        self.assertEqual(instance.s3.meta.region_name, expected_region)
 
     def test_get_s3_policy(self):
         """
         Verify S3 policy is set for correctly
         """
-        instance = OpenEdXInstanceFactory()
-        policies = [
-            (
-                '"Action": [\n        "s3:ListBucket",\n        "s3:CreateBucket"'
-                ',\n        "s3:DeleteBucket",\n        "s3:PutBucketCORS"\n      ]'
-            ),
-            '"Resource": [\n        "arn:aws:s3:::{}"\n      ]'.format(instance.s3_bucket_name),
-            '"Action": [\n        "s3:*Object*"\n      ]',
-            '"Resource": [\n        "arn:aws:s3:::{}/*"\n      ]'.format(instance.s3_bucket_name)
+        instance = OpenEdXInstanceFactory(s3_bucket_name='test_bucket')
+        actions = [
+            "s3:ListBucket",
+            "s3:CreateBucket",
+            "s3:DeleteBucket",
+            "s3:PutBucketCORS",
+            "s3:PutBucketVersioning",
+            "s3:PutLifecycleConfiguration",
         ]
-        policy = instance.get_s3_policy()
-        for line in policies:
-            self.assertIn(line, policy)
+        policy = instance.get_s3_policy()['Statement']
+        self.assertIn("arn:aws:s3:::{}".format(instance.s3_bucket_name), policy[0]['Resource'])
+        for action in actions:
+            self.assertIn(action, policy[0]['Action'])
 
-    @patch('boto.s3.connection.S3Connection.create_bucket')
-    @patch('boto.s3.bucket.Bucket.set_cors')
-    def test_provision_s3(self, set_cors, create_bucket):
+    @ddt.data(
+        (True, ), (False, )
+    )
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    # pylint: disable=no-self-use
+    def test_provision_s3(self, provision_iam):
         """
         Test s3 provisioning succeeds
         """
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.s3_access_key = 'test'
-        instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.s3_region = 'test'
-        instance.provision_s3()
-        create_bucket.assert_called_once_with(instance.s3_bucket_name, location=instance.s3_region)
-        self.assertEqual(
-            instance.s3_hostname,
-            settings.AWS_S3_CUSTOM_REGION_HOSTNAME.format(region=instance.s3_region)
-        )
+        if not provision_iam:
+            instance.s3_access_key = 'test'
+            instance.s3_secret_access_key = 'test'
 
-    @patch('boto.s3.connection.S3Connection.create_bucket')
-    def test__create_bucket_fails(self, create_bucket):
+        with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+            if provision_iam:
+                iamstubber.stub_create_user(instance.iam_username)
+                iamstubber.stub_create_access_key(instance.iam_username)
+                iamstubber.stub_put_user_policy(
+                    instance.iam_username,
+                    storage.USER_POLICY_NAME,
+                    instance.get_s3_policy()
+                )
+                stubber.stub_create_bucket()
+                stubber.stub_put_cors()
+                stubber.stub_set_expiration()
+                stubber.stub_versioning()
+                instance.provision_s3()
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test__create_bucket_fails(self):
         """
         Test s3 provisioning fails on bucket creation, and retries up to 4 times
         """
-        create_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
         instance = OpenEdXInstanceFactory()
         instance.s3_access_key = 'test'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
-        attempts = 4
-        with self.assertRaises(boto.exception.S3ResponseError):
-            with self.assertLogs('instance.models.instance', level='INFO') as cm:
-                instance._create_bucket(attempts=attempts)
-        base_log_text = (
-            'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation.'
-            ' IAM keys are not propagated yet, attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, attempts)
-        )
-        self.assertEqual(
-            cm.output,
-            [base_log_text % i for i in range(1, attempts + 1)]
-        )
+        max_tries = 4
+        stubber = Stubber(s3_client)
+        for _ in range(max_tries):
+            stubber.add_client_error('create_bucket')
+        with self.assertLogs('instance.models.instance', level='INFO') as cm:
+            with stubber:
+                with self.assertRaises(ClientError):
+                    instance._create_bucket(max_tries=max_tries)
 
-    @patch('boto.connect_iam')
-    @patch('boto.s3.connection.S3Connection')
-    def test_deprovision_s3(self, s3_connection, iam_connection):
+            base_log_text = (
+                'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket creation'
+                ' due to "", attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, max_tries)
+            )
+            self.assertEqual(
+                cm.output,
+                [base_log_text % i for i in range(1, max_tries + 1)]
+            )
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test__update_bucket_fails(self):
+        """
+        Test s3 provisioning fails on bucket update, and retries up to 4 times
+        This can happen when the IAM is updated but the propagation is delayed
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.s3_access_key = 'test'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        max_tries = 4
+        stubber = S3Stubber(s3_client)
+        stubber.stub_create_bucket(location='')
+        for _ in range(max_tries):
+            stubber.stub_put_cors()
+            stubber.add_client_error('put_bucket_lifecycle_configuration')
+        with self.assertLogs('instance.models.instance', level='INFO') as cm:
+            with stubber, self.assertRaises(ClientError):
+                instance._create_bucket(max_tries=max_tries)
+
+            base_log_text = (
+                'INFO:instance.models.instance:instance={} ({!s:.15}) | Retrying bucket configuration'
+                ' due to "", attempt %s of {}.'.format(instance.ref.pk, instance.ref.name, max_tries)
+            )
+            for i in range(1, 1 + max_tries):
+                self.assertIn(
+                    base_log_text % i,
+                    cm.output,
+                )
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test_deprovision_s3(self):
         """
         Test s3 deprovisioning succeeds
         """
+
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.s3_access_key = 'test'
+        instance.s3_access_key = 'test_0123456789a'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.s3_region = 'test'
-        instance.provision_s3()
-        instance.deprovision_s3()
+
+        with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+            iamstubber.stub_put_user_policy(
+                instance.iam_username,
+                storage.USER_POLICY_NAME,
+                instance.get_s3_policy()
+            )
+            stubber.stub_create_bucket()
+            stubber.stub_put_cors()
+            stubber.stub_set_expiration()
+            stubber.stub_versioning()
+            instance.provision_s3()
+            # Put an object
+            stubber.stub_put_object(b'test', 'test')
+            s3_client.put_object(Body=b'test', Bucket='test', Key='test')
+            # Overwrite object
+            stubber.stub_put_object(b'another_test', 'test')
+            s3_client.put_object(Body=b'another_test', Bucket='test', Key='test')
+            # Put another object
+            stubber.stub_put_object(b'another_test', 'another_test')
+            s3_client.put_object(Body=b'another_test', Bucket='test', Key='another_test')
+            # Delete object
+            stubber.stub_delete_object(key='another_test')
+            s3_client.delete_object(Bucket='test', Key='another_test')
+            # Make sure three versions and a delete marker are removed
+            items = {
+                'Versions': [
+                    {'Key': 'test', 'VersionId': '1a'},
+                    {'Key': 'test', 'VersionId': '2b'},
+                    {'Key': 'another_test', 'VersionId': '3c'}
+                ],
+                'DeleteMarkers': [
+                    {'Key': 'another_test', 'VersionId': '4d'}
+                ]
+            }
+            stubber.stub_list_object_versions(result=items)
+            stubber.add_response('delete_objects', {}, {
+                'Bucket': 'test',
+                'Delete': {
+                    'Objects': [{'Key': d['Key'], 'VersionId': d['VersionId']}
+                                for d in items['Versions'] + items['DeleteMarkers']]
+                }
+            })
+            stubber.stub_list_object_versions(result={})
+            stubber.stub_delete_bucket()
+
+            iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
+            iamstubber.stub_delete_user_policy(instance.iam_username)
+            iamstubber.stub_delete_user(instance.iam_username)
+            instance.deprovision_s3()
+
         instance.refresh_from_db()
         self.assertEqual(instance.s3_bucket_name, "")
         self.assertEqual(instance.s3_access_key, "")
@@ -409,41 +525,74 @@ class SwiftContainerInstanceTestCase(TestCase):
         # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
         self.assertEqual(instance.s3_region, "test")
 
-    @patch('boto.connect_iam')
-    @patch('boto.s3.connection.S3Connection')
-    def test_deprovision_s3_delete_user_fails(self, s3_connection, connect_iam):
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    def test_deprovision_s3_delete_user_fails(self):
         """
         Test s3 deprovisioning fails on delete_user
         """
-        iam_connection = connect_iam()
-        iam_connection.delete_access_key.side_effect = boto.exception.BotoServerError(403, "Forbidden")
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.s3_access_key = 'test'
+        instance.s3_access_key = 'test_0123456789a'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         with self.assertLogs("instance.models.instance"):
-            instance.deprovision_s3()
+            with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+                iamstubber.stub_put_user_policy(
+                    instance.iam_username,
+                    storage.USER_POLICY_NAME,
+                    instance.get_s3_policy()
+                )
+                stubber.stub_create_bucket(location='')
+                stubber.stub_put_cors()
+                stubber.stub_set_expiration()
+                stubber.stub_versioning()
+                instance.provision_s3()
+
+                stubber.stub_list_object_versions(result={})
+                stubber.stub_delete_bucket()
+
+                iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
+                iamstubber.stub_delete_user_policy(instance.iam_username)
+                iamstubber.add_client_error('delete_user')
+                instance.deprovision_s3()
         # Since it failed deleting the user, access_keys should not be empty
-        self.assertEqual(instance.s3_access_key, "test")
+        instance.refresh_from_db()
+        self.assertEqual(instance.s3_access_key, "test_0123456789a")
         self.assertEqual(instance.s3_secret_access_key, "test")
 
-    @patch('boto.connect_iam')
-    @patch('boto.s3.connection.S3Connection')
-    def test_deprovision_s3_delete_bucket_fails(self, s3_connection, connect_iam):
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test_deprovision_s3_delete_bucket_fails(self):
         """
         Test s3 deprovisioning fails on delete_bucket
         """
-        s3_connection = s3_connection()
-        s3_connection.delete_bucket.side_effect = boto.exception.S3ResponseError(403, "Forbidden")
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.s3_access_key = 'test'
+        instance.s3_access_key = 'test_0123456789a'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.s3_region = 'test'
         with self.assertLogs("instance.models.instance"):
-            instance.deprovision_s3()
+            with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+                iamstubber.stub_put_user_policy(
+                    instance.iam_username,
+                    storage.USER_POLICY_NAME,
+                    instance.get_s3_policy()
+                )
+                stubber.stub_create_bucket()
+                stubber.stub_put_cors()
+                stubber.stub_set_expiration()
+                stubber.stub_versioning()
+                instance.provision_s3()
+
+                stubber.stub_list_object_versions(result={})
+                stubber.add_client_error('delete_bucket')
+
+                iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
+                iamstubber.stub_delete_user_policy(instance.iam_username)
+                iamstubber.stub_delete_user(instance.iam_username)
+                instance.deprovision_s3()
         instance.refresh_from_db()
         # Since it failed deleting the bucket, s3_bucket_name should not be empty
         self.assertEqual(instance.s3_bucket_name, "test")
@@ -452,10 +601,8 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.s3_secret_access_key, "")
         self.assertEqual(instance.s3_access_key, "")
 
-    @patch('boto.s3.connection.S3Connection.create_bucket')
-    @patch('boto.s3.bucket.Bucket.set_cors')
     @override_settings(AWS_S3_DEFAULT_REGION='test')
-    def test_provision_s3_swift(self, set_cors, create_bucket):
+    def test_provision_s3_swift(self):
         """
         Test s3 provisioning does nothing when SWIFT is enabled
         """
@@ -468,20 +615,28 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.s3_secret_access_key, '')
         self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)
 
-    @patch('boto.s3.connection.S3Connection.create_bucket')
-    @patch('boto.s3.bucket.Bucket.set_cors')
-    @override_settings(AWS_S3_DEFAULT_REGION='')
-    def test_provision_s3_unconfigured(self, set_cors, create_bucket):
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test_provision_s3_unconfigured(self):
         """
         Test s3 provisioning works with default bucket and IAM
         """
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.provision_s3()
-        create_bucket.assert_called_once_with(
-            instance.s3_bucket_name,
-            location=settings.AWS_S3_DEFAULT_REGION
-        )
+        instance.s3_bucket_name = instance.bucket_name  # For stubbing to work correctly
+        with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+            iamstubber.stub_create_user(instance.iam_username)
+            iamstubber.stub_create_access_key(instance.iam_username)
+            iamstubber.stub_put_user_policy(
+                instance.iam_username,
+                storage.USER_POLICY_NAME,
+                instance.get_s3_policy()
+            )
+            stubber.stub_create_bucket(bucket=instance.s3_bucket_name, location='')
+            stubber.stub_put_cors(bucket=instance.s3_bucket_name)
+            stubber.stub_set_expiration(bucket=instance.s3_bucket_name)
+            stubber.stub_versioning(bucket=instance.s3_bucket_name)
+            instance.provision_s3()
         instance.refresh_from_db()
         self.assertIsNotNone(instance.s3_bucket_name)
         self.assertIsNotNone(instance.s3_access_key)
@@ -489,47 +644,35 @@ class SwiftContainerInstanceTestCase(TestCase):
         self.assertEqual(instance.s3_region, settings.AWS_S3_DEFAULT_REGION)
         self.assertEqual(instance.s3_hostname, settings.AWS_S3_DEFAULT_HOSTNAME)
 
-    @patch('boto.connect_iam')
-    @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
-    def test_create_iam_user(self, connect_iam):
+    @override_settings(AWS_ACCESS_KEY_ID='test_0123456789a', AWS_SECRET_ACCESS_KEY='secret')
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    def test_create_iam_user(self):
         """
         Test create_iam_user succeeds and sets the required attributes
         """
-        access_keys = {
-            'create_access_key_response': {
-                'create_access_key_result': {
-                    'access_key': {
-                        'access_key_id': 'test',
-                        'secret_access_key': 'test'
-                    }
-                }
-            }
-        }
-        connect_iam().create_access_key.return_value = access_keys
         instance = OpenEdXInstanceFactory()
         instance.storage_type = StorageContainer.S3_STORAGE
-        instance.create_iam_user()
-        instance.refresh_from_db()
-        self.assertEqual(instance.s3_access_key, 'test')
-        self.assertEqual(instance.s3_secret_access_key, 'test')
+
+        with IAMStubber(iam_client) as iamstubber:
+            iamstubber.stub_create_user(instance.iam_username)
+            iamstubber.stub_create_access_key(instance.iam_username)
+            iamstubber.stub_put_user_policy(
+                instance.iam_username,
+                storage.USER_POLICY_NAME,
+                instance.get_s3_policy()
+            )
+            instance.create_iam_user()
+            instance.refresh_from_db()
+            self.assertEqual(instance.s3_access_key, 'test_0123456789a')
+            self.assertEqual(instance.s3_secret_access_key, 'secret')
 
     def test_get_s3_cors(self):
         """
         Test get_s3_config succeeds
         """
-        s3_cors_config = get_s3_cors_config()
-        self.assertEqual(s3_cors_config[0].allowed_method, ['GET', 'PUT'])
-        self.assertEqual(s3_cors_config[0].allowed_header, ['*'])
-        self.assertEqual(s3_cors_config[0].allowed_origin, ['*'])
-
-    @patch('boto.connect_iam')
-    @override_settings(AWS_ACCESS_KEY_ID='test', AWS_SECRET_ACCESS_KEY='test')
-    def test_get_master_iam_connection(self, connect_iam):  # pylint: disable=no-self-use
-        """
-        Test get_s3_config succeeds
-        """
-        get_master_iam_connection()
-        connect_iam.assert_called_once_with('test', 'test')
+        self.assertEqual(S3_CORS['CORSRules'][0]['AllowedMethods'], ['GET', 'PUT'])
+        self.assertEqual(S3_CORS['CORSRules'][0]['AllowedHeaders'], ['*'])
+        self.assertEqual(S3_CORS['CORSRules'][0]['AllowedOrigins'], ['*'])
 
     def test_bucket_name(self):
         """

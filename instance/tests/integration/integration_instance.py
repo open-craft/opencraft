@@ -253,7 +253,26 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         self._assert_theme_favicon_in_html(instance, application, favicon_url)
 
+    def assert_bucket_configured(self, instance):
+        """
+        Ensure bucket is configured with proper lifecycle and versioning
+        """
+        # Make sure versioning is enabled
+        response = instance.s3.get_bucket_versioning(Bucket=instance.s3_bucket_name)
+        self.assertEqual(response.get('Status'), 'Enabled')
+
+        # Make sure expiration lifecycle is enabled
+        response = instance.s3.get_bucket_lifecycle_configuration(Bucket=instance.s3_bucket_name)
+        self.assertIn('Rules', response)
+        days = None
+        for rule in response.get('Rules'):
+            if rule.get('Status') == 'Enabled' and 'NoncurrentVersionExpiration' in rule:
+                days = rule.get('NoncurrentVersionExpiration').get('NoncurrentDays')
+                break
+        self.assertEqual(settings.S3_VERSION_EXPIRATION, days)
+
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
+    @shard(1)
     def test_spawn_appserver(self):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
@@ -289,9 +308,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
-        appserver = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
         self.assert_instance_up(instance)
+        self.assert_bucket_configured(instance)
         self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
         for appserver in instance.appserver_set.all():
@@ -299,7 +319,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_lms_users_provisioned(user, appserver)
             self.assert_theme_provisioned(instance, appserver, application)
 
-    @shard(1)
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_betatest_accepted(self):
         """
