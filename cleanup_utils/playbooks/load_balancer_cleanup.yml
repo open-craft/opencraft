@@ -13,7 +13,7 @@
       find:
         paths: "{{ FRAGMENT_DIR }}"
         age: "{{ DAYS_OLDER_THAN }}d"
-        patterns: FRAGMENT_PATTERN
+        patterns: "{{ FRAGMENT_PATTERN }}"
       register: stale_fragment_files
 
     - name: Debug print the stale fragment files found
