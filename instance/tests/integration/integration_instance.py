@@ -433,7 +433,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
         instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failure')
-        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failure.yml"):
+        with patch.object(OpenEdXAppServer, 'configuration_playbook_name', new="playbooks/failure.yml"):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         self.assertFalse(instance.get_active_appservers().exists())
@@ -453,7 +453,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
         heartbeat_active.return_value = True
         instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failignore')
-        with patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new="playbooks/failignore.yml"), \
+        with patch.object(OpenEdXAppServer, 'configuration_playbook_name', new="playbooks/failignore.yml"), \
                 self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()

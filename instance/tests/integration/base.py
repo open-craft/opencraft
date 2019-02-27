@@ -46,7 +46,11 @@ class IntegrationTestCase(TestCase):
 
         # Use a reduced playbook for integration builds - it will run faster.
         # See https://github.com/open-craft/configuration/blob/integration/playbooks/opencraft_integration.yml
-        patcher = patch.object(OpenEdXAppServer, 'CONFIGURATION_PLAYBOOK', new='playbooks/opencraft_integration.yml')
+        patcher = patch.object(
+            OpenEdXAppServer,
+            'configuration_playbook_name',
+            new='playbooks/opencraft_integration.yml'
+        )
         self.addCleanup(patcher.stop)
         patcher.start()
 

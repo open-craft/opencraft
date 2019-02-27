@@ -37,7 +37,7 @@ from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
 from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
-from instance.models.utils import default_setting, format_help_text
+from instance.models.utils import default_setting, format_help_text, get_base_playbook_name
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
 from userprofile.models import UserProfile
 
@@ -98,6 +98,10 @@ class OpenEdXAppConfiguration(models.Model):
         default=default_setting('DEFAULT_CONFIGURATION_VERSION'),
     )
     configuration_extra_settings = models.TextField(blank=True, help_text="YAML config vars that override all others")
+    configuration_playbook_name = models.CharField(
+        max_length=100,
+        blank=True,
+    )
 
     edx_platform_repository_url = models.CharField(
         max_length=256,
@@ -163,6 +167,17 @@ class OpenEdXAppConfiguration(models.Model):
         )
     )
 
+    def get_configuration_playbook_name(self):
+        """
+        Getter for configuration_playbook_name
+
+        Automatically fills the field if left empty
+        """
+        if not self.configuration_playbook_name:
+            self.configuration_playbook_name = get_base_playbook_name(self.openedx_release)
+            self.save()
+        return self.configuration_playbook_name
+
     @classmethod
     def get_config_fields(cls):
         """
@@ -196,7 +211,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
     INVENTORY_GROUP = 'openedx-app'
-    CONFIGURATION_PLAYBOOK = 'playbooks/edx_sandbox.yml'
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
@@ -245,7 +259,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path=self.CONFIGURATION_PLAYBOOK,
+            playbook_path=self.get_configuration_playbook_name(),
             version=self.configuration_version,
             variables=self.configuration_settings,
         )

@@ -90,7 +90,7 @@ class AnsibleAppServerTestCase(TestCase):
             inventory_str=mock_inventory,
             vars_str=appserver.configuration_settings,
             playbook_path='{}/playbooks'.format(working_dir),
-            playbook_name='edx_sandbox.yml',
+            playbook_name='openedx_native.yml',
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 
