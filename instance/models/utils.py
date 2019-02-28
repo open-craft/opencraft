@@ -98,14 +98,14 @@ def get_base_playbook_name(openedx_release):
     releases still use the old playbook name.
     More info: https://github.com/edx/configuration/pull/5025
     """
-    releases_with_new_playbook_name = [
-        'master',
-        'open-release/ironwood.master',
-        'open-release/ironwood.1',
+    old_playbook_releases = [
+        'ginkgo',
+        'hawthorn',
     ]
-    if openedx_release in releases_with_new_playbook_name:
-        return 'playbooks/openedx_native.yml'
-    return 'playbooks/edx_sandbox.yml'
+    if any([release_name in openedx_release for release_name in old_playbook_releases]):
+        return 'playbooks/edx_sandbox.yml'
+
+    return 'playbooks/openedx_native.yml'
 
 
 # Classes #####################################################################
