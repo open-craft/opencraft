@@ -297,7 +297,7 @@ class S3BucketInstanceMixin(models.Model):
             )
         return self._s3_client
 
-    def _create_bucket(self, max_tries=4, retry_delay=4, location=None):
+    def _create_bucket(self, max_tries=4, retry_delay=15, location=None):
         """
         Create bucket, retry up to defined attempts if it fails
         If you specify a location (e.g. 'EU', 'us-west-1'), this method will use it. If the location is
