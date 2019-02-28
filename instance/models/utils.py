@@ -104,7 +104,6 @@ def get_base_playbook_name(openedx_release):
     ]
     if any([release_name in openedx_release for release_name in old_playbook_releases]):
         return 'playbooks/edx_sandbox.yml'
-
     return 'playbooks/openedx_native.yml'
 
 

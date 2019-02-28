@@ -36,7 +36,6 @@ import MySQLdb as mysql
 import pymongo
 
 from instance.models.appserver import AppServer, Status as AppServerStatus
-from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.openstack_utils import stat_container
@@ -279,6 +278,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
+            configuration_playbook_name='playbooks/opencraft_integration.yml',
             deploy_simpletheme=True,
         )
         instance = OpenEdXInstance.objects.get()
@@ -326,6 +326,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         OpenEdXInstanceFactory(
             name='Integration - test_betatest_accepted',
+            configuration_playbook_name='playbooks/opencraft_integration.yml',
             deploy_simpletheme=True,
         )
         instance = OpenEdXInstance.objects.get()
@@ -362,7 +363,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         if not settings.DEFAULT_INSTANCE_MYSQL_URL or not settings.DEFAULT_INSTANCE_MONGO_URL:
             print('External databases not configured, skipping integration test')
             return
-        OpenEdXInstanceFactory(name='Integration - test_external_databases')
+        OpenEdXInstanceFactory(
+            name='Integration - test_external_databases',
+            configuration_playbook_name='playbooks/opencraft_integration.yml',
+        )
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
@@ -381,7 +385,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Run the activity_csv management command against a live instance.
         """
-        OpenEdXInstanceFactory(name='Integration - test_activity_csv')
+        OpenEdXInstanceFactory(
+            name='Integration - test_activity_csv',
+            configuration_playbook_name='playbooks/opencraft_integration.yml',
+        )
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
@@ -432,9 +439,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
 
-        instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failure')
-        with patch.object(OpenEdXAppServer, 'configuration_playbook_name', new="playbooks/failure.yml"):
-            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
+        instance = OpenEdXInstanceFactory(
+            name='Integration - test_ansible_failure',
+            configuration_playbook_name='playbooks/failure.yml'
+        )
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         self.assertFalse(instance.get_active_appservers().exists())
         appserver = instance.appserver_set.last()
@@ -452,10 +461,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
         heartbeat_active.return_value = True
-        instance = OpenEdXInstanceFactory(name='Integration - test_ansible_failignore')
-        with patch.object(OpenEdXAppServer, 'configuration_playbook_name', new="playbooks/failignore.yml"), \
-                self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
-            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
+        instance = OpenEdXInstanceFactory(
+            name='Integration - test_ansible_failignore',
+            configuration_playbook_name='playbooks/failignore.yml'
+        )
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         active_appservers = list(instance.get_active_appservers().all())
         self.assertEqual(len(active_appservers), 1)
