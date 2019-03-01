@@ -465,7 +465,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
         )
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
+        with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
+            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
         active_appservers = list(instance.get_active_appservers().all())
         self.assertEqual(len(active_appservers), 1)
