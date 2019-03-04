@@ -460,7 +460,7 @@ class ConsulAgent(object):
         :return: Either True or False. If False is returned, then the update has not taken place.
         """
         consul_key = self.prefix + key
-        value = json.dumps(value) if self._is_json_serializable(value) else str(value)
+        value = json.dumps(value)
 
         return self._client.kv.put(consul_key, value, **kwargs)
 
@@ -515,11 +515,3 @@ class ConsulAgent(object):
             pass
 
         return value
-
-    @staticmethod
-    def _is_json_serializable(obj):
-        """
-        :param obj: Object to check
-        :return: Boolean True if object is list or dictionary, False otherwise.
-        """
-        return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)

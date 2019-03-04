@@ -629,6 +629,14 @@ class ConsulAgentTest(TestCase):
         self.assertIsInstance(fetched_value, str)
         self.assertEqual(fetched_value, stored_value)
 
+        # Test None
+        key = 'none_key'
+        stored_value = None  # pylint: disable=redefined-variable-type
+        self.client.kv.put(prefix + key, json.dumps(stored_value))
+
+        fetched_value = agent.get(key)
+        self.assertEqual(fetched_value, stored_value)
+
         # Test integer values
         key = 'int_key'
         stored_value = 23  # pylint: disable=redefined-variable-type
@@ -687,7 +695,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, value)
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put int values
         key = 'key'
@@ -696,7 +704,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, str(value))
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put float values
         key = 'key'
@@ -705,7 +713,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, str(value))
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put list values
         key = 'key'
@@ -747,7 +755,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(prefix + key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, value)
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put int values
         key = 'key'
@@ -756,7 +764,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(prefix + key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, str(value))
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put float values
         key = 'key'
@@ -765,7 +773,7 @@ class ConsulAgentTest(TestCase):
 
         _, data = self.client.kv.get(prefix + key)
         fetched_value = data['Value'].decode()
-        self.assertEqual(fetched_value, str(value))
+        self.assertEqual(fetched_value, json.dumps(value))
 
         # Put list values
         key = 'key'
@@ -883,18 +891,6 @@ class ConsulAgentTest(TestCase):
         fetched_value = json.dumps(dict_value).encode()
         self.assertEqual(self.agent._cast_value(fetched_value), dict_value)
         self.assertIsNone(self.agent._cast_value(None))
-
-    def test_is_json_serializable(self):
-        """
-        Tests that lists and dicts are identified as json objects or not.
-        """
-        self.assertTrue(self.agent._is_json_serializable([1, 2, 3, 4, 5]))
-        self.assertTrue(self.agent._is_json_serializable({'key': 'value'}))
-        self.assertTrue(self.agent._is_json_serializable(False))
-
-        self.assertFalse(self.agent._is_json_serializable('nope'))
-        self.assertFalse(self.agent._is_json_serializable(1))
-        self.assertFalse(self.agent._is_json_serializable(1.1))
 
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
