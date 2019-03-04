@@ -553,6 +553,25 @@ class ConsulAgentTest(TestCase):
         self.assertEqual(agent.prefix, prefix)
         self.assertIsInstance(agent._client, consul.Consul)
 
+    def test_get_index(self):
+        """
+        Tests getting the key value and the index.
+        """
+        agent = ConsulAgent()
+
+        for key, value in(('some/key1', {'some': 'value'}),
+                          ('some/key2', 'null'),
+                          ('some/key3', None)):
+            self.assertTrue(agent.put(key, value))
+            returned_index, returned_value = agent.get(key, index=True)
+            self.assertEqual(value, returned_value)
+            self.assertTrue(int(returned_index) > 0)
+
+        key = 'does/not/exist'
+        returned_index, returned_value = agent.get(key, index=True)
+        self.assertEqual(None, returned_value)
+        self.assertTrue(int(returned_index) == 0)
+
     def test_get_no_prefix(self):
         """
         Tests getting bare keys of different data types from Consul's Key-Value store.

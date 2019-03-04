@@ -435,15 +435,22 @@ class ConsulAgent(object):
         :param key: The key its value to be fetched
         :param index: If True then the return value will be a tuple of (index, value)
                       where index is the current Consul index, suitable for making subsequent
-                      calls to wait for changes since this query was last run.
+                      calls to wait for changes since this query was last run. If the key
+                      does not exist, index is 0 and the value is None
         :param kwargs: Consul.kv.delete specific options
         :return: The value or the the tuple of (index, value) of the specified key.
         """
         key = self.prefix + key
         data_index, data = self._client.kv.get(key, **kwargs)
 
-        stored_value = data['Value'] if data else None
-        value = self._cast_value(stored_value)
+        if data:
+            value = self._cast_value(data['Value'])
+        else:
+            value = None
+            # if the key does not exist, data_index is set to a non zero
+            # value which is of no practical use. Reset it to zero so
+            # it can be used as a cas value to create the key
+            data_index = '0'
 
         if index:
             return data_index, value
