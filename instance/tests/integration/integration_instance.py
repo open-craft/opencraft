@@ -276,9 +276,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
+        import pdb; pdb.set_trace()
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
-            configuration_playbook_name='playbooks/opencraft_integration.yml',
             deploy_simpletheme=True,
         )
         instance = OpenEdXInstance.objects.get()
@@ -326,7 +326,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         OpenEdXInstanceFactory(
             name='Integration - test_betatest_accepted',
-            configuration_playbook_name='playbooks/opencraft_integration.yml',
             deploy_simpletheme=True,
         )
         instance = OpenEdXInstance.objects.get()
@@ -365,7 +364,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             return
         OpenEdXInstanceFactory(
             name='Integration - test_external_databases',
-            configuration_playbook_name='playbooks/opencraft_integration.yml',
         )
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
@@ -387,7 +385,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         OpenEdXInstanceFactory(
             name='Integration - test_activity_csv',
-            configuration_playbook_name='playbooks/opencraft_integration.yml',
         )
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)

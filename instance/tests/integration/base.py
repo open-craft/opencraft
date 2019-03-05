@@ -22,16 +22,18 @@ Tests - Integration - Base
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 from huey.contrib import djhuey
 
 from instance.models.load_balancer import LoadBalancingServer
+from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.base import TestCase
 
 
 # Tests #######################################################################
-
 class IntegrationTestCase(TestCase):
     """
     Base class for API tests
@@ -40,6 +42,15 @@ class IntegrationTestCase(TestCase):
         super().setUp()
         # Override the environment setting - always run task in the same process
         djhuey.HUEY.always_eager = True
+
+        # Use a reduced playbook for integration builds - it will run faster.
+        # See https://github.com/open-craft/configuration/blob/integration/playbooks/opencraft_integration.yml
+        patcher = patch(
+            'instance.models.openedx_appserver.get_base_playbook_name',
+            return_value='playbooks/opencraft_integration.yml'
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def tearDown(self):
         # Trigger clean-up operations for load-balancers and instances.  To avoid reconfiguring the
