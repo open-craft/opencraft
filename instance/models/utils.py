@@ -94,8 +94,8 @@ def get_base_playbook_name(openedx_release):
     release
 
     This is needed because OpenEdX changed the main playbook name from
-    `edx_sandbox.yml` to `openedx_native.yml`. This is needed because the old
-    releases still use the old playbook name.
+    `edx_sandbox.yml` to `openedx_native.yml` and releases before Ironwood still
+    use the old playbook name.
     More info: https://github.com/edx/configuration/pull/5025
     """
     old_playbook_releases = [

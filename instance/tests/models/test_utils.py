@@ -21,6 +21,7 @@ model utils - Tests, mostly for state machine
 """
 
 # Imports #####################################################################
+import ddt
 import json
 from unittest import TestCase
 from unittest.mock import Mock
@@ -30,6 +31,7 @@ from django.db import models
 import consul
 
 from instance.models.utils import (
+    get_base_playbook_name,
     ResourceState,
     ResourceStateDescriptor,
     ModelResourceStateDescriptor,
@@ -898,3 +900,28 @@ class ConsulAgentTest(TestCase):
 
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
+
+
+@ddt.ddt
+class PlaybookNameSelectorTestCase(TestCase):
+    """
+    Checks if get_base_playbook_name returns correct values
+    """
+    @ddt.data(
+        # Old playbook name
+        ('open-release/ginkgo.1', 'playbooks/edx_sandbox.yml'),
+        ('opencraft-release/ginkgo.2', 'playbooks/edx_sandbox.yml'),
+        ('open-release/hawthorn.1', 'playbooks/edx_sandbox.yml'),
+        ('opencraft-release/hawthorn.2', 'playbooks/edx_sandbox.yml'),
+        # New playbook name and defaults
+        ('', 'playbooks/openedx_native.yml'),
+        ('master', 'playbooks/openedx_native.yml'),
+        ('open-release/ironwood.master', 'playbooks/openedx_native.yml'),
+        ('opencraft-release/ironwood.master', 'playbooks/openedx_native.yml'),
+    )
+    @ddt.unpack
+    def test_get_base_playbook_name(self, openedx_release, playbook_name):
+        """
+        Test the overloaded comparison operators
+        """
+        self.assertEqual(get_base_playbook_name(openedx_release), playbook_name)
