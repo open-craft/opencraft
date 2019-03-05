@@ -276,7 +276,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
-        import pdb; pdb.set_trace()
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,

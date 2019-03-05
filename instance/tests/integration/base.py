@@ -27,7 +27,6 @@ from unittest.mock import patch
 from huey.contrib import djhuey
 
 from instance.models.load_balancer import LoadBalancingServer
-from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer
 from instance.tests.base import TestCase

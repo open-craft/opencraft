@@ -71,14 +71,14 @@ class AnsibleAppServerTestCase(TestCase):
         self.assertEqual(str(context.exception), "Cannot prepare to run playbooks when server has no public IP.")
 
     @ddt.data(
-        [0, 'master', 'openedx_native.yml'],
-        [0, 'open-release/ironwood.master', 'openedx_native.yml'],
-        [0, 'open-release/hawthorn.1', 'edx_sandbox.yml'],
-        [0, 'open-release/ginkgo.1', 'edx_sandbox.yml'],
-        [1, 'master', 'openedx_native.yml'],
-        [1, 'open-release/ironwood.master', 'openedx_native.yml'],
-        [1, 'open-release/hawthorn.1', 'edx_sandbox.yml'],
-        [1, 'open-release/ginkgo.1', 'edx_sandbox.yml'],
+        [0, ('master', 'openedx_native.yml')],
+        [0, ('open-release/ironwood.master', 'openedx_native.yml')],
+        [0, ('open-release/hawthorn.1', 'edx_sandbox.yml')],
+        [0, ('open-release/ginkgo.1', 'edx_sandbox.yml')],
+        [1, ('master', 'openedx_native.yml')],
+        [1, ('open-release/ironwood.master', 'openedx_native.yml')],
+        [1, ('open-release/hawthorn.1', 'edx_sandbox.yml')],
+        [1, ('open-release/ginkgo.1', 'edx_sandbox.yml')],
     )
     @ddt.unpack
     @patch('instance.ansible.poll_streams')
@@ -88,8 +88,7 @@ class AnsibleAppServerTestCase(TestCase):
     def test_provisioning(
             self,
             playbook_returncode,
-            openedx_release,
-            base_playbook_name,
+            release_playbook_data,
             mock_open_repo,
             mock_inventory,
             mock_run_playbook,
@@ -99,6 +98,9 @@ class AnsibleAppServerTestCase(TestCase):
         The appserver gets provisioned with the appropriate playbooks.
         Failure causes later playbooks to not run.
         """
+        # Unpack release and playbook data
+        openedx_release, base_playbook_name = release_playbook_data
+        # Create instance with pre-defined release
         instance = OpenEdXInstanceFactory(openedx_release=openedx_release)
         appserver = make_test_appserver(instance)
         working_dir = '/cloned/configuration-repo/path'
@@ -148,22 +150,3 @@ class AnsibleAppServerTestCase(TestCase):
             log, returncode = appserver._run_playbook("/tmp/test/working/dir/", playbook)
             self.assertCountEqual(log, ['Hello', 'Hi'])
             self.assertEqual(returncode, 0)
-
-    # @ddt.data(
-    #     {
-    #         'openedx_release': 'master',
-    #         'expected_playbook_name': 'openedx_native.yml'
-    #     },
-    #     {
-    #         'openedx_release': 'open-release/ironwood.master',
-    #         'expected_playbook_name': 'openedx_native.yml'
-    #     },
-    #     {
-    #         'openedx_release': 'open-release/hawthorn.1',
-    #         'expected_playbook_name': 'edx_sandbox.yml'
-    #     },
-    #     {
-    #         'openedx_release': 'open-release/ginko.1',
-    #         'expected_playbook_name': 'edx_sandbox.yml'
-    #     },
-    # )
