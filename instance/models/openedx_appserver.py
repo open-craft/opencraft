@@ -167,9 +167,10 @@ class OpenEdXAppConfiguration(models.Model):
         )
     )
 
-    def get_configuration_playbook_name(self):
+    @property
+    def base_playbook_name(self):
         """
-        Getter for configuration_playbook_name
+        Get the correct base playbook name for the openedx_release
 
         Automatically fills the field if left empty
         """
@@ -259,7 +260,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         return Playbook(
             source_repo=self.configuration_source_repo_url,
             requirements_path='requirements.txt',
-            playbook_path=self.get_configuration_playbook_name(),
+            playbook_path=self.base_playbook_name,
             version=self.configuration_version,
             variables=self.configuration_settings,
         )
