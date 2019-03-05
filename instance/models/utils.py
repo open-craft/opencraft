@@ -438,7 +438,7 @@ class ConsulAgent(object):
     # Those use a "magic flag" to help indicate conflicts with semaphores.
     # We want to compete with those locks though, so we use this flag too.
     # Comes from https://github.com/hashicorp/consul/blob/master/api/lock.go#L35-L38
-    MAGIC_LOCK_FLAG = 0x2ddccbc058a50c18
+    LOCK_MAGIC_FLAG = 0x2ddccbc058a50c18
 
     def __init__(self, prefix='', lock_wait=100, lock_wait_sleep=1):
         self._client = consul.Consul()
@@ -454,7 +454,7 @@ class ConsulAgent(object):
         # is also deleted. However there is a default lock delay of 15 seconds, so
         # new locks have to wait for that timer even if the lock key is physically gone.
         # See https://www.consul.io/docs/internals/sessions.html for details.
-        self.session_id = self._client.session.create(behavior="delete")
+        self.session_id = self._client.session.create(behavior="delete", ttl=1200)
 
         # If someone else is holding this lock, the Consul client just returns False.
         # We implement a "wait until lock is acquired" scenario here, and bail if
@@ -462,14 +462,14 @@ class ConsulAgent(object):
         lock_wait = self.lock_wait
         while lock_wait > 0 and not self._client.kv.put(
             "lock/ocim/.lock", "",
-            flags=self.MAGIC_LOCK_FLAG,
+            flags=self.LOCK_MAGIC_FLAG,
             acquire=self.session_id
         ):
             lock_wait -= 1
             time.sleep(self.lock_wait_sleep)
 
         if lock_wait == 0:
-            raise ConsulLockAcquisitionException("Failed to acquire")
+            raise ConsulLockAcquisitionException("Failed to acquire Consul lock!")
 
         return self
 
