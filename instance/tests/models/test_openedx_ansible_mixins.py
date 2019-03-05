@@ -30,6 +30,7 @@ import ddt
 from instance.models.mixins.ansible import Playbook
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
 
 
@@ -69,16 +70,37 @@ class AnsibleAppServerTestCase(TestCase):
             print(appserver.inventory_str)
         self.assertEqual(str(context.exception), "Cannot prepare to run playbooks when server has no public IP.")
 
-    @ddt.data(0, 1)
+    @ddt.data(
+        [0, 'master', 'openedx_native.yml'],
+        [0, 'open-release/ironwood.master', 'openedx_native.yml'],
+        [0, 'open-release/hawthorn.1', 'edx_sandbox.yml'],
+        [0, 'open-release/ginkgo.1', 'edx_sandbox.yml'],
+        [1, 'master', 'openedx_native.yml'],
+        [1, 'open-release/ironwood.master', 'openedx_native.yml'],
+        [1, 'open-release/hawthorn.1', 'edx_sandbox.yml'],
+        [1, 'open-release/ginkgo.1', 'edx_sandbox.yml'],
+    )
+    @ddt.unpack
     @patch('instance.ansible.poll_streams')
     @patch('instance.ansible.run_playbook')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.inventory_str')
     @patch('instance.models.mixins.ansible.open_repository')
     def test_provisioning(
-            self, playbook_returncode, mock_open_repo, mock_inventory, mock_run_playbook, mock_poll_streams
+            self,
+            playbook_returncode,
+            openedx_release,
+            base_playbook_name,
+            mock_open_repo,
+            mock_inventory,
+            mock_run_playbook,
+            mock_poll_streams
     ):
-        """The appserver gets provisioned with the appropriate playbooks. Failure causes later playbooks to not run."""
-        appserver = make_test_appserver()
+        """
+        The appserver gets provisioned with the appropriate playbooks.
+        Failure causes later playbooks to not run.
+        """
+        instance = OpenEdXInstanceFactory(openedx_release=openedx_release)
+        appserver = make_test_appserver(instance)
         working_dir = '/cloned/configuration-repo/path'
         mock_open_repo.return_value.__enter__.return_value.working_dir = working_dir
         mock_run_playbook.return_value.__enter__.return_value.returncode = playbook_returncode
@@ -90,7 +112,7 @@ class AnsibleAppServerTestCase(TestCase):
             inventory_str=mock_inventory,
             vars_str=appserver.configuration_settings,
             playbook_path='{}/playbooks'.format(working_dir),
-            playbook_name='openedx_native.yml',
+            playbook_name=base_playbook_name,
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 
@@ -126,3 +148,22 @@ class AnsibleAppServerTestCase(TestCase):
             log, returncode = appserver._run_playbook("/tmp/test/working/dir/", playbook)
             self.assertCountEqual(log, ['Hello', 'Hi'])
             self.assertEqual(returncode, 0)
+
+    # @ddt.data(
+    #     {
+    #         'openedx_release': 'master',
+    #         'expected_playbook_name': 'openedx_native.yml'
+    #     },
+    #     {
+    #         'openedx_release': 'open-release/ironwood.master',
+    #         'expected_playbook_name': 'openedx_native.yml'
+    #     },
+    #     {
+    #         'openedx_release': 'open-release/hawthorn.1',
+    #         'expected_playbook_name': 'edx_sandbox.yml'
+    #     },
+    #     {
+    #         'openedx_release': 'open-release/ginko.1',
+    #         'expected_playbook_name': 'edx_sandbox.yml'
+    #     },
+    # )
