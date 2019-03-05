@@ -47,8 +47,8 @@ def rollback_base_playbook_name(apps, schema_editor):
     The defaults, based on the openedx_release, can be recalculated using the
     function above when the migration is performed.
     """
-    logger.warning('Reverting this migration causes data loss...')
-    logger.warning('All customized playbook_names set will be lost!')
+    print('\nReverting this migration causes data loss...')
+    print('All customized playbook_names set will be lost!')
 
 
 # Migration ###################################################################
