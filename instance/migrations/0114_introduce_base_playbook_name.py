@@ -37,9 +37,9 @@ def set_base_playbook_names(apps, schema_editor):
     instances = OpenEdXInstance.objects.using(db_alias).all()
     # Make all saves() in a single transaction
     with transaction.atomic():
-        for item in queryset:
-            item.configuration_playbook_name = get_base_playbook_name(item.openedx_release)
-            item.save()
+        for instance in instances:
+            instance.configuration_playbook_name = get_base_playbook_name(instance.openedx_release)
+            instance.save()
 
 def rollback_base_playbook_name(apps, schema_editor):
     """
