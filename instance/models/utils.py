@@ -24,7 +24,6 @@ import functools
 import inspect
 import json
 import time
-from json import JSONDecodeError
 from weakref import WeakKeyDictionary
 
 from django.conf import settings
@@ -461,9 +460,9 @@ class ConsulAgent(object):
         # `lock_wait` retries have failed.
         lock_wait = self.lock_wait
         while lock_wait > 0 and not self._client.kv.put(
-            "lock/ocim/.lock", "",
-            flags=self.LOCK_MAGIC_FLAG,
-            acquire=self.session_id
+                "lock/ocim/.lock", "",
+                flags=self.LOCK_MAGIC_FLAG,
+                acquire=self.session_id
         ):
             lock_wait -= 1
             time.sleep(self.lock_wait_sleep)
@@ -473,7 +472,7 @@ class ConsulAgent(object):
 
         return self
 
-    def __exit__(self):
+    def __exit__(self, *args):
         self._client.session.destroy(self.session_id)
 
     def get(self, key, index=False, **kwargs):
@@ -560,7 +559,7 @@ class ConsulAgent(object):
 
         try:
             return json.loads(value)
-        except (JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError):
             pass
 
         return value
