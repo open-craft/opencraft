@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import migrations, models, transaction
-from django.db.models import F
 
 
 # Logging #####################################################################

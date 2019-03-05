@@ -21,7 +21,6 @@ Tests - Integration - Base
 """
 
 # Imports #####################################################################
-
 from unittest.mock import patch
 
 from huey.contrib import djhuey
@@ -41,15 +40,14 @@ class IntegrationTestCase(TestCase):
         super().setUp()
         # Override the environment setting - always run task in the same process
         djhuey.HUEY.always_eager = True
-
         # Use a reduced playbook for integration builds - it will run faster.
         # See https://github.com/open-craft/configuration/blob/integration/playbooks/opencraft_integration.yml
         patcher = patch(
-            'instance.models.openedx_appserver.get_base_playbook_name',
+            'instance.models.openedx_instance.get_base_playbook_name',
             return_value='playbooks/opencraft_integration.yml'
         )
-        patcher.start()
         self.addCleanup(patcher.stop)
+        patcher.start()
 
     def tearDown(self):
         # Trigger clean-up operations for load-balancers and instances.  To avoid reconfiguring the
