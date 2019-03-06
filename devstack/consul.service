@@ -1,0 +1,10 @@
+[Unit]
+Description=Consul Agent
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/consul agent -dev
+
+[Install]
+WantedBy=multi-user.target

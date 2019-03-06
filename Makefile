@@ -32,7 +32,7 @@ RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
 # Parameters ##################################################################
 
 # For `test.one` use the rest as arguments and turn them into do-nothing targets
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),test.one manage))
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),test.one manage devstack.shell))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
@@ -149,6 +149,38 @@ test: clean test.quality test.unit test.migrations_missing test.js test.browser 
 
 test.one: clean
 	$(HONCHO_MANAGE_TESTS) test $(RUN_ARGS)
+
+# Docker devstack commands ##################################################
+
+DEVSTACK_COMPOSE_FILE=-f devstack/devstack-compose-ocim.yml.tmp
+
+devstack.shell: devstack.up ## Run a command in devstack (or an interactive shell)
+	docker-compose ${DEVSTACK_COMPOSE_FILE} exec --user ${USER} \
+						 ocim-${USER} /usr/local/bin/shell.sh ${RUN_ARGS}
+
+devstack.stop: ## Stop the devstack
+	docker-compose ${DEVSTACK_COMPOSE_FILE} stop
+
+devstack.down: ## Destroy the devstack and all it contains
+	docker-compose ${DEVSTACK_COMPOSE_FILE} down
+	rm -f devstack/*.tmp
+
+devstack.up: devstack.build devstack/honcho.env.test.tmp devstack/honcho.env.tmp ## Start the devstack
+	docker-compose ${DEVSTACK_COMPOSE_FILE} up -d
+
+DEVSTACK_BUILD=docker-compose ${DEVSTACK_COMPOSE_FILE} build
+
+devstack.build: devstack/devstack-compose-ocim.yml.tmp
+	@echo ${DEVSTACK_BUILD}
+	@if ! timeout 5 ${DEVSTACK_BUILD} > /dev/null 2>&1 ; then \
+            ${DEVSTACK_BUILD} ; \
+	fi
+
+devstack/%.tmp: devstack/%
+	sed -e 's|%%WORKING_DIRECTORY%%|$(shell git rev-parse --show-toplevel)|g' \
+	    -e 's/%%USER_NAME%%/${USER}/g' \
+	    -e 's/%%USER_ID/$(shell id -u)/g' \
+            < $< > $@
 
 # Files #######################################################################
 

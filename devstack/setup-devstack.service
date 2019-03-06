@@ -1,0 +1,10 @@
+[Unit]
+Description=Setup Ocim devstack
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/setup-devstack.sh
+
+[Install]
+WantedBy=multi-user.target

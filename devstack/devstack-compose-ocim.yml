@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  ocim-%%USER_NAME%%:
+    command: /sbin/init
+    image: ocim-devstack-%%USER_NAME%%
+    build:
+      context: ..
+      dockerfile: devstack/devstack.dockerfile
+      args:
+        USER_NAME: %%USER_NAME%%
+        USER_ID: %%USER_ID
+    environment:
+        USER_NAME: %%USER_NAME%%
+        USER_ID: %%USER_ID
+    working_dir: %%WORKING_DIRECTORY%%
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - %%WORKING_DIRECTORY%%:%%WORKING_DIRECTORY%%
+    security_opt:
+      - seccomp=unconfined
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "2222:22"
+      - "2001:2001"
+      - "5000:5000"
+      - "8888:8888"
+    networks:
+      - ocim
+
+networks:
+  ocim:

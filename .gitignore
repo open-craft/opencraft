@@ -76,5 +76,8 @@ target/
 .vagrant/
 /deploy
 
+# Docker
+devstack/*.tmp
+
 # Ansible
 *.retry

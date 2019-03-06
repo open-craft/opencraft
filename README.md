@@ -126,6 +126,25 @@ Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
 Once you have set everything up you will be able to access the development
 server at http://localhost:5000/ using your web browser.
 
+### Docker devstack installation and usage
+
+- Install [docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/).
+- Run a shell in the container, with the current directory mounted inside it:
+
+    $ make devstack.shell
+    singuliere@2fa899e089b8:/opt/opencraft$ make test.unit
+
+- Run all tests, using the current directory:
+
+    $ make devstack.shell -- make test
+
+- Run Ocim using the current directory and connect to it
+
+    $ make devstack.shell -- make migrate
+    $ make devstack.shell -- make manage createsuperuser
+    $ make devstack.shell -- make run.dev
+    $ firefox http://localhost:5000/
+
 ### Local install (skip this step if using Vagrant)
 
 If you prefer not to use Vagrant, you can install OpenCraft manually. Refer to
