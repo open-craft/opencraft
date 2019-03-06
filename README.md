@@ -703,7 +703,8 @@ so from the shell. There are two options:
 
 **Factory methods**
 
-OpenCraft IM provides two factory methods for creating instances:
+OpenCraft IM provides two factory methods for creating instances (the
+following lines should run via `make shell`):
 
 ```python
 from instance.factories import instance_factory, production_instance_factory
