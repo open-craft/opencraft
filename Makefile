@@ -25,8 +25,10 @@ COVERAGE_THRESHOLD ?= 90
 WORKERS ?= 3
 WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
-HONCHO_MANAGE := honcho run python3 manage.py
-HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
+HONCHO_ENV ?= .env
+HONCHO_MANAGE := honcho -e ${HONCHO_ENV} run python3 manage.py
+HONCHO_TEST_ENV ?= .env.test
+HONCHO_MANAGE_TESTS := honcho -e ${HONCHO_TEST_ENV} run python3 manage.py
 RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
 
 # Parameters ##################################################################
@@ -83,10 +85,10 @@ migrations: clean ## Generate migrations.
 	$(HONCHO_MANAGE) makemigrations
 
 run: clean migrations.check static ## Run Ocim in a production setting with concurrency.
-	honcho start --concurrency "worker=$(WORKERS),worker_low_priority=$(WORKERS_LOW_PRIORITY)"
+	honcho -e ${HONCHO_ENV} start --concurrency "worker=$(WORKERS),worker_low_priority=$(WORKERS_LOW_PRIORITY)"
 
 run.dev: clean migrations.check static_external ## Run the developmental server using `runserver_plus`.
-	honcho start -f Procfile.dev
+	honcho -e ${HONCHO_ENV} start -f Procfile.dev
 
 shell: ## Start the power shell.
 	HUEY_QUEUE_NAME=opencraft_low_priority $(HONCHO_MANAGE) shell_plus
@@ -100,7 +102,7 @@ test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
 test.unit: clean static_external ## Run all unit tests.
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*,venv/*' ./manage.py test --noinput
+	honcho -e ${HONCHO_TEST_ENV} run coverage run --source='.' --omit='*/tests/*,venv/*' ./manage.py test --noinput
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
