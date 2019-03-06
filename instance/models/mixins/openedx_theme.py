@@ -20,8 +20,10 @@
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
 import yaml
+from colour import Color
 
 from django.db import models
+from django.conf import settings
 
 
 # Classes #####################################################################
@@ -65,24 +67,13 @@ class OpenEdXThemeMixin(models.Model):
             return ""
 
         # These settings set the values required by simple_theme
-        settings = {
+        theme_settings = {
             # This block defines our theme by applying the chosen colors to SASS-defined color variables
             "SIMPLETHEME_SASS_OVERRIDES": [
                 {
                     "variable": "link-color",
                     "value": application.link_color,
                 },
-                # TODO: These are specific to Ginkgo and can be removed
-                # after Hawthorn upgrade
-                {
-                    "variable": "header-bg",
-                    "value": application.header_bg_color,
-                },
-                {
-                    "variable": "footer-bg",
-                    "value": application.footer_bg_color,
-                },
-                # END TODO
                 {
                     "variable": "button-color",
                     "value": application.main_color,
@@ -115,14 +106,52 @@ class OpenEdXThemeMixin(models.Model):
             ],
             "SIMPLETHEME_ENABLE_DEPLOY": True,
             "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
+            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
             "SIMPLETHEME_EXTRA_SASS": """
-                .global-header {{
-                    background: {header_bg};
-                }}
-                .wrapper-footer {{
-                    background: {footer_bg};
-                }}""".format(header_bg=application.header_bg_color,
-                             footer_bg=application.footer_bg_color)
+                $main-color: {main_color};
+                $link-color: {link_color};
+                $header-bg: {header_bg};
+                $header-font-color: {header_font_color};
+                $footer-bg: {footer_bg};
+                $footer-font-color: {footer_font_color};
+            """.format(
+                link_color=application.link_color,
+                main_color=application.main_color,
+                header_bg=application.header_bg_color,
+                header_font_color=self.get_contrasting_font_color(
+                    application.header_bg_color
+                ),
+                footer_bg=application.footer_bg_color,
+                footer_font_color=self.get_contrasting_font_color(
+                    application.footer_bg_color
+                ),
+            )
         }
 
-        return yaml.dump(settings, default_flow_style=False)
+        return yaml.dump(theme_settings, default_flow_style=False)
+
+    @staticmethod
+    def get_contrasting_font_color(background_color, delta=0.5):
+        """
+        Takes in a hexcolor code and returns black or white, depending
+        which gives the better contrast
+        """
+        # Return black if background_color not set
+        if not background_color:
+            return "#000000"
+
+        try:
+            color = Color(background_color)
+        except (ValueError, AttributeError):
+            return "#000000"
+
+        # Using Web Content Accessibility Guidelines (WCAG) 2.0 and comparing
+        # the background to the black color we can define which is the
+        # best color to improve readability on the page
+        # More info:
+        # https://www.w3.org/TR/WCAG20/
+        if color.luminance > delta:
+            return '#000000'
+        else:
+            return '#ffffff'

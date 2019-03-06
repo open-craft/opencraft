@@ -482,6 +482,14 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
 # Enable or disable celery heartbeats on instances managed by Ocim
 EDX_WORKERS_ENABLE_CELERY_HEARTBEATS = env.bool('EDX_WORKERS_ENABLE_CELERY_HEARTBEATS', default=False)
 
+# This repository is used as a skeleton theme for the betatest instances
+# to apply the specified theming configuration through the `simple-theme` role.
+SIMPLE_THEME_SKELETON_THEME_REPO = env(
+    'SIMPLE_THEME_SKELETON_THEME_REPO',
+    default='https://github.com/open-craft/edx-simple-theme/'
+)
+SIMPLE_THEME_SKELETON_THEME_VERSION = env('SIMPLE_THEME_SKELETON_THEME_VERSION', default='master')
+
 # Ansible #####################################################################
 
 # Ansible requires a Python 2 interpreter

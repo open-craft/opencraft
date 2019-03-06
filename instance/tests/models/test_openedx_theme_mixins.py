@@ -21,7 +21,7 @@ OpenEdXInstance Theme Mixins - Tests
 """
 
 # Imports #####################################################################
-
+import ddt
 import yaml
 from django.contrib.auth import get_user_model
 
@@ -34,6 +34,7 @@ from registration.models import BetaTestApplication
 
 # Tests #######################################################################
 
+@ddt.ddt
 class OpenEdXThemeMixinTestCase(TestCase):
     """
     Tests for OpenEdXThemeMixin, to check that settings from the beta application form are
@@ -85,13 +86,6 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
-                    # TODO: These are specific to Ginkgo and can be removed
-                    # after Hawthorn upgrade
-                    {'variable': 'header-bg',
-                     'value': '#caaffe', },
-                    {'variable': 'footer-bg',
-                     'value': '#ffff11', },
-                    # END TODO
                     {'variable': 'button-color',
                      'value': '#001122', },
                     {'variable': 'action-primary-bg',
@@ -103,13 +97,14 @@ class OpenEdXThemeMixinTestCase(TestCase):
                 ],
                 'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
                 # for SIMPLETHEME_STATIC_FILES_URLS, see below
-                'SIMPLETHEME_EXTRA_SASS': '''
-                .global-header {
-                    background: #caaffe;
-                }
-                .wrapper-footer {
-                    background: #ffff11;
-                }'''
+                'SIMPLETHEME_EXTRA_SASS': """
+                $main-color: #001122;
+                $link-color: #003344;
+                $header-bg: #caaffe;
+                $header-font-color: #000000;
+                $footer-bg: #ffff11;
+                $footer-font-color: #000000;
+            """
             }
             for ansible_var, value in expected_settings.items():
                 self.assertEqual(value, parsed_vars[ansible_var])
@@ -146,3 +141,31 @@ class OpenEdXThemeMixinTestCase(TestCase):
             self.assertNotIn('SIMPLETHEME_ENABLE_DEPLOY', parsed_vars)
             self.assertNotIn('SIMPLETHEME_SASS_OVERRIDES', parsed_vars)
             self.assertNotIn('EDXAPP_DEFAULT_SITE_THEME', parsed_vars)
+
+    @ddt.data(
+        # Invalid or empty color returns black
+        ('', '#000000'),
+        ('#@!Vb]´', '#000000'),
+        ('#zzzzzz', '#000000'),
+        # Check for some colors
+        ('#ffffff', '#000000'),    # white, black
+        ('#4286f4', '#000000'), # light blue, black
+        ('#45e052', '#000000'), # light green, black
+        ('#000000', '#ffffff'),    # black, white
+        ('#1f365b', '#ffffff'),    # dark blue, white
+        ('#7c702f', '#ffffff'),    # dark gold, white
+    )
+    def test_get_contrasting_font_color(self, test_colors):
+        """
+        Tests if the automatic font color selection is working properly
+        """
+        # Create objects
+        OpenEdXInstanceFactory(name='Integration - test_colors_applied', deploy_simpletheme=True)
+        instance = OpenEdXInstance.objects.get()
+
+        # Test if the font color is correctly returned depending on the background color
+        bg_color, font_color = test_colors
+        self.assertEqual(
+            instance.get_contrasting_font_color(bg_color),
+            font_color
+        )
