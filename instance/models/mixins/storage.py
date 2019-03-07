@@ -313,8 +313,9 @@ class S3BucketInstanceMixin(models.Model):
                 )
                 break
             except ClientError as e:
-                if e.response.get('Error', {}).get('Code') == 'EntityAlreadyExists':
+                if e.response.get('Error', {}).get('Code') == 'BucketAlreadyOwnedByYou':
                     # Continue if bucket already exists, i.e. reprovisioning
+                    # This is only raised outside of us-east-1
                     self.logger.info(
                         'Bucket %s already exists',
                         self.s3_bucket_name
