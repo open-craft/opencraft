@@ -22,6 +22,7 @@ OpenStack - Helper functions
 
 # Imports #####################################################################
 import logging
+import json
 from collections import namedtuple, defaultdict
 
 from django.conf import settings
@@ -30,6 +31,9 @@ from openstack.connection import Connection
 from openstack.profile import Profile
 import requests
 from swiftclient.service import SwiftService
+import sh
+from io import StringIO
+import time
 
 from instance.utils import get_requests_retry
 
@@ -267,3 +271,40 @@ def delete_swift_container(container_name, **kwargs):
         # and since it yields we should read all results.
         for result in service.delete(container_name):  # pylint: disable=unused-variable
             pass
+
+class OpenStackClient(object):
+
+    def __init__(self, region):
+        self.openstack = sh.openstack.bake(
+            '--quiet',
+            '--os-auth-url', settings.OPENSTACK_AUTH_URL,
+            '--os-region-name', region,
+            '--os-username', settings.OPENSTACK_USER,
+            '--os-password', settings.OPENSTACK_PASSWORD,
+            '--os-project-name', settings.OPENSTACK_TENANT,
+        )
+        self.wget = sh.wget.bake('--continue', '--quiet')
+        self.image2url = {
+            'ocim-xenial-16.04-unmodified':
+            'https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img',
+        }
+
+    def image_exists(self, image):
+        out = StringIO()
+        self.openstack('image', 'list', '-f', 'json', '--property', 'name=' + image, _out=out)
+        return len(json.loads(out.getvalue())) > 0
+
+    def image_create(self, name):
+        path = name + ".qcow2"
+        self.wget('--output-document', path, self.image2url[name])
+        self.openstack('image', 'create', '--disk-format=qcow2', '--container-format=bare',
+                       '--private', '--file', path, name)
+
+    def upload_known_image(self, name):
+        if name not in self.image2url:
+            return None
+        if self.image_exists(name):
+            return False
+        else:
+            self.image_create(name)
+            return True

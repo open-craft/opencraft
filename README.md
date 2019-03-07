@@ -238,37 +238,6 @@ where `KEY_NAME` is the name used to identify this key pair in OpenStack. The
 `OPENSTACK_SANDBOX_SSH_KEYNAME` setting in your `.env` file should be set to
 this name.
 
-### OpenStack images
-
-Open edX is currently designed to run on Ubuntu 16.04. Your OpenStack host may
-already have an image available for this version of Ubuntu. You can manage
-OpenStack images using `glance`:
-
-    pip install python-glanceclient
-
-You can check the images available with your host using:
-
-    glance image-list
-
-For maximum compatibility we recommend the
-[official Ubuntu cloud image](https://cloud-images.ubuntu.com/xenial/current/).
-If this image is not available with your host, you can fetch it and add to
-OpenStack using `glance`:
-
-    wget https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
-    glance image-create \
-      --disk-format=qcow2 \
-      --container-format=bare \
-      --file xenial-server-cloudimg-amd64-disk1.img \
-      --name IMAGE_NAME \
-      --progress
-
-where `IMAGE_NAME` is the name used to identify the image in OpenStack. The
-`OPENSTACK_SANDBOX_BASE_IMAGE` setting in your `.env` file should match this
-name:
-
-    OPENSTACK_SANDBOX_BASE_IMAGE='{"name": "IMAGE_NAME"}'
-
 ### OpenStack flavors
 
 OpenStack instances come in various

@@ -280,6 +280,7 @@ class OpenStackServer(Server):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nova = openstack_utils.get_nova_client(self.openstack_region)
+        self.client = openstack_utils.OpenStackClient(self.openstack_region)
 
     def __str__(self):
         if self.openstack_id:
@@ -388,6 +389,7 @@ class OpenStackServer(Server):
         """
         self.logger.info('Starting server (status=%s)...', self.status)
         self._status_to_building()
+        self.client.upload_known_image(image_selector)
         try:
             os_server = openstack_utils.create_server(
                 self.nova,

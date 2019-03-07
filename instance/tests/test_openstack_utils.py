@@ -492,3 +492,17 @@ class ServicePassesAuthTestCase(TestCase):
                 'os_region_name': 'Region'
             }
         )
+
+class OpenStackTestCase(TestCase):
+    """Tests for OpenStack."""
+
+    def test_upload_known_image(self):
+        c = openstack_utils.OpenStackClient('region')
+        self.assertIsNone(c.upload_known_image('unknown'))
+        known = list(c.image2url.keys())[0]
+        with patch.object(openstack_utils.OpenStackClient, 'image_exists', return_value=True):
+            self.assertFalse(c.upload_known_image(known))
+        with patch.object(openstack_utils.OpenStackClient, 'image_exists', return_value=False):
+            with patch.object(openstack_utils.OpenStackClient, 'image_create') as create:
+                self.assertTrue(c.upload_known_image(known))
+            create.assert_called_once_with(known)
