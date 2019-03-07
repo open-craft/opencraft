@@ -210,6 +210,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "REQUIRE_COURSE_EMAIL_AUTH": False,
                 "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
+                "ENABLE_ACCOUNT_DELETION": True,
                 # These are not part of the standard install:
                 # "CUSTOM_COURSES_EDX": True,
                 # "ENABLE_LTI_PROVIDER": True,
