@@ -314,6 +314,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Set up User Retirement Pipeline
             "RETIREMENT_SERVICE_SETUP": True,
             "RETIREMENT_SERVICE_ENABLE_CRON_JOB": True,
+            "RETIREMENT_SERVICE_COOL_OFF_DAYS": 5,
             "RETIREMENT_LMS_BASE_URL": 'https://{}'.format(self.instance.domain),
             "RETIREMENT_ECOMMERCE_BASE_BASE_URL": 'https://{}'.format(self.instance.ecommerce_domain),
             "RETIREMENT_CREDENTIALS_BASE_BASE_URL": "http://localhost:8150",
