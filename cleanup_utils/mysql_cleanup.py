@@ -86,7 +86,7 @@ class MySqlCleanupInstance:
 
         query = """SELECT table_schema, MAX(create_time) AS create_time
             FROM information_schema.tables
-            WHERE create_time <= DATE_SUB(NOW(), INTERVAL %(age_limit)s DAY)
+            WHERE create_time <= DATE_SUB(NOW(), INTERVAL %(age_limit)s HOUR)
             AND table_schema LIKE %(domain_filter)s
             GROUP BY table_schema ORDER BY create_time DESC"""
         params = {

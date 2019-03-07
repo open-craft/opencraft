@@ -57,7 +57,7 @@ class LoadBalancerCleanup:
         ) / "playbooks/load_balancer_cleanup.yml"
 
         ansible_vars = (
-            "DAYS_OLDER_THAN: {age_limit}\n"
+            "HOURS_OLDER_THAN: {age_limit}\n"
             "FRAGMENT_PATTERN: {fragment_prefix}*\n"
             "REMOVE_FRAGMENTS: {remove_fragments}\n"
         ).format(
