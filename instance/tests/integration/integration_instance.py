@@ -361,9 +361,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         if not settings.DEFAULT_INSTANCE_MYSQL_URL or not settings.DEFAULT_INSTANCE_MONGO_URL:
             print('External databases not configured, skipping integration test')
             return
-        OpenEdXInstanceFactory(
-            name='Integration - test_external_databases',
-        )
+        OpenEdXInstanceFactory(name='Integration - test_external_databases')
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_swift_container_provisioned(instance)
@@ -382,9 +380,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Run the activity_csv management command against a live instance.
         """
-        OpenEdXInstanceFactory(
-            name='Integration - test_activity_csv',
-        )
+        OpenEdXInstanceFactory(name='Integration - test_activity_csv')
         instance = OpenEdXInstance.objects.get()
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
         self.assert_instance_up(instance)
