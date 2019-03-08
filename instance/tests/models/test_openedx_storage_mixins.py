@@ -666,6 +666,28 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
             self.assertEqual(instance.s3_access_key, 'test_0123456789a')
             self.assertEqual(instance.s3_secret_access_key, 'secret')
 
+    @override_settings(AWS_ACCESS_KEY_ID='test_0123456789a', AWS_SECRET_ACCESS_KEY='secret')
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    def test_iam_user_exists(self):
+        """
+        Test create_iam_user succeeds when user already exists
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.storage_type = StorageContainer.S3_STORAGE
+
+        with IAMStubber(iam_client) as iamstubber:
+            iamstubber.add_client_error('create_user', 'EntityAlreadyExists')
+            iamstubber.stub_create_access_key(instance.iam_username)
+            iamstubber.stub_put_user_policy(
+                instance.iam_username,
+                storage.USER_POLICY_NAME,
+                instance.get_s3_policy()
+            )
+            instance.create_iam_user()
+            instance.refresh_from_db()
+            self.assertEqual(instance.s3_access_key, 'test_0123456789a')
+            self.assertEqual(instance.s3_secret_access_key, 'secret')
+
     def test_get_s3_cors(self):
         """
         Test get_s3_config succeeds
