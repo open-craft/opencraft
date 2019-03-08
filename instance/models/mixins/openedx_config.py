@@ -316,6 +316,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "RETIREMENT_SERVICE_SETUP": True,
             "RETIREMENT_SERVICE_ENABLE_CRON_JOB": True,
             "RETIREMENT_SERVICE_COOL_OFF_DAYS": 5,
+            # Cron job scheduling
+            "RETIREMENT_SERVICE_CRON_JOB_HOURS": 0,
+            "RETIREMENT_SERVICE_CRON_JOB_MINUTES": 0,
+            # LMS, ecommerce and credentials base url
             "RETIREMENT_LMS_BASE_URL": 'https://{}'.format(self.instance.domain),
             "RETIREMENT_ECOMMERCE_BASE_BASE_URL": 'https://{}'.format(self.instance.ecommerce_domain),
             "RETIREMENT_CREDENTIALS_BASE_BASE_URL": "http://localhost:8150",
