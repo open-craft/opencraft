@@ -134,6 +134,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'configuration_source_repo_url',
             'configuration_version',
             'configuration_extra_settings',
+            'configuration_playbook_name',
             'edx_platform_repository_url',
             'edx_platform_commit',
 
