@@ -36,6 +36,16 @@ from instance.models.utils import ValidateModelMixin
 
 # Models ######################################################################
 
+def validate_color(color):
+    """
+    Check the color is either #123 or #123456
+    """
+    validators.RegexValidator(
+        r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+        '{} is not a valid color, it must be either #123 or #123456'.format(color),
+    )(color)
+
+
 def validate_available_subdomain(subdomain):
     """
     Check that the given subdomain is not blacklisted.
@@ -132,6 +142,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                   'It is used as filler for buttons.',
         # #126f9a == $m-blue-d3 in variables.scss. It's rgb(18,111,154)
         default='#126f9a',
+        validators=[validate_color],
     )
     link_color = models.CharField(
         max_length=7,
@@ -139,7 +150,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                   'instance.',
         # Same as main_color. Almost like openedx's #0075b4 == rgb(0, 117, 180)
         default='#126f9a',
-
+        validators=[validate_color],
     )
     header_bg_color = models.CharField(
         max_length=7,
@@ -147,6 +158,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text='Used as the background color for the top bar.',
         # openedx also uses white by default
         default='#ffffff',
+        validators=[validate_color],
     )
     footer_bg_color = models.CharField(
         max_length=7,
@@ -154,6 +166,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text='Used as the background color for the footer.',
         # openedx also uses white by default
         default='#ffffff',
+        validators=[validate_color],
     )
     # If you're using SWIFT (OpenStack) to store files (this is enabled through
     # the MEDIAFILES_SWIFT_ENABLE environment variable) then you'll need to

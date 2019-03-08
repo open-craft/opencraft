@@ -475,6 +475,23 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
     url = reverse('registration:register')
     request_method = 'post'
 
+    def test_invalid_color(self):
+        """
+        Colors that are not in the expected format
+        Note: this does not need testing in the browser, only server side
+              because the color picker already does the sanity checks
+              for fields of type=color
+        """
+        color_fields = ('main_color', 'link_color', 'footer_bg_color', 'header_bg_color')
+        bad_color = '#1234'
+        expected_errors = {}
+        for field in color_fields:
+            self.form_data[field] = bad_color
+            expected_errors[field] = [
+                '{} is not a valid color, it must be either #123 or #123456'.format(bad_color)
+            ]
+        self._assert_registration_fails(self.form_data, expected_errors=expected_errors)
+
     def test_modify_immutable_fields(self):
         """
         Check that non-modifiable fields cannot be modified once a user has
