@@ -455,8 +455,7 @@ class OpenEdXInstance(
         basic_auth = self.http_auth_info_base64()
         enable_health_checks = active_servers.count() > 1
         active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
-
-        configurations = {
+        return {
             'domain_slug': self.domain_slug,
             'domain': self.domain,
             'name': self.name,
@@ -466,16 +465,12 @@ class OpenEdXInstance(
             'active_app_servers': active_servers_data,
         }
 
-        return configurations
-
     def _write_metadata_to_consul(self, configurations):
         """
-        Reflect passed configurations to Consul. Values on consul
-        will be updated only if they changed in this version of the
-        model using agent's `cas` parameter (Check-And-Set).
+        Reflect passed configurations to Consul.
 
         If we successfully updated at least one field in Consul
-        then the configurations' version number is gonna be incremented.
+        then the configurations' version number is incremented.
 
         :note: This still doesn't apply removed-configurations case.
         :param configurations: A dict object contains the configurations
@@ -483,19 +478,16 @@ class OpenEdXInstance(
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        agent = ConsulAgent(prefix=self.consul_prefix)
-        version_updated = False
-
-        version_number = agent.get('version') or 0
-        for key, value in configurations.items():
-            index, stored_value = agent.get(key, index=True)
-            cas = index if stored_value is not None else 0
-            agent.put(key, value, cas=cas)
-
-            if not version_updated and value != stored_value:
-                version_updated = True
-                version_number += 1
-                agent.put('version', version_number)
+        with ConsulAgent(prefix=self.consul_prefix) as agent:
+            version_updated = False
+            version_number = agent.get('version') or 0
+            for key, value in configurations.items():
+                stored_value = agent.get(key)
+                agent.put(key, value)
+                if not version_updated and value != stored_value:
+                    version_updated = True
+                    version_number += 1
+                    agent.put('version', version_number)
 
         return version_number, version_updated
 
@@ -514,7 +506,6 @@ class OpenEdXInstance(
 
         new_configurations = self._generate_consul_metadata()
         version, updated = self._write_metadata_to_consul(new_configurations)
-
         return version, updated
 
     def purge_consul_metadata(self):
