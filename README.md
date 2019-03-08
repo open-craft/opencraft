@@ -74,14 +74,14 @@ to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
 system.
 
-Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated 
-virtual machines with the developer environment set up. To provision and 
-configure the developer environment as needed Vagrant uses 
-[Ansible](https://www.ansible.com/). 
+Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
+virtual machines with the developer environment set up. To provision and
+configure the developer environment as needed Vagrant uses
+[Ansible](https://www.ansible.com/).
 
-You will need to install all these tools before you can set up your development 
+You will need to install all these tools before you can set up your development
 environment:
- 
+
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
@@ -114,7 +114,7 @@ Once the virtual machine is up and running, you can ssh into it with this
 command:
 
     vagrant ssh
-    
+
 To check if everything is set up properly you can run ``make test.unit`` inside
 your new environment.
 
@@ -129,7 +129,7 @@ server at http://localhost:5000/ using your web browser.
 ### Local install (skip this step if using Vagrant)
 
 If you prefer not to use Vagrant, you can install OpenCraft manually. Refer to
-the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used 
+the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used
 by Vagrant for an example. Instructions based on Ubuntu 16.04.
 
 Install the system package dependencies & virtualenv:
@@ -161,7 +161,6 @@ everything is working correctly:
 
     make test.unit
 
-
 Configure
 ---------
 
@@ -192,7 +191,7 @@ GANDI_API_KEY='api-key'
 GITHUB_ACCESS_TOKEN='github-token'
 ```
 
-You can also configure the environment variables using a YAML file from which 
+You can also configure the environment variables using a YAML file from which
 Ansible can load these values. Create a file called ``private.yml`` and use the
 following contents as a starting point:
 
@@ -384,7 +383,6 @@ Required settings:
   https://github.com/settings/tokens, and enable the `read:org` and
   `read:user` scopes on the token.
 
-
 ### New Relic settings
 
 * `NEWRELIC_LICENSE_KEY`: Your New Relic license key. If set, New Relic server
@@ -513,7 +511,6 @@ also check for pending migrations manually with:
 
     make migrations.check
 
-
 Creating users
 --------------
 
@@ -562,7 +559,6 @@ To create a staff user:
     In [3]: user.is_staff = True
     In [4]: user.save()
 
-
 Run
 ---
 
@@ -585,7 +581,6 @@ server:
 
     make run WORKERS=2
 
-
 Process description
 -------------------
 
@@ -599,7 +594,6 @@ and loads the environment from the `.env` file:
 Important: the Werkzeug debugger started by the development server allows remote
 execution of Python commands. It should *not* be run in production.
 
-
 Static assets collection
 ------------------------
 
@@ -611,14 +605,12 @@ can also run it manually:
 
     make static
 
-
 Running the tests
 -----------------
 
 To run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.):
 
     make test
-
 
 To run a single test, use `make test.one`:
 
@@ -656,7 +648,6 @@ Debug
 To access the console, you can use `shell_plus`:
 
     make shell
-
 
 Provisioning sandboxes
 ----------------------
@@ -822,7 +813,6 @@ It is possible to ignore errors for specific resources when deleting an instance
 
 **Do not use delete() in production!**
 
-
 manage.py
 ---------
 
@@ -850,20 +840,19 @@ activated.  To see the options available, run:
 
     make manage "instance_redeploy --help"
 
-Keep track of the number of redeployments running in a batch. If it is larger 
+Keep track of the number of redeployments running in a batch. If it is larger
 than the number of workers available, then you will run into issues. You can
 check the number of regular workers with ``echo $WORKERS`` and the number of
 low-priority workers with ``echo $WORKERS_LOW_PRIORITY``. If those values are
 not set in the environment, then they have the default values defined in the
 [Makefile](Makefile).
 
-To ensure that people are still able to use the website to activate/deactivate 
-or launch AppServers you should probably run the redeployment command in the 
-low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_low_priority`` 
+To ensure that people are still able to use the website to activate/deactivate
+or launch AppServers you should probably run the redeployment command in the
+low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_low_priority``
 before the redeployment command. For example:
 
     HUEY_QUEUE_NAME=opencraft_low_priority make manage "instance_redeploy ..."
-
 
 Databases
 ---------
@@ -877,7 +866,7 @@ to an instance, following these steps:
 2. In your `.env` file, set `DEFAULT_INSTANCE_MYSQL_URL` and `DEFAULT_INSTANCE_MONGO_URL`
    to URLs that point to the MySQL and MongoDB servers created in the previous step:
 
-   ```
+   ```env
    DEFAULT_INSTANCE_MYSQL_URL='mysql://<user>:<password>@<hostname>:<port>'
    DEFAULT_INSTANCE_MONGO_URL='mongodb://<user>:<password>@<hostname>:<port>'
    ```
@@ -954,6 +943,7 @@ service. However, support is available to manually enable those services. To do 
   ```
 
 Notes:
+
 * We need to set the `COMMON_HOSTNAME` to something other than the FQDN, so
   that API requests made on the server can be properly routed through the load
   balancer-terminated SSL connection.  This is required because, by default, the
@@ -983,10 +973,13 @@ Once the spawn is complete, you'll need to take the following steps to finish se
 Test your configuration:
 
 1. Verify the OIDC login for both services:
+
     https://ecommerce-<your-instance>.opencraft.hosting/login
     https://discovery-<your-instance>.opencraft.hosting/login
+
 1. Verify that the discovery cronjob runs without errors:
-    ```
+
+    ```sh
     sudo -s -c . /edx/app/discovery/discovery_env; /edx/bin/manage.discovery refresh_course_metadata
     ```
 
