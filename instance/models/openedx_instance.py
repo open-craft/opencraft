@@ -42,7 +42,7 @@ from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
-from instance.models.utils import WrongStateException, ConsulAgent
+from instance.models.utils import WrongStateException, ConsulAgent, get_base_playbook_name
 from instance.utils import sufficient_time_passed
 
 
@@ -111,6 +111,10 @@ class OpenEdXInstance(
             self.edx_platform_commit = self.openedx_release
         if self.storage_type is None:
             self.storage_type = settings.INSTANCE_STORAGE_TYPE
+        # If left blank, the base playbook name will be automatically selected
+        # based on the openedx release
+        if not self.configuration_playbook_name:
+            self.configuration_playbook_name = get_base_playbook_name(self.openedx_release)
 
         super().save(**kwargs)
         self.update_consul_metadata()

@@ -88,6 +88,25 @@ def default_setting(name):
     return functools.partial(_get_setting, name)
 
 
+def get_base_playbook_name(openedx_release):
+    """
+    This functions returns the correct main playbook name for the given Open EdX
+    release
+
+    This is needed because OpenEdX changed the main playbook name from
+    `edx_sandbox.yml` to `openedx_native.yml` and releases before Ironwood still
+    use the old playbook name.
+    More info: https://github.com/edx/configuration/pull/5025
+    """
+    old_playbook_releases = [
+        'ginkgo',
+        'hawthorn',
+    ]
+    if any([release_name in openedx_release for release_name in old_playbook_releases]):
+        return 'playbooks/edx_sandbox.yml'
+    return 'playbooks/openedx_native.yml'
+
+
 # Classes #####################################################################
 
 class ValidateModelMixin(object):
