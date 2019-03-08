@@ -467,12 +467,10 @@ class OpenEdXInstance(
 
     def _write_metadata_to_consul(self, configurations):
         """
-        Reflect passed configurations to Consul. Values on consul
-        will be updated only if they changed in this version of the
-        model using agent's `cas` parameter (Check-And-Set).
+        Reflect passed configurations to Consul.
 
         If we successfully updated at least one field in Consul
-        then the configurations' version number is gonna be incremented.
+        then the configurations' version number is incremented.
 
         :note: This still doesn't apply removed-configurations case.
         :param configurations: A dict object contains the configurations
@@ -484,9 +482,8 @@ class OpenEdXInstance(
             version_updated = False
             version_number = agent.get('version') or 0
             for key, value in configurations.items():
-                index, stored_value = agent.get(key, index=True)
-                cas = index if stored_value is not None else 0
-                agent.put(key, value, cas=cas)
+                stored_value = agent.get(key)
+                agent.put(key, value)
                 if not version_updated and value != stored_value:
                     version_updated = True
                     version_number += 1
