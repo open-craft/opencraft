@@ -33,7 +33,6 @@ from instance.models.openedx_instance import OpenEdXInstance
 
 # Classes #####################################################################
 
-# pylint: disable=too-many-instance-attributes
 class OpenEdXInstanceFactory(DjangoModelFactory):
     """
     Factory for OpenEdXInstance

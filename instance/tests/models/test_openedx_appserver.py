@@ -50,7 +50,7 @@ from userprofile.models import Organization
 
 # Tests #######################################################################
 
-@ddt  # pylint: disable=too-many-public-methods
+@ddt
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
