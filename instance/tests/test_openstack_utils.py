@@ -470,7 +470,6 @@ class SwiftTestCase(TestCase):
 class ServicePassesAuthTestCase(TestCase):
     """Tests for swift_service call."""
 
-    # pylint: disable=no-self-use
     def test_service_passes_auth(self):
         """Test if swift_service passes authorization properly. """
         with mock.patch('instance.openstack_utils.SwiftService') as service:

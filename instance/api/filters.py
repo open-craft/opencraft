@@ -48,7 +48,7 @@ class IsOrganizationOwnerFilterBackendAppServer(IsOrganizationOwnerFilterBackend
     Filter for Appserver.
     """
 
-    def get_filtered_queryset(self, queryset, organization):  # pylint: disable=no-self-use
+    def get_filtered_queryset(self, queryset, organization):
         """
         Return filtered queryset by organization.
         """
@@ -60,7 +60,7 @@ class IsOrganizationOwnerFilterBackendInstance(IsOrganizationOwnerFilterBackend)
     Filter for Instance.
     """
 
-    def get_filtered_queryset(self, queryset, organization):  # pylint: disable=no-self-use
+    def get_filtered_queryset(self, queryset, organization):
         """
         Return filtered queryset by organization.
         """

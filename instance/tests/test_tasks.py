@@ -414,7 +414,7 @@ class CleanUpTestCase(TestCase):
 
     @patch('instance.tasks.terminate_obsolete_appservers_all_instances')
     @patch('instance.tasks.shut_down_obsolete_pr_sandboxes')
-    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):  # pylint: disable=no-self-use
+    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):
         """
         Test that `clean_up` task spawns `shut_down_obsolete_pr_sandboxes` and
         `terminate_obsolete_appservers_all_instances` tasks.
