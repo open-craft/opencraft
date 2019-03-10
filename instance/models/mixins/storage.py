@@ -292,7 +292,7 @@ class S3BucketInstanceMixin(models.Model):
         self.save()
 
     @property
-    def s3(self):  # pylint: disable=invalid-name
+    def s3(self):
         """
         Create connection to S3 service
         """

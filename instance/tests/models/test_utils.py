@@ -173,7 +173,7 @@ class SimpleResource:
         return self.return_value
 
     @state.only_for(State1)
-    def method_one_with_args(self, a, b, c):  # pylint: disable=invalid-name
+    def method_one_with_args(self, a, b, c):
         """ A method that only can be called in state 1 """
         return (a * 1) + (b * 2) + (c * 3)
 
@@ -452,7 +452,7 @@ class DjangoResource:
         return self.return_value
 
     @state.only_for(State1)
-    def method_one_with_args(self, a, b, c):  # pylint: disable=invalid-name
+    def method_one_with_args(self, a, b, c):
         """ A method that only can be called in state 1 """
         return (a * 1) + (b * 2) + (c * 3)
 

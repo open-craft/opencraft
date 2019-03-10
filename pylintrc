@@ -202,13 +202,13 @@ name-group=
 include-naming-hint=yes
 
 # Regular expression matching correct argument names
-argument-rgx=[a-z_][a-z0-9_]{1,30}$
+argument-rgx=[a-z_][a-z0-9_]{0,30}$
 
 # Naming hint for argument names
 argument-name-hint=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression matching correct method names
-method-rgx=[a-z_][a-z0-9_]{2,45}$
+method-rgx = ([a-z_][a-z0-9_]{1,70}|setUp|set[Uu]pClass|tearDown|tear[Dd]ownClass)$
 
 # Naming hint for method names
 method-name-hint=[a-z_][a-z0-9_]{2,45}$
@@ -232,7 +232,7 @@ variable-rgx=[a-z_][a-z0-9_]{0,30}$
 variable-name-hint=[a-z_][a-z0-9_]{0,30}$
 
 # Regular expression matching correct attribute names
-attr-rgx=[a-z_][a-z0-9_]{2,30}$
+attr-rgx=([a-z_][a-z0-9_]{1,30}|maxDiff)$
 
 # Naming hint for attribute names
 attr-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -244,7 +244,7 @@ const-rgx=(([a-z_][a-z0-9_]{2,30})|([A-Z_][A-Z0-9_]{2,50}))$
 const-name-hint=(([a-z_][a-z0-9_]{2,30})|([A-Z_][A-Z0-9_]{2,50}))$
 
 # Regular expression matching correct class attribute names
-class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
+class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{0,30}|(__.*__))$
 
 # Naming hint for class attribute names
 class-attribute-name-hint=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$

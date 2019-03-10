@@ -105,7 +105,7 @@ class TestCase(DjangoTestCase):
     """
     def setUp(self):
         super().setUp()
-        self.maxDiff = None #pylint: disable=invalid-name
+        self.maxDiff = None
 
 
 class WithUserTestCase(DjangoTestCase):

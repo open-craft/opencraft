@@ -426,7 +426,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertRegex(config_str, r"\bserver\b.*\b{}:80\b".format(ip_address))
         self.assertCountEqual(backend_map, [(domain, backend) for domain in domain_names])
 
-    def _check_load_balancer_configuration_prefix_domains(self,  # pylint: disable=invalid-name
+    def _check_load_balancer_configuration_prefix_domains(self,
                                                           backend_map,
                                                           config,
                                                           domain_names,

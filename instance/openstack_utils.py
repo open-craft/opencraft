@@ -265,5 +265,5 @@ def delete_swift_container(container_name, **kwargs):
     with swift_service(**kwargs) as service:
         # Service delete may yield arbitrary large amount of results,
         # and since it yields we should read all results.
-        for result in service.delete(container_name):  # pylint: disable=unused-variable
+        for _ in service.delete(container_name):
             pass
