@@ -52,7 +52,7 @@ def _get_cursor(url):
         )
     except MySQLError as exc:
         logger.exception('Cannot get MySQL cursor: %s', exc)
-        raise
+        return None
     return connection.cursor()
 
 
@@ -70,11 +70,7 @@ class MySqlCleanupInstance:
         self.cleaned_up_hashes = []
         self.domain_suffix = domain.replace('.', '_')
         self.dry_run = dry_run
-        try:
-            self.cursor = _get_cursor(url)
-        except Exception:  # pylint: disable=broad-except
-            # Exception has already been logged
-            self.cursor = None
+        self.cursor = _get_cursor(url)
 
     def _get_old_databases(self):
         """
