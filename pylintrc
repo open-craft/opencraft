@@ -94,6 +94,10 @@ disable=
     no-member,
     too-few-public-methods,
     too-many-ancestors,
+    too-many-arguments,
+    too-many-instance-attributes,
+    too-many-lines,
+    too-many-public-methods,
     protected-access,
     unused-argument
 

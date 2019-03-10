@@ -168,7 +168,6 @@ class PR:
     """
     Representation of a GitHub Pull Request
     """
-    # pylint: disable=too-many-arguments
     def __init__(self, number, source_fork_name, target_fork_name, branch_name, title, username, body=''):
         self.number = number
         self.fork_name = source_fork_name

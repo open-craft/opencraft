@@ -52,7 +52,7 @@ from instance.tests.utils import patch_services, skip_unless_consul_running
 
 # Tests #######################################################################
 
-@ddt.ddt  # pylint: disable=too-many-lines
+@ddt.ddt
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
