@@ -33,7 +33,6 @@ from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
 
 # Test cases ##################################################################
-# pylint: disable=no-self-use
 
 
 class ApprovalTestCase(TestCase):

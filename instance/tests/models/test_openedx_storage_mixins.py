@@ -369,7 +369,6 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
     )
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    # pylint: disable=no-self-use
     def test_provision_s3(self, provision_iam):
         """
         Test s3 provisioning succeeds

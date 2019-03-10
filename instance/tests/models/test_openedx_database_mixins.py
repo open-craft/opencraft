@@ -787,7 +787,7 @@ class RabbitMQServerManagerTestCase(TestCase):
             RabbitMQServer.objects.select_random()
 
     @patch('instance.models.rabbitmq_server.logger')
-    def test_mismatch_warning(self, mock_logger):  # pylint: disable=no-self-use
+    def test_mismatch_warning(self, mock_logger):
         """
         Test that a warning is logged when trying to spawn the default, but a default already
         and contains mismatching parameters with the given settings.

@@ -265,7 +265,7 @@ class ResourceStateDescriptor:
         """
         raise AttributeError("You cannot assign to a state machine attribute to change the state.")
 
-    def only_for(self, *accepted_states):  # Not sure why this warning is raised: pylint: disable=no-self-use
+    def only_for(self, *accepted_states):
         """
         Decorator that can annotate a method and will raise an error if the method is called
         when the state machine is not in one of the specified states (accepted_states).

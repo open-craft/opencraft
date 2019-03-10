@@ -147,7 +147,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_update_monitoring_additional_email(self, mock_newrelic):  # pylint: disable=no-self-use
+    def test_update_monitoring_additional_email(self, mock_newrelic):
         """
         Check that the `enable_monitoring` method will add new
         'additional_monitoring_emails' to the existing monitors.
@@ -187,7 +187,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         ], any_order=True)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_disable_monitoring(self, mock_newrelic):  # pylint: disable=no-self-use
+    def test_disable_monitoring(self, mock_newrelic):
         """
         Check that the `disable_monitoring` method removes any New Relic
         Synthetics monitors for this instance.

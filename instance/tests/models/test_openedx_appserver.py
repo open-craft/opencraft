@@ -210,7 +210,7 @@ class OpenEdXAppServerTestCase(TestCase):
                 app_server.provision()
 
     @patch('instance.openstack_utils.get_nova_client')
-    def test_launch_in_other_region(self, mock_get_nova_client):  # pylint: disable=no-self-use
+    def test_launch_in_other_region(self, mock_get_nova_client):
         """
         Test launching an appserver in a non-default region.
         """

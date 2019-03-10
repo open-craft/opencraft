@@ -61,7 +61,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
             return SpawnAppServerSerializer
         return OpenEdXAppServerSerializer
 
-    def create(self, request):  # pylint: disable=no-self-use
+    def create(self, request):
         """
         Spawn a new AppServer for an existing OpenEdXInstance
 

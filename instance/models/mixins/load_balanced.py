@@ -40,13 +40,13 @@ class LoadBalancedInstance(models.Model):
     class Meta:
         abstract = True
 
-    def get_load_balanced_domains(self):  # pylint: disable=no-self-use
+    def get_load_balanced_domains(self):
         """
         Return an iterable of domains that should be handled by the load balancer.
         """
         return []
 
-    def get_managed_domains(self):  # pylint: disable=no-self-use
+    def get_managed_domains(self):
         """
         Return an iterable of domains that we  manage DNS entries for.
         """

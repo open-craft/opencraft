@@ -89,6 +89,7 @@ confidence=
 disable=
     fixme,
     locally-disabled,
+    no-self-use,
     no-init,
     no-member,
     too-few-public-methods,

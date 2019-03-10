@@ -310,7 +310,6 @@ class TestBackupSequence(TestCase):
         )
 
 
-# pylint: disable=no-self-use
 class MiscTests(TestCase):
     """Tests for things that didn't deserve own class."""
 
