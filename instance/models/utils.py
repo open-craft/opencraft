@@ -182,7 +182,7 @@ class ResourceState:
         To compare with inherited classes etc., use a full isinstance or issubclass expression.
         """
         if inspect.isclass(obj):
-            return type(self) is obj  # pylint: disable=unidiomatic-typecheck
+            return type(self) is obj
         else:
             return type(self) is type(obj)
 
