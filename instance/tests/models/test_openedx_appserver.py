@@ -684,7 +684,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
         """
         Test that invalid status transitions raise exception
         """
-        # TODO: Get pylint to see state as an iterable
+        # pylint incorrectly concludes states is not iterable
         invalid_from_states = (state for state in AppServerStatus.states  # pylint: disable=not-an-iterable
                                if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
