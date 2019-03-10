@@ -163,9 +163,9 @@ class ResourceState:
         To compare with inherited classes etc., use a full isinstance or issubclass expression.
         """
         if inspect.isclass(obj):
-            return type(self) is obj  # pylint: disable=unidiomatic-typecheck
+            return isinstance(self, obj)
         else:
-            return type(self) is type(obj)
+            return isinstance(self, type(obj))
 
     def __hash__(self):
         """ Get an appropriate hash value (for consistency with __eq__) """
