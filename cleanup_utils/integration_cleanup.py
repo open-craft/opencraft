@@ -39,10 +39,10 @@ from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
 
 # Constants ###################################################################
 
-# Default age at which things should be cleaned up, in days
-DEFAULT_AGE_LIMIT = 3
+# Default age at which things should be cleaned up, in hours
+DEFAULT_AGE_LIMIT = 8
 DEFAULT_CUTOFF_TIME = (
-    datetime.utcnow().replace(tzinfo=UTC) - timedelta(days=DEFAULT_AGE_LIMIT)
+    datetime.utcnow().replace(tzinfo=UTC) - timedelta(hours=DEFAULT_AGE_LIMIT)
 )
 
 
