@@ -57,6 +57,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "HEARTBEAT_EXTENDED_CHECKS": [
                     "lms.lib.comment_client.utils.check_forum_heartbeat",
                 ],
+                # Set the LMS session cookie domain to '.<LMS domain>' in preparation for the Studio login
+                # in Ironwood which uses LMS login and requires LMS and Studio to be on cookie-compatible domains
+                "SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
             },
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
@@ -73,9 +76,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_CMS_BASE": self.instance.studio_domain,
             "CMS_HOSTNAME": '~{}'.format(self.instance.studio_domain_nginx_regex),
 
-            # Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
-            # We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
-            "EDXAPP_SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
             "EDXAPP_LOGIN_REDIRECT_WHITELIST": [self.instance.studio_domain, ],
 
             # Run a command to delete expired sessions once a day. The time is random and different in each server
