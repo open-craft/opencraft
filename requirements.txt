@@ -11,6 +11,7 @@ click==6.6
 cliff==2.3.0
 cmd2==0.6.9
 colorama==0.3.7
+colour==0.1.5
 cookies==2.2.1
 coverage==4.2
 ddt==1.1.1
@@ -35,7 +36,6 @@ docutils==0.14
 dodgy==0.1.9
 factory-boy==2.7.0
 fake-factory==0.7.2
-Flask==0.11.1
 freezegun==0.3.8
 future==0.17.1
 futures==3.0.5
@@ -160,4 +160,3 @@ warlock==1.2.0
 wcwidth==0.1.7
 Werkzeug==0.11.1
 wrapt==1.10.8
-colour==0.1.5
