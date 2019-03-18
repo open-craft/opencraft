@@ -66,6 +66,7 @@ class BetaTestApplicationViewTestMixin:
             'password_strength': 3,
             'password_confirmation': 'gryffindor',
             'accept_terms': True,
+            'accept_privacy_policy': True,
             'subscribe_to_updates': False,
             'main_color': '#001122',
             'link_color': '#001122',
@@ -378,6 +379,18 @@ class BetaTestApplicationViewTestMixin:
         self.form_data['password_confirmation'] = 'slytherin'
         self._assert_registration_fails(self.form_data, expected_errors={
             'password_confirmation': ["The two password fields didn't match."],
+        })
+
+    def test_no_privacy_policy(self):
+        """
+        User has not accepted privacy policy.
+        """
+        form_data = self.form_data.copy()
+        del form_data['accept_privacy_policy']
+        self._assert_registration_fails(form_data, expected_errors={
+            'accept_privacy_policy': [
+                'You must accept the privacy policy to register.'
+            ],
         })
 
     @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)

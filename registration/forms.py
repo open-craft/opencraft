@@ -176,6 +176,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'required': 'You must accept these terms to register.',
         },
     )
+    accept_privacy_policy = forms.BooleanField(
+        required=True,
+        help_text=('I accept the privacy policy.'),
+        error_messages={
+            'required': 'You must accept the privacy policy to register.',
+        },
+    )
 
     # This field is created automatically from the model field, but the regex
     # validator is not copied over. We need to define the field manually so
@@ -233,6 +240,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 # If the user has already registered they have already accepted
                 # the terms, so the checkbox can default to checked
                 self.initial['accept_terms'] = True
+                # Ditto the Privacy Policy
+                self.initial['accept_privacy_policy'] = True
 
                 # Make all non-modifiable fields read only
                 for name, field in self.fields.items():
