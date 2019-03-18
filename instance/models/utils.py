@@ -19,10 +19,11 @@
 """
 Models Utils
 """
+
 import functools
 import inspect
 import json
-from json import JSONDecodeError
+import time
 from weakref import WeakKeyDictionary
 
 from django.conf import settings
@@ -44,6 +45,14 @@ class SteadyStateException(WrongStateException):
     """
     Raised when attempting to wait until object reaches a state that fulfills a certain condition
     but the object's current state is steady, i.e., it is not expected to change.
+    """
+    pass
+
+
+class ConsulLockAcquisitionException(RuntimeError):
+    """
+    Raised when acquiring a Consul lock after continuous tries fails.
+    Should only be raised if not acquiring the lock could cause inconsistencies.
     """
     pass
 
@@ -77,6 +86,25 @@ def default_setting(name):
     """
     assert hasattr(settings, name)
     return functools.partial(_get_setting, name)
+
+
+def get_base_playbook_name(openedx_release):
+    """
+    This functions returns the correct main playbook name for the given Open EdX
+    release
+
+    This is needed because OpenEdX changed the main playbook name from
+    `edx_sandbox.yml` to `openedx_native.yml` and releases before Ironwood still
+    use the old playbook name.
+    More info: https://github.com/edx/configuration/pull/5025
+    """
+    old_playbook_releases = [
+        'ginkgo',
+        'hawthorn',
+    ]
+    if any([release_name in openedx_release for release_name in old_playbook_releases]):
+        return 'playbooks/edx_sandbox.yml'
+    return 'playbooks/openedx_native.yml'
 
 
 # Classes #####################################################################
@@ -423,9 +451,48 @@ class ConsulAgent(object):
     managing prefixes, and reduces the call size to the main needed things with a
     possibility to expand it for more advanced queries.
     """
-    def __init__(self, prefix=''):
+
+    # We use the `consul lock` CLI to acquire locks on the server side.
+    # Those use a "magic flag" to help indicate conflicts with semaphores.
+    # We want to compete with those locks though, so we use this flag too.
+    # Comes from https://github.com/hashicorp/consul/blob/master/api/lock.go#L35-L38
+    LOCK_MAGIC_FLAG = 0x2ddccbc058a50c18
+
+    def __init__(self, prefix='', lock_wait=100, lock_wait_sleep=1):
         self._client = consul.Consul()
         self.prefix = prefix
+        self.session_id = None
+        self.lock_wait = lock_wait
+        self.lock_wait_sleep = lock_wait_sleep
+
+    def __enter__(self):
+        # Any `put` operation using a session with "delete" behavior is ephemeral.
+        # So if we create the lock below with this session, when the session is
+        # invalidated (TTL completed, session was destroyed, etc.) the lock key
+        # is also deleted. However there is a default lock delay of 15 seconds, so
+        # new locks have to wait for that timer even if the lock key is physically gone.
+        # See https://www.consul.io/docs/internals/sessions.html for details.
+        self.session_id = self._client.session.create(behavior="delete", ttl=1200)
+
+        # If someone else is holding this lock, the Consul client just returns False.
+        # We implement a "wait until lock is acquired" scenario here, and bail if
+        # `lock_wait` retries have failed.
+        lock_wait = self.lock_wait
+        while lock_wait > 0 and not self._client.kv.put(
+                "lock/ocim/.lock", "",
+                flags=self.LOCK_MAGIC_FLAG,
+                acquire=self.session_id
+        ):
+            lock_wait -= 1
+            time.sleep(self.lock_wait_sleep)
+
+        if lock_wait == 0:
+            raise ConsulLockAcquisitionException("Failed to acquire Consul lock!")
+
+        return self
+
+    def __exit__(self, *args):
+        self._client.session.destroy(self.session_id)
 
     def get(self, key, index=False, **kwargs):
         """
@@ -436,7 +503,7 @@ class ConsulAgent(object):
         :param index: If True then the return value will be a tuple of (index, value)
                       where index is the current Consul index, suitable for making subsequent
                       calls to wait for changes since this query was last run.
-        :param kwargs: Consul.kv.delete specific options
+        :param kwargs: Consul.kv.get specific options
         :return: The value or the the tuple of (index, value) of the specified key.
         """
         key = self.prefix + key
@@ -511,7 +578,7 @@ class ConsulAgent(object):
 
         try:
             return json.loads(value)
-        except (JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError):
             pass
 
         return value

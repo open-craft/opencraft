@@ -87,6 +87,8 @@ OPENEDX_SECRET_KEYS = [
     'INSIGHTS_SECRET_KEY',
     'NOTIFIER_LMS_SECRET_KEY',
     'PROGRAMS_SECRET_KEY',
+    'RETIREMENT_SERVICE_OAUTH_CLIENT_ID',
+    'RETIREMENT_SERVICE_OAUTH_CLIENT_SECRET',
 ]
 
 # Translation table for keys that must match other keys (shared API keys)

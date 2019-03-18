@@ -275,9 +275,17 @@ class S3BucketInstanceMixin(models.Model):
         """
         Create IAM user with access only to the s3 bucket set in s3_bucket_name
         """
-        self.iam.create_user(
-            UserName=self.iam_username,
-        )
+        try:
+            self.iam.create_user(
+                UserName=self.iam_username,
+            )
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == 'EntityAlreadyExists':
+                # Continue if IAM user already exists, i.e. reprovisioning
+                self.logger.info(
+                    'IAM user %s already exists',
+                    self.iam_username
+                )
         access_key = self.iam.create_access_key(UserName=self.iam_username)['AccessKey']
         self.s3_access_key = access_key['AccessKeyId']
         self.s3_secret_access_key = access_key['SecretAccessKey']
@@ -313,8 +321,9 @@ class S3BucketInstanceMixin(models.Model):
                 )
                 break
             except ClientError as e:
-                if e.response.get('Error', {}).get('Code') == 'EntityAlreadyExists':
+                if e.response.get('Error', {}).get('Code') == 'BucketAlreadyOwnedByYou':
                     # Continue if bucket already exists, i.e. reprovisioning
+                    # This is only raised outside of us-east-1
                     self.logger.info(
                         'Bucket %s already exists',
                         self.s3_bucket_name

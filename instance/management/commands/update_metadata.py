@@ -30,6 +30,7 @@ from django.core.management.base import BaseCommand
 import consul
 
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.utils import ConsulAgent
 
 
 # Classes #####################################################################
@@ -72,11 +73,9 @@ class Command(BaseCommand):
         their metadata in Consul.
         """
         instances = self.get_running_instances()
-
         self.stdout.write('Updating {} instances\' metadata...'.format(instances.count()))
         for instance in instances:
             instance.update_consul_metadata()
-
         self.stdout.write(self.style.SUCCESS('Successfully updated instances\' metadata'))
 
     def clean_consul_metadata(self):
@@ -84,14 +83,13 @@ class Command(BaseCommand):
         This method will iterate over all archived instances and clean their
         metadata from Consul.
         """
-        client = consul.Consul()
         instances_ids = self.get_archived_instances()
-        self.stdout.write('Cleaning metadata for {} archived instances...'.format(len(instances_ids)))
-
-        for instances_id in instances_ids:
-            prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=instances_id)
-            client.kv.delete(prefix, recurse=True)
-        self.stdout.write(self.style.SUCCESS('Successfully cleaned archived instances\' metadata'))
+        with ConsulAgent() as agent:
+            self.stdout.write('Cleaning metadata for {} archived instances...'.format(len(instances_ids)))
+            for instances_id in instances_ids:
+                prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=instances_id)
+                agent.delete(prefix, recurse=True)
+            self.stdout.write(self.style.SUCCESS('Successfully cleaned archived instances\' metadata'))
 
     @staticmethod
     def get_running_instances():
@@ -113,17 +111,14 @@ class Command(BaseCommand):
         """
         agent = consul.Consul()
         archived_instances_ids = set()
-
         instances_prefix = '{ocim}/instances/'.format(ocim=settings.OCIM_ID)
         _, consul_instances_keys = agent.kv.get(instances_prefix, recurse=True, keys=True)
-
         if not consul_instances_keys:
             self.stdout.write('Consul does not contain data yet')
             return archived_instances_ids
 
         running_instances = self.get_running_instances()
         running_instances_ids = running_instances.values_list('id', flat=True)
-
         for key in consul_instances_keys:
             id_elements = key.split('/')
             try:

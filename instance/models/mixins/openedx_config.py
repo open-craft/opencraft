@@ -57,6 +57,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "HEARTBEAT_EXTENDED_CHECKS": [
                     "lms.lib.comment_client.utils.check_forum_heartbeat",
                 ],
+                # Set the LMS session cookie domain to '.<LMS domain>' in preparation for the Studio login
+                # in Ironwood which uses LMS login and requires LMS and Studio to be on cookie-compatible domains
+                "SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
             },
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
@@ -73,9 +76,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_CMS_BASE": self.instance.studio_domain,
             "CMS_HOSTNAME": '~{}'.format(self.instance.studio_domain_nginx_regex),
 
-            # Set this to a string such as ".myinstance.org" to enable session sharing between LMS and the Studio.
-            # We cannot do this on OC IM for security reasons (we don't want different *instances* to share cookies).
-            "EDXAPP_SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
             "EDXAPP_LOGIN_REDIRECT_WHITELIST": [self.instance.studio_domain, ],
 
             # Run a command to delete expired sessions once a day. The time is random and different in each server
@@ -210,6 +210,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "REQUIRE_COURSE_EMAIL_AUTH": False,
                 "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
+                "ENABLE_ACCOUNT_DELETION": True,
                 # These are not part of the standard install:
                 # "CUSTOM_COURSES_EDX": True,
                 # "ENABLE_LTI_PROVIDER": True,
@@ -310,6 +311,54 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # in Ocim deployments.
             # Disabling heartbeats can have a drastic reduction RabbitMQ usage.
             "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
+
+            # Set up User Retirement Pipeline
+            "RETIREMENT_SERVICE_SETUP": True,
+            "RETIREMENT_SERVICE_ENABLE_CRON_JOB": True,
+            "RETIREMENT_SERVICE_COOL_OFF_DAYS": 5,
+            # Cron job scheduling
+            "RETIREMENT_SERVICE_CRON_JOB_HOURS": 0,
+            "RETIREMENT_SERVICE_CRON_JOB_MINUTES": 0,
+            # LMS, ecommerce and credentials base url
+            "RETIREMENT_LMS_BASE_URL": 'https://{}'.format(self.instance.domain),
+            "RETIREMENT_ECOMMERCE_BASE_BASE_URL": 'https://{}'.format(self.instance.ecommerce_domain),
+            "RETIREMENT_CREDENTIALS_BASE_BASE_URL": "http://localhost:8150",
+            # Set up retirement pipeline on LMS
+            "EDXAPP_RETIREMENT_STATES": [
+                "PENDING",
+                "RETIRING_ENROLLMENTS",
+                "ENROLLMENTS_COMPLETE",
+                "RETIRING_LMS_MISC",
+                "LMS_MISC_COMPLETE",
+                "RETIRING_LMS",
+                "LMS_COMPLETE",
+                "RETIRING_CREDENTIALS",
+                "CREDENTIALS_COMPLETE",
+                "ERRORED",
+                "ABORTED",
+                "COMPLETE",
+            ],
+            # Set up retirement pipeline steps
+            "RETIREMENT_SERVICE_PIPELINE_CONFIGURATION": [
+                {
+                    "NAME": "RETIRING_ENROLLMENTS",
+                    "NAME_COMPLETE": "ENROLLMENTS_COMPLETE",
+                    "SERVICE": "LMS",
+                    "FUNCTION": "retirement_unenroll",
+                },
+                {
+                    "NAME": "RETIRING_LMS_MISC",
+                    "NAME_COMPLETE": "LMS_MISC_COMPLETE",
+                    "SERVICE": "LMS",
+                    "FUNCTION": "retirement_lms_retire_misc",
+                },
+                {
+                    "NAME": "RETIRING_LMS",
+                    "NAME_COMPLETE": "LMS_COMPLETE",
+                    "SERVICE": "LMS",
+                    "FUNCTION": "retirement_lms_retire",
+                },
+            ]
         }
 
         if self.smtp_relay_settings:
