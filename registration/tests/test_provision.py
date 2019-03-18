@@ -57,3 +57,4 @@ class ApprovalTestCase(TestCase):
         self.assertTrue(instance.internal_lms_domain.startswith(application.subdomain))
         self.assertEqual(instance.email, application.public_contact_email)
         self.assertEqual(instance.lms_users.get(), user)
+        self.assertEqual(instance.accepted_privacy_policy, application.created)

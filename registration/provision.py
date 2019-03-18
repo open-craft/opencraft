@@ -73,6 +73,7 @@ def _provision_instance(sender, **kwargs):
             name=application.instance_name,
             email=application.public_contact_email,
             deploy_simpletheme=True,
+            accepted_privacy_policy=application.created,
         )
         application.instance.lms_users.add(user)
         application.save()
