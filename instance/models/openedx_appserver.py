@@ -371,6 +371,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         users = UserProfile.objects \
             .filter(admin_user_query) \
+            .filter(user__is_active=True) \
             .exclude(Q(github_username__isnull=True) | Q(github_username__exact='')) \
             .values_list('github_username', flat=True)
 

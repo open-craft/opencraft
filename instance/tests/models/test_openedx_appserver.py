@@ -146,6 +146,7 @@ class OpenEdXAppServerTestCase(TestCase):
             ('user', 'user', admin_org_handle),
             ('admin2', 'admin2', admin_org_handle),
             ('no_github_handle', '', admin_org_handle),
+            ('inactive_user', 'inactive_user', admin_org_handle),
             ('another_org', 'another_org', 'another_org'),
             ('no_org_1', 'no_org_1', ''),
             ('no_org_2', 'no_org_2', None),
@@ -156,6 +157,7 @@ class OpenEdXAppServerTestCase(TestCase):
             ('admin4', 'admin4', ''),
             ('admin5', 'admin5', None),
             ('admin_no_org', '', admin_org_handle),
+            ('inactive_admin', 'inactive_admin', admin_org_handle),
         ]
 
         expected_admin_users = ['user', 'admin1', 'admin2', 'admin3', 'admin4', 'admin5']
@@ -167,6 +169,9 @@ class OpenEdXAppServerTestCase(TestCase):
             profile, _ = make_user_and_organization(username, github_username=github_handle, org_handle=org_handle)
             profile.user.is_superuser = True
             profile.user.save()
+
+        # Mark the inactive user and admin as inactive; they should not be added to the resulting list
+        get_user_model().objects.filter(username__in=('inactive_user', 'inactive_admin')).update(is_active=False)
 
         instance = OpenEdXInstanceFactory()
         organization = Organization.objects.get(github_handle=admin_org_handle)
