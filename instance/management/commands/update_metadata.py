@@ -84,12 +84,12 @@ class Command(BaseCommand):
         metadata from Consul.
         """
         instances_ids = self.get_archived_instances()
-        with ConsulAgent() as agent:
-            self.stdout.write('Cleaning metadata for {} archived instances...'.format(len(instances_ids)))
-            for instances_id in instances_ids:
-                prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=instances_id)
-                agent.delete(prefix, recurse=True)
-            self.stdout.write(self.style.SUCCESS('Successfully cleaned archived instances\' metadata'))
+        agent = ConsulAgent()
+        self.stdout.write('Cleaning metadata for {} archived instances...'.format(len(instances_ids)))
+        for instances_id in instances_ids:
+            prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=instances_id)
+            agent.delete(prefix, recurse=True)
+        self.stdout.write(self.style.SUCCESS('Successfully cleaned archived instances\' metadata'))
 
     @staticmethod
     def get_running_instances():
