@@ -20,6 +20,7 @@
 Models Utils
 """
 
+import base64
 import functools
 import inspect
 import json
@@ -446,6 +447,88 @@ class ConsulAgent(object):
     def __init__(self, prefix=''):
         self._client = consul.Consul()
         self.prefix = prefix
+
+    @staticmethod
+    def _tnx_decode(value):
+        "load the json from a txn value"
+        return json.loads(base64.b64decode(value).decode('utf-8'))
+
+    @staticmethod
+    def _tnx_encode(value):
+        "store the value as a json string suitable for a txn"
+        return base64.b64encode(json.dumps(value).encode('utf-8')).decode('ascii')
+
+    @staticmethod
+    def _tnx_set(key, value):
+        "return a txn KV parameter to set k/v"
+        return {
+            "KV": {
+                "Verb": "set",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+            }
+        }
+
+    @staticmethod
+    def _tnx_update(key, value, cas):
+        "return a txn KV parameter to cas k/v"
+        return {
+            "KV": {
+                "Verb": "cas",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+                "Index": cas,
+            }
+        }
+
+    def txn_put(self, updates):
+        """
+        Write updates dictionary as a single transaction
+
+        :param updates: A dict object contains the k/v
+                               to be written on Consul.
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updates.
+        """
+
+        get = [
+            {
+                "KV": {
+                    "Verb": "get-tree",
+                    "Key": self.prefix,
+                },
+            },
+        ]
+        get_result = self._client.txn.put(get)
+        existing = {}
+        for entry in get_result['Results']:
+            entry["KV"]["Value"] = self._tnx_decode(entry["KV"]["Value"])
+            existing[entry["KV"]["Key"].split('/')[-1]] = entry["KV"]
+
+        put = []
+        for key in set(updates.keys()) & set(existing.keys()):
+            if updates[key] != existing[key]["Value"]:
+                put.append(self._tnx_update(
+                    self.prefix + key, updates[key], existing[key]["ModifyIndex"]))
+
+        for key in set(updates.keys()) - set(existing.keys()):
+            put.append(self._tnx_set(self.prefix + key, updates[key]))
+
+        if 'version' in existing:
+            version = existing['version']["Value"]
+        else:
+            version = 0
+
+        if put:
+            version += 1
+            if 'version' in existing:
+                put.append(self._tnx_update(
+                    self.prefix + "version", version, existing['version']["ModifyIndex"]))
+            else:
+                put.append(self._tnx_set(self.prefix + "version", 1))
+            self._client.txn.put(put)
+
+        return version, bool(put)
 
     def get(self, key, index=False, **kwargs):
         """
