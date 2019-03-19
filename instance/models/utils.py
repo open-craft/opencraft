@@ -552,29 +552,15 @@ class ConsulAgent(object):
     @staticmethod
     def _cast_value(value):
         """
-        Will decode the value to make it a string object, then tries to cast it
-        the proper data-type as we're expecting.
-        Currently supporting the following data-types:
-            * int
-            * float
-            * list
-            * dict
-            * string
-        :param value: The fetched value from Consul to be checked.
+        Will decode the value to make it a string object, then json.loads
+        it. If the json string cannot be decoded for any reason, return the
+        string object.
+
+        :param value: The fetched value from Consul to be converted.
         :return: The casted value if the data-type identified, an str object of
                  the value if not
         """
-        value = value.decode('latin-1') if value else None
-
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            pass
-
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            pass
+        value = value.decode('utf-8') if value else None
 
         try:
             return json.loads(value)
