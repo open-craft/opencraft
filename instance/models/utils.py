@@ -20,10 +20,10 @@
 Models Utils
 """
 
+import base64
 import functools
 import inspect
 import json
-import time
 from weakref import WeakKeyDictionary
 
 from django.conf import settings
@@ -45,14 +45,6 @@ class SteadyStateException(WrongStateException):
     """
     Raised when attempting to wait until object reaches a state that fulfills a certain condition
     but the object's current state is steady, i.e., it is not expected to change.
-    """
-    pass
-
-
-class ConsulLockAcquisitionException(RuntimeError):
-    """
-    Raised when acquiring a Consul lock after continuous tries fails.
-    Should only be raised if not acquiring the lock could cause inconsistencies.
     """
     pass
 
@@ -452,47 +444,91 @@ class ConsulAgent(object):
     possibility to expand it for more advanced queries.
     """
 
-    # We use the `consul lock` CLI to acquire locks on the server side.
-    # Those use a "magic flag" to help indicate conflicts with semaphores.
-    # We want to compete with those locks though, so we use this flag too.
-    # Comes from https://github.com/hashicorp/consul/blob/master/api/lock.go#L35-L38
-    LOCK_MAGIC_FLAG = 0x2ddccbc058a50c18
-
-    def __init__(self, prefix='', lock_wait=100, lock_wait_sleep=1):
+    def __init__(self, prefix=''):
         self._client = consul.Consul()
         self.prefix = prefix
-        self.session_id = None
-        self.lock_wait = lock_wait
-        self.lock_wait_sleep = lock_wait_sleep
 
-    def __enter__(self):
-        # Any `put` operation using a session with "delete" behavior is ephemeral.
-        # So if we create the lock below with this session, when the session is
-        # invalidated (TTL completed, session was destroyed, etc.) the lock key
-        # is also deleted. However there is a default lock delay of 15 seconds, so
-        # new locks have to wait for that timer even if the lock key is physically gone.
-        # See https://www.consul.io/docs/internals/sessions.html for details.
-        self.session_id = self._client.session.create(behavior="delete", ttl=1200)
+    @staticmethod
+    def _tnx_decode(value):
+        "load the json from a txn value"
+        return json.loads(base64.b64decode(value).decode('utf-8'))
 
-        # If someone else is holding this lock, the Consul client just returns False.
-        # We implement a "wait until lock is acquired" scenario here, and bail if
-        # `lock_wait` retries have failed.
-        lock_wait = self.lock_wait
-        while lock_wait > 0 and not self._client.kv.put(
-                "lock/ocim/.lock", "",
-                flags=self.LOCK_MAGIC_FLAG,
-                acquire=self.session_id
-        ):
-            lock_wait -= 1
-            time.sleep(self.lock_wait_sleep)
+    @staticmethod
+    def _tnx_encode(value):
+        "store the value as a json string suitable for a txn"
+        return base64.b64encode(json.dumps(value).encode('utf-8')).decode('ascii')
 
-        if lock_wait == 0:
-            raise ConsulLockAcquisitionException("Failed to acquire Consul lock!")
+    @staticmethod
+    def _tnx_set(key, value):
+        "return a txn KV parameter to set k/v"
+        return {
+            "KV": {
+                "Verb": "set",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+            }
+        }
 
-        return self
+    @staticmethod
+    def _tnx_update(key, value, cas):
+        "return a txn KV parameter to cas k/v"
+        return {
+            "KV": {
+                "Verb": "cas",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+                "Index": cas,
+            }
+        }
 
-    def __exit__(self, *args):
-        self._client.session.destroy(self.session_id)
+    def txn_put(self, updates):
+        """
+        Write updates dictionary as a single transaction
+
+        :param updates: A dict object contains the k/v
+                               to be written on Consul.
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updates.
+        """
+
+        get = [
+            {
+                "KV": {
+                    "Verb": "get-tree",
+                    "Key": self.prefix,
+                },
+            },
+        ]
+        get_result = self._client.txn.put(get)
+        existing = {}
+        for entry in get_result['Results']:
+            entry["KV"]["Value"] = self._tnx_decode(entry["KV"]["Value"])
+            existing[entry["KV"]["Key"].split('/')[-1]] = entry["KV"]
+
+        put = []
+        for key in set(updates.keys()) & set(existing.keys()):
+            if updates[key] != existing[key]["Value"]:
+                put.append(self._tnx_update(
+                    self.prefix + key, updates[key], existing[key]["ModifyIndex"]))
+
+        for key in set(updates.keys()) - set(existing.keys()):
+            put.append(self._tnx_set(self.prefix + key, updates[key]))
+
+        if 'version' in existing:
+            version = existing['version']["Value"]
+        else:
+            version = 0
+
+        if put:
+            version += 1
+            if 'version' in existing:
+                put.append(self._tnx_update(
+                    self.prefix + "version", version, existing['version']["ModifyIndex"]))
+            else:
+                put.append(self._tnx_set(self.prefix + "version", 1))
+            self._client.txn.put(put)
+
+        return version, bool(put)
 
     def get(self, key, index=False, **kwargs):
         """
@@ -552,29 +588,15 @@ class ConsulAgent(object):
     @staticmethod
     def _cast_value(value):
         """
-        Will decode the value to make it a string object, then tries to cast it
-        the proper data-type as we're expecting.
-        Currently supporting the following data-types:
-            * int
-            * float
-            * list
-            * dict
-            * string
-        :param value: The fetched value from Consul to be checked.
+        Will decode the value to make it a string object, then json.loads
+        it. If the json string cannot be decoded for any reason, return the
+        string object.
+
+        :param value: The fetched value from Consul to be converted.
         :return: The casted value if the data-type identified, an str object of
                  the value if not
         """
-        value = value.decode('latin-1') if value else None
-
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            pass
-
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            pass
+        value = value.decode('utf-8') if value else None
 
         try:
             return json.loads(value)
