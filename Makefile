@@ -143,7 +143,7 @@ test.instance_js_web: clean static_external ## Run instance-specific JS tests.
 test.registration_js_web: clean static_external ## Run registration-specific JS tests.
 	cd registration/tests/js && jasmine --host 0.0.0.0
 
-test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
+test: test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
 	@echo "\nAll tests OK!\n"
 
 test.one: clean
