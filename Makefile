@@ -99,7 +99,7 @@ test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
 test.unit: clean static_external ## Run all unit tests.
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*,venv/*' ./manage.py test --noinput
+	honcho -e .env.test run coverage run ./manage.py test --noinput
 	coverage html
 	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
 	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
