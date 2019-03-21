@@ -146,7 +146,7 @@ test.registration_js_web: clean static_external ## Run registration-specific JS 
 test: test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
 	@echo "\nAll tests OK!\n"
 
-test.one: clean
+test.one: clean ## Run one test, for instance: make test.one instance.tests.test_utils
 	honcho -e .env.test run manage.py test $(RUN_ARGS)
 
 # Files #######################################################################
