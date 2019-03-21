@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'foundation',
     'compressor',
     'djng',
+    'easy_thumbnails',
     'rest_framework',
     'huey.contrib.djhuey',
     'swampdragon',
@@ -729,3 +730,6 @@ FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS'
 
 # AWS S3
 S3_VERSION_EXPIRATION = env.json('S3_VERSION_EXPIRATION', default=30)
+
+# Django-Angular
+FORM_RENDERER = 'djng.forms.renderers.DjangoAngularBootstrap3Templates'

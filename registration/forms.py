@@ -33,7 +33,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.utils.text import capfirst
 from django.template.loader import get_template
-from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
+from djng.forms import fields, NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
@@ -130,13 +130,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'favicon',
     }
 
-    full_name = forms.CharField(
+    full_name = fields.CharField(
         max_length=255,
         widget=TextInput,
         label='Your full name',
         help_text='Example: Albus Dumbledore',
     )
-    username = forms.RegexField(
+    username = fields.RegexField(
         regex=r'^[\w.+-]+$',
         max_length=30,
         widget=TextInput,
@@ -148,27 +148,27 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'unique': 'This username is already taken.',
         },
     )
-    email = forms.EmailField(
+    email = fields.EmailField(
         widget=EmailInput,
         help_text=('This is also your account name, and where we will send '
                    'important notices.'),
     )
-    password_strength = forms.IntegerField(
+    password_strength = fields.IntegerField(
         widget=forms.HiddenInput,
     )
-    password = forms.CharField(
+    password = fields.CharField(
         strip=False,
         widget=PasswordInput,
         help_text=('Pick a password for your OpenCraft account. You will be '
                    'able to use it to login and access your account.'),
     )
-    password_confirmation = forms.CharField(
+    password_confirmation = fields.CharField(
         strip=False,
         widget=PasswordInput,
         help_text=('Please use a strong password: avoid common patterns and '
                    'make it long enough to be difficult to crack.'),
     )
-    accept_terms = forms.BooleanField(
+    accept_terms = fields.BooleanField(
         required=True,
         help_text=('I accept that this is a free trial, '
                    'and that the instance is provided without any guarantee.'),
@@ -184,7 +184,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     _subdomain_field = Meta.model._meta.get_field('subdomain')
     _subdomain_validator = next(v for v in _subdomain_field.validators
                                 if hasattr(v, 'regex'))
-    subdomain = forms.RegexField(
+    subdomain = fields.RegexField(
         regex=_subdomain_validator.regex,
         max_length=_subdomain_field.max_length,
         label=capfirst(_subdomain_field.verbose_name),
@@ -429,12 +429,12 @@ class LoginForm(NgFormValidationMixin, AuthenticationForm,
     """
     Allows users to login with username/email and password.
     """
-    username = forms.CharField(
+    username = fields.CharField(
         label='Your email or username',
         help_text='You can enter either your username or your email to login.',
         widget=TextInput,
     )
-    password = forms.CharField(
+    password = fields.CharField(
         help_text=('If you have forgotten your login details or need to reset '
                    'your password, please '
                    '<a href="mailto:contact@opencraft.com">contact us</a>.'),
