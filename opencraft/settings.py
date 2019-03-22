@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -729,3 +729,6 @@ FILEBEAT_COMMON_PROSPECTOR_FIELDS = env.json('FILEBEAT_COMMON_PROSPECTOR_FIELDS'
 
 # AWS S3
 S3_VERSION_EXPIRATION = env.json('S3_VERSION_EXPIRATION', default=30)
+
+# Default Privacy Policy URL
+DEFAULT_PRIVACY_POLICY_URL = env('DEFAULT_PRIVACY_POLICY_URL', default='')

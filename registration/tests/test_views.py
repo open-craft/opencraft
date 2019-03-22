@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -71,6 +71,7 @@ class BetaTestApplicationViewTestMixin:
             'link_color': '#001122',
             'header_bg_color': '#ffffff',
             'footer_bg_color': '#ffffff',
+            'privacy_policy_url': 'http://example.com/privacy',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -380,7 +381,10 @@ class BetaTestApplicationViewTestMixin:
             'password_confirmation': ["The two password fields didn't match."],
         })
 
-    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
+    @override_settings(
+        VARIABLES_NOTIFICATION_EMAIL=None,
+        DEFAULT_PRIVACY_POLICY_URL='http://example.com/privacy'
+    )
     def test_existing_user(self):
         """
         Logged in user already exists but has not registered.

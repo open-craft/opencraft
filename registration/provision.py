@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -72,6 +72,7 @@ def _provision_instance(sender, **kwargs):
             sub_domain=application.subdomain,
             name=application.instance_name,
             email=application.public_contact_email,
+            privacy_policy_url=application.privacy_policy_url,
             deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)

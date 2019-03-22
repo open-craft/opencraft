@@ -177,6 +177,11 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             ],
             # EDXAPP_DEFAULT_SITE_THEME is set by OpenEdXThemeMixin when required
 
+            # Custom Privacy Policy
+            "EDXAPP_MKTG_URLS": {
+                "PRIVACY": self.privacy_policy_url,
+            },
+
             # Misc
             "EDXAPP_LANG": 'en_US.UTF-8',
             "EDXAPP_TIME_ZONE": 'UTC',
@@ -211,6 +216,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
                 "ENABLE_ACCOUNT_DELETION": True,
+                "ENABLE_MKTG_SITE": True,
                 # These are not part of the standard install:
                 # "CUSTOM_COURSES_EDX": True,
                 # "ENABLE_LTI_PROVIDER": True,

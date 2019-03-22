@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -66,6 +66,11 @@ class OpenEdXAppConfiguration(models.Model):
         'The default contact email for this instance; also used as the from address for emails '
         'sent by the server.'
     ))
+    privacy_policy_url = models.URLField(
+        verbose_name='URL to Privacy Policy',
+        help_text=('URL to the privacy policy.'),
+        blank=True,
+    )
 
     openedx_release = models.CharField(
         max_length=128,

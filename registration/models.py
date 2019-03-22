@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -132,6 +132,11 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         verbose_name='your project',
         help_text=('What are you going to use the instance for? What are '
                    'your expectations?'),
+        blank=True, default=''
+    )
+    privacy_policy_url = models.URLField(
+        verbose_name='URL to Privacy Policy',
+        help_text=('URL to the privacy policy.'),
         blank=True, default=''
     )
 
