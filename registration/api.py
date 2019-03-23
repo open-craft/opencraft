@@ -38,13 +38,13 @@ class BetaTestApplicationViewSet(BetaTestApplicationMixin, ViewSet):
     """
     permission_classes = (AllowAny,)
 
-    def list(self, request):
+    def create(self, request):
         """
         Validate the given form input, and return any errors as json.
 
         Not really a list view, but we have to use `list` to fit into ViewSet
         semantics so this can be part of the browsable api.
         """
-        form = BetaTestApplicationForm(request.query_params,
+        form = BetaTestApplicationForm(request.data,
                                        instance=self.get_object())
         return Response(form.errors)
