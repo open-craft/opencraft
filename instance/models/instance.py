@@ -157,11 +157,6 @@ class Instance(ValidateModelMixin, models.Model):
         blank=True,
         help_text='Custom tags associated with the instance.',
     )
-    accepted_privacy_policy = models.DateTimeField(
-        blank=True,
-        null=True,
-        help_text='Date the privacy policy was accepted.',
-    )
 
     class Meta:
         abstract = True
