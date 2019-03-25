@@ -36,6 +36,7 @@ class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docst
     search_fields = ('user__username', 'subdomain', 'instance_name',
                      'public_contact_email')
     date_hierarchy = 'created'
+    readonly_fields = ('accepted_privacy_policy',)
 
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)
