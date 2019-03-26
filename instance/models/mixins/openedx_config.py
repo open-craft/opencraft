@@ -208,6 +208,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
                 "ENABLE_ACCOUNT_DELETION": True,
+                # Disable the unified login from Studio
+                # Since Ironwood, the Studio login changed from a separate login
+                # to using LMS as a SSO provider. This flag disables that behaviour.
+                "DISABLE_STUDIO_SSO_OVER_LMS": True,
                 # These are not part of the standard install:
                 # "CUSTOM_COURSES_EDX": True,
                 # "ENABLE_LTI_PROVIDER": True,
@@ -356,11 +360,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "FUNCTION": "retirement_lms_retire",
                 },
             ],
-
-            # Disable the unified login from Studio
-            # Since Ironwood, the Studio login changed from a separate login
-            # to using LMS as a SSO provider. This flag disables that behaviour.
-            "DISABLE_STUDIO_SSO_OVER_LMS": True,
         }
 
         if self.smtp_relay_settings:
