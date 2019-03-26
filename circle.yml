@@ -87,6 +87,23 @@ jobs:
           no_output_timeout: 47m
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
+      - persist_to_workspace:
+          root: /tmp/coverage
+          path: .coverage.*
+  coverage:
+    docker:
+      - image: circleci/python:3.5.4
+    steps:
+      - checkout
+      - run:
+          name: Collect coverage files from the build and display the report
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install coverage
+            cp /tmp/coverage/.coverage.* .
+            make coverage.combine coverage.report coverage.threshold
+
   cleanup:
     docker:
       - image: circleci/python:3.5.4

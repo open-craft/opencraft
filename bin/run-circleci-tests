@@ -6,9 +6,10 @@ make install_system_dependencies
 
 case $CIRCLE_NODE_INDEX in
     0)
-        make test
+        make test.one registration.tests.test_views.BetaTestAjaxValidationTestCase
+        : make test.quality test.unit test.migrations_missing test.js test.browser test.integration
         ;;
     *)
-        make test.integration
+        : make test.integration
         ;;
 esac

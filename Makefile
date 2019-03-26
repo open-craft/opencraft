@@ -98,26 +98,23 @@ upgrade_dependencies:
 test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
-test.unit: clean static_external ## Run all unit tests.
-	honcho -e .env.test run coverage run ./manage.py test --noinput
-	coverage html
-	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
-	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
+test.unit: clean static_external  ## Run all unit tests.
+	honcho -e .env.test run coverage run --parallel-mode ./manage.py test --noinput
 
 test.migrations_missing: clean ## Check if migrations are missing.
 	@honcho -e .env.test run python3 manage.py makemigrations --dry-run --check
 
 test.browser: clean static_external ## Run browser-specific tests.
 	@echo -e "\nRunning browser tests..."
-	xvfb-run --auto-servernum honcho -e .env.test run python3 manage.py test --pattern=browser_*.py --noinput
+	xvfb-run --auto-servernum honcho -e .env.test run coverage run --parallel-mode manage.py test --pattern=browser_*.py --noinput
 
 test.integration: clean ## Run integration tests.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."
-	honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput
+	honcho -e .env.integration run coverage run --parallel-mode manage.py test --pattern=integration_*.py --noinput
 else ifdef OPENSTACK_USER
 	echo -e "\nRunning integration tests with credentials from environment variables..."
-	./manage.py test --pattern=integration_*.py --noinput
+	coverage run --parallel-mode manage.py test --pattern=integration_*.py --noinput
 else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
 endif
@@ -143,11 +140,27 @@ test.instance_js_web: clean static_external ## Run instance-specific JS tests.
 test.registration_js_web: clean static_external ## Run registration-specific JS tests.
 	cd registration/tests/js && jasmine --host 0.0.0.0
 
-test: test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
-	@echo "\nAll tests OK!\n"
+test: coverage.erase test.quality test.unit test.migrations_missing test.js test.browser test.integration coverage.combine coverage.threshold coverage.html ## Run all tests.
 
 test.one: clean ## Run one test, for instance: make test.one instance.tests.test_utils
-	honcho -e .env.test run manage.py test $(RUN_ARGS)
+	honcho -e .env.test run coverage run --parallel-mode manage.py test $(RUN_ARGS)
+
+coverage.combine:
+	@coverage combine
+
+coverage.erase:
+	@coverage erase
+
+coverage.report:
+	@coverage report --show-missing
+
+coverage.html:
+	@coverage html
+	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
+
+coverage.threshold:
+	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
+	@echo "\nAll tests OK!\n"
 
 # Files #######################################################################
 
