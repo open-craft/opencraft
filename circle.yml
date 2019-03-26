@@ -2,14 +2,14 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.5.4-browsers
+      - image: ubuntu:xenial
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
       - image: redis
-      - image: mongo:3.2-jessie
+      - image: mongo:3.6.7-stretch
       - image: "circleci/mysql:5"
         environment:
           MYSQL_ALLOW_EMPTY_PASSWORD: True
@@ -23,6 +23,10 @@ jobs:
       - checkout
       - restore_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: apt-get update
+          command: |
+            apt-get update
       - run:
           name: Wait for Redis
           command: |
@@ -50,21 +54,31 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
+             apt-get install make git python-virtualenv gcc python-dev libxml2-dev libxmlsec1-dev wget
+             apt-get install xvfb
+             apt-get install libgtk-3-0 libdbus-glib-1-2
+            wget https://github.com/mozilla/geckodriver/releases/download/v0.15.0/geckodriver-v0.15.0-linux64.tar.gz
+            mkdir geckodriver
+            tar -xf geckodriver-v0.15.0-linux64.tar.gz -C geckodriver
+            export PATH=$PATH:$(pwd)/geckodriver
+            wget https://ftp.mozilla.org/pub/firefox/releases/52.0.1esr/linux-x86_64/en-US/firefox-52.0.1esr.tar.bz2
+            tar -xf firefox-52.0.1esr.tar.bz2
+            export PATH=$PATH:$(pwd)/firefox
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
             pip install --upgrade virtualenv
-            sudo apt-get update; sudo apt-get install python2.7-dev
-            sudo apt-get install mysql-client
+             apt-get update;  apt-get install python2.7-dev
+             apt-get install mysql-client
             pip install -r requirements.txt
             pip install -r cleanup_utils/requirements.txt
-            sudo apt-get install postgresql-client
-            sudo apt-get install unzip
-            sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+             apt-get install postgresql-client
+             apt-get install unzip
+             wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
       - run:
           name: Run Consul
           command: |
-            sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
+             unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
             consul agent -dev
           background: true
       - save_cache:
@@ -97,7 +111,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            sudo apt-get install libpython2.7-dev
+             apt-get install libpython2.7-dev
             pip install -r cleanup_utils/requirements.txt
       - run:
           name: Cleanup
