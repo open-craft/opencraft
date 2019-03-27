@@ -54,6 +54,11 @@ jobs:
             . venv/bin/activate
             pip install --upgrade pip
             pip install --upgrade virtualenv
+            # The jessie-updates and jessie-backports areas are now removed from the repositories. So
+            # the lines corresponding to those areas have to be removed to fix the resulting errors.
+            # This can be removed after upgrading to the image based on Debian Stretch.
+            sudo sed -i '/jessie-updates/d' /etc/apt/sources.list
+            sudo sed -i '/jessie-backports/d' /etc/apt/sources.list
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
             pip install -r requirements.txt
