@@ -33,7 +33,11 @@ class BetaTestApplicationTestCase(TestCase):
     Tests for beta test applications.
     """
 
-    def test_update_existing_with_no_privacy_acceptance(self):
+    def test_update_existing_no_privacy_acceptance(self):
+        """
+        Ensure that we can update an existing application without it having
+        accepted the privacy policy.
+        """
         application = BetaTestApplication.objects.create(
             subdomain='test',
             instance_name='I did not accept',
