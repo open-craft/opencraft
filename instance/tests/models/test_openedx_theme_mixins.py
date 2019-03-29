@@ -22,10 +22,9 @@ OpenEdXInstance Theme Mixins - Tests
 
 # Imports #####################################################################
 import ddt
-from freezegun import freeze_time
-from pytz import utc
 import yaml
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
@@ -44,7 +43,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
     """
 
     @staticmethod
-    def make_test_application(instance, user, frozen_time):
+    def make_test_application(instance, user):
         """
         Creates BetaTestApplication with test data and sample colors.
         """
@@ -61,7 +60,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
             footer_bg_color='#ffff11',
             logo='opencraft_logo_small.png',
             favicon='favicon.ico',
-            accepted_privacy_policy=frozen_time
+            accepted_privacy_policy=timezone.now(),
         )
         return application
 
@@ -74,10 +73,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
         OpenEdXInstanceFactory(name='Integration - test_colors_applied', deploy_simpletheme=True)
         instance = OpenEdXInstance.objects.get()
         user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
-        with freeze_time('2019-01-02 09:30:00') as frozen_time:
-            accepted_time = utc.localize(frozen_time())
-            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S')
-            self.make_test_application(instance, user, accepted_time)
+        self.make_test_application(instance, user)
         appserver = make_test_appserver(instance)
 
         # Test the results
@@ -136,10 +132,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
         OpenEdXInstanceFactory(name='Integration - test_simpletheme_optout', deploy_simpletheme=False)
         instance = OpenEdXInstance.objects.get()
         user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
-        with freeze_time('2019-01-02 09:30:00') as frozen_time:
-            accepted_time = utc.localize(frozen_time())
-            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S')
-            self.make_test_application(instance, user, accepted_time)
+        self.make_test_application(instance, user)
         appserver = make_test_appserver(instance)
 
         # Test the results

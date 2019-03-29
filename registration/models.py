@@ -208,10 +208,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         verbose_name='Accept privacy policy',
         blank=False,
         null=True,
-        help_text=('I accept the privacy policy.'),
-        error_messages={
-            'required': 'You must accept the privacy policy to register.',
-        },
+        help_text=('Date the user accepted the privacy policy.'),
     )
     subscribe_to_updates = models.BooleanField(
         default=False,
