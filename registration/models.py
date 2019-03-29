@@ -206,7 +206,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
     accepted_privacy_policy = models.DateTimeField(
         verbose_name='Accept privacy policy',
-        blank=False,
+        blank=True,
         null=True,
         help_text=('Date the user accepted the privacy policy.'),
     )
