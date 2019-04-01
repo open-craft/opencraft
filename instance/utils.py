@@ -117,7 +117,7 @@ def poll_streams(*files, line_timeout=None, global_timeout=None):
         available = selector.select(next(timeout))
         if not available:
             # TODO(smarnach): This can also mean that the process received a signal.
-            raise TimeoutError
+            raise TimeoutError('Could not read line before timeout: {timeout}'.format(timeout=timeout))
         for key, unused_mask in available:
             line = key.fileobj.readline()
             if line:
