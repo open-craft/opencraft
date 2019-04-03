@@ -246,6 +246,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 for name, field in self.fields.items():
                     if name not in self.can_be_modified:
                         field.widget.attrs['readonly'] = True
+            else:
+                self.initial['privacy_policy_url'] = settings.DEFAULT_PRIVACY_POLICY_URL
 
     def clean_subdomain(self):
         """
@@ -327,6 +329,18 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 code='password_mismatch',
             )
         return password
+
+    def clean_privacy_policy_url(self):
+        """
+        Privacy Policy URL cannot be empty for new applications.
+        """
+        privacy_policy_url = self.cleaned_data.get('privacy_policy_url')
+        if not self.instance.pk and not privacy_policy_url:
+            raise forms.ValidationError(
+                "New applications must specify a privacy policy URL.",
+                code='invalid',
+            )
+        return privacy_policy_url
 
     def clean(self):
         """
