@@ -219,7 +219,6 @@ class BetaTestApplicationViewTestMixin:
         self.assertEqual(BetaTestApplication.objects.count(), original_count)
         self.assertEqual(len(mail.outbox), 0)
 
-
     def test_valid_application(self):
         """
         Test a valid beta test application.
