@@ -196,15 +196,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.studio_url, 'https://{}/'.format(external_studio_domain))
         self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
 
+    @ddt.data('http://example.com/default-test-spawn-privacy', '')
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver_without_privacy_policy(self, mocks, mock_provision):
+    def test_spawn_appserver(self, mocks, privacy_policy_url, mock_provision):
         """
         Run spawn_appserver() sequence
         """
-        with override_settings(DEFAULT_PRIVACY_POLICY_URL=''):
-            instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
-
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.spawn',
+            privacy_policy_url=privacy_policy_url,
+        )
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mock_provision.call_count, 1)
 
@@ -246,64 +248,15 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
-        self.assertNotIn('EDXAPP_MKTG_URLS', configuration_vars)
-        self.assertNotIn('ENABLE_MKTG_SITE', configuration_vars['EDXAPP_FEATURES'])
-
-    @patch_services
-    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver(self, mocks, mock_provision):
-        """
-        Run spawn_appserver() sequence
-        """
-        with override_settings(DEFAULT_PRIVACY_POLICY_URL='http://example.com/default-test-spawn-privacy'):
-            instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
-
-        appserver_id = instance.spawn_appserver()
-        self.assertEqual(mock_provision.call_count, 1)
-
-        self.assertIsNotNone(appserver_id)
-        self.assertEqual(instance.appserver_set.count(), 1)
-        self.assertFalse(instance.get_active_appservers().exists())
-
-        # Make sure databases were provisioned:
-        self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
-        self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
-        self.assertEqual(mocks.mock_provision_swift.call_count, 1)
-
-        lb_domain = instance.load_balancing_server.domain + '.'
-        dns_records = gandi.api.client.list_records('example.com')
-        self.assertCountEqual(dns_records, [
-            dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='preview.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='studio.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='ecommerce.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-            dict(name='discovery.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
-        ])
-
-        appserver = instance.appserver_set.get(pk=appserver_id)
-        self.assertEqual(appserver.name, "AppServer 1")
-        self.assertEqual(appserver.instance, instance)
-        for field_name in OpenEdXAppConfiguration.get_config_fields():
-            self.assertEqual(
-                getattr(instance, field_name),
-                getattr(appserver, field_name),
-            )
-        storage_settings = {
-            'EDXAPP_DEFAULT_FILE_STORAGE: swift.storage.SwiftStorage',
-            'EDXAPP_GRADE_STORAGE_CLASS: swift.storage.SwiftStorage',
-            'VHOST_NAME: openstack',
-            'XQUEUE_SETTINGS: openstack_settings'
-        }
-        self.assertTrue(storage_settings <= set(appserver.configuration_storage_settings.split('\n')))
-        configuration_vars = yaml.load(appserver.configuration_settings)
-        self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
-        self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
-        self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
-        self.assertEqual(configuration_vars['EDXAPP_MKTG_URLS'], {
-            'ROOT': 'http://example.com',
-            'PRIVACY': 'http://example.com/default-test-spawn-privacy',
-        })
-        self.assertTrue(configuration_vars['EDXAPP_FEATURES']['ENABLE_MKTG_SITE'])
+        if privacy_policy_url:
+            self.assertEqual(configuration_vars['EDXAPP_MKTG_URLS'], {
+                'ROOT': 'http://example.com',
+                'PRIVACY': 'http://example.com/default-test-spawn-privacy',
+            })
+            self.assertTrue(configuration_vars['EDXAPP_FEATURES']['ENABLE_MKTG_SITE'])
+        else:
+            self.assertNotIn('EDXAPP_MKTG_URLS', configuration_vars)
+            self.assertNotIn('ENABLE_MKTG_SITE', configuration_vars['EDXAPP_FEATURES'])
 
     @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
     @patch_services
