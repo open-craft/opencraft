@@ -431,7 +431,7 @@ class BetaTestApplicationViewTestMixin:
         specified.
         """
         form_data = self.form_data.copy()
-        del form_data['privacy_policy_url']
+        form_data['privacy_policy_url'] = ''
         self._assert_registration_fails(form_data)
 
     def _get_response_body(self, url):
