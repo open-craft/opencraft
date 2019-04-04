@@ -427,12 +427,12 @@ class BetaTestApplicationViewTestMixin:
     )
     def test_no_privacy_url_specified(self):
         """
-        Ensure that new registrations fail when no privacy policy URL is
+        Ensure that new registrations succeed when no privacy policy URL is
         specified.
         """
         form_data = self.form_data.copy()
         form_data['privacy_policy_url'] = ''
-        self._assert_registration_fails(form_data)
+        self._assert_registration_succeeds(form_data)
 
     def _get_response_body(self, url):
         """
@@ -598,15 +598,15 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         """
         self._register(self.form_data)
         application = BetaTestApplication.objects.get()
-        application.privacy_policy_url = None
+        application.privacy_policy_url = ''
         application.save()
         application.refresh_from_db()
-        assert application.privacy_policy_url is None
+        assert application.privacy_policy_url == ''
         modified = self.form_data.copy()
         modified.update({
             'header_bg_color': '#fefefe',
         })
-        del modified['privacy_policy_url']
+        modified['privacy_policy_url'] = ''
         self._register(modified)
         application.refresh_from_db()
         self.assertEqual(application.header_bg_color, '#fefefe')

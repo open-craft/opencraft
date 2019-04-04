@@ -70,6 +70,7 @@ class OpenEdXAppConfiguration(models.Model):
         verbose_name='URL to Privacy Policy',
         help_text=('URL to the privacy policy.'),
         blank=True,
+        default='',
     )
 
     openedx_release = models.CharField(

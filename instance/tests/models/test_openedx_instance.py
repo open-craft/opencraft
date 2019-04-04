@@ -91,9 +91,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertTrue(instance.rabbitmq_vhost)
         self.assertTrue(instance.rabbitmq_consumer_user)
         self.assertTrue(instance.rabbitmq_provider_user)
-        self.assertEqual(instance.privacy_policy_url, settings.DEFAULT_PRIVACY_POLICY_URL)
 
-    @override_settings(DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/default-privacy')
     def test_create_defaults(self):
         """
         Create an instance without specifying additional fields,

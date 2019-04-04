@@ -115,8 +115,6 @@ class OpenEdXInstance(
         # based on the openedx release
         if not self.configuration_playbook_name:
             self.configuration_playbook_name = get_base_playbook_name(self.openedx_release)
-        if not self.privacy_policy_url and not self.pk:
-            self.privacy_policy_url = settings.DEFAULT_PRIVACY_POLICY_URL
 
         super().save(**kwargs)
         self.update_consul_metadata()
