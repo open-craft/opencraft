@@ -460,7 +460,7 @@ class ConsulAgent(object):
 
     @staticmethod
     def _tnx_set(key, value):
-        "return a txn KV parameter to set k/v"
+        "return a txn KV parameter to set k/v -- this is for new keys"
         return {
             "KV": {
                 "Verb": "set",
@@ -471,7 +471,7 @@ class ConsulAgent(object):
 
     @staticmethod
     def _tnx_update(key, value, cas):
-        "return a txn KV parameter to cas k/v"
+        "return a txn KV parameter to cas k/v -- this is for existing keys"
         return {
             "KV": {
                 "Verb": "cas",
@@ -483,15 +483,17 @@ class ConsulAgent(object):
 
     def txn_put(self, updates):
         """
-        Write updates dictionary as a single transaction
+        Write dictionary to Consul as a single transaction
 
         :param updates: A dict object contains the k/v
                                to be written on Consul.
         :return: A pair (version, changed) with the current version number and
-                 a bool to indicate whether the information was updates.
+                 a bool to indicate whether the information was updated.
         """
 
-        get = [
+        # contact Consul & get the key-value tree located at `self.prefix`
+        # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
+        request = [
             {
                 "KV": {
                     "Verb": "get-tree",
@@ -499,26 +501,36 @@ class ConsulAgent(object):
                 },
             },
         ]
-        get_result = self._client.txn.put(get)
+        result = self._client.txn.put(request)
+
+        # store a dictionary of existing values, decoded from JSON
+        # e.g. ocim/instances/387/domain_slug:edxins-sajosuebcstag-387 ->
+        #   existing = {'domain_slug': {'Key':'ocim/instances/387/domain_slug',
+        #                               'Value':'edxins-sajosuebcstag-387'} }
         existing = {}
-        for entry in get_result['Results']:
+        for entry in result['Results']:
             entry["KV"]["Value"] = self._tnx_decode(entry["KV"]["Value"])
             existing[entry["KV"]["Key"].split('/')[-1]] = entry["KV"]
 
+        # store existing keys which will be updated
+        # as a list of dictionaries containing JSON encoded values
         put = []
         for key in set(updates.keys()) & set(existing.keys()):
             if updates[key] != existing[key]["Value"]:
                 put.append(self._tnx_update(
                     self.prefix + key, updates[key], existing[key]["ModifyIndex"]))
 
+        # store all new keys in the list
         for key in set(updates.keys()) - set(existing.keys()):
             put.append(self._tnx_set(self.prefix + key, updates[key]))
 
+        # get or create the version number
         if 'version' in existing:
             version = existing['version']["Value"]
         else:
             version = 0
 
+        # increment the version number and use `txn` to update inside a transaction
         if put:
             version += 1
             if 'version' in existing:
