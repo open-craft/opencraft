@@ -119,12 +119,21 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         """
         Get or create an instance for the given pull request
         """
-        watched_pr, created = self.get_or_create(
-            fork_name=pr.fork_name,
-            branch_name=pr.branch_name,
-            github_pr_url=pr.github_pr_url,
-            watched_fork=watched_fork,
-        )
+        created = False
+        try:
+            watched_pr = WatchedPullRequest.objects.get(fork_name=pr.fork_name,
+                                                        branch_name=pr.branch_name,
+                                                        github_pr_url=pr.github_pr_url,
+                                                        watched_fork=watched_fork)
+
+        except WatchedPullRequest.DoesNotExist:
+            watched_pr = self.create(fork_name=pr.fork_name,
+                                     branch_name=pr.branch_name,
+                                     github_pr_url=pr.github_pr_url,
+                                     watched_fork=watched_fork)
+            watched_pr.save()
+            created = True
+
         if created:
             watched_pr.update_instance_from_pr(pr)
 

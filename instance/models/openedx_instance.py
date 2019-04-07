@@ -69,6 +69,11 @@ class OpenEdXInstance(
 
     successfully_provisioned = models.BooleanField(default=False)
 
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        self.random_prefix = kwargs.pop('random_prefix', None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Open edX Instance'
 
@@ -115,6 +120,9 @@ class OpenEdXInstance(
         # based on the openedx release
         if not self.configuration_playbook_name:
             self.configuration_playbook_name = get_base_playbook_name(self.openedx_release)
+
+        if self.random_prefix is not None:
+            self.mysql_user = self.random_prefix
 
         super().save(**kwargs)
         self.update_consul_metadata()

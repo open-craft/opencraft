@@ -235,7 +235,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         # The logo is found in a line like this in the HTML:
         #       <img src="/static/simple-theme/images/logo.82fb8d18479f.png" alt="danieltest1b Home Page"/>
-        logo_extractor = re.search(r'<img src="(/static/simple-theme/images/logo.[a-z0-9]+\.png)" ',
+        logo_extractor = re.search(r'<img\s+class="logo"\s+src="(/static/simple-theme/images/logo.[a-z0-9]+\.png)"',
                                    server_html)
         self.assertTrue(logo_extractor)
         logo_url = logo_extractor.group(1)
