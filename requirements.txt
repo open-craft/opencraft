@@ -147,7 +147,7 @@ sockjs-tornado==1.0.3
 sqlparse==0.2.2
 static3==0.7.0
 stevedore==1.18.0
--e git+https://github.com/jonashagstedt/swampdragon.git@ef8dedd191b7b3a7a11d49f5190699ed0b00bcb2#egg=SwampDragon
+-e git+https://github.com/lepri/swampdragon.git@febe814336dfee346802a3d73f79de8d394ad5d1#egg=SwampDragon
 testfixtures==5.2.0
 tlslite==0.4.9
 tornado==4.4.2
