@@ -183,6 +183,38 @@
                     padding-left: 2.33rem;
                 }
             }
+
+            &__appendix-header
+            {
+                &::before
+                {
+                    counter-increment: appendix-header;
+                    content: "Appendix " counter(appendix-header) ": ";
+                }
+            }
+
+            &__numbered-item
+            {
+                &::before
+                {
+                    counter-increment: numbered-item;
+                    content: counters(numbered-item, ".") " ";
+                }
+            }
+
+            &__appendix-numbered-item
+            {
+                &::before
+                {
+                    counter-increment: appendix-numbered-item;
+                    content: counters(appendix-numbered-item, ".") ". ";
+                }
+            }
+
+            &__appendix-list
+            {
+                list-style-type: disc;
+            }
         }
     }
 }
