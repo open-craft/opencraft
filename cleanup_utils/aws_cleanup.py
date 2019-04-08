@@ -193,52 +193,57 @@ class AwsCleanupInstance:
             if 'integration' not in user['UserName']:
                 logger.info("  > Skipping user %s as it's not related to integration...", user['UserName'])
                 continue
+            try:
+                self.cleanup_user(user)
+            except Exception as e:
+                logger.exception('*** Failed to cleanup "%s".', user['UserName'], e)
 
-            old_keys = self.get_iam_user_old_access_keys(
-                username=user['UserName']
-            )
-            # If the user has any old keys, proceed with deletion
-            if old_keys:
-                user_policy = self.get_user_policy(user['UserName'])
-                # If user policy exists
-                if user_policy:
-                    buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
-                    logger.info("  > Cleaning up stuff from user %s.", user['UserName'])
+    def cleanup_user(self, user):
+        old_keys = self.get_iam_user_old_access_keys(
+            username=user['UserName']
+        )
+        # If the user has any old keys, proceed with deletion
+        if old_keys:
+            user_policy = self.get_user_policy(user['UserName'])
+            # If user policy exists
+            if user_policy:
+                buckets_to_delete = self.get_bucket_names_from_policy(user_policy)
+                logger.info("  > Cleaning up stuff from user %s.", user['UserName'])
 
-                    # Delete buckets, user policy, access keys and the iam user
-                    for bucket_name in buckets_to_delete:
-                        logger.info("    * Deleting bucket %s.", bucket_name)
-                        self.delete_bucket(bucket_name)
+                # Delete buckets, user policy, access keys and the iam user
+                for bucket_name in buckets_to_delete:
+                    logger.info("    * Deleting bucket %s.", bucket_name)
+                    self.delete_bucket(bucket_name)
 
-                    logger.info(
-                        "    * Deleting policy %s from user %s.",
-                        DEFAULT_POLICY_NAME,
-                        user['UserName']
-                    )
-                    self.delete_user_policy(user['UserName'], DEFAULT_POLICY_NAME)
-                else:
-                    logger.warning(
-                        "    * WARNING: The user %s doesn't have %s policy. Skipping bucket and policy deletion...",
-                        user['UserName'],
-                        DEFAULT_POLICY_NAME
-                    )
-
-                for access_key in old_keys:
-                    logger.info(
-                        "    * Deleting access key %s  from user %s.",
-                        access_key['AccessKeyId'],
-                        user['UserName']
-                    )
-                    self.delete_user_access_key(
-                        username=user['UserName'],
-                        access_key=access_key
-                    )
-
-                logger.info("    * Deleting user %s.", user['UserName'])
-                self.delete_user(username=user['UserName'])
-
-                # Saves hashes from user name
-                # ocim-HASH_integration_plebia_net.
-                self.cleaned_up_hashes.append(
-                    user['UserName'].split('_')[0][5:]
+                logger.info(
+                    "    * Deleting policy %s from user %s.",
+                    DEFAULT_POLICY_NAME,
+                    user['UserName']
                 )
+                self.delete_user_policy(user['UserName'], DEFAULT_POLICY_NAME)
+            else:
+                logger.warning(
+                    "    * WARNING: The user %s doesn't have %s policy. Skipping bucket and policy deletion...",
+                    user['UserName'],
+                    DEFAULT_POLICY_NAME
+                )
+
+            for access_key in old_keys:
+                logger.info(
+                    "    * Deleting access key %s  from user %s.",
+                    access_key['AccessKeyId'],
+                    user['UserName']
+                )
+                self.delete_user_access_key(
+                    username=user['UserName'],
+                    access_key=access_key
+                )
+
+            logger.info("    * Deleting user %s.", user['UserName'])
+            self.delete_user(username=user['UserName'])
+
+            # Saves hashes from user name
+            # ocim-HASH_integration_plebia_net.
+            self.cleaned_up_hashes.append(
+                user['UserName'].split('_')[0][5:]
+            )
