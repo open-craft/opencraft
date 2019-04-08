@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,6 +36,11 @@ class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docst
     search_fields = ('user__username', 'subdomain', 'instance_name',
                      'public_contact_email')
     date_hierarchy = 'created'
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.accepted_privacy_policy:
+            return ('accepted_privacy_policy',)
+        return super(BetaTestApplicationAdmin, self).get_readonly_fields(request, obj)
 
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)

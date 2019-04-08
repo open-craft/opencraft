@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,6 +24,7 @@ OpenEdXInstance Theme Mixins - Tests
 import ddt
 import yaml
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
@@ -59,6 +60,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
             footer_bg_color='#ffff11',
             logo='opencraft_logo_small.png',
             favicon='favicon.ico',
+            accepted_privacy_policy=timezone.now(),
         )
         return application
 

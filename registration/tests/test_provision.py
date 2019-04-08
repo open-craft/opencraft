@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +26,8 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from freezegun import freeze_time
+from pytz import utc
 from simple_email_confirmation.models import EmailAddress
 
 from registration.models import BetaTestApplication
@@ -39,13 +41,17 @@ class ApprovalTestCase(TestCase):
     def test_provision_instance(self):
         """Test that an instance gets correctly provisioned when the email addresses are confirmed."""
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
-        application = BetaTestApplication.objects.create(
-            user=user,
-            subdomain='test',
-            instance_name='Test instance',
-            project_description='Test instance creation.',
-            public_contact_email=user.email,
-        )
+        with freeze_time('2019-01-02 09:30:00') as frozen_time:
+            accepted_time = utc.localize(frozen_time())
+            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S')
+            application = BetaTestApplication.objects.create(
+                user=user,
+                subdomain='test',
+                instance_name='Test instance',
+                project_description='Test instance creation.',
+                public_contact_email=user.email,
+                accepted_privacy_policy=accepted_time
+            )
         EmailAddress.objects.create_unconfirmed(user.email, user)
         with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver:
             # Confirm email address.  This triggers provisioning the instance.

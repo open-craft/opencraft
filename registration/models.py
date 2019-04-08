@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -204,6 +204,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='opencraft_favicon.ico',
     )
 
+    accepted_privacy_policy = models.DateTimeField(
+        verbose_name='Accept privacy policy',
+        blank=True,
+        null=True,
+        help_text=('Date the user accepted the privacy policy.'),
+    )
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about important news, '

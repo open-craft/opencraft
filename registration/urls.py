@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2018 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,6 +24,7 @@ URL Patterns for the `registration` app
 
 from django.conf.urls import url
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
 
 from registration.forms import LoginForm
 from registration.views import BetaTestApplicationView
@@ -36,4 +37,6 @@ urlpatterns = [
     url(r'^$', BetaTestApplicationView.as_view(), name='register'),
     url(r'^login/$', auth_views.login, {'authentication_form': LoginForm}, name='login'),
     url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
+    url(r'^terms/$', TemplateView.as_view(template_name='registration/terms.html'), name='terms'),
+    url(r'^privacy/$', TemplateView.as_view(template_name='registration/privacy.html'), name='privacy'),
 ]
