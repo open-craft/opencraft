@@ -624,7 +624,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application.privacy_policy_url = ''
         application.save()
         application.refresh_from_db()
-        assert application.privacy_policy_url == ''
+        self.assertEqual(application.privacy_policy_url, '')
         modified = self.form_data.copy()
         modified.update({
             'header_bg_color': '#fefefe',
