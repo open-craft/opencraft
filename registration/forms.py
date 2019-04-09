@@ -31,6 +31,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
+from django.utils import timezone
 from django.utils.text import capfirst
 from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
@@ -103,7 +104,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     """
     class Meta:
         model = BetaTestApplication
-        exclude = ('user', 'status', 'instance')
+        exclude = ('user', 'status', 'instance', 'accepted_privacy_policy')
         widgets = {
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
@@ -184,6 +185,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'required': 'You must accept these terms to register.',
         },
     )
+    accept_privacy_policy = forms.BooleanField(
+        required=True,
+        help_text=('I accept the privacy policy.'),
+        error_messages={
+            'required': 'You must accept the privacy policy to register.',
+        },
+    )
 
     # This field is created automatically from the model field, but the regex
     # validator is not copied over. We need to define the field manually so
@@ -241,6 +249,9 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 # If the user has already registered they have already accepted
                 # the terms, so the checkbox can default to checked
                 self.initial['accept_terms'] = True
+                self.initial['accept_privacy_policy'] = bool(
+                    self.instance.accepted_privacy_policy
+                )
 
                 # Make all non-modifiable fields read only
                 for name, field in self.fields.items():
@@ -353,6 +364,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         with data from the form.
         """
         application = super().save(commit=False)
+        application.accepted_privacy_policy = timezone.now()
         if hasattr(application, 'user'):
             self.update_user(application, commit=commit)
         else:
