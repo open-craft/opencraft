@@ -53,7 +53,7 @@ class BetaTestApplicationViewTestMixin:
     """
     maxDiff = None
 
-    def setUp(self): #pylint: disable=invalid-name
+    def setUp(self):
         """
         Initialize the test case with some valid data.
         """
