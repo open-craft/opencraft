@@ -37,5 +37,10 @@ class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docst
                      'public_contact_email')
     date_hierarchy = 'created'
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.accepted_privacy_policy:
+            return ('accepted_privacy_policy',)
+        return super(BetaTestApplicationAdmin, self).get_readonly_fields(request, obj)
+
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)

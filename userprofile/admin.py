@@ -49,7 +49,7 @@ class OrganizationAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
         'account_actions',
     )
 
-    def account_actions(self, obj):  # pylint: disable=no-self-use
+    def account_actions(self, obj):
         """
         This method will extract actions in the admin panel for each record. Currently
         the only action we're generating is a link to the report.
