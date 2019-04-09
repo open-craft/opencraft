@@ -53,7 +53,7 @@ class BetaTestApplicationViewTestMixin:
     """
     maxDiff = None
 
-    def setUp(self): #pylint: disable=invalid-name
+    def setUp(self):
         """
         Initialize the test case with some valid data.
         """
@@ -659,7 +659,7 @@ class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
     Tests the ajax validation view for the beta registration form.
     """
     url = reverse('api:register-list')
-    request_method = 'get'
+    request_method = 'post'
 
     def _assert_registration_succeeds(self, form_data):
         """
