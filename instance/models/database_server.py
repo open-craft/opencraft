@@ -53,7 +53,7 @@ class DatabaseServerManager(SharedServerManager):
     Custom manager for the DatabaseServer model.
     """
 
-    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+    def extra_args(self, host, primary, replica_set):
         """
         Return extra attributes needed for database creation
         """
@@ -209,7 +209,7 @@ class MongoDBReplicaSetManager(models.Manager):
     """
     Custom manager for the DatabaseServer model.
     """
-    def extra_args(self, host, primary, replica_set):  # pylint: disable=no-self-use
+    def extra_args(self, host, primary, replica_set):
         """
         Return extra attributes needed for database creation
         """

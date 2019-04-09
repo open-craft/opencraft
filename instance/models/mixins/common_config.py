@@ -30,20 +30,20 @@ class ConfigMixinBase(models.Model):
             **self._get_filebeat_variables(),
         }
 
-    def _get_prometheus_variables(self):  # pylint: disable=no-self-use
+    def _get_prometheus_variables(self):
         """Get all Prometheus-related ansible variables."""
         return {
             'NODE_EXPORTER_PASSWORD': settings.NODE_EXPORTER_PASSWORD
         }
 
-    def _get_consul_variables(self):  # pylint: disable=no-self-use
+    def _get_consul_variables(self):
         """Get all Consul-related ansible variables."""
         return {
             'consul_encrypt': settings.CONSUL_ENCRYPT,
             'consul_servers': settings.CONSUL_SERVERS,
         }
 
-    def _get_filebeat_variables(self):  # pylint: disable=no-self-use
+    def _get_filebeat_variables(self):
         """Get all Filebeat-related ansible variables."""
         return {
             'filebeat_logstash_hosts': settings.FILEBEAT_LOGSTASH_HOSTS,

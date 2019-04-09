@@ -50,7 +50,7 @@ from userprofile.models import Organization
 
 # Tests #######################################################################
 
-@ddt  # pylint: disable=too-many-public-methods
+@ddt
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
@@ -215,7 +215,7 @@ class OpenEdXAppServerTestCase(TestCase):
                 app_server.provision()
 
     @patch('instance.openstack_utils.get_nova_client')
-    def test_launch_in_other_region(self, mock_get_nova_client):  # pylint: disable=no-self-use
+    def test_launch_in_other_region(self, mock_get_nova_client):
         """
         Test launching an appserver in a non-default region.
         """
@@ -689,7 +689,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
         """
         Test that invalid status transitions raise exception
         """
-        # TODO: Get pylint to see state as an iterable
+        # pylint incorrectly concludes states is not iterable
         invalid_from_states = (state for state in AppServerStatus.states  # pylint: disable=not-an-iterable
                                if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
