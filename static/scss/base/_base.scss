@@ -11,7 +11,7 @@ body
 body
 {
     color: map-get($colors, black);
-    counter-reset: section-title;
+    counter-reset: numbered-item appendix-item;
 }
 
 a
@@ -39,4 +39,25 @@ hr
 {
     margin: 0;
     border: 0;
+}
+
+section.subsection
+{
+    counter-reset: numbered-item appendix-item appendix-numbered-item;
+}
+
+section.appendix
+{
+    counter-reset: appendix-numbered-item appendix-item;
+}
+
+section.appendices
+{
+    counter-reset: appendix-header;
+}
+
+h4.appendix-item::before
+{
+    counter-increment: appendix-item;
+    content: counter(appendix-item, upper-alpha) ".";
 }

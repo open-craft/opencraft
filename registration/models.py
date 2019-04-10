@@ -204,6 +204,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='opencraft_favicon.ico',
     )
 
+    accepted_privacy_policy = models.DateTimeField(
+        verbose_name='Accept privacy policy',
+        blank=True,
+        null=True,
+        help_text=('Date the user accepted the privacy policy.'),
+    )
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about important news, '
