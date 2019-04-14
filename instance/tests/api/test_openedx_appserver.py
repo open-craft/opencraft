@@ -489,6 +489,60 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+class OpenEdXAppServerAPITerminate(APITestCase):
+    """
+    Test cases for OpenEdXAppServer API calls related to termination of servers.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.api_client.login(username='user3', password='pass')
+
+    def _create_appserver(self, is_active):
+        instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
+        server = ReadyOpenStackServerFactory()
+        app_server = make_test_appserver(instance=instance, server=server)
+        self.assertFalse(instance.get_active_appservers().exists())
+
+        app_server.make_active(is_active)
+        self.assertEqual(app_server.is_active, is_active)
+        return instance, app_server
+
+    @patch_gandi
+    @patch('instance.models.server.OpenStackServer.public_ip')
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    @patch('instance.models.server.OpenStackServer.terminate')
+    def test_terminate_inactive(self, mock_terminate_server, mock_run_playbook, mock_public_ip):
+        """
+        POST /api/v1/openedx_appserver/:id/terminate/ - Terminate this OpenEdXAppServer VM.
+
+        Inactive app servers are terminated.
+        """
+        instance, app_server = self._create_appserver(False)
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/terminate/'.format(pk=app_server.pk))
+        instance.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'status': 'App server termination initiated.'})
+        self.assertEqual(mock_terminate_server.call_count, 1)
+
+    @patch_gandi
+    @patch('instance.models.server.OpenStackServer.public_ip')
+    @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
+    @patch('instance.models.server.OpenStackServer.terminate')
+    def test_terminate_active(self, mock_terminate_server, mock_run_playbook, mock_public_ip):
+        """
+        POST /api/v1/openedx_appserver/:id/terminate/ - Terminate this OpenEdXAppServer VM.
+
+        AppServer must be deactivated to be terminated.
+        """
+        instance, app_server = self._create_appserver(True)
+        response = self.api_client.post('/api/v1/openedx_appserver/{pk}/terminate/'.format(pk=app_server.pk))
+        instance.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'error': 'Cannot terminate an active app server.'})
+        self.assertEqual(mock_terminate_server.call_count, 0)
+
+
 @ddt.ddt
 class OpenEdXAppServerAPILogsTestCase(APITestCase):
     """

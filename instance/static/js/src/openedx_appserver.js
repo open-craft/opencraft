@@ -48,6 +48,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                     throw "This appserver is associated with another instance.";
                 }
                 $scope.appserver = appserver;
+                $scope.vm_running = appserver.status === 'configuring' || appserver.status === 'running' || appserver.status === 'failed';
                 $scope.is_active = appserver.is_active;
             }, function() {
                 $scope.notify("Unable to load the appserver details.");
@@ -76,6 +77,20 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 $scope.fetchLogs();
             }
         });
+
+        $scope.terminate_appserver = function() {
+            OpenCraftAPI.one("openedx_appserver", $stateParams.appserverId).post('terminate').then(function() {
+                // Refresh the list of app servers in the instance scope, then refresh this appserver
+                $scope.$parent.refresh().then(function() {
+                    $scope.refresh();
+                });
+                $scope.notify($scope.appserver.name + ' is now being terminated');
+
+            }, function() {
+                $scope.refresh();
+                $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be terminated.', 'alert');
+            });
+        }
 
         $scope.make_appserver_active = function(active) {
             var action = active ? 'active' : 'inactive';
