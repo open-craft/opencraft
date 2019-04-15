@@ -499,6 +499,9 @@ class OpenEdXAppServerAPITerminate(APITestCase):
         self.api_client.login(username='user3', password='pass')
 
     def _create_appserver(self, is_active):
+        """
+        Creates test instance and app server
+        """
         instance = OpenEdXInstanceFactory(edx_platform_commit='1' * 40)
         server = ReadyOpenStackServerFactory()
         app_server = make_test_appserver(instance=instance, server=server)
