@@ -450,8 +450,19 @@ class ConsulAgent(object):
 
     @staticmethod
     def _tnx_decode(value):
-        "load the json from a txn value"
-        return json.loads(base64.b64decode(value).decode('utf-8'))
+        """
+        Decodes values received in Consul txn
+
+        :param value: base64 encoded value
+        :return: base64 decoded value, JSON decoded if serializable
+        """
+        value = base64.b64decode(value).decode('utf-8')
+        try:
+            # We did conditional JSON encoding before
+            # Now everything should be JSON encoded in _tnx_encode
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return value
 
     @staticmethod
     def _tnx_encode(value):
