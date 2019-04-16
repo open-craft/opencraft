@@ -94,7 +94,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
 
         $scope.make_appserver_active = function(active) {
             var action = active ? 'active' : 'inactive';
-            $scope.is_active = active; // Toggle the button optimistically
+            $scope.is_active = null; // Toggle all buttons off
             OpenCraftAPI.one("openedx_appserver", $stateParams.appserverId).post('make_' + action).then(function() {
                 // Refresh the list of app servers in the instance scope, then refresh this appserver
                 $scope.$parent.refresh().then(function() {
