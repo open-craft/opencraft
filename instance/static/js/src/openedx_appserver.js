@@ -90,7 +90,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 $scope.refresh();
                 $scope.notify('An error occurred. ' + $scope.appserver.name + ' could not be terminated.', 'alert');
             });
-        }
+        };
 
         $scope.make_appserver_active = function(active) {
             var action = active ? 'active' : 'inactive';
