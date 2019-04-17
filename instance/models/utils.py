@@ -24,6 +24,7 @@ import base64
 import functools
 import inspect
 import json
+import time
 from weakref import WeakKeyDictionary
 
 from django.conf import settings
@@ -492,18 +493,10 @@ class ConsulAgent(object):
             }
         }
 
-    def txn_put(self, updates):
+    def _get_put_data(self, updates):
         """
-        Write dictionary to Consul as a single transaction
-
-        :param updates: A dict object contains the k/v
-                               to be written on Consul.
-        :return: A pair (version, changed) with the current version number and
-                 a bool to indicate whether the information was updated.
+        Prepare and return the data to be used in the transaction put request
         """
-
-        # contact Consul & get the key-value tree located at `self.prefix`
-        # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
         request = [
             {
                 "KV": {
@@ -549,9 +542,30 @@ class ConsulAgent(object):
                     self.prefix + "version", version, existing['version']["ModifyIndex"]))
             else:
                 put.append(self._tnx_set(self.prefix + "version", 1))
-            self._client.txn.put(put)
+            return put, version
 
-        return version, bool(put)
+    def txn_put(self, updates, num_retries=3):
+        """
+        Write dictionary to Consul as a single transaction
+
+        :param updates: A dict object contains the k/v
+                               to be written on Consul.
+        :param num_retries: Number of times to retry on failure due to cas
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updated.
+        """
+
+        # contact Consul & get the key-value tree located at `self.prefix`
+        # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
+        for attempt in range(num_retries + 1):
+            put, version = self._get_put_data(updates)
+            try:
+                self._client.txn.put(put)
+                return version, bool(put)
+            except consul.base.ClientError:
+                if attempt == num_retries:
+                    raise
+                time.sleep(10)
 
     def get(self, key, index=False, **kwargs):
         """
