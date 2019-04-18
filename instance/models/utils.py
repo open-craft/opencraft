@@ -566,7 +566,7 @@ class ConsulAgent(object):
                 except consul.base.ClientError:
                     if attempt == num_retries:
                         raise
-                    time.sleep(10)
+                    time.sleep(5)
         return version, bool(put)
 
     def get(self, key, index=False, **kwargs):
