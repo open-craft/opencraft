@@ -542,7 +542,7 @@ class ConsulAgent(object):
                     self.prefix + "version", version, existing['version']["ModifyIndex"]))
             else:
                 put.append(self._tnx_set(self.prefix + "version", 1))
-            return put, version
+        return version, bool(put)
 
     def txn_put(self, updates, num_retries=3):
         """
