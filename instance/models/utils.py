@@ -542,7 +542,7 @@ class ConsulAgent(object):
                     self.prefix + "version", version, existing['version']["ModifyIndex"]))
             else:
                 put.append(self._tnx_set(self.prefix + "version", 1))
-        return version, bool(put)
+        return version, put
 
     def txn_put(self, updates, num_retries=3):
         """
@@ -559,13 +559,15 @@ class ConsulAgent(object):
         # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
         for attempt in range(num_retries + 1):
             put, version = self._get_put_data(updates)
-            try:
-                self._client.txn.put(put)
-                return version, bool(put)
-            except consul.base.ClientError:
-                if attempt == num_retries:
-                    raise
-                time.sleep(10)
+            if put:
+                try:
+                    self._client.txn.put(put)
+                    break
+                except consul.base.ClientError:
+                    if attempt == num_retries:
+                        raise
+                    time.sleep(10)
+        return version, bool(put)
 
     def get(self, key, index=False, **kwargs):
         """
