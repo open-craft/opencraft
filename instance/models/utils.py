@@ -558,7 +558,7 @@ class ConsulAgent(object):
         # contact Consul & get the key-value tree located at `self.prefix`
         # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
         for attempt in range(num_retries + 1):
-            put, version = self._get_put_data(updates)
+            version, put = self._get_put_data(updates)
             if put:
                 try:
                     self._client.txn.put(put)
