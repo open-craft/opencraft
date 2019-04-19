@@ -46,7 +46,7 @@
       </tbody>
     </table>
 
-    <button ng-disabled="is_active !== false || !appserver.is_healthy"
+    <button ng-disabled="is_active !== false || !is_running"
             tooltip="This will add this app server to the load balancer pool for this instance."
             tooltip-placement="top"
             ng-click="make_appserver_active(true)">

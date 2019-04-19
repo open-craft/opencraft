@@ -48,8 +48,9 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                     throw "This appserver is associated with another instance.";
                 }
                 $scope.appserver = appserver;
-                $scope.vm_running = appserver.status === 'configuring' || appserver.status === 'running' || appserver.status === 'failed';
                 $scope.is_active = appserver.is_active;
+                $scope.is_running = appserver.status === 'running';
+                $scope.vm_running = appserver.status === 'configuring' || appserver.status === 'running' || appserver.status === 'failed';
             }, function() {
                 $scope.notify("Unable to load the appserver details.");
             });
