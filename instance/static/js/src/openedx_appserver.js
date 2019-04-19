@@ -50,7 +50,7 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                 $scope.appserver = appserver;
                 $scope.is_active = appserver.is_active;
                 $scope.is_running = appserver.status === 'running';
-                $scope.vm_running = appserver.status === 'configuring' || appserver.status === 'running' || appserver.status === 'failed';
+                $scope.vm_running = appserver.server.status === 'ready';
             }, function() {
                 $scope.notify("Unable to load the appserver details.");
             });
