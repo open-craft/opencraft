@@ -23,7 +23,7 @@ model utils - Tests, mostly for state machine
 # Imports #####################################################################
 import json
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import ddt
 from django.db import models
@@ -873,7 +873,7 @@ class ConsulAgentTest(TestCase):
         floats, lists, dictionaries and strings
         """
         self.assertEqual(self.agent._cast_value(b'string'), 'string')
-        self.assertEqual(self.agent._cast_value(bytes('ãáé string', 'latin-1')), 'ãáé string')
+        self.assertEqual(self.agent._cast_value(bytes('ãáé string', 'utf-8')), 'ãáé string')
         self.assertEqual(self.agent._cast_value(b'1'), 1)
         self.assertEqual(self.agent._cast_value(b'1.3'), 1.3)
 
@@ -897,6 +897,29 @@ class ConsulAgentTest(TestCase):
         self.assertFalse(self.agent._is_json_serializable('nope'))
         self.assertFalse(self.agent._is_json_serializable(1))
         self.assertFalse(self.agent._is_json_serializable(1.1))
+
+    @patch.object(consul.Consul.Txn, 'put')
+    @patch.object(ConsulAgent, '_get_put_data')
+    def test_txn_put_retries(self, mock_get_put_data, mock_txn_put):
+        """
+        Tests that the txn_put method retries on error
+        """
+        mock_get_put_data.return_value = (1, True)
+        mock_txn_put.side_effect = [consul.base.ClientError(), {}]
+        agent = ConsulAgent()
+        agent.txn_put({})
+
+    @patch.object(consul.Consul.Txn, 'put')
+    @patch.object(ConsulAgent, '_get_put_data')
+    def test_txn_put_error_after_all_retries(self, mock_get_put_data, mock_txn_put):
+        """
+        Tests that the txn_put method raises the exception on error after exhausting all the retries
+        """
+        mock_get_put_data.return_value = (1, True)
+        mock_txn_put.side_effect = consul.base.ClientError
+        with self.assertRaises(consul.base.ClientError):
+            agent = ConsulAgent()
+            agent.txn_put({})
 
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
