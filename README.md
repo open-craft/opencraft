@@ -48,6 +48,9 @@ may be required in some high-resource-utilization cases.
 Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
+If you want to terminate a VM associated with an App Server, first you must
+**deactivate** it and then **terminate**. Notice that only instances with an
+associated pull request can have all its App Servers deactivates/terminated.
 
 Sometimes Open edX playbook fails, and then you need to read the log,
 which is shown in real-time in the web console.
