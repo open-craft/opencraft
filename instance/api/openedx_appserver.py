@@ -120,3 +120,16 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         app_server = self.get_object()
         make_appserver_active(app_server.pk, active=False)
         return Response({'status': 'App server deactivation initiated.'})
+
+    @detail_route(methods=['post'])
+    def terminate(self, request, pk):
+        """
+        Terminate the VM running the provided AppServer.
+        """
+        app_server = self.get_object()
+        if app_server.is_active:
+            return Response({
+                'error': 'Cannot terminate an active app server.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        app_server.terminate_vm()
+        return Response({'status': 'App server termination initiated.'})
