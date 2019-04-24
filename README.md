@@ -48,6 +48,9 @@ may be required in some high-resource-utilization cases.
 Before activating a server, there's the option to test it through a
 basic-auth password-protected link in the "Authenticated Link" section
 (the username and password are embedded in the link).
+If you want to terminate a VM associated with an App Server, first you must
+**deactivate** it and then **terminate**. Notice that only instances with an
+associated pull request can have all its App Servers deactivates/terminated.
 
 Sometimes Open edX playbook fails, and then you need to read the log,
 which is shown in real-time in the web console.
@@ -694,7 +697,8 @@ so from the shell. There are two options:
 
 **Factory methods**
 
-OpenCraft IM provides two factory methods for creating instances:
+OpenCraft IM provides two factory methods for creating instances (the
+following lines should run via `make shell`):
 
 ```python
 from instance.factories import instance_factory, production_instance_factory

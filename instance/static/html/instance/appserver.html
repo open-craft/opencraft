@@ -46,18 +46,26 @@
       </tbody>
     </table>
 
-    <button ng-disabled="is_active || !appserver.is_healthy"
+    <button ng-disabled="is_active !== false || !is_running"
             tooltip="This will add this app server to the load balancer pool for this instance."
-            tooltip-placement="below"
+            tooltip-placement="top"
             ng-click="make_appserver_active(true)">
-      Activate this app server
+      Activate
     </button>
 
-    <button ng-disabled="!is_active || instance.active_appservers.length < 2"
+    <button ng-disabled="is_active !== true || (!instance.source_pr && instance.active_appservers.length < 2)"
             tooltip="This will remove this app server from the load balancer pool for this instance."
-            tooltip-placement="below"
+            tooltip-placement="top"
             ng-click="make_appserver_active(false)">
-      Deactivate this app server
+      Deactivate
+    </button>
+
+    <button class="alert"
+            ng-disabled="is_active !== false || !vm_running"
+            tooltip="This will terminate the app server virtual machine."
+            tooltip-placement="top"
+            ng-click="terminate_appserver()">
+      Terminate
     </button>
   </accordion-group>
 

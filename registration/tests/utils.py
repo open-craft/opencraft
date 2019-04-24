@@ -40,7 +40,7 @@ class BrowserTestMixin:
     Runs tests with a real browser. Provides helper methods for filling in
     forms. Mix this in with LiveServerTestCase.
     """
-    def setUp(self): # pylint: disable=invalid-name
+    def setUp(self):
         """
         Start firefox.
         """
@@ -51,7 +51,7 @@ class BrowserTestMixin:
             time.sleep(1)
             self.client = webdriver.Firefox()
 
-    def tearDown(self): # pylint: disable=invalid-name
+    def tearDown(self):
         """
         Close firefox.
         """
@@ -127,7 +127,7 @@ class UserMixin:
     email = 'tafkap@rip.org'
     password = '1999'
 
-    def setUp(self): # pylint: disable=invalid-name
+    def setUp(self):
         """
         Create a test user.
         """

@@ -24,6 +24,7 @@ OpenEdXInstance Theme Mixins - Tests
 import ddt
 import yaml
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
@@ -59,6 +60,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
             footer_bg_color='#ffff11',
             logo='opencraft_logo_small.png',
             favicon='favicon.ico',
+            accepted_privacy_policy=timezone.now(),
         )
         return application
 

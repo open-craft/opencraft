@@ -158,9 +158,7 @@ app.controller('Registration', ['$scope', '$http', 'djangoForm', function($scope
         // Ensure that server doesn't validate password strength;
         // it should only do this when user submits the form.
         delete params.password_strength;
-        var request = $http.get('/api/v1/registration/register/validate/', {
-            params: params
-        });
+        var request = $http.post('/api/v1/registration/register/validate/', params);
         request.success(displayErrors);
         request.error(function() {
             console.error('Failed to validate form');

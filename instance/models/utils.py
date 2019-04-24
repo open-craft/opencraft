@@ -20,6 +20,7 @@
 Models Utils
 """
 
+import base64
 import functools
 import inspect
 import json
@@ -45,14 +46,6 @@ class SteadyStateException(WrongStateException):
     """
     Raised when attempting to wait until object reaches a state that fulfills a certain condition
     but the object's current state is steady, i.e., it is not expected to change.
-    """
-    pass
-
-
-class ConsulLockAcquisitionException(RuntimeError):
-    """
-    Raised when acquiring a Consul lock after continuous tries fails.
-    Should only be raised if not acquiring the lock could cause inconsistencies.
     """
     pass
 
@@ -182,7 +175,7 @@ class ResourceState:
         To compare with inherited classes etc., use a full isinstance or issubclass expression.
         """
         if inspect.isclass(obj):
-            return type(self) is obj  # pylint: disable=unidiomatic-typecheck
+            return type(self) is obj
         else:
             return type(self) is type(obj)
 
@@ -284,7 +277,7 @@ class ResourceStateDescriptor:
         """
         raise AttributeError("You cannot assign to a state machine attribute to change the state.")
 
-    def only_for(self, *accepted_states):  # Not sure why this warning is raised: pylint: disable=no-self-use
+    def only_for(self, *accepted_states):
         """
         Decorator that can annotate a method and will raise an error if the method is called
         when the state machine is not in one of the specified states (accepted_states).
@@ -452,47 +445,129 @@ class ConsulAgent(object):
     possibility to expand it for more advanced queries.
     """
 
-    # We use the `consul lock` CLI to acquire locks on the server side.
-    # Those use a "magic flag" to help indicate conflicts with semaphores.
-    # We want to compete with those locks though, so we use this flag too.
-    # Comes from https://github.com/hashicorp/consul/blob/master/api/lock.go#L35-L38
-    LOCK_MAGIC_FLAG = 0x2ddccbc058a50c18
-
-    def __init__(self, prefix='', lock_wait=100, lock_wait_sleep=1):
+    def __init__(self, prefix=''):
         self._client = consul.Consul()
         self.prefix = prefix
-        self.session_id = None
-        self.lock_wait = lock_wait
-        self.lock_wait_sleep = lock_wait_sleep
 
-    def __enter__(self):
-        # Any `put` operation using a session with "delete" behavior is ephemeral.
-        # So if we create the lock below with this session, when the session is
-        # invalidated (TTL completed, session was destroyed, etc.) the lock key
-        # is also deleted. However there is a default lock delay of 15 seconds, so
-        # new locks have to wait for that timer even if the lock key is physically gone.
-        # See https://www.consul.io/docs/internals/sessions.html for details.
-        self.session_id = self._client.session.create(behavior="delete", ttl=1200)
+    @staticmethod
+    def _tnx_decode(value):
+        """
+        Decodes values received in Consul txn
 
-        # If someone else is holding this lock, the Consul client just returns False.
-        # We implement a "wait until lock is acquired" scenario here, and bail if
-        # `lock_wait` retries have failed.
-        lock_wait = self.lock_wait
-        while lock_wait > 0 and not self._client.kv.put(
-                "lock/ocim/.lock", "",
-                flags=self.LOCK_MAGIC_FLAG,
-                acquire=self.session_id
-        ):
-            lock_wait -= 1
-            time.sleep(self.lock_wait_sleep)
+        :param value: base64 encoded value
+        :return: base64 decoded value, JSON decoded if serializable
+        """
+        value = base64.b64decode(value).decode('utf-8')
+        try:
+            # We did conditional JSON encoding before
+            # Now everything should be JSON encoded in _tnx_encode
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return value
 
-        if lock_wait == 0:
-            raise ConsulLockAcquisitionException("Failed to acquire Consul lock!")
+    @staticmethod
+    def _tnx_encode(value):
+        "store the value as a json string suitable for a txn"
+        return base64.b64encode(json.dumps(value).encode('utf-8')).decode('ascii')
 
-        return self
+    @staticmethod
+    def _tnx_set(key, value):
+        "return a txn KV parameter to set k/v -- this is for new keys"
+        return {
+            "KV": {
+                "Verb": "set",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+            }
+        }
 
-    def __exit__(self, *args):
-        self._client.session.destroy(self.session_id)
+    @staticmethod
+    def _tnx_update(key, value, cas):
+        "return a txn KV parameter to cas k/v -- this is for existing keys"
+        return {
+            "KV": {
+                "Verb": "cas",
+                "Key": key,
+                "Value": ConsulAgent._tnx_encode(value),
+                "Index": cas,
+            }
+        }
+
+    def _get_put_data(self, updates):
+        """
+        Prepare and return the data to be used in the transaction put request
+        """
+        request = [
+            {
+                "KV": {
+                    "Verb": "get-tree",
+                    "Key": self.prefix,
+                },
+            },
+        ]
+        result = self._client.txn.put(request)
+
+        # store a dictionary of existing values, decoded from JSON
+        # e.g. ocim/instances/387/domain_slug:edxins-sajosuebcstag-387 ->
+        #   existing = {'domain_slug': {'Key':'ocim/instances/387/domain_slug',
+        #                               'Value':'edxins-sajosuebcstag-387'} }
+        existing = {}
+        for entry in result['Results']:
+            entry["KV"]["Value"] = self._tnx_decode(entry["KV"]["Value"])
+            existing[entry["KV"]["Key"].split('/')[-1]] = entry["KV"]
+
+        # store existing keys which will be updated
+        # as a list of dictionaries containing JSON encoded values
+        put = []
+        for key in set(updates.keys()) & set(existing.keys()):
+            if updates[key] != existing[key]["Value"]:
+                put.append(self._tnx_update(
+                    self.prefix + key, updates[key], existing[key]["ModifyIndex"]))
+
+        # store all new keys in the list
+        for key in set(updates.keys()) - set(existing.keys()):
+            put.append(self._tnx_set(self.prefix + key, updates[key]))
+
+        # get or create the version number
+        if 'version' in existing:
+            version = existing['version']["Value"]
+        else:
+            version = 0
+
+        # increment the version number and use `txn` to update inside a transaction
+        if put:
+            version += 1
+            if 'version' in existing:
+                put.append(self._tnx_update(
+                    self.prefix + "version", version, existing['version']["ModifyIndex"]))
+            else:
+                put.append(self._tnx_set(self.prefix + "version", 1))
+        return version, put
+
+    def txn_put(self, updates, num_retries=3):
+        """
+        Write dictionary to Consul as a single transaction
+
+        :param updates: A dict object contains the k/v
+                               to be written on Consul.
+        :param num_retries: Number of times to retry on failure due to cas
+        :return: A pair (version, changed) with the current version number and
+                 a bool to indicate whether the information was updated.
+        """
+
+        # contact Consul & get the key-value tree located at `self.prefix`
+        # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
+        for attempt in range(num_retries + 1):
+            version, put = self._get_put_data(updates)
+            if put:
+                try:
+                    self._client.txn.put(put)
+                    break
+                except consul.base.ClientError:
+                    if attempt == num_retries:
+                        raise
+                    time.sleep(5)
+        return version, bool(put)
 
     def get(self, key, index=False, **kwargs):
         """
@@ -552,29 +627,15 @@ class ConsulAgent(object):
     @staticmethod
     def _cast_value(value):
         """
-        Will decode the value to make it a string object, then tries to cast it
-        the proper data-type as we're expecting.
-        Currently supporting the following data-types:
-            * int
-            * float
-            * list
-            * dict
-            * string
-        :param value: The fetched value from Consul to be checked.
+        Will decode the value to make it a string object, then json.loads
+        it. If the json string cannot be decoded for any reason, return the
+        string object.
+
+        :param value: The fetched value from Consul to be converted.
         :return: The casted value if the data-type identified, an str object of
                  the value if not
         """
-        value = value.decode('latin-1') if value else None
-
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            pass
-
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            pass
+        value = value.decode('utf-8') if value else None
 
         try:
             return json.loads(value)
