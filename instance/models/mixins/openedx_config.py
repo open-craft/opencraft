@@ -394,16 +394,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         if self.privacy_policy_url:
             # Custom Privacy Policy
             url_components = urlparse(self.privacy_policy_url)
-            root_url = '{}://{}'.format(
-                url_components.scheme, url_components.netloc)
             template.update({
-                "EDXAPP_MKTG_URLS": {
-                    "ROOT": root_url,
-                    "PRIVACY": self.privacy_policy_url,
+                "EDXAPP_LMS_ENV_EXTRA": {
+                    "MKTG_URL_OVERRIDES": {
+                        "PRIVACY": self.privacy_policy_url,
+                    }
                 },
-            })
-            template['EDXAPP_FEATURES'].update({
-                "ENABLE_MKTG_SITE": True,
             })
 
         return template

@@ -247,14 +247,12 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
         if privacy_policy_url:
-            self.assertEqual(configuration_vars['EDXAPP_MKTG_URLS'], {
-                'ROOT': 'http://example.com',
+            self.assertEqual(
+                configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES'], {
                 'PRIVACY': 'http://example.com/default-test-spawn-privacy',
             })
-            self.assertTrue(configuration_vars['EDXAPP_FEATURES']['ENABLE_MKTG_SITE'])
         else:
-            self.assertNotIn('EDXAPP_MKTG_URLS', configuration_vars)
-            self.assertNotIn('ENABLE_MKTG_SITE', configuration_vars['EDXAPP_FEATURES'])
+            self.assertNotIn('MKTG_URL_OVERRIDES', configuration_vars)
 
     @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
     @patch_services
