@@ -67,6 +67,12 @@ class TextInput(InputStyleMixin, forms.widgets.TextInput):
     """
 
 
+class URLInput(InputStyleMixin, forms.widgets.URLInput):
+    """
+    Adds styles to URL fields.
+    """
+
+
 class EmailInput(InputStyleMixin, forms.widgets.EmailInput):
     """
     Adds styles to email input fields, and enables email validation.
@@ -103,6 +109,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
             'project_description': Textarea,
+            'privacy_policy_url': URLInput,
             'main_color': TextInput(attrs={'type': 'color'}),
             'link_color': TextInput(attrs={'type': 'color'}),
             'header_bg_color': TextInput(attrs={'type': 'color'}),
@@ -119,6 +126,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'footer_bg_color',
         'logo',
         'favicon',
+        'privacy_policy_url',
     }
 
     # Fields that when modified need a restart of the instance
@@ -249,6 +257,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 for name, field in self.fields.items():
                     if name not in self.can_be_modified:
                         field.widget.attrs['readonly'] = True
+            else:
+                self.initial['privacy_policy_url'] = settings.DEFAULT_PRIVACY_POLICY_URL
 
     def clean_subdomain(self):
         """

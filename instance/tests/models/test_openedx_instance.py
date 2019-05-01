@@ -194,14 +194,17 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.studio_url, 'https://{}/'.format(external_studio_domain))
         self.assertEqual(str(instance), 'Sample Instance (external.domain.com)')
 
+    @ddt.data('http://example.com/default-test-spawn-privacy', '')
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver(self, mocks, mock_provision):
+    def test_spawn_appserver(self, mocks, privacy_policy_url, mock_provision):
         """
         Run spawn_appserver() sequence
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
-
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.spawn',
+            privacy_policy_url=privacy_policy_url,
+        )
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mock_provision.call_count, 1)
 
@@ -243,6 +246,15 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
+        if privacy_policy_url:
+            self.assertEqual(
+                configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES'],
+                {
+                    'PRIVACY': 'http://example.com/default-test-spawn-privacy',
+                }
+            )
+        else:
+            self.assertNotIn('MKTG_URL_OVERRIDES', configuration_vars)
 
     @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
     @patch_services

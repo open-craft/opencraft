@@ -66,6 +66,12 @@ class OpenEdXAppConfiguration(models.Model):
         'The default contact email for this instance; also used as the from address for emails '
         'sent by the server.'
     ))
+    privacy_policy_url = models.URLField(
+        verbose_name='URL to Privacy Policy',
+        help_text=('URL to the privacy policy.'),
+        blank=True,
+        default='',
+    )
 
     openedx_release = models.CharField(
         max_length=128,

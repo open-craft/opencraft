@@ -134,6 +134,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'your expectations?'),
         blank=True, default=''
     )
+    privacy_policy_url = models.URLField(
+        verbose_name='URL to Privacy Policy',
+        help_text=('URL to the privacy policy.'),
+        blank=True,
+        default='',
+    )
 
     # Theme fields. They allow to define the design, e.g. choose colors and logo
     main_color = models.CharField(

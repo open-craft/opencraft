@@ -86,10 +86,11 @@ class BrowserTestMixin:
 
             if not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
-                element.send_keys(value)
-                # Before moving on, make sure input field contains desired text
-                WebDriverWait(self.client, timeout=5) \
-                    .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
+                if value:
+                    element.send_keys(value)
+                    # Before moving on, make sure input field contains desired text
+                    WebDriverWait(self.client, timeout=5) \
+                        .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
 
     def submit_form(self):
         """

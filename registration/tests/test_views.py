@@ -75,6 +75,7 @@ class BetaTestApplicationViewTestMixin:
             'link_color': '#001122',
             'header_bg_color': '#ffffff',
             'footer_bg_color': '#ffffff',
+            'privacy_policy_url': 'http://example.com/privacy',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -127,7 +128,8 @@ class BetaTestApplicationViewTestMixin:
                                        'header_bg_color',
                                        'footer_bg_color',
                                        'logo',
-                                       'favicon'}}
+                                       'favicon',
+                                       'privacy_policy_url'}}
         form_values = {name: field['value']
                        for name, field in form_fields.items()}
         expected_values = {name: value
@@ -140,7 +142,8 @@ class BetaTestApplicationViewTestMixin:
                                            'header_bg_color',
                                            'footer_bg_color',
                                            'logo',
-                                           'favicon'}}
+                                           'favicon',
+                                           'privacy_policy_url'}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
             if field.get('type') != 'checkbox':
@@ -423,6 +426,37 @@ class BetaTestApplicationViewTestMixin:
         del form_data['password_confirmation']
         self._assert_registration_succeeds(form_data)
 
+    @data(
+        'invalid-privacy',
+        'file://some/path',
+        'mailto:someone@somewhere',
+        'mailto:someone@somewhere.com',
+        'This is not a URL',
+    )
+    def test_invalid_privacy_url(self, privacy_url):
+        """
+        Invalid Privacy Policy URLs should be rejected.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = privacy_url
+        self._assert_registration_fails(form_data, expected_errors={
+            'privacy_policy_url': [
+                'Enter a valid URL.',
+            ],
+        })
+
+    @override_settings(
+        DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/test-no-privacy',
+    )
+    def test_no_privacy_url_specified(self):
+        """
+        Ensure that new registrations succeed when no privacy policy URL is
+        specified.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = ''
+        self._assert_registration_succeeds(form_data)
+
     def _get_response_body(self, url):
         """
         Navigate to the given url and return the response body as a string.
@@ -490,6 +524,7 @@ class BetaTestApplicationViewTestMixin:
         return errors
 
 
+@ddt
 class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
                                       TestCase):
     """
@@ -578,6 +613,44 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
             })
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails + 1)
+
+    def test_preserve_empty_privacy_url(self):
+        """
+        Existing applications with an empty Privacy Policy URL must be
+        editable, and allow the Privacy Policy URL to remain empty.
+        """
+        self._register(self.form_data)
+        application = BetaTestApplication.objects.get()
+        application.privacy_policy_url = ''
+        application.save()
+        application.refresh_from_db()
+        self.assertEqual(application.privacy_policy_url, '')
+        modified = self.form_data.copy()
+        modified.update({
+            'header_bg_color': '#fefefe',
+        })
+        modified['privacy_policy_url'] = ''
+        self._register(modified)
+        application.refresh_from_db()
+        self.assertEqual(application.header_bg_color, '#fefefe')
+        self.assertFalse(application.privacy_policy_url)
+
+    @data(
+        'http://example.com/valid-privacy',
+        'http://example.com:5000/valid-privacy',
+        'http://example.com:5000/this/is/valid-privacy',
+        'http://example.com:5000/this/is/valid-privacy?with=query',
+    )
+    def test_valid_privacy_url(self, privacy_url):
+        """
+        Valid Privacy Policy URLs should be stored in the application.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = privacy_url
+        self._assert_registration_succeeds(form_data)
+        # Check that the application matches the submitted data
+        application = BetaTestApplication.objects.get()
+        self.assertEqual(application.privacy_policy_url, privacy_url)
 
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
