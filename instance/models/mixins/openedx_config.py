@@ -5,7 +5,6 @@ Instance app model mixins - OpenEdX Instance Configuration
 # Imports #####################################################################
 
 from random import randint
-from urllib.parse import urlparse
 
 from django.conf import settings
 
@@ -393,7 +392,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
         if self.privacy_policy_url:
             # Custom Privacy Policy
-            url_components = urlparse(self.privacy_policy_url)
             template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {
                 "PRIVACY": self.privacy_policy_url,
             }

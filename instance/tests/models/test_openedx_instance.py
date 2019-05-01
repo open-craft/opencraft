@@ -248,9 +248,11 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
         if privacy_policy_url:
             self.assertEqual(
-                configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES'], {
-                'PRIVACY': 'http://example.com/default-test-spawn-privacy',
-            })
+                configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES'],
+                {
+                    'PRIVACY': 'http://example.com/default-test-spawn-privacy',
+                }
+            )
         else:
             self.assertNotIn('MKTG_URL_OVERRIDES', configuration_vars)
 
