@@ -206,7 +206,7 @@ class Command(BaseCommand):  # pragma: no cover
         if 1:  # pylint: disable=using-constant-test
             LOG.info("Creating bucket (%s). Waiting some seconds between attempts", instance.s3_bucket_name)
             # This private method doesn't have a public version
-            instance._create_bucket(retry_delay=6, attempts=8, location=S3_REGION)
+            instance._create_bucket(retry_delay=6, max_retries=8, location=S3_REGION)
 
         LOG.info("Preparing rclone")
         # Doesn't hurt to run it several times (it will overwrite old one)
