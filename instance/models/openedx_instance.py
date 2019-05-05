@@ -482,18 +482,7 @@ class OpenEdXInstance(
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        with ConsulAgent(prefix=self.consul_prefix) as agent:
-            version_updated = False
-            version_number = agent.get('version') or 0
-            for key, value in configurations.items():
-                stored_value = agent.get(key)
-                agent.put(key, value)
-                if not version_updated and value != stored_value:
-                    version_updated = True
-                    version_number += 1
-                    agent.put('version', version_number)
-
-        return version_number, version_updated
+        return ConsulAgent(prefix=self.consul_prefix).txn_put(configurations)
 
     def update_consul_metadata(self):
         """

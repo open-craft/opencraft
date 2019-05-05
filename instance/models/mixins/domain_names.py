@@ -153,7 +153,7 @@ class DomainNameInstance(models.Model):
             )
             if domain:
                 domains.append(domain)
-        choices = '|'.join(map(re.escape, domains))  # pylint: disable=bad-builtin
+        choices = '|'.join([re.escape(x) for x in domains])
         return '^({})$'.format(choices)
 
     def get_prefix_domain_names(self):

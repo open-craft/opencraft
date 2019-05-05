@@ -33,6 +33,9 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.utils import timezone
+from freezegun import freeze_time
+from pytz import utc
 from simple_email_confirmation.models import EmailAddress
 
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -50,7 +53,7 @@ class BetaTestApplicationViewTestMixin:
     """
     maxDiff = None
 
-    def setUp(self): #pylint: disable=invalid-name
+    def setUp(self):
         """
         Initialize the test case with some valid data.
         """
@@ -66,11 +69,13 @@ class BetaTestApplicationViewTestMixin:
             'password_strength': 3,
             'password_confirmation': 'gryffindor',
             'accept_terms': True,
+            'accept_privacy_policy': True,
             'subscribe_to_updates': False,
             'main_color': '#001122',
             'link_color': '#001122',
             'header_bg_color': '#ffffff',
             'footer_bg_color': '#ffffff',
+            'privacy_policy_url': 'http://example.com/privacy',
         }
 
     def _assert_registration_succeeds(self, form_data):
@@ -80,11 +85,14 @@ class BetaTestApplicationViewTestMixin:
         displays a success message.
         """
         # Fill in the form and submit the registration
-        response = self._register(form_data)
+        with freeze_time('2017-01-04 19:30:00') as frozen_time:
+            response = self._register(form_data)
+        accepted_time = utc.localize(frozen_time())
         self._assert_success_response(response)
 
         # Check that the application matches the submitted data
         application = BetaTestApplication.objects.get()
+        self.assertEqual(application.accepted_privacy_policy, accepted_time)
         self._assert_application_matches_form_data(application)
 
         # Test the email verification flow
@@ -120,7 +128,8 @@ class BetaTestApplicationViewTestMixin:
                                        'header_bg_color',
                                        'footer_bg_color',
                                        'logo',
-                                       'favicon'}}
+                                       'favicon',
+                                       'privacy_policy_url'}}
         form_values = {name: field['value']
                        for name, field in form_fields.items()}
         expected_values = {name: value
@@ -133,7 +142,8 @@ class BetaTestApplicationViewTestMixin:
                                            'header_bg_color',
                                            'footer_bg_color',
                                            'logo',
-                                           'favicon'}}
+                                           'favicon',
+                                           'privacy_policy_url'}}
         self.assertEqual(form_values, expected_values)
         for name, field in form_fields.items():
             if field.get('type') != 'checkbox':
@@ -159,6 +169,7 @@ class BetaTestApplicationViewTestMixin:
                              self.form_data[application_field])
         self.assertEqual(application.subscribe_to_updates,
                          bool(self.form_data.get('subscribe_to_updates')))
+        self.assertNotEqual(None, application.accepted_privacy_policy)
         self._assert_user_matches_form_data(application.user)
         self._assert_profile_matches_form_data(application.user.profile)
 
@@ -269,6 +280,7 @@ class BetaTestApplicationViewTestMixin:
             subdomain=self.form_data['subdomain'],
             instance_name='I got here first',
             public_contact_email='test@example.com',
+            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username='test'),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -314,6 +326,7 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That username is mine',
             public_contact_email='test@example.com',
+            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username=self.form_data['username']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -337,6 +350,7 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That email address is mine',
             public_contact_email='test@example.com',
+            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username='test', email=self.form_data['email']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -380,6 +394,18 @@ class BetaTestApplicationViewTestMixin:
             'password_confirmation': ["The two password fields didn't match."],
         })
 
+    def test_no_privacy_policy(self):
+        """
+        User has not accepted privacy policy.
+        """
+        form_data = self.form_data.copy()
+        del form_data['accept_privacy_policy']
+        self._assert_registration_fails(form_data, expected_errors={
+            'accept_privacy_policy': [
+                'You must accept the privacy policy to register.'
+            ],
+        })
+
     @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
     def test_existing_user(self):
         """
@@ -398,6 +424,37 @@ class BetaTestApplicationViewTestMixin:
         del form_data['password']
         del form_data['password_strength']
         del form_data['password_confirmation']
+        self._assert_registration_succeeds(form_data)
+
+    @data(
+        'invalid-privacy',
+        'file://some/path',
+        'mailto:someone@somewhere',
+        'mailto:someone@somewhere.com',
+        'This is not a URL',
+    )
+    def test_invalid_privacy_url(self, privacy_url):
+        """
+        Invalid Privacy Policy URLs should be rejected.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = privacy_url
+        self._assert_registration_fails(form_data, expected_errors={
+            'privacy_policy_url': [
+                'Enter a valid URL.',
+            ],
+        })
+
+    @override_settings(
+        DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/test-no-privacy',
+    )
+    def test_no_privacy_url_specified(self):
+        """
+        Ensure that new registrations succeed when no privacy policy URL is
+        specified.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = ''
         self._assert_registration_succeeds(form_data)
 
     def _get_response_body(self, url):
@@ -467,6 +524,7 @@ class BetaTestApplicationViewTestMixin:
         return errors
 
 
+@ddt
 class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
                                       TestCase):
     """
@@ -556,6 +614,44 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails + 1)
 
+    def test_preserve_empty_privacy_url(self):
+        """
+        Existing applications with an empty Privacy Policy URL must be
+        editable, and allow the Privacy Policy URL to remain empty.
+        """
+        self._register(self.form_data)
+        application = BetaTestApplication.objects.get()
+        application.privacy_policy_url = ''
+        application.save()
+        application.refresh_from_db()
+        self.assertEqual(application.privacy_policy_url, '')
+        modified = self.form_data.copy()
+        modified.update({
+            'header_bg_color': '#fefefe',
+        })
+        modified['privacy_policy_url'] = ''
+        self._register(modified)
+        application.refresh_from_db()
+        self.assertEqual(application.header_bg_color, '#fefefe')
+        self.assertFalse(application.privacy_policy_url)
+
+    @data(
+        'http://example.com/valid-privacy',
+        'http://example.com:5000/valid-privacy',
+        'http://example.com:5000/this/is/valid-privacy',
+        'http://example.com:5000/this/is/valid-privacy?with=query',
+    )
+    def test_valid_privacy_url(self, privacy_url):
+        """
+        Valid Privacy Policy URLs should be stored in the application.
+        """
+        form_data = self.form_data.copy()
+        form_data['privacy_policy_url'] = privacy_url
+        self._assert_registration_succeeds(form_data)
+        # Check that the application matches the submitted data
+        application = BetaTestApplication.objects.get()
+        self.assertEqual(application.privacy_policy_url, privacy_url)
+
 
 class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
                                      TestCase):
@@ -563,7 +659,7 @@ class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
     Tests the ajax validation view for the beta registration form.
     """
     url = reverse('api:register-list')
-    request_method = 'get'
+    request_method = 'post'
 
     def _assert_registration_succeeds(self, form_data):
         """

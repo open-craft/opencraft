@@ -31,6 +31,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
+from django.utils import timezone
 from django.utils.text import capfirst
 from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
@@ -65,6 +66,12 @@ class TextInput(InputStyleMixin, forms.widgets.TextInput):
     """
 
 
+class URLInput(InputStyleMixin, forms.widgets.URLInput):
+    """
+    Adds styles to URL fields.
+    """
+
+
 class EmailInput(InputStyleMixin, forms.widgets.EmailInput):
     """
     Adds styles to email input fields, and enables email validation.
@@ -96,11 +103,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     """
     class Meta:
         model = BetaTestApplication
-        exclude = ('user', 'status', 'instance')
+        exclude = ('user', 'status', 'instance', 'accepted_privacy_policy')
         widgets = {
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
             'project_description': Textarea,
+            'privacy_policy_url': URLInput,
             'main_color': TextInput(attrs={'type': 'color'}),
             'link_color': TextInput(attrs={'type': 'color'}),
             'header_bg_color': TextInput(attrs={'type': 'color'}),
@@ -117,6 +125,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         'footer_bg_color',
         'logo',
         'favicon',
+        'privacy_policy_url',
     }
 
     # Fields that when modified need a restart of the instance
@@ -173,6 +182,13 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                    'and that the instance is provided without any guarantee.'),
         error_messages={
             'required': 'You must accept these terms to register.',
+        },
+    )
+    accept_privacy_policy = forms.BooleanField(
+        required=True,
+        help_text=('I accept the privacy policy.'),
+        error_messages={
+            'required': 'You must accept the privacy policy to register.',
         },
     )
 
@@ -234,11 +250,16 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 # the terms, so the checkbox can default to checked
                 self.initial['accept_terms'] = True
                 self.fields['accept_terms'].widget.attrs['checked'] = 'checked'
+                self.initial['accept_privacy_policy'] = bool(
+                    self.instance.accepted_privacy_policy
+                )
 
                 # Make all non-modifiable fields read only
                 for name, field in self.fields.items():
                     if name not in self.can_be_modified:
                         field.widget.attrs['readonly'] = True
+            else:
+                self.initial['privacy_policy_url'] = settings.DEFAULT_PRIVACY_POLICY_URL
 
     def clean_subdomain(self):
         """
@@ -344,6 +365,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         with data from the form.
         """
         application = super().save(commit=False)
+        application.accepted_privacy_policy = timezone.now()
         if hasattr(application, 'user'):
             self.update_user(application, commit=commit)
         else:

@@ -40,7 +40,7 @@ class BrowserTestMixin:
     Runs tests with a real browser. Provides helper methods for filling in
     forms. Mix this in with LiveServerTestCase.
     """
-    def setUp(self): # pylint: disable=invalid-name
+    def setUp(self):
         """
         Start firefox.
         """
@@ -51,7 +51,7 @@ class BrowserTestMixin:
             time.sleep(1)
             self.client = webdriver.Firefox()
 
-    def tearDown(self): # pylint: disable=invalid-name
+    def tearDown(self):
         """
         Close firefox.
         """
@@ -86,10 +86,11 @@ class BrowserTestMixin:
 
             if not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
-                element.send_keys(value)
-                # Before moving on, make sure input field contains desired text
-                WebDriverWait(self.client, timeout=5) \
-                    .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
+                if value:
+                    element.send_keys(value)
+                    # Before moving on, make sure input field contains desired text
+                    WebDriverWait(self.client, timeout=5) \
+                        .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
 
     def submit_form(self):
         """
@@ -127,7 +128,7 @@ class UserMixin:
     email = 'tafkap@rip.org'
     password = '1999'
 
-    def setUp(self): # pylint: disable=invalid-name
+    def setUp(self):
         """
         Create a test user.
         """

@@ -134,6 +134,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'your expectations?'),
         blank=True, default=''
     )
+    privacy_policy_url = models.URLField(
+        verbose_name='URL to Privacy Policy',
+        help_text=('URL to the privacy policy.'),
+        blank=True,
+        default='',
+    )
 
     # Theme fields. They allow to define the design, e.g. choose colors and logo
     main_color = models.CharField(
@@ -204,6 +210,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='opencraft_favicon.ico',
     )
 
+    accepted_privacy_policy = models.DateTimeField(
+        verbose_name='Accept privacy policy',
+        blank=True,
+        null=True,
+        help_text=('Date the user accepted the privacy policy.'),
+    )
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about important news, '

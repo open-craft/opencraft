@@ -24,6 +24,7 @@
             {% include row with field=form.full_name %}
             {% include row with field=form.email %}
             {% include row with field=form.public_contact_email %}
+            {% include row with field=form.privacy_policy_url %}
             {% include row with field=form.username %}
             {% if form.password %}
                 {% include row with field=form.password %}
@@ -39,7 +40,8 @@
             {% include row with field=form.favicon %}
         {% endwith %}
         {% with row="registration/form_checkbox_field.html" %}
-            {% include row with field=form.accept_terms %}
+            {% include row with field=form.accept_terms view_name="registration:terms" link_text="View the Terms of Service" %}
+            {% include row with field=form.accept_privacy_policy view_name="registration:privacy" link_text="View the Privacy Policy" %}
             {% include row with field=form.subscribe_to_updates %}
         {% endwith %}
         {% with field=form.password_strength %}

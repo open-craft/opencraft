@@ -390,6 +390,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 ],
             })
 
+        if self.privacy_policy_url:
+            # Custom Privacy Policy
+            template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {
+                "PRIVACY": self.privacy_policy_url,
+            }
+
         return template
 
     def _get_prometheus_variables(self):
