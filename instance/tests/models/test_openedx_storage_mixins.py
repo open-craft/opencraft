@@ -117,6 +117,7 @@ def get_s3_settings(instance):
     """
     s3_settings = {
         "COMMON_ENABLE_AWS_INTEGRATION": 'true',
+        "COMMON_ENABLE_AWS_ROLE": 'true',
         "AWS_ACCESS_KEY_ID": instance.s3_access_key,
         "AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
 
