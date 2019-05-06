@@ -54,6 +54,10 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
         """
         s3_settings = {
             "COMMON_ENABLE_AWS_INTEGRATION": True,
+            # In Ironwood, the "COMMON_ENABLE_AWS_INTEGRATION" variable has been replaced by the
+            # "COMMON_ENABLE_AWS_ROLE" variable. Retaining both for backward compatibility till
+            # the former can be removed.
+            "COMMON_ENABLE_AWS_ROLE": True,
             "AWS_ACCESS_KEY_ID": self.s3_access_key,
             "AWS_SECRET_ACCESS_KEY": self.s3_secret_access_key,
 

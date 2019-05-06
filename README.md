@@ -499,7 +499,8 @@ set the following configuration variables:
 * `EDX_WORKERS_ENABLE_CELERY_HEARTBEATS`: Switch to enable/disable celery
   heartbeats used to detect connection drops. Disabling heartbeats can have a
   drastic reduction RabbitMQ usage. This setting sets
-  `worker_django_enable_heartbeats` on supported playbooks. Defaults to `False`.
+  `worker_django_enable_heartbeats` and `EDXAPP_CELERY_HEARTBEAT_ENABLED` on
+  supported playbooks. Defaults to `False`.
 
 Migrations
 ----------
