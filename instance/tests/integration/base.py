@@ -59,7 +59,7 @@ class IntegrationTestCase(TestCase):
         for load_balancer in LoadBalancingServer.objects.iterator():
             load_balancer.delete()
         for instance in OpenEdXInstance.objects.iterator():
-            instance.delete()
+            instance.delete(ignore_errors=True)
 
         super().tearDown()
 

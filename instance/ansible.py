@@ -212,9 +212,9 @@ def capture_playbook_output(
                         logger_.error(line)
                 if collect_logs:
                     log_lines.append(line)
-        except TimeoutError:
+        except TimeoutError as exc:
             if logger_ is not None:
-                logger_.error('Playbook run timed out.  Terminating the Ansible process.')
+                logger_.exception('Playbook run timed out.  Terminating the Ansible process: %s', exc)
             process.terminate()
         process.wait()
         if collect_logs:

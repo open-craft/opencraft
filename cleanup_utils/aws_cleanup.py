@@ -108,7 +108,10 @@ class AwsCleanupInstance:
         """
         if self.dry_run:
             return
-        self.iam_client.delete_user(UserName=username)
+        try:
+            self.iam_client.delete_user(UserName=username)
+        except self.iam_client.exceptions.DeleteConflictException as exc:
+            logger.error("Could not delete user: %s. %s", username, exc)
 
     def get_iam_users(self):
         """
@@ -129,7 +132,7 @@ class AwsCleanupInstance:
                 UserName=username,
                 PolicyName=DEFAULT_POLICY_NAME
             )
-        except botocore.exceptions.NoSuchEntityException:
+        except self.iam_client.exceptions.NoSuchEntityException:
             logger.error(
                 "User policy not found: %s",
                 username,
@@ -158,7 +161,7 @@ class AwsCleanupInstance:
             paginator = self.iam_client.get_paginator('list_access_keys')
             for page in paginator.paginate(UserName=username):
                 old_keys.extend([key for key in page['AccessKeyMetadata'] if is_key_old(key)])
-        except botocore.exceptions.NoSuchEntityException:
+        except self.iam_client.exceptions.NoSuchEntityException:
             logger.error("Error retrieving user keys, user %s will be skipped...", username)
 
         return old_keys
