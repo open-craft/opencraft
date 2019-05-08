@@ -253,6 +253,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 self.initial['accept_privacy_policy'] = bool(
                     self.instance.accepted_privacy_policy
                 )
+                self.fields['accept_privacy_policy'].widget.attrs['checked'] = 'checked'
 
                 # Make all non-modifiable fields read only
                 for name, field in self.fields.items():
