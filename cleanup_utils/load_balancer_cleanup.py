@@ -63,7 +63,7 @@ class LoadBalancerCleanup:
         ).format(
             age_limit=self.age_limit,
             fragment_prefix=self.fragment_prefix,
-            remove_fragments='true' if self.dry_run else 'false'
+            remove_fragments='true' if not self.dry_run else 'false'
         )
 
         return_code = ansible.capture_playbook_output(
