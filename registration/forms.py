@@ -39,7 +39,6 @@ from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgMo
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
 
-
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
@@ -229,6 +228,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         if 'request' in kwargs:
             self.request = kwargs.pop('request')
         super().__init__(*args, **kwargs)
+
         if self.instance:
             if hasattr(self.instance, 'user'):
                 # Populate the username and email fields and make them read only
@@ -249,9 +249,11 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 # If the user has already registered they have already accepted
                 # the terms, so the checkbox can default to checked
                 self.initial['accept_terms'] = True
+                self.fields['accept_terms'].widget.attrs['checked'] = 'checked'
                 self.initial['accept_privacy_policy'] = bool(
                     self.instance.accepted_privacy_policy
                 )
+                self.fields['accept_privacy_policy'].widget.attrs['checked'] = 'checked'
 
                 # Make all non-modifiable fields read only
                 for name, field in self.fields.items():

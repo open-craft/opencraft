@@ -17,8 +17,8 @@ coverage==4.2
 ddt==1.1.1
 debtcollector==1.9.0
 decorator==4.0.10
-Django==1.10.7
--e git+https://github.com/open-craft/django-angular.git@5f3e54f909b925eecb59dc4dd73b6e9fe27e9558#egg=django_angular
+Django==1.11.20
+-e git+https://github.com/jrief/django-angular.git@3a4eb9e716b0f03e4abe5ec60d6978a52da100f8#egg=django_angular
 django-appconf==1.0.2
 django-compressor==2.1
 django-debug-toolbar==1.6
@@ -104,7 +104,7 @@ pydocstyle==1.0.0
 pyflakes==1.3.0
 Pygments==2.1.3
 pyjwkest==1.4.0
-pylint==1.5.6
+pylint==1.6.5
 pylint-celery==0.3
 pylint-common==0.2.2
 pylint-django==0.7.2
@@ -147,7 +147,7 @@ sockjs-tornado==1.0.3
 sqlparse==0.2.2
 static3==0.7.0
 stevedore==1.18.0
--e git+https://github.com/jonashagstedt/swampdragon.git@ef8dedd191b7b3a7a11d49f5190699ed0b00bcb2#egg=SwampDragon
+-e git+https://github.com/lepri/swampdragon.git@febe814336dfee346802a3d73f79de8d394ad5d1#egg=SwampDragon
 testfixtures==5.2.0
 tlslite==0.4.9
 tornado==4.4.2
