@@ -84,7 +84,7 @@ jobs:
           command: |
             . venv/bin/activate
             bin/run-circleci-tests
-          no_output_timeout: 47m
+          no_output_timeout: 6h
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
   cleanup:

@@ -312,6 +312,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # in Ocim deployments.
             # Disabling heartbeats can have a drastic reduction RabbitMQ usage.
             "worker_django_enable_heartbeats": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
+            # The "worker_django_enable_heartbeats" variable was changed in the upstream PR
+            # merged to master (but not cherry-picked to Ironwood) to "EDXAPP_CELERY_HEARTBEAT_ENABLED".
+            # Both are present for backward-compatibility for the time-being.
+            "EDXAPP_CELERY_HEARTBEAT_ENABLED": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
 
             # Set up User Retirement Pipeline
             "RETIREMENT_SERVICE_SETUP": True,
