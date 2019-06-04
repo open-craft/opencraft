@@ -28,7 +28,6 @@ import traceback
 
 from django.apps import apps
 from django.db import connection, models, ProgrammingError
-from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance.serializers.logentry import LogEntrySerializer
 
@@ -82,19 +81,6 @@ class DBHandler(logging.Handler):
             # This can occur if django tries to log something before migrations have created the log table.
             # Make sure that is actually what happened:
             assert 'instance_logentry' not in connection.introspection.table_names()
-
-        # Send notice of entries related to any resource. Skip generic log entries that occur
-        # in debug mode, like "GET /static/img/favicon/favicon-96x96.png":
-        if content_type:
-            log_event = {
-                'type': 'object_log_line',
-                'log_entry': LogEntrySerializer(log_entry).data
-            }
-            if hasattr(obj, 'event_context'):
-                log_event.update(obj.event_context)
-            # TODO: Filter out log entries for which the user doesn't have view rights
-            # TODO: More targetted events - only emit events for what the user is looking at
-            publish_data('log', log_event)
 
 
 class ModelLoggerAdapter(logging.LoggerAdapter):

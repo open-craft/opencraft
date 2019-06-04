@@ -592,7 +592,6 @@ This runs three processes via Honcho, which reads `Procfile` or `Procfile.dev`
 and loads the environment from the `.env` file:
 
 * *web*: the main HTTP server (Django + Werkzeug debugger in dev, gunicorn in prod)
-* *websocket*: the websocket server (Tornado)
 * *worker*: runs asynchronous jobs (Huey)
 
 Important: the Werkzeug debugger started by the development server allows remote
