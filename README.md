@@ -756,7 +756,7 @@ instance.save()
 Once the instance is created, use the web UI to review the instance
 configuration, then use the "Launch new AppServer" button to provision a server.
 
-Once the server is ready, select it in the UI and click "Activate this app
+Once the server is ready (refresh the page to check), select it in the UI and click "Activate this app
 server". (You can also do this in advance, during provisioning, if you want the
 DNS updated sooner and aren't concerned about the DNS pointing to a potentially
 broken server, in the case the provisioning should fail.)
@@ -777,8 +777,8 @@ instance.save()
 ```
 
 Then use the "Launch new AppServer" button in the web UI to provision a server
-with the updated settings, and click "Activate this app server" to use the new
-server when it's ready.
+with the updated settings, wait, refresh the page to check if it's ready, and
+click "Activate this app server" to use the new server when it's ready.
 
 **To terminate all VMs associated with an instance**, but still preserve the
 information about the AppServers and their configuration, run:

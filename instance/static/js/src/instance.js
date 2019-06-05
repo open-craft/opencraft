@@ -203,8 +203,6 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
 
             OpenCraftAPI.all("openedx_appserver").post({instance_id: $stateParams.instanceId});
             // The API call above is an asynchronous task so it will return a 200 status immediately.
-            // When the new app server is successfully created, it will send an openedx_appserver_update
-            // notification, which will trigger $scope.refresh(), which will reset 'is_spawning_appserver'
         };
 
         $scope.init();
