@@ -35,6 +35,25 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # Classes #####################################################################
 
+
+class ServerValidationComplete:
+    """
+    Waits for the Angular validation classes to be set on the element.
+    """
+
+    ng_validated_classes = ('ng-valid', 'ng-invalid')
+
+    def __init__(self, locator):
+        self.locator = locator
+
+    def __call__(self, driver):
+        element = driver.find_element(*self.locator)
+        classes = element.get_attribute('class').split(' ')
+        if 'ng-dirty' in classes and any(ng_class in classes for ng_class in self.ng_validated_classes):
+            return element
+        return False
+
+
 class BrowserTestMixin:
     """
     Runs tests with a real browser. Provides helper methods for filling in
@@ -65,10 +84,12 @@ class BrowserTestMixin:
         """
         return self.client.find_element_by_tag_name('form')
 
-    def fill_form(self, form_data):
+    def fill_form(self, form_data, validate_fields=None):
         """
         Fill in the form with the given data.
         """
+        if validate_fields is None:
+            validate_fields = tuple()
         for field, value in form_data.items():
             element = self.form.find_element_by_name(field)
             if element.get_attribute('type') == 'checkbox':
@@ -91,6 +112,10 @@ class BrowserTestMixin:
                     # Before moving on, make sure input field contains desired text
                     WebDriverWait(self.client, timeout=5) \
                         .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
+                    # And that the server validation, if any, has completed
+                    if field in validate_fields:
+                        WebDriverWait(self.client, timeout=10) \
+                            .until(ServerValidationComplete((By.NAME, field)))
 
     def submit_form(self):
         """
