@@ -30,7 +30,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
-from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from userprofile.models import UserProfile, Organization
 
@@ -98,11 +97,6 @@ class InstanceReference(TimeStampedModel):
         This also gets called whenever the Instance subclass has changed.
         """
         super().save(*args, **kwargs)
-        # Notify anyone monitoring for changes via swampdragon/websockets:
-        publish_data('notification', {
-            'type': 'instance_update',
-            'instance_id': self.pk,
-        })
 
     @classmethod
     def can_manage(cls, user):

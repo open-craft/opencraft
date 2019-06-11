@@ -31,7 +31,6 @@ from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 import novaclient
 import requests
-from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import openstack_utils
 from instance.logging import ModelLoggerAdapter
@@ -250,10 +249,6 @@ class Server(ValidateModelMixin, TimeStampedModel):
         Save this Server
         """
         super().save(*args, **kwargs)
-        publish_data('notification', {
-            'type': 'server_update',
-            'server_pk': self.pk,
-        })
 
     def update_status(self):
         """
