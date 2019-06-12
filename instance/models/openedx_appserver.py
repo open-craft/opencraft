@@ -29,7 +29,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
-from swampdragon.pubsub_providers.data_publisher import publish_data
 
 from instance import ansible
 from instance.logging import log_exception
@@ -534,9 +533,3 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         if not self.pk:
             self.configuration_settings = self.create_configuration_settings()
         super().save(*args, **kwargs)
-        # Notify anyone monitoring for changes via swampdragon/websockets:
-        publish_data('notification', {
-            'type': 'openedx_appserver_update',
-            'appserver_id': self.pk,
-            'instance_id': self.owner.pk,  # This is the ID of the InstanceReference
-        })

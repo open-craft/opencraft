@@ -143,15 +143,11 @@ simplejson==3.10.0
 six==1.10.0
 smmap==0.9.0
 smmap2==2.0.1
-sockjs-tornado==1.0.3
 sqlparse==0.2.2
 static3==0.7.0
 stevedore==1.18.0
--e git+https://github.com/lepri/swampdragon.git@febe814336dfee346802a3d73f79de8d394ad5d1#egg=SwampDragon
 testfixtures==5.2.0
 tlslite==0.4.9
-tornado==4.4.2
-tornado-redis==2.4.18
 traitlets==4.3.1
 unicodecsv==0.14.1
 urllib3==1.24.1
