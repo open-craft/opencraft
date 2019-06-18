@@ -61,8 +61,7 @@ gitdb2==2.0.0
 GitPython==2.1.0
 glob2==0.7
 gunicorn==19.6.0
-# Using patched honcho that includes: https://github.com/nickstenning/honcho/pull/179
--e git+https://github.com/open-craft/honcho.git@00c8f0d6c55ba1e9ec18470e942e47b07617099a#egg=honcho
+honcho==1.0.1
 huey==1.2.2
 idna==2.8
 ipdb==0.10.1
