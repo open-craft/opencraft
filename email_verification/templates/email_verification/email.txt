@@ -1,3 +1,11 @@
-Please verify your email address by clicking the following link, or pasting it into your browser's address bar:
+Hi,
+
+To confirm your email address and the creation of your Open edX instance, please click
+on the following link, or paste it in your browser's address bar and navigate to that address:
 
 {{ verification_url }}
+
+And if you need anything, or have any questions or remarks, don't hesitate to reply to this
+email.
+
+{{ signature }}

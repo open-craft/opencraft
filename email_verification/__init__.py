@@ -51,6 +51,7 @@ def send_email_verification(email, request):
     message = template.render({
         'email': email,
         'verification_url': request.build_absolute_uri(verification_url),
+        'signature': settings.BETATEST_EMAIL_SIGNATURE,
     }, request)
     send_mail(
         subject=EMAIL_VERIFICATION_SUBJECT,

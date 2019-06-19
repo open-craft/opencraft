@@ -116,7 +116,7 @@ class BetaTestApplicationViewTestMixin:
         response_body = re.sub(r'\s+', ' ', response)
         self.assertIn('Thank you for applying for the OpenCraft free 30-day trial',
                       response_body)
-        self.assertIn('pending email confirmation', response_body)
+        self.assertIn('Please confirm your email address', response_body)
         form_fields = {name: field
                        for name, field in self._get_form_fields(response).items()
                        if name not in {'password',
@@ -210,7 +210,7 @@ class BetaTestApplicationViewTestMixin:
             email = EmailAddress.objects.get(email=email_address)
             self.assertIs(email.is_confirmed, True)
         response = self._get_response_body(self.url)
-        self.assertNotIn('pending email confirmation',
+        self.assertNotIn('Please confirm your email address',
                          re.sub(r'\s+', ' ', response))
 
     def _assert_registration_fails(self, form_data, expected_errors=None):
