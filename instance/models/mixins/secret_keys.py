@@ -50,7 +50,7 @@ def generate_secret_key(char_length):
     # We need three random bytes per four random b64 characters.
     random_bytes = os.urandom(int(char_length * 0.75))
     # Encode to a b64 string...
-    random_string = b64encode(random_bytes)
+    random_string = b64encode(random_bytes).decode("utf-8")
     # ...and return!
     return random_string
 
