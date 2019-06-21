@@ -29,7 +29,8 @@ from django.conf import settings
 from django.db import connection
 from django.db.models import F
 from django.utils import timezone
-from huey.contrib.djhuey import crontab, db_task, db_periodic_task
+from huey.api import crontab
+from huey.contrib.djhuey import db_task, db_periodic_task
 
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
