@@ -156,7 +156,7 @@ python-novaclient==14.1.0
 python-openstackclient==3.19.0
 python-swiftclient==3.7.0
 pytz==2019.1
-PyYAML==5.1.1
+PyYAML==3.13
 rcssmin==1.0.6
 redis==3.2.1
 requests==2.22.0
