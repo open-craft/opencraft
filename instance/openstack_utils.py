@@ -147,13 +147,14 @@ def get_nova_client(region_name, api_version=2):
         region_name=region_name,
     )
 
-    # API queries via the nova client occasionally get connection errors from the OpenStack provider.
-    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
-    # urllib3's definition) are retried before giving up.
-    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    nova.client.open_session()
-    nova.client._session.mount('http://', adapter)
-    nova.client._session.mount('https://', adapter)
+    # FIXME: reenable this, in order to be able to retry connections. Note that this code is repeated in get_openstack_connection, so maybe it isn't necessary or good to define it here
+    # # API queries via the nova client occasionally get connection errors from the OpenStack provider.
+    # # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
+    # # urllib3's definition) are retried before giving up.
+    # adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
+    # nova.client.open_session()
+    # nova.client._session.mount('http://', adapter)
+    # nova.client._session.mount('https://', adapter)
 
     return nova
 
