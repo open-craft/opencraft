@@ -50,17 +50,17 @@ def generate_secret_key(char_length):
     # We need three random bytes per four random b64 characters.
     random_bytes = os.urandom(int(char_length * 0.75))
     # Encode to a b64 string...
-    random_string = b64encode(random_bytes)
+    random_string = b64encode(random_bytes).decode("utf-8")
     # ...and return!
     return random_string
 
 
 def generate_rsa_key(key_size):
     """
-    Creates a key_size-bit RSA key and returns private key
+    Creates a key_size-bit RSA key and returns private key as string
     """
     rsa_key = RSA.generate(key_size)
-    return rsa_key.exportKey()
+    return rsa_key.exportKey().decode("utf-8")
 
 
 # Constants ###################################################################
@@ -135,7 +135,7 @@ class SecretKeyInstanceMixin(models.Model):
     @property
     def secret_key(self):
         """
-        Return the secret key in binary form.
+        Return the secret key in binary form, as bytes.
         """
         return b64decode(self.secret_key_b64encoded)
 
@@ -216,7 +216,7 @@ class SecretKeyInstanceMixin(models.Model):
 
     def http_auth_info_base64(self):
         """
-        Return the HTTP auth information in the format required by Authorization HTTP header.
+        Return the HTTP auth information in the format required by Authorization HTTP header, as a string.
         """
         user_pass = '{}:{}'.format(self.http_auth_user, self.http_auth_pass)
-        return b64encode(user_pass.encode('latin1'))
+        return b64encode(user_pass.encode('latin1')).decode("utf-8")
