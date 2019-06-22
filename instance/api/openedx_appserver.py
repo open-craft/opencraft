@@ -57,7 +57,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         """
         if self.action == 'list':
             return AppServerBasicSerializer
-        elif self.action == 'create':
+        if self.action == 'create':
             return SpawnAppServerSerializer
         return OpenEdXAppServerSerializer
 

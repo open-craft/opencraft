@@ -188,12 +188,12 @@ def capture_playbook_output(
     Convenience wrapper for run_playbook() that captures the output of the playbook run.
     """
     with run_playbook(
-        requirements_path=requirements_path,
-        inventory_str=inventory_str,
-        vars_str=vars_str,
-        playbook_path=os.path.dirname(playbook_path),
-        playbook_name=os.path.basename(playbook_path),
-        username=username,
+            requirements_path=requirements_path,
+            inventory_str=inventory_str,
+            vars_str=vars_str,
+            playbook_path=os.path.dirname(playbook_path),
+            playbook_name=os.path.basename(playbook_path),
+            username=username,
     ) as process:
         try:
             log_line_generator = poll_streams(
@@ -219,5 +219,4 @@ def capture_playbook_output(
         process.wait()
         if collect_logs:
             return log_lines, process.returncode
-        else:
-            return process.returncode
+        return process.returncode

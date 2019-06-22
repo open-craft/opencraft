@@ -151,7 +151,7 @@ class DnsCleanupInstance():
             len(records_to_delete)
         )
 
-        if len(records_to_delete):
+        if records_to_delete:
             logger.info("Starting cleanup...")
             # Create new zone version
             new_zone_version = self.create_new_zone_version(self.zone_id)
