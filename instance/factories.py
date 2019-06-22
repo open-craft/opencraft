@@ -50,19 +50,19 @@ def _check_environment():
             "AWS support is currently enabled. Add AWS_ACCESS_KEY_ID and "
             "AWS_SECRET_ACCESS_KEY settings or adjust INSTANCE_STORAGE_TYPE setting."
         )
-        return
+        return False
     if not MySQLServer.objects.exists() and settings.DEFAULT_INSTANCE_MYSQL_URL is None:
         logger.warning(
             "No MySQL servers configured, and default URL for external MySQL database is missing."
             "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
         )
-        return
+        return False
     if not MongoDBServer.objects.exists() and settings.DEFAULT_INSTANCE_MONGO_URL is None:
         logger.warning(
             "No MongoDB servers configured, and default URL for external MongoDB database is missing."
             "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."
         )
-        return
+        return False
     return True
 
 
@@ -122,7 +122,7 @@ def production_instance_factory(**kwargs):
 
     if not environment_ready:
         logger.warning("Environment not ready. Please fix the problems above, then try again. Aborting.")
-        return
+        return None
 
     # Gather settings
     production_settings = {

@@ -80,7 +80,8 @@ class Command(BaseCommand):
                 active_appservers[public_ip] = appserver.instance
         return active_appservers
 
-    def activity_csv(self, out):
+    # TODO simplify to reduce the number of local variables
+    def activity_csv(self, out):  # pylint: disable=too-many-locals
         """Generate the activity CSV."""
         active_appservers = self.get_active_appservers()
         if not active_appservers:

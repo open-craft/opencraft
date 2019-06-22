@@ -132,8 +132,8 @@ class AnsibleAppServerMixin(models.Model):
             self.logger.info('Playbooks completed for AppServer %s', self)
         return (log, returncode)
 
-    def save(self, *args, **kwargs):
+    def save(self, **kwargs):
         """Save this AnsibleAppServer."""
         if not self.pk:
             self.common_configuration_settings = self.create_common_configuration_settings()
-        super().save(*args, **kwargs)
+        super().save(**kwargs)

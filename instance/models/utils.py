@@ -121,10 +121,10 @@ class ValidateModelMixin(object):
 
     https://gist.github.com/glarrain/5448253
     """
-    def save(self, *args, **kwargs):
+    def save(self, **kwargs):
         """Call :meth:`full_clean` before saving."""
         self.full_clean()
-        super(ValidateModelMixin, self).save(*args, **kwargs)
+        super(ValidateModelMixin, self).save(**kwargs)
 
 
 class ClassProperty(property):

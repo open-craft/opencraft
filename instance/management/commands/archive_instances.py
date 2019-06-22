@@ -52,6 +52,8 @@ class Command(BaseCommand):
             '--file', help='File containing newline-separated list of instance domains'
         )
 
+    # TODO simplify to reduce the number of branches
+    # pylint: disable=too-many-branches
     def handle(self, *args, **options):
         """
         Archive instances from a list of domains or from a file.
