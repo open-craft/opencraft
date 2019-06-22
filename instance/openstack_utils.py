@@ -140,10 +140,10 @@ def get_nova_client(region_name, api_version=2):
     """
     nova = NovaClient(
         api_version,
-        settings.OPENSTACK_USER,
-        settings.OPENSTACK_PASSWORD,
-        settings.OPENSTACK_TENANT,
-        settings.OPENSTACK_AUTH_URL,
+        username=settings.OPENSTACK_USER,
+        password=settings.OPENSTACK_PASSWORD,
+        project_name=settings.OPENSTACK_TENANT,
+        auth_url=settings.OPENSTACK_AUTH_URL,
         region_name=region_name,
     )
 
