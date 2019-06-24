@@ -422,7 +422,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
-    @shard(3)
     @patch_git_checkout
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failure(self, git_checkout, git_working_dir):
@@ -443,7 +442,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
-    @shard(1)
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
@@ -466,7 +464,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
-    @shard(1)
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
         """
