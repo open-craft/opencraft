@@ -114,7 +114,7 @@ class BrowserTestMixin:
                         .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
                     # And that the server validation, if any, has completed
                     if field in validate_fields:
-                        WebDriverWait(self.client, timeout=30) \
+                        WebDriverWait(self.client, timeout=60) \
                             .until(ServerValidationComplete((By.NAME, field)))
 
     def submit_form(self):
