@@ -43,7 +43,7 @@ class ApprovalTestCase(TestCase):
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         with freeze_time('2019-01-02 09:30:00') as frozen_time:
             accepted_time = utc.localize(frozen_time())
-            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S')
+            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S%z')
             application = BetaTestApplication.objects.create(
                 user=user,
                 subdomain='test',
