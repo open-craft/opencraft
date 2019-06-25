@@ -164,7 +164,11 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     Create a VM via nova
     """
     flavor = nova.flavors.find(**flavor_selector)
-    image = nova.images.find(**image_selector)
+    if 'name' in image_selector and 'name_or_id' not in image_selector:
+        # Newer novaclient versions use 'name_or_id' but we still support 'name', since it's written in our .env and stored in DB fields
+        image_selector['name_or_id'] = image_selector['name']
+        del image_selector['name']
+    image = nova.glance.find_image(**image_selector)
 
     logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
     return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)
