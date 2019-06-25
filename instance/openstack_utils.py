@@ -75,7 +75,7 @@ def get_openstack_connection(region_name):
     """
 
     loader = occ.OpenStackConfig(
-        load_yaml_files=False,
+        load_yaml_config=False,
         app_name='opencraft-im',
         app_version='1.0')
     cloud_region = loader.get_one_cloud(
@@ -84,9 +84,7 @@ def get_openstack_connection(region_name):
         auth=dict(
             auth_url=settings.AUTH_URL,
             username=settings.OPENSTACK_USER,
-            user_domain_name='example-domain',
             project_name=settings.OPENSTACK_TENANT,
-            user_project_name='example-domain',
             password=settings.OPENSTACK_PASSWORD,
         ))
     conn = connection.from_config(cloud_config=cloud_region)
