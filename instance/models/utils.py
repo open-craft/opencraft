@@ -27,9 +27,11 @@ import json
 import time
 from weakref import WeakKeyDictionary
 
-from django.conf import settings
-
 import consul
+import requests
+from django.conf import settings
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Exceptions ##################################################################
 
@@ -651,3 +653,18 @@ class ConsulAgent(object):
         :return: Boolean True if object is list or dictionary, False otherwise.
         """
         return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)
+
+
+def retry_session(retries=5, session=None, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session

@@ -9,6 +9,7 @@ from random import randint
 from django.conf import settings
 
 from instance.models.mixins.common_config import ConfigMixinBase
+from instance.models.utils import retry_session
 
 
 # Classes #####################################################################
@@ -383,6 +384,11 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             })
 
         if self.admin_users:
+            session = retry_session()
+            users = [
+                username for username in self.admin_users
+                if session.get('https://github.com/{}.keys'.format(username)).status_code == 200
+            ]
             template.update({
                 "COMMON_USER_INFO": [
                     {
@@ -390,7 +396,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         "github": True,
                         "type": "admin"
                     }
-                    for github_username in self.admin_users
+                    for github_username in users
                 ],
             })
 
