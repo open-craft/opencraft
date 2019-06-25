@@ -57,10 +57,10 @@ def generate_secret_key(char_length):
 
 def generate_rsa_key(key_size):
     """
-    Creates a key_size-bit RSA key and returns private key
+    Creates a key_size-bit RSA key and returns private key as string
     """
     rsa_key = RSA.generate(key_size)
-    return rsa_key.exportKey()
+    return rsa_key.exportKey().decode("utf-8")
 
 
 # Constants ###################################################################
