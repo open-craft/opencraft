@@ -82,7 +82,7 @@ def get_openstack_connection(region_name):
         region_name=region_name,
         auth_type='password',
         auth=dict(
-            auth_url=settings.AUTH_URL,
+            auth_url=settings.OPENSTACK_AUTH_URL,
             username=settings.OPENSTACK_USER,
             project_name=settings.OPENSTACK_TENANT,
             password=settings.OPENSTACK_PASSWORD,
