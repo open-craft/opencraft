@@ -106,11 +106,10 @@ class BrowserTestMixin:
                 self.client.execute_script("document.getElementById('{}').type='text'".format(id_elem))
 
             if not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
+                element.click()
                 element.clear()
-                time.sleep(.5)
                 if value:
-                    element.click()
-                    time.sleep(.5)
+                    time.sleep(.25)
                     element.send_keys(value)
                     # Before moving on, make sure input field contains desired text
                     WebDriverWait(self.client, timeout=5) \
