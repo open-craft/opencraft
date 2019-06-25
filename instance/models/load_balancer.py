@@ -281,12 +281,12 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
                 "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
             )
 
-    def delete(self, *args, **kwargs):
+    def delete(self, **kwargs):
         """
         Delete the LoadBalancingServer from the database.
         """
         self.deconfigure()
-        super().delete(*args, **kwargs)
+        super().delete(**kwargs)
 
     @contextlib.contextmanager
     def _configuration_lock(self, *, blocking=True):

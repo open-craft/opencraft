@@ -362,7 +362,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         # OpenCraft backported replicaset support into Ginkgo release branches.
         if (("ginkgo" in self.openedx_release and "opencraft" not in self.configuration_version) or
                 "ficus" in self.openedx_release):
-            edxapp_mongo_hosts = [primary_mongodb_server.hostname]  # pylint: disable=redefined-variable-type
+            edxapp_mongo_hosts = [primary_mongodb_server.hostname]
 
         # Replicasets are supported by OpenCraft's ginkgo, and upstream post-Ginkgo releases, and require a
         # comma-separated string of hostnames.

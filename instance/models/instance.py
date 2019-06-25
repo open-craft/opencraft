@@ -82,21 +82,13 @@ class InstanceReference(TimeStampedModel):
     def __str__(self):
         return '{} #{}'.format(self.instance_type.name, self.instance_id)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, **kwargs):
         """
         Delete this InstanceReference and the associated Instance.
         """
         if not kwargs.pop('instance_already_deleted', False):
             self.instance.delete(ref_already_deleted=True, **kwargs)
-        super().delete(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        """
-        Save this InstanceReference
-
-        This also gets called whenever the Instance subclass has changed.
-        """
-        super().save(*args, **kwargs)
+        super().delete(**kwargs)
 
     @classmethod
     def can_manage(cls, user):
@@ -199,6 +191,7 @@ class Instance(ValidateModelMixin, models.Model):
         """Get the username of the Ocim user who created the instance."""
         if self.ref.creator:
             return self.ref.creator.user.username
+        return None
 
     @property
     def owner_organization(self):
@@ -208,6 +201,7 @@ class Instance(ValidateModelMixin, models.Model):
         """
         if self.ref.owner:
             return self.ref.owner.name
+        return None
 
     def save(self, *args, **kwargs):
         """ Save this Instance """
@@ -217,7 +211,7 @@ class Instance(ValidateModelMixin, models.Model):
             self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
         self.ref.save()
 
-    def refresh_from_db(self, using=None, fields=None, **kwargs):
+    def refresh_from_db(self, using=None, fields=None):
         """
         Reload from DB, or load related field.
 
@@ -227,7 +221,7 @@ class Instance(ValidateModelMixin, models.Model):
         """
         if fields is None:
             self.ref.refresh_from_db()
-        super().refresh_from_db(using=using, fields=fields, **kwargs)
+        super().refresh_from_db(using=using, fields=fields)
 
     @property
     def event_context(self):
@@ -264,7 +258,7 @@ class Instance(ValidateModelMixin, models.Model):
         self.ref.is_archived = True
         self.ref.save()
 
-    def delete(self, *args, **kwargs):
+    def delete(self, **kwargs):
         """
         Delete this Instance.
 
@@ -272,7 +266,7 @@ class Instance(ValidateModelMixin, models.Model):
         """
         if not kwargs.pop('ref_already_deleted', False):
             self.ref.delete(instance_already_deleted=True, **kwargs)
-        super().delete(*args, **kwargs)
+        super().delete(**kwargs)
 
 
 class InstanceTag(ValidateModelMixin, models.Model):
