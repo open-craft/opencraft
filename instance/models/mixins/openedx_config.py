@@ -393,7 +393,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "COMMON_USER_INFO": [
                     {
                         "name": github_username,
-                        "github": github_username in users,
+                        "github": True,
+                        "type": "admin"
+                    } if github_username in users else {
+                        "name": github_username,
                         "type": "admin"
                     }
                     for github_username in self.admin_users
