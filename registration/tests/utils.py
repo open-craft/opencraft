@@ -107,14 +107,17 @@ class BrowserTestMixin:
 
             if not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
                 element.clear()
+                time.sleep(.5)
                 if value:
+                    element.click()
+                    time.sleep(.5)
                     element.send_keys(value)
                     # Before moving on, make sure input field contains desired text
                     WebDriverWait(self.client, timeout=5) \
                         .until(expected_conditions.text_to_be_present_in_element_value((By.NAME, field), value))
                     # And that the server validation, if any, has completed
                     if field in validate_fields:
-                        WebDriverWait(self.client, timeout=60) \
+                        WebDriverWait(self.client, timeout=10) \
                             .until(ServerValidationComplete((By.NAME, field)))
 
     def submit_form(self):
