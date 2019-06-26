@@ -110,7 +110,8 @@ class BrowserTestMixin:
                 element.clear()
                 if value:
                     # A small delay is required for angular to properly mark field as dirty
-                    time.sleep(.25)
+                    element.click()
+                    time.sleep(.5)
                     element.send_keys(value)
                     # Before moving on, make sure input field contains desired text
                     WebDriverWait(self.client, timeout=5) \
