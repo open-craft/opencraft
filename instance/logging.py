@@ -46,7 +46,7 @@ def log_exception(method):
     def wrapper(self, *args, **kwds):
         try:
             return method(self, *args, **kwds)
-        except Exception:  # pylint: disable=broad-except
+        except:  # pylint: disable=bare-except
             self.logger.critical(traceback.format_exc()) # TODO: Restrict traceback view to administrators
             raise
     return wrapper

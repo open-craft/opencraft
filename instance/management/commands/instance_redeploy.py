@@ -283,7 +283,8 @@ class Command(BaseCommand):
                 cursor.close()
 
     # TODO simplify to reduce the number of branches
-    def _do_redeployment(self):  # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches
+    def _do_redeployment(self):
         """
         Run the redeployment in batches, logging the status for each loop.
         """
