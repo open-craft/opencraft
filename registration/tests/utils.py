@@ -107,7 +107,6 @@ class BrowserTestMixin:
                 self.client.execute_script("document.getElementById('{}').type='text'".format(id_elem))
 
             if not element.get_attribute('readonly') and not element.get_attribute('type') == 'hidden':
-                element.click()
                 element.clear()
                 if value:
                     # A small delay is required for angular to properly mark field as dirty
