@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+FIREFOX_RELEASE="47.0.2"
+FIREFOX_BIN="/usr/local/bin/firefox"
+
+sudo curl -O "https://ftp.mozilla.org/pub/firefox/releases/$FIREFOX_RELEASE/linux-x86_64/en-US/firefox-$FIREFOX_RELEASE.tar.bz2"
+sudo tar xf "firefox-$FIREFOX_RELEASE.tar.bz2"
+
+if test -f "$FIREFOX_BIN"; then
+    sudo mv "$FIREFOX_BIN" "$FIREFOX_BIN.old"
+fi
+sudo ln -s $(pwd)/firefox/firefox "$FIREFOX_BIN"

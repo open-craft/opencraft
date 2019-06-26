@@ -24,7 +24,6 @@ Beta registration browser tests
 
 from collections import defaultdict
 import re
-import time
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.urlresolvers import reverse
@@ -34,6 +33,14 @@ from registration.tests.utils import BrowserTestMixin
 
 
 # Tests #######################################################################
+
+SERVER_VALIDATED_FIELDS = (
+    'subdomain',
+    'username',
+    'email',
+    'password_confirmation',
+)
+
 
 class BetaTestBrowserTestCase(BrowserTestMixin,
                               BetaTestApplicationViewTestMixin,
@@ -63,11 +70,7 @@ class BetaTestBrowserTestCase(BrowserTestMixin,
         Fill in the registration form and click the submit button.
         """
         self.client.get(self.url)
-        self.fill_form(form_data)
-
-        # Wait for ajax validation to complete
-        time.sleep(2)
-
+        self.fill_form(form_data, validate_fields=SERVER_VALIDATED_FIELDS)
         self.submit_form()
 
         return self.client.page_source
