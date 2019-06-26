@@ -27,9 +27,11 @@ import json
 import time
 from weakref import WeakKeyDictionary
 
-from django.conf import settings
-
 import consul
+import requests
+from django.conf import settings
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Exceptions ##################################################################
 
@@ -651,3 +653,28 @@ class ConsulAgent(object):
         :return: Boolean True if object is list or dictionary, False otherwise.
         """
         return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)
+
+
+def check_github_users(usernames, retries=5, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)):
+    """
+    Check if provided usernames exist in Github
+    :param usernames: list of usernames
+    :param retries: number of retries
+    :param backoff_factor: backoff to apply between retries
+    :param status_forcelist: HTTP status codes that should be retried
+    :return: list of usernames that exist in Github
+    """
+    session = requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
+    return [
+        username for username in usernames
+        if session.get('https://github.com/{}.keys'.format(username)).status_code == 200
+    ]

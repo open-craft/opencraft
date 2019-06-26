@@ -9,6 +9,7 @@ from random import randint
 from django.conf import settings
 
 from instance.models.mixins.common_config import ConfigMixinBase
+from instance.models.utils import check_github_users
 
 
 # Classes #####################################################################
@@ -390,7 +391,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                         "github": True,
                         "type": "admin"
                     }
-                    for github_username in self.admin_users
+                    for github_username in check_github_users(self.admin_users)
                 ],
             })
 

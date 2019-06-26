@@ -157,6 +157,7 @@ class OpenEdXAppServerTestCase(TestCase):
             ('admin4', 'admin4', ''),
             ('admin5', 'admin5', None),
             ('admin_no_org', '', admin_org_handle),
+            ('admin_no_github', 'invalid_github_user', admin_org_handle),
             ('inactive_admin', 'inactive_admin', admin_org_handle),
         ]
 
@@ -175,13 +176,20 @@ class OpenEdXAppServerTestCase(TestCase):
 
         instance = OpenEdXInstanceFactory()
         organization = Organization.objects.get(github_handle=admin_org_handle)
-        appserver = make_test_appserver(instance, organization=organization)
 
-        self.assertEqual(len(appserver.admin_users), len(expected_admin_users))
-        ansible_settings = yaml.load(appserver.configuration_settings)
-        self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
-            {'name': name, 'github': True, 'type': 'admin'} for name in expected_admin_users
-        ])
+        def check(_users):
+            return [_user for _user in _users if _user != 'invalid_github_user']
+
+        with patch('instance.models.mixins.openedx_config.check_github_users', check):
+            appserver = make_test_appserver(instance, organization=organization)
+
+            # Check user with non existant Github hande is removed
+            self.assertEqual(len(appserver.admin_users) - 1, len(expected_admin_users))
+
+            ansible_settings = yaml.load(appserver.configuration_settings)
+            self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
+                {'name': name, 'github': True, 'type': 'admin'} for name in expected_admin_users
+            ])
 
     @patch_services
     def test_cannot_reprovision(self, mocks):
