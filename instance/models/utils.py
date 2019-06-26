@@ -655,8 +655,16 @@ class ConsulAgent(object):
         return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)
 
 
-def retry_session(retries=5, session=None, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)):
-    session = session or requests.Session()
+def check_github_users(usernames, retries=5, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)):
+    """
+    Check if provided usernames exist in Github
+    :param usernames: list of usernames
+    :param retries: number of retries
+    :param backoff_factor: backoff to apply between retries
+    :param status_forcelist: HTTP status codes that should be retried
+    :return: list of usernames that exist in Github
+    """
+    session = requests.Session()
     retry = Retry(
         total=retries,
         read=retries,
@@ -666,4 +674,7 @@ def retry_session(retries=5, session=None, backoff_factor=0.3, status_forcelist=
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
-    return session
+    return [
+        username for username in usernames
+        if session.get('https://github.com/{}.keys'.format(username)).status_code == 200
+    ]
