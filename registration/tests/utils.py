@@ -38,7 +38,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 class ServerValidationComplete:
     """
-    Waits for the Angular validation classes to be set on the element.
+    This class will check if the `ng-dirty` class is present, meaning the element was modified, while
+    also checking the presence of one of the validation classes is also present to check if server-side
+    validation was successful.
     """
 
     ng_validated_classes = ('ng-valid', 'ng-invalid')
@@ -88,8 +90,7 @@ class BrowserTestMixin:
         """
         Fill in the form with the given data.
         """
-        if validate_fields is None:
-            validate_fields = tuple()
+        validate_fields = validate_fields or ()
         for field, value in form_data.items():
             element = self.form.find_element_by_name(field)
             if element.get_attribute('type') == 'checkbox':
@@ -109,6 +110,7 @@ class BrowserTestMixin:
                 element.click()
                 element.clear()
                 if value:
+                    # A small delay is required for angular to properly mark field as dirty
                     time.sleep(.25)
                     element.send_keys(value)
                     # Before moving on, make sure input field contains desired text
