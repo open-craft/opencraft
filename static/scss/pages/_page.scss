@@ -59,6 +59,7 @@
         &__header
         {
             margin-top: -10rem;
+            z-index: 1;
             margin-bottom: 2rem;
 
             & .box-alert__content
@@ -218,4 +219,3 @@
         }
     }
 }
-
