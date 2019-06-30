@@ -1,13 +1,12 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/python:3.5-stretch-browsers
+      - image: circleci/python:3.5-stretch-node-browsers
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
-          TEST_RUNNER: 'opencraft.tests.utils.CircleCIParallelTestRunner'
       - image: redis
       - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
@@ -18,35 +17,29 @@ jobs:
           PG_HOST: 127.0.0.1
           POSTGRES_USER: circleci
           POSTGRES_DB: circle_test
-    parallelism: 4
+    parameters:
+        tests_group:
+            type: integer
+        tests_type:
+            type: string
+    environment:
+        TEST_GROUP: <<parameters.tests_group>>
     steps:
       - checkout
       - restore_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
       - run:
           name: Wait for Redis
-          command: |
-            while ! nc -z localhost 6379; do
-              sleep 0.1
-            done
+          command: dockerize -wait tcp://localhost:6379 -timeout 10s
       - run:
           name: Wait for Postgres
-          command: |
-            while ! nc -z localhost 5432; do
-              sleep 0.1
-            done
+          command: dockerize -wait tcp://localhost:5432 -timeout 10s
       - run:
           name: Wait for MySQL
-          command: |
-            while ! nc -z localhost 3306; do
-              sleep 0.1
-            done
+          command: dockerize -wait tcp://localhost:3306 -timeout 10s
       - run:
           name: Wait for MongoDB
-          command: |
-            while ! nc -z localhost 27017; do
-              sleep 0.1
-            done
+          command: dockerize -wait tcp://localhost:27017 -timeout 10s
       - run:
           name: Install Dependencies
           command: |
@@ -56,11 +49,14 @@ jobs:
             pip install --upgrade virtualenv
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
+            sudo apt-get install default-libmysqlclient-dev
             pip install -r requirements.txt
             pip install -r cleanup_utils/requirements.txt
             sudo apt-get install postgresql-client
             sudo apt-get install unzip
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+            make install_system_dependencies
+            npm install
       - run:
           name: Run Consul
           command: |
@@ -82,10 +78,57 @@ jobs:
             make install_system_dependencies
             sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlclient.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
             bin/install-supported-firefox
-            bin/run-circleci-tests
-          no_output_timeout: 6h
+            mkdir -p /tmp/coverage
+            make << parameters.tests_type >>
+            if [ -e .coverage.* ]; then
+                cp -v .coverage.* /tmp/coverage/.
+            fi
+            if [ -d coverage ]; then
+                cp -vR coverage/* /tmp/coverage/.
+            fi
+          no_output_timeout: 2h
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - coverage
+  coverage:
+    docker:
+      - image: circleci/python:3.5.4-node
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade virtualenv
+            # The jessie-updates and jessie-backports areas are now removed from the repositories. So
+            # the lines corresponding to those areas have to be removed to fix the resulting errors.
+            # This can be removed after upgrading to the image based on Debian Stretch.
+            sudo sed -i '/jessie-updates/d' /etc/apt/sources.list
+            sudo sed -i '/jessie-backports/d' /etc/apt/sources.list
+            sudo apt-get update; sudo apt-get install python2.7-dev
+            sudo apt-get install mysql-client
+            pip install -r requirements.txt
+            pip install -r cleanup_utils/requirements.txt
+            sudo apt-get install postgresql-client
+            sudo apt-get install unzip
+            sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+            make install_system_dependencies
+            npm install
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          command: |
+              . venv/bin/activate
+              coverage combine --append /tmp/workspace/coverage/
+              make cov.html
+              if [ -e /tmp/workspace/coverage/text/coverage.txt ]; then cat /tmp/workspace/coverage/text/coverage.txt; fi
   cleanup:
     docker:
       - image: circleci/python:3.5.4
@@ -114,5 +157,65 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - build
+      - build:
+          name: quality_migrations_tests
+          tests_group: 0
+          tests_type: clean test.quality test.migrations_missing
+      - build:
+          name: python_unit_tests
+          tests_group: 0
+          tests_type: clean test.unit
+          requires:
+            - quality_migrations_tests
+      - build:
+          name: browser_tests
+          tests_group: 0
+          tests_type: clean test.browser
+          requires:
+            - quality_migrations_tests
+      - build:
+          name: js_tests
+          tests_group: 0
+          tests_type: clean test.js
+          requires:
+            - quality_migrations_tests
+      - build:
+          name: integration_tests_group_1
+          tests_group: 1
+          tests_type: test.integration
+          requires:
+            - python_unit_tests
+            - browser_tests
+            - js_tests
+      - build:
+          name: integration_tests_group_2
+          tests_group: 2
+          tests_type: test.integration
+          requires:
+            - python_unit_tests
+            - browser_tests
+            - js_tests
+      - build:
+          name: integration_tests_group_3
+          tests_group: 3
+          tests_type: test.integration
+          requires:
+            - python_unit_tests
+            - browser_tests
+            - js_tests
+      - coverage:
+          name: coverage
+          requires:
+            - integration_tests_group_1
+            - integration_tests_group_2
+            - integration_tests_group_3
+  cleanup-workflow:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
       - cleanup

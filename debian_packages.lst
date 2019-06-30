@@ -1,6 +1,5 @@
 git
 libffi-dev
-libmysqlclient-dev
 libpq-dev
 make
 python-dev

@@ -63,4 +63,4 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
     configuration_version = 'integration-ironwood'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
-    edx_platform_commit = 'opencraft-release/ironwood.1'
+    edx_platform_commit = 'opencraft-release/ironwood.2'
