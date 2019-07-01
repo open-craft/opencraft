@@ -28,7 +28,6 @@ ddt==1.2.1
 debtcollector==1.21.0
 decorator==4.4.0
 Django==2.2.2
-# FIXME: see what's wrong with the upstream django-angular that made us use this:      -e git+https://github.com/jrief/django-angular.git@3a4eb9e716b0f03e4abe5ec60d6978a52da100f8#egg=django_angular         … and then fix it in some way, or create tickets, or just remove these validations. Or port our fixes (code drift) into the latest version.  See SE-222.  For now we'll use upstream:
 django-angular==2.2
 django-appconf==1.0.3
 django-compressor==2.3

@@ -96,7 +96,7 @@ class Textarea(InputStyleMixin, forms.widgets.Textarea):
 
 # Forms #######################################################################
 
-# FIXME use this class declaration again (NgModelFormMixin, …), after fixing the django-angular issues. Instead of ModelForm
+# TODO convert to django-angular form by using this class signature (see BIZ-671):
 # class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelForm):
 class BetaTestApplicationForm(forms.ModelForm):
     """
@@ -450,11 +450,8 @@ class BetaTestApplicationForm(forms.ModelForm):
         return users
 
 
-
-# FIXME use this class declaration again (NgModelFormMixin, …), after fixing the django-angular issues. Instead of AuthenticationForm
-# class LoginForm(NgFormValidationMixin, AuthenticationForm,
-#                 metaclass=NgDeclarativeFieldsMetaclass):
-# FIXME delete this other class:
+# TODO convert to django-angular form by using this class signature (see BIZ-671):
+# class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
 class LoginForm(AuthenticationForm):
     """
     Allows users to login with username/email and password.
