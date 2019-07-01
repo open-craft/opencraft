@@ -4,3 +4,4 @@ python-novaclient==14.1.0
 PyYAML==3.13
 Django==2.2.2
 django-environ==0.4.5
+virtualenv==16.6.1
