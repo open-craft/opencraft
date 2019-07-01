@@ -71,7 +71,6 @@ def get_openstack_connection(region_name):
     The returned Connection object has an attribute for each available service,
     e.g. "compute", "network", etc.
 
-    FIXME rewrite this function according to https://docs.openstack.org/openstacksdk/latest/user/transition_from_profile.html (started, but it doesn't work) and fix tests.
     """
 
     loader = occ.OpenStackConfig(
