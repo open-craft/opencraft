@@ -46,12 +46,12 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
             'domain',
         )
 
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Add additional fields/data to the output
         """
-        output = super().to_representation(obj)
-        output['appserver_count'] = obj.appserver_set.count()
+        output = super().to_representation(instance)
+        output['appserver_count'] = instance.appserver_set.count()
         output['status_description'] = []
 
         # Store the list of active appservers, and collated status information
@@ -63,7 +63,7 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         output['status_description'] = []
         output['is_healthy'] = True
         output['is_steady'] = True
-        for appserver in obj.get_active_appservers():
+        for appserver in instance.get_active_appservers():
             serialized_appserver = AppServerBasicSerializer(appserver, context=self.context).data
             if not serialized_appserver['is_healthy']:
                 output['is_healthy'] = False
@@ -73,7 +73,7 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
             output['status_description'].append(serialized_appserver['status_description'])
 
         output['status_description'] = '\n'.join(output['status_description'])
-        if len(output['active_appservers']) == 0:
+        if not output['active_appservers']:
             output['is_healthy'] = None
             output['is_steady'] = None
 
@@ -82,7 +82,7 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
             # We don't change or check the ordering of the .appserver_set.all() queryset here
             # because that causes the django ORM to force a new database query to be made
             # for each instance here, even if appserver_set was previously cached.
-            newest_appserver = obj.appserver_set.all()[0]
+            newest_appserver = instance.appserver_set.all()[0]
         except IndexError:
             output['newest_appserver'] = None
         else:
@@ -146,27 +146,27 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'openstack_server_ssh_keyname',
         )
 
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Add additional fields/data to the output
         """
-        output = super().to_representation(obj)
+        output = super().to_representation(instance)
 
-        filtered_appservers = obj.appserver_set.all()[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
+        filtered_appservers = instance.appserver_set.all()[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
         output['appservers'] = [
             AppServerBasicSerializer(appserver, context=self.context).data for appserver in filtered_appservers
         ]
 
         try:
-            output['source_pr'] = WatchedPullRequestSerializer(obj.watchedpullrequest).data
+            output['source_pr'] = WatchedPullRequestSerializer(instance.watchedpullrequest).data
         except WatchedPullRequest.DoesNotExist:
             output['source_pr'] = None
 
-        if obj.load_balancing_server:
-            output['load_balancing_server'] = obj.load_balancing_server.domain
+        if instance.load_balancing_server:
+            output['load_balancing_server'] = instance.load_balancing_server.domain
         else:
             output['load_balancing_server'] = None
 
-        output['configuration_theme_settings'] = obj.get_theme_settings()
+        output['configuration_theme_settings'] = instance.get_theme_settings()
 
         return output

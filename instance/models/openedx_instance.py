@@ -154,7 +154,7 @@ class OpenEdXInstance(
 
             appserver_vars.append(dict(ip_address=appserver.server.public_ip, name=server_name))
 
-        if len(appserver_vars) == 0:
+        if not appserver_vars:
             self.logger.error(
                 "No active appservers found with public IP addresses.  This should not happen. "
                 "Deconfiguring the load balancer backend."
@@ -222,7 +222,7 @@ class OpenEdXInstance(
             ).earliest('last_activated')
             return first_activated_appserver.last_activated
         except models.ObjectDoesNotExist:
-            return
+            return None
 
     def _spawn_appserver(self):
         """
@@ -294,7 +294,7 @@ class OpenEdXInstance(
 
             # Warn spawn failed after given attempts
             appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
-            return
+            return None
 
         self.logger.info('Provisioned new app server, %s', app_server.name)
         self.successfully_provisioned = True
@@ -414,7 +414,7 @@ class OpenEdXInstance(
             "Use archive() to shut down all of an instances app servers and remove it from the instance list."
         )
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete this Open edX Instance and its associated AppServers, and deprovision external databases and storage.
 

@@ -100,7 +100,7 @@ class NewRelicAvailabilityMonitor(models.Model):
     def __str__(self):
         return self.pk
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Disable this availability monitor on delete.
         """

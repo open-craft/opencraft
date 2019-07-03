@@ -72,7 +72,7 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
     def __str__(self):
         return '{0.created:%Y-%m-%d %H:%M:%S} | {0.level:>8s} | {0.text}'.format(self)
 
-    def clean_fields(self, **kwargs):
+    def clean_fields(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Clean fields, including the 'object_id' field
         """

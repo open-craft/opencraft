@@ -28,8 +28,8 @@ import time
 from weakref import WeakKeyDictionary
 
 import consul
-import requests
 from django.conf import settings
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -41,7 +41,6 @@ class WrongStateException(RuntimeError):
     Raised when a method/action is attempted but the object's current state
     does not support that method.
     """
-    pass
 
 
 class SteadyStateException(WrongStateException):
@@ -49,7 +48,6 @@ class SteadyStateException(WrongStateException):
     Raised when attempting to wait until object reaches a state that fulfills a certain condition
     but the object's current state is steady, i.e., it is not expected to change.
     """
-    pass
 
 
 # Functions ###################################################################
@@ -104,7 +102,7 @@ def get_base_playbook_name(openedx_release):
 
 # Classes #####################################################################
 
-class ValidateModelMixin(object):
+class ValidateModelMixin:
     """
     Make :meth:`save` call :meth:`full_clean`.
 
@@ -439,7 +437,7 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
         return new_state
 
 
-class ConsulAgent(object):
+class ConsulAgent:
     """
     This class acts as a helper that simplifies the operations of getting, putting,
     and deleting keys from Consul. These operations are mainly dealing with data-types,
@@ -751,9 +749,9 @@ class ConsulAgent(object):
     def _is_json_serializable(obj):
         """
         :param obj: Object to check
-        :return: Boolean True if object is list or dictionary, False otherwise.
+        :return: Boolean True if object is list, dictionary, or boolean, False otherwise.
         """
-        return isinstance(obj, dict) or isinstance(obj, list) or isinstance(obj, bool)
+        return isinstance(obj, (dict, list, bool))
 
 
 def check_github_users(usernames, retries=5, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)):

@@ -46,7 +46,7 @@ urlpatterns = [
 
 if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
     # Enable debug toolbar URLs
-    import debug_toolbar # pylint: disable=wrong-import-position,wrong-import-order
+    import debug_toolbar
     # "debug" URL pattern must be before "site" URL pattern.
     # See https://github.com/jazzband/django-debug-toolbar/issues/529
     urlpatterns = [

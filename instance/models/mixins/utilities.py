@@ -35,13 +35,13 @@ class EmailMixin:
     """
     Mixin that enables AppServer to send emails
     """
-    class EmailSubject(object):
+    class EmailSubject:
         """
         Class holding email subject constants
         """
         PROVISION_FAILED = "AppServer {name} ({instance_name}) failed to provision"
 
-    class EmailBody(object):
+    class EmailBody:
         """
         Class holding email body constants
         """

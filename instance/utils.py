@@ -54,7 +54,7 @@ def to_json(obj):
             return repr(obj2)
         try:
             return obj2.toJSON()
-        except: #pylint: disable=bare-except
+        except Exception:  # pylint: disable=broad-except
             return repr(obj2)
 
     if not hasattr(obj, 'toJSON'):

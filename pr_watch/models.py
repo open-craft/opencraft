@@ -139,7 +139,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
 
         return watched_pr.instance, created
 
-    def create(self, *args, **kwargs):
+    def create(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Augmented `create()` method:
         - Adds support for `fork_name` to allow to set both the github org & repo

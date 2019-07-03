@@ -411,6 +411,8 @@ class OpenEdXAppServerTestCase(TestCase):
                 result = Mock()
                 result.name = name_or_id
                 return result
+            else:
+                return None
 
         def mocked_create_security_group(**args):
             """ Mock openstack network.create_security_group """

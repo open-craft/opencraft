@@ -391,8 +391,8 @@ class DatabaseServerManagerTest(TestCase):
         self.assertEqual(MongoDBServer.objects.count(), 1)
 
         with override_settings(
-            DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@{hostname}'.format(hostname=mysql_hostname),
-            DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@{hostname}'.format(hostname=mongodb_hostname),
+                DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@{hostname}'.format(hostname=mysql_hostname),
+                DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@{hostname}'.format(hostname=mongodb_hostname),
         ):
             MySQLServer.objects._create_default()
             MongoDBServer.objects._create_default()

@@ -379,7 +379,7 @@ class OpenStackServerTestCase(TestCase):
         """
         server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
 
-        def raise_not_found(): #pylint: disable=missing-docstring
+        def raise_not_found():
             raise novaclient.exceptions.NotFound('not-found')
         server.os_server.delete.side_effect = raise_not_found
         server.logger = Mock()
@@ -402,7 +402,7 @@ class OpenStackServerTestCase(TestCase):
         """
         server = OpenStackServerFactory()
 
-        def raise_openstack_api_error(): #pylint: disable=missing-docstring
+        def raise_openstack_api_error():
             raise exception
 
         server.os_server.delete.side_effect = raise_openstack_api_error

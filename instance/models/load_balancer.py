@@ -282,7 +282,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
                 "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
             )
 
-    def delete(self, **kwargs):
+    def delete(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete the LoadBalancingServer from the database.
         """

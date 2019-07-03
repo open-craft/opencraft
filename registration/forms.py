@@ -34,7 +34,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.text import capfirst
 from django.template.loader import get_template
-from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
+# from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
@@ -105,7 +105,10 @@ class BetaTestApplicationForm(forms.ModelForm):
     """
     class Meta:
         model = BetaTestApplication
-        exclude = ('user', 'status', 'instance', 'accepted_privacy_policy')
+        fields = ('subdomain', 'instance_name', 'public_contact_email',
+                  'project_description', 'privacy_policy_url', 'main_color',
+                  'link_color', 'header_bg_color', 'footer_bg_color', 'logo',
+                  'favicon', 'subscribe_to_updates')
         widgets = {
             'instance_name': TextInput,
             'public_contact_email': EmailInput,

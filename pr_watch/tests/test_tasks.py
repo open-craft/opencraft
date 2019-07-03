@@ -172,9 +172,9 @@ class TasksTestCase(TestCase):
                 configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
                 configuration_version='named-release/elder-fromwatchedfork',
                 configuration_extra_settings=textwrap.dedent("""\
-                PHRASE: "I am a setting which was set up the watched fork {} (but will be overriden by the PR)"
-                FORK_SPECIFIC_PHRASE: "I am another setting which was set up in watched fork {}"
-                """.format(number, number)),
+                PHRASE: "I am a setting which was set up the watched fork {number} (but will be overriden by the PR)"
+                FORK_SPECIFIC_PHRASE: "I am another setting which was set up in watched fork {number}"
+                """.format(number=number)),
                 openedx_release='ginkgo.8',
             )
             pr_number = 23000 + number

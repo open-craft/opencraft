@@ -34,6 +34,8 @@ class ModelBackend(backends.ModelBackend):
     Extends the default ModelBackend to fetch users by email address as well as
     by username.
     """
+    # TODO: investigate updating this - django ModelBackend now has `request`
+    # as the first arg, and also checks user_can_authenticate
     def authenticate(self, username=None, password=None):
         """
         This is mostly copied from the default ModelBackend. Attempts to fetch
@@ -52,3 +54,4 @@ class ModelBackend(backends.ModelBackend):
         else:
             if user.check_password(password):
                 return user
+        return None

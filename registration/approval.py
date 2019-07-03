@@ -101,4 +101,3 @@ class ApplicationNotReady(Exception):
     """
     Raised when trying to process an application which isn't ready yet
     """
-    pass
