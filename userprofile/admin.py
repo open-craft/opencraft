@@ -68,6 +68,8 @@ class OrganizationAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
                 }),
             )
 
+        return None
+
     account_actions.short_description = 'Account Actions'
     account_actions.allow_tags = True
 

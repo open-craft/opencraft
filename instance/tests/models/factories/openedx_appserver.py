@@ -29,6 +29,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 # Functions ###################################################################
 
 
+# pylint: disable=too-many-branches, useless-suppression
 def make_test_appserver(instance=None, s3=False, server=None, organization=None, status=None):
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
@@ -68,7 +69,7 @@ def make_test_appserver(instance=None, s3=False, server=None, organization=None,
 
     if status == AppServerStatus.Running:
         _set_appserver_running(appserver)
-    if status == AppServerStatus.ConfigurationFailed:
+    elif status == AppServerStatus.ConfigurationFailed:
         _set_appserver_configuration_failed(appserver)
     elif status == AppServerStatus.Error:
         _set_appserver_errored(appserver)

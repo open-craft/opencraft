@@ -53,7 +53,7 @@ class Command(BaseCommand):
         )
 
     # TODO simplify to reduce the number of branches
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, useless-suppression
     def handle(self, *args, **options):
         """
         Archive instances from a list of domains or from a file.

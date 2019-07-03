@@ -49,11 +49,11 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
             'openstack_region',
         )
 
-    def to_representation(self, obj):
-        output = super().to_representation(obj)
+    def to_representation(self, instance):
+        output = super().to_representation(instance)
         # Convert the state values from objects to strings:
-        output['status'] = obj.status.state_id
+        output['status'] = instance.status.state_id
         # Add state name and description for display purposes:
-        output['status_name'] = obj.status.name
-        output['status_description'] = obj.status.description
+        output['status_name'] = instance.status.name
+        output['status_description'] = instance.status.description
         return output

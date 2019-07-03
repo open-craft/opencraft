@@ -369,8 +369,8 @@ class CleanUpTestCase(TestCase):
             closed_at = None
 
         with patch(
-            'pr_watch.github.get_pr_info_by_number',
-            return_value={'state': pr_state, 'closed_at': closed_at},
+                'pr_watch.github.get_pr_info_by_number',
+                return_value={'state': pr_state, 'closed_at': closed_at},
         ):
             # Run task
             tasks.shut_down_obsolete_pr_sandboxes()

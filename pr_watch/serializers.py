@@ -44,11 +44,11 @@ class WatchedPullRequestSerializer(serializers.ModelSerializer):
             'github_pr_url',
         )
 
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Add additional fields/data to the output
         """
-        output = super().to_representation(obj)
+        output = super().to_representation(instance)
         # The API must only expose InstanceReference IDs, not Instance ID
-        output['instance_id'] = obj.instance.ref.id if obj.instance else None
+        output['instance_id'] = instance.instance.ref.id if instance.instance else None
         return output

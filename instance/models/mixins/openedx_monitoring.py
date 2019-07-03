@@ -90,9 +90,14 @@ class OpenEdXMonitoringMixin:
             )
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
-        # Set up email alerts.
-        # We add emails here but never remove them - that must be done manually (or the monitor deleted)
-        # in order to reduce the chance of bugs or misconfigurations accidentally suppressing monitors.
+        self._set_email_alerts()
+
+    def _set_email_alerts(self):
+        """
+        Set up email alerts.
+        We add emails here but never remove them - that must be done manually (or the monitor deleted)
+        in order to reduce the chance of bugs or misconfigurations accidentally suppressing monitors.
+        """
         emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
         if emails_to_monitor:
             emails_current = set(
@@ -177,7 +182,7 @@ class NewRelicAvailabilityMonitor(models.Model):
     def __str__(self):
         return self.pk
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Disable this availability monitor on delete.
         """

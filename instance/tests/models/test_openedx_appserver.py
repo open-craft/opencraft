@@ -174,14 +174,14 @@ class OpenEdXAppServerTestCase(TestCase):
         # Mark the inactive user and admin as inactive; they should not be added to the resulting list
         get_user_model().objects.filter(username__in=('inactive_user', 'inactive_admin')).update(is_active=False)
 
-        instance = OpenEdXInstanceFactory()
-        organization = Organization.objects.get(github_handle=admin_org_handle)
-
         def check(_users):
             return [_user for _user in _users if _user != 'invalid_github_user']
 
         with patch('instance.models.mixins.openedx_config.check_github_users', check):
-            appserver = make_test_appserver(instance, organization=organization)
+            appserver = make_test_appserver(
+                OpenEdXInstanceFactory(),
+                organization=Organization.objects.get(github_handle=admin_org_handle),
+            )
 
             # Check user with non existant Github hande is removed
             self.assertEqual(len(appserver.admin_users) - 1, len(expected_admin_users))
@@ -411,6 +411,8 @@ class OpenEdXAppServerTestCase(TestCase):
                 result = Mock()
                 result.name = name_or_id
                 return result
+            else:
+                return None
 
         def mocked_create_security_group(**args):
             """ Mock openstack network.create_security_group """

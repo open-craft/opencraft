@@ -36,12 +36,12 @@ class ShardedTestLoader(unittest.TestLoader):
         self.node_index = node_index
         self.node_total = node_total
 
-    def getTestCaseNames(self, test_case_class):  # nopep8
+    def getTestCaseNames(self, testCaseClass):  # nopep8
         """Only return the test cases that are supposed to run on the current shard."""
-        method_names = super().getTestCaseNames(test_case_class)
+        method_names = super().getTestCaseNames(testCaseClass)
         filtered_method_names = []
         for method_name in method_names:
-            method = getattr(test_case_class, method_name)
+            method = getattr(testCaseClass, method_name)
             test_shard = getattr(method, 'shard', 0)
             if test_shard % self.node_total == self.node_index:
                 filtered_method_names.append(method_name)

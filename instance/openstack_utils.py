@@ -28,10 +28,8 @@ from django.conf import settings
 from novaclient.client import Client as NovaClient
 from openstack import config as occ
 from openstack import connection
-import requests
 from swiftclient.service import SwiftService
 
-from instance.utils import get_requests_retry
 
 # Logging #####################################################################
 
@@ -160,7 +158,8 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     """
     flavor = nova.flavors.find(**flavor_selector)
     if 'name' in image_selector and 'name_or_id' not in image_selector:
-        # Newer novaclient versions use 'name_or_id' but we still support 'name', since it's written in our .env and stored in DB fields
+        # Newer novaclient versions use 'name_or_id' but we still support
+        # 'name', since it's written in our .env and stored in DB fields
         image_selector['name_or_id'] = image_selector['name']
         del image_selector['name']
     image = nova.glance.find_image(**image_selector)

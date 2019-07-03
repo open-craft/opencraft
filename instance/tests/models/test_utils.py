@@ -572,7 +572,7 @@ class ConsulAgentTest(TestCase):
 
         # Test integer values
         key = 'int_key'
-        stored_value = 23  # pylint: disable=redefined-variable-type
+        stored_value = 23
         self.client.kv.put(key, str(stored_value))
 
         fetched_value = agent.get(key)
@@ -633,7 +633,7 @@ class ConsulAgentTest(TestCase):
 
         # Test integer values
         key = 'int_key'
-        stored_value = 23  # pylint: disable=redefined-variable-type
+        stored_value = 23
         self.client.kv.put(prefix + key, str(stored_value))
 
         fetched_value = agent.get(key)
@@ -693,7 +693,7 @@ class ConsulAgentTest(TestCase):
 
         # Put int values
         key = 'key'
-        value = 1  # pylint: disable=redefined-variable-type
+        value = 1
         agent.put(key, value)
 
         _, data = self.client.kv.get(key)
@@ -753,7 +753,7 @@ class ConsulAgentTest(TestCase):
 
         # Put int values
         key = 'key'
-        value = 1  # pylint: disable=redefined-variable-type
+        value = 1
         agent.put(key, value)
 
         _, data = self.client.kv.get(prefix + key)

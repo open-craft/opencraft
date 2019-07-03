@@ -66,7 +66,6 @@ def patch_url(url, method=responses.GET, status=requests.codes.ok):
         def test_that_calls_nova(...):
             ...
     """
-    # pylint: disable=missing-docstring
     def function_wrapper(func):
         def responses_wrapper(*args, **kwargs):
             responses.add(

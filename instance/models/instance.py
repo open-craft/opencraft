@@ -82,7 +82,7 @@ class InstanceReference(TimeStampedModel):
     def __str__(self):
         return '{} #{}'.format(self.instance_type.name, self.instance_id)
 
-    def delete(self, **kwargs):
+    def delete(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete this InstanceReference and the associated Instance.
         """
@@ -203,7 +203,7 @@ class Instance(ValidateModelMixin, models.Model):
             return self.ref.owner.name
         return None
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """ Save this Instance """
         super().save(*args, **kwargs)
         # Ensure an InstanceReference exists, and update its 'modified' field:
@@ -258,7 +258,7 @@ class Instance(ValidateModelMixin, models.Model):
         self.ref.is_archived = True
         self.ref.save()
 
-    def delete(self, **kwargs):
+    def delete(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete this Instance.
 
