@@ -160,7 +160,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         Yield all instances configured to use this load balancer.
         """
         # Local import due to avoid problems with circular dependencies.
-        # pylint: disable=cyclic-import
+        # pylint: disable=cyclic-import, useless-suppression
         from instance.models.mixins.load_balanced import LoadBalancedInstance
 
         for field in self._meta.get_fields():

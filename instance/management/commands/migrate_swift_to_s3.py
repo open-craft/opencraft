@@ -173,7 +173,7 @@ class Command(BaseCommand):  # pragma: no cover
         # LOG.info("Command output: ", output)
 
     # This is a long process with many steps and we don't gain much by moving steps to separate functions
-    # pylint: disable=too-many-statements,too-many-branches
+    # pylint: disable=too-many-statements,too-many-branches, useless-suppression
     def _migrate_swift_to_s3(self, instance):
         """Create IAM user, S3 bucket, move all files from SWIFT to S3, and mark the instance as using S3."""
         # It still doesn't do error handling, so the first times you must review that it's doing the right thing
