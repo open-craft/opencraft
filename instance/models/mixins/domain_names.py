@@ -85,6 +85,9 @@ class DomainNameInstance(models.Model):
     external_studio_domain = models.CharField(max_length=100, blank=True)
     external_discovery_domain = models.CharField(max_length=100, blank=True)
     external_ecommerce_domain = models.CharField(max_length=100, blank=True)
+    extra_custom_domains = models.TextField(default='', blank=True, help_text=(
+        "Add custom domain names, one per line. Domain names must be sub domains of the main LMS domain."
+    ))
 
     enable_prefix_domains_redirect = models.BooleanField(default=False)
 
@@ -179,6 +182,8 @@ class DomainNameInstance(models.Model):
             self.internal_discovery_domain,
             self.internal_ecommerce_domain,
         ]
+        custom_domains = self.extra_custom_domains.split("\r\n")
+        domain_names += [domain for domain in custom_domains if domain.endswith(self.internal_lms_domain)]
         return [name for name in domain_names if name]
 
     def get_managed_domains(self):

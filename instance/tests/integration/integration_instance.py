@@ -270,6 +270,30 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 break
         self.assertEqual(settings.S3_VERSION_EXPIRATION, days)
 
+    def assert_load_balanced_domains(self, instance):
+        """
+        Ensure instance has extra custom domains correctly configured.
+        """
+        expected_domain_names = [
+            instance.external_lms_domain,
+            instance.external_lms_preview_domain,
+            instance.external_studio_domain,
+            instance.external_discovery_domain,
+            instance.external_ecommerce_domain,
+            instance.internal_lms_domain,
+            instance.internal_lms_preview_domain,
+            instance.internal_studio_domain,
+            instance.internal_discovery_domain,
+            instance.internal_ecommerce_domain,
+            'custom1.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
+            'custom2.{lms_domain}'.format(lms_domain=instance.internal_lms_domain),
+        ]
+        expected_domain_names = [domain for domain in expected_domain_names if domain]
+        self.assertEqual(
+            instance.get_load_balanced_domains(),
+            expected_domain_names
+        )
+
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @shard(1)
     def test_spawn_appserver(self):
@@ -317,6 +341,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_secret_keys(instance, appserver)
             self.assert_lms_users_provisioned(user, appserver)
             self.assert_theme_provisioned(instance, appserver, application)
+        self.assert_load_balanced_domains(instance)
 
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_betatest_accepted(self):
