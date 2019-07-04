@@ -60,9 +60,14 @@ class OpenEdXMonitoringMixin:
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             self.new_relic_availability_monitors.create(pk=new_monitor_id)
 
-        # Set up email alerts.
-        # We add emails here but never remove them - that must be done manually (or the monitor deleted)
-        # in order to reduce the chance of bugs or misconfigurations accidentally supressing monitors.
+        self._set_email_alerts()
+
+    def _set_email_alerts(self):
+        """
+        Set up email alerts.
+        We add emails here but never remove them - that must be done manually (or the monitor deleted)
+        in order to reduce the chance of bugs or misconfigurations accidentally supressing monitors.
+        """
         emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
         if emails_to_monitor:
             for monitor in self.new_relic_availability_monitors.all():

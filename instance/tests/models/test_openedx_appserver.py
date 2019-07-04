@@ -134,6 +134,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
+    # pylint: disable=too-many-locals
     def test_admin_users(self):
         """
         By default, all users that belong to an organization that owns the

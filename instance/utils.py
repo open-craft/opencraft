@@ -24,12 +24,18 @@ Instance app - Util functions
 
 import itertools
 import json
+import logging
 import selectors
 import socket
 import time
 from unittest.mock import Mock
 
 import requests
+
+
+# Logging #####################################################################
+
+logger = logging.getLogger(__name__)
 
 
 # Functions ###################################################################
@@ -114,7 +120,14 @@ def poll_streams(*files, line_timeout=None, global_timeout=None):
         selector.register(fileobj, selectors.EVENT_READ)
     timeout = _line_timeout_generator(line_timeout, global_timeout)
     while selector.get_map():
-        available = selector.select(next(timeout))
+        try:
+            next_timeout = next(timeout)
+        except StopIteration:
+            logger.error('_line_timeout_generator returned (should never happen).'
+                         'line_timeout: %s, global_timeout: %s',
+                         line_timeout, global_timeout)
+            next_timeout = 0
+        available = selector.select(next_timeout)
         if not available:
             # TODO(smarnach): This can also mean that the process received a signal.
             raise TimeoutError('Could not read line before timeout: {timeout}'.format(timeout=timeout))
