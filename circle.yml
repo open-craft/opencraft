@@ -75,7 +75,7 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            sleep <<tests_delay>>
+            sleep << parameters.tests_delay >>
             . venv/bin/activate
             sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
             make install_system_dependencies
