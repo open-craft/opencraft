@@ -22,8 +22,6 @@ jobs:
             type: integer
         tests_type:
             type: string
-        tests_delay:
-            type: integer
     environment:
         TEST_GROUP: <<parameters.tests_group>>
     steps:
@@ -75,7 +73,6 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            sleep << parameters.tests_delay >>
             . venv/bin/activate
             sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
             make install_system_dependencies
@@ -164,33 +161,28 @@ workflows:
           name: quality_migrations_tests
           tests_group: 0
           tests_type: clean test.quality test.migrations_missing
-          tests_delay: 0
       - build:
           name: python_unit_tests
           tests_group: 0
           tests_type: clean test.unit
-          tests_delay: 0
           requires:
             - quality_migrations_tests
       - build:
           name: browser_tests
           tests_group: 0
           tests_type: clean test.browser
-          tests_delay: 0
           requires:
             - quality_migrations_tests
       - build:
           name: js_tests
           tests_group: 0
           tests_type: clean test.js
-          tests_delay: 0
           requires:
             - quality_migrations_tests
       - build:
           name: integration_tests_group_1
           tests_group: 1
           tests_type: test.integration
-          tests_delay: 0
           requires:
             - python_unit_tests
             - browser_tests
@@ -199,7 +191,6 @@ workflows:
           name: integration_tests_group_2
           tests_group: 2
           tests_type: test.integration
-          tests_delay: 600
           requires:
             - python_unit_tests
             - browser_tests
@@ -208,7 +199,6 @@ workflows:
           name: integration_tests_group_3
           tests_group: 3
           tests_type: test.integration
-          tests_delay: 1200
           requires:
             - python_unit_tests
             - browser_tests
