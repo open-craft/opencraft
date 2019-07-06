@@ -533,6 +533,8 @@ ADMINS = env.json('ADMINS', default=set())
 
 BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console", "mail_admins"])
 HANDLERS = BASE_HANDLERS + ['db']
+# Email threshold level configurable by environment variable
+LOGGING_EMAIL_THRESHOLD = env('LOGGING_EMAIL_THRESHOLD', default='CRITICAL')
 LOGGING_ROTATE_MAX_KBYTES = env.json('LOGGING_ROTATE_MAX_KBYTES', default=10 * 1024)
 LOGGING_ROTATE_MAX_FILES = env.json('LOGGING_ROTATE_MAX_FILES', default=60)
 LOGGING = {
@@ -562,7 +564,7 @@ LOGGING = {
             'formatter': 'db'
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': LOGGING_EMAIL_THRESHOLD,
             'class': 'django.utils.log.AdminEmailHandler'
         },
     },
