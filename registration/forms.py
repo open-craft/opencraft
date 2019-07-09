@@ -34,7 +34,6 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.text import capfirst
 from django.template.loader import get_template
-# from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile

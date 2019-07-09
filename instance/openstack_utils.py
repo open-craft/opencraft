@@ -28,10 +28,8 @@ from django.conf import settings
 from novaclient.client import Client as NovaClient
 from openstack import config as occ
 from openstack import connection
-# import requests
 from swiftclient.service import SwiftService
 
-# from instance.utils import get_requests_retry
 
 # Logging #####################################################################
 
