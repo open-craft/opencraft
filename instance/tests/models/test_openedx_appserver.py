@@ -178,7 +178,10 @@ class OpenEdXAppServerTestCase(TestCase):
             return [_user for _user in _users if _user != 'invalid_github_user']
 
         with patch('instance.models.mixins.openedx_config.check_github_users', check):
-            appserver = make_test_appserver(OpenEdXInstanceFactory(), organization=Organization.objects.get(github_handle=admin_org_handle))
+            appserver = make_test_appserver(
+                OpenEdXInstanceFactory(),
+                organization=Organization.objects.get(github_handle=admin_org_handle),
+            )
 
             # Check user with non existant Github hande is removed
             self.assertEqual(len(appserver.admin_users) - 1, len(expected_admin_users))
