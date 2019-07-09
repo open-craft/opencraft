@@ -104,11 +104,8 @@ class BetaTestApplicationForm(forms.ModelForm):
     """
     class Meta:
         model = BetaTestApplication
-        fields = ('subdomain', 'instance_name', 'full_name', 'email', 'public_contact_email',
-                  'privacy_policy_url', 'username', 'password_strength',
-                  'password', 'password_confirmation', 'main_color',
-                  'link_color', 'header_bg_color', 'footer_bg_color', 'logo',
-                  'favicon', 'accept_terms', 'accept_privacy_policy', 'subscribe_to_updates')
+        # pylint: disable=modelform-uses-exclude
+        exclude = ('user', 'status', 'instance', 'accepted_privacy_policy')
         widgets = {
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
