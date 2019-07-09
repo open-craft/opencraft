@@ -104,10 +104,11 @@ class BetaTestApplicationForm(forms.ModelForm):
     """
     class Meta:
         model = BetaTestApplication
-        fields = ('subdomain', 'instance_name', 'public_contact_email',
-                  'project_description', 'privacy_policy_url', 'main_color',
+        fields = ('subdomain', 'instance_name', 'full_name', 'email', 'public_contact_email',
+                  'privacy_policy_url', 'username', 'password_strength',
+                  'password', 'password_confirmation', 'main_color',
                   'link_color', 'header_bg_color', 'footer_bg_color', 'logo',
-                  'favicon', 'subscribe_to_updates')
+                  'favicon', 'accept_terms', 'accept_privacy_policy', 'subscribe_to_updates')
         widgets = {
             'instance_name': TextInput,
             'public_contact_email': EmailInput,
