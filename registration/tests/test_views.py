@@ -500,7 +500,7 @@ class BetaTestApplicationViewTestMixin:
             if el.name == 'textarea':
                 attrs['value'] = el.text.strip()
             elif el['type'] == 'checkbox':
-                attrs['value'] = bool(el.get('checked'))
+                attrs['value'] = el.get('checked') is not None
             fields[name] = attrs
         return fields
 
