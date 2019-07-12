@@ -23,6 +23,7 @@ Instance - Integration Tests
 
 import os
 import re
+import sys
 import time
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -75,7 +76,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         server = active_appservers[0].server
         check_url_accessible('http://{0}/'.format(server.public_ip), auth=auth)
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
-            check_url_accessible(url)
+            sys.stderr.write('Checking {}'.format(url))
+            check_url_accessible(url, attempts=10, delay=600)
 
     def assert_appserver_firewalled(self, instance):
         """
