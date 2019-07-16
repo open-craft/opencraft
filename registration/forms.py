@@ -34,6 +34,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.text import capfirst
 from django.template.loader import get_template
+from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
@@ -95,9 +96,10 @@ class Textarea(InputStyleMixin, forms.widgets.Textarea):
 
 # Forms #######################################################################
 
-# TODO convert to django-angular form by using this class signature (see BIZ-671):
-# class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelForm):
-class BetaTestApplicationForm(forms.ModelForm):
+# TODO redo this form (see BIZ-671).
+# Use this signature to test:
+# class BetaTestApplicationForm(forms.ModelForm):
+class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelForm):
     """
     Application form for beta testers. Creates instances of User, UserProfile,
     and BetaTestApplication models on submit.
@@ -450,9 +452,10 @@ class BetaTestApplicationForm(forms.ModelForm):
         return users
 
 
-# TODO convert to django-angular form by using this class signature (see BIZ-671):
-# class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
-class LoginForm(AuthenticationForm):
+# TODO redo this form (see BIZ-671).
+# Use this signature to test:
+# class LoginForm(AuthenticationForm):
+class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
     """
     Allows users to login with username/email and password.
     """
