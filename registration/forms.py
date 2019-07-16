@@ -106,7 +106,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
     """
     class Meta:
         model = BetaTestApplication
-        # pylint: disable=modelform-uses-exclude
         exclude = ('user', 'status', 'instance', 'accepted_privacy_policy')
         widgets = {
             'instance_name': TextInput,
