@@ -122,7 +122,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
-    @patch('novaclient.client.HTTPClient.authenticate', autospec=True)
+    @patch('novaclient.v2.client.Client.authenticate', autospec=True)
     @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
     @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate):
