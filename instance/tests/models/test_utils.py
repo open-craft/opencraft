@@ -921,6 +921,96 @@ class ConsulAgentTest(TestCase):
             agent = ConsulAgent()
             agent.txn_put({})
 
+    @patch.object(consul.Consul.KV, 'get')
+    @patch.object(consul.Consul.KV, 'put')
+    @patch('instance.models.utils.ConsulAgent.txn_put', return_value=Mock())
+    def test_create_or_update_dict(self, mock_txn_put, mock_kv_put, mock_kv_get):
+        """
+        Tests create or update dict.
+        """
+        test_dict = {'key1': 'value1', 'key2': 'value2', 'version': 1}
+        mock_kv_get.side_effect = [(1, {'Value': json.dumps(test_dict).encode('utf-8')}), (1, None)]
+        self.agent.create_or_update_dict({'key1': 'value1', 'key2': 'value2'})
+        # Assert the same object is saved
+        self.assertFalse(len(mock_kv_put.mock_calls))
+
+        mock_kv_get.side_effect = [(1, {'Value': json.dumps(test_dict).encode('utf-8')}), (1, None)]
+        self.agent.create_or_update_dict({'key1': 'value1-update'})
+        test_dict['key1'] = 'value1-update'
+        test_dict['version'] = 2
+        # Assert only one key changed and the version was updated
+        self.assertEqual(len(mock_kv_put.mock_calls), 1)
+        name, args, kwargs = mock_kv_put.mock_calls[0]
+        self.assertEqual(args[0], self.agent.prefix)
+        self.assertDictEqual(test_dict, json.loads(args[1].decode('utf-8')))
+
+        mock_kv_get.side_effect = [
+            (1, None),
+            (1, json.dumps(
+                {'this/dummy/prefix/key1': 'value1',
+                 'this/dummy/prefix/key2': 'value2',
+                 'this/dummy/prefix/version': 1}
+            ).encode('utf-8'))
+        ]
+        value_dict = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'}
+        self.agent.create_or_update_dict(value_dict)
+        # Assert we are backwards compatible.
+        mock_txn_put.assert_called_with(value_dict, 3)
+
+    @patch.object(consul.Consul.KV, 'get')
+    @patch.object(consul.Consul.KV, 'put')
+    def test_delete_dict_key(self, mock_kv_put, mock_kv_get):
+        """
+        Test deleting a single key from a stored dictionary.
+        """
+        test_dict = {'key1': 'value1', 'key2': 'value2', 'version': 1}
+        mock_kv_get.side_effect = [(1, {'Value': json.dumps(test_dict).encode('utf-8')}), (1, None)]
+        self.agent.delete_dict_key('key1')
+        self.assertEqual(len(mock_kv_put.mock_calls), 1)
+        name, args, kwargs = mock_kv_put.mock_calls[0]
+        self.assertEqual(args[0], self.agent.prefix)
+        self.assertDictEqual({'key2': 'value2', 'version': 2}, json.loads(args[1].decode('utf-8')))
+
+    @patch.object(consul.Consul.KV, 'delete')
+    def test_remove_dict(self, mock_kv_delete):
+        """
+        Test delete a config dict.
+        """
+        self.agent.remove_dict()
+        mock_kv_delete.assert_called_with(self.agent.prefix)
+
+    @patch.object(consul.Consul.KV, 'put')
+    @patch(
+        'instance.models.utils.ConsulAgent._get_keys_as_dict',
+        return_value={
+            'key1': {
+                'Value': 'value1'
+            },
+            'key2': {
+                'Value': 'value2'
+            },
+            'version': {
+                'Value': 2
+            }
+        }
+    )
+    def test_consolidate_values_to_dict(self, mock_get_keys, mock_kv_put):
+        """
+        Test consolidate old format values into one key/value pair.
+        """
+        self.agent.consolidate_values_to_dict()
+        self.assertEqual(len(mock_kv_put.mock_calls), 1)
+        name, args, kwargs = mock_kv_put.mock_calls[0]
+        self.assertEqual(args[0], self.agent.prefix)
+        self.assertDictEqual(
+            {
+                'key1': 'value1',
+                'key2': 'value2',
+                'version': 2,
+            },
+            json.loads(args[1].decode('utf-8'))
+        )
+
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
 
