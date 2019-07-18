@@ -190,7 +190,7 @@ class OpenStackTestCase(TestCase):
         openstack_utils.create_server(self.nova, 'test-vm', {"ram": 4096, "disk": 40}, {"name": "Ubuntu 12.04"})
         self.assertEqual(self.nova.mock_calls, [
             call.flavors.find(disk=40, ram=4096),
-            call.glance.find_image(name='Ubuntu 12.04'),
+            call.glance.find_image(name_or_id='Ubuntu 12.04'),
             call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None, security_groups=None)
         ])
 
