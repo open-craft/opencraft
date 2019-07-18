@@ -92,7 +92,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(instance.configuration_version, 'named-release/elder')
         self.assertEqual(
             instance.name,
-            'PR#234: Watched PR title which ... (bradenmacdonald) - fork/watch-branch (7777777)')
+            'PR#234: Watched PR title which … (bradenmacdonald) - fork/watch-branch (7777777)')
 
         # Also check the WatchedPullRequest object:
         watched_pr = WatchedPullRequest.objects.get(github_pr_url=pr_url)
@@ -256,7 +256,7 @@ class TasksTestCase(TestCase):
             self.assertEqual(instance.configuration_version, 'named-release/elder')
             self.assertEqual(
                 instance.name,
-                'PR#2300{}: Watched PR title which ... (bradenmacdonald) - '
+                'PR#2300{}: Watched PR title which … (bradenmacdonald) - '
                 'fork/watch-branch (7777777)'.format(pr_number)
             )
 
