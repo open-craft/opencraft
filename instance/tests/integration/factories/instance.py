@@ -50,6 +50,12 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
             sub_domain = '{}.integration'.format(random_id)
             kwargs['random_prefix'] = random_id
             kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
+            kwargs['extra_custom_domains'] = (
+                "custom1.{lms_domain}\r\n"
+                "custom2.{lms_domain}".format(
+                    lms_domain=generate_internal_lms_domain(sub_domain)
+                )
+            )
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
