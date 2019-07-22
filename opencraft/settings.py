@@ -55,7 +55,7 @@ ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
 OCIM_ID = env('OCIM_ID', default='ocim')
-CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}/')
+CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}')
 
 # Auth ########################################################################
 
