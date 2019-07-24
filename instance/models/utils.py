@@ -638,12 +638,12 @@ class ConsulAgent:
         """
         get_data = None
         try:
-            data_index, get_data = self._client.kv.get(self.prefix, **kwargs)
+            _, get_data = self._client.kv.get(self.prefix, **kwargs)
         except consul.base.NotFound:
             pass
         try:
             # This is only needed for backwards compatibility.
-            data_index, txn_data = self._client.kv.get(self.prefix, recurse=True, **kwargs)
+            _, txn_data = self._client.kv.get(self.prefix, recurse=True, **kwargs)
         except consul.base.NotFound:
             pass
 
@@ -684,7 +684,7 @@ class ConsulAgent:
         :param (str) key: Key to delete
         :param (dict) kwargs: Extra parameters for consul.kv.put
         """
-        data_index, get_data = self._client.kv.get(self.prefix)
+        _, get_data = self._client.kv.get(self.prefix)
         stored = json.loads(get_data['Value'].decode('utf-8'))
         stored.pop(key)
         stored['version'] = stored['version'] + 1
