@@ -916,7 +916,7 @@ class ConsulAgentTest(TestCase):
         test_dict['version'] = 2
         # Assert only one key changed and the version was updated
         self.assertEqual(len(mock_kv_put.mock_calls), 1)
-        name, args, kwargs = mock_kv_put.mock_calls[0]
+        _, args, _ = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual(test_dict, json.loads(args[1].decode('utf-8')))
 
@@ -930,7 +930,7 @@ class ConsulAgentTest(TestCase):
         mock_kv_get.side_effect = [(1, {'Value': json.dumps(test_dict).encode('utf-8')}), (1, None)]
         self.agent.delete_dict_key('key1')
         self.assertEqual(len(mock_kv_put.mock_calls), 1)
-        name, args, kwargs = mock_kv_put.mock_calls[0]
+        _, args, _ = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual({'key2': 'value2', 'version': 2}, json.loads(args[1].decode('utf-8')))
 
