@@ -39,7 +39,7 @@ class IntegrationTestCase(TestCase):
     def setUp(self):
         super().setUp()
         # Override the environment setting - always run task in the same process
-        djhuey.HUEY.always_eager = True
+        djhuey.HUEY.immediate = True
         # Use a reduced playbook for integration builds - it will run faster.
         # See https://github.com/open-craft/configuration/blob/integration/playbooks/opencraft_integration.yml
         patcher = patch(
