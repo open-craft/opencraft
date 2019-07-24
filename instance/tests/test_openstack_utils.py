@@ -94,7 +94,10 @@ class OpenStackTestCase(TestCase):
         Test get_openstack_connection()
         """
         conn = openstack_utils.get_openstack_connection("some_region")
-        self.assertEqual(conn.profile.get_services()[0]['region_name'], "some_region")
+
+        # FIXME check whether testing conn.configt_get_region_name() is enough, or whether we need to test get_services() as in the original line:   self.assertEqual(conn.profile.get_services()[0]['region_name'], "some_region")
+        self.assertEqual(conn.config.get_region_name(), "some_region")
+
         self.assertTrue(conn.session.user_agent.startswith('opencraft-im'))
         # TODO: In future we could use 'mimic' to fake the OpenStack API for testing.
         # Then, here we could test 'conn.authorize()'
