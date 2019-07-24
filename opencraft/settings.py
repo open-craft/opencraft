@@ -232,7 +232,7 @@ HUEY = {
         'port': REDIS_URL_OBJ.port,
         'password': REDIS_URL_OBJ.password,
     },
-    'always_eager': env.bool('HUEY_ALWAYS_EAGER', default=False),
+    'immediate': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
     'consumer': {'workers': 1, 'loglevel': logging.INFO},

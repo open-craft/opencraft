@@ -331,10 +331,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
-        task = spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
-        # FIXME find out why huey's db_task won't run automatically after calling spawn_appserver() in tests(as it did before). Then remove this line:
-        # (note: other options are print(task(True))
-        task.task.execute()
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
         self.assert_instance_up(instance)
         self.assert_bucket_configured(instance)
