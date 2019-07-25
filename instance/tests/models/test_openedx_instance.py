@@ -980,7 +980,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         expected shape.
         """
         instance = OpenEdXInstanceFactory()
-        self.assertEqual(instance.consul_prefix, '{}/instances/{}/'.format(settings.OCIM_ID, instance.pk))
+        self.assertEqual(instance.consul_prefix, '{}/instances/{}'.format(settings.OCIM_ID, instance.pk))
 
     @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
     def test_write_metadata_to_consul(self):
@@ -1022,7 +1022,18 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         instance.purge_consul_metadata()
 
     @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
-    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata',
+        return_value={
+            'domain_slug': 'domain_slug',
+            'domain': 'domain',
+            'name': 'name',
+            'domains': ['domain1', 'domain2'],
+            'health_checks_enabled': False,
+            'basic_auth': 'basic_auth',
+            'active_app_servers': [],
+        }
+    )
     def test_update_consul_metadata(self, metadata_mock):
         """
         Tests whether the wrapper built around Consul writer returns the expected results.
@@ -1035,7 +1046,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
 
         # Initial store defaults
         version, updated = instance.update_consul_metadata()
-        self.assertEqual(version, 1)
+        self.assertEqual(version, 2)
         self.assertEqual(updated, True)
 
         # Test configurations changed
@@ -1045,12 +1056,12 @@ class OpenEdXInstanceConsulTestCase(TestCase):
             'dummyKey3': 'dummyValue3',
         }
         version, updated = instance.update_consul_metadata()
-        self.assertEqual(version, 2)
+        self.assertEqual(version, 3)
         self.assertEqual(updated, True)
 
         # Test configurations not changed
         version, updated = instance.update_consul_metadata()
-        self.assertEqual(version, 2)
+        self.assertEqual(version, 3)
         self.assertEqual(updated, False)
 
         instance.purge_consul_metadata()
@@ -1068,7 +1079,18 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         self.assertEqual(updated, False)
 
     @override_settings(CONSUL_ENABLED=True, OCIM_ID='ocim-test')
-    @patch('instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata')
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._generate_consul_metadata',
+        return_value={
+            'domain_slug': 'domain_slug',
+            'domain': 'domain',
+            'name': 'name',
+            'domains': ['domain1', 'domain2'],
+            'health_checks_enabled': False,
+            'basic_auth': 'basic_auth',
+            'active_app_servers': [],
+        }
+    )
     def test_purge_consul_metadata(self, metadata_mock):
         """
         Tests the functionality of deleting the Consul metadata for a specific instance
