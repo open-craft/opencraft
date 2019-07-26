@@ -95,7 +95,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Tries to resolve all the domains created for an instance and outputs the status.
         """
-        for domain_type in ['lms', 'studio', 'preview', 'discovery', 'ecommerce']:
+        for domain_type in ['lms', 'studio', 'lms_preview', 'discovery', 'ecommerce']:
             domain = getattr(instance, 'internal_{}_domain'.format(domain_type))
             try:
                 socket.gethostbyname(domain)
