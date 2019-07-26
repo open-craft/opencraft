@@ -111,6 +111,7 @@ pylint-django==0.7.2
 pylint-flask==0.5
 pylint-plugin-utils==0.2.4
 pymongo==3.3.1
+pyOpenSSL==19.0.0
 pyparsing==2.1.10
 python-cinderclient==1.9.0
 python-consul==1.1.0
