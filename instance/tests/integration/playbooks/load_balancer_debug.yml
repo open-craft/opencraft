@@ -34,3 +34,13 @@
     - name: Print whether the domain configuration is active
       debug:
         var: config_active
+
+    - name: Check if the certificates for the domain are found
+      find:
+        paths: /etc/haproxy/certs
+        patterns: "*{{ DOMAIN_NAME }}*"
+        register: cert_found
+
+    - name: Print whether the certificates were found
+      debug:
+        var: cert_found
