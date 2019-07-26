@@ -1,0 +1,36 @@
+---
+# Playbook to debug the HAProxy configuration for an instance
+
+- hosts: all
+  become: True
+  tasks:
+    - name: Check if the backend configuration file exists
+      state:
+        path: "/etc/haproxy/backends/{{ FRAGMENT_NAME }}"
+      register: backend_config_exists
+
+    - name: Print the backend configuration
+      debug: var=item
+      with_file:
+        - "/etc/haproxy/backends/{{ FRAGMENT_NAME }}"
+      when: backend_config_exists.stat.exists
+    - name: Check if the configuration file exists
+      state:
+        path: "/etc/haproxy/conf.d/{{ FRAGMENT_NAME }}"
+      register: config_exists
+
+    - name: Print the configuration
+      debug:
+        var=item
+      with_file:
+        - "/etc/haproxy/conf.d/{{ FRAGMENT_NAME }}"
+      when: config_exists.stat.exists
+
+    - name: Check if the configuration is active
+      shell: |
+        grep "{{ DOMAIN_NAME }}" /etc/haproxy/backend.map
+      register: config_active
+
+    - name: Print whether the domain configuration is active
+      debug:
+        var: config_active

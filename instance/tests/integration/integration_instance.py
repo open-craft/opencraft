@@ -21,8 +21,13 @@ Instance - Integration Tests
 """
 # Imports #####################################################################
 
+import logging
 import os
+import pathlib
 import re
+import socket
+import ssl
+import sys
 import time
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -32,9 +37,12 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import override_settings
 from django.utils.six import StringIO
+from OpenSSL import crypto
 import MySQLdb as mysql
 import pymongo
+import requests
 
+from instance import ansible
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
@@ -61,6 +69,74 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         'FORUM_API_KEY',
     )
 
+    def _debug_cert_domains(self, hostname):
+        """
+        Retrieves the certificate for the given hostname and outputs all the domains in that certificate.
+        """
+        domains = []
+        context = ssl._create_unverified_context()
+        with socket.create_connection((sys.argv[1], 443)) as sock:
+            with context.wrap_socket(sock, server_hostname=sys.argv[1]) as sslsock:
+                der_cert = sslsock.getpeercert(True)
+                pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
+                cert = crypto.load_certificate(crypto.FILETYPE_PEM, pem_cert)
+                domains = []
+                for component in cert.get_subject().get_components():
+                    if component[0].decode('ascii') == 'CN':
+                        domains.append(component[1].decode('ascii'))
+                        break
+                for i in range(cert.get_extension_count()):
+                    ext = cert.get_extension(i)
+                    if 'subjectAltName' in str(ext.get_short_name()):
+                        domains += [domain_.replace("DNS:", "") for domain_ in str(ext).split(", ")]
+        sys.stderr.write('SSL certificate domains: {}'.format(', '.join(domains)))
+
+    def _debug_dns_resolution(self, instance):
+        """
+        Tries to resolve all the domains created for an instance and outputs the status.
+        """
+        for domain_type in ['lms', 'studio', 'preview', 'discovery', 'ecommerce']:
+            domain = getattr(instance, 'internal_{}_domain'.format(domain_type))
+            try:
+                socket.gethostbyname(domain)
+                sys.stderr.write('Resolved {}\n'.format(domain))
+            except socket.gaierror:
+                sys.stderr.write('Unable to resolve {}\n'.format(domain))
+
+    def _debug_haproxy_configuration(self, instance):
+        """
+        Debugs the HAProxy configuration by running a playbook to check the configuration fragments for an instance.
+        """
+        playbook_path = pathlib.Path(
+            os.path.abspath(os.path.dirname(__file__))
+        ) / "playbooks/load_balancer_debug.yml"
+        ansible_vars = (
+            "FRAGMENT_NAME: {}\n"
+            "DOMAIN_NAME: {}\n"
+        ).format(
+            settings.LOAD_BALANCER_FRAGMENT_NAME_PREFIX + instance.load_balancing_server.fragment_name_postfix,
+            instance.domain
+        )
+
+        return_code = ansible.capture_playbook_output(
+            requirements_path=str(playbook_path.parent / "requirements.txt"),
+            playbook_path=str(playbook_path),
+            inventory_str=instance.load_balancer_address,
+            vars_str=ansible_vars,
+            username='ubuntu',
+            logger_=logging.getLogger('integration_ssl_debug')
+        )
+        if return_code != 0:
+            raise Exception('Playbook to debug the haproxy configuration failed')
+
+    def _get_debug_data(self, instance):
+        """
+        Gets debug information for investigating the SSL error.
+        """
+        instance.refresh_from_db()
+        self._debug_dns_resolution(instance)
+        self._debug_cert_domains(instance.domain)
+
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
@@ -75,7 +151,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         server = active_appservers[0].server
         check_url_accessible('http://{0}/'.format(server.public_ip), auth=auth)
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
-            check_url_accessible(url)
+            try:
+                check_url_accessible(url)
+            except (ssl.SSLError, requests.packages.urllib3.exceptions.SSLError, requests.exceptions.SSLError):
+                self._get_debug_data(instance)
 
     def assert_appserver_firewalled(self, instance):
         """
@@ -327,6 +406,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             footer_bg_color='#ddff89',
             instance=instance,
         )
+
+        self._get_debug_data(instance)
 
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
