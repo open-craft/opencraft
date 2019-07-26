@@ -136,6 +136,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         instance.refresh_from_db()
         self._debug_dns_resolution(instance)
         self._debug_cert_domains(instance.domain)
+        self._debug_haproxy_configuration(instance)
 
     def assert_instance_up(self, instance):
         """
