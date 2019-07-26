@@ -75,7 +75,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         domains = []
         context = ssl._create_unverified_context()
-        with socket.create_connection((sys.argv[1], 443)) as sock:
+        with socket.create_connection((hostname, 443)) as sock:
             with context.wrap_socket(sock, server_hostname=sys.argv[1]) as sslsock:
                 der_cert = sslsock.getpeercert(True)
                 pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
