@@ -408,8 +408,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             instance=instance,
         )
 
-        self._get_debug_data(instance)
-
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
