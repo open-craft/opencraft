@@ -121,7 +121,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         return_code = ansible.capture_playbook_output(
             requirements_path=str(playbook_path.parent / "requirements.txt"),
             playbook_path=str(playbook_path),
-            inventory_str=instance.load_balancer_address,
+            inventory_str=instance.load_balancing_server.domain,
             vars_str=ansible_vars,
             username='ubuntu',
             logger_=logging.getLogger('integration_ssl_debug')
