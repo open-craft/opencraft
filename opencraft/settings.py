@@ -55,7 +55,7 @@ ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
 OCIM_ID = env('OCIM_ID', default='ocim')
-CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}/')
+CONSUL_PREFIX = env('CONSUL_PREFIX', default='{ocim}/instances/{instance}')
 
 # Auth ########################################################################
 
@@ -533,6 +533,9 @@ ADMINS = env.json('ADMINS', default=set())
 
 BASE_HANDLERS = env.json('BASE_HANDLERS', default=["file", "console", "mail_admins"])
 HANDLERS = BASE_HANDLERS + ['db']
+# Log level for e-mail notifications. Messages below this level will not be
+# sent to site ADMINS.
+LOGGING_EMAIL_THRESHOLD = env('LOGGING_EMAIL_THRESHOLD', default='CRITICAL')
 LOGGING_ROTATE_MAX_KBYTES = env.json('LOGGING_ROTATE_MAX_KBYTES', default=10 * 1024)
 LOGGING_ROTATE_MAX_FILES = env.json('LOGGING_ROTATE_MAX_FILES', default=60)
 LOGGING = {
@@ -562,7 +565,7 @@ LOGGING = {
             'formatter': 'db'
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': LOGGING_EMAIL_THRESHOLD,
             'class': 'django.utils.log.AdminEmailHandler'
         },
     },
@@ -675,6 +678,7 @@ DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=Non
 
 LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
 PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
+PRELIMINARY_PAGE_HOSTNAME = env('PRELIMINARY_PAGE_HOSTNAME', default=None)
 
 # AWS #########################################################################
 

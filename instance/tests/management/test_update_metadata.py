@@ -20,6 +20,7 @@
 Instance app - instances' metadata update management command
 """
 # Imports #####################################################################
+import json
 from unittest.mock import patch
 
 from django.conf import settings
@@ -97,8 +98,7 @@ class UpdateMetadataTestCase(TestCase):
 
         # Add some garbage data to consul
         bad_prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=333)
-        self.client.kv.put(bad_prefix + 'key1', 'value1')
-        self.client.kv.put(bad_prefix + 'key2', 'value2')
+        self.client.kv.put(bad_prefix, json.dumps({'key1': 'value1', 'key2': 'value2'}).encode('utf-8'))
 
         call_command('update_metadata', skip_update=True, stdout=out)
         objects_count = OpenEdXInstance.objects.count()
@@ -126,8 +126,7 @@ class UpdateMetadataTestCase(TestCase):
 
         # Add some garbage data to consul
         bad_prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=333)
-        self.client.kv.put(bad_prefix + 'key1', 'value1')
-        self.client.kv.put(bad_prefix + 'key2', 'value2')
+        self.client.kv.put(bad_prefix, json.dumps({'key1': 'value1', 'key2': 'value2'}).encode('utf-8'))
 
         # Create an active instance
         active_instances_total = 20

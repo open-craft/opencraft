@@ -50,6 +50,12 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
             sub_domain = '{}.integration'.format(random_id)
             kwargs['random_prefix'] = random_id
             kwargs['internal_lms_domain'] = generate_internal_lms_domain(sub_domain)
+            kwargs['extra_custom_domains'] = (
+                "custom1.{lms_domain}\r\n"
+                "custom2.{lms_domain}".format(
+                    lms_domain=generate_internal_lms_domain(sub_domain)
+                )
+            )
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
@@ -59,7 +65,7 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     # or a release candidate tag will work.  We point both the edx-platform and the configuration
     # versions to the branch "integration" in our own forks.  These branches are based on the
     # corresponding openedx_release versions from upstream, but can contain custom modifications.
-    openedx_release = 'open-release/ironwood.1'
+    openedx_release = 'open-release/ironwood.2'
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
     configuration_version = 'integration-ironwood'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
