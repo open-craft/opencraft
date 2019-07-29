@@ -91,5 +91,7 @@ class LoadBalancedInstance(models.Model):
         self.logger.info("Configuring load balancer to point to the preliminary page.")
         backend_name = "be-preliminary-page-{}".format(primary_key)
         config = "    server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP)
+        if settings.PRELIMINARY_PAGE_HOSTNAME:
+            config += "\n    http-request set-header Host '{}'".format(settings.PRELIMINARY_PAGE_HOSTNAME)
         backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
         return backend_map, [(backend_name, config)]

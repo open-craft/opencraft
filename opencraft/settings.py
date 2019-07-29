@@ -678,6 +678,7 @@ DEFAULT_LOAD_BALANCING_SERVER = env('DEFAULT_LOAD_BALANCING_SERVER', default=Non
 
 LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', default='opencraft-')
 PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
+PRELIMINARY_PAGE_HOSTNAME = env('PRELIMINARY_PAGE_HOSTNAME', default=None)
 
 # AWS #########################################################################
 

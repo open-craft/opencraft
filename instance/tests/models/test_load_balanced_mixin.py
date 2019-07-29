@@ -23,6 +23,7 @@ Load-balanced instance mixin - tests
 # Imports #####################################################################
 
 import ddt
+from django.conf import settings
 from django.test import override_settings
 
 from instance import gandi
@@ -141,3 +142,27 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         self.assertEqual(instance.get_preliminary_page_config(instance.ref.pk), ([], []))
+
+    @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
+    def test_preliminary_page_ip_address_configured(self):
+        instance = OpenEdXInstanceFactory()
+        _, [(backend_name, config)] = instance.get_preliminary_page_config(instance.ref.pk)
+        self.assertIn(
+            "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
+            config
+        )
+        self.assertNotIn('http-request set-header Host', config)
+
+    @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
+    @override_settings(PRELIMINARY_PAGE_HOSTNAME='example.com')
+    def test_preliminary_page_hostname_configured(self):
+        instance = OpenEdXInstanceFactory()
+        _, [(backend_name, config)] = instance.get_preliminary_page_config(instance.ref.pk)
+        self.assertIn(
+            "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
+            config
+        )
+        self.assertIn(
+            "http-request set-header Host '{}'".format(settings.PRELIMINARY_PAGE_HOSTNAME),
+            config
+        )
