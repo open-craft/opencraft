@@ -146,8 +146,11 @@ class LoadBalancedInstanceTestCase(TestCase):
     @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
     @override_settings(PRELIMINARY_PAGE_HOSTNAME=None)
     def test_preliminary_page_ip_address_configured(self):
+        """
+        Test that the preliminary page server IP is included in the load balancer configuration.
+        """
         instance = OpenEdXInstanceFactory()
-        _, [(backend_name, config)] = instance.get_preliminary_page_config(instance.ref.pk)
+        _, [(_, config)] = instance.get_preliminary_page_config(instance.ref.pk)
         self.assertIn(
             "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
             config
@@ -157,8 +160,11 @@ class LoadBalancedInstanceTestCase(TestCase):
     @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
     @override_settings(PRELIMINARY_PAGE_HOSTNAME='example.com')
     def test_preliminary_page_hostname_configured(self):
+        """
+        Test that the preliminary page server hostname is included in the load balancer configuration.
+        """
         instance = OpenEdXInstanceFactory()
-        _, [(backend_name, config)] = instance.get_preliminary_page_config(instance.ref.pk)
+        _, [(_, config)] = instance.get_preliminary_page_config(instance.ref.pk)
         self.assertIn(
             "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
             config
