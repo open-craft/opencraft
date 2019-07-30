@@ -144,6 +144,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         self.assertEqual(instance.get_preliminary_page_config(instance.ref.pk), ([], []))
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
+    @override_settings(PRELIMINARY_PAGE_HOSTNAME=None)
     def test_preliminary_page_ip_address_configured(self):
         instance = OpenEdXInstanceFactory()
         _, [(backend_name, config)] = instance.get_preliminary_page_config(instance.ref.pk)
