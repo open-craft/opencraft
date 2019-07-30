@@ -135,7 +135,7 @@ class SecretKeyInstanceMixin(models.Model):
     @property
     def secret_key(self):
         """
-        Return the secret key in binary form.
+        Return the secret key in binary form, as bytes.
         """
         return b64decode(self.secret_key_b64encoded)
 
@@ -216,7 +216,7 @@ class SecretKeyInstanceMixin(models.Model):
 
     def http_auth_info_base64(self):
         """
-        Return the HTTP auth information in the format required by Authorization HTTP header.
+        Return the HTTP auth information in the format required by Authorization HTTP header, as a string.
         """
         user_pass = '{}:{}'.format(self.http_auth_user, self.http_auth_pass)
-        return b64encode(user_pass.encode('latin1'))
+        return b64encode(user_pass.encode('latin1')).decode("utf-8")
