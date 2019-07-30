@@ -217,7 +217,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
     INVENTORY_GROUP = 'openedx-app'
-    MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
+    # MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
+    # FIXME very wrong playbook here. It makes the deployment fast by skipping edxapp. Remove
+    MANAGE_USERS_PLAYBOOK = 'playbooks/opencraft_integration.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',

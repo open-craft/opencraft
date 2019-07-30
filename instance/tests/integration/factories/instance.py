@@ -67,6 +67,8 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
     # corresponding openedx_release versions from upstream, but can contain custom modifications.
     openedx_release = 'open-release/ironwood.2'
     configuration_source_repo_url = 'https://github.com/open-craft/configuration.git'
-    configuration_version = 'integration-ironwood'
+    # FIXME temporary playbook just to make CircleCI run faster (by skipping edxapp). Delete
+    # configuration_version = 'integration-ironwood'
+    configuration_version = 'clemente/integration-while-testing-se-713'
     edx_platform_repository_url = 'https://github.com/open-craft/edx-platform.git'
     edx_platform_commit = 'opencraft-release/ironwood.2'
