@@ -965,7 +965,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
             'name': instance.name,
             'domains': instance.get_load_balanced_domains(),
             'health_checks_enabled': enable_health_checks,
-            'basic_auth': basic_auth.decode(),
+            'basic_auth': basic_auth,
             'active_app_servers': active_servers_data,
         }
 
