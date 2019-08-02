@@ -31,6 +31,7 @@ from django.conf import settings
 from django.test import override_settings
 import novaclient
 import requests
+import keystoneauth1
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
@@ -122,10 +123,11 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
+    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token', autospec=True)
     @patch('novaclient.v2.client.Client.authenticate', autospec=True)
     @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
     @patch('instance.models.server.openstack_utils.create_server')
-    def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate):
+    def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate, mock_get_token):
         """
         The nova client should retry in case of server errors
         """
@@ -133,10 +135,21 @@ class OpenStackServerTestCase(TestCase):
         mock_response_class.side_effect = (MockHTTPResponse(500),
                                            MockHTTPResponse(200, body='{"server": {}}'))
 
+        # FIXME this must be mocked differently.
+        # … because: Method 'authenticate' is deprecated since Ocata.
+        # according to the latest novaclient
+        #
         def authenticate(client):
             """ Simulate nova client authentication """
             client.management_url = 'http://example.com'
         mock_authenticate.side_effect = authenticate
+        # FIXME new version of mock. Testing:
+        def get_fake_token(plugin, session, **kwargs):
+            """Simulate token"""
+            return "This token is fake"
+        mock_get_token.side_effect = get_fake_token
+        # mock_get_token.return_value = "This token is fake"
+
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
