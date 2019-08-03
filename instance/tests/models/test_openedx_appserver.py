@@ -22,7 +22,7 @@ OpenEdXAppServer model - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, PropertyMock
 
 import novaclient
 import requests
@@ -816,9 +816,13 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(mime_type, "text/html")
 
     @responses.activate
-    def test_heartbeat_active_succeeds(self):
+    @patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock)
+    def test_heartbeat_active_succeeds(self, mock_public_ip):
         """ Test that heartbeat_active method returns true when request to heartbeat is 200"""
         appserver = make_test_appserver()
+        # FIXME better way to mock? (Without specifying each return value separately)
+        mock_public_ip.side_effect = ["1.1.1.1", "1.1.1.1"]
+
         responses.add(responses.OPTIONS, 'http://{}/heartbeat'.format(appserver.server.public_ip), status=200)
         self.assertTrue(appserver.heartbeat_active())
 
