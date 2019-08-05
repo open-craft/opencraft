@@ -23,13 +23,14 @@ OpenStack - Helper functions
 # Imports #####################################################################
 import logging
 from collections import namedtuple, defaultdict
+import requests
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
 from openstack import config as occ
 from openstack import connection
 from swiftclient.service import SwiftService
-
+from instance.utils import get_requests_retry
 
 # Logging #####################################################################
 
@@ -87,13 +88,15 @@ def get_openstack_connection(region_name):
     conn = connection.from_config(cloud_config=cloud_region)
     conn.session.user_agent = "opencraft-im"
 
-    # TODO reenable and make it work with the new opentstacksdk
+    # FIXME reenable and make it work with the new opentstacksdk. Testing it below. Delet commented code
     # # API queries via the nova client occasionally get connection errors from the OpenStack provider.
     # # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
     # # urllib3's definition) are retried before giving up.
-    # adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
+    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
     # conn.session.session.mount('http://', adapter)
     # conn.session.session.mount('https://', adapter)
+    conn.session.mount('http://', adapter)
+    conn.session.mount('https://', adapter)
 
     return conn
 
@@ -143,14 +146,16 @@ def get_nova_client(region_name, api_version=2):
         region_name=region_name,
     )
 
-    # TODO reenable and make it work with the new NovaClient
+    # FIXME reenable and make it work with the new NovaClient. Testing it below. Delete commented code
     # # API queries via the nova client occasionally get connection errors from the OpenStack provider.
     # # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
     # # urllib3's definition) are retried before giving up.
-    # adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
+    adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
     # nova.client.open_session()
     # nova.client._session.mount('http://', adapter)
     # nova.client._session.mount('https://', adapter)
+    nova.client.session.mount('http://', adapter)
+    nova.client.session.mount('https://', adapter)
 
     return nova
 
