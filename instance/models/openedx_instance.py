@@ -490,7 +490,7 @@ class OpenEdXInstance(
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        return ConsulAgent(prefix=self.consul_prefix).txn_put(configurations)
+        return ConsulAgent(prefix=self.consul_prefix).create_or_update_dict(configurations)
 
     def update_consul_metadata(self):
         """
