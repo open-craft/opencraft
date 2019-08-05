@@ -95,7 +95,7 @@ jobs:
               - coverage
   coverage:
     docker:
-      - image: circleci/python:3.5.4-node
+      - image: circleci/python:3.5-stretch-node
     steps:
       - checkout
       - restore_cache:
@@ -107,11 +107,6 @@ jobs:
             . venv/bin/activate
             pip install --upgrade pip
             pip install --upgrade virtualenv
-            # The jessie-updates and jessie-backports areas are now removed from the repositories. So
-            # the lines corresponding to those areas have to be removed to fix the resulting errors.
-            # This can be removed after upgrading to the image based on Debian Stretch.
-            sudo sed -i '/jessie-updates/d' /etc/apt/sources.list
-            sudo sed -i '/jessie-backports/d' /etc/apt/sources.list
             sudo apt-get update; sudo apt-get install python2.7-dev
             sudo apt-get install mysql-client
             pip install -r requirements.txt
@@ -131,7 +126,7 @@ jobs:
               if [ -e /tmp/workspace/coverage/text/coverage.txt ]; then cat /tmp/workspace/coverage/text/coverage.txt; fi
   cleanup:
     docker:
-      - image: circleci/python:3.5.4
+      - image: circleci/python:3.5-stretch
         environment:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           DJANGO_SETTINGS_MODULE: 'opencraft.settings'
