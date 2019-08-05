@@ -85,6 +85,7 @@ def get_openstack_connection(region_name):
             password=settings.OPENSTACK_PASSWORD,
         ))
     conn = connection.from_config(cloud_config=cloud_region)
+    conn.session.user_agent = "opencraft-im"
 
     # TODO reenable and make it work with the new opentstacksdk
     # # API queries via the nova client occasionally get connection errors from the OpenStack provider.
