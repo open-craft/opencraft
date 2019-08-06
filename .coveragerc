@@ -1,6 +1,9 @@
 [run]
 branch = True
+source = .
 omit =
+    */tests/*
+    venv/*
     /*/migrations/*
     /playbooks/collect_activity/stats.py
     cleanup_utils/*

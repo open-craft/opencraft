@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
@@ -44,12 +45,16 @@ from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tests.integration.utils import check_url_accessible, get_url_contents, is_port_open
 from instance.tasks import spawn_appserver
-from opencraft.tests.utils import shard
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
 
+# TEST_GROUP should be an integer. This will skip any test that is not part of the group value.
+# If it's None every integration test will run.
+TEST_GROUP = os.getenv('TEST_GROUP')
+print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
+
 
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
@@ -294,8 +299,8 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             expected_domain_names
         )
 
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    @shard(1)
     def test_spawn_appserver(self):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
@@ -343,41 +348,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_theme_provisioned(instance, appserver, application)
         self.assert_load_balanced_domains(instance)
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_betatest_accepted(self):
-        """
-        Provision an instance, spawn an AppServer and accepts the application.
-        """
-        OpenEdXInstanceFactory(
-            name='Integration - test_betatest_accepted',
-            deploy_simpletheme=True,
-        )
-        instance = OpenEdXInstance.objects.get()
-
-        # Add an lms user, as happens with beta registration
-        user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
-        instance.lms_users.add(user)
-
-        # Simulate that the application form was filled. This doesn't create another instance nor user
-        BetaTestApplication.objects.create(
-            user=user,
-            subdomain='betatestdomain',
-            instance_name=instance.name,
-            public_contact_email='publicemail@example.com',
-            project_description='I want to beta test OpenCraft IM',
-            status=BetaTestApplication.PENDING,
-            instance=instance,
-        )
-
-        appserver = MagicMock()
-        appserver.status = AppServer.Status.Running
-        instance.refresh_from_db()
-
-        # Test accepting beta test application
-        on_appserver_spawned(None, instance=instance, appserver=appserver)
-        self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)
-
-    @shard(2)
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_external_databases(self):
         """
@@ -399,7 +370,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_mysql_db_provisioned(instance)
         self.assert_mongo_db_provisioned(instance)
 
-    @shard(3)
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '3', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_activity_csv(self):
         """
@@ -447,6 +418,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
     @patch_git_checkout
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failure(self, git_checkout, git_working_dir):
@@ -467,6 +439,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
@@ -489,6 +462,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
         """
@@ -501,3 +475,38 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         server.os_server.delete()
         time.sleep(10)
         self.assertEqual(server.update_status(), ServerStatus.Terminated)
+
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
+    def test_betatest_accepted(self):
+        """
+        Provision an instance, spawn an AppServer and accepts the application.
+        """
+        OpenEdXInstanceFactory(
+            name='Integration - test_betatest_accepted',
+            deploy_simpletheme=True,
+        )
+        instance = OpenEdXInstance.objects.get()
+
+        # Add an lms user, as happens with beta registration
+        user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+
+        # Simulate that the application form was filled. This doesn't create another instance nor user
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='betatestdomain',
+            instance_name=instance.name,
+            public_contact_email='publicemail@example.com',
+            project_description='I want to beta test OpenCraft IM',
+            status=BetaTestApplication.PENDING,
+            instance=instance,
+        )
+
+        appserver = MagicMock()
+        appserver.status = AppServer.Status.Running
+        instance.refresh_from_db()
+
+        # Test accepting beta test application
+        on_appserver_spawned(None, instance=instance, appserver=appserver)
+        self.assertEqual(instance.betatestapplication_set.first().status, BetaTestApplication.ACCEPTED)

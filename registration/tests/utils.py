@@ -21,7 +21,6 @@ Utils for registration tests
 """
 
 # Imports #####################################################################
-
 import time
 
 from django.contrib.auth.models import User
@@ -29,6 +28,7 @@ from django.core.urlresolvers import reverse
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -66,11 +66,13 @@ class BrowserTestMixin:
         Start firefox.
         """
         super().setUp()
+        options = Options()
+        options.headless = True
         try:
-            self.client = webdriver.Firefox()
+            self.client = webdriver.Firefox(firefox_options=options)
         except WebDriverException:
             time.sleep(1)
-            self.client = webdriver.Firefox()
+            self.client = webdriver.Firefox(firefox_options=options)
 
     def tearDown(self):
         """

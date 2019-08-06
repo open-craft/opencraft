@@ -54,8 +54,6 @@ ipython-genutils==0.1.0
 iso8601==0.1.11
 isort==4.2.5
 itsdangerous==0.24
-jasmine==2.5.0
-jasmine-core==2.5.2
 Jinja2==2.8
 jira==1.0.7
 jmespath==0.9.3

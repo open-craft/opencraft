@@ -27,7 +27,9 @@ WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
-RUN_JS_TESTS := xvfb-run --auto-servernum jasmine-ci --logs --browser firefox
+HONCHO_COVERAGE_TEST := honcho -e .env.test run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
+HONCHO_COVERAGE_INTEGRATION := honcho -e .env.integration run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
+COVERAGE := coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 
 # Parameters ##################################################################
 
@@ -45,7 +47,7 @@ help: ## Display this help message.
 
 all: run.dev
 
-clean: ## Remove all temporary files.
+clean: cov.clean ## Remove all temporary files.
 	find -name '*.pyc' -delete
 	find -name '*~' -delete
 	find -name '__pycache__' -type d -delete
@@ -61,6 +63,21 @@ install_system_db_dependencies: apt_get_update ## Install system-level DB depend
 
 install_system_dependencies: apt_get_update ## Install system-level dependencies from `debian_packages.lst`. Ignores comments.
 	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
+	if [ -z $$CI ] ; then \
+		echo "Installing Firefox because we're not in a CI."; \
+		sudo apt-get install -y libgtk3.0-cil-dev libasound2 libasound2 libdbus-glib-1-2 libdbus-1-3 --no-install-recommends; \
+		sudo curl -sL -o /tmp/firefox.deb 'https://s3.amazonaws.com/circle-downloads/firefox-mozilla-build_47.0.1-0ubuntu1_amd64.deb'; \
+		echo 'ef016febe5ec4eaf7d455a34579834bcde7703cb0818c80044f4d148df8473bb  /tmp/firefox.deb' | sha256sum -c; \
+		sudo dpkg -i /tmp/firefox.deb || sudo apt-get -f install; \
+		sudo rm -rf /tmp/firefox.deb; \
+	else \
+		echo "Not installing Firefox because this is a CI."; \
+	fi
+
+install_js_dependencies: ## Install dependencies for JS code.
+	curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+	sudo apt-get install -y nodejs
+	npm install
 
 create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \
@@ -100,25 +117,22 @@ test.quality: clean ## Run quality tests.
 	prospector --profile opencraft --uses django
 
 test.unit: clean static_external ## Run all unit tests.
-	honcho -e .env.test run coverage run --source='.' --omit='*/tests/*,venv/*' ./manage.py test --noinput
-	coverage html
-	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
-	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
+	$(HONCHO_COVERAGE_TEST)
 
 test.migrations_missing: clean ## Check if migrations are missing.
 	@$(HONCHO_MANAGE_TESTS) makemigrations --dry-run --check
 
 test.browser: clean static_external ## Run browser-specific tests.
 	@echo -e "\nRunning browser tests..."
-	xvfb-run --auto-servernum $(HONCHO_MANAGE_TESTS) test --pattern=browser_*.py --noinput
-
+	xvfb-run --auto-servernum $(HONCHO_COVERAGE_TEST) --pattern=browser_*.py
+	
 test.integration: clean ## Run integration tests.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."
-	honcho -e .env.integration run ./manage.py test --pattern=integration_*.py --noinput
+	$(HONCHO_COVERAGE_INTEGRATION) --pattern=integration_*.py
 else ifdef OPENSTACK_USER
 	echo -e "\nRunning integration tests with credentials from environment variables..."
-	./manage.py test --pattern=integration_*.py --noinput
+	$(COVERAGE) --pattern=integration_*.py
 else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
 endif
@@ -135,16 +149,10 @@ else
 endif
 
 test.js: clean static_external ## Run JS tests.
-	cd instance/tests/js && $(RUN_JS_TESTS)
-	cd registration/tests/js && $(RUN_JS_TESTS)
+	@./node_modules/.bin/karma start --single-run
+	@if [ -e coverage/text/coverage.txt ]; then cat coverage/text/coverage.txt; fi
 
-test.instance_js_web: clean static_external ## Run instance-specific JS tests.
-	cd instance/tests/js && jasmine --host 0.0.0.0
-
-test.registration_js_web: clean static_external ## Run registration-specific JS tests.
-	cd registration/tests/js && jasmine --host 0.0.0.0
-
-test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration ## Run all tests.
+test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration cov.combine ## Run all tests.
 	@echo "\nAll tests OK!\n"
 
 test.one: clean
@@ -154,3 +162,14 @@ test.one: clean
 
 static_external:
 	$(MAKE) -C static/external
+
+cov.html:
+	coverage html
+	@echo "\nCoverage HTML report at file://`pwd`/build/coverage/index.html\n"
+	@coverage report --fail-under $(COVERAGE_THRESHOLD) || (echo "\nERROR: Coverage is below $(COVERAGE_THRESHOLD)%\n" && exit 2)
+
+cov.combine:
+	coverage combine
+
+cov.clean:
+	coverage erase
