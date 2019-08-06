@@ -24,9 +24,9 @@ New Relic API - Helper functions
 
 import logging
 
-from django.conf import settings
 import requests
-
+from django.conf import settings
+from six.moves import urllib
 
 # Logging #####################################################################
 
@@ -36,6 +36,12 @@ logger = logging.getLogger(__name__)
 # Constants ###################################################################
 
 SYNTHETICS_API_URL = 'https://synthetics.newrelic.com/synthetics/api/v1'
+
+NEW_RELIC_API_BASE = 'https://api.newrelic.com/v2'
+ALERTS_CHANNELS_API_URL = '{}/alerts_channels.json'.format(NEW_RELIC_API_BASE)
+ALERTS_POLICIES_API_URL = '{}/alerts_policies.json'.format(NEW_RELIC_API_BASE)
+ALERTS_POLICIES_CHANNELS_API_URL = '{}/alerts_policy_channels.json'.format(NEW_RELIC_API_BASE)
+ALERTS_CONDITIONS_API_URL = '{}/alerts_synthetics_conditions'.format(NEW_RELIC_API_BASE)
 
 
 # Functions ###################################################################
@@ -128,6 +134,105 @@ def delete_synthetics_monitor(monitor_id):
     except requests.exceptions.HTTPError:
         if r.status_code == requests.codes.not_found:
             logger.info('Monitor for %s has already been deleted. Proceeding.')
+        else:
+            raise
+
+
+def create_alert_policy(name, incident_preference='PER_CONDITION'):
+    """
+    Create an alert policy with the given name and the given incident preference and return the policy id.
+    """
+    url = ALERTS_POLICIES_API_URL
+    logger.info('POST %s', url)
+    r = requests.post(
+        url,
+        headers=_request_headers(),
+        json={"policy": {"incident_preference": incident_preference, "name": name}}
+    )
+    r.raise_for_status()
+    return r.json()['policy']['id']
+
+
+def create_email_notification_channel(email_address):
+    """
+    Create an email notification channel with the given email address and return the channel id.
+    """
+    url = ALERTS_CHANNELS_API_URL
+    logger.info('POST %s', url)
+    r = requests.post(
+        url,
+        headers=_request_headers(),
+        json={
+            'channel': {
+                'name': email_address,
+                'type': 'email',
+                'configuration': {
+                    'recipients': email_address,
+                    'include_json_attachment': False
+                }
+            }
+        }
+    )
+    r.raise_for_status()
+    return r.json()["channels"][0]["id"]
+
+
+def add_notification_channels_to_policy(policy_id, channel_ids):
+    """
+    Update the notification channels for the given policy id with the notification channels corresponding
+    to the given channel ids.
+    """
+    url = '{0}/?{1}'.format(
+        ALERTS_POLICIES_CHANNELS_API_URL,
+        urllib.parse.urlencode({'policy_id': policy_id, 'channel_ids': ','.join(channel_ids)})
+    )
+    logger.info('PUT %s', url)
+
+    # This API call only appends to the existing notification channels and ignores the duplicates.
+    r = requests.put(
+        url,
+        headers=_request_headers(),
+        json=""
+    )
+    r.raise_for_status()
+
+
+def add_alert_condition(policy_id, monitor_id, name):
+    """
+    Add an alert condition to the alert policy with the given id for the monitor with the given id.
+    """
+    url = '{0}/policies/{1}.json'.format(ALERTS_CONDITIONS_API_URL, policy_id)
+    logger.info('POST %s', url)
+    r = requests.post(
+        url,
+        headers=_request_headers(),
+        json={
+            'synthetics_condition': {
+                'name': name,
+                'monitor_id': monitor_id,
+                'enabled': True
+            }
+        }
+    )
+    r.raise_for_status()
+    return r.json()['synthetics_condition']['id']
+
+
+def delete_alert_condition(condition_id):
+    """
+    Delete the New Relic alerts alert condition with the given id.
+
+    If the alert condition can't be found (DELETE request comes back with 404),
+    treat it as if it has already been deleted; do not raise an exception in that case.
+    """
+    url = '{0}/{1}.json'.format(ALERTS_CONDITIONS_API_URL, condition_id)
+    logger.info('DELETE %s', url)
+    try:
+        r = requests.delete(url, headers=_request_headers())
+        r.raise_for_status()
+    except requests.exceptions.HTTPError:
+        if r.status_code == requests.codes.not_found:
+            logger.info('Alert condition for %s has already been deleted. Proceeding.')
         else:
             raise
 
