@@ -123,6 +123,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
     # FIXME this function is testing a disabled and unimplemented behavior. Fix this test last or remove it
+    @patch('urllib3.connection.HTTPConnection.connect')
     @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_endpoint', autospec=True)
     @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token', autospec=True)
     @patch('novaclient.v2.client.Client.authenticate', autospec=True)
@@ -130,13 +131,20 @@ class OpenStackServerTestCase(TestCase):
     @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server_nova_error(self,
                                   mock_create_server, mock_response_class, mock_authenticate,
-                                  mock_get_token, mock_get_endpoint):
+                                  mock_get_token, mock_get_endpoint, mock_connect):
         """
         The nova client should retry in case of server errors
         """
         mock_create_server.return_value.id = 'pending-server-id'
         mock_response_class.side_effect = (MockHTTPResponse(500),
                                            MockHTTPResponse(200, body='{"server": {}}'))
+        # FIXME delete tests
+        def working_or_not():
+            raise NotImplementedError("Is this even working? (It seems not)")
+        mock_response_class.side_effect = working_or_not
+        def lazy_connect():
+            raise NotImplementedError("Not connecting anywhere today!")
+        # mock_connect.side_effect = lazy_connect  # works
 
         # FIXME this must be mocked differently.
         # … because: Method 'authenticate' is deprecated since Ocata.
