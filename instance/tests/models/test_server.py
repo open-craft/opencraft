@@ -31,6 +31,7 @@ from django.conf import settings
 from django.test import override_settings
 import novaclient
 import requests
+import responses
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
@@ -45,16 +46,6 @@ from instance.tests.models.factories.server import (
 
 
 # Tests #######################################################################
-
-class MockHTTPResponse(http.client.HTTPResponse):
-    """
-    A fake http.client.HTTPResponse, for stubbing low-level urllib3 calls.
-    """
-    def __init__(self, status_code=200, body='{}'):
-        content = 'HTTP/1.1 {status}\n\n{body}'.format(status=status_code, body=body).encode()
-        sock = Mock()
-        sock.makefile.return_value = io.BytesIO(content)
-        super().__init__(sock)
 
 
 @ddt
@@ -122,8 +113,8 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
-    # FIXME this function is testing a disabled and unimplemented behavior. Fix this test last or remove it
-    @patch('urllib3.connection.HTTPConnection.connect')
+    # FIXME clean arguments, not all of them need to be mocked
+    @responses.activate
     @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_endpoint', autospec=True)
     @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token', autospec=True)
     @patch('novaclient.v2.client.Client.authenticate', autospec=True)
@@ -131,25 +122,20 @@ class OpenStackServerTestCase(TestCase):
     @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server_nova_error(self,
                                   mock_create_server, mock_response_class, mock_authenticate,
-                                  mock_get_token, mock_get_endpoint, mock_connect):
+                                  mock_get_token, mock_get_endpoint):
         """
         The nova client should retry in case of server errors
         """
         mock_create_server.return_value.id = 'pending-server-id'
-        mock_response_class.side_effect = (MockHTTPResponse(500),
-                                           MockHTTPResponse(200, body='{"server": {}}'))
-        # FIXME delete tests
-        def working_or_not():
-            raise NotImplementedError("Is this even working? (It seems not)")
-        mock_response_class.side_effect = working_or_not
-        def lazy_connect():
-            raise NotImplementedError("Not connecting anywhere today!")
-        # mock_connect.side_effect = lazy_connect  # works
+
+        # The first call will fail. The code will then automatically retry. The second call will work
+        responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={}, status=500)
+        responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={"server": {}}, status=200)
 
         # FIXME this must be mocked differently.
         # … because: Method 'authenticate' is deprecated since Ocata.
         # according to the latest novaclient
-        #
+        # Also, management_url could be deprecated: Use `endpoint_override` instead
         def authenticate(client):
             """ Simulate nova client authentication """
             client.management_url = 'http://example.com'
@@ -163,14 +149,11 @@ class OpenStackServerTestCase(TestCase):
         # mock_get_token.return_value = "This token is fake"
 
         # FIXME reconsider, why to fake this? Delete
-        def get_fake_endpoint(plugin, session, service_type=None, interface=None,
-                              region_name=None, service_name=None, allow=None,
-                              allow_version_hack=True, discover_versions=True,
-                              skip_discovery=False, min_version=None,
-                              max_version=None, endpoint_override=None, **kwargs):
-            """Simulate returning an URL"""
-            return "http://localhost:55558/"
-        mock_get_endpoint.side_effect = get_fake_endpoint
+        # def get_fake_endpoint(*args, **kwargs):
+        #     """Simulate returning an URL"""
+        #     return "http://localhost/"
+        # mock_get_endpoint.side_effect = get_fake_endpoint
+        mock_get_endpoint.return_value = "http://localhost/"
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
