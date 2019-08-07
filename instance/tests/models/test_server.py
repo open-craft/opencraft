@@ -22,8 +22,6 @@ OpenStackServer model - Tests
 
 # Imports #####################################################################
 
-import http.client
-import io
 from unittest.mock import Mock, call, patch
 
 from ddt import ddt, data, unpack
@@ -113,47 +111,24 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
-    # FIXME clean arguments, not all of them need to be mocked
     @responses.activate
-    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_endpoint', autospec=True)
-    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token', autospec=True)
-    @patch('novaclient.v2.client.Client.authenticate', autospec=True)
-    @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
+    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_endpoint')
+    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token')
     @patch('instance.models.server.openstack_utils.create_server')
     def test_os_server_nova_error(self,
-                                  mock_create_server, mock_response_class, mock_authenticate,
-                                  mock_get_token, mock_get_endpoint):
+                                  mock_create_server,
+                                  mock_get_token,
+                                  mock_get_endpoint):
         """
         The nova client should retry in case of server errors
         """
         mock_create_server.return_value.id = 'pending-server-id'
+        mock_get_token.return_value = "authentication token"
+        mock_get_endpoint.return_value = "http://localhost/"
 
         # The first call will fail. The code will then automatically retry. The second call will work
         responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={}, status=500)
         responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={"server": {}}, status=200)
-
-        # FIXME this must be mocked differently.
-        # … because: Method 'authenticate' is deprecated since Ocata.
-        # according to the latest novaclient
-        # Also, management_url could be deprecated: Use `endpoint_override` instead
-        def authenticate(client):
-            """ Simulate nova client authentication """
-            client.management_url = 'http://example.com'
-        mock_authenticate.side_effect = authenticate
-
-        # FIXME new version of mock. Testing:
-        def get_fake_token(plugin, session, **kwargs):
-            """Simulate token"""
-            return "This token is fake"
-        mock_get_token.side_effect = get_fake_token
-        # mock_get_token.return_value = "This token is fake"
-
-        # FIXME reconsider, why to fake this? Delete
-        # def get_fake_endpoint(*args, **kwargs):
-        #     """Simulate returning an URL"""
-        #     return "http://localhost/"
-        # mock_get_endpoint.side_effect = get_fake_endpoint
-        mock_get_endpoint.return_value = "http://localhost/"
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
