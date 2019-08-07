@@ -40,6 +40,7 @@ htmlcov/
 .tox/
 .coverage
 .coverage.*
+coverage/
 .cache
 nosetests.xml
 coverage.xml
@@ -78,3 +79,5 @@ target/
 
 # Ansible
 *.retry
+
+node_modules

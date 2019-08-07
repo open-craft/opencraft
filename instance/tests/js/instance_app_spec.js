@@ -27,6 +27,26 @@ describe('Instance app', function () {
         rootScope,
         $timeout;
 
+    beforeAll(function() {
+        fixture.setBase('instance/tests/fixtures');
+    });
+
+    function sanitizeRestangularAll(items) {
+        var all = _.map(items, function (item) {
+            return sanitizeRestangularOne(item);
+        });
+        return sanitizeRestangularOne(all);
+    }
+
+    function sanitizeRestangularOne(item) {
+        return _.omit(item, "route", "parentResource", "getList", "get", "post", "put", "remove", "head", "trace", "options", "patch",
+            "$get", "$save", "$query", "$remove", "$delete", "$put", "$post", "$head", "$trace", "$options", "$patch",
+            "$then", "$resolved", "restangularCollection", "customOperation", "customGET", "customPOST",
+            "customPUT", "customDELETE", "customGETLIST", "$getList", "$resolved", "restangularCollection", "one", "all", "doGET", "doPOST",
+            "doPUT", "doDELETE", "doGETLIST", "addRestangularMethod", "getRestangularUrl", "getRequestedUrl", "clone", "reqParams", "withHttpConfig",
+            "plain", "restangularized", "several", "oneUrl", "allUrl", "fromServer", "save", "singleOne", "getParentList");
+    }
+
     function flushHttpBackend() {
         // Convenience method since httpBackend.flush() seems to generate calls
         // to $timeout which also need to be flushed.
@@ -46,14 +66,14 @@ describe('Instance app', function () {
         });
 
         // Models
-        instanceList = jasmine.loadFixture('api/instances_list.json');
+        instanceList = fixture.load('api/instances_list.json');
         httpBackend.whenGET('/api/v1/instance/').respond(instanceList);
 
         // Templates
         const templatePattern = /\/static\/html\/instance\/(.+)/;
         httpBackend.whenGET(templatePattern).respond(function(method, url, data) {
             const templateName = url.match(templatePattern)[1];
-            const templateHTML = jasmine.loadTemplate(templateName);
+            const templateHTML = window.__html__[templateName];
             return [200, templateHTML];
         });
 
@@ -66,6 +86,7 @@ describe('Instance app', function () {
         httpBackend.verifyNoOutstandingExpectation();
         httpBackend.verifyNoOutstandingRequest();
         $timeout.verifyNoPendingTasks();
+        fixture.cleanup();
     });
 
 
@@ -77,7 +98,10 @@ describe('Instance app', function () {
 
         describe('$scope.updateInstanceList', function() {
             it('loads the instance list from the API on init', function() {
-                expect(jasmine.sanitizeRestangularAll($scope.instanceList)).toEqual(instanceList);
+                expect($scope.instanceList.length).toEqual(instanceList.length);
+                for (var i; i < $scope.instanceList.length; i++){
+                    expect($scope.instanceList[i]).toEqual(instanceList[i]);
+                }
             });
 
             it('sets $scope.loading while making the ajax call', function() {
@@ -108,7 +132,7 @@ describe('Instance app', function () {
 
         beforeEach(function() {
             // Models
-            instanceDetail = jasmine.loadFixture('api/instance_detail.json');
+            instanceDetail = fixture.load('api/instance_detail.json');
             httpBackend.whenGET('/api/v1/instance/50/').respond(instanceDetail);
 
             $scope = rootScope.$new();
@@ -118,7 +142,7 @@ describe('Instance app', function () {
 
         describe('$scope.refresh', function() {
             it('loads the instance details from the API on init', function() {
-                expect(jasmine.sanitizeRestangularOne($scope.instance)).toEqual(instanceDetail);
+                expect(sanitizeRestangularOne($scope.instance)).toEqual(instanceDetail);
             });
         });
 
@@ -175,12 +199,12 @@ describe('Instance app', function () {
 
         beforeEach(function() {
             // Models
-            appServerDetail = jasmine.loadFixture('api/appserver_detail.json');
+            appServerDetail = fixture.load('api/appserver_detail.json');
             httpBackend.whenGET('/api/v1/openedx_appserver/8/').respond(appServerDetail);
 
             // Mock the parent scope (instance details)
             parentScope = rootScope.$new(); // Scope for the Instance "Details" controller
-            parentScope.instance = jasmine.loadFixture('api/instance_detail.json');
+            parentScope.instance = fixture.load('api/instance_detail.json');
             inject(function($q) {
                 // Mock tthe instance refresh() method and make sure to return a promise.
                 parentScope.refresh = jasmine.createSpy('Instance refresh method').and.returnValue($q.when({}));
@@ -198,7 +222,7 @@ describe('Instance app', function () {
 
         describe('$scope.refresh', function() {
             it('loads the AppServer details from the API on init', function() {
-                expect(jasmine.sanitizeRestangularOne($scope.appserver)).toEqual(appServerDetail);
+                expect(sanitizeRestangularOne($scope.appserver)).toEqual(appServerDetail);
             });
             it('sets is_active correctly', function() {
                 expect($scope.is_active).toBe(true); // Based on the fixture, AppServer 8 is active

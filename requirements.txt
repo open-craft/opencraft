@@ -74,8 +74,6 @@ iso8601==0.1.12
 isort==4.3.20
 itsdangerous==1.1.0
 jaraco.functools==2.0
-jasmine==3.4.0
-jasmine-core==3.4.0
 jedi==0.14.0
 Jinja2==2.10.1
 jmespath==0.9.4
