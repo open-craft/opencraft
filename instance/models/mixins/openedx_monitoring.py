@@ -24,6 +24,7 @@ Open edX instance monitoring mixin
 
 from django.conf import settings
 from django.db import models
+from django.db.models import ProtectedError
 
 from instance import newrelic
 
@@ -44,6 +45,20 @@ class OpenEdXMonitoringMixin:
             return
         self.logger.info('Checking New Relic Synthetics monitors')
 
+        # The notifications for the monitors are now set up using New Relic alert policies. Alert policies
+        # can contain one or more alert conditions and an alert condition can be associated with
+        # one or more Synthetics (aka availability) monitors.
+        #
+        # An alert policy can have one or more existing notification channels added to it. We use email
+        # notification channels for sending out email notifications.
+        #
+        # The alert policy can be configured to create an incident per policy, per alert condition or per monitor and
+        # entity (for each failure). We use the 'per-policy' setting on all the alert policies.
+
+        if not hasattr(self, 'new_relic_alert_policy'):
+            alert_policy_id = newrelic.add_alert_policy(self.domain)
+            NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
+
         urls_to_monitor = self._urls_to_monitor  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
 
@@ -58,19 +73,44 @@ class OpenEdXMonitoringMixin:
         for url in urls_to_monitor - already_monitored_urls:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
-            self.new_relic_availability_monitors.create(pk=new_monitor_id)
+            monitor = self.new_relic_availability_monitors.create(pk=new_monitor_id)
+            alert_condition_id = newrelic.add_alert_condition(self.new_relic_alert_policy.id, new_monitor_id, url)
+            monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=self.new_relic_alert_policy)
 
         # Set up email alerts.
         # We add emails here but never remove them - that must be done manually (or the monitor deleted)
-        # in order to reduce the chance of bugs or misconfigurations accidentally supressing monitors.
+        # in order to reduce the chance of bugs or misconfigurations accidentally suppressing monitors.
         emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
         if emails_to_monitor:
-            for monitor in self.new_relic_availability_monitors.all():
-                emails_current = set(newrelic.get_synthetics_notification_emails(monitor.id))
-                emails_to_add = list(emails_to_monitor - emails_current)
-                if emails_to_add:
-                    self.logger.info('Adding email(s) to monitor %s: %s', monitor.id, ', '.join(emails_to_add))
-                    newrelic.add_synthetics_email_alerts(monitor.id, emails_to_add)
+            emails_current = set(
+                self.new_relic_alert_policy.email_notification_channels.values_list('email', flat=True)
+            )
+            emails_to_add = list(emails_to_monitor - emails_current)
+            if emails_to_add:
+                self.logger.info('Adding email(s) to policy %s: %s', self.new_relic_alert_policy.id, ', '.join(emails_to_add))
+                self._add_emails(emails_to_add)
+
+    def _add_emails(self, emails):
+        """
+        Create a notification channel for each given email address if it doesn't exist and add it to this instance's
+        alert policy.
+        """
+        channel_ids = []
+        for email in emails:
+            try:
+                channel = NewRelicEmailNotificationChannel.objects.get(email=email)
+                self.logger.info(
+                    'Email notification channel for {} already exists. Using it.'.format(email)
+                )
+                channel_id = channel.id
+            except NewRelicEmailNotificationChannel.DoesNotExist:
+                self.logger.info('Creating a new email notification channel for {}'.format(email))
+                channel_id = newrelic.add_email_notification_channel(email)
+                NewRelicEmailNotificationChannel.objects.create(id=channel_id, email=email)
+            channel_ids.append(channel_id)
+        # Always add all the notification channels corresponding to the given emails to the policy.
+        # Existing email notification channels are ignored.
+        newrelic.add_notification_channels_to_policy(self.new_relic_alert_policy.id, channel_ids)
 
     def disable_monitoring(self):
         """
@@ -79,6 +119,11 @@ class OpenEdXMonitoringMixin:
         self.logger.info('Removing New Relic Synthetics monitors')
         for monitor in self.new_relic_availability_monitors.all():
             monitor.delete()
+
+        if hasattr(self, 'new_relic_alert_policy'):
+            for channel in self.new_relic_policy.notification_channels.filter(shared=False):
+                channel.delete()
+            self.new_relic_alert_policy.delete()
 
     @property
     def _urls_to_monitor(self):
@@ -106,3 +151,64 @@ class NewRelicAvailabilityMonitor(models.Model):
         """
         newrelic.delete_synthetics_monitor(self.pk)
         super().delete(*args, **kwargs)
+
+
+class NewRelicAlertPolicy(models.Model):
+    """
+    A New Relic alert policy for an instance.
+    """
+    id = models.IntegerField(primary_key=True)
+    instance = models.OneToOneField(
+        'OpenEdXInstance', related_name='new_relic_alert_policy', on_delete=models.CASCADE
+    )
+    email_notification_channels = models.ManyToManyField(
+        'NewRelicEmailNotificationChannel', related_name='new_relic_alert_policies'
+    )
+
+    def __str__(self):
+        return self.id
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete this alert policy.
+        """
+        newrelic.delete_alert_policy(self.id)
+        super().delete(*args, **kwargs)
+
+
+class NewRelicEmailNotificationChannel(models.Model):
+    """
+    A New Relic notification channel.
+    """
+    id = models.IntegerField(primary_key=True)
+    email = models.EmailField(unique=True)
+    shared = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.id
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete this email notification channel.
+        """
+        if not self.shared:
+            newrelic.delete_email_notification_channel(self.id)
+            super().delete(*args, **kwargs)
+        else:
+            raise ProtectedError('Cannot delete a shared email notification channel')
+
+
+class NewRelicAlertCondition(models.Model):
+    """
+    A New Relic alert condition for an instance under an alert policy
+    """
+    id = models.IntegerField(primary_key=True)
+    monitor = models.ForeignKey(
+        'NewRelicAvailabilityMonitor', related_name='new_relic_alert_conditions', on_delete=models.CASCADE
+    )
+    alert_policy = models.ForeignKey(
+        'NewRelicAlertPolicy', related_name='new_relic_alert_conditions', on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.id

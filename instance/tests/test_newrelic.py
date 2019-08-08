@@ -25,6 +25,7 @@ New Relic - Tests
 import json
 
 from django.test import override_settings
+from six.moves import urllib
 import requests
 import responses
 
@@ -170,6 +171,206 @@ class NewRelicTestCase(TestCase):
                                    status=error)
                 try:
                     newrelic.delete_synthetics_monitor(monitor_id)
+                except requests.exceptions.HTTPError:
+                    if error == requests.codes.not_found:
+                        self.fail('Should not raise an exception for {} response.'.format(error))
+                else:
+                    if not error == requests.codes.not_found:
+                        self.fail('Should raise an exception for {} response.'.format(error))
+
+    @responses.activate
+    def test_add_alert_policy(self):
+        """
+        Check that the add_alert_policy function adds an alert
+        """
+        url = '{}.json'.format(newrelic.ALERTS_POLICIES_API_URL)
+        policy_name = 'Test'
+        policy_id = 1
+        response_json = {
+            'policy': {
+                'id': policy_id
+            }
+        }
+        responses.add(responses.POST, url, json=response_json, status=201)
+        self.assertEqual(newrelic.add_alert_policy(policy_name), policy_id)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertEqual(request_json, {
+            'policy': {
+                'incident_preference': 'PER_POLICY',
+                'name': policy_name
+            }
+        })
+
+    @responses.activate
+    def test_add_email_notification_channel(self):
+        """
+        Check that the add_email_notification_channel function adds a notification channel.
+        """
+        url = '{}.json'.format(newrelic.ALERTS_CHANNELS_API_URL)
+        email_address = 'test@example.com'
+        channel_id = 1
+        response_json = {
+            'channels': [
+                {
+                    'id': channel_id
+                }
+            ]
+        }
+        responses.add(responses.POST, url, json=response_json, status=201)
+        self.assertEqual(newrelic.add_email_notification_channel(email_address), channel_id)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertEqual(request_json, {
+            'channel': {
+                'name': email_address,
+                'type': 'email',
+                'configuration': {
+                    'recipients': email_address,
+                    'include_json_attachment': False
+                }
+            }
+        })
+
+    @responses.activate
+    def test_notification_channels_to_policy(self):
+        """
+        Check that the add_notification_channels_to_policy function adds the given notification channels to
+        the given policy.
+        """
+        policy_id = 1
+        channel_ids = ['10', '11']
+        url = '{}/?policy_id={}&channel_ids={}'.format(
+            newrelic.ALERTS_POLICIES_CHANNELS_API_URL,
+            policy_id,
+            ','.join(channel_ids)
+        )
+        responses.add(responses.PUT, url, json='', status=201)
+        newrelic.add_notification_channels_to_policy(policy_id, channel_ids)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertEqual(request_json, '')
+
+    @responses.activate
+    def test_add_alert_condition(self):
+        """
+        Check that the add_alert_condition function adds an alert condition for the given monitor to
+        the given alert policy
+        """
+        policy_id = 1
+        monitor_id = 'abcde-fghij-klmno-12345'
+        synthetics_condition_id = 1
+        condition_name = 'Test'
+        url = '{}/policies/{}.json'.format(newrelic.ALERTS_CONDITIONS_API_URL, policy_id)
+        responses.add(
+            responses.POST,
+            url,
+            json={'synthetics_condition': {'id': synthetics_condition_id}},
+            status=201
+        )
+        self.assertEqual(newrelic.add_alert_condition(policy_id, monitor_id, condition_name), synthetics_condition_id)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertEqual(request_json, {
+            'synthetics_condition': {
+                'name': condition_name,
+                'monitor_id': monitor_id,
+                'enabled': True
+            }
+        })
+
+    @responses.activate
+    def test_delete_alert_policy(self):
+        """
+        Check that the delete_alert_policy function behaves correctly if DELETE request unsuccessful.
+
+        We expect the function *not* to raise an exception if the alert policy to delete
+        can not be found (i.e., if the DELETE request comes back with a 404).
+
+        In all other cases the function should raise an exception.
+        """
+        policy_id = 1
+
+        client_errors = [status_code for status_code in requests.status_codes._codes if 400 <= status_code < 500]
+        server_errors = [status_code for status_code in requests.status_codes._codes if 500 <= status_code < 600]
+
+        for error in client_errors + server_errors:
+            with responses.RequestsMock() as mock_responses:
+                mock_responses.add(
+                    responses.DELETE,
+                    '{}/{}.json'.format(newrelic.ALERTS_POLICIES_API_URL, policy_id),
+                    status=error
+                )
+                try:
+                    newrelic.delete_alert_policy(policy_id)
+                except requests.exceptions.HTTPError:
+                    if error == requests.codes.not_found:
+                        self.fail('Should not raise an exception for {} response.'.format(error))
+                else:
+                    if not error == requests.codes.not_found:
+                        self.fail('Should raise an exception for {} response.'.format(error))
+
+    def test_delete_email_notification_channel(self):
+        """
+        Check that the delete_email_notification_channel function behaves correctly if DELETE request unsuccessful.
+
+        We expect the function *not* to raise an exception if the notification channel to delete
+        can not be found (i.e., if the DELETE request comes back with a 404).
+
+        In all other cases the function should raise an exception.
+        """
+        channel_id = 1
+
+        client_errors = [status_code for status_code in requests.status_codes._codes if 400 <= status_code < 500]
+        server_errors = [status_code for status_code in requests.status_codes._codes if 500 <= status_code < 600]
+
+        for error in client_errors + server_errors:
+            with responses.RequestsMock() as mock_responses:
+                mock_responses.add(
+                    responses.DELETE,
+                    '{}/{}.json'.format(newrelic.ALERTS_CHANNELS_API_URL, channel_id),
+                    status=error
+                )
+                try:
+                    newrelic.delete_email_notification_channel(channel_id)
+                except requests.exceptions.HTTPError:
+                    if error == requests.codes.not_found:
+                        self.fail('Should not raise an exception for {} response.'.format(error))
+                else:
+                    if not error == requests.codes.not_found:
+                        self.fail('Should raise an exception for {} response.'.format(error))
+
+    def test_delete_alert_condition(self):
+        """
+        Check that the delete_alert_condition function behaves correctly if DELETE request unsuccessful.
+
+        We expect the function *not* to raise an exception if the alert_condition to delete
+        can not be found (i.e., if the DELETE request comes back with a 404).
+
+        In all other cases the function should raise an exception.
+        """
+        condition_id = 1
+
+        client_errors = [status_code for status_code in requests.status_codes._codes if 400 <= status_code < 500]
+        server_errors = [status_code for status_code in requests.status_codes._codes if 500 <= status_code < 600]
+
+        for error in client_errors + server_errors:
+            with responses.RequestsMock() as mock_responses:
+                mock_responses.add(
+                    responses.DELETE,
+                    '{}/{}.json'.format(newrelic.ALERTS_CONDITIONS_API_URL, condition_id),
+                    status=error
+                )
+                try:
+                    newrelic.delete_alert_condition(condition_id)
                 except requests.exceptions.HTTPError:
                     if error == requests.codes.not_found:
                         self.fail('Should not raise an exception for {} response.'.format(error))
