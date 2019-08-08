@@ -87,7 +87,9 @@ class OpenEdXMonitoringMixin:
             )
             emails_to_add = list(emails_to_monitor - emails_current)
             if emails_to_add:
-                self.logger.info('Adding email(s) to policy %s: %s', self.new_relic_alert_policy.id, ', '.join(emails_to_add))
+                self.logger.info(
+                    'Adding email(s) to policy %s: %s', self.new_relic_alert_policy.id, ', '.join(emails_to_add)
+                )
                 self._add_emails(emails_to_add)
 
     def _add_emails(self, emails):
@@ -106,11 +108,12 @@ class OpenEdXMonitoringMixin:
             except NewRelicEmailNotificationChannel.DoesNotExist:
                 self.logger.info('Creating a new email notification channel for {}'.format(email))
                 channel_id = newrelic.add_email_notification_channel(email)
-                NewRelicEmailNotificationChannel.objects.create(id=channel_id, email=email)
+                channel = NewRelicEmailNotificationChannel.objects.create(id=channel_id, email=email)
+                self.new_relic_alert_policy.email_notification_channels.add(channel)
             channel_ids.append(channel_id)
         # Always add all the notification channels corresponding to the given emails to the policy.
         # Existing email notification channels are ignored.
-        newrelic.add_notification_channels_to_policy(self.new_relic_alert_policy.id, channel_ids)
+        newrelic.add_notification_channels_to_policy(self.new_relic_alert_policy.id, sorted(channel_ids))
 
     def disable_monitoring(self):
         """
@@ -121,9 +124,9 @@ class OpenEdXMonitoringMixin:
             monitor.delete()
 
         if hasattr(self, 'new_relic_alert_policy'):
-            for channel in self.new_relic_policy.notification_channels.filter(shared=False):
+            for channel in self.new_relic_alert_policy.email_notification_channels.filter(shared=False):
                 channel.delete()
-            self.new_relic_alert_policy.delete()
+            NewRelicAlertPolicy.objects.get(instance=self).delete()
 
     @property
     def _urls_to_monitor(self):
@@ -166,7 +169,7 @@ class NewRelicAlertPolicy(models.Model):
     )
 
     def __str__(self):
-        return self.id
+        return self.pk
 
     def delete(self, *args, **kwargs):
         """
@@ -185,7 +188,7 @@ class NewRelicEmailNotificationChannel(models.Model):
     shared = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.id
+        return self.pk
 
     def delete(self, *args, **kwargs):
         """
@@ -195,7 +198,7 @@ class NewRelicEmailNotificationChannel(models.Model):
             newrelic.delete_email_notification_channel(self.id)
             super().delete(*args, **kwargs)
         else:
-            raise ProtectedError('Cannot delete a shared email notification channel')
+            raise ProtectedError('Cannot delete a shared email notification channel', self)
 
 
 class NewRelicAlertCondition(models.Model):
@@ -211,4 +214,4 @@ class NewRelicAlertCondition(models.Model):
     )
 
     def __str__(self):
-        return self.id
+        return self.pk
