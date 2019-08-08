@@ -30,7 +30,6 @@ import ddt
 from django.conf import settings
 from openstack.network.v2.security_group import SecurityGroup
 from openstack.network.v2.security_group_rule import SecurityGroupRule
-import requests
 from swiftclient.service import SwiftError
 import keystoneauth1
 
