@@ -194,10 +194,10 @@ workflows:
           name: integration_tests_group_3
           tests_group: 3
           tests_type: test.integration
-          requires:
-            - python_unit_tests
-            - browser_tests
-            - js_tests
+          # requires:
+          #   - python_unit_tests
+          #   - browser_tests
+          #   - js_tests
       - build:
           name: integration_tests_group_4
           tests_group: 4

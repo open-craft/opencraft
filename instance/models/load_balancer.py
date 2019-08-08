@@ -220,7 +220,10 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         Run the playbook to perform the server reconfiguration.
 
         This is factored out into a separate method so it can be mocked out in the tests.
+
+        TODO: remove this code once the HA load balancers are in production.
         """
+        return
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
         returncode = ansible.capture_playbook_output(
             requirements_path=str(playbook_path.parent / "requirements.txt"),
