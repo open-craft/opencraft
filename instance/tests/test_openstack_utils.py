@@ -32,6 +32,7 @@ from openstack.network.v2.security_group import SecurityGroup
 from openstack.network.v2.security_group_rule import SecurityGroupRule
 import requests
 from swiftclient.service import SwiftError
+import keystoneauth1
 
 from instance import openstack_utils
 from instance.tests.base import TestCase
@@ -309,7 +310,7 @@ class OpenStackTestCase(TestCase):
             raise ConnectionResetError('[Errno 104] Connection reset by peer')
         mock_getresponse.side_effect = getresponse_call
         nova = openstack_utils.get_nova_client(settings.OPENSTACK_REGION)
-        with self.assertRaises(requests.exceptions.ConnectionError):
+        with self.assertRaises(keystoneauth1.exceptions.discovery.DiscoveryFailure):
             nova.servers.get('test-id')
         self.assertEqual(mock_getresponse.call_count, 11)
         self.assertEqual(mock_retry_sleep.call_count, 10)
