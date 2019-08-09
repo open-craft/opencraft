@@ -61,7 +61,7 @@ class OpenEdXMonitoringMixin:
             alert_policy_id = newrelic.add_alert_policy(self.domain)
             alert_policy = NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
 
-        urls_to_monitor = self._urls_to_monitor  # Store locally so we don't keep re-computing this
+        urls_to_monitor = set(self._urls_to_monitor.values())  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
 
         for monitor in self.new_relic_availability_monitors.all():
@@ -138,7 +138,12 @@ class OpenEdXMonitoringMixin:
         """
         The urls to monitor for this instance.
         """
-        return {self.url, self.studio_url, self.lms_preview_url, self.lms_extended_heartbeat_url}
+        return {
+            'LMS': self.url,
+            'Studio': self.studio_url,
+            'Preview': self.lms_preview_url,
+            'Extended heartbeat': self.lms_extended_heartbeat_url
+        }
 
 
 class NewRelicAvailabilityMonitor(models.Model):
