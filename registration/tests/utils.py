@@ -69,6 +69,9 @@ class BrowserTestMixin:
         super().setUp()
         options = Options()
         options.headless = True
+        # Ensure we don't attempt to use the new geckodriver method (which
+        # isn't working for us. I _think_ selenium 2 defaults to old method,
+        # but just to make sure.
         cap = DesiredCapabilities().FIREFOX
         cap['marionette'] = False
         try:
