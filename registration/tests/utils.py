@@ -69,11 +69,13 @@ class BrowserTestMixin:
         super().setUp()
         options = Options()
         options.headless = True
+        cap = DesiredCapabilities().FIREFOX
+        cap['marionette'] = True
         try:
-            self.client = webdriver.Firefox(firefox_options=options)
+            self.client = webdriver.Firefox(capabilities=cap, firefox_options=options)
         except WebDriverException:
             time.sleep(1)
-            self.client = webdriver.Firefox(firefox_options=options)
+            self.client = webdriver.Firefox(capabilities=cap, firefox_options=options)
 
     def tearDown(self):
         """
