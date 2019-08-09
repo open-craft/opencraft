@@ -58,21 +58,24 @@ clean: cov.clean ## Remove all temporary files.
 apt_get_update: ## Update system package cache.
 	sudo apt-get update
 
+install_python_requirements: ## Install libs in requirements.txt
+	[ ! -d 'venv' ] && python3 -m venv venv
+	. venv/bin/activate
+	pip install --upgrade pip
+	pip install --upgrade virtualenv
+	pip install -r requirements.txt
+
 install_system_db_dependencies: apt_get_update ## Install system-level DB dependencies from `debian_db_packages.lst`. Ignores comments.
 	sudo -E apt-get install -y `grep -v '^#' debian_db_packages.lst | tr -d '\r'`
 
 install_system_dependencies: apt_get_update ## Install system-level dependencies from `debian_packages.lst`. Ignores comments.
 	sudo -E apt-get install -y `grep -v '^#' debian_packages.lst | tr -d '\r'`
-	if [ -z $$CI ] ; then \
-		echo "Installing Firefox because we're not in a CI."; \
-		sudo apt-get install -y libgtk3.0-cil-dev libasound2 libasound2 libdbus-glib-1-2 libdbus-1-3 --no-install-recommends; \
-		sudo curl -sL -o /tmp/firefox.deb 'https://s3.amazonaws.com/circle-downloads/firefox-mozilla-build_47.0.1-0ubuntu1_amd64.deb'; \
-		echo 'ef016febe5ec4eaf7d455a34579834bcde7703cb0818c80044f4d148df8473bb  /tmp/firefox.deb' | sha256sum -c; \
-		sudo dpkg -i /tmp/firefox.deb || sudo apt-get -f install; \
-		sudo rm -rf /tmp/firefox.deb; \
-	else \
-		echo "Not installing Firefox because this is a CI."; \
-	fi
+
+	sudo apt-get install -y libgtk3.0-cil-dev libasound2 libasound2 libdbus-glib-1-2 libdbus-1-3 --no-install-recommends; \
+	sudo curl -sL -o /tmp/firefox.deb 'https://s3.amazonaws.com/circle-downloads/firefox-mozilla-build_47.0.1-0ubuntu1_amd64.deb'; \
+	echo 'ef016febe5ec4eaf7d455a34579834bcde7703cb0818c80044f4d148df8473bb  /tmp/firefox.deb' | sha256sum -c
+	sudo dpkg -i /tmp/firefox.deb || sudo apt-get -f install
+	sudo rm -rf /tmp/firefox.deb
 
 install_js_dependencies: ## Install dependencies for JS code.
 	curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
