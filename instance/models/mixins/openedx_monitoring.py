@@ -55,9 +55,11 @@ class OpenEdXMonitoringMixin:
         # The alert policy can be configured to create an incident per policy, per alert condition or per monitor and
         # entity (for each failure). We use the 'per-policy' setting on all the alert policies.
 
-        if not hasattr(self, 'new_relic_alert_policy'):
+        try:
+            alert_policy = NewRelicAlertPolicy.objects.get(instance=self)
+        except NewRelicAlertPolicy.DoesNotExist:
             alert_policy_id = newrelic.add_alert_policy(self.domain)
-            NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
+            alert_policy = NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
 
         urls_to_monitor = self._urls_to_monitor  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
@@ -74,8 +76,8 @@ class OpenEdXMonitoringMixin:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             monitor = self.new_relic_availability_monitors.create(pk=new_monitor_id)
-            alert_condition_id = newrelic.add_alert_condition(self.new_relic_alert_policy.id, new_monitor_id, url)
-            monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=self.new_relic_alert_policy)
+            alert_condition_id = newrelic.add_alert_condition(alert_policy.id, new_monitor_id, url)
+            monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
         # Set up email alerts.
         # We add emails here but never remove them - that must be done manually (or the monitor deleted)
@@ -83,16 +85,16 @@ class OpenEdXMonitoringMixin:
         emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
         if emails_to_monitor:
             emails_current = set(
-                self.new_relic_alert_policy.email_notification_channels.values_list('email', flat=True)
+                alert_policy.email_notification_channels.values_list('email', flat=True)
             )
             emails_to_add = list(emails_to_monitor - emails_current)
             if emails_to_add:
                 self.logger.info(
-                    'Adding email(s) to policy %s: %s', self.new_relic_alert_policy.id, ', '.join(emails_to_add)
+                    'Adding email(s) to policy %s: %s', alert_policy.id, ', '.join(emails_to_add)
                 )
-                self._add_emails(emails_to_add)
+                self._add_emails(alert_policy, emails_to_add)
 
-    def _add_emails(self, emails):
+    def _add_emails(self, alert_policy, emails):
         """
         Create a notification channel for each given email address if it doesn't exist and add it to this instance's
         alert policy.
@@ -109,11 +111,11 @@ class OpenEdXMonitoringMixin:
                 self.logger.info('Creating a new email notification channel for {}'.format(email))
                 channel_id = newrelic.add_email_notification_channel(email)
                 channel = NewRelicEmailNotificationChannel.objects.create(id=channel_id, email=email)
-                self.new_relic_alert_policy.email_notification_channels.add(channel)
+                alert_policy.email_notification_channels.add(channel)
             channel_ids.append(channel_id)
         # Always add all the notification channels corresponding to the given emails to the policy.
         # Existing email notification channels are ignored.
-        newrelic.add_notification_channels_to_policy(self.new_relic_alert_policy.id, sorted(channel_ids))
+        newrelic.add_notification_channels_to_policy(alert_policy.id, sorted(channel_ids))
 
     def disable_monitoring(self):
         """
@@ -123,10 +125,13 @@ class OpenEdXMonitoringMixin:
         for monitor in self.new_relic_availability_monitors.all():
             monitor.delete()
 
-        if hasattr(self, 'new_relic_alert_policy'):
-            for channel in self.new_relic_alert_policy.email_notification_channels.filter(shared=False):
+        try:
+            alert_policy = NewRelicAlertPolicy.objects.get(instance=self)
+            for channel in alert_policy.email_notification_channels.filter(shared=False):
                 channel.delete()
-            NewRelicAlertPolicy.objects.get(instance=self).delete()
+            alert_policy.delete()
+        except NewRelicAlertPolicy.DoesNotExist:
+            pass
 
     @property
     def _urls_to_monitor(self):
