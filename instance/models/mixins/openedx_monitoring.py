@@ -192,7 +192,7 @@ class NewRelicAlertPolicy(models.Model):
     )
 
     def __str__(self):
-        return self.pk
+        return str(self.pk)
 
     def delete(self, *args, **kwargs):
         """
@@ -211,7 +211,7 @@ class NewRelicEmailNotificationChannel(models.Model):
     shared = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.pk
+        return str(self.pk)
 
     def delete(self, *args, **kwargs):
         """
@@ -237,4 +237,4 @@ class NewRelicAlertCondition(models.Model):
     )
 
     def __str__(self):
-        return self.pk
+        return str(self.pk)
