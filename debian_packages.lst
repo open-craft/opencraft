@@ -1,10 +1,14 @@
 git
 libffi-dev
+libmysqlclient-dev
 libpq-dev
 make
+mysql-client
+postgresql-client
 python-dev
+python2.7-dev
 python3-pip
 redis-server
 subversion
+unzip
 xvfb
-postgresql-client
