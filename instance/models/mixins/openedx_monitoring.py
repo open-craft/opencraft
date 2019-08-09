@@ -97,7 +97,7 @@ class OpenEdXMonitoringMixin:
         if emails_to_monitor:
             emails_current = set(
                 NewRelicEmailNotificationChannel.objects.filter(
-                    new_relic_alert_policies=alert_policy
+                    new_relic_alert_policies__id=alert_policy.id
                 ).values_list('email', flat=True)
             )
             emails_to_add = list(emails_to_monitor - emails_current)
