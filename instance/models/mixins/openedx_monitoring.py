@@ -61,7 +61,8 @@ class OpenEdXMonitoringMixin:
             alert_policy_id = newrelic.add_alert_policy(self.domain)
             alert_policy = NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
 
-        urls_to_monitor = set(self._urls_to_monitor.values())  # Store locally so we don't keep re-computing this
+        urls_to_monitor_dict = self._urls_to_monitor
+        urls_to_monitor = set(urls_to_monitor_dict)  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
 
         for monitor in self.new_relic_availability_monitors.all():
@@ -72,7 +73,9 @@ class OpenEdXMonitoringMixin:
                 # and create one if it doesn't. This helps when the alert condition
                 # wasn't created in a previous invocation due to some issue.
                 if not monitor.new_relic_alert_conditions.exists():
-                    alert_condition_id = newrelic.add_alert_condition(alert_policy.id, monitor.id, url)
+                    alert_condition_id = newrelic.add_alert_condition(
+                        alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+                    )
                     monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
             else:
                 self.logger.info('Deleting New Relic Synthetics monitor for old public URL %s', url)
@@ -82,7 +85,9 @@ class OpenEdXMonitoringMixin:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             monitor = self.new_relic_availability_monitors.create(pk=new_monitor_id)
-            alert_condition_id = newrelic.add_alert_condition(alert_policy.id, new_monitor_id, url)
+            alert_condition_id = newrelic.add_alert_condition(
+                alert_policy.id, new_monitor_id, urls_to_monitor_dict[url]
+            )
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
         # Set up email alerts.
@@ -145,10 +150,10 @@ class OpenEdXMonitoringMixin:
         The urls to monitor for this instance.
         """
         return {
-            'LMS': self.url,
-            'Studio': self.studio_url,
-            'Preview': self.lms_preview_url,
-            'Extended heartbeat': self.lms_extended_heartbeat_url
+            self.url: 'LMS',
+            self.studio_url: 'Studio',
+            self.lms_preview_url: 'Preview',
+            self.lms_extended_heartbeat_url: 'Extended heartbeat',
         }
 
 
