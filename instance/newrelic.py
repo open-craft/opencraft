@@ -181,7 +181,7 @@ def add_notification_channels_to_policy(policy_id, channel_ids):
     Update the notification channels for the given policy id with the notification channels corresponding
     to the given channel ids.
     """
-    url = '{0}?policy_id={1}&channel_ids={0}'.format(
+    url = '{}?policy_id={}&channel_ids={}'.format(
         ALERTS_POLICIES_CHANNELS_API_URL,
         policy_id,
         ','.join([str(id) for id in channel_ids])
@@ -203,7 +203,7 @@ def add_alert_condition(policy_id, monitor_id, name):
     """
     Add an alert condition to the alert policy with the given id for the monitor with the given id.
     """
-    url = '{0}/policies/{1}.json'.format(ALERTS_CONDITIONS_API_URL, policy_id)
+    url = '{}/policies/{}.json'.format(ALERTS_CONDITIONS_API_URL, policy_id)
     logger.info('POST %s', url)
     r = requests.post(
         url,
