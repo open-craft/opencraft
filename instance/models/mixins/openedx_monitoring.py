@@ -124,11 +124,13 @@ class OpenEdXMonitoringMixin:
                 self.logger.info('Creating a new email notification channel for {}'.format(email))
                 channel_id = newrelic.add_email_notification_channel(email)
                 channel = NewRelicEmailNotificationChannel.objects.create(id=channel_id, email=email)
-                alert_policy.email_notification_channels.add(channel)
             channel_ids.append(channel_id)
         # Always add all the notification channels corresponding to the given emails to the policy.
         # Existing email notification channels are ignored.
         newrelic.add_notification_channels_to_policy(alert_policy.id, sorted(channel_ids))
+        for email_notification_channel in NewRelicEmailNotificationChannel.objects.filter(email__in=emails):
+            alert_policy.email_notification_channels.add(email_notification_channel)
+
 
     def disable_monitoring(self):
         """
