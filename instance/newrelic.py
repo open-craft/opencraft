@@ -194,7 +194,6 @@ def add_notification_channels_to_policy(policy_id, channel_ids):
     r = requests.put(
         url,
         headers=headers,
-        json=""
     )
     r.raise_for_status()
 
