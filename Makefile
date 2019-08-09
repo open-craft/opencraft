@@ -125,7 +125,7 @@ test.migrations_missing: clean ## Check if migrations are missing.
 test.browser: clean static_external ## Run browser-specific tests.
 	@echo -e "\nRunning browser tests..."
 	xvfb-run --auto-servernum $(HONCHO_COVERAGE_TEST) --pattern=browser_*.py
-	
+
 test.integration: clean ## Run integration tests.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."

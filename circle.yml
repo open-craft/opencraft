@@ -46,6 +46,7 @@ jobs:
             sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
             make install_system_dependencies
             sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlclient.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
+            bin/install-supported-firefox
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip

@@ -70,7 +70,7 @@ class BrowserTestMixin:
         options = Options()
         options.headless = True
         cap = DesiredCapabilities().FIREFOX
-        cap['marionette'] = True
+        cap['marionette'] = False
         try:
             self.client = webdriver.Firefox(capabilities=cap, firefox_options=options)
         except WebDriverException:
