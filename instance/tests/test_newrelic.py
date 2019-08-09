@@ -244,12 +244,12 @@ class NewRelicTestCase(TestCase):
         """
         policy_id = 1
         channel_ids = ['10', '11']
-        url = '{}/?policy_id={}&channel_ids={}'.format(
+        url = '{}?policy_id={}&channel_ids={}'.format(
             newrelic.ALERTS_POLICIES_CHANNELS_API_URL,
             policy_id,
             ','.join(channel_ids)
         )
-        responses.add(responses.PUT, url, json='', status=201)
+        responses.add(responses.PUT, url, json='', status=200)
         newrelic.add_notification_channels_to_policy(policy_id, channel_ids)
         self.assertEqual(len(responses.calls), 1)
         request_json = json.loads(responses.calls[0].request.body.decode())
