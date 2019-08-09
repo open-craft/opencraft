@@ -68,6 +68,12 @@ class OpenEdXMonitoringMixin:
             url = newrelic.get_synthetics_monitor(monitor.pk)['uri']
             if url in urls_to_monitor:
                 already_monitored_urls.add(url)
+                # Check if the monitor has an associated alert condition
+                # and create one if it doesn't. This helps when the alert condition
+                # wasn't created in a previous invocation due to some issue.
+                if not monitor.new_relic_alert_conditions.exists():
+                    alert_condition_id = newrelic.add_alert_condition(alert_policy.id, monitor.id, url)
+                    monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
             else:
                 self.logger.info('Deleting New Relic Synthetics monitor for old public URL %s', url)
                 monitor.delete()
