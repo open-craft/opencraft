@@ -26,7 +26,6 @@ import logging
 
 import requests
 from django.conf import settings
-from six.moves import urllib
 
 # Logging #####################################################################
 
@@ -182,16 +181,19 @@ def add_notification_channels_to_policy(policy_id, channel_ids):
     Update the notification channels for the given policy id with the notification channels corresponding
     to the given channel ids.
     """
-    url = '{0}/?{1}'.format(
+    url = '{0}?policy_id={1}&channel_ids={0}'.format(
         ALERTS_POLICIES_CHANNELS_API_URL,
-        urllib.parse.urlencode({'policy_id': policy_id, 'channel_ids': ','.join([str(id) for id in channel_ids])})
+        policy_id,
+        ','.join([str(id) for id in channel_ids])
     )
     logger.info('PUT %s', url)
 
     # This API call only appends to the existing notification channels and ignores the duplicates.
+    headers = _request_headers()
+    headers['Content-Type'] = 'application/json'
     r = requests.put(
         url,
-        headers=_request_headers(),
+        headers=headers,
         json=""
     )
     r.raise_for_status()
