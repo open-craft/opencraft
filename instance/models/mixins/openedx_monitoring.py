@@ -148,6 +148,8 @@ class OpenEdXMonitoringMixin:
                 channel.delete()
             alert_policy.delete()
         except NewRelicAlertPolicy.DoesNotExist:
+            # Alert policy will not exist for instances with monitoring enabled
+            # with tha pre-New Relic Alerts code. So ignore such cases and do nothing.
             pass
 
     @property
