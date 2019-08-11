@@ -131,7 +131,6 @@ class OpenEdXMonitoringMixin:
         for email_notification_channel in NewRelicEmailNotificationChannel.objects.filter(email__in=emails):
             alert_policy.email_notification_channels.add(email_notification_channel)
 
-
     def disable_monitoring(self):
         """
         Disable monitoring on this instance.
@@ -142,7 +141,10 @@ class OpenEdXMonitoringMixin:
 
         try:
             alert_policy = NewRelicAlertPolicy.objects.get(instance=self)
-            for channel in alert_policy.email_notification_channels.filter(shared=False):
+            channels = NewRelicEmailNotificationChannel.objects.filter(
+                new_relic_alert_policies__id=alert_policy.id, shared=False
+            )
+            for channel in channels:
                 channel.delete()
             alert_policy.delete()
         except NewRelicAlertPolicy.DoesNotExist:
