@@ -237,7 +237,7 @@ class NewRelicTestCase(TestCase):
         })
 
     @responses.activate
-    def test_notification_channels_to_policy(self):
+    def test_add_notification_channels_to_policy(self):
         """
         Check that the add_notification_channels_to_policy function adds the given notification channels to
         the given policy.
@@ -252,10 +252,10 @@ class NewRelicTestCase(TestCase):
         responses.add(responses.PUT, url, json='', status=200)
         newrelic.add_notification_channels_to_policy(policy_id, channel_ids)
         self.assertEqual(len(responses.calls), 1)
-        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_body = responses.calls[0].request.body
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
-        self.assertEqual(request_json, '')
+        self.assertEqual(request_body, None)
 
     @responses.activate
     def test_add_alert_condition(self):
