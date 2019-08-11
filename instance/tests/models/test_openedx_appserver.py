@@ -820,8 +820,7 @@ class EmailMixinInstanceTestCase(TestCase):
     def test_heartbeat_active_succeeds(self, mock_public_ip):
         """ Test that heartbeat_active method returns true when request to heartbeat is 200"""
         appserver = make_test_appserver()
-        # FIXME better way to mock? (Without specifying each return value separately)
-        mock_public_ip.side_effect = ["1.1.1.1", "1.1.1.1"]
+        mock_public_ip.return_value = "1.1.1.1"
 
         responses.add(responses.OPTIONS, 'http://{}/heartbeat'.format(appserver.server.public_ip), status=200)
         self.assertTrue(appserver.heartbeat_active())
