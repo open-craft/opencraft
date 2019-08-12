@@ -176,7 +176,12 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
 
         The triggering_instance_id indicates the id of the instance reference that initiated the
         reconfiguration of the load balancer.
+
+        Is a no-op if CONSUL_ENABLED is true.
         """
+        if settings.CONSUL_ENABLED:
+            return "", ""
+
         backend_map = []
         backend_conf = []
         for instance in self.get_instances():
@@ -220,10 +225,12 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         Run the playbook to perform the server reconfiguration.
 
         This is factored out into a separate method so it can be mocked out in the tests.
-
-        TODO: remove this code once the HA load balancers are in production.
         """
-        return
+        if settings.CONSUL_ENABLED:
+            self.logger.info(
+                "Consul is enabled. Load balancer will not be reconfigured."
+            )
+            return
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
         returncode = ansible.capture_playbook_output(
             requirements_path=str(playbook_path.parent / "requirements.txt"),

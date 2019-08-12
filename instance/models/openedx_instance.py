@@ -134,6 +134,12 @@ class OpenEdXInstance(
         The triggered_by_instance flag indicates whether the reconfiguration was initiated by this
         instance, in which case we log additional information.
         """
+        if settings.CONSUL_ENABLED:
+            self.logger.info(
+                "Consul is enabled. No haproxy configuration fragment and backend map will be generated."
+            )
+            return [], []
+
         active_appservers = self.get_active_appservers()
         if not active_appservers.exists():
             return self.get_preliminary_page_config(self.ref.pk)

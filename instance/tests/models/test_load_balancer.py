@@ -22,6 +22,7 @@ LoadBalancingServer model - tests
 import re
 from unittest.mock import Mock, patch
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 
@@ -63,6 +64,8 @@ def mock_instances():
 class LoadBalancingServerTest(TestCase):
     """
     Test cases for the LoadBalancingServer model.
+
+    If Consul is handling the Load Balancer configuration, do not test it.
     """
 
     def setUp(self):
@@ -73,6 +76,9 @@ class LoadBalancingServerTest(TestCase):
         """
         Test that the configuration gets rendered correctly.
         """
+        if settings.CONSUL_ENABLED:
+            return
+
         backend_map, backend_conf = self.load_balancer.get_configuration()
         self.assertCountEqual(
             [line for line in backend_map.splitlines(False) if line],
@@ -95,13 +101,16 @@ class LoadBalancingServerTest(TestCase):
         """
         Test that the reconfigure() method triggers a playbook run.
         """
+        if settings.CONSUL_ENABLED:
+            return
+
         mock_run_playbook.return_value.__enter__.return_value.returncode = 0
         self.load_balancer.reconfigure()
-        #self.assertEqual(mock_run_playbook.call_count, 1)
+        self.assertEqual(mock_run_playbook.call_count, 1)
         self.assertEqual(self.load_balancer.configuration_version, 2)
         self.assertEqual(self.load_balancer.deployed_configuration_version, 2)
         self.load_balancer.delete()
-        #self.assertEqual(mock_run_playbook.call_count, 2)
+        self.assertEqual(mock_run_playbook.call_count, 2)
 
     @patch("instance.ansible.poll_streams")
     @patch("instance.ansible.run_playbook")
@@ -110,6 +119,9 @@ class LoadBalancingServerTest(TestCase):
         """
         Test that the reconfigure() method gives us a dirty LB if the playbook fails.
         """
+        if settings.CONSUL_ENABLED:
+            return
+
         with self.assertRaises(ReconfigurationFailed):
             mock_run_playbook.return_value.__enter__.return_value.returncode = 1
             self.load_balancer.reconfigure()
@@ -123,9 +135,12 @@ class LoadBalancingServerTest(TestCase):
         """
         Test that the deconfigure() method triggers a playbook run.
         """
+        if settings.CONSUL_ENABLED:
+            return
+
         mock_run_playbook.return_value.__enter__.return_value.returncode = 0
         self.load_balancer.deconfigure()
-        #self.assertEqual(mock_run_playbook.call_count, 1)
+        self.assertEqual(mock_run_playbook.call_count, 1)
 
 
 class LoadBalancingServerManager(TestCase):
