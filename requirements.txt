@@ -28,12 +28,8 @@ ddt==1.2.1
 debtcollector==1.21.0
 decorator==4.4.0
 Django==2.2.2
-# with Django 1 we were using: -e git+https://github.com/jrief/django-angular.git@3a4eb9e716b0f03e4abe5ec60d6978a52da100f8#egg=django_angular	
-# with Django 2, clean option:
-# django-angular==2.2
-# but django-angular 2.2 requires a heavy rewrite of many parts of the form. Disabling django-angular does too. So a compromise is to patch our django-angular version to work with Django 2:
-# TODO: use opencraft's branch
--e git+https://github.com/open-craft/django-angular.git@clemente/migrate-our-django-angular-to-django-2#egg=django_angular
+# using the latest django-angular (2.2 or later) requires a heavy rewrite of the registration form, so we use the old 1.0.0 version patched to work under Django 2
+-e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular
 django-appconf==1.0.3
 django-compressor==2.3
 django-debug-toolbar==2.0

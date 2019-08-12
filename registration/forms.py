@@ -96,9 +96,6 @@ class Textarea(InputStyleMixin, forms.widgets.Textarea):
 
 # Forms #######################################################################
 
-# TODO redo this form (see BIZ-671).
-# Use this signature to test:
-# class BetaTestApplicationForm(forms.ModelForm):
 class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelForm):
     """
     Application form for beta testers. Creates instances of User, UserProfile,
@@ -451,9 +448,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         return users
 
 
-# TODO redo this form (see BIZ-671).
-# Use this signature to test:
-# class LoginForm(AuthenticationForm):
 class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
     """
     Allows users to login with username/email and password.
