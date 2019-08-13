@@ -77,7 +77,8 @@ class LoadBalancedInstance(models.Model):
                 'Direct load balancer reconfiguration disabled. Skipping %s configuration...',
                 self
             )
-            return 
+            return
+
         if load_balancing_server is None:
             load_balancing_server = self.load_balancing_server
             if load_balancing_server is None:
