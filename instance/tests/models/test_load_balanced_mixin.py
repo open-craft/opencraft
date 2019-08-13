@@ -134,6 +134,25 @@ class LoadBalancedInstanceTestCase(TestCase):
         self.assertIn("New load-balancer configuration", logs.output[1])
         self.assertIn("Setting DNS records for active app servers", logs.output[2])
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
+    @patch_services
+    def test_reconfigure_load_balancer_disabled(self, mock_run_playbook):
+        """
+        Test that reconfigure_load_balancer doesn't reconfigure the load balancer
+        when the reconfiguration is disabled on settings.
+        """
+        instance = OpenEdXInstanceFactory(sub_domain='test.load_balancer')
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        with self.assertLogs("instance.models.instance") as logs:
+            appserver.make_active()
+        annotation = instance.get_log_message_annotation()
+        for log_line in logs.output:
+            self.assertIn(annotation, log_line)
+        self.assertEqual(len(logs.output), 2)
+        self.assertIn("Direct load balancer reconfiguration disabled. Skipping", logs.output[0])
+        self.assertIn("Setting DNS records for active app servers", logs.output[1])
+
     @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
     def test_preliminary_page_not_configured(self):
         """

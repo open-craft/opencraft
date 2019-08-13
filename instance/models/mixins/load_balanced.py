@@ -72,6 +72,12 @@ class LoadBalancedInstance(models.Model):
         """
         Reconfigure the associated load balancer.
         """
+        if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
+            self.logger.info(
+                'Direct load balancer reconfiguration disabled. Skipping %s configuration...',
+                self
+            )
+            return 
         if load_balancing_server is None:
             load_balancing_server = self.load_balancing_server
             if load_balancing_server is None:
