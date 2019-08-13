@@ -451,134 +451,6 @@ class ConsulAgent(object):
         self._client = consul.Consul()
         self.prefix = prefix
 
-    @staticmethod
-    def _tnx_decode(value):
-        """
-        Decodes values received in Consul txn
-
-        :param value: base64 encoded value
-        :return: base64 decoded value, JSON decoded if serializable
-        """
-        value = base64.b64decode(value).decode('utf-8')
-        try:
-            # We did conditional JSON encoding before
-            # Now everything should be JSON encoded in _tnx_encode
-            return json.loads(value)
-        except json.JSONDecodeError:
-            return value
-
-    @staticmethod
-    def _tnx_encode(value):
-        "store the value as a json string suitable for a txn"
-        return base64.b64encode(json.dumps(value).encode('utf-8')).decode('ascii')
-
-    @staticmethod
-    def _tnx_set(key, value):
-        "return a txn KV parameter to set k/v -- this is for new keys"
-        return {
-            "KV": {
-                "Verb": "set",
-                "Key": key,
-                "Value": ConsulAgent._tnx_encode(value),
-            }
-        }
-
-    @staticmethod
-    def _tnx_update(key, value, cas):
-        "return a txn KV parameter to cas k/v -- this is for existing keys"
-        return {
-            "KV": {
-                "Verb": "cas",
-                "Key": key,
-                "Value": ConsulAgent._tnx_encode(value),
-                "Index": cas,
-            }
-        }
-
-    def _get_keys_as_dict(self):
-        """
-        Retrieves a list of keys based on a prefix and returns a dictionary.
-        """
-        request = [
-            {
-                "KV": {
-                    "Verb": "get-tree",
-                    "Key": self.prefix,
-                },
-            },
-        ]
-        result = self._client.txn.put(request)
-
-        # store a dictionary of existing values, decoded from JSON
-        # e.g. ocim/instances/387/domain_slug:edxins-sajosuebcstag-387 ->
-        #   existing = {'domain_slug': {'Key':'ocim/instances/387/domain_slug',
-        #                               'Value':'edxins-sajosuebcstag-387'} }
-        existing = {}
-        for entry in result['Results']:
-            entry["KV"]["Value"] = self._tnx_decode(entry["KV"]["Value"])
-            existing[entry["KV"]["Key"].split('/')[-1]] = entry["KV"]
-        return existing
-
-    def _get_put_data(self, updates):
-        """
-        Prepare and return the data to be used in the transaction put request
-        """
-        existing = self._get_keys_as_dict()
-        # store existing keys which will be updated
-        # as a list of dictionaries containing JSON encoded values
-        put = []
-        for key in set(updates.keys()) & set(existing.keys()):
-            if updates[key] != existing[key]["Value"]:
-                put.append(
-                    self._tnx_update(
-                        self.prefix + key,
-                        updates[key],
-                        existing[key]["ModifyIndex"]
-                    )
-                )
-
-        # store all new keys in the list
-        for key in set(updates.keys()) - set(existing.keys()):
-            put.append(self._tnx_set(self.prefix + key, updates[key]))
-
-        # get or create the version number
-        version = existing.get("version", {"Value": 0})["Value"]
-
-        # increment the version number and use `txn` to update inside a transaction
-        if put:
-            version += 1
-            if 'version' in existing:
-                put.append(self._tnx_update(
-                    self.prefix + "version", version, existing['version']["ModifyIndex"]))
-            else:
-                put.append(self._tnx_set(self.prefix + "version", 1))
-        return version, put
-
-    def txn_put(self, updates, num_retries=3):
-        """
-        Write dictionary to Consul as a single transaction
-
-        :param updates: A dict object contains the k/v
-                               to be written on Consul.
-        :param num_retries: Number of times to retry on failure due to cas
-        :return: A pair (version, changed) with the current version number and
-                 a bool to indicate whether the information was updated.
-        """
-
-        # contact Consul & get the key-value tree located at `self.prefix`
-        # see settings.CONSUL_PREFIX, e.g. ocim/instances/347/
-        for attempt in range(num_retries + 1):
-            version, put = self._get_put_data(updates)
-            if put:
-                try:
-                    self._client.txn.put(put)
-                    break
-                except consul.base.ClientError:
-                    if attempt == num_retries:
-                        raise
-                    time.sleep(5 * (attempt + 1))
-        return version, bool(put)
-
     def get(self, key, index=False, **kwargs):
         """
         Get's a key value from Consul's Key-Value store after casting it to
@@ -635,7 +507,6 @@ class ConsulAgent(object):
             given. To delete a key use :meth:`delete_dict_key`
 
         :param (dict) value: value to write
-        :param (int) num_retries: Retries for self.txn_put
         :param kwargs: consul.kv.put specific options.
         """
         get_data = None
@@ -643,14 +514,6 @@ class ConsulAgent(object):
             data_index, get_data = self._client.kv.get(self.prefix, **kwargs)
         except consul.base.NotFound:
             pass
-        try:
-            # This is only needed for backwards compatibility.
-            data_index, txn_data = self._client.kv.get(self.prefix, recurse=True, **kwargs)
-        except consul.base.NotFound:
-            pass
-
-        if not get_data and txn_data:
-            return self.txn_put(value, num_retries)
 
         if get_data:
             stored = json.loads(get_data['Value'].decode('utf-8'))
@@ -697,17 +560,6 @@ class ConsulAgent(object):
         Remove a config dict using this instance's prefix.
         """
         self._client.kv.delete(self.prefix)
-
-    def consolidate_values_to_dict(self):
-        """
-        Consolidate multiple k/v pairs into one single k/v pair where the
-        key is the prefix and the value is a json object.
-        """
-        stored = self._get_keys_as_dict()
-        values = {
-            k: stored[k]['Value'] for k in stored
-        }
-        return self._client.kv.put(self.prefix, json.dumps(values).encode('utf-8'))
 
     def delete(self, key, **kwargs):
         """
