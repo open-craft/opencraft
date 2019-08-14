@@ -25,7 +25,6 @@ New Relic - Tests
 import json
 
 from django.test import override_settings
-from six.moves import urllib
 import requests
 import responses
 
