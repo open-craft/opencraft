@@ -160,7 +160,6 @@ class OpenEdXMonitoringTestCase(TestCase):
             """
             Exception to be thrown by mocked code.
             """
-            pass
 
         def check(instance):
             """
@@ -169,7 +168,7 @@ class OpenEdXMonitoringTestCase(TestCase):
             """
             try:
                 instance.enable_monitoring()
-            except:  # pylint: disable=broad-except
+            except Exception:  # pylint: disable=broad-except
                 pass
             for _ in range(10):
                 with self.assertRaises(CustomException):
