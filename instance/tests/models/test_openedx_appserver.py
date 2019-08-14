@@ -28,7 +28,7 @@ import novaclient
 import requests
 import responses
 import yaml
-from ddt import ddt, data, unpack
+from ddt import ddt, data
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail as django_mail
