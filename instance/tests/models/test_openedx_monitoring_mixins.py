@@ -38,7 +38,6 @@ from instance.models.mixins.openedx_monitoring import (
     NewRelicAlertPolicy,
     NewRelicEmailNotificationChannel,
 )
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
@@ -126,8 +125,8 @@ class OpenEdXMonitoringTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory()
         monitor_ids = [str(uuid4()) for i in range(len(instance._urls_to_monitor))]
-        for index, monitored_url in enumerate(instance._urls_to_monitor.keys()):
-            NewRelicAvailabilityMonitor.objects.create(instance=instance, pk=monitor_ids[index])
+        for monitor_id in monitor_ids:
+            NewRelicAvailabilityMonitor.objects.create(instance=instance, pk=monitor_id)
 
         existing_monitors = NewRelicAvailabilityMonitor.objects.filter(instance=instance)
 
@@ -150,20 +149,27 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_enable_monitoring_does_not_skip_any_new_relic_alerts_code_on_retry_after_error(self, mock_newrelic):
+    def test_enable_monitoring_does_not_skip_alerts_on_retry_after_error(self, mock_newrelic):
         """
-        Check that the enable_monitoring doesn't skip the creation of monitoring resources when a previous attempt
-        to enable monitoring failed with an error.
+        Check that the enable_monitoring doesn't skip the creation of monitoring resources (New Relic alerts)
+        when a previous attempt to enable monitoring failed with an error.
         """
         instance = OpenEdXInstanceFactory()
 
         class CustomException(Exception):
+            """
+            Exception to be thrown by mocked code.
+            """
             pass
 
         def check(instance):
+            """
+            Do a first call to enable monitoring, then check that successive calls stop at a certain step
+            (not before).
+            """
             try:
                 instance.enable_monitoring()
-            except:
+            except:  # pylint: disable=broad-except
                 pass
             for _ in range(10):
                 with self.assertRaises(CustomException):
@@ -336,6 +342,9 @@ class OpenEdXMonitoringTestCase(TestCase):
         NewRelicEmailNotificationChannel.objects.get(email='admin@opencraft.com')
 
     def test_deleting_shared_notification_email_address(self):
+        """
+        Test that a shared email notification channel can't be deleted.
+        """
         e = NewRelicEmailNotificationChannel.objects.create(id=1, email='test@opencraft.com', shared=True)
         with self.assertRaises(ProtectedError):
             e.delete()
