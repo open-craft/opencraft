@@ -45,7 +45,7 @@ django-redis==4.10.0
 django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
 django-zurb-foundation==5.5.0
-django==2.2.2
+django==2.2.4
 djangorestframework==3.9.4
 docutils==0.14
 dodgy==0.1.9
