@@ -343,6 +343,8 @@ class OpenEdXMonitoringTestCase(TestCase):
     def test_deleting_shared_notification_email_address(self):
         """
         Test that a shared email notification channel can't be deleted.
+        Shared notification channels are used by many instances, so if one instance deleted it, the others
+        wouldn't be able to use it.
         """
         e = NewRelicEmailNotificationChannel.objects.create(id=1, email='test@opencraft.com', shared=True)
         with self.assertRaises(ProtectedError):
