@@ -680,6 +680,17 @@ LOAD_BALANCER_FRAGMENT_NAME_PREFIX = env('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', d
 PRELIMINARY_PAGE_SERVER_IP = env('PRELIMINARY_PAGE_SERVER_IP', default=None)
 PRELIMINARY_PAGE_HOSTNAME = env('PRELIMINARY_PAGE_HOSTNAME', default=None)
 
+# This disables Load Balancer reconfiguration
+# If using the new load balancer, this setting must be set to True, as the
+# load balancing configuration is done by Consul Template on the load balancers,
+# without needing any direct action from Ocim on the load balancers.
+# !!! This should only be set after the new loab balancers are configured and
+# tested to be working !!!
+DISABLE_LOAD_BALANCER_CONFIGURATION = env.bool(
+    'DISABLE_LOAD_BALANCER_CONFIGURATION',
+    default=False
+)
+
 # AWS #########################################################################
 
 # Must be set if `INSTANCE_STORAGE_TYPE = 's3'`.

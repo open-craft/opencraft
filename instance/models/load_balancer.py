@@ -178,6 +178,13 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         The triggering_instance_id indicates the id of the instance reference that initiated the
         reconfiguration of the load balancer.
         """
+        if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
+            self.logger.info(
+                'Direct load balancer reconfiguration disabled. Skipping %s configuration...',
+                self
+            )
+            return "", ""
+
         backend_map = []
         backend_conf = []
         for instance in self.get_instances():
@@ -222,6 +229,13 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
 
         This is factored out into a separate method so it can be mocked out in the tests.
         """
+        if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
+            self.logger.info(
+                'Direct load balancer reconfiguration disabled. Skipping %s configuration...',
+                self
+            )
+            return
+
         playbook_path = pathlib.Path(settings.SITE_ROOT) / "playbooks/load_balancer_conf/load_balancer_conf.yml"
         returncode = ansible.capture_playbook_output(
             requirements_path=str(playbook_path.parent / "requirements.txt"),
