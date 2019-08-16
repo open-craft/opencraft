@@ -23,13 +23,14 @@ OpenStack - Helper functions
 # Imports #####################################################################
 import logging
 from collections import namedtuple, defaultdict
+import requests
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
 from openstack import config as occ
 from openstack import connection
 from swiftclient.service import SwiftService
-
+from instance.utils import get_requests_retry
 
 # Logging #####################################################################
 
@@ -133,6 +134,7 @@ def get_nova_client(region_name, api_version=2):
     """
     Instantiate a python novaclient.Client() object with proper credentials
     """
+    # TODO this function duplicates features and code from get_openstack_connection. Merge them
     nova = NovaClient(
         api_version,
         username=settings.OPENSTACK_USER,
@@ -143,12 +145,20 @@ def get_nova_client(region_name, api_version=2):
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
-    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
-    # urllib3's definition) are retried before giving up.
+    # To gracefully recover when the unavailability is short-lived, ensure some requests are retried
+    # before giving up.
+    # - requests's HTTPAdapter provides a max_retries parameter that will be passed to urllib3
+    # - keystoneauth1 supports a connect_retries parameter, but it only retries certain types of errors
+    #   which inherit from RetriableConnectionFailure. This includes timeouts and socket errors but not
+    #   others like a 500 error. We add retries on those status codes here
+    #
     adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    nova.client.open_session()
-    nova.client._session.mount('http://', adapter)
-    nova.client._session.mount('https://', adapter)
+    nova.client.session.session.mount('http://', adapter)
+    nova.client.session.session.mount('https://', adapter)
+
+    # keystoneauth1 retries on certain status codes, see above
+    nova.client.retriable_status_codes = range(500, 600)
+    nova.client.status_code_retries = 10
 
     return nova
 
