@@ -20,11 +20,9 @@
 Models Utils
 """
 
-import base64
 import functools
 import inspect
 import json
-import time
 from weakref import WeakKeyDictionary
 
 import consul
