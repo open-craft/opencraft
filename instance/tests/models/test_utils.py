@@ -898,33 +898,9 @@ class ConsulAgentTest(TestCase):
         self.assertFalse(self.agent._is_json_serializable(1))
         self.assertFalse(self.agent._is_json_serializable(1.1))
 
-    @patch.object(consul.Consul.Txn, 'put')
-    @patch.object(ConsulAgent, '_get_put_data')
-    def test_txn_put_retries(self, mock_get_put_data, mock_txn_put):
-        """
-        Tests that the txn_put method retries on error
-        """
-        mock_get_put_data.return_value = (1, True)
-        mock_txn_put.side_effect = [consul.base.ClientError(), {}]
-        agent = ConsulAgent()
-        agent.txn_put({})
-
-    @patch.object(consul.Consul.Txn, 'put')
-    @patch.object(ConsulAgent, '_get_put_data')
-    def test_txn_put_error_after_all_retries(self, mock_get_put_data, mock_txn_put):
-        """
-        Tests that the txn_put method raises the exception on error after exhausting all the retries
-        """
-        mock_get_put_data.return_value = (1, True)
-        mock_txn_put.side_effect = consul.base.ClientError
-        with self.assertRaises(consul.base.ClientError):
-            agent = ConsulAgent()
-            agent.txn_put({})
-
     @patch.object(consul.Consul.KV, 'get')
     @patch.object(consul.Consul.KV, 'put')
-    @patch('instance.models.utils.ConsulAgent.txn_put', return_value=Mock())
-    def test_create_or_update_dict(self, mock_txn_put, mock_kv_put, mock_kv_get):
+    def test_create_or_update_dict(self, mock_kv_put, mock_kv_get):
         """
         Tests create or update dict.
         """
@@ -943,19 +919,6 @@ class ConsulAgentTest(TestCase):
         name, args, kwargs = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual(test_dict, json.loads(args[1].decode('utf-8')))
-
-        mock_kv_get.side_effect = [
-            (1, None),
-            (1, json.dumps(
-                {'this/dummy/prefix/key1': 'value1',
-                 'this/dummy/prefix/key2': 'value2',
-                 'this/dummy/prefix/version': 1}
-            ).encode('utf-8'))
-        ]
-        value_dict = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'}
-        self.agent.create_or_update_dict(value_dict)
-        # Assert we are backwards compatible.
-        mock_txn_put.assert_called_with(value_dict, 3)
 
     @patch.object(consul.Consul.KV, 'get')
     @patch.object(consul.Consul.KV, 'put')
@@ -978,38 +941,6 @@ class ConsulAgentTest(TestCase):
         """
         self.agent.remove_dict()
         mock_kv_delete.assert_called_with(self.agent.prefix)
-
-    @patch.object(consul.Consul.KV, 'put')
-    @patch(
-        'instance.models.utils.ConsulAgent._get_keys_as_dict',
-        return_value={
-            'key1': {
-                'Value': 'value1'
-            },
-            'key2': {
-                'Value': 'value2'
-            },
-            'version': {
-                'Value': 2
-            }
-        }
-    )
-    def test_consolidate_values_to_dict(self, mock_get_keys, mock_kv_put):
-        """
-        Test consolidate old format values into one key/value pair.
-        """
-        self.agent.consolidate_values_to_dict()
-        self.assertEqual(len(mock_kv_put.mock_calls), 1)
-        name, args, kwargs = mock_kv_put.mock_calls[0]
-        self.assertEqual(args[0], self.agent.prefix)
-        self.assertDictEqual(
-            {
-                'key1': 'value1',
-                'key2': 'value2',
-                'version': 2,
-            },
-            json.loads(args[1].decode('utf-8'))
-        )
 
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
