@@ -6,7 +6,7 @@
         <div class="page-content__inner__wrapper">
             <ul class="djng-form-errors">
                 {% for error in form.non_field_errors %}
-                    <li class="invalid">{{ error }}</li>
+                    <li class="invalid">{{ error|last }}</li>
                 {% endfor %}
             </ul>
         </div>
