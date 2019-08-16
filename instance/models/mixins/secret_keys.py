@@ -219,4 +219,4 @@ class SecretKeyInstanceMixin(models.Model):
         Return the HTTP auth information in the format required by Authorization HTTP header, as a string.
         """
         user_pass = '{}:{}'.format(self.http_auth_user, self.http_auth_pass)
-        return b64encode(user_pass.encode('latin1')).decode("utf-8")
+        return b64encode(user_pass.encode('utf-8')).decode("utf-8")
