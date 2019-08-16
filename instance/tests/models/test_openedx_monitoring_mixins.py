@@ -26,11 +26,19 @@ from unittest.mock import call, patch
 from uuid import uuid4
 
 import ddt
-from django.test import override_settings
 import requests
 import responses
+from django.db.models import ProtectedError
+from django.test import override_settings
 
 from instance import newrelic
+from instance.models.mixins.openedx_monitoring import (
+    NewRelicAvailabilityMonitor,
+    NewRelicAlertCondition,
+    NewRelicAlertPolicy,
+    NewRelicEmailNotificationChannel,
+)
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
@@ -74,6 +82,9 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.get_synthetics_monitor.return_value = []
         mock_newrelic.get_synthetics_notification_emails.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.side_effect = list(range(len(expected_monitor_emails)))
         instance = OpenEdXInstanceFactory()
         instance.additional_monitoring_emails = additional_monitoring_emails
         instance.enable_monitoring()
@@ -93,11 +104,86 @@ class OpenEdXMonitoringTestCase(TestCase):
 
         # Check that alert emails have been set up
         created_monitor_ids = set()
-        for creation_call in mock_newrelic.add_synthetics_email_alerts.call_args_list:
-            created_monitor_ids.add(creation_call[0][0])  # First positional arg to add_synthetics_email_alerts()
-            list_of_emails_added = creation_call[0][1]  # Second arg - the list of emails added
-            self.assertEqual(set(list_of_emails_added), set(expected_monitor_emails))
+        list_of_emails_added = []
+
+        for add_call in mock_newrelic.add_alert_condition.call_args_list:
+            created_monitor_ids.add(add_call[0][1])
+
+        for add_call in mock_newrelic.add_email_notification_channel.call_args_list:
+            list_of_emails_added.append(add_call[0][0])
+
         self.assertEqual(set(monitor_ids), created_monitor_ids)
+        self.assertEqual(set(list_of_emails_added), set(expected_monitor_emails))
+        mock_newrelic.add_notification_channels_to_policy.assert_called_with(
+            1, list(range(len(expected_monitor_emails)))
+        )
+
+    @patch('instance.models.mixins.openedx_monitoring.newrelic')
+    def test_enable_monitoring_for_pre_new_relic_alerts_instances(self, mock_newrelic):
+        """
+        Check that the monitoring is enabled properly for the instances with monitoring
+        enabled using the pre-New Relic alerts code.
+        """
+        instance = OpenEdXInstanceFactory()
+        monitor_ids = [str(uuid4()) for i in range(len(instance._urls_to_monitor))]
+        for index, monitored_url in enumerate(instance._urls_to_monitor.keys()):
+            NewRelicAvailabilityMonitor.objects.create(instance=instance, pk=monitor_ids[index])
+
+        existing_monitors = NewRelicAvailabilityMonitor.objects.filter(instance=instance)
+
+        self.assertEqual(existing_monitors.count(), len(instance._urls_to_monitor))
+        self.assertEqual(NewRelicAlertPolicy.objects.filter(instance=instance).count(), 0)
+        mock_newrelic.get_synthetics_monitor.side_effect = [{'uri': url} for url in instance._urls_to_monitor]
+        mock_newrelic.get_synthetics_notification_emails.return_value = ['admin@opencraft.com']
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.return_value = 1
+        instance.enable_monitoring()
+        self.assertEqual(set(NewRelicAvailabilityMonitor.objects.filter(instance=instance)), set(existing_monitors))
+        self.assertEqual(NewRelicAlertPolicy.objects.filter(instance=instance).count(), 1)
+        self.assertEqual(
+            NewRelicEmailNotificationChannel.objects.get(new_relic_alert_policies__id=1).email,
+            'admin@opencraft.com'
+        )
+        self.assertEqual(
+            NewRelicAlertCondition.objects.filter(alert_policy__id=1, monitor__id__in=monitor_ids).count(), 4
+        )
+
+    @patch('instance.models.mixins.openedx_monitoring.newrelic')
+    def test_enable_monitoring_does_not_skip_any_new_relic_alerts_code_on_retry_after_error(self, mock_newrelic):
+        """
+        Check that the enable_monitoring doesn't skip the creation of monitoring resources when a previous attempt
+        to enable monitoring failed with an error.
+        """
+        instance = OpenEdXInstanceFactory()
+
+        class CustomException(Exception):
+            pass
+
+        def check(instance):
+            try:
+                instance.enable_monitoring()
+            except:
+                pass
+            for _ in range(10):
+                with self.assertRaises(CustomException):
+                    instance.enable_monitoring()
+
+        mock_newrelic.add_alert_policy.side_effect = CustomException()
+        check(instance)
+
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.get_synthetics_monitor.side_effect = [{'uri': url} for url in instance._urls_to_monitor]
+        mock_newrelic.add_alert_condition.side_effect = CustomException()
+        check(instance)
+
+        mock_newrelic.add_alert_condition.side_effect = list(range(len(instance._urls_to_monitor)))
+        mock_newrelic.add_email_notification_channel.side_effect = CustomException()
+        check(instance)
+
+        mock_newrelic.add_email_notification_channel.return_value = 1
+        mock_newrelic.add_notification_channels_to_policy.side_effect = CustomException()
+        check(instance)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
     def test_update_monitoring(self, mock_newrelic):
@@ -132,6 +218,11 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.get_synthetics_monitor.side_effect = mock_get_synthetics_monitor
         new_ids = [str(uuid4()) for i in range(3)]
         mock_newrelic.create_synthetics_monitor.side_effect = new_ids
+        other_ids = list(range(4))
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = other_ids
+        mock_newrelic.add_email_notification_channel.side_effect = other_ids
+
         instance.enable_monitoring()
 
         # Check that the old monitor has been deleted and that new monitors
@@ -172,34 +263,82 @@ class OpenEdXMonitoringTestCase(TestCase):
 
         mock_newrelic.get_synthetics_monitor.side_effect = mock_get_synthetics_monitor
         mock_newrelic.get_synthetics_notification_emails.return_value = ['admin@opencraft.com']
-
-        instance.additional_monitoring_emails = ['extra@opencraft.com']
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.return_value = 1
+        instance.new_relic_alert_policy = NewRelicAlertPolicy.objects.create(id=1, instance=instance)
+        instance.new_relic_alert_policy.email_notification_channels.add(
+            NewRelicEmailNotificationChannel.objects.create(id=0, email='admin@opencraft.com')
+        )
+        NewRelicEmailNotificationChannel.objects.create(id=10, email='existing@opencraft.com')
+        instance.additional_monitoring_emails = ['extra@opencraft.com', 'existing@opencraft.com']
         instance.enable_monitoring()
 
         # Check that the extra email has been added to existing monitors,
         # which should be unchanged
         mock_newrelic.create_synthetics_monitor.assert_not_called()
         mock_newrelic.delete_synthetics_monitor.assert_not_called()
-        mock_newrelic.add_synthetics_email_alerts.assert_has_calls([
-            call(existing_monitor_ids[0], ['extra@opencraft.com']),
-            call(existing_monitor_ids[1], ['extra@opencraft.com']),
-            call(existing_monitor_ids[2], ['extra@opencraft.com']),
-        ], any_order=True)
+        mock_newrelic.add_email_notification_channel.assert_called_with('extra@opencraft.com')
+        mock_newrelic.add_notification_channels_to_policy.assert_called_with(1, [1, 10])
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
     def test_disable_monitoring(self, mock_newrelic):
         """
         Check that the `disable_monitoring` method removes any New Relic
-        Synthetics monitors for this instance.
+        Synthetics monitors for this instance and the alert policy created for the instance
         """
-        monitor_ids = [str(uuid4()) for i in range(3)]
+        monitor_ids = [str(uuid4()) for i in range(4)]
         instance = OpenEdXInstanceFactory()
-        for monitor_id in monitor_ids:
-            instance.new_relic_availability_monitors.create(pk=monitor_id)
+        mock_newrelic.get_synthetics_notification_emails.return_value = []
+        mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.return_value = 1
+
+        instance.enable_monitoring()
         instance.disable_monitoring()
         mock_newrelic.delete_synthetics_monitor.assert_has_calls([
             call(monitor_id) for monitor_id in monitor_ids
         ], any_order=True)
+        mock_newrelic.delete_alert_policy.assert_called_with(1)
+        with self.assertRaises(NewRelicAlertPolicy.DoesNotExist):
+            NewRelicAlertPolicy.objects.get(instance=instance)
+
+    @patch('instance.models.mixins.openedx_monitoring.newrelic')
+    def test_email_address_deletion_on_disabling_monitoring(self, mock_newrelic):
+        """
+        Check that the `disable_monitoring` method removes all the notification email addresses for an instance
+        except the shared email addresses.
+        """
+        monitor_ids = [str(uuid4()) for i in range(4)]
+        instance = OpenEdXInstanceFactory()
+        mock_newrelic.get_synthetics_notification_emails.return_value = []
+        mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.return_value = 1
+        instance.new_relic_alert_policy = NewRelicAlertPolicy.objects.create(id=1, instance=instance)
+        instance.new_relic_alert_policy.email_notification_channels.add(
+            NewRelicEmailNotificationChannel.objects.create(id=10, email='admin@opencraft.com', shared=True)
+        )
+        instance.additional_monitoring_emails = ['extra@opencraft.com']
+        instance.enable_monitoring()
+        self.assertEqual(
+            NewRelicEmailNotificationChannel.objects.filter(
+                email__in=['admin@opencraft.com', 'extra@opencraft.com']
+            ).count(),
+            2
+        )
+        instance.disable_monitoring()
+        with self.assertRaises(NewRelicEmailNotificationChannel.DoesNotExist):
+            NewRelicEmailNotificationChannel.objects.get(email='extra@opencraft.com')
+        NewRelicEmailNotificationChannel.objects.get(email='admin@opencraft.com')
+
+    def test_deleting_shared_notification_email_address(self):
+        e = NewRelicEmailNotificationChannel.objects.create(id=1, email='test@opencraft.com', shared=True)
+        with self.assertRaises(ProtectedError):
+            e.delete()
 
     @responses.activate
     def test_disable_monitoring_monitors_not_found(self):

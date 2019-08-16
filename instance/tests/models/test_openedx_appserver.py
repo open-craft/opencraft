@@ -544,6 +544,42 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
 
     @patch_services
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
+    def test_make_active_no_load_balancer_reconfiguration(self, mocks):
+        """
+        Test make_active() and make_active(active=False) when the load balancer
+        reconfiguration is disabled
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
+        appserver_id = instance.spawn_appserver()
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 0)
+        appserver = instance.appserver_set.get(pk=appserver_id)
+
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+
+        with freeze_time('2017-01-17 11:25:00') as freezed_time:
+            appserver.make_active()
+        activation_time = utc.localize(freezed_time())
+
+        instance.refresh_from_db()
+        appserver.refresh_from_db()
+        self.assertTrue(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+        self.assertEqual(instance.appserver_set.get().last_activated, activation_time)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 0)
+        self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
+
+        # Test deactivate
+        appserver.make_active(active=False)
+        instance.refresh_from_db()
+        appserver.refresh_from_db()
+        self.assertFalse(appserver.is_active)
+        self.assertEqual(appserver.last_activated, activation_time)
+        self.assertFalse(instance.get_active_appservers().exists())
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 0)
+        self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
+
+    @patch_services
     def test_terminate_vm(self, mocks):
         """
         Test AppServer termination
