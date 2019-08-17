@@ -26,8 +26,8 @@ from collections import namedtuple, defaultdict
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
-from openstack.connection import Connection
-from openstack.profile import Profile
+from openstack import config as occ
+from openstack import connection
 import requests
 from swiftclient.service import SwiftService
 
@@ -70,24 +70,34 @@ def get_openstack_connection(region_name):
 
     The returned Connection object has an attribute for each available service,
     e.g. "compute", "network", etc.
+
     """
-    profile = Profile()
-    profile.set_region(Profile.ALL, region_name)
-    connection = Connection(
-        profile=profile,
-        user_agent='opencraft-im',
-        auth_url=settings.OPENSTACK_AUTH_URL,
-        project_name=settings.OPENSTACK_TENANT,
-        username=settings.OPENSTACK_USER,
-        password=settings.OPENSTACK_PASSWORD,
-    )
+
+    loader = occ.OpenStackConfig(
+        load_yaml_files=False,
+        app_name='opencraft-im',
+        app_version='1.0')
+    cloud_region = loader.get_one_cloud(
+        region_name=region_name,
+        auth_type='password',
+        auth=dict(
+            auth_url=settings.AUTH_URL,
+            username=settings.OPENSTACK_USER,
+            user_domain_name='example-domain',
+            project_name=settings.OPENSTACK_TENANT,
+            user_project_name='example-domain',
+            password=settings.OPENSTACK_PASSWORD,
+        ))
+    conn = connection.from_config(cloud_config=cloud_region)
+
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
     # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
     # urllib3's definition) are retried before giving up.
     adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    connection.session.session.mount('http://', adapter)
-    connection.session.session.mount('https://', adapter)
-    return connection
+    conn.session.session.mount('http://', adapter)
+    conn.session.session.mount('https://', adapter)
+
+    return conn
 
 
 def sync_security_group_rules(security_group, rule_definitions, network):
