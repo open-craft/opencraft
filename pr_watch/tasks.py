@@ -24,7 +24,8 @@ Worker tasks for development of Open edX
 
 import logging
 
-from huey.contrib.djhuey import crontab, db_periodic_task
+from huey.api import crontab
+from huey.contrib.djhuey import db_periodic_task
 
 from userprofile.models import UserProfile
 

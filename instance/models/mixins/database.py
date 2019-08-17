@@ -163,8 +163,7 @@ def select_random_mongodb_server():
     """
     if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
         return MongoDBServer.objects.select_random().pk
-    else:
-        return None
+    return None
 
 
 def select_random_mongodb_replica_set():
@@ -173,8 +172,7 @@ def select_random_mongodb_replica_set():
     """
     if getattr(settings, MongoDBServer.DEFAULT_SETTINGS_NAME, None):
         return None
-    else:
-        return MongoDBReplicaSet.objects.select_random().pk
+    return MongoDBReplicaSet.objects.select_random().pk
 
 
 # Classes #####################################################################

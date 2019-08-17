@@ -23,14 +23,13 @@ OpenStack - Helper functions
 # Imports #####################################################################
 import logging
 from collections import namedtuple, defaultdict
+import requests
 
 from django.conf import settings
 from novaclient.client import Client as NovaClient
-from openstack.connection import Connection
-from openstack.profile import Profile
-import requests
+from openstack import config as occ
+from openstack import connection
 from swiftclient.service import SwiftService
-
 from instance.utils import get_requests_retry
 
 # Logging #####################################################################
@@ -70,24 +69,33 @@ def get_openstack_connection(region_name):
 
     The returned Connection object has an attribute for each available service,
     e.g. "compute", "network", etc.
+
     """
-    profile = Profile()
-    profile.set_region(Profile.ALL, region_name)
-    connection = Connection(
-        profile=profile,
-        user_agent='opencraft-im',
-        auth_url=settings.OPENSTACK_AUTH_URL,
-        project_name=settings.OPENSTACK_TENANT,
-        username=settings.OPENSTACK_USER,
-        password=settings.OPENSTACK_PASSWORD,
-    )
+
+    loader = occ.OpenStackConfig(
+        load_yaml_config=False,
+        app_name='opencraft-im',
+        app_version='1.0')
+    cloud_region = loader.get_one_cloud(
+        region_name=region_name,
+        auth_type='password',
+        auth=dict(
+            auth_url=settings.OPENSTACK_AUTH_URL,
+            username=settings.OPENSTACK_USER,
+            project_name=settings.OPENSTACK_TENANT,
+            password=settings.OPENSTACK_PASSWORD,
+        ))
+    conn = connection.from_config(cloud_config=cloud_region)
+    conn.session.user_agent = "opencraft-im"
+
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
     # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
     # urllib3's definition) are retried before giving up.
     adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    connection.session.session.mount('http://', adapter)
-    connection.session.session.mount('https://', adapter)
-    return connection
+    conn.session.session.mount('http://', adapter)
+    conn.session.session.mount('https://', adapter)
+
+    return conn
 
 
 def sync_security_group_rules(security_group, rule_definitions, network):
@@ -126,22 +134,31 @@ def get_nova_client(region_name, api_version=2):
     """
     Instantiate a python novaclient.Client() object with proper credentials
     """
+    # TODO this function duplicates features and code from get_openstack_connection. Merge them
     nova = NovaClient(
         api_version,
-        settings.OPENSTACK_USER,
-        settings.OPENSTACK_PASSWORD,
-        settings.OPENSTACK_TENANT,
-        settings.OPENSTACK_AUTH_URL,
+        username=settings.OPENSTACK_USER,
+        password=settings.OPENSTACK_PASSWORD,
+        project_name=settings.OPENSTACK_TENANT,
+        auth_url=settings.OPENSTACK_AUTH_URL,
         region_name=region_name,
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
-    # To gracefully recover when the unavailability is short-lived, ensure safe requests (as per
-    # urllib3's definition) are retried before giving up.
+    # To gracefully recover when the unavailability is short-lived, ensure some requests are retried
+    # before giving up.
+    # - requests's HTTPAdapter provides a max_retries parameter that will be passed to urllib3
+    # - keystoneauth1 supports a connect_retries parameter, but it only retries certain types of errors
+    #   which inherit from RetriableConnectionFailure. This includes timeouts and socket errors but not
+    #   others like a 500 error. We add retries on those status codes here
+    #
     adapter = requests.adapters.HTTPAdapter(max_retries=get_requests_retry())
-    nova.client.open_session()
-    nova.client._session.mount('http://', adapter)
-    nova.client._session.mount('https://', adapter)
+    nova.client.session.session.mount('http://', adapter)
+    nova.client.session.session.mount('https://', adapter)
+
+    # keystoneauth1 retries on certain status codes, see above
+    nova.client.retriable_status_codes = range(500, 600)
+    nova.client.status_code_retries = 10
 
     return nova
 
@@ -151,7 +168,12 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     Create a VM via nova
     """
     flavor = nova.flavors.find(**flavor_selector)
-    image = nova.images.find(**image_selector)
+    if 'name' in image_selector and 'name_or_id' not in image_selector:
+        # Newer novaclient versions use 'name_or_id' but we still support
+        # 'name', since it's written in our .env and stored in DB fields
+        image_selector['name_or_id'] = image_selector['name']
+        del image_selector['name']
+    image = nova.glance.find_image(**image_selector)
 
     logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
     return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)

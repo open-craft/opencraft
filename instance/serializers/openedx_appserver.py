@@ -52,12 +52,12 @@ class OpenEdXAppServerSerializer(serializers.ModelSerializer):
             'server',
         )
 
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Add additional fields/data to the output
         """
-        output = AppServerBasicSerializer(obj, context=self.context).data
-        output.update(super().to_representation(obj))
+        output = AppServerBasicSerializer(instance, context=self.context).data
+        output.update(super().to_representation(instance))
         return output
 
 

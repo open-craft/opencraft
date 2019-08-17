@@ -22,8 +22,6 @@ OpenStackServer model - Tests
 
 # Imports #####################################################################
 
-import http.client
-import io
 from unittest.mock import Mock, call, patch
 
 from ddt import ddt, data, unpack
@@ -31,6 +29,7 @@ from django.conf import settings
 from django.test import override_settings
 import novaclient
 import requests
+import responses
 
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.models.utils import SteadyStateException, WrongStateException
@@ -45,16 +44,6 @@ from instance.tests.models.factories.server import (
 
 
 # Tests #######################################################################
-
-class MockHTTPResponse(http.client.HTTPResponse):
-    """
-    A fake http.client.HTTPResponse, for stubbing low-level urllib3 calls.
-    """
-    def __init__(self, status_code=200, body='{}'):
-        content = 'HTTP/1.1 {status}\n\n{body}'.format(status=status_code, body=body).encode()
-        sock = Mock()
-        sock.makefile.return_value = io.BytesIO(content)
-        super().__init__(sock)
 
 
 @ddt
@@ -122,21 +111,24 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.os_server, server.nova.servers.get.return_value)
         self.assertEqual(server.nova.mock_calls, [call.servers.get('pending-server-id')])
 
-    @patch('novaclient.client.HTTPClient.authenticate', autospec=True)
-    @patch('requests.packages.urllib3.connectionpool.HTTPConnection.response_class')
+    @responses.activate
+    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_endpoint')
+    @patch('keystoneauth1.identity.base.BaseIdentityPlugin.get_token')
     @patch('instance.models.server.openstack_utils.create_server')
-    def test_os_server_nova_error(self, mock_create_server, mock_response_class, mock_authenticate):
+    def test_os_server_nova_error(self,
+                                  mock_create_server,
+                                  mock_get_token,
+                                  mock_get_endpoint):
         """
         The nova client should retry in case of server errors
         """
         mock_create_server.return_value.id = 'pending-server-id'
-        mock_response_class.side_effect = (MockHTTPResponse(500),
-                                           MockHTTPResponse(200, body='{"server": {}}'))
+        mock_get_token.return_value = "authentication token"
+        mock_get_endpoint.return_value = "http://localhost/"
 
-        def authenticate(client):
-            """ Simulate nova client authentication """
-            client.management_url = 'http://example.com'
-        mock_authenticate.side_effect = authenticate
+        # The first call will fail. The code will then automatically retry. The second call will work
+        responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={}, status=500)
+        responses.add(responses.GET, 'http://localhost/servers/pending-server-id', json={"server": {}}, status=200)
 
         # We do not use the OpenStackServerFactory here as it mocks the retry
         # behaviour that we are trying to test
@@ -379,7 +371,7 @@ class OpenStackServerTestCase(TestCase):
         """
         server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
 
-        def raise_not_found(): #pylint: disable=missing-docstring
+        def raise_not_found():
             raise novaclient.exceptions.NotFound('not-found')
         server.os_server.delete.side_effect = raise_not_found
         server.logger = Mock()
@@ -402,7 +394,7 @@ class OpenStackServerTestCase(TestCase):
         """
         server = OpenStackServerFactory()
 
-        def raise_openstack_api_error(): #pylint: disable=missing-docstring
+        def raise_openstack_api_error():
             raise exception
 
         server.os_server.delete.side_effect = raise_openstack_api_error

@@ -29,8 +29,6 @@ import traceback
 from django.apps import apps
 from django.db import connection, models, ProgrammingError
 
-from instance.serializers.logentry import LogEntrySerializer
-
 
 # Logging #####################################################################
 
@@ -45,12 +43,12 @@ def log_exception(method):
     Uses the object logging facilities, ie `self.logger` must be defined
     """
     @wraps(method)
-    def wrapper(self, *args, **kwds): #pylint: disable=missing-docstring
+    def wrapper(self, *args, **kwds):
         try:
             return method(self, *args, **kwds)
-        except:
+        except Exception as e:
             self.logger.critical(traceback.format_exc()) # TODO: Restrict traceback view to administrators
-            raise
+            raise e
     return wrapper
 
 
@@ -74,7 +72,7 @@ class DBHandler(logging.Handler):
             object_id = obj.pk
 
         try:
-            log_entry = apps.get_model('instance', 'LogEntry').objects.create(
+            apps.get_model('instance', 'LogEntry').objects.create(
                 level=record.levelname, text=self.format(record), content_type=content_type, object_id=object_id
             )
         except ProgrammingError:
@@ -96,5 +94,4 @@ class ModelLoggerAdapter(logging.LoggerAdapter):
         annotation = self.extra['obj'].get_log_message_annotation()
         if annotation:
             return "{} | {}".format(annotation, msg), kwargs
-        else:
-            return msg, kwargs
+        return msg, kwargs

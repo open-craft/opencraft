@@ -119,10 +119,9 @@ class DomainNameInstance(models.Model):
         nginx_regex_key = self.nginx_domain_regex_attributes.get(domain_attr)
         if domain_key is not None:
             return self.get_domain(domain_key)
-        elif nginx_regex_key is not None:
+        if nginx_regex_key is not None:
             return self.domain_nginx_regex(nginx_regex_key)
-        else:
-            return super().__getattribute__(domain_attr)
+        return super().__getattribute__(domain_attr)
 
     def get_domain(self, domain_key):
         """
@@ -137,6 +136,7 @@ class DomainNameInstance(models.Model):
             domain_name = getattr(self, domain_attr, None)
             if domain_name:
                 return domain_name
+        return None
 
     def domain_nginx_regex(self, site_name):
         """
@@ -237,7 +237,7 @@ class DomainNameInstance(models.Model):
         """
         return u'{}heartbeat?extended'.format(self.url)
 
-    def save(self, **kwargs):
+    def save(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Set default values before saving the instance.
         """

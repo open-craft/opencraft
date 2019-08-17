@@ -34,12 +34,10 @@ logger = logging.getLogger(__name__)
 
 class TarsnapException(Exception):
     """Base class for tarsnap exceptions"""
-    pass
 
 
 class TarsnapFsckException(TarsnapException):
     """Exception raised when tarsnap suggests running --fsck to fix the error"""
-    pass
 
 
 # Functions ###################################################################

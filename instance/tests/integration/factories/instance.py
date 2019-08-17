@@ -41,7 +41,7 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
         model = OpenEdXInstance
 
     @classmethod
-    def create(cls, *args, **kwargs):
+    def create(cls, *args, **kwargs):  # pylint: disable=arguments-differ
         # OpenEdXInstance constructor accepts either a 'sub_domain' or 'instance_lms_domain' value. Only generate a
         # random value for 'internal_lms_domain' if neither 'sub_domain' nor 'internal_lms_domain' are provided.
         if 'sub_domain' not in kwargs and 'internal_lms_domain' not in kwargs:

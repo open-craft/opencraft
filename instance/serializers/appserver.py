@@ -23,7 +23,7 @@ Instance serializers (API representation)
 # Imports #####################################################################
 
 from collections import OrderedDict
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from rest_framework import serializers
 
@@ -36,13 +36,14 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
     """
     Simple high-level serializer for AppServer
     """
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Serialize AppServer object summary.
 
         This serializer will work with any subclass of the AppServer abstract class.
         """
-        api_path = reverse('api:{}-detail'.format(obj._meta.model_name), kwargs={'pk': obj.pk})
+
+        api_path = reverse('api:{}-detail'.format(instance._meta.model_name), kwargs={'pk': instance.pk})
         request = self.context.get('request')
         if request:
             api_url = request.build_absolute_uri(api_path)
@@ -50,19 +51,19 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
             raise AssertionError("AppServerBasicSerializer should be instantiated with context={'request': request}")
 
         output = OrderedDict()
-        output['id'] = obj.pk
+        output['id'] = instance.pk
         output['api_url'] = api_url
-        output['name'] = obj.name
-        output['is_active'] = obj.is_active
+        output['name'] = instance.name
+        output['is_active'] = instance.is_active
 
-        output['status'] = obj.status.state_id
-        output['status_name'] = obj.status.name
-        output['status_description'] = obj.status.description
+        output['status'] = instance.status.state_id
+        output['status_name'] = instance.status.name
+        output['status_description'] = instance.status.description
         # Add info about relevant conditions related to instance status:
-        output['is_steady'] = obj.status.is_steady_state
-        output['is_healthy'] = obj.status.is_healthy_state
+        output['is_steady'] = instance.status.is_steady_state
+        output['is_healthy'] = instance.status.is_healthy_state
 
-        output['created'] = obj.created
-        output['modified'] = obj.modified
-        output['terminated'] = obj.terminated
+        output['created'] = instance.created
+        output['modified'] = instance.modified
+        output['terminated'] = instance.terminated
         return output

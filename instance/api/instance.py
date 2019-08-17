@@ -92,7 +92,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return queryset
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         """
         List all instances. No App server list is returned in the list view, only the newest app server information.
 

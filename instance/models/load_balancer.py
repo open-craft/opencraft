@@ -160,6 +160,7 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
         Yield all instances configured to use this load balancer.
         """
         # Local import due to avoid problems with circular dependencies.
+        # pylint: disable=cyclic-import, useless-suppression
         from instance.models.mixins.load_balanced import LoadBalancedInstance
 
         for field in self._meta.get_fields():
@@ -295,12 +296,12 @@ class LoadBalancingServer(ValidateModelMixin, TimeStampedModel):
                 "FRAGMENT_NAME: {fragment_name}\nREMOVE_FRAGMENT: True".format(fragment_name=fragment_name)
             )
 
-    def delete(self, *args, **kwargs):
+    def delete(self, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete the LoadBalancingServer from the database.
         """
         self.deconfigure()
-        super().delete(*args, **kwargs)
+        super().delete(**kwargs)
 
     @contextlib.contextmanager
     def _configuration_lock(self, *, blocking=True):

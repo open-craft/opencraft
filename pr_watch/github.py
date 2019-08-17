@@ -221,11 +221,9 @@ class ObjectDoesNotExist(Exception):
     """
     Exception raised when trying to access a github object that does not exist.
     """
-    pass
 
 
 class RateLimitExceeded(Exception):
     """
     Exception raised when trying to access a GitHub object and a rate limit is hit
     """
-    pass

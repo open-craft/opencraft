@@ -30,8 +30,8 @@ import ddt
 from django.conf import settings
 from openstack.network.v2.security_group import SecurityGroup
 from openstack.network.v2.security_group_rule import SecurityGroupRule
-import requests
 from swiftclient.service import SwiftError
+import keystoneauth1
 
 from instance import openstack_utils
 from instance.tests.base import TestCase
@@ -94,7 +94,8 @@ class OpenStackTestCase(TestCase):
         Test get_openstack_connection()
         """
         conn = openstack_utils.get_openstack_connection("some_region")
-        self.assertEqual(conn.profile.get_services()[0]['region_name'], "some_region")
+
+        self.assertEqual(conn.config.get_region_name(), "some_region")
         self.assertTrue(conn.session.user_agent.startswith('opencraft-im'))
         # TODO: In future we could use 'mimic' to fake the OpenStack API for testing.
         # Then, here we could test 'conn.authorize()'
@@ -186,11 +187,11 @@ class OpenStackTestCase(TestCase):
         Create a VM via nova
         """
         self.nova.flavors.find.return_value = 'test-flavor'
-        self.nova.images.find.return_value = 'test-image'
+        self.nova.glance.find_image.return_value = 'test-image'
         openstack_utils.create_server(self.nova, 'test-vm', {"ram": 4096, "disk": 40}, {"name": "Ubuntu 12.04"})
         self.assertEqual(self.nova.mock_calls, [
             call.flavors.find(disk=40, ram=4096),
-            call.images.find(name='Ubuntu 12.04'),
+            call.glance.find_image(name_or_id='Ubuntu 12.04'),
             call.servers.create('test-vm', 'test-image', 'test-flavor', key_name=None, security_groups=None)
         ])
 
@@ -304,7 +305,7 @@ class OpenStackTestCase(TestCase):
             raise ConnectionResetError('[Errno 104] Connection reset by peer')
         mock_getresponse.side_effect = getresponse_call
         nova = openstack_utils.get_nova_client(settings.OPENSTACK_REGION)
-        with self.assertRaises(requests.exceptions.ConnectionError):
+        with self.assertRaises(keystoneauth1.exceptions.discovery.DiscoveryFailure):
             nova.servers.get('test-id')
         self.assertEqual(mock_getresponse.call_count, 11)
         self.assertEqual(mock_retry_sleep.call_count, 10)

@@ -22,7 +22,7 @@ OpenEdXAppServer model - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, PropertyMock
 
 import novaclient
 import requests
@@ -174,14 +174,14 @@ class OpenEdXAppServerTestCase(TestCase):
         # Mark the inactive user and admin as inactive; they should not be added to the resulting list
         get_user_model().objects.filter(username__in=('inactive_user', 'inactive_admin')).update(is_active=False)
 
-        instance = OpenEdXInstanceFactory()
-        organization = Organization.objects.get(github_handle=admin_org_handle)
-
         def check(_users):
             return [_user for _user in _users if _user != 'invalid_github_user']
 
         with patch('instance.models.mixins.openedx_config.check_github_users', check):
-            appserver = make_test_appserver(instance, organization=organization)
+            appserver = make_test_appserver(
+                OpenEdXInstanceFactory(),
+                organization=Organization.objects.get(github_handle=admin_org_handle),
+            )
 
             # Check user with non existant Github hande is removed
             self.assertEqual(len(appserver.admin_users) - 1, len(expected_admin_users))
@@ -411,6 +411,8 @@ class OpenEdXAppServerTestCase(TestCase):
                 result = Mock()
                 result.name = name_or_id
                 return result
+            else:
+                return None
 
         def mocked_create_security_group(**args):
             """ Mock openstack network.create_security_group """
@@ -850,15 +852,18 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertEqual(mime_type, "text/html")
 
     @responses.activate
-    def test_hearbeat_active_succeeds(self):
-        """ Test that heartbeat_active method returns true when request to hearbeat is 200"""
+    @patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock)
+    def test_heartbeat_active_succeeds(self, mock_public_ip):
+        """ Test that heartbeat_active method returns true when request to heartbeat is 200"""
         appserver = make_test_appserver()
+        mock_public_ip.return_value = "1.1.1.1"
+
         responses.add(responses.OPTIONS, 'http://{}/heartbeat'.format(appserver.server.public_ip), status=200)
         self.assertTrue(appserver.heartbeat_active())
 
     @patch('requests.options')
     def test_heartbeat_active_fails(self, mock_requests_options):
-        """ Test that heartbeat_active method returns false when request to hearbeat fails"""
+        """ Test that heartbeat_active method returns false when request to heartbeat fails"""
         mock_requests_options.side_effect = requests.exceptions.ConnectionError()
         appserver = make_test_appserver()
         self.assertFalse(appserver.heartbeat_active())

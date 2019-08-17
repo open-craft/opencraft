@@ -139,7 +139,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
 
         return watched_pr.instance, created
 
-    def create(self, *args, **kwargs):
+    def create(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Augmented `create()` method:
         - Adds support for `fork_name` to allow to set both the github org & repo
@@ -178,7 +178,7 @@ class WatchedPullRequest(models.Model):
     # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
     # api (including the head commit sha hash, which does not require a separate API call as
     # is currently used.)
-    watched_fork = models.ForeignKey(WatchedFork, blank=False, null=False)
+    watched_fork = models.ForeignKey(WatchedFork, blank=False, null=False, on_delete=models.CASCADE)
     branch_name = models.CharField(max_length=255, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
     github_organization_name = models.CharField(max_length=200, db_index=True)

@@ -94,13 +94,13 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
 
         return serializer(instance, context=self.context).data
 
-    def to_representation(self, obj):
+    def to_representation(self, instance):
         """
         Add additional fields/data to the output
         """
-        output = super().to_representation(obj)
-        output['instance_type'] = obj.instance_type.model
-        details = self.serialize_details(obj.instance)
+        output = super().to_representation(instance)
+        output['instance_type'] = instance.instance_type.model
+        details = self.serialize_details(instance.instance)
         # Merge instance details into the resulting dict, but never overwrite existing fields
         for key, val in details.items():
             output.setdefault(key, val)
@@ -134,10 +134,10 @@ class InstanceAppServerSerializer(serializers.ModelSerializer):
         model = InstanceReference
         fields = ('app_servers',)
 
-    def to_representation(self, obj):
-        output = super().to_representation(obj)
+    def to_representation(self, instance):
+        output = super().to_representation(instance)
         output['app_servers'] = [
             AppServerBasicSerializer(appserver, context=self.context).data
-            for appserver in obj.app_servers
+            for appserver in instance.app_servers
         ]
         return output

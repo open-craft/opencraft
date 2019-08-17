@@ -11,8 +11,8 @@ import requests
 
 from backup_swift.tasks import do_backup_swift, backup_swift_periodic, backup_swift_task
 from backup_swift.utils import filter_swift
-from . import tarsnap, tasks
 from instance.openstack_utils import FailedContainer
+from . import tarsnap, tasks
 
 
 @mock.patch('subprocess.run')

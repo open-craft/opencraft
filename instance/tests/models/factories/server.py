@@ -44,11 +44,11 @@ def patch_os_server(func):
     """
     os_server_manager = OSServerMockManager()
 
-    def server_get(openstack_id): #pylint: disable=missing-docstring
+    def server_get(openstack_id):
         return os_server_manager.get_os_server(openstack_id)
 
     @wraps(func)
-    def wrapper(*args, **kwargs): #pylint: disable=missing-docstring
+    def wrapper(*args, **kwargs):
         with patch('instance.models.server.openstack_utils.get_nova_client') as mock_get_nova_client:
             mock_get_nova_client.return_value.servers.get.side_effect = server_get
             args += (os_server_manager,)
