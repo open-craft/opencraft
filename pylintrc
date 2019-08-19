@@ -100,7 +100,8 @@ disable=
     too-many-public-methods,
     protected-access,
     unidiomatic-typecheck,
-    unused-argument
+    unused-argument,
+    no-else-return
 
 [SPELLING]
 

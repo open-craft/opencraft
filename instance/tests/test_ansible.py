@@ -112,11 +112,11 @@ class AnsibleTestCase(TestCase):
             mock_create_temp.return_value.__enter__.return_value = '/tmp/tempdir'
 
             with ansible.run_playbook(
-                requirements_path="/tmp/requirements.txt",
-                inventory_str="INVENTORY: 'str'",
-                vars_str="VARS: 'str2'",
-                playbook_path='/play/book',
-                playbook_name='playbook_name'
+                    requirements_path="/tmp/requirements.txt",
+                    inventory_str="INVENTORY: 'str'",
+                    vars_str="VARS: 'str2'",
+                    playbook_path='/play/book',
+                    playbook_name='playbook_name'
             ) as run_playbook_result:
 
                 # This checks if run_playbook returns a Process object (or more precisely: object returned from Popen)

@@ -91,7 +91,7 @@ def run_integration_cleanup(dry_run=False):
         'auth_url': os.environ['OPENSTACK_AUTH_URL'],
         'username': os.environ['OPENSTACK_USER'],
         'password': os.environ['OPENSTACK_PASSWORD'],
-        'project_id': os.environ['OPENSTACK_TENANT'],
+        'project_name': os.environ['OPENSTACK_TENANT'],
         'region_name': os.environ['OPENSTACK_REGION'],
     }
     os_cleanup = OpenStackCleanupInstance(

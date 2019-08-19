@@ -338,6 +338,13 @@ class S3BucketInstanceMixin(models.Model):
                     raise
                 time.sleep(retry_delay)
 
+        self._update_bucket_policies(max_tries, retry_delay)
+
+    def _update_bucket_policies(self, max_tries, retry_delay):
+        """
+        Update bucket policies, including cors, lifecycle config, and versioning.
+        Retry up to `max_tries` times, with `retry_delay` seconds between each attempt.
+        """
         for attempt in range(1, max_tries + 1):
             try:
                 # Update bucket cors

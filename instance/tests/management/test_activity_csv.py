@@ -32,9 +32,6 @@ class ActivityCSVTestCase(TestCase):
     """
     Test cases for the `activity_csv` management command.
     """
-    def setUp(self):
-        super().setUp()
-
     def test_no_instances(self):
         """
         Verify that the command correctly notifies the user that there are no active app servers.

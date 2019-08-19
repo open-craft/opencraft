@@ -25,10 +25,10 @@ Decorators - Tests
 import ddt
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.test import RequestFactory
+from django.urls import reverse
 
 from instance.tests.base import WithUserTestCase
 from instance.views.decorators import instance_manager_required

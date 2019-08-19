@@ -243,6 +243,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         if self.instance:
             return self.instance.first_activated
+        return None
 
     @property
     def domain(self):

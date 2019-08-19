@@ -448,8 +448,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         return users
 
 
-class LoginForm(NgFormValidationMixin, AuthenticationForm,
-                metaclass=NgDeclarativeFieldsMetaclass):
+class LoginForm(NgFormValidationMixin, AuthenticationForm, metaclass=NgDeclarativeFieldsMetaclass):
     """
     Allows users to login with username/email and password.
     """

@@ -54,7 +54,7 @@ class OpenStackCleanupInstance:
                 auth_url=openstack_settings['auth_url'],
                 username=openstack_settings['username'],
                 password=openstack_settings['password'],
-                project_id=openstack_settings['project_id'],
+                project_name=openstack_settings['project_name'],
                 region_name=openstack_settings['region_name']
             )
         except Exception as e:  # pylint: disable=broad-except

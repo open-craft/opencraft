@@ -572,7 +572,7 @@ class ConsulAgentTest(TestCase):
 
         # Test integer values
         key = 'int_key'
-        stored_value = 23  # pylint: disable=redefined-variable-type
+        stored_value = 23
         self.client.kv.put(key, str(stored_value))
 
         fetched_value = agent.get(key)
@@ -633,7 +633,7 @@ class ConsulAgentTest(TestCase):
 
         # Test integer values
         key = 'int_key'
-        stored_value = 23  # pylint: disable=redefined-variable-type
+        stored_value = 23
         self.client.kv.put(prefix + key, str(stored_value))
 
         fetched_value = agent.get(key)
@@ -693,7 +693,7 @@ class ConsulAgentTest(TestCase):
 
         # Put int values
         key = 'key'
-        value = 1  # pylint: disable=redefined-variable-type
+        value = 1
         agent.put(key, value)
 
         _, data = self.client.kv.get(key)
@@ -753,7 +753,7 @@ class ConsulAgentTest(TestCase):
 
         # Put int values
         key = 'key'
-        value = 1  # pylint: disable=redefined-variable-type
+        value = 1
         agent.put(key, value)
 
         _, data = self.client.kv.get(prefix + key)
@@ -916,7 +916,7 @@ class ConsulAgentTest(TestCase):
         test_dict['version'] = 2
         # Assert only one key changed and the version was updated
         self.assertEqual(len(mock_kv_put.mock_calls), 1)
-        name, args, kwargs = mock_kv_put.mock_calls[0]
+        _, args, _ = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual(test_dict, json.loads(args[1].decode('utf-8')))
 
@@ -930,7 +930,7 @@ class ConsulAgentTest(TestCase):
         mock_kv_get.side_effect = [(1, {'Value': json.dumps(test_dict).encode('utf-8')}), (1, None)]
         self.agent.delete_dict_key('key1')
         self.assertEqual(len(mock_kv_put.mock_calls), 1)
-        name, args, kwargs = mock_kv_put.mock_calls[0]
+        _, args, _ = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual({'key2': 'value2', 'version': 2}, json.loads(args[1].decode('utf-8')))
 

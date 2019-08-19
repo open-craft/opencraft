@@ -24,10 +24,11 @@ Utils for registration tests
 import time
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
@@ -68,11 +69,16 @@ class BrowserTestMixin:
         super().setUp()
         options = Options()
         options.headless = True
+        # Ensure we don't attempt to use the new geckodriver method (which
+        # isn't working for us. I _think_ selenium 2 defaults to old method,
+        # but just to make sure.
+        cap = DesiredCapabilities().FIREFOX
+        cap['marionette'] = False
         try:
-            self.client = webdriver.Firefox(firefox_options=options)
+            self.client = webdriver.Firefox(capabilities=cap, firefox_options=options)
         except WebDriverException:
             time.sleep(1)
-            self.client = webdriver.Firefox(firefox_options=options)
+            self.client = webdriver.Firefox(capabilities=cap, firefox_options=options)
 
     def tearDown(self):
         """

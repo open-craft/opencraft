@@ -119,7 +119,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
 
         self.assertEqual(instance.http_auth_user, '75182ee9f532ee81')
         self.assertEqual(instance.http_auth_pass, 'af350fc1d3ceb6c0')
-        self.assertEqual(instance.http_auth_info_base64(), b'NzUxODJlZTlmNTMyZWU4MTphZjM1MGZjMWQzY2ViNmMw')
+        self.assertEqual(instance.http_auth_info_base64(), 'NzUxODJlZTlmNTMyZWU4MTphZjM1MGZjMWQzY2ViNmMw')
 
     @patch_services
     def test_do_not_create_insecure_secret_keys(self, mocks):

@@ -244,12 +244,6 @@ class Server(ValidateModelMixin, TimeStampedModel):
             "Aborting with a status of {status}.".format(minutes=initial_timeout / 60, status=self.status.name)
         )
 
-    def save(self, *args, **kwargs):
-        """
-        Save this Server
-        """
-        super().save(*args, **kwargs)
-
     def update_status(self):
         """
         Check the current status and update it if it has changed

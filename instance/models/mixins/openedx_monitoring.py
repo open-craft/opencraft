@@ -35,6 +35,7 @@ class OpenEdXMonitoringMixin:
     """
     Mixin that sets up availability monitoring for Open edX instances.
     """
+
     def enable_monitoring(self):
         """
         Enable monitoring on this instance.
@@ -61,6 +62,15 @@ class OpenEdXMonitoringMixin:
             alert_policy_id = newrelic.add_alert_policy(self.domain)
             alert_policy = NewRelicAlertPolicy.objects.create(id=alert_policy_id, instance=self)
 
+        self._update_url_monitors(alert_policy)
+        self._set_email_alerts(alert_policy)
+
+    def _update_url_monitors(self, alert_policy):
+        """
+        Create a monitor for each URL to monitor, and delete the other monitors.
+        In the end, each monitor will have an associated alert condition.
+        Monitors and alert conditions will be created under the policy passed as a parameter.
+        """
         urls_to_monitor_dict = self._urls_to_monitor
         urls_to_monitor = set(urls_to_monitor_dict)  # Store locally so we don't keep re-computing this
         already_monitored_urls = set()
@@ -90,9 +100,12 @@ class OpenEdXMonitoringMixin:
             )
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
-        # Set up email alerts.
-        # We add emails here but never remove them - that must be done manually (or the monitor deleted)
-        # in order to reduce the chance of bugs or misconfigurations accidentally suppressing monitors.
+    def _set_email_alerts(self, alert_policy):
+        """
+        Set up email alerts.
+        We add emails here but never remove them - that must be done manually (or the monitor deleted)
+        in order to reduce the chance of bugs or misconfigurations accidentally suppressing monitors.
+        """
         emails_to_monitor = set([email for name, email in settings.ADMINS] + self.additional_monitoring_emails)
         if emails_to_monitor:
             emails_current = set(
@@ -177,7 +190,7 @@ class NewRelicAvailabilityMonitor(models.Model):
     def __str__(self):
         return self.pk
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Disable this availability monitor on delete.
         """
@@ -200,7 +213,7 @@ class NewRelicAlertPolicy(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete this alert policy.
         """
@@ -219,7 +232,7 @@ class NewRelicEmailNotificationChannel(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """
         Delete this email notification channel.
         """

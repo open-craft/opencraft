@@ -22,6 +22,7 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
+import logging
 from datetime import timedelta
 from unittest.mock import call, patch, PropertyMock
 
@@ -369,8 +370,8 @@ class CleanUpTestCase(TestCase):
             closed_at = None
 
         with patch(
-            'pr_watch.github.get_pr_info_by_number',
-            return_value={'state': pr_state, 'closed_at': closed_at},
+                'pr_watch.github.get_pr_info_by_number',
+                return_value={'state': pr_state, 'closed_at': closed_at},
         ):
             # Run task
             tasks.shut_down_obsolete_pr_sandboxes()
@@ -460,6 +461,8 @@ class DeleteOldLogsTestCase(TestCase):
 
         # Some Django start-up tasks produce logs which interfere with our tests.
         LogEntry.objects.all().delete()
+        # huey produces logs when running tasks, that interfere with calculations
+        logging.getLogger('huey').disabled = True
 
     @override_settings(LOG_DELETION_DAYS=30)
     def test_delete_old_logs(self):
