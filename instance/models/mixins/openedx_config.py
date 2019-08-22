@@ -213,13 +213,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 # Since Ironwood, the Studio login changed from a separate login
                 # to using LMS as a SSO provider. This flag disables that behaviour.
                 "DISABLE_STUDIO_SSO_OVER_LMS": True,
+                # Enable prerequisite subsections feature
+                "ENABLE_PREREQUISITE_COURSES": True,
+                "MILESTONES_APP": True,
                 # These are not part of the standard install:
                 # "CUSTOM_COURSES_EDX": True,
                 # "ENABLE_LTI_PROVIDER": True,
-                # "ENABLE_PREREQUISITE_COURSES": True,
                 # "ENABLE_PROCTORED_EXAMS": True,
                 # "INDIVIDUAL_DUE_DATES": True,
-                # "MILESTONES_APP": True,
             },
 
             # Gunicorn workers
