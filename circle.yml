@@ -108,6 +108,7 @@ jobs:
             sudo apt-get install postgresql-client
             sudo apt-get install unzip
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+            sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
             make install_system_dependencies
             npm install
       - attach_workspace:
