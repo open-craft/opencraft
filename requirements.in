@@ -1,7 +1,6 @@
 # Please list here direct dependencies only.
 # Then run pip-compile to generate the full requirements.txt (which will include dependencies of dependencies).
 # Always commit requirements.in together with requirements.txt
-ansible==2.3.2.0
 beautifulsoup4==4.7.1
 boto==2.48.0
 boto3==1.9.174
@@ -71,7 +70,7 @@ python-novaclient==14.1.0
 python-openstackclient==3.19.0
 python-swiftclient==3.7.0
 pytz==2019.1
-PyYAML==3.13
+PyYAML==5.1.2
 redis==3.2.1
 requests==2.22.0
 requests-file==1.4.3

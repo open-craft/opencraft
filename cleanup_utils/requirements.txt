@@ -1,7 +1,7 @@
 boto3==1.9.171
 mysqlclient==1.4.2.post1
 python-novaclient==14.1.0
-PyYAML==3.13
+PyYAML==5.1.2
 Django==2.2.4
 django-environ==0.4.5
 virtualenv==16.6.1
