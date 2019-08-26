@@ -43,23 +43,21 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
+            sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
+            make install_system_dependencies
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlclient.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
+            bin/install-supported-firefox
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
             pip install --upgrade virtualenv
-            sudo apt-get update; sudo apt-get install python2.7-dev
-            sudo apt-get install mysql-client
-            sudo apt-get install default-libmysqlclient-dev
             pip install -r requirements.txt
             pip install -r cleanup_utils/requirements.txt
-            sudo apt-get install postgresql-client
-            sudo apt-get install unzip
-            sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
-            make install_system_dependencies
             npm install
       - run:
           name: Run Consul
           command: |
+            sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
             sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
             consul agent -dev
           background: true
@@ -74,10 +72,6 @@ jobs:
           name: Run Tests
           command: |
             . venv/bin/activate
-            sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
-            make install_system_dependencies
-            sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlclient.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
-            bin/install-supported-firefox
             mkdir -p /tmp/coverage
             make << parameters.tests_type >>
             if [ -e .coverage.* ]; then
@@ -114,6 +108,7 @@ jobs:
             sudo apt-get install postgresql-client
             sudo apt-get install unzip
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+            sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
             make install_system_dependencies
             npm install
       - attach_workspace:
