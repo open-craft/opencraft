@@ -94,9 +94,8 @@ class Command(BaseCommand):
         """
         try:
             # TODO Remove dry-run
-            self.log('instance.delete()')
             assert False
-            return True
+            instance.delete()
         except Exception:  # noqa
             tb = traceback.format_exc()
             message = 'Failed to delete {}.'.format(instance.internal_lms_domain)
@@ -104,6 +103,7 @@ class Command(BaseCommand):
             self.log(self.style.ERROR(message))
             self.stdout.write(self.style.ERROR(tb))
             return False
+        return True
 
     def confirm(self, message):
         """
