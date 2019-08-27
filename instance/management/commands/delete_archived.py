@@ -22,9 +22,10 @@ Management command to delete old archived instances
 
 import logging
 import traceback
-from datetime import datetime as dt
+
 from dateutil.relativedelta import relativedelta
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from instance.models.instance import InstanceReference
 
 LOG = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class Command(BaseCommand):
         self.log('Starting delete_archived')
         yes = options.get('yes', False)
         months = options.get('months')
-        cutoff = dt.now() - relativedelta(months=months)
+        cutoff = timezone.now() - relativedelta(months=months)
 
         refs = InstanceReference.objects.filter(
             is_archived=True,
@@ -118,6 +119,6 @@ class Command(BaseCommand):
         Shortcut to log messages with date and time
         """
         self.stdout.write('{} | {}'.format(
-            dt.now().strftime('%Y-%m-%d %H:%M:%S'),
+            timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
             message
         ))
