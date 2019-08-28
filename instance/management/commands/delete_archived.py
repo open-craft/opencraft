@@ -94,8 +94,6 @@ class Command(BaseCommand):
         the exception and log it so other the instances can proceed.
         """
         try:
-            # TODO Remove dry-run
-            assert False
             instance.delete()
         except Exception:  # noqa
             tb = traceback.format_exc()
