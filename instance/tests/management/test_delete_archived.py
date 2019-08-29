@@ -101,17 +101,21 @@ class DeleteArchivedTestCase(TestCase):
         Verify '-y' skips confirmation and errors are logged
         """
         out = StringIO()
-        call_command('delete_archived', '-y', '3', stdout=out)
+        err = StringIO()
+        call_command('delete_archived', '-y', '3', stdout=out, stderr=err)
         self.assertTrue('Found 1 archived instances older than 3 months' in out.getvalue())
 
         self.assertTrue('Deleting old.example.com' in out.getvalue())
-        self.assertTrue('Failed to delete old.example.com' in out.getvalue())
-
         self.assertTrue('Deleting new.example.com' not in out.getvalue())
-        self.assertTrue('Failed to delete new.example.com' not in out.getvalue())
-
         self.assertTrue('Deleting newer.example.com' not in out.getvalue())
-        self.assertTrue('Failed to delete newer.example.com' not in out.getvalue())
 
+        self.assertTrue('Failed to delete old.example.com' in out.getvalue())
+        self.assertTrue('Failed to delete new.example.com' not in out.getvalue())
+        self.assertTrue('Failed to delete newer.example.com' not in out.getvalue())
         self.assertTrue('Traceback' in out.getvalue())
+
         self.assertTrue('Deleted 0 archived instances older than 3 months' in out.getvalue())
+
+        self.assertTrue('Failed to delete old.example.com' in err.getvalue())
+        self.assertTrue('Failed to delete new.example.com' not in err.getvalue())
+        self.assertTrue('Failed to delete newer.example.com' not in err.getvalue())
