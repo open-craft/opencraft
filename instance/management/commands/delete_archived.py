@@ -53,7 +53,7 @@ class Command(BaseCommand):
         Finds old archived instances
         """
         self.log('Starting delete_archived')
-        yes = options.get('yes', False)
+        self.yes = options.get('yes', False)
         months = options.get('months')
         cutoff = timezone.now() - relativedelta(months=months)
 
@@ -75,7 +75,7 @@ class Command(BaseCommand):
             self.log('- {}: {}'.format(ref.name[:30], ref.instance.internal_lms_domain))
 
         # Get user confirmation and deletes archived instances
-        if yes or self.confirm('Are you absolutely sure you want to delete these instances?'):
+        if self.yes or self.confirm('Are you absolutely sure you want to delete these instances?'):
             archived_count = 0
             for ref in refs:
                 self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
@@ -101,6 +101,9 @@ class Command(BaseCommand):
             LOG.exception(message)
             self.log(self.style.ERROR(message))
             self.stdout.write(self.style.ERROR(tb))
+            if self.yes:
+                # When running on automated mode, also logs to stderr
+                self.stderr.write(message)
             return False
         return True
 
