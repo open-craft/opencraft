@@ -37,6 +37,10 @@ class Command(BaseCommand):
     """
     help = 'Deletes instances archived more than X months ago.'
 
+    def __init__(self):
+        super().__init__()
+        self.yes = None
+
     def add_arguments(self, parser):
         """
         Adds optional and required command options.
