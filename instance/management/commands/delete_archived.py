@@ -76,15 +76,22 @@ class Command(BaseCommand):
 
         self.log('Found {} archived instances older than {} months...'.format(instance_count, months))
         for ref in refs:
-            self.log('- {}: {}'.format(ref.name[:30], ref.instance.internal_lms_domain))
+            try:
+                self.log('- {}: {}'.format(ref.name[:30], ref.instance.internal_lms_domain))
+            except AttributeError:
+                # InstanceRef does not point to instance
+                self.log('- {}: No instance associated'.format(ref.name[:30]))
 
         # Get user confirmation and deletes archived instances
         if self.yes or self.confirm('Are you absolutely sure you want to delete these instances?'):
             archived_count = 0
             for ref in refs:
+                if not ref.instance:
+                    continue
                 self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
-                if self.delete_instance(ref.instance):
+                if ref.instance and self.delete_instance(ref.instance):
                     archived_count += 1
+            refs.delete()
             self.log(
                 'Deleted {} archived instances older than {} months.'.format(
                     archived_count, months)
