@@ -84,13 +84,9 @@ class Command(BaseCommand):
 
         # Get user confirmation and deletes archived instances
         if self.yes or self.confirm('Are you absolutely sure you want to delete these instances?'):
-            deleted_count = 0
-            for ref in refs:
-                if ref.instance:
-                    self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
-                if self.delete_instance_reference(ref):
-                    deleted_count += 1
-
+            deleted_count = sum([
+                1 for ref in refs if self.delete_instance_reference(ref)
+            ])
             self.log(
                 'Deleted {} archived instances older than {} months.'.format(deleted_count, months)
             )
@@ -104,6 +100,7 @@ class Command(BaseCommand):
         so other the instances can proceed.
         """
         try:
+            self.log('Deleting {}...'.format(ref.instance.internal_lms_domain if ref.instance else ref.name))
             ref.delete(instance_already_deleted=ref.instance is None)
         except Exception:  # noqa
             tb = traceback.format_exc()
