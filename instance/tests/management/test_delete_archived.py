@@ -81,8 +81,9 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Cancelled' in out.getvalue())
 
     @patch('instance.management.commands.delete_archived.input', MagicMock(return_value='yes'))
+    @patch('instance.models.instance.InstanceReference.delete')
     @patch('instance.models.openedx_instance.OpenEdXInstance.delete')
-    def test_confirm_deletion(self, mock_delete):
+    def test_confirm_deletion(self, mock_delete, mock_ref_delete):
         """
         Verify deletion proceeds by answering "yes"
         """
@@ -95,9 +96,11 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Deleting newer.example.com' not in out.getvalue())
         self.assertTrue('Failed to delete' not in out.getvalue())
         self.assertEqual(mock_delete.call_count, 2)
+        self.assertEqual(mock_ref_delete.call_count, 2)
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.delete', MagicMock(side_effect=Exception('error')))
-    def test_deletion_fails(self):
+    @patch('instance.models.instance.InstanceReference.delete')
+    def test_deletion_fails(self, mock_ref_delete):
         """
         Verify '-y' skips confirmation and errors are logged
         """
@@ -122,7 +125,7 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Failed to delete newer.example.com' not in err.getvalue())
 
     @patch('instance.management.commands.delete_archived.input', MagicMock(return_value='yes'))
-    @patch('django.db.models.query.QuerySet.delete')
+    @patch('instance.models.instance.InstanceReference.delete')
     @patch('instance.models.openedx_instance.OpenEdXInstance.delete')
     def test_ref_without_instance(self, mock_delete, mock_ref_delete):
         """
