@@ -88,10 +88,10 @@ class Command(BaseCommand):
             for ref in refs:
                 if ref.instance:
                     self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
+                    if self.delete_instance(ref.instance):
+                        archived_count += 1
                 else:
-                    ref.delete()
-                if ref.instance and self.delete_instance(ref.instance):
-                    archived_count += 1
+                    ref.delete(ref_already_deleted=True)
             self.log(
                 'Deleted {} archived instances older than {} months.'.format(
                     archived_count, months)
