@@ -91,7 +91,8 @@ class Command(BaseCommand):
                     if self.delete_instance(ref.instance):
                         archived_count += 1
                 else:
-                    ref.delete(ref_already_deleted=True)
+                    ref.delete(instance_already_deleted=True)
+
             self.log(
                 'Deleted {} archived instances older than {} months.'.format(
                     archived_count, months)

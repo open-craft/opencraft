@@ -81,8 +81,8 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Cancelled' in out.getvalue())
 
     @patch('instance.management.commands.delete_archived.input', MagicMock(return_value='yes'))
-    @patch('instance.models.instance.InstanceReference.delete')
-    def test_confirm_deletion(self, mock_delete, mock_ref_delete):
+    @patch('instance.models.openedx_instance.OpenEdXInstance.delete')
+    def test_confirm_deletion(self, mock_delete):
         """
         Verify deletion proceeds by answering "yes"
         """
