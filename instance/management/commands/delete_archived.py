@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """
-    delete_archives management command class
+    delete_archived management command class
     """
     help = 'Deletes instances archived more than X months ago.'
 
@@ -88,29 +88,26 @@ class Command(BaseCommand):
             for ref in refs:
                 if ref.instance:
                     self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
-                    if self.delete_instance(ref.instance):
-                        deleted_count += 1
-                else:
-                    ref.delete(instance_already_deleted=True)
+                if self.delete_instance_reference(ref):
                     deleted_count += 1
 
             self.log(
-                'Deleted {} archived instances older than {} months.'.format(
-                    deleted_count, months)
+                'Deleted {} archived instances older than {} months.'.format(deleted_count, months)
             )
         else:
             self.log('Cancelled')
 
-    def delete_instance(self, instance):
+    def delete_instance_reference(self, ref):
         """
-        Deletes a single OpenEdXInstance. If it fails for any reason, handle
-        the exception and log it so other the instances can proceed.
+        Deletes a single InstanceReference and associated OpenEdXInstance, if
+        it exists. If it fails for any reason, handle the exception and log it
+        so other the instances can proceed.
         """
         try:
-            instance.delete()
+            ref.delete(instance_already_deleted=ref.instance is None)
         except Exception:  # noqa
             tb = traceback.format_exc()
-            message = 'Failed to delete {}.'.format(instance.internal_lms_domain)
+            message = 'Failed to delete {}.'.format(ref.name)
             LOG.exception(message)
             self.log(self.style.ERROR(message))
             self.stdout.write(self.style.ERROR(tb))
