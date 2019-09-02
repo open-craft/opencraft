@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """
-    delete_archives management command class
+    delete_archived management command class
     """
     help = 'Deletes instances archived more than X months ago.'
 
@@ -76,32 +76,35 @@ class Command(BaseCommand):
 
         self.log('Found {} archived instances older than {} months...'.format(instance_count, months))
         for ref in refs:
-            self.log('- {}: {}'.format(ref.name[:30], ref.instance.internal_lms_domain))
+            try:
+                self.log('- {}: {}'.format(ref.name[:30], ref.instance.internal_lms_domain))
+            except AttributeError:
+                # InstanceRef does not point to instance
+                self.log('- {}: No instance associated'.format(ref.name[:30]))
 
         # Get user confirmation and deletes archived instances
         if self.yes or self.confirm('Are you absolutely sure you want to delete these instances?'):
-            archived_count = 0
-            for ref in refs:
-                self.log('Deleting {}...'.format(ref.instance.internal_lms_domain))
-                if self.delete_instance(ref.instance):
-                    archived_count += 1
+            deleted_count = sum([
+                1 for ref in refs if self.delete_instance_reference(ref)
+            ])
             self.log(
-                'Deleted {} archived instances older than {} months.'.format(
-                    archived_count, months)
+                'Deleted {} archived instances older than {} months.'.format(deleted_count, months)
             )
         else:
             self.log('Cancelled')
 
-    def delete_instance(self, instance):
+    def delete_instance_reference(self, ref):
         """
-        Deletes a single OpenEdXInstance. If it fails for any reason, handle
-        the exception and log it so other the instances can proceed.
+        Deletes a single InstanceReference and associated OpenEdXInstance, if
+        it exists. If it fails for any reason, handle the exception and log it
+        so other the instances can proceed.
         """
         try:
-            instance.delete()
+            self.log('Deleting {}...'.format(ref.instance.internal_lms_domain if ref.instance else ref.name))
+            ref.delete(instance_already_deleted=ref.instance is None)
         except Exception:  # noqa
             tb = traceback.format_exc()
-            message = 'Failed to delete {}.'.format(instance.internal_lms_domain)
+            message = 'Failed to delete {}.'.format(ref.name)
             LOG.exception(message)
             self.log(self.style.ERROR(message))
             self.stdout.write(self.style.ERROR(tb))

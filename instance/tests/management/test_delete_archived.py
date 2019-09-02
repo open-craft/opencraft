@@ -28,6 +28,7 @@ from django.core.management import call_command
 from django.utils.six import StringIO
 from django.test import TestCase
 
+from instance.models.instance import InstanceReference
 from instance.models.openedx_instance import OpenEdXInstance
 
 
@@ -95,7 +96,7 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Failed to delete' not in out.getvalue())
         self.assertEqual(mock_delete.call_count, 2)
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.delete', MagicMock(side_effect=Exception('error')))
+    @patch('instance.models.instance.InstanceReference.delete', MagicMock(side_effect=Exception('error')))
     def test_deletion_fails(self):
         """
         Verify '-y' skips confirmation and errors are logged
@@ -109,13 +110,32 @@ class DeleteArchivedTestCase(TestCase):
         self.assertTrue('Deleting new.example.com' not in out.getvalue())
         self.assertTrue('Deleting newer.example.com' not in out.getvalue())
 
-        self.assertTrue('Failed to delete old.example.com' in out.getvalue())
-        self.assertTrue('Failed to delete new.example.com' not in out.getvalue())
-        self.assertTrue('Failed to delete newer.example.com' not in out.getvalue())
+        self.assertTrue('Failed to delete Instance' in out.getvalue())
+        self.assertTrue('Failed to delete Instance' in err.getvalue())
         self.assertTrue('Traceback' in out.getvalue())
-
         self.assertTrue('Deleted 0 archived instances older than 3 months' in out.getvalue())
 
-        self.assertTrue('Failed to delete old.example.com' in err.getvalue())
-        self.assertTrue('Failed to delete new.example.com' not in err.getvalue())
-        self.assertTrue('Failed to delete newer.example.com' not in err.getvalue())
+    @patch('instance.management.commands.delete_archived.input', MagicMock(return_value='yes'))
+    @patch('instance.models.instance.InstanceReference.delete')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.delete')
+    def test_ref_without_instance(self, mock_delete, mock_ref_delete):
+        """
+        Verify deletion proceeds when an InstanceReference does not point to
+        an OpenEdxInstance.
+        """
+        # Create instanceless InstanceReference
+        ref = InstanceReference.objects.create(
+            name='Instanceless', instance_id=999, instance_type_id=13, is_archived=True)
+        ref.modified -= timedelta(days=365)
+        ref.save(update_modified=False)
+
+        # Run command
+        out = StringIO()
+        call_command('delete_archived', '10', stdout=out)
+
+        # Check only the InstanceReference queryset gets deleted
+        self.assertTrue('Found 1 archived instances older than 10 months' in out.getvalue())
+        self.assertTrue('Instanceless: No instance associated' in out.getvalue())
+        self.assertTrue('Deleted 1 archived instances older than 10 months' in out.getvalue())
+        self.assertEqual(mock_delete.call_count, 0)
+        self.assertEqual(mock_ref_delete.call_count, 1)
