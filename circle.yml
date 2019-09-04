@@ -7,6 +7,10 @@ jobs:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+          DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
+          CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
+          CONSUL_ENABLED: true
+          DISABLE_LOAD_BALANCER_CONFIGURATION: true
       - image: redis
       - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
@@ -125,6 +129,10 @@ jobs:
         environment:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           DJANGO_SETTINGS_MODULE: 'opencraft.settings'
+          DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
+          CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
+          CONSUL_ENABLED: true
+          DISABLE_LOAD_BALANCER_CONFIGURATION: true
     steps:
       - checkout
       - restore_cache:
@@ -173,10 +181,10 @@ workflows:
           name: integration_tests_group_1
           tests_group: 1
           tests_type: test.integration
-          requires:
-            - python_unit_tests
-            - browser_tests
-            - js_tests
+          # requires:
+          #   - python_unit_tests
+          #   - browser_tests
+          #   - js_tests
       - build:
           name: integration_tests_group_2
           tests_group: 2
