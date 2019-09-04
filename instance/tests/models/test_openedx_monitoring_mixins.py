@@ -48,13 +48,17 @@ from instance.tests.utils import patch_services
 @ddt.ddt
 @override_settings(ADMINS=[('OpenCraft Admin', 'admin@opencraft.com')],
                    NEWRELIC_ADMIN_USER_API_KEY='admin-api-key')
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXMonitoringTestCase(TestCase):
     """
     Tests for OpenEdXMonitoringMixin.
     """
     @patch_services
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.enable_monitoring')
-    def test_set_appserver_active(self, mocks, mock_enable_monitoring):
+    def test_set_appserver_active(self, mocks, mock_consul, mock_enable_monitoring):
         """
         Check that monitoring is enabled when an appserver is activated.
         """
@@ -71,7 +75,7 @@ class OpenEdXMonitoringTestCase(TestCase):
     )
     @ddt.unpack
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_enable_monitoring(self, additional_monitoring_emails, expected_monitor_emails, mock_newrelic):
+    def test_enable_monitoring(self, additional_monitoring_emails, expected_monitor_emails, mock_newrelic, mock_consul):
         """
         Check that the `enable_monitoring` method creates New Relic Synthetics
         monitors for each of the instance's public urls, and enables email
@@ -118,7 +122,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_enable_monitoring_for_pre_new_relic_alerts_instances(self, mock_newrelic):
+    def test_enable_monitoring_for_pre_new_relic_alerts_instances(self, mock_newrelic, mock_consul):
         """
         Check that the monitoring is enabled properly for the instances with monitoring
         enabled using the pre-New Relic alerts code.
@@ -149,7 +153,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_enable_monitoring_does_not_skip_alerts_on_retry_after_error(self, mock_newrelic):
+    def test_enable_monitoring_does_not_skip_alerts_on_retry_after_error(self, mock_newrelic, mock_consul):
         """
         Check that the enable_monitoring doesn't skip the creation of monitoring resources (New Relic alerts)
         when a previous attempt to enable monitoring failed with an error.
@@ -191,7 +195,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         check(instance)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_update_monitoring(self, mock_newrelic):
+    def test_update_monitoring(self, mock_newrelic, mock_consul):
         """
         Check that the `enable_monitoring` method only creates New Relic
         Synthetics monitors for urls that are not already monitored, and
@@ -243,7 +247,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_update_monitoring_additional_email(self, mock_newrelic):
+    def test_update_monitoring_additional_email(self, mock_newrelic, mock_consul):
         """
         Check that the `enable_monitoring` method will add new
         'additional_monitoring_emails' to the existing monitors.
@@ -288,7 +292,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.add_notification_channels_to_policy.assert_called_with(1, [1, 10])
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_disable_monitoring(self, mock_newrelic):
+    def test_disable_monitoring(self, mock_newrelic, mock_consul):
         """
         Check that the `disable_monitoring` method removes any New Relic
         Synthetics monitors for this instance and the alert policy created for the instance
@@ -311,7 +315,7 @@ class OpenEdXMonitoringTestCase(TestCase):
             NewRelicAlertPolicy.objects.get(instance=instance)
 
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
-    def test_email_address_deletion_on_disabling_monitoring(self, mock_newrelic):
+    def test_email_address_deletion_on_disabling_monitoring(self, mock_newrelic, mock_consul):
         """
         Check that the `disable_monitoring` method removes all the notification email addresses for an instance
         except the shared email addresses.
@@ -340,7 +344,7 @@ class OpenEdXMonitoringTestCase(TestCase):
             NewRelicEmailNotificationChannel.objects.get(email='extra@opencraft.com')
         NewRelicEmailNotificationChannel.objects.get(email='admin@opencraft.com')
 
-    def test_deleting_shared_notification_email_address(self):
+    def test_deleting_shared_notification_email_address(self, mock_consul):
         """
         Test that a shared email notification channel can't be deleted.
         Shared notification channels are used by many instances, so if one instance deleted it, the others
@@ -351,7 +355,7 @@ class OpenEdXMonitoringTestCase(TestCase):
             e.delete()
 
     @responses.activate
-    def test_disable_monitoring_monitors_not_found(self):
+    def test_disable_monitoring_monitors_not_found(self, mock_consul):
         """
         Test that the `disable_monitoring` method removes any New Relic
         Synthetics monitors for this instance, even if the actual monitors no longer exist.

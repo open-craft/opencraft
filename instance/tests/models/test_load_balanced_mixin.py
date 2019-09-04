@@ -22,6 +22,8 @@ Load-balanced instance mixin - tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 import ddt
 from django.conf import settings
 from django.test import override_settings
@@ -37,6 +39,10 @@ from instance.tests.utils import patch_gandi, patch_services
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class LoadBalancedInstanceTestCase(TestCase):
     """
     Tests for OpenEdXStorageMixin
@@ -66,7 +72,7 @@ class LoadBalancedInstanceTestCase(TestCase):
 
     @ddt.data(False, True)
     @patch_gandi
-    def test_set_dns_records(self, enable_prefix_domains_redirect):
+    def test_set_dns_records(self, enable_prefix_domains_redirect, mock_consul):
         """
         Test set_dns_records() without external domains.
         """
@@ -80,7 +86,7 @@ class LoadBalancedInstanceTestCase(TestCase):
 
     @ddt.data(False, True)
     @patch_gandi
-    def test_set_dns_records_external_domain(self, enable_prefix_domains_redirect):
+    def test_set_dns_records_external_domain(self, enable_prefix_domains_redirect, mock_consul):
         """
         Test set_dns_records() with custom external domains.
         Ensure that the DNS records are only created for the internal domains.
@@ -97,7 +103,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         self._verify_dns_records(instance, 'opencraft.co.uk', expected_domains)
 
     @patch_gandi
-    def test_remove_dns_records(self):
+    def test_remove_dns_records(self, mock_consul):
         """
         Test remove_dns_records().
         """
@@ -109,15 +115,16 @@ class LoadBalancedInstanceTestCase(TestCase):
         dns_records = gandi.api.client.list_records('opencraft.co.uk')
         self.assertEqual(dns_records, [])
 
-    def test_domains(self):
+    def test_domains(self, mock_consul):
         """
         Test the get_managed_domains() and get_load_balanced_domains() methods (for test coverage only).
         """
         self.assertEqual(LoadBalancedInstance.get_managed_domains(None), [])
         self.assertEqual(LoadBalancedInstance.get_load_balanced_domains(None), [])
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_services
-    def test_reconfigure_load_balancer(self, mock_run_playbook):
+    def test_reconfigure_load_balancer(self, mock_run_playbook, mock_consul):
         """
         Test that reconfigure_load_balancer reconfigures the load balancer and logs to the instance.
         """
@@ -136,7 +143,7 @@ class LoadBalancedInstanceTestCase(TestCase):
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
     @patch_services
-    def test_reconfigure_load_balancer_disabled(self, mock_run_playbook):
+    def test_reconfigure_load_balancer_disabled(self, mock_run_playbook, mock_consul):
         """
         Test that reconfigure_load_balancer doesn't reconfigure the load balancer
         when the reconfiguration is disabled on settings.
@@ -154,7 +161,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         self.assertIn("Setting DNS records for active app servers", logs.output[1])
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
-    def test_preliminary_page_not_configured(self):
+    def test_preliminary_page_not_configured(self, mock_consul):
         """
         Test that get_preliminary_page_config() returns an empty configuration if
         PRELIMINARY_PAGE_SERVER_IP is not set.
@@ -164,7 +171,7 @@ class LoadBalancedInstanceTestCase(TestCase):
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
     @override_settings(PRELIMINARY_PAGE_HOSTNAME=None)
-    def test_preliminary_page_ip_address_configured(self):
+    def test_preliminary_page_ip_address_configured(self, mock_consul):
         """
         Test that the preliminary page server IP is included in the load balancer configuration.
         """
@@ -178,7 +185,7 @@ class LoadBalancedInstanceTestCase(TestCase):
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP='0.0.0.0')
     @override_settings(PRELIMINARY_PAGE_HOSTNAME='example.com')
-    def test_preliminary_page_hostname_configured(self):
+    def test_preliminary_page_hostname_configured(self, mock_consul):
         """
         Test that the preliminary page server hostname is included in the load balancer configuration.
         """

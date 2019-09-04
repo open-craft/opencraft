@@ -170,7 +170,11 @@ class ReportsHelpersTestCase(TestCase):
     """
 
     def setUp(self):
-        self.appserver = make_test_appserver()
+        with mock.patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            self.appserver = make_test_appserver()
         self.organization = OrganizationFactory.create(
             name='Organization Name',
             github_handle='organization_github_handle'
@@ -333,7 +337,11 @@ class ReportsHelpersTestCase(TestCase):
             'charge': settings.BILLING_RATE * expected_days,
         })
 
-    def get_instance_charges_future_month(self):
+    @mock.patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def get_instance_charges_future_month(self, mock_consul):
         """
         Test that the instance will return empty charges and 0 total for its
         AppServers if the invoice month is in future.
@@ -343,8 +351,12 @@ class ReportsHelpersTestCase(TestCase):
         self.assertEqual(appservers_charges, [])
         self.assertEqual(appservers_total, 0)
 
+    @mock.patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @mock.patch('reports.helpers.generate_charge_details')
-    def test_get_instance_charges(self, charges_details_mock):
+    def test_get_instance_charges(self, charges_details_mock, mock_consul):
         """
         Test that an instance is going to generate charges for all of its
         terminated and running appservers only and make sure that servers
@@ -403,8 +415,12 @@ class ReportsHelpersTestCase(TestCase):
         self.assertIsInstance(watched_forks[fork3], list)
         self.assertEqual(len(watched_forks[fork3]), 0)
 
+    @mock.patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @mock.patch('reports.helpers.get_instance_charges')
-    def test_generate_charges(self, instance_charges_mock):
+    def test_generate_charges(self, instance_charges_mock, mock_consul):
         """
         Make sure that we're able to generate charges for all of the appservers
         that belong to any fork under a given organization.
@@ -454,9 +470,13 @@ class ReportsHelpersTestCase(TestCase):
             organization=self.organization
         )
 
-        instance1 = OpenEdXInstanceFactory()
-        instance2 = OpenEdXInstanceFactory()
-        instance3 = OpenEdXInstanceFactory()
+        with mock.patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            instance1 = OpenEdXInstanceFactory()
+            instance2 = OpenEdXInstanceFactory()
+            instance3 = OpenEdXInstanceFactory()
 
         WatchedPullRequest.objects.create(
             fork_name=watched_fork1.fork,

@@ -63,7 +63,11 @@ class SpawnAppServerTestCase(TestCase):
         self.mock_make_appserver_active = self.make_appserver_active_patcher.start()
         self.addCleanup(self.make_appserver_active_patcher.stop)
 
-    def test_provision_sandbox_instance(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_provision_sandbox_instance(self, mock_consul):
         """
         Test the spawn_appserver() task, and that it can be used to spawn an AppServer for a new
         instance.
@@ -81,7 +85,11 @@ class SpawnAppServerTestCase(TestCase):
         self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
     @ddt.data(True, False)
-    def test_mark_active_on_success(self, provisioning_succeeds):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_mark_active_on_success(self, provisioning_succeeds, mock_consul):
         """
         Test that when mark_active_on_success=True, the spawn_appserver task will mark the
         newly provisioned AppServer as active, if provisioning succeeded.
@@ -98,7 +106,11 @@ class SpawnAppServerTestCase(TestCase):
         else:
             self.mock_make_appserver_active.assert_not_called()
 
-    def test_not_mark_active_if_pending(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_not_mark_active_if_pending(self, mock_consul):
         """
         Test that we when mark_active_on_success=True, the spawn_appserver task will not mark the
         newly provisioned AppServer as active if the OpenStack server is not ready.
@@ -116,7 +128,11 @@ class SpawnAppServerTestCase(TestCase):
         self.assertEqual(appserver.is_active, False)
 
     @ddt.data(True, False)
-    def test_deactivate_old_appservers(self, provisioning_succeeds):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_deactivate_old_appservers(self, provisioning_succeeds, mock_consul):
         """
         If `mark_active_on_success` and `deactivate_old_appservers` are both passed in as `True`,
         the spawn appserver task will mark the newly provisioned AppServer as active, and deactivate
@@ -134,8 +150,12 @@ class SpawnAppServerTestCase(TestCase):
         else:
             self.mock_make_appserver_active.assert_not_called()
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
-    def test_num_attempts(self, mock_spawn):
+    def test_num_attempts(self, mock_spawn, mock_consul):
         """
         Test that if num_attempts > 1, the spawn_appserver task will automatically re-try
         provisioning.
@@ -160,9 +180,13 @@ class SpawnAppServerTestCase(TestCase):
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_num_attempts_successful(self, mock_provision, mock_spawn):
+    def test_num_attempts_successful(self, mock_provision, mock_spawn, mock_consul):
         """
         Test that if num_attempts > 1, the spawn_appserver task will stop trying to provision
         after a successful attempt.
@@ -189,9 +213,13 @@ class SpawnAppServerTestCase(TestCase):
         self.assertFalse(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertFalse(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_one_attempt_default(self, mock_provision, mock_spawn):
+    def test_one_attempt_default(self, mock_provision, mock_spawn, mock_consul):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning.
         """
@@ -214,9 +242,13 @@ class SpawnAppServerTestCase(TestCase):
         # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))
 
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_one_attempt_default_fail(self, mock_provision, mock_spawn):
+    def test_one_attempt_default_fail(self, mock_provision, mock_spawn, mock_consul):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning, even when failing.
         """
@@ -247,7 +279,11 @@ class MakeAppserverActiveTestCase(TestCase):
     """
 
     def setUp(self):
-        self.appserver = make_test_appserver()
+        with patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            self.appserver = make_test_appserver()
         self.appserver.server = ReadyOpenStackServerFactory()
         self.appserver.is_active = True
         self.appserver.save()
@@ -323,9 +359,13 @@ class CleanUpTestCase(TestCase):
         """
         return msg, kwargs
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.logging.ModelLoggerAdapter.process')
     @patch('instance.models.openedx_instance.OpenEdXInstance.terminate_obsolete_appservers')
-    def test_terminate_obsolete_appservers(self, mock_terminate_appservers, mock_logger):
+    def test_terminate_obsolete_appservers(self, mock_terminate_appservers, mock_logger, mock_consul):
         """
         Test that `terminate_obsolete_appservers_all_instances`
         calls `terminate_obsolete_appservers` on all existing instances.
@@ -347,9 +387,13 @@ class CleanUpTestCase(TestCase):
         {'pr_state': 'closed', 'pr_days_since_closed': 10, 'instance_is_archived': True},
         {'pr_state': 'open', 'pr_days_since_closed': None, 'instance_is_archived': False},
     )
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.logging.ModelLoggerAdapter.process')
     @patch('instance.models.openedx_instance.OpenEdXInstance.archive')
-    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_archive, mock_logger):
+    def test_shut_down_obsolete_pr_sandboxes(self, data, mock_archive, mock_logger, mock_consul):
         """
         Test that `shut_down_obsolete_pr_sandboxes` correctly identifies and shuts down instances
         whose PRs got merged (more than) one week ago.
@@ -385,8 +429,12 @@ class CleanUpTestCase(TestCase):
                 self.assertEqual(mock_archive.call_count, 0)
                 self.assertEqual(mock_logger.call_count, 10)
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance.archive')
-    def test_shut_down_obsolete_pr_sandboxes_no_pr(self, mock_archive):
+    def test_shut_down_obsolete_pr_sandboxes_no_pr(self, mock_archive, mock_consul):
         """
         Test that `shut_down_obsolete_pr_sandboxes` does not shut down instances
         that are not associated with a PR.
@@ -398,8 +446,12 @@ class CleanUpTestCase(TestCase):
 
         self.assertEqual(mock_archive.call_count, 0)
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.openedx_instance.OpenEdXInstance.archive')
-    def test_shut_down_obsolete_pr_sandboxes_archived(self, mock_archive):
+    def test_shut_down_obsolete_pr_sandboxes_archived(self, mock_archive, mock_consul):
         """
         Test that `shut_down_obsolete_pr_sandboxes` does not shut down instances
         more than once.
@@ -413,9 +465,13 @@ class CleanUpTestCase(TestCase):
 
         self.assertEqual(mock_archive.call_count, 0)
 
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.tasks.terminate_obsolete_appservers_all_instances')
     @patch('instance.tasks.shut_down_obsolete_pr_sandboxes')
-    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers):
+    def test_clean_up_task(self, mock_shut_down_sandboxes, mock_terminate_appservers, mock_consul):
         """
         Test that `clean_up` task spawns `shut_down_obsolete_pr_sandboxes` and
         `terminate_obsolete_appservers_all_instances` tasks.
@@ -465,7 +521,11 @@ class DeleteOldLogsTestCase(TestCase):
         logging.getLogger('huey').disabled = True
 
     @override_settings(LOG_DELETION_DAYS=30)
-    def test_delete_old_logs(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_delete_old_logs(self, mock_consul):
         """
         Only logs created before a cutoff date are deleted.
         """

@@ -141,7 +141,11 @@ class WatchedPullRequestTestCase(TestCase):
         DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX='lms-preview.',
         DEFAULT_STUDIO_DOMAIN_PREFIX='studio-'
     )
-    def test_create_from_pr(self):
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_create_from_pr(self, mock_consul):
         """
         Create an instance from a pull request
         """
@@ -163,7 +167,6 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.internal_studio_domain, 'studio-{}'.format(internal_lms_domain))
         self.assertRegex(instance.name, r'^PR')
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
-
         same_instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertEqual(instance, same_instance)
         self.assertFalse(created)
@@ -184,7 +187,11 @@ class WatchedPullRequestTestCase(TestCase):
                 """),
             openedx_release='ginkgo.8',
         )
-        instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
+        with patch(
+                'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertTrue(created)
 
         self.assertEqual(instance.configuration_source_repo_url,

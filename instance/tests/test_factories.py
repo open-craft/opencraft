@@ -22,6 +22,8 @@ Factories module - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 from django.conf import settings
 from django.test import override_settings
 import yaml
@@ -82,7 +84,11 @@ class FactoriesTestCase(TestCase):
         expected_extra_settings = yaml.load(configuration_extra_settings, Loader=yaml.SafeLoader)
         self.assertEqual(extra_settings, expected_extra_settings)
 
-    def test_instance_factory(self):
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_instance_factory(self, mock_consul):
         """
         Test that factory function for creating instances produces expected results
         """
@@ -102,8 +108,12 @@ class FactoriesTestCase(TestCase):
         with self.assertRaises(AssertionError):
             instance_factory()
 
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @override_settings(PROD_APPSERVER_FAIL_EMAILS=['appserverfail@localhost'])
-    def test_production_instance_factory(self):
+    def test_production_instance_factory(self, mock_consul):
         """
         Test that factory function for creating production instances produces expected results
         """

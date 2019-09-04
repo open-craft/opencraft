@@ -21,6 +21,7 @@ OpenEdXInstance Storage Mixins - Tests
 """
 
 # Imports #####################################################################
+
 from unittest.mock import call, patch
 
 import boto3
@@ -80,7 +81,11 @@ class OpenEdXStorageMixinTestCase(TestCase):
         self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
         self.assertRegex(opts['location'], r'instance[\w]+_test_example_com/profile-images')
 
-    def test_ansible_s3_settings(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_ansible_s3_settings(self, mock_consul):
         """
         Test that get_storage_settings() includes S3 vars, and that they get passed on to the
         AppServer
@@ -223,6 +228,10 @@ class ContainerTestCase(TestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class SwiftContainerInstanceTestCase(ContainerTestCase):
     """
     Tests for Swift container provisioning.
@@ -256,7 +265,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         )
 
     @patch('instance.openstack_utils.create_swift_container')
-    def test_provision_swift(self, create_swift_container):
+    def test_provision_swift(self, create_swift_container, mock_consul):
         """
         Test provisioning Swift containers, and that they are provisioned only once.
         """
@@ -271,7 +280,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.check_swift(instance, create_swift_container)
 
     @patch('instance.openstack_utils.create_swift_container')
-    def test_deprovision_swift(self, create_swift_container):
+    def test_deprovision_swift(self, create_swift_container, mock_consul):
         """
         Test deprovisioning Swift containers.
         """
@@ -284,7 +293,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
 
     @patch('instance.openstack_utils.create_swift_container')
     @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
-    def test_swift_disabled(self, create_swift_container):
+    def test_swift_disabled(self, create_swift_container, mock_consul):
         """
         Verify disabling Swift provisioning works.
         """
@@ -293,7 +302,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(create_swift_container.called)
 
-    def test_ansible_settings_swift(self):
+    def test_ansible_settings_swift(self, mock_consul):
         """
         Verify Swift Ansible configuration when Swift is enabled.
         """
@@ -302,7 +311,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.check_ansible_settings(appserver)
 
     @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
-    def test_ansible_settings_swift_disabled(self):
+    def test_ansible_settings_swift_disabled(self, mock_consul):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
         """
@@ -317,6 +326,10 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
     AWS_SECRET_ACCESS_KEY_ID='test',
     INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE,
 )
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class S3ContainerInstanceTestCase(ContainerTestCase):
     """
     Tests for S3 Storage
@@ -327,7 +340,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         '',
         'eu-west-1',
     )
-    def test_ansible_settings_s3(self, s3_region):
+    def test_ansible_settings_s3(self, s3_region, mock_consul):
         """
         Verify S3 Ansible configuration when S3 is enabled.
         """
@@ -342,7 +355,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         ('eu-central-1', 'eu-central-1'),
     )
     @ddt.unpack
-    def test_get_s3_connection(self, s3_region, expected_region):
+    def test_get_s3_connection(self, s3_region, expected_region, mock_consul):
         """
         Test get_s3 connection returns right instance
         """
@@ -350,7 +363,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_region = s3_region
         self.assertEqual(instance.s3.meta.region_name, expected_region)
 
-    def test_get_s3_policy(self):
+    def test_get_s3_policy(self, mock_consul):
         """
         Verify S3 policy is set for correctly
         """
@@ -373,7 +386,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
     )
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test_provision_s3(self, provision_iam):
+    def test_provision_s3(self, provision_iam, mock_consul):
         """
         Test s3 provisioning succeeds
         """
@@ -401,7 +414,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                 instance.provision_s3()
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test__create_bucket_fails(self):
+    def test__create_bucket_fails(self, mock_consul):
         """
         Test s3 provisioning fails on bucket creation, and retries up to 4 times
         """
@@ -428,7 +441,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
             )
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test__update_bucket_fails(self):
+    def test__update_bucket_fails(self, mock_consul):
         """
         Test s3 provisioning fails on bucket update, and retries up to 4 times
         This can happen when the IAM is updated but the propagation is delayed
@@ -459,7 +472,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test_deprovision_s3(self):
+    def test_deprovision_s3(self, mock_consul):
         """
         Test s3 deprovisioning succeeds
         """
@@ -530,7 +543,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
-    def test_deprovision_s3_delete_user_fails(self):
+    def test_deprovision_s3_delete_user_fails(self, mock_consul):
         """
         Test s3 deprovisioning fails on delete_user
         """
@@ -566,7 +579,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test_deprovision_s3_delete_bucket_fails(self):
+    def test_deprovision_s3_delete_bucket_fails(self, mock_consul):
         """
         Test s3 deprovisioning fails on delete_bucket
         """
@@ -605,7 +618,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         self.assertEqual(instance.s3_access_key, "")
 
     @override_settings(AWS_S3_DEFAULT_REGION='test')
-    def test_provision_s3_swift(self):
+    def test_provision_s3_swift(self, mock_consul):
         """
         Test s3 provisioning does nothing when SWIFT is enabled
         """
@@ -620,7 +633,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
-    def test_provision_s3_unconfigured(self):
+    def test_provision_s3_unconfigured(self, mock_consul):
         """
         Test s3 provisioning works with default bucket and IAM
         """
@@ -649,7 +662,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @override_settings(AWS_ACCESS_KEY_ID='test_0123456789a', AWS_SECRET_ACCESS_KEY='secret')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
-    def test_create_iam_user(self):
+    def test_create_iam_user(self, mock_consul):
         """
         Test create_iam_user succeeds and sets the required attributes
         """
@@ -671,7 +684,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
 
     @override_settings(AWS_ACCESS_KEY_ID='test_0123456789a', AWS_SECRET_ACCESS_KEY='secret')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
-    def test_iam_user_exists(self):
+    def test_iam_user_exists(self, mock_consul):
         """
         Test create_iam_user succeeds when user already exists
         """
@@ -691,7 +704,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
             self.assertEqual(instance.s3_access_key, 'test_0123456789a')
             self.assertEqual(instance.s3_secret_access_key, 'secret')
 
-    def test_get_s3_cors(self):
+    def test_get_s3_cors(self, mock_consul):
         """
         Test get_s3_config succeeds
         """
@@ -699,21 +712,21 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         self.assertEqual(S3_CORS['CORSRules'][0]['AllowedHeaders'], ['*'])
         self.assertEqual(S3_CORS['CORSRules'][0]['AllowedOrigins'], ['*'])
 
-    def test_bucket_name(self):
+    def test_bucket_name(self, mock_consul):
         """
         Test bucket_name is correct
         """
         instance = OpenEdXInstanceFactory()
         self.assertRegex(instance.bucket_name, r'ocim-instance[A-Za-z0-9]*-test-example-com')
 
-    def test_iam_username(self):
+    def test_iam_username(self, mock_consul):
         """
         Test bucket_name is correct
         """
         instance = OpenEdXInstanceFactory()
         self.assertRegex(instance.iam_username, r'ocim-instance[A-Za-z0-9]*_test_example_com')
 
-    def test_s3_region_default_value(self):
+    def test_s3_region_default_value(self, mock_consul):
         """
         Test the default value for the S3 region
         """

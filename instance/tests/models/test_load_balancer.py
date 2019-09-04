@@ -60,6 +60,7 @@ def mock_instances():
     ]
 
 
+@override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
 class LoadBalancingServerTest(TestCase):
     """
     Test cases for the LoadBalancingServer model.
@@ -69,6 +70,7 @@ class LoadBalancingServerTest(TestCase):
         self.load_balancer = LoadBalancingServerFactory()
 
     @patch('instance.models.load_balancer.LoadBalancingServer.get_instances', return_value=mock_instances())
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_get_configuration(self, mock_get_instances):
         """
         Test that the configuration gets rendered correctly.
@@ -106,6 +108,7 @@ class LoadBalancingServerTest(TestCase):
     @patch("instance.ansible.poll_streams")
     @patch("instance.ansible.run_playbook")
     @patch('instance.models.load_balancer.LoadBalancingServer.get_instances', return_value=mock_instances())
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_reconfigure_fails(self, mock_get_instances, mock_run_playbook, mock_poll_streams):
         """
         Test that the reconfigure() method gives us a dirty LB if the playbook fails.
@@ -119,6 +122,7 @@ class LoadBalancingServerTest(TestCase):
     @patch("instance.ansible.poll_streams")
     @patch("instance.ansible.run_playbook")
     @patch('instance.models.load_balancer.LoadBalancingServer.get_instances', return_value=mock_instances())
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_deconfigure(self, mock_get_instances, mock_run_playbook, mock_poll_streams):
         """
         Test that the deconfigure() method triggers a playbook run.
@@ -132,7 +136,10 @@ class LoadBalancingServerManager(TestCase):
     """
     Tests for LoadBalancingServerManager.
     """
-    @override_settings(DEFAULT_LOAD_BALANCING_SERVER=None)
+    @override_settings(
+        DEFAULT_LOAD_BALANCING_SERVER=None,
+        DISABLE_LOAD_BALANCER_CONFIGURATION=False
+    )
     def test_no_load_balancer_available(self):
         """
         Test that get_random() raises an exception when no load balancers are available.
@@ -140,7 +147,10 @@ class LoadBalancingServerManager(TestCase):
         with self.assertRaises(LoadBalancingServer.DoesNotExist):
             LoadBalancingServer.objects.select_random()
 
-    @override_settings(DEFAULT_LOAD_BALANCING_SERVER="domain.without.username")
+    @override_settings(
+        DEFAULT_LOAD_BALANCING_SERVER="domain.without.username",
+        DISABLE_LOAD_BALANCER_CONFIGURATION=False
+    )
     def test_invalid_default_load_balancer(self):
         """
         Verify that an exception gets raised when the username is missing from the setting for the

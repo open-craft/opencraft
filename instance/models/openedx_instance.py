@@ -156,7 +156,7 @@ class OpenEdXInstance(
                 'Direct load balancer reconfiguration disabled. No haproxy '
                 'configuration fragment and backend map will be generated.'
             )
-            return "", ""
+            return [], []
 
         active_appservers = self.get_active_appservers()
         if not active_appservers.exists():

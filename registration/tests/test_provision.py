@@ -53,7 +53,11 @@ class ApprovalTestCase(TestCase):
                 accepted_privacy_policy=accepted_time
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
-        with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver:
+        with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver, \
+            mock.patch(
+                    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                    return_value=(1, True)
+            ):
             # Confirm email address.  This triggers provisioning the instance.
             EmailAddress.objects.confirm(user.email_address_set.get().key)
             self.assertTrue(mock_spawn_appserver.called)
