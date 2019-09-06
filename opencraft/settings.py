@@ -281,10 +281,25 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
 
+
+# AWS S3 storage for media files. This configuration is used by Ocim
+# to store the files uploaded in the Ocim registration form. It will
+# not be copied to the deployed instance.
+MEDIAFILES_S3_ENABLE = env.bool('MEDIAFILES_S3_ENABLE', default=False)
+
 # SWIFT for media files. This configuration is used by Ocim to store files
 # uploaded in Ocim forms. It will not be copied to the deployed instance.
 MEDIAFILES_SWIFT_ENABLE = env.bool('MEDIAFILES_SWIFT_ENABLE', default=False)
-if MEDIAFILES_SWIFT_ENABLE:
+
+if MEDIAFILES_S3_ENABLE:
+    DEFAULT_FILE_STORAGE = 'instance.media_storage.S3MediaStorage'
+    MEDIAFILES_AWS_S3_ACCESS_KEY_ID = env('MEDIAFILES_AWS_S3_ACCESS_KEY_ID')
+    MEDIAFILES_AWS_S3_SECRET_ACCESS_KEY = env('MEDIAFILES_AWS_S3_SECRET_ACCESS_KEY')
+    MEDIAFILES_AWS_S3_BUCKET_NAME = env('MEDIAFILES_AWS_S3_BUCKET_NAME')
+    MEDIAFILES_AWS_S3_REGION_NAME = env('MEDIAFILES_AWS_S3_REGION_NAME')
+    MEDIAFILES_AWS_S3_SIGNATURE_VERSION = env('MEDIAFILES_AWS_S3_SIGNATURE_VERSION')
+
+elif MEDIAFILES_SWIFT_ENABLE:
     DEFAULT_FILE_STORAGE = 'swift.storage.SwiftStorage'
     SWIFT_AUTH_URL = env('MEDIAFILES_SWIFT_AUTH_URL')
     SWIFT_USERNAME = env('MEDIAFILES_SWIFT_USERNAME')
