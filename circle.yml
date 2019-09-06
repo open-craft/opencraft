@@ -28,6 +28,11 @@ jobs:
             type: string
     environment:
         TEST_GROUP: <<parameters.tests_group>>
+        LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+        DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
+        CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
+        CONSUL_ENABLED: true
+        DISABLE_LOAD_BALANCER_CONFIGURATION: true
     steps:
       - checkout
       - restore_cache:
@@ -133,6 +138,12 @@ jobs:
           CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
           CONSUL_ENABLED: true
           DISABLE_LOAD_BALANCER_CONFIGURATION: true
+    environment:
+        LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+        DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
+        CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
+        CONSUL_ENABLED: true
+        DISABLE_LOAD_BALANCER_CONFIGURATION: true
     steps:
       - checkout
       - restore_cache:
