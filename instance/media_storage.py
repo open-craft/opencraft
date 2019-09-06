@@ -33,3 +33,5 @@ class S3MediaStorage(S3Boto3Storage):
     bucket_name = settings.MEDIAFILES_AWS_S3_BUCKET_NAME
     region_name = settings.MEDIAFILES_AWS_S3_REGION_NAME
     signature_version = settings.MEDIAFILES_AWS_S3_SIGNATURE_VERSION
+    querystring_expire = settings.MEDIAFILES_AWS_S3_QUERYSTRING_EXPIRE
+    default_acl = 'private'
