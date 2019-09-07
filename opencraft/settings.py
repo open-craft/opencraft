@@ -281,7 +281,6 @@ if BACKUP_SWIFT_ENABLED:
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
 
 
-
 # AWS S3 storage for media files. This configuration is used by Ocim
 # to store the files uploaded in the Ocim registration form. It will
 # not be copied to the deployed instance.
