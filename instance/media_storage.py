@@ -34,4 +34,5 @@ class S3MediaStorage(S3Boto3Storage):  # pylint: disable=abstract-method
     region_name = settings.MEDIAFILES_AWS_S3_REGION_NAME
     signature_version = settings.MEDIAFILES_AWS_S3_SIGNATURE_VERSION
     querystring_expire = settings.MEDIAFILES_AWS_S3_QUERYSTRING_EXPIRE
+    file_overwrite = False
     default_acl = 'private'
