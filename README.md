@@ -11,7 +11,7 @@ GitHub pull requests.
 
 It also includes a web console where you can create new servers and check their status and configuration.
 
-![Ocim's main screen](documentation/ocim_main_screen.png)
+![Ocim's main screen](documentation/images/ocim_main_screen.png)
 
 Table of Contents
 -----------------
