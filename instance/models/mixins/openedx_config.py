@@ -51,14 +51,24 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # edxapp
             "EDXAPP_PLATFORM_NAME": self.instance.name,
             "EDXAPP_SITE_NAME": self.instance.domain,
+
+            # Available as ENV_TOKENS in the django setting files.
+            # Note: use EDXAPP_CMS_ENV_EXTRA and/or EDXAPP_LMS_ENV_EXTRA; don't use
+            # EDXAPP_ENV_EXTRA as the other two overwrite this.
+            "EDXAPP_CMS_ENV_EXTRA": {
+                "ADDL_INSTALLED_APPS": [
+                    "openedx.core.djangoapps.heartbeat",
+                ],
+            },
             "EDXAPP_LMS_ENV_EXTRA": {
                 "ADDL_INSTALLED_APPS": [
                     "openedx.core.djangoapps.heartbeat",
                 ],
                 "HEARTBEAT_EXTENDED_CHECKS": [
-                    "lms.lib.comment_client.utils.check_forum_heartbeat",
+                    "openedx.core.djangoapps.heartbeat.default_checks.check_celery",
                 ],
             },
+
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
@@ -178,11 +188,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Misc
             "EDXAPP_LANG": 'en_US.UTF-8',
             "EDXAPP_TIME_ZONE": 'UTC',
-
-            # Available as ENV_TOKENS in the django setting files.
-            "EDXAPP_ENV_EXTRA": {
-                "LANGUAGE_CODE": 'en',
-            },
 
             # Features
             "EDXAPP_FEATURES": {
@@ -401,6 +406,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {
                 "PRIVACY": self.privacy_policy_url,
             }
+
+        # use the new forum heartbeat path if on master. Note: will need to
+        # update this after the release after ironwood has landed.
+        if self.openedx_release == 'master':
+            forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
+        else:
+            forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
+        template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
         return template
 
