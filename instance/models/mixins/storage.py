@@ -255,7 +255,12 @@ class S3BucketInstanceMixin(models.Model):
         """
         The custom domain name built based on the bucket name.
         """
-        return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
+        # If s3_region is empty, boto3 will use S3 default region 'N. Virginia (us-east-1)'
+        # Reference: https://docs.aws.amazon.com/general/latest/gr/rande.html
+        return "{}.s3.{}.amazonaws.com".format(
+            self.s3_bucket_name,
+            self.s3_region or 'us-east-1'
+        )
 
     @property
     def iam(self):

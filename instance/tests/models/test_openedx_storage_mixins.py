@@ -126,7 +126,10 @@ def get_s3_settings(instance):
         "EDXAPP_AWS_ACCESS_KEY_ID": instance.s3_access_key,
         "EDXAPP_AWS_SECRET_ACCESS_KEY": instance.s3_secret_access_key,
         "EDXAPP_AUTH_EXTRA": '\n  AWS_STORAGE_BUCKET_NAME: test\nEDXAPP_AWS_ACCESS_KEY_ID: test',
-        "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.amazonaws.com".format(instance.s3_bucket_name),
+        "EDXAPP_AWS_S3_CUSTOM_DOMAIN": "{}.s3.{}.amazonaws.com".format(
+            instance.s3_bucket_name,
+            instance.s3_region or 'us-east-1'
+        ),
         "EDXAPP_IMPORT_EXPORT_BUCKET": instance.s3_bucket_name,
         "EDXAPP_FILE_UPLOAD_BUCKET_NAME": instance.s3_bucket_name,
         "EDXAPP_FILE_UPLOAD_STORAGE_PREFIX": '{}/{}'.format(
