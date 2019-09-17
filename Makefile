@@ -132,6 +132,7 @@ ifneq ($(wildcard .env.integration),)
 	$(HONCHO_COVERAGE_INTEGRATION) --pattern=integration_*.py
 else ifdef OPENSTACK_USER
 	echo -e "\nRunning integration tests with credentials from environment variables..."
+	echo -e "\n and by the way CONSUL_SERVERS is: --> $$CONSUL_SERVERS <--"
 	$(COVERAGE) --pattern=integration_*.py
 else
 	echo -e "\nIntegration tests skipped (create a '.env.integration' file to run them)"
