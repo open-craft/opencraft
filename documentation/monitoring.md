@@ -1,0 +1,49 @@
+Monitoring
+------------
+
+New Relic is a SaaS tool for monitoring and alerting. Ocim supports using `New Relic Synthetics` and `New Relic Alerts` for monitoring the instances.
+
+On Alerts, policies can be created to control the alerting behaviour. Alerts has two main components:
+* **Alert Policies**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. A policy should be created before adding conditions to it.
+* **Alert Conditions**: its a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
+
+Each **Alert Policy** contains one or more **Alert Conditions** that can be configured to modify the alerting behaviour.
+
+For example, on Open edX instances, we create a alert policy with 1 alert per policy, and add an alert condition for each service (LMS, Studio, Preview).
+That way, if any service is down, the monitor will trigger an alert. But if there's more than one service failing pings, only a single alert will be fired, to prevent firing a massive amount of alert emails when an entire instance goes down or there are OVH/AWS network issues.
+
+The image below shows the concept behind Alerts.
+
+![New Relic Alerts](./images/newrelic-alerts.png)
+
+A more in deph explanation of how New Relic Alerts work can be found [here](https://docs.newrelic.com/docs/alerts/new-relic-alerts/getting-started/new-relic-alerts-concepts-workflow).
+
+## How it works on Ocim
+
+Ocim automatically sets up monitoring for each instance, and creates all the necessary NewRelic resources for alerting. It does that by running `.enable_monitoring()` on an instance during provisioning.
+
+Additionally, the monitoring set up methods can be called manually to disable monitoring or rebuild NewRelic assets changed due to changes in configuration.
+
+* `.enable_monitoring()`: Set ups resources on New Relic to enable monitoring, if the resources already exist, overwrite them with new settings.
+* `.disable_monitoring()`: Deprovision all resources on New Relics related to that instance, including Alert Policies, Alert Conditions, Notification channels (if not shared) and Synthetics monitors. This is used when an instance is archived and might be useful for debugging.
+
+## Deploying production instances
+
+For production instances, some manual setup is required to alert to other notification channels (such as PagerDuty or a email list).
+
+1. Using Django Shell (`make shell`), find the instance you want to add monitoring to.
+```
+instance = OpenEdXInstance.objects.get(internal_lms_domain='test.opencraft.hosting')
+```
+2. Add additional monitoring emails to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
+3. Apply the New Relic configuration by running `instance.enable_monitoring()`
+
+## Troubleshooting
+
+Most issues with Ocim monitored instances can be fixed by running `.enable_monitoring()`, but in case that's failing you can use the following checklist to help you debug the issue:
+
+1. Check if the monitored endpoints are working as expected and available from the internet. For LMS, the monitoring address is `/heartbeat?extended`. The return of the page will point out if there's any issue with the instance.
+2. Check if Ocim has valid credentials on `.env` configuration file.
+3. Check if the Synthetics monitor is correctly configured and enabled.
+4. Check if the monitor has a Alert Condition and Alert Policy associated.
+5. Verify that there's at least 1 notification channel added to the alert policy and that the channel is receiving notifications.
