@@ -445,7 +445,7 @@ class ConsulAgent:
     """
 
     def __init__(self, prefix=''):
-        print("I'm in __init__ creating a consul.Consul(), and CONSUL_SERVERS is", os.environ("CONSUL_SERVERS"))
+        print("I'm in __init__ creating a consul.Consul(), and CONSUL_SERVERS is", os.environ["CONSUL_SERVERS"])
         self._client = consul.Consul()
         self.prefix = prefix
 
@@ -508,7 +508,7 @@ class ConsulAgent:
         :param kwargs: consul.kv.put specific options.
         """
         get_data = None
-        print("I'm in create_or_update_dict and CONSUL_SERVERS is", os.environ("CONSUL_SERVERS"))
+        print("I'm in create_or_update_dict and CONSUL_SERVERS is", os.environ["CONSUL_SERVERS"])
         try:
             _, get_data = self._client.kv.get(self.prefix, **kwargs)
         except consul.base.NotFound:
