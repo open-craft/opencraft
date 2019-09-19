@@ -22,7 +22,7 @@ A more in-depth explanation of how New Relic Alerts work can be found [here](htt
 
 Ocim automatically sets up monitoring for each instance, and creates all the necessary NewRelic resources for alerting. It does that by executing the `.enable_monitoring()` method on an instance after it is activated.
 
-Additionally, the monitoring set up methods can be called manually to disable monitoring or rebuild NewRelic assets changed due to changes in configuration.
+Additionally, the `.enable_monitoring()` and `.disable_monitoring()` methods of an instance can be called manually from the Django shell to update the New Relic resources on configuration changes or to disable monitoring.
 
 * `.enable_monitoring()`: Sets up resources on New Relic to enable monitoring, if the resources already exist, don't change them. The resources here correspond to a URL to be monitored and a list of addresses to be notified. As long as those do not change, the existing resources will be left unmodified. If the URL is changed, the existing monitors for the old URL are not automatically removed - this is important because we don't want to delete those automatically, to avoid issues.
 * `.disable_monitoring()`: Deprovisions all the New Relic resources related to that instance, including Alert Policies, Alert Conditions, Notification channels (if not shared) and Synthetics monitors. This is used when an instance is archived and might be useful for debugging.
