@@ -305,10 +305,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
-        print("Some debug info, looking for consul:")
-        print(os.environ['CONSUL_SERVERS'])
-        print("(it has the right value here)")
-
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,

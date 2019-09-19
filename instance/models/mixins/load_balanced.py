@@ -57,7 +57,6 @@ class LoadBalancedInstance(models.Model):
         Create CNAME records for the domain names of this instance pointing to the load balancer.
         """
         load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
-        self.logger.info('load_balancer_domain is "%s".', load_balancer_domain)
         for domain in self.get_managed_domains():
             gandi.api.set_dns_record(domain, type="CNAME", value=load_balancer_domain)
 

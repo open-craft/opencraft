@@ -19,7 +19,6 @@
 """
 Instance app models - Open edX Instance models
 """
-import os
 import string
 
 from django.conf import settings
@@ -498,7 +497,6 @@ class OpenEdXInstance(
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        print("I'm in _write_metadata_to_consul and CONSUL_SERVERS is", os.environ["CONSUL_SERVERS"])
         return ConsulAgent(prefix=self.consul_prefix).create_or_update_dict(configurations)
 
     def update_consul_metadata(self):
