@@ -7,7 +7,7 @@ On Alerts, policies can be created to control the alerting behaviour. Alerts has
 * **Alert Policies**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. The incident preference is used to configure how an incident is created - per error, per condition or per policy and the notification channels are the various modes of sending out alert notifications like email, PagerDuty etc. A policy should be created before adding conditions to it.
 * **Alert Conditions**: An alert condition is a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
 
-Each **Alert Policy** contains one or more **Alert Conditions** that can be configured to modify the alerting behaviour.
+Each **Alert Policy** contains one or more **Alert Conditions**  which specify the alerting behaviour.
 
 For example, on Open edX instances, we create a alert policy with 1 alert per policy, and add an alert condition for each service (LMS, Studio, Preview).
 That way, if any service is down, the monitor will trigger an alert. But if there's more than one service failing pings, only a single alert will be fired, to prevent firing a massive amount of alert emails when an entire instance goes down or there are OVH/AWS network issues.
