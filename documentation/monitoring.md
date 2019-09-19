@@ -24,19 +24,16 @@ Ocim automatically sets up monitoring for each instance, and creates all the nec
 
 Additionally, the monitoring set up methods can be called manually to disable monitoring or rebuild NewRelic assets changed due to changes in configuration.
 
-* `.enable_monitoring()`: Set ups resources on New Relic to enable monitoring, if the resources already exist, overwrite them with new settings.
+* `.enable_monitoring()`: Set up resources on New Relic to enable monitoring, if the resources already exist, don't change them. The resources here correspond to a URL to be monitored and a list of addresses to be notified. As long as those do not change, the existing resources will be left unmodified. If the URL is changed, the existing monitors for the old URL are not automatically removed - this is important because we don't want to delete those automatically to avoid issues.
 * `.disable_monitoring()`: Deprovision all resources on New Relics related to that instance, including Alert Policies, Alert Conditions, Notification channels (if not shared) and Synthetics monitors. This is used when an instance is archived and might be useful for debugging.
 
 ## Deploying production instances
 
 For production instances, some manual setup is required to alert to other notification channels (such as PagerDuty or a email list).
 
-1. Using Django Shell (`make shell`), find the instance you want to add monitoring to.
-```
-instance = OpenEdXInstance.objects.get(internal_lms_domain='test.opencraft.hosting')
-```
+1. Using Django Admin interface, go to the OpenEdXInstance model and find the instance you want to add monitoring to.
 2. Add additional monitoring emails to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
-3. Apply the New Relic configuration by running `instance.enable_monitoring()`
+3. Apply the New Relic configuration by redeploying the instance (click on `Spawn new appserver` button on the instance page).
 
 ## Troubleshooting
 
