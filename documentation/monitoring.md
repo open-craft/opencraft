@@ -29,7 +29,7 @@ Additionally, the monitoring set up methods can be called manually to disable mo
 
 ## Deploying production instances
 
-For production instances, some manual setup is required to alert to other notification channels (such as PagerDuty or a email list).
+Ocim automatically creates an email notification channel for each email address in `settings.ADMINS` and adds them to the alert policies of all the active instances. If additional email addresses have to be alerted for the incidents related to an instance, the following manual steps will be required.
 
 1. Using Django Admin interface, go to the OpenEdXInstance model and find the instance you want to add monitoring to.
 2. Add additional monitoring emails to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
