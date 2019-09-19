@@ -10,7 +10,7 @@ On Alerts, policies can be created to control the alerting behaviour. Alerts has
 Each **Alert Policy** contains one or more **Alert Conditions**  which specify the alerting behaviour.
 
 For example, on Open edX instances, we create a alert policy with 1 alert per policy, and add an alert condition for each service (LMS, Studio, Preview).
-That way, if any service is down, the monitor will trigger an alert. But if there's more than one service failing pings, only a single alert will be fired, to prevent firing a massive amount of alert emails when an entire instance goes down or there are OVH/AWS network issues.
+So if any service is down, the monitor will create an incident and trigger an alert. But if more than one service is failing on an instance, only a single incident will be created and a single alert notification will be sent due to the per-policy incident preference. This prevents the creation a large number of incidents and the resulting alert notifications when an instance goes down or there are network issues.
 
 The image below shows the concept behind Alerts.
 
