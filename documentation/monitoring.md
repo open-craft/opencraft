@@ -20,7 +20,7 @@ A more in-depth explanation of how New Relic Alerts work can be found [here](htt
 
 ## How it works on Ocim
 
-Ocim automatically sets up monitoring for each instance, and creates all the necessary NewRelic resources for alerting. It does that by running `.enable_monitoring()` on an instance during provisioning.
+Ocim automatically sets up monitoring for each instance, and creates all the necessary NewRelic resources for alerting. It does that by executing the `.enable_monitoring()` method on an instance after it is activated.
 
 Additionally, the monitoring set up methods can be called manually to disable monitoring or rebuild NewRelic assets changed due to changes in configuration.
 
