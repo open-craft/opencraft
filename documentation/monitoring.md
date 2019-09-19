@@ -16,7 +16,7 @@ The image below shows the concept behind Alerts.
 
 ![New Relic Alerts](./images/newrelic-alerts.png)
 
-A more in deph explanation of how New Relic Alerts work can be found [here](https://docs.newrelic.com/docs/alerts/new-relic-alerts/getting-started/new-relic-alerts-concepts-workflow).
+A more in-depth explanation of how New Relic Alerts work can be found [here](https://docs.newrelic.com/docs/alerts/new-relic-alerts/getting-started/new-relic-alerts-concepts-workflow).
 
 ## How it works on Ocim
 
