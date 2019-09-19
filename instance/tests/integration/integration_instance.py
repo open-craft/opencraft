@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+import logging
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -48,6 +49,8 @@ from instance.tasks import spawn_appserver
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
+
+logger = logging.getLogger(__name__)
 
 # TEST_GROUP should be an integer. This will skip any test that is not part of the group value.
 # If it's None every integration test will run.
@@ -305,6 +308,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
+        print("Some debug info:")
+        print(os.environ)
+        logger.warning("Same info through logger. Environ:")
+        logger.warning(os.environ)
+        logger.info("------")
+
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
