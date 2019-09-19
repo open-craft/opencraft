@@ -24,7 +24,7 @@ Ocim automatically sets up monitoring for each instance, and creates all the nec
 
 Additionally, the monitoring set up methods can be called manually to disable monitoring or rebuild NewRelic assets changed due to changes in configuration.
 
-* `.enable_monitoring()`: Set up resources on New Relic to enable monitoring, if the resources already exist, don't change them. The resources here correspond to a URL to be monitored and a list of addresses to be notified. As long as those do not change, the existing resources will be left unmodified. If the URL is changed, the existing monitors for the old URL are not automatically removed - this is important because we don't want to delete those automatically to avoid issues.
+* `.enable_monitoring()`: Sets up resources on New Relic to enable monitoring, if the resources already exist, don't change them. The resources here correspond to a URL to be monitored and a list of addresses to be notified. As long as those do not change, the existing resources will be left unmodified. If the URL is changed, the existing monitors for the old URL are not automatically removed - this is important because we don't want to delete those automatically, to avoid issues.
 * `.disable_monitoring()`: Deprovision all resources on New Relics related to that instance, including Alert Policies, Alert Conditions, Notification channels (if not shared) and Synthetics monitors. This is used when an instance is archived and might be useful for debugging.
 
 ## Deploying production instances
