@@ -116,7 +116,6 @@ class LoadBalancedInstanceTestCase(TestCase):
         self.assertEqual(LoadBalancedInstance.get_managed_domains(None), [])
         self.assertEqual(LoadBalancedInstance.get_load_balanced_domains(None), [])
 
-    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_services
     def test_reconfigure_load_balancer(self, mock_run_playbook):
         """

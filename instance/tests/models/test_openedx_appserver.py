@@ -853,7 +853,6 @@ class EmailMixinInstanceTestCase(TestCase):
 
     @responses.activate
     @patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock)
-    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)  # FIXME does this fix anything?¿¿¿¿
     def test_heartbeat_active_succeeds(self, mock_public_ip):
         """ Test that heartbeat_active method returns true when request to heartbeat is 200"""
         appserver = make_test_appserver()

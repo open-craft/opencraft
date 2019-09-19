@@ -351,7 +351,6 @@ class OpenEdXMonitoringTestCase(TestCase):
             e.delete()
 
     @responses.activate
-    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)  # FIXME does this fix anything here?
     def test_disable_monitoring_monitors_not_found(self):
         """
         Test that the `disable_monitoring` method removes any New Relic
