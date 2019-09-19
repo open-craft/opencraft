@@ -3,6 +3,8 @@ Monitoring
 
 New Relic is a SaaS tool for monitoring and alerting. Ocim supports using `New Relic Synthetics` and `New Relic Alerts` for monitoring the instances.
 
+On Synthetics, monitors can be created to the check liveness of an endpoint/URL by periodically ping it. If the pre-defined, expected response is not received, the monitor can be configured using `New Relic Alerts` to send out alert notifications through various channels including, but not limited to, email.
+
 On Alerts, policies can be created to control the alerting behaviour. Alerts has two main components:
 * **Alert Policies**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. The incident preference is used to configure how an incident is created - per error, per condition or per policy and the notification channels are the various modes of sending out alert notifications like email, PagerDuty etc. A policy should be created before adding conditions to it.
 * **Alert Conditions**: An alert condition is a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
@@ -37,10 +39,11 @@ Ocim automatically creates an email notification channel for each email address 
 
 ## Troubleshooting
 
-Most issues with Ocim monitored instances can be fixed by running `.enable_monitoring()`, but in case that's failing you can use the following checklist to help you debug the issue:
+In the case that the monitoring is failing or ends up incorreclty configured, you can use the following checklist to help you debug the issue:
 
-1. Check if the monitored endpoints are working as expected and available from the internet. For LMS, the monitoring address is `/heartbeat?extended`. The return of the page will point out if there's any issue with the instance.
+1. Check if the monitored endpoints are working as expected and available from the internet.
 2. Check if Ocim has valid credentials on `.env` configuration file.
-3. Check if the Synthetics monitor is correctly configured and enabled.
-4. Check if the monitor has a Alert Condition and Alert Policy associated.
-5. Verify that there's at least 1 notification channel added to the alert policy and that the channel is receiving notifications.
+3. Try to reprovision monitoring resources with `.enable_monitoring()` and `.disable_monitoring()` on the failing instance.
+4. Check if the Synthetics monitor is correctly configured and enabled.
+5. Check if the monitor has a Alert Condition and Alert Policy associated.
+6. Verify that there's at least 1 notification channel added to the alert policy and that the channel is receiving notifications.
