@@ -49,8 +49,6 @@ from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
 
-logger = logging.getLogger(__name__)
-
 # TEST_GROUP should be an integer. This will skip any test that is not part of the group value.
 # If it's None every integration test will run.
 TEST_GROUP = os.getenv('TEST_GROUP')
