@@ -69,7 +69,8 @@ jobs:
             echo Running consul agent to connect to the integration consul server
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
             sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
-            consul agent -retry-join haproxy-integration.net.opencraft.hosting
+            mkdir -p /var/lib/consul
+            consul agent -retry-join haproxy-integration.net.opencraft.hosting -data-dir /var/lib/consul
           background: true
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
