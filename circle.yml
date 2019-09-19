@@ -90,9 +90,10 @@ jobs:
           no_output_timeout: 2h
           environment:
             ANSIBLE_HOST_KEY_CHECKING: False
-            CONSUL_SERVERS: testingwhetherthevariableworkshere-haproxy-integration.net.opencraft.hosting
-            CONSUL_ENABLED: true
-            DISABLE_LOAD_BALANCER_CONFIGURATION: true
+            # these variables, if used, overwrite the settings. But we don't need them here
+            # CONSUL_SERVERS: testingwhetherthevariableworkshere-haproxy-integration.net.opencraft.hosting
+            # CONSUL_ENABLED: true
+            # DISABLE_LOAD_BALANCER_CONFIGURATION: true
       - persist_to_workspace:
           root: /tmp
           paths:

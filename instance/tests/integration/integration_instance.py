@@ -24,7 +24,6 @@ Instance - Integration Tests
 import os
 import re
 import time
-import logging
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -308,11 +307,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
-        print("Some debug info:")
-        print(os.environ)
-        logger.warning("Same info through logger. Environ:")
-        logger.warning(os.environ)
-        logger.info("------")
+        print("Some debug info, looking for consul:")
+        print(os.environ['CONSUL_SERVERS'])
+        print("(it has the right value here)")
 
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
