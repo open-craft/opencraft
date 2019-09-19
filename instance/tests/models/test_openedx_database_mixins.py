@@ -638,6 +638,7 @@ class RabbitMQInstanceTestCase(TestCase):
         ('DELETE', ['permissions', '/some_vhost', 'testuser'], '/api/permissions/%2Fsome_vhost/testuser')
     )
     @ddt.unpack
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)  # FIXME does this fix anything here?
     def test_rabbitmq_request(self, method, url_parts, expected_url):
         """
         Test to make sure the _rabbitmq_request parameters form the correct URLs
@@ -660,10 +661,11 @@ class RabbitMQInstanceTestCase(TestCase):
         )
 
     @responses.activate
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)  # FIXME does this fix anything?¿¿¿¿
     def test_provision_rabbitmq(self):
         """
         Record the calls to the RabbitMQ API and make sure a new vhost along with
-        two new users are created during provision and deleted during deprobision.
+        two new users are created during provision and deleted during deprovision.
 
         The use of `responses.RequestsMock` raises an exception during context deconstruction
         if any of the URLs added to the `responses` object aren't ever called. Also,

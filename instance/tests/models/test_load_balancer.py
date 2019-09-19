@@ -119,6 +119,7 @@ class LoadBalancingServerTest(TestCase):
     @patch("instance.ansible.poll_streams")
     @patch("instance.ansible.run_playbook")
     @patch('instance.models.load_balancer.LoadBalancingServer.get_instances', return_value=mock_instances())
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_deconfigure(self, mock_get_instances, mock_run_playbook, mock_poll_streams):
         """
         Test that the deconfigure() method triggers a playbook run.
