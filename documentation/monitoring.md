@@ -33,7 +33,7 @@ For production instances, some manual setup is required to alert to other notifi
 
 1. Using Django Admin interface, go to the OpenEdXInstance model and find the instance you want to add monitoring to.
 2. Add additional monitoring emails to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
-3. Apply the New Relic configuration by redeploying the instance (click on `Spawn new appserver` button on the instance page).
+3. Apply the New Relic configuration by redeploying the instance (click on `Spawn new appserver` button on the instance page) and activating it after it is successfully provisioned.
 
 ## Troubleshooting
 
