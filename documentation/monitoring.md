@@ -5,7 +5,7 @@ New Relic is a SaaS tool for monitoring and alerting. Ocim supports using `New R
 
 On Alerts, policies can be created to control the alerting behaviour. Alerts has two main components:
 * **Alert Policies**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. The incident preference is used to configure how an incident is created - per error, per condition or per policy and the notification channels are the various modes of sending out alert notifications like email, PagerDuty etc. A policy should be created before adding conditions to it.
-* **Alert Conditions**: its a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
+* **Alert Conditions**: An alert condition is a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
 
 Each **Alert Policy** contains one or more **Alert Conditions** that can be configured to modify the alerting behaviour.
 
