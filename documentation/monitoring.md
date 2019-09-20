@@ -34,7 +34,7 @@ Additionally, the `.enable_monitoring()` and `.disable_monitoring()` methods of 
 Ocim automatically creates an email notification channel for each email address in `settings.ADMINS` and adds them to the alert policies of all the active instances. If additional email addresses have to be alerted for the incidents related to an instance, the following manual steps will be required.
 
 1. Using the Django Admin interface, go to the `OpenEdXInstance` model and find the instance you want to update the monitoring addresses of.
-2. Add additional monitoring emails to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
+2. Add the email addresses to the `additional_monitoring_emails` field and save the model. The field takes in an array of strings with valid email addresses.
 3. Apply the New Relic configuration by redeploying the instance (click on `Spawn new appserver` button on the instance page) and activating it after it is successfully provisioned.
 
 ## Troubleshooting
