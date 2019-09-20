@@ -456,6 +456,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @ddt.data(False, True)
     @patch_services
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_get_load_balancer_configuration(self, mocks, enable_prefix_domains_redirect):
         """
         Test that the load balancer configuration gets generated correctly.
