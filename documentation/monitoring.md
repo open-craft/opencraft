@@ -3,7 +3,7 @@ Monitoring
 
 New Relic is a SaaS tool for monitoring and alerting. Ocim supports using `New Relic Synthetics` and `New Relic Alerts` for monitoring the instances.
 
-On Synthetics, monitors can be created to the check liveness of an endpoint/URL by periodically ping it. If the pre-defined, expected response is not received, the monitor can be configured using `New Relic Alerts` to send out alert notifications through various channels including, but not limited to, email.
+On Synthetics, monitors can be created to the check liveness of an endpoint/URL by periodically pinging it. If the pre-defined, expected response is not received, the monitor can be configured using `New Relic Alerts` to send out alert notifications through various channels including, but not limited to, email.
 
 On Alerts, policies can be created to control the alerting behaviour. Alerts has two main components:
 * **Alert Policies**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. The incident preference is used to configure how an incident is created - per error, per condition or per policy and the notification channels are the various modes of sending out alert notifications like email, PagerDuty etc. A policy should be created before adding conditions to it.
