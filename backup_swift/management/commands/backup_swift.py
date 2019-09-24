@@ -31,5 +31,4 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        self.logger.warning('SWIFT storage is not maintained and will be dropped in a future version.')
         do_backup_swift()
