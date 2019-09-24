@@ -18,6 +18,8 @@
 #
 """
 AppConfig for the Backup Swift app
+
+DEPRECATED: Remove this on next code cleanup
 """
 
 from django.apps import AppConfig
