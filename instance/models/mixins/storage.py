@@ -181,6 +181,7 @@ class S3BucketInstanceMixin(models.Model):
             ' When set empty, the bucket is created in the default region us-east-1.'
         )
     )
+    s3_provisioned = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -451,6 +452,8 @@ class S3BucketInstanceMixin(models.Model):
 
         self._update_iam_policy()
         self._create_bucket(location=self.s3_region)
+        self.s3_provisioned = True
+        self.save()
 
     def _get_bucket_objects(self):
         """
@@ -488,6 +491,7 @@ class S3BucketInstanceMixin(models.Model):
                 )
         else:
             self.s3_bucket_name = ""
+            self.s3_provisioned = False
             self.save()
 
         try:

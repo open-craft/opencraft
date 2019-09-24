@@ -259,7 +259,7 @@ OPENSTACK_PRODUCTION_INSTANCE_FLAVOR = env.json(
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
 # when Swift is enabled.
 
-INSTANCE_STORAGE_TYPE = env('INSTANCE_STORAGE_TYPE', default='swift')  # Keeping the previous behaviour for SWIFT_ENABLE
+INSTANCE_STORAGE_TYPE = env('INSTANCE_STORAGE_TYPE', default='s3')
 
 # SWIFT_ENABLE = env.bool('SWIFT_ENABLE', default=True)  # Not used any longer
 SWIFT_OPENSTACK_USER = env('SWIFT_OPENSTACK_USER', default=OPENSTACK_USER)
