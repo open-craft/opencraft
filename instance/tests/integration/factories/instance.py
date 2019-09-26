@@ -39,7 +39,7 @@ def _get_unused_id():
     Find an unused ID for Consul
     """
     while True:
-        i = randint(2 ** 30, 2 ** 32)
+        i = randint(2 ** 30, 2 ** 31)
         if not ConsulAgent(prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=i)).get(''):
             return i
 
