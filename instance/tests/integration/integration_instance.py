@@ -299,6 +299,14 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             expected_domain_names
         )
 
+    def _get_unused_id(self):
+        from random import randint
+        from instance.models.utils import ConsulAgent
+        while True:
+            i = randint(2 ** 30, 2 ** 32)
+            if not ConsulAgent(prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=i)).get(''):
+                return i
+
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_spawn_appserver(self):
@@ -306,6 +314,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
         OpenEdXInstanceFactory(
+            id=self._get_unused_id(),
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
         )
