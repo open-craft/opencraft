@@ -460,9 +460,7 @@ class OpenEdXInstance(
 
         :return: A unique Key-Value prefix for this instance in Consul.
         """
-        prefix = settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=self.id)
-        self.logger.info('Consul prefix: {}'.format(prefix))
-        return prefix
+        return settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=self.id)
 
     def _generate_consul_metadata(self):
         """
