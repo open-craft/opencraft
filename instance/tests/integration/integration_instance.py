@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+from random import randint
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -39,6 +40,7 @@ import pymongo
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
+from instance.models.utils import ConsulAgent
 from instance.openstack_utils import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
@@ -300,8 +302,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         )
 
     def _get_unused_id(self):
-        from random import randint
-        from instance.models.utils import ConsulAgent
+        """
+        Find an unused ID for Consul
+        """
         while True:
             i = randint(2 ** 30, 2 ** 32)
             if not ConsulAgent(prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=i)).get(''):
