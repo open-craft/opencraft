@@ -39,9 +39,15 @@ def _get_unused_id():
     Find an unused ID for Consul
     """
     while True:
-        i = randint(2 ** 30, 2 ** 31)
-        if not ConsulAgent(prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=i)).get(''):
-            return i
+        try:
+            uid = randint(2 ** 30, 2 ** 31)
+            current = ConsulAgent(
+                prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=uid)
+            ).get('')
+            assert current is not None
+        except (ConnectionError, AssertionError):
+            # Returns when current is None or Consul unreachable
+            return uid
 
 
 # Classes #####################################################################
