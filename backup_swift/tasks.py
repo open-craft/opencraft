@@ -47,6 +47,7 @@ def do_backup_swift():
     """
     Perform full swift backup sequence.
     """
+    logger.warning('SWIFT storage is not maintained and will be dropped in a future version.')
 
     with filter_logger('swiftclient.service', filter_swift), filter_logger('swiftclient', filter_swift):
 
