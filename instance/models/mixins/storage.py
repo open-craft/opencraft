@@ -79,6 +79,7 @@ class StorageContainer(models.Model):
         abstract = True
 
 
+# TODO: Drop SWIFT related code on code cleanup
 class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
@@ -124,6 +125,7 @@ class SwiftContainerInstanceMixin(models.Model):
         Create the Swift containers if necessary.
         """
         if self.storage_type == self.SWIFT_STORAGE:
+            self.logger.warning('SWIFT storage is not maintained and will be dropped in a future version.')
             for container_name in self.swift_container_names:
                 openstack_utils.create_swift_container(
                     container_name,
