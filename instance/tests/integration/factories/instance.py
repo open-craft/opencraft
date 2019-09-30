@@ -45,7 +45,7 @@ def _get_unused_id():
                 prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=uid)
             ).get('')
             assert current is not None
-        except Exception:
+        except (ConnectionError, AssertionError):
             # Returns when current is None or Consul unreachable
             return uid
 
