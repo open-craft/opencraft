@@ -23,12 +23,25 @@ OpenEdXInstance model - Factories
 # Imports #####################################################################
 
 import uuid
+from random import randint
 
 import factory
 from factory.django import DjangoModelFactory
+from django.conf import settings
 
 from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.utils import ConsulAgent
+
+
+def _get_unused_id():
+    """
+    Find an unused ID for Consul
+    """
+    while True:
+        i = randint(2 ** 30, 2 ** 31)
+        if not ConsulAgent(prefix=settings.CONSUL_PREFIX.format(ocim=settings.OCIM_ID, instance=i)).get(''):
+            return i
 
 
 # Classes #####################################################################
@@ -56,6 +69,7 @@ class OpenEdXInstanceFactory(DjangoModelFactory):
                     lms_domain=generate_internal_lms_domain(sub_domain)
                 )
             )
+        kwargs['id'] = _get_unused_id()
         return super(OpenEdXInstanceFactory, cls).create(*args, **kwargs)
 
     name = factory.Sequence('Test Instance {}'.format)
