@@ -57,14 +57,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # EDXAPP_ENV_EXTRA as the other two overwrite this.
             "EDXAPP_CMS_ENV_EXTRA": {
                 "ADDL_INSTALLED_APPS": [
-                    "openedx.core.djangoapps.heartbeat",
                 ],
             },
             "EDXAPP_LMS_ENV_EXTRA": {
                 "ADDL_INSTALLED_APPS": [
-                    "openedx.core.djangoapps.heartbeat",
                 ],
                 "HEARTBEAT_EXTENDED_CHECKS": [
+                    # celery check is default, but we need to include it here
+                    # because we also add other extended checks
                     "openedx.core.djangoapps.heartbeat.default_checks.check_celery",
                 ],
             },
@@ -414,6 +414,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         else:
             forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
         template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
+
+        # master has djangoapps.heartbeat installed by default now.
+        # openedx <= ironwood requires this if celery check is included in
+        # heartbeat extended checks (which we add by default above)
+        if self.openedx_release != 'master':
+            hb_app = "openedx.core.djangoapps.heartbeat"
+            template["EDXAPP_CMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
+            template["EDXAPP_LMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
 
         return template
 
