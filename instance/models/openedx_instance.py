@@ -398,7 +398,7 @@ class OpenEdXInstance(
         Shut down this instance's app servers, mark it as archived and
         remove its metadata from Consul.
         """
-        ignore_errors = kwargs.pop('ignore_archive_errors', False)
+        ignore_errors = kwargs.pop('ignore_errors', False)
 
         self.logger.info('Archiving instance started.')
         self.disable_monitoring()
