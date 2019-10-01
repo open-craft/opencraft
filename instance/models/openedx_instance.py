@@ -398,11 +398,11 @@ class OpenEdXInstance(
         Shut down this instance's app servers, mark it as archived and
         remove its metadata from Consul.
         """
-        ignore_errors = kwargs.pop('ignore_errors', False)
+        ignore_errors = kwargs.pop('ignore_archive_errors', False)
 
         self.logger.info('Archiving instance started.')
         self.disable_monitoring()
-        self.remove_dns_records(ignore_errors=kwargs.pop('ignore_dns_errors', ignore_errors))
+        self.remove_dns_records(ignore_errors=ignore_errors)
         if self.load_balancing_server is not None:
             load_balancer = self.load_balancing_server
             self.load_balancing_server = None
@@ -444,7 +444,7 @@ class OpenEdXInstance(
 
         ignore_errors = kwargs.pop('ignore_errors', False)
 
-        self.archive(**kwargs)
+        self.archive(ignore_errors=kwargs.pop('ignore_archive_errors', ignore_errors))
         self.deprovision_mysql(ignore_errors=kwargs.pop('ignore_mysql_errors', ignore_errors))
         self.deprovision_mongo(ignore_errors=kwargs.pop('ignore_mongo_errors', ignore_errors))
         self.deprovision_swift()
