@@ -305,7 +305,7 @@ class MySQLInstanceTestCase(TestCase):
             return group_info
 
         # Load instance settings
-        db_vars = yaml.load(self.instance.get_database_settings())
+        db_vars = yaml.load(self.instance.get_database_settings(), Loader=yaml.SafeLoader)
 
         # Check instance settings for common users
         self.check_common_users(self.instance, db_vars)

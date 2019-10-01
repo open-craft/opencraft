@@ -192,4 +192,4 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.configuration_version,
                          'named-release/elder-fromwatchedfork')
         self.assertEqual(instance.openedx_release, 'ginkgo.8')
-        self.assertEqual(yaml.load(instance.configuration_extra_settings), {'PHRASE': 'Hello'})
+        self.assertEqual(yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader), {'PHRASE': 'Hello'})

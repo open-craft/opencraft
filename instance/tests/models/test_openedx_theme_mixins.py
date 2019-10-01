@@ -82,7 +82,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
         ansible_theme_vars = instance.get_theme_settings()
         ansible_vars = appserver.configuration_settings
         for variables in (ansible_theme_vars, ansible_vars):
-            parsed_vars = yaml.load(variables) or {}
+            parsed_vars = yaml.load(variables, Loader=yaml.SafeLoader) or {}
             expected_settings = {
                 'SIMPLETHEME_ENABLE_DEPLOY': True,
                 'SIMPLETHEME_SASS_OVERRIDES': [
@@ -139,7 +139,7 @@ class OpenEdXThemeMixinTestCase(TestCase):
         ansible_theme_vars = instance.get_theme_settings()
         ansible_vars = appserver.configuration_settings
         for variables in (ansible_theme_vars, ansible_vars):
-            parsed_vars = yaml.load(variables) or {}
+            parsed_vars = yaml.load(variables, Loader=yaml.SafeLoader) or {}
             self.assertNotIn('SIMPLETHEME_ENABLE_DEPLOY', parsed_vars)
             self.assertNotIn('SIMPLETHEME_SASS_OVERRIDES', parsed_vars)
             self.assertNotIn('EDXAPP_DEFAULT_SITE_THEME', parsed_vars)

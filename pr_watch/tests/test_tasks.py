@@ -87,7 +87,9 @@ class TasksTestCase(TestCase):
         self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
         self.assertEqual(instance.edx_platform_commit, '7' * 40)
         self.assertEqual(instance.openedx_release, 'master')
-        self.assertEqual(yaml.load(instance.configuration_extra_settings), yaml.load(ansible_extra_settings))
+        self.assertEqual(
+            yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader),
+            yaml.load(ansible_extra_settings, Loader=yaml.SafeLoader))
         self.assertEqual(instance.configuration_source_repo_url, 'https://github.com/open-craft/configuration')
         self.assertEqual(instance.configuration_version, 'named-release/elder')
         self.assertEqual(
@@ -249,7 +251,9 @@ class TasksTestCase(TestCase):
             self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
             self.assertEqual(instance.edx_platform_commit, '7' * 40)
             self.assertEqual(instance.openedx_release, 'ginkgo.8') # from WatchedFork
-            self.assertEqual(yaml.load(instance.configuration_extra_settings), pr['expected_settings'])
+            self.assertEqual(
+                yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader),
+                pr['expected_settings'])
             # PR settings have precedence and they overwrote the ones in the WatchedFork
             self.assertEqual(instance.configuration_source_repo_url,
                              'https://github.com/open-craft/configuration')

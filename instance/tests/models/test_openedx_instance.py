@@ -242,7 +242,7 @@ class OpenEdXInstanceTestCase(TestCase):
             'XQUEUE_SETTINGS: openstack_settings'
         }
         self.assertTrue(storage_settings <= set(appserver.configuration_storage_settings.split('\n')))
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
@@ -266,7 +266,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='test.newrelic')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC'], False)
         self.assertIs(configuration_vars['COMMON_ENABLE_NEWRELIC_APP'], True)
         self.assertEqual(configuration_vars['COMMON_ENVIRONMENT'], 'opencraft')
@@ -282,7 +282,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='test.appserver_services')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_RABBITMQ'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_DISCOVERY'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_ECOMMERCE'], False)
@@ -304,7 +304,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_LMS_BASE'], instance.external_lms_domain)
         self.assertEqual(configuration_vars['EDXAPP_PREVIEW_LMS_BASE'], instance.external_lms_preview_domain)
@@ -409,7 +409,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 1)
 
         appserver = instance.appserver_set.get(pk=appserver_id)
-        ansible_vars = yaml.load(appserver.configuration_settings)
+        ansible_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         for setting in ('EDXAPP_MYSQL_USER', 'EDXAPP_MONGO_PASSWORD',
                         'EDXAPP_MONGO_USER', 'EDXAPP_MONGO_PASSWORD',
                         'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
@@ -424,7 +424,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='test.forum_api_key')
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         api_key = configuration_vars['EDXAPP_COMMENTS_SERVICE_KEY']
         self.assertIsNot(api_key, '')
         self.assertIsNotNone(api_key)

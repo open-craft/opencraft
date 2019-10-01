@@ -78,7 +78,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         Test the YAML settings returned by SecretKeyInstanceMixin.
         """
         instance = OpenEdXInstanceFactory()
-        secret_key_settings = yaml.load(instance.get_secret_key_settings())
+        secret_key_settings = yaml.load(instance.get_secret_key_settings(), Loader=yaml.SafeLoader)
 
         # Test that all keys are hex-encoded strings,
         # except for the JWK keys, wich must be valid JSON strings

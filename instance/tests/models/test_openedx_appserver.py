@@ -186,7 +186,7 @@ class OpenEdXAppServerTestCase(TestCase):
             # Check user with non existant Github hande is removed
             self.assertEqual(len(appserver.admin_users) - 1, len(expected_admin_users))
 
-            ansible_settings = yaml.load(appserver.configuration_settings)
+            ansible_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
             self.assertCountEqual(ansible_settings['COMMON_USER_INFO'], [
                 {'name': name, 'github': True, 'type': 'admin'} for name in expected_admin_users
             ])
@@ -299,7 +299,7 @@ class OpenEdXAppServerTestCase(TestCase):
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
         appserver = make_test_appserver(instance)
-        ansible_settings = yaml.load(appserver.lms_user_settings)
+        ansible_settings = yaml.load(appserver.lms_user_settings, Loader=yaml.SafeLoader)
         self.assertEqual(len(ansible_settings['django_users']), 1)
         self.assertEqual(ansible_settings['django_users'][0]['username'], user.username)
         self.assertEqual(ansible_settings['django_groups'], [])
@@ -321,7 +321,7 @@ class OpenEdXAppServerTestCase(TestCase):
             external_lms_domain='lms.myinstance.org'
         )
         appserver = make_test_appserver(instance)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_HOST'], 'smtp.myhost.com')
         self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_PORT'], '2525')
         self.assertEqual(configuration_vars['POSTFIX_QUEUE_EXTERNAL_SMTP_USER'], 'smtpuser')
@@ -339,7 +339,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(sub_domain='test.no.postfix.queue')
         appserver = make_test_appserver(instance)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_HOST', configuration_vars)
         self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_PORT', configuration_vars)
         self.assertNotIn('POSTFIX_QUEUE_EXTERNAL_SMTP_USER', configuration_vars)
@@ -353,7 +353,7 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         instance = OpenEdXInstanceFactory(sub_domain='youtube.apikey')
         appserver = make_test_appserver(instance)
-        configuration_vars = yaml.load(appserver.configuration_settings)
+        configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
 
     @patch_services
