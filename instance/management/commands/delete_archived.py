@@ -102,8 +102,10 @@ class Command(BaseCommand):
         try:
             self.log('Deleting {}...'.format(ref.instance.internal_lms_domain if ref.instance else ref.name))
             if ref.instance:
-                # Gandi domain not found error is ignored
-                ref.instance.delete(ignore_dns_errors=True)
+                ref.instance.delete(
+                    ignore_dns_errors=True,  # # Gandi domain not found error is ignored
+                    ref_already_deleted=True  # Manually removing it afterwards
+                )
             ref.delete(instance_already_deleted=True)
         except Exception:  # noqa
             tb = traceback.format_exc()
