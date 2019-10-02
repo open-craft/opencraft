@@ -301,7 +301,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         confvars = self._get_configuration_variables()
         for attr_name in self.CONFIGURATION_EXTRA_FIELDS:
             additional_vars = getattr(self, attr_name)
-            additional_vars = yaml.load(additional_vars) if additional_vars else {}
+            additional_vars = yaml.load(additional_vars, Loader=yaml.SafeLoader) if additional_vars else {}
             confvars = ansible.dict_merge(confvars, additional_vars)
         vars_str = yaml.dump(confvars, default_flow_style=False)
         self.logger.debug('Vars.yml:\n%s', vars_str)

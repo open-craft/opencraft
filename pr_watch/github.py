@@ -203,7 +203,7 @@ class PR:
 
         The name may be a dot-separated path to retrieve nested settings.
         """
-        extra_settings_dict = yaml.load(self.extra_settings) or {}
+        extra_settings_dict = yaml.load(self.extra_settings, Loader=yaml.SafeLoader) or {}
         try:
             return functools.reduce(operator.getitem, name.split('.'), extra_settings_dict)
         except KeyError:
