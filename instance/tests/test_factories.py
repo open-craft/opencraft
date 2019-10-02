@@ -78,8 +78,8 @@ class FactoriesTestCase(TestCase):
         self.assertEqual(instance.internal_studio_domain, 'studio.{}.example.com'.format(sub_domain))
         self.assertEqual(instance.configuration_version, configuration_version)
         self.assertEqual(instance.openedx_release, openedx_release)
-        extra_settings = yaml.load(instance.configuration_extra_settings)
-        expected_extra_settings = yaml.load(configuration_extra_settings)
+        extra_settings = yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader)
+        expected_extra_settings = yaml.load(configuration_extra_settings, Loader=yaml.SafeLoader)
         self.assertEqual(extra_settings, expected_extra_settings)
 
     def test_instance_factory(self):

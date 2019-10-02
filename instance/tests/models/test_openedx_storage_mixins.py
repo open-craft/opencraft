@@ -56,7 +56,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
         """
         Check the the given yaml string includes the expected Open edX S3-related vars/values
         """
-        parsed_vars = yaml.load(yaml_vars_string)
+        parsed_vars = yaml.load(yaml_vars_string, Loader=yaml.SafeLoader)
         self.assertEqual(parsed_vars['AWS_ACCESS_KEY_ID'], 'test-s3-access-key')
         self.assertEqual(parsed_vars['AWS_SECRET_ACCESS_KEY'], 'test-s3-secret-access-key')
 
