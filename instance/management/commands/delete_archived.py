@@ -97,11 +97,16 @@ class Command(BaseCommand):
         """
         Deletes a single InstanceReference and associated OpenEdXInstance, if
         it exists. If it fails for any reason, handle the exception and log it
-        so other the instances can proceed.
+        so the deletion of other instances can proceed.
         """
         try:
             self.log('Deleting {}...'.format(ref.instance.internal_lms_domain if ref.instance else ref.name))
-            ref.delete(instance_already_deleted=ref.instance is None)
+            if ref.instance:
+                ref.instance.delete(
+                    ignore_archive_errors=True,  # Instance already archived
+                    ref_already_deleted=True  # Manually removing it afterwards
+                )
+            ref.delete(instance_already_deleted=True)
         except Exception:  # noqa
             tb = traceback.format_exc()
             message = 'Failed to delete {}.'.format(ref.name)
