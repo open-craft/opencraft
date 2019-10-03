@@ -51,14 +51,24 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # edxapp
             "EDXAPP_PLATFORM_NAME": self.instance.name,
             "EDXAPP_SITE_NAME": self.instance.domain,
+
+            # Available as ENV_TOKENS in the django setting files.
+            # Note: use EDXAPP_CMS_ENV_EXTRA and/or EDXAPP_LMS_ENV_EXTRA; don't use
+            # EDXAPP_ENV_EXTRA as the other two overwrite this.
+            "EDXAPP_CMS_ENV_EXTRA": {
+                "ADDL_INSTALLED_APPS": [
+                    "openedx.core.djangoapps.heartbeat",
+                ],
+            },
             "EDXAPP_LMS_ENV_EXTRA": {
                 "ADDL_INSTALLED_APPS": [
                     "openedx.core.djangoapps.heartbeat",
                 ],
                 "HEARTBEAT_EXTENDED_CHECKS": [
-                    "lms.lib.comment_client.utils.check_forum_heartbeat",
+                    "openedx.core.djangoapps.heartbeat.default_checks.check_celery",
                 ],
             },
+
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
@@ -179,11 +189,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_LANG": 'en_US.UTF-8',
             "EDXAPP_TIME_ZONE": 'UTC',
 
-            # Available as ENV_TOKENS in the django setting files.
-            "EDXAPP_ENV_EXTRA": {
-                "LANGUAGE_CODE": 'en',
-            },
-
             # Features
             "EDXAPP_FEATURES": {
                 "ALLOW_ALL_ADVANCED_COMPONENTS": True,
@@ -223,15 +228,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 # "INDIVIDUAL_DUE_DATES": True,
             },
 
-            # Gunicorn workers
-            # By default, the number of workers is num_cores*4 for LMS, num_cores*2 for CMS,
-            # which turns out to be too much.
-            # 06/2019 update: We've done some testing and realized using 14 workers is OK
-            # and it helps to support more concurrent requests as well as a more efficient
-            # use of the server's resources.
+            # Gunicorn workers - safe defaults for a 1 CPU, 4GB RAM instance.
+            # This should be changed to use worker_core_mult to scale num
+            # workers with cpu count.
             "EDXAPP_WORKERS": {
-                "lms": 14,
-                "cms": 7,
+                "lms": 3,
+                "cms": 2,
             },
 
             # Restart workers regularly to work around a memory leaks.
@@ -240,16 +242,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # e.g if the instance receives an average of around 20000 requests per day,
             # with 10% for static assets, restarting after 10000 requests means
             # restarting each of the 3 LMS workers about every .8 days.
-            # 06/2019 Update: By incrementing the workers number we have more concurrent
-            # processes helping out with the requests. We can lower this number to have
-            # the workers "refresh" the memory more often.
-            # Note: There's also an `EDXAPP_LMS_MAX_REQUEST_JITTER` variable which will make
-            # gunicorn use a random number between 0 and the given value to restart each
-            # worker process/thread. By using jitter vs a fixed number of requests
-            # we avoid potentially restarting every worker process/thread at the same time.
-            # Jitter only works on gunicorn 9.2+. By default EDXAPP_LMS_MAX_REQ will be used
-            # until explicitly set to null.
-            "EDXAPP_LMS_MAX_REQ": 1000,
+            "EDXAPP_LMS_MAX_REQ": 5000,
 
             # Studio/CMS handles ~5% of the LMS requests with only 2 workers.
             # Restart them every 1-2 days.
@@ -413,6 +406,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {
                 "PRIVACY": self.privacy_policy_url,
             }
+
+        # use the new forum heartbeat path if on master. Note: will need to
+        # update this after the release after ironwood has landed.
+        if self.openedx_release == 'master':
+            forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
+        else:
+            forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
+        template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
         return template
 

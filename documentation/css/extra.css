@@ -1,0 +1,8 @@
+.codehilite code, .codehilite pre{
+    color:#3F3F3F;
+    background-color:#F7F7F7;
+    overflow: auto;
+    box-sizing: border-box;
+    padding: 1em;
+    border: 1px dotted  #CCC;
+}

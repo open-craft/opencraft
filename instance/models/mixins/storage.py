@@ -79,6 +79,7 @@ class StorageContainer(models.Model):
         abstract = True
 
 
+# TODO: Drop SWIFT related code on code cleanup
 class SwiftContainerInstanceMixin(models.Model):
     """
     Mixin to provision Swift containers for an instance.
@@ -124,6 +125,7 @@ class SwiftContainerInstanceMixin(models.Model):
         Create the Swift containers if necessary.
         """
         if self.storage_type == self.SWIFT_STORAGE:
+            self.logger.warning('SWIFT storage is not maintained and will be dropped in a future version.')
             for container_name in self.swift_container_names:
                 openstack_utils.create_swift_container(
                     container_name,
@@ -255,7 +257,12 @@ class S3BucketInstanceMixin(models.Model):
         """
         The custom domain name built based on the bucket name.
         """
-        return "{}.s3.amazonaws.com".format(self.s3_bucket_name)
+        # If s3_region is empty, boto3 will use S3 default region 'N. Virginia (us-east-1)'
+        # Reference: https://docs.aws.amazon.com/general/latest/gr/rande.html
+        return "{}.s3.{}.amazonaws.com".format(
+            self.s3_bucket_name,
+            self.s3_region or 'us-east-1'
+        )
 
     @property
     def iam(self):

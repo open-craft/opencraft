@@ -1,0 +1,18 @@
+site_name: OpenCraft Instance Manager Documentation
+site_dir: build
+docs_dir: documentation
+theme: readthedocs
+repo_url: https://github.com/open-craft/opencraft
+markdown_extensions:
+  - codehilite
+extra_css:
+  - css/extra.css
+nav:
+  - index.md
+  - usage.md
+  - installation.md
+  - configuration.md
+  - users.md
+  - provisioning-sandboxes.md
+  - monitoring.md
+  - howtos.md

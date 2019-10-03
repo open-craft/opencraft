@@ -334,6 +334,7 @@ class Command(BaseCommand):  # pragma: no cover
         """
         Finds all instances and migrates them.
         """
+        self.logger.warning('SWIFT storage is not maintained and will be dropped in a future version.')
         self.options = options
 
         # instances = OpenEdXInstance.objects.filter(storage_type='swift')

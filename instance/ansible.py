@@ -50,8 +50,8 @@ def load_yaml(string):
     """
     if string.startswith('@'):
         with open(string[1:]) as f:
-            return yaml.load(f)
-    return yaml.load(string)
+            return yaml.load(f, Loader=yaml.SafeLoader)
+    return yaml.load(string, Loader=yaml.SafeLoader)
 
 
 def yaml_merge(yaml_str1, yaml_str2):
@@ -61,8 +61,8 @@ def yaml_merge(yaml_str1, yaml_str2):
     if not yaml_str2:
         return yaml_str1
 
-    dict1 = yaml.load(yaml_str1) or {}
-    dict2 = yaml.load(yaml_str2) or {}
+    dict1 = yaml.load(yaml_str1, Loader=yaml.SafeLoader) or {}
+    dict2 = yaml.load(yaml_str2, Loader=yaml.SafeLoader) or {}
     result_dict = dict_merge(dict1, dict2)
 
     return yaml.dump(result_dict)

@@ -250,7 +250,7 @@ class Instance(ValidateModelMixin, models.Model):
         # TODO: Filter out log entries for which the user doesn't have view rights
         return reversed(list(entries[:limit]))
 
-    def archive(self):
+    def archive(self, **kwargs):
         """
         Mark this instance as archived.
         Subclasses should override this to shut down any active resources being used by this instance.

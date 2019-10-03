@@ -11,7 +11,7 @@ GitHub pull requests.
 
 It also includes a web console where you can create new servers and check their status and configuration.
 
-![Ocim's main screen](documentation/ocim_main_screen.png)
+![Ocim's main screen](documentation/images/ocim_main_screen.png)
 
 Table of Contents
 -----------------
@@ -857,6 +857,15 @@ low-priority queue.  You can do that by prepending ``HUEY_QUEUE_NAME=opencraft_l
 before the redeployment command. For example:
 
     HUEY_QUEUE_NAME=opencraft_low_priority make manage "instance_redeploy ..."
+
+**`delete_archived`**: Deletes archived instances older than the given number
+of months. For example, to delete instances archived more than one year ago:
+
+    make manage "delete_archived 12"
+
+This command will actually check when the InstanceReference model was last
+modified, so it might miss archived instances that were modified after being
+archived.
 
 Databases
 ---------

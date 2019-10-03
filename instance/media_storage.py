@@ -17,16 +17,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-AppConfig for the Backup Swift app
-
-DEPRECATED: Remove this on next code cleanup
+Media storage classes
 """
 
-from django.apps import AppConfig
+from django.conf import settings
+from storages.backends.s3boto3 import S3Boto3Storage
 
 
-class BackupSwiftConfig(AppConfig):
+class S3MediaStorage(S3Boto3Storage):  # pylint: disable=abstract-method
     """
-    AppConfig for the Backup Swift app
+    A custom media storage backend for django-storages extending the S3Boto3Storage backend.
     """
-    name = 'backup_swift'
+    access_key = settings.MEDIAFILES_AWS_S3_ACCESS_KEY_ID
+    secret_key = settings.MEDIAFILES_AWS_S3_SECRET_ACCESS_KEY
+    bucket_name = settings.MEDIAFILES_AWS_S3_BUCKET_NAME
+    region_name = settings.MEDIAFILES_AWS_S3_REGION_NAME
+    signature_version = settings.MEDIAFILES_AWS_S3_SIGNATURE_VERSION
+    querystring_expire = settings.MEDIAFILES_AWS_S3_QUERYSTRING_EXPIRE
+    file_overwrite = False
+    default_acl = 'private'

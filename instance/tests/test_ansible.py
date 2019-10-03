@@ -71,7 +71,7 @@ class YAMLTestCase(TestCase):
         Merge of two yaml strings with overlapping variables
         """
         yaml_result_str = ansible.yaml_merge(self.yaml_str1, self.yaml_str2)
-        self.assertEqual(yaml.load(yaml_result_str), {
+        self.assertEqual(yaml.load(yaml_result_str, Loader=yaml.SafeLoader), {
             'testa': 'firsta with unicode «ταБЬℓσ»',
             'testb': 'secondb with unicode «ταБЬℓσ2»',
             'testc': 'secondc',

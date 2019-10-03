@@ -21,6 +21,7 @@ django-libsass==0.7
 django-redis==4.10.0
 django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
+django-storages==1.7.1
 django-zurb-foundation==5.5.0
 djangorestframework==3.9.4
 docutils==0.14
@@ -51,7 +52,7 @@ pep257==0.7.0
 pep8==1.7.1
 pep8-naming==0.4.1
 Pillow==6.0.0
-pip-tools==3.4.0
+pip-tools==4.1.0
 prospector==1.1.4
 psycopg2==2.8.3
 pycodestyle==2.3.1
