@@ -384,7 +384,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             out_lines[0]
         )
         self.assertIn('"Integration - test_spawn_appserver"', out_lines[1])
-        self.assertIn('"betatest@example.com"', out_lines[1])
+        self.assertIn('"test@example.com"', out_lines[1])
         self.assertNotIn('N/A', out_lines[1])
 
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
