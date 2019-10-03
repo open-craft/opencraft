@@ -383,7 +383,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             '"Age (Days)"',
             out_lines[0]
         )
-        self.assertIn('"Integration - test_activity_csv"', out_lines[1])
+        self.assertIn('"Integration - test_spawn_appserver"', out_lines[1])
         self.assertIn('"betatest@example.com"', out_lines[1])
         self.assertNotIn('N/A', out_lines[1])
 
