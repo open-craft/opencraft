@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/python:3.5-stretch-node-browsers
+      - image: circleci/python:3.6-stretch-node-browsers
         environment:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
@@ -89,7 +89,7 @@ jobs:
               - coverage
   coverage:
     docker:
-      - image: circleci/python:3.5-stretch-node
+      - image: circleci/python:3.6-stretch-node
     steps:
       - checkout
       - restore_cache:
@@ -121,7 +121,7 @@ jobs:
               if [ -e /tmp/workspace/coverage/text/coverage.txt ]; then cat /tmp/workspace/coverage/text/coverage.txt; fi
   cleanup:
     docker:
-      - image: circleci/python:3.5-stretch
+      - image: circleci/python:3.6-stretch
         environment:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           DJANGO_SETTINGS_MODULE: 'opencraft.settings'

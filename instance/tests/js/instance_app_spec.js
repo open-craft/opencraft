@@ -54,6 +54,15 @@ describe('Instance app', function () {
         $timeout.flush();
     };
 
+    function getBroadcastMessage(data) {
+        // Convenience method to return the message in the appropriate structure for broadcast.
+        return {
+            data: JSON.stringify(
+                {type: data.type, message: data}
+            )
+        };
+    }
+
     beforeEach(function() {
         angular.mock.module('restangular');
         angular.mock.module('InstanceApp');
@@ -96,6 +105,15 @@ describe('Instance app', function () {
             $scope = rootScope;
         });
 
+        describe('$scope.init', function() {
+            it('broadcasts websocket events to the current scope and all the child scopes', function() {
+                const handler = jasmine.createSpy('Mock event handler');
+                $scope.$on('websocket:test_event', handler);
+                $scope.webSocketMessageHandler(getBroadcastMessage({otherVal: 42, type: 'test_event'}));
+                expect(handler).toHaveBeenCalledWith(jasmine.any(Object), {'type': 'test_event', otherVal: 42});
+            });
+        });
+
         describe('$scope.updateInstanceList', function() {
             it('loads the instance list from the API on init', function() {
                 expect($scope.instanceList.length).toEqual(instanceList.length);
@@ -110,6 +128,24 @@ describe('Instance app', function () {
                 expect($scope.loading).toBeTruthy();
                 flushHttpBackend(); // Clear timeouts created by httpBackend
                 expect($scope.loading).not.toBeTruthy();
+            });
+        });
+
+        describe('websocket events', function() {
+            beforeEach(function() {
+                spyOn($scope, 'updateInstanceList');
+            });
+            it('update the instance list whenever an instance is updated', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: 'instance_update'}));
+                expect($scope.updateInstanceList).toHaveBeenCalled();
+            });
+            it('update the instance list whenever an AppServer is updated', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: 'openedx_appserver_update'}));
+                expect($scope.updateInstanceList).toHaveBeenCalled();
+            });
+            it('do not update the instance list for other changes', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: 'other_event'}));
+                expect($scope.updateInstanceList).not.toHaveBeenCalled();
             });
         });
 
@@ -143,6 +179,90 @@ describe('Instance app', function () {
         describe('$scope.refresh', function() {
             it('loads the instance details from the API on init', function() {
                 expect(sanitizeRestangularOne($scope.instance)).toEqual(instanceDetail);
+            });
+        });
+
+        describe('websocket event handlers', function() {
+            beforeEach(function() {
+                spyOn(rootScope, 'updateInstanceList');
+                spyOn($scope, 'refresh');
+                $scope.instanceLogs = {'log_entries': []};
+                spyOn($scope.instanceLogs.log_entries, 'push');
+                console.log(typeof($scope.instanceLogs.log_entries.push));
+
+            });
+            it('update the instance details whenever the instance is updated', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "instance_update", instance_id: 400}));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "instance_update", instance_id: instanceDetail.id}));
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the instance list whenever one of the instance's AppServers are updated", function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "openedx_appserver_update", instance_id: 400}));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "openedx_appserver_update", instance_id: instanceDetail.id}));
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the instance's log entries", function() {
+                const logEntry = {created: new Date().toISOString(), level: "INFO", text: "A long time ago"};
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    instance_id: instanceDetail.id,
+                    log_entry: logEntry,
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instanceLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the instance's log entries for other instance logs", function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    instance_id: 400,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instanceLogs.log_entries.push).not.toHaveBeenCalled();
+            });
+            it("do not update the instance's log entries for AppServer logs", function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    instance_id: instanceDetail.id,
+                    appserver_id: 15,
+                    log_entry: {created: new Date(), level: "INFO", text: "Irrelevant log line"},
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.instanceLogs.log_entries.push).not.toHaveBeenCalled();
+            });
+            it('do not update the instance details for other changes', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "other_update"}));
+                expect($scope.refresh).not.toHaveBeenCalled();
+            });
+        });
+        describe('$scope.spawn_appserver', function() {
+            it('will spawn an appserver and set is_spawning_appserver=true until the appserver is ready', function() {
+                expect($scope.is_spawning_appserver).toBe(false);
+                httpBackend.expectPOST('/api/v1/openedx_appserver/', {instance_id: instanceDetail.id}).respond('');
+                // Note: The API call above is an asynchronous task so it will return a 200 status immediately.
+                $scope.spawn_appserver();
+                expect($scope.is_spawning_appserver).toBe(true);
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(true);
+
+                // Mock an unrelated update to an older AppServer, which should have no effect on is_spawning_appserver:
+                $scope.webSocketMessageHandler(getBroadcastMessage(
+                    {type: "openedx_appserver_update", instance_id: instanceDetail.id}
+                ));
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(true);
+                // Now, mock the result of successfully spawning an AppServer:
+                const mockAppServer = {"id": 8, };
+                instanceDetail.newest_appserver = mockAppServer;
+                instanceDetail.appservers.push(mockAppServer);
+                instanceDetail.appserver_count = instanceDetail.appservers.length;
+                $scope.webSocketMessageHandler(getBroadcastMessage(
+                    {type: "openedx_appserver_update", instance_id: instanceDetail.id}
+                ));
+                flushHttpBackend();
+                expect($scope.is_spawning_appserver).toBe(false);
             });
         });
 
@@ -304,6 +424,80 @@ describe('Instance app', function () {
                 expect(parentScope.refresh).not.toHaveBeenCalled();
                 expect($scope.refresh).toHaveBeenCalled();
                 expect(rootScope.notify).toHaveBeenCalledWith('An error occurred. AppServer 2 could not be made inactive.', 'alert');
+            });
+        });
+        describe('websocket event handlers', function() {
+            beforeEach(function() {
+                spyOn(rootScope, 'updateInstanceList'); // Mock this out to avoid its HTTP requests
+                spyOn($scope, 'refresh');
+                $scope.appserverLogs = {log_entries: [], log_error_entries: []}; // Mock the loading of the logs
+                spyOn($scope.appserverLogs.log_entries, 'push');
+                spyOn($scope.appserverLogs.log_error_entries, 'push');
+            });
+            it('update the AppServer details whenever the AppServer is updated', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "openedx_appserver_update", appserver_id: 404}));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "openedx_appserver_update", appserver_id: appServerDetail.id}));
+                expect($scope.refresh).toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new AppServer logs", function() {
+                const logEntry = {created: new Date().toISOString(), level: "INFO", text: "A long time ago"};
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    appserver_id: appServerDetail.id,
+                    log_entry: logEntry,
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new AppServer error logs", function() {
+                const logEntry = {created: new Date().toISOString(), level: "ERROR", text: "Something went wrong"};
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    appserver_id: appServerDetail.id,
+                    log_entry: logEntry,
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the AppServer's log entries for other AppServer logs", function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    appserver_id: 404,
+                    log_entry: {created: new Date().toISOString(), level: "INFO", text: "Irrelevant log line"},
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it("update the AppServer's log entries for new VM error logs", function() {
+                const logEntry = {created: new Date().toISOString(), level: "ERROR", text: "Something went wrong on the server"};
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    server_id: appServerDetail.server.id,
+                    log_entry: logEntry,
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).toHaveBeenCalledWith(logEntry);
+                expect($scope.appserverLogs.log_error_entries.push).toHaveBeenCalledWith(logEntry);
+            });
+            it("do not update the AppServer's log entries for other VM logs", function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({
+                    type: "object_log_line",
+                    server_id: 404,
+                    log_entry: {created: new Date().toISOString(), level: "INFO", text: "Irrelevant log line"},
+                }));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
+            });
+            it('do not update the AppServer or log entries details for other changes', function() {
+                $scope.webSocketMessageHandler(getBroadcastMessage({type: "other_update"}));
+                expect($scope.refresh).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_entries.push).not.toHaveBeenCalled();
+                expect($scope.appserverLogs.log_error_entries.push).not.toHaveBeenCalled();
             });
         });
     });

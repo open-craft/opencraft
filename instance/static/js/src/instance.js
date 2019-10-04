@@ -69,11 +69,15 @@ app.factory('OpenCraftAPI', function(Restangular) {
     });
 });
 
+app.factory('WebSocketClient', function() {
+    var protocol = (window.location.protocol == 'https') ? 'wss' : 'ws';
+    return new WebSocket(protocol + '://' + window.location.host + '/ws/');
+});
 
 // Controllers ////////////////////////////////////////////////////////////////
 
-app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
-    function ($scope, $state, OpenCraftAPI, $timeout) {
+app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', 'WebSocketClient', '$timeout',
+    function ($scope, $state, OpenCraftAPI, WebSocketClient, $timeout) {
 
         $scope.init = function() {
             $scope.loading = true;
@@ -82,6 +86,16 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
 
             $scope.instanceList = [];
             $scope.updateInstanceList();
+            $scope.webSocketMessageHandler = function(event) {
+                let data = JSON.parse(event.data);
+                let event_name = 'websocket:' + data.message.type;
+                $scope.$broadcast(event_name, data.message);
+            };
+            $scope.webSocketErrorHandler = function(event) {
+                console.error('Websocket connection closed unexpectedly')
+            }
+            WebSocketClient.onmessage = $scope.webSocketMessageHandler;
+            WebSocketClient.onerror = $scope.webSocketErrorHandler;
         };
 
         $scope.updateInstanceList = function() {
@@ -111,6 +125,14 @@ app.controller("Index", ['$scope', '$state', 'OpenCraftAPI', '$timeout',
                 }, 10000)
             };
         };
+
+        $scope.$on("websocket:instance_update", function(event, data) {
+           $scope.updateInstanceList();
+        });
+
+        $scope.$on('websocket:openedx_appserver_update', function(event, data){
+            $scope.updateInstanceList();
+        })
 
         $scope.init();
     }
@@ -204,6 +226,24 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             OpenCraftAPI.all("openedx_appserver").post({instance_id: $stateParams.instanceId});
             // The API call above is an asynchronous task so it will return a 200 status immediately.
         };
+
+        $scope.$on("websocket:instance_update", function(event, data){
+           if (data.instance_id == $stateParams.instanceId) {
+               $scope.refresh();
+           }
+        });
+
+        $scope.$on("websocket:openedx_appserver_update", function(event, data){
+            if (data.instance_id == $stateParams.instanceId) {
+                $scope.refresh();
+            }
+        });
+
+        $scope.$on('websocket:object_log_line', function(event, data){
+            if (data.instance_id == $scope.instance.id && !data.appserver_id && $scope.instanceLogs) {
+                $scope.instanceLogs.log_entries.push(data.log_entry);
+            }
+        })
 
         $scope.init();
     }

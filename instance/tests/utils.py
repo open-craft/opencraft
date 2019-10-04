@@ -22,8 +22,10 @@ Test utils
 
 # Imports #####################################################################
 from contextlib import ExitStack
+import functools
 import unittest
 from unittest.mock import Mock, patch
+
 import requests
 import responses
 import consul
@@ -85,6 +87,7 @@ def patch_services(func):
     """
     new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4')]
 
+    @patch_publish_data
     def wrapper(self, *args, **kwargs):
         """ Wrap the test with appropriate mocks """
         os_server_manager = OSServerMockManager()
@@ -148,6 +151,21 @@ def patch_services(func):
             stack.enter_context(patch_gandi())
             return func(self, mocks, *args, **kwargs)
     return wrapper
+
+
+def patch_publish_data(func):
+    """
+    Patch all the publish_data() calls to avoid messing with tests that assert on time.sleep calls
+    """
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        with ExitStack() as stack:
+            stack.enter_context(patch('instance.models.openedx_appserver.publish_data'))
+            stack.enter_context(patch('instance.models.server.publish_data'))
+            stack.enter_context(patch('instance.models.instance.publish_data'))
+            stack.enter_context(patch('instance.logging.publish_data'))
+            return func(*args, **kwargs)
+    return wrapped
 
 
 def skip_unless_consul_running():

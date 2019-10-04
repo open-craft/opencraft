@@ -111,6 +111,25 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
                               'alert');
             });
         };
+        $scope.$on("websocket:object_log_line", function(event, data){
+            if (!$scope.appserverLogs) {
+                return;
+            }
+
+            if (data.appserver_id == $scope.appserver.id || ($scope.appserver.server && data.server_id == $scope.appserver.server.id)) {
+                if (data.log_entry.level == 'ERROR' || data.log_entry.level == 'CRITICAL') {
+                    $scope.appserverLogs.log_error_entries.push(data.log_entry);
+                }
+                $scope.appserverLogs.log_entries.push(data.log_entry);
+                $scope.$apply();
+            }
+        });
+
+        $scope.$on("websocket:openedx_appserver_update", function(event, data){
+           if (data.appserver_id == $scope.appserver.id) {
+               $scope.refresh();
+           }
+        });
 
         $scope.init();
     }

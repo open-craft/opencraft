@@ -41,6 +41,7 @@ from instance.tests.models.factories.server import (
     BuildFailedOpenStackServerFactory,
     ReadyOpenStackServerFactory,
 )
+from instance.tests.utils import patch_publish_data
 
 
 # Tests #######################################################################
@@ -140,6 +141,7 @@ class OpenStackServerTestCase(TestCase):
         'accepts_ssh_commands',
         'vm_available',
     )
+    @patch_publish_data
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
     def test_sleep_until_condition_already_fulfilled(self, condition, mock_sleep, mock_update_status):
@@ -181,6 +183,7 @@ class OpenStackServerTestCase(TestCase):
             'expected_status': ServerStatus.Booting,
         },
     )
+    @patch_publish_data
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
     def test_sleep_until_state_changes(self, condition, mock_sleep, mock_update_status):
@@ -233,6 +236,7 @@ class OpenStackServerTestCase(TestCase):
             # if server can not reach desired status because transition logic is broken:
             server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=5)
 
+    @patch_publish_data
     @patch('instance.models.server.OpenStackServer.update_status')
     @patch('instance.models.server.time.sleep')
     def test_sleep_until_timeout(self, mock_sleep, mock_update_status):
@@ -262,6 +266,7 @@ class OpenStackServerTestCase(TestCase):
             with self.assertRaises(AssertionError):
                 server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=value)
 
+    @patch_publish_data
     @patch('instance.models.server.time.sleep')
     def test_reboot_booting_server(self, mock_sleep):
         """
@@ -273,6 +278,7 @@ class OpenStackServerTestCase(TestCase):
         server.os_server.reboot.assert_not_called()
         mock_sleep.assert_not_called()
 
+    @patch_publish_data
     @patch('instance.models.server.time.sleep')
     def test_reboot_ready_server(self, mock_sleep):
         """
