@@ -85,7 +85,8 @@ LOCAL_APPS = (
     'userprofile',
     'registration',
     'reports',
-    'backup_swift'
+    'backup_swift',
+    'periodic_builds'
 )
 
 INSTALLED_APPS = (

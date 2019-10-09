@@ -40,6 +40,7 @@ from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
+from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuildsMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.utils import WrongStateException, ConsulAgent, get_base_playbook_name
@@ -57,6 +58,7 @@ class OpenEdXInstance(
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
         OpenEdXThemeMixin,
+        OpenEdXPeriodicBuildsMixin,
         SecretKeyInstanceMixin,
         Instance
 ):
