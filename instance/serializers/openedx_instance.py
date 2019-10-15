@@ -148,6 +148,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'periodic_builds_enabled',
             'periodic_builds_interval',
             'periodic_builds_retries',
+            'admin_url',
         )
 
     def to_representation(self, instance):

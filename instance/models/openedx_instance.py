@@ -90,6 +90,13 @@ class OpenEdXInstance(
         """
         return reverse('instance:index') + str(self.ref.id) + "/"
 
+    @property
+    def admin_url(self):
+        """
+        Returns the admin url for an instance
+        """
+        return reverse('admin:instance_openedxinstance_change', args=(self.id,))
+
     def get_active_appservers(self):
         """
         Returns a queryset containing the active appservers.
