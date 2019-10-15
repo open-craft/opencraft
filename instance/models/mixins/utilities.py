@@ -23,6 +23,7 @@ Instance app model mixins - Utilities
 # Imports #####################################################################
 
 import sys
+from typing import List, Optional
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
@@ -62,7 +63,9 @@ class EmailMixin:
 
     def provision_failed_email(self, reason, log=None):
         """
-        Send email notifications when instance provisioning is failed
+        Send email notifications when instance provisioning is failed. Will
+        send notifications to settings.ADMINs and the instance's
+        additional_monitoring_emails.
         """
         attachments = []
         if log is not None:
@@ -73,10 +76,12 @@ class EmailMixin:
             self.EmailSubject.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name),
             self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
             self._get_exc_info(default=None),
-            attachments=attachments
+            attachments=attachments,
+            extra_recipients=self.instance.additional_monitoring_emails,
         )
 
-    def _send_email(self, subject, message, exc_info=None, attachments=None):
+    def _send_email(self, subject, message, exc_info=None, attachments=None,
+                    extra_recipients: Optional[List[str]] = None):
         """
         Helper method mimicking :class:`AdminEmailHandler` - if exception is available renders traceback as HTML message
         content
@@ -87,18 +92,28 @@ class EmailMixin:
             attachments.append(("debug.html", html_message, "text/html"))
 
         self.logger.info("Sending message to admins: %s - %s", subject, message)
-        self._mail_admins_with_attachment(subject, message, attachments=attachments)
+        self._mail_admins_with_attachment(subject, message, attachments=attachments, extra_recipients=extra_recipients)
 
     @staticmethod
-    def _mail_admins_with_attachment(subject, message,
-                                     fail_silently=True, connection=None, html_message=None, attachments=None):
-        """ Mimics mail_admins, but allows attaching files to the message"""
-        if not settings.ADMINS:
+    def _mail_admins_with_attachment(
+            subject,
+            message,
+            fail_silently=True,
+            connection=None,
+            html_message=None,
+            attachments=None,
+            extra_recipients: Optional[List[str]] = None,
+    ):
+        """
+        Mimics mail_admins, but allows attaching files to the message
+        """
+        if not settings.ADMINS and not extra_recipients:
             return
 
+        recipients = [a[1] for a in settings.ADMINS] + extra_recipients
         mail = EmailMultiAlternatives(
             "%s%s" % (settings.EMAIL_SUBJECT_PREFIX, subject),
-            message, settings.SERVER_EMAIL, [a[1] for a in settings.ADMINS],
+            message, settings.SERVER_EMAIL, recipients,
             connection=connection
         )
 

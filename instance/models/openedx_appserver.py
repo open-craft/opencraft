@@ -168,7 +168,7 @@ class OpenEdXAppConfiguration(models.Model):
         help_text=(
             "Optional: A list of additional email addresses other than settings.ADMINS "
             "who should receive alerts from New Relic Synthetics Monitors when this instance "
-            "becomes unavailable."
+            "becomes unavailable, and alerts on AppServer provision failure."
         )
     )
 
