@@ -69,6 +69,10 @@ def spawn_appserver(
     logger.info('Retrieving instance: ID=%s', instance_ref_id)
     instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
+    # NOTE: this is not async; blocks up to an hour.
+    # The actual appserver model is created fairly quickly though (after
+    # instance-wide provisioning things happen (mysql, dns records, mongo, s3,
+    # rabbitmq, etc.) but before appserver provision happens)
     appserver = instance.spawn_appserver(
         num_attempts=num_attempts,
         success_tag=success_tag,

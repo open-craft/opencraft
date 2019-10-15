@@ -69,10 +69,12 @@ class PeriodicBuildsTestCase(TestCase):
             # both enabled instances should have spawned an appserver
             self.assertEqual(mock_spawn_appserver.call_count, 2)
             mock_spawn_appserver.assert_any_call(
-                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True
+                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
+                deactivate_old_appservers=True,
             )
             mock_spawn_appserver.assert_any_call(
-                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True
+                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
+                deactivate_old_appservers=True,
             )
 
             # mock both instances now have appservers
@@ -95,7 +97,8 @@ class PeriodicBuildsTestCase(TestCase):
 
             # the shorter interval instance should have spawned a new one
             mock_spawn_appserver.assert_called_once_with(
-                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True
+                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
+                deactivate_old_appservers=True,
             )
             # fake that we have a new appserver but it's still configuring
             make_test_appserver(instance_enabled2, status=AppServerStatus.ConfiguringServer)
@@ -108,5 +111,6 @@ class PeriodicBuildsTestCase(TestCase):
             tasks.launch_periodic_builds()
 
             mock_spawn_appserver.assert_called_once_with(
-                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True
+                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
+                deactivate_old_appservers=True,
             )
