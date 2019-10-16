@@ -70,8 +70,8 @@ app.factory('OpenCraftAPI', function(Restangular) {
 });
 
 app.factory('WebSocketClient', function() {
-    var protocol = (window.location.protocol == 'https') ? 'wss' : 'ws';
-    return new WebSocket(protocol + '://' + window.location.host + '/ws/');
+    var protocol = (window.location.protocol == 'https:') ? 'wss:' : 'ws:';
+    return new WebSocket(protocol + '//' + window.location.host + '/ws/');
 });
 
 // Controllers ////////////////////////////////////////////////////////////////
