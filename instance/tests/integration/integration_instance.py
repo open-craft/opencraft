@@ -341,7 +341,15 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
-        self.assert_instance_up(instance)
+        for i in range(RETRIES):
+            try:
+                time.sleep(DELAY)
+                self.assert_instance_up(instance)
+            except AssertionError:
+                if i + 1 == RETRIES:
+                    raise
+            else:
+                break
         self.assert_bucket_configured(instance)
         self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
