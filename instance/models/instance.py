@@ -36,6 +36,7 @@ from userprofile.models import UserProfile, Organization
 from instance.models.log_entry import LogEntry
 from instance.models.utils import default_setting
 from instance.logging import ModelLoggerAdapter
+from instance.utils import publish_data
 from .utils import ValidateModelMixin
 
 
@@ -89,6 +90,16 @@ class InstanceReference(TimeStampedModel):
         if not kwargs.pop('instance_already_deleted', False):
             self.instance.delete(ref_already_deleted=True, **kwargs)
         super().delete(**kwargs)
+
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        """
+        Save this InstanceReference.
+        """
+        super().save(*args, **kwargs)
+        publish_data({
+            'type': 'instance_update',
+            'instance_id': self.pk,
+        })
 
     @classmethod
     def can_manage(cls, user):

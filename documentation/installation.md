@@ -64,12 +64,22 @@ server at http://localhost:5000/ using your web browser.
 
 If you prefer not to use Vagrant, you can install OpenCraft Instance Manager manually.
 Refer to the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used
-by Vagrant for an example. Instructions based on Ubuntu 16.04.
+by Vagrant for an example. Ocim requires Python 3.6 or a newer version. The instructions
+here are based on Ubuntu 16.04. Since Ubuntu 16.04 ships with Python 3.5, we will use `pyenv`
+to install a newer, supported version on it. This is not required when a supported version of
+Python is available. All the `pyenv` commands can be then ignored and the built-in `venv` module
+can be used to create a virtualenv environment.
 
-Install the system package dependencies & virtualenv:
+Install [pyenv](https://github.com/pyenv/pyenv) by following the [pyenv documentation](https://github.com/pyenv/pyenv#installation).
+Also install [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv#installation) by following its [documentation](https://github.com/pyenv/pyenv-virtualenv#installation).
+
+Install a supported version of Python and create a virtualenv environment. We will be using Python 3.6.9 as an example.
+
+    pyenv install 3.6.9
+
+Install the system package dependencies:
 
     make install_system_dependencies
-    pip3 install --user virtualenv
 
 You might also need to install PostgreSQL, MySQL and MongoDB:
 
@@ -78,10 +88,10 @@ You might also need to install PostgreSQL, MySQL and MongoDB:
 Note that the tests expect to be able to access MySQL on localhost using the
 default port, connecting as the root user without a password.
 
-Create a virtualenv, source it, and install the python requirements:
+Create a virtualenv, activate it, and install the python requirements:
 
-    virtualenv -p python3 venv
-    source venv/bin/activate
+    pyenv virtualenv 3.6.9 opencraft
+    pyenv activate opencraft
     pip install -r requirements.txt
 
 You will need to create a database user to run the tests:
@@ -133,14 +143,14 @@ server:
 Process description
 -------------------
 
-This runs three processes via Honcho, which reads `Procfile` or `Procfile.dev`
+This runs multiple processes via Honcho, which reads `Procfile` or `Procfile.dev`
 and loads the environment from the `.env` file:
 
-* *web*: the main HTTP server (Django + Werkzeug debugger in dev, gunicorn in prod)
-* *worker*: runs asynchronous jobs (Huey)
+* *web*: runs an ASGI server supporting HTTP and Websockets in dev and a WSGI HTTP server using gunicorn in productino.
+* *websocket*: runs an ASGI websocket server in production.
+* *worker\**: runs asynchronous jobs (Huey).
+* *periodic*: runs periodic, asynchronous jobs in production (Huey).
 
-Important: the Werkzeug debugger started by the development server allows remote
-execution of Python commands. It should *not* be run in production.
 
 Static assets collection
 ------------------------

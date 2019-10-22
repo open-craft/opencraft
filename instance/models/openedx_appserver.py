@@ -38,6 +38,7 @@ from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text, get_base_playbook_name
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
+from instance.utils import publish_data
 from userprofile.models import UserProfile
 
 # Constants ###################################################################
@@ -168,7 +169,7 @@ class OpenEdXAppConfiguration(models.Model):
         help_text=(
             "Optional: A list of additional email addresses other than settings.ADMINS "
             "who should receive alerts from New Relic Synthetics Monitors when this instance "
-            "becomes unavailable."
+            "becomes unavailable, and alerts on AppServer provision failure."
         )
     )
 
@@ -533,3 +534,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         if not self.pk:
             self.configuration_settings = self.create_configuration_settings()
         super().save(*args, **kwargs)
+        publish_data({
+            'type': 'openedx_appserver_update',
+            'appserver_id': self.pk,
+            'instance_id': self.owner.pk,
+        })

@@ -144,6 +144,11 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'openstack_server_flavor',
             'openstack_server_base_image',
             'openstack_server_ssh_keyname',
+
+            'periodic_builds_enabled',
+            'periodic_builds_interval',
+            'periodic_builds_retries',
+            'admin_url',
         )
 
     def to_representation(self, instance):

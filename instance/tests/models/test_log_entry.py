@@ -120,6 +120,48 @@ class LoggingTestCase(TestCase):
         with override_settings(LOG_LIMIT=2):
             self.check_log_entries(self.app_server.log_entries, expected[-2:])
 
+    @patch('instance.logging.publish_data')
+    def test_log_publish(self, mock_publish_data):
+        """
+        Logger sends an event to the client on each new entry added.
+        """
+        with freeze_time('2019-10-07 00:41:00'):
+            self.instance.logger.info('Text the client should see')
+
+        mock_publish_data.assert_called_with({
+            'log_entry': {
+                'created': '2019-10-07T00:41:00Z',
+                'level': 'INFO',
+                'text': (
+                    'instance.models.instance  | instance={} (Test Instance 1) | Text the client should see'.format(
+                        self.instance.ref.pk
+                    )
+                ),
+            },
+            'type': 'object_log_line',
+            'instance_id': self.instance.ref.pk,
+            'instance_type': 'OpenEdXInstance',
+        })
+
+        with freeze_time('2019-10-07 00:41:00'):
+            self.instance.logger.info('Text the client should see, with unicode «ταБЬℓσ»')
+
+        mock_publish_data.assert_called_with({
+            'log_entry': {
+                'created': '2019-10-07T00:41:00Z',
+                'level': 'INFO',
+                'text': (
+                    'instance.models.instance  | instance={} (Test Instance 1) | '
+                    'Text the client should see, with unicode «ταБЬℓσ»'
+                ).format(
+                    self.instance.ref.pk
+                )
+            },
+            'type': 'object_log_line',
+            'instance_id': self.instance.ref.pk,
+            'instance_type': 'OpenEdXInstance',
+        })
+
     def test_log_delete(self):
         """
         Check `log_entries` output for combination of instance & server logs

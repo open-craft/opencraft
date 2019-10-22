@@ -31,6 +31,8 @@ import time
 from unittest.mock import Mock
 
 import requests
+import channels.layers
+from asgiref.sync import async_to_sync
 
 
 # Logging #####################################################################
@@ -146,3 +148,11 @@ def sufficient_time_passed(earlier_date, later_date, expected_days_since):
     """
     days_passed = (later_date - earlier_date).days
     return days_passed >= expected_days_since
+
+
+def publish_data(data):
+    """
+    Publish the data to the 'ws' group.
+    """
+    channel_layer = channels.layers.get_channel_layer()
+    async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})

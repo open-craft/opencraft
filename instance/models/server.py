@@ -37,7 +37,7 @@ from instance.logging import ModelLoggerAdapter
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException, default_setting
 )
-from instance.utils import is_port_open, to_json
+from instance.utils import is_port_open, to_json, publish_data
 
 
 # Logging #####################################################################
@@ -243,6 +243,16 @@ class Server(ValidateModelMixin, TimeStampedModel):
             "Waited {minutes:.2f} minutes to reach appropriate status, and got nowhere. "
             "Aborting with a status of {status}.".format(minutes=initial_timeout / 60, status=self.status.name)
         )
+
+    def save(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        """
+        Save this server.
+        """
+        super().save(*args, **kwargs)
+        publish_data({
+            'type': 'server_update',
+            'server_pk': self.pk,
+        })
 
     def update_status(self):
         """

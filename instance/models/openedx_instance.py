@@ -26,6 +26,7 @@ from django.db import models, transaction
 from django.db.backends.utils import truncate_name
 from django.db.models import F
 from django.template import loader
+from django.urls import reverse
 from django.utils import timezone
 
 from instance import gandi
@@ -40,6 +41,7 @@ from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
+from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuildsMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
 from instance.models.openedx_appserver import OpenEdXAppConfiguration
 from instance.models.utils import WrongStateException, ConsulAgent, get_base_playbook_name
@@ -57,6 +59,7 @@ class OpenEdXInstance(
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
         OpenEdXThemeMixin,
+        OpenEdXPeriodicBuildsMixin,
         SecretKeyInstanceMixin,
         Instance
 ):
@@ -79,6 +82,20 @@ class OpenEdXInstance(
 
     def __str__(self):
         return "{} ({})".format(self.name, self.domain)
+
+    def get_absolute_url(self):
+        """
+        Return link to the instance admin page, e.g. /instance/210/
+        This link is shown in Django's admin.
+        """
+        return reverse('instance:index') + str(self.ref.id) + "/"
+
+    @property
+    def admin_url(self):
+        """
+        Returns the admin url for an instance
+        """
+        return reverse('admin:instance_openedxinstance_change', args=(self.id,))
 
     def get_active_appservers(self):
         """

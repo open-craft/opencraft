@@ -85,7 +85,8 @@ LOCAL_APPS = (
     'userprofile',
     'registration',
     'reports',
-    'backup_swift'
+    'backup_swift',
+    'periodic_builds'
 )
 
 INSTALLED_APPS = (
@@ -103,6 +104,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'huey.contrib.djhuey',
     'simple_email_confirmation',
+    'channels',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
@@ -752,3 +754,14 @@ S3_VERSION_EXPIRATION = env.json('S3_VERSION_EXPIRATION', default=30)
 
 # Default Privacy Policy URL
 DEFAULT_PRIVACY_POLICY_URL = env('DEFAULT_PRIVACY_POLICY_URL', default='')
+
+ASGI_APPLICATION = 'opencraft.routing.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [REDIS_URL],
+        },
+    },
+}

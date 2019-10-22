@@ -30,7 +30,7 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 
 
 # pylint: disable=too-many-branches, useless-suppression
-def make_test_appserver(instance=None, s3=False, server=None, organization=None, status=None):
+def make_test_appserver(instance=None, s3=False, server=None, organization=None, status=None):  # noqa: MC0001
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
 
@@ -69,6 +69,8 @@ def make_test_appserver(instance=None, s3=False, server=None, organization=None,
 
     if status == AppServerStatus.Running:
         _set_appserver_running(appserver)
+    elif status == AppServerStatus.ConfiguringServer:
+        _set_appserver_configuring_server(appserver)
     elif status == AppServerStatus.ConfigurationFailed:
         _set_appserver_configuration_failed(appserver)
     elif status == AppServerStatus.Error:
@@ -87,6 +89,14 @@ def _set_appserver_terminated(appserver):
     appserver._status_to_configuring_server()
     appserver._status_to_running()
     appserver._status_to_terminated()
+
+
+def _set_appserver_configuring_server(appserver):
+    """
+    Transition `appserver` to AppServerStatus.Running.
+    """
+    appserver._status_to_waiting_for_server()
+    appserver._status_to_configuring_server()
 
 
 def _set_appserver_running(appserver):
