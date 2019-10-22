@@ -34,7 +34,7 @@
       <div class="large-3 columns">
         <h4>App Servers</h4>
         <button class="small" ng-click="spawn_appserver()" ng-disabled="is_spawning_appserver">
-          {{is_spawning_appserver ? "AppServer launching. Please refresh after some seconds to see the new server." : "Launch new AppServer"}}
+          <i class="fa fa-plus" ng-class="{'fa-spin': is_spawning_appserver}"></i> Launch new AppServer
         </button>
         <ul class="side-nav appserver-list">
           <li ng-if="instance.appservers.length < instance.appserver_count">

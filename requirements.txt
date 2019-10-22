@@ -5,10 +5,15 @@
 #    pip-compile
 #
 -e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular
+aioredis==1.3.0           # via channels-redis
 appdirs==1.4.3            # via openstacksdk
+asgiref==3.2.2            # via channels, channels-redis, daphne
 asn1crypto==0.24.0        # via cryptography
 astroid==2.1.0            # via pylint, pylint-celery, requirements-detector
-attrs==19.1.0             # via cmd2, jsonschema
+async-timeout==3.0.1      # via aioredis
+attrs==19.1.0             # via automat, cmd2, jsonschema, service-identity, twisted
+autobahn==19.10.1         # via daphne
+automat==0.7.0            # via twisted
 babel==2.7.0              # via osc-lib, oslo.i18n, python-cinderclient, python-novaclient, python-openstackclient
 backcall==0.1.0           # via ipython
 backports.functools-lru-cache==1.5  # via cheroot
@@ -18,6 +23,8 @@ boto==2.48.0
 botocore==1.12.212        # via boto3, s3transfer
 certifi==2019.6.16        # via requests
 cffi==1.12.3              # via cryptography
+channels==2.3.0
+channels_redis==2.4.0
 chardet==3.0.4            # via requests
 cheroot==6.5.6            # via cherrypy
 cherrypy==18.1.1
@@ -26,9 +33,11 @@ cliff==2.15.0             # via osc-lib, python-openstackclient
 cmd2==0.9.16              # via cliff
 colorama==0.4.1           # via cmd2
 colour==0.1.5
+constantly==15.1.0        # via twisted
 cookies==2.2.1
 coverage==4.5.3
-cryptography==2.7         # via openstacksdk, pyopenssl
+cryptography==2.7         # via autobahn, openstacksdk, pyopenssl, service-identity
+daphne==2.3.0             # via channels
 ddt==1.2.1
 debtcollector==1.21.0     # via oslo.config, oslo.utils, python-keystoneclient
 decorator==4.4.0          # via dogpile.cache, ipython, openstacksdk, traitlets
@@ -44,7 +53,7 @@ django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
-django==2.2.4
+django==2.2.6
 djangorestframework==3.9.4
 docutils==0.14
 dodgy==0.1.9
@@ -60,9 +69,12 @@ futures==3.1.1
 gitdb2==2.0.5             # via gitpython
 gitpython==2.1.11
 gunicorn==19.9.0
+hiredis==1.0.0            # via aioredis
 honcho==1.0.1
 huey==2.1.0
+hyperlink==19.0.0         # via twisted
 idna==2.8
+incremental==17.5.0       # via twisted
 ipdb==0.12
 ipython-genutils==0.2.0   # via traitlets
 ipython==7.5.0
@@ -79,7 +91,7 @@ lazy-object-proxy==1.4.1  # via astroid
 libsass==0.19.2           # via django-libsass
 mccabe==0.6.1
 more-itertools==7.2.0     # via cheroot, cherrypy, jaraco.functools
-msgpack==0.6.1            # via oslo.serialization
+msgpack==0.6.1            # via channels-redis, oslo.serialization
 munch==2.3.2              # via openstacksdk
 mysqlclient==1.4.2.post1
 netaddr==0.7.19           # via oslo.config, oslo.utils
@@ -107,12 +119,15 @@ prompt-toolkit==2.0.9     # via ipython
 prospector==1.1.4
 psycopg2==2.8.3
 ptyprocess==0.6.0         # via pexpect
+pyasn1-modules==0.2.7     # via service-identity
+pyasn1==0.4.7             # via pyasn1-modules, service-identity
 pycodestyle==2.3.1
 pycparser==2.19           # via cffi
 pycryptodomex==3.8.2      # via pyjwkest
 pydocstyle==4.0.1         # via prospector
 pyflakes==1.6.0
 pygments==2.4.2           # via ipython
+pyhamcrest==1.9.0         # via twisted
 pyjwkest==1.4.0
 pylint-celery==0.3
 pylint-common==0.2.5
@@ -146,6 +161,7 @@ rfc3986==1.3.2
 rjsmin==1.1.0             # via django-compressor
 s3transfer==0.2.1         # via boto3
 selenium==2.53.6
+service_identity==18.1.0
 setoptconf==0.2.0         # via prospector
 simplejson==3.16.0        # via osc-lib, python-cinderclient, python-novaclient
 six==1.12.0
@@ -158,6 +174,8 @@ tempora==1.14.1           # via portend
 testfixtures==6.10.0
 text-unidecode==1.2       # via faker
 traitlets==4.3.2          # via ipython
+twisted==19.7.0           # via daphne
+txaio==18.8.1             # via autobahn
 typed-ast==1.4.0          # via astroid
 urllib3==1.25.3
 virtualenv==16.6.1
@@ -166,3 +184,4 @@ wcwidth==0.1.7            # via cmd2, prompt-toolkit
 werkzeug==0.15.4
 wrapt==1.11.2             # via astroid, debtcollector, python-glanceclient
 zc.lockfile==2.0          # via cherrypy
+zope.interface==4.6.0     # via twisted
