@@ -412,6 +412,11 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 application.save()
 
         if self.restart_fields_changed():
+            if not application.email_addresses_verified():
+                messages.add_message(self.request, messages.INFO,
+                                     "Thank you for submitting these changes - we will build your instance to "
+                                     "apply them once your email address is confirmed.")
+                return
             messages.add_message(self.request, messages.INFO,
                                  "Thank you for submitting these changes - we will rebuild your instance to "
                                  "apply them, and email you to confirm once it is up to date.")
