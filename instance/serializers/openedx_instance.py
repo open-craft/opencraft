@@ -130,6 +130,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
 
             'additional_security_groups',
             'additional_monitoring_emails',
+            'provision_failed_emails',
 
             'configuration_source_repo_url',
             'configuration_version',
