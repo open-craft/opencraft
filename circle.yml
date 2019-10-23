@@ -184,10 +184,8 @@ workflows:
       - coverage:
           name: coverage
           requires:
-            - quality_migrations_tests
-            - python_unit_tests
-            - browser_tests
-            - js_tests
+            - integration_tests_group_1
+            - integration_tests_group_2
   cleanup-workflow:
     triggers:
       - schedule:
