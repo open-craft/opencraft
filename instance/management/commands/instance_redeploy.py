@@ -30,6 +30,7 @@ from django.core.management.base import BaseCommand
 from instance.ansible import load_yaml
 from instance.models.instance import InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_appserver import Source
 from instance.tasks import spawn_appserver
 
 LOG = logging.getLogger(__name__)
@@ -332,6 +333,7 @@ class Command(BaseCommand):
                     num_attempts=num_attempts,
                     mark_active_on_success=activate_on_success,
                     deactivate_old_appservers=activate_on_success,
+                    source=Source.INSTANCE_REDEPLOY,
                 )
 
             # 3. Give a status update.

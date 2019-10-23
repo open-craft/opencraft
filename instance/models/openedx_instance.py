@@ -43,7 +43,7 @@ from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuilds
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
-from instance.models.openedx_appserver import OpenEdXAppConfiguration
+from instance.models.openedx_appserver import OpenEdXAppConfiguration, Source
 from instance.models.utils import ConsulAgent, WrongStateException, get_base_playbook_name
 from instance.signals import appserver_spawned
 from instance.utils import sufficient_time_passed
@@ -266,7 +266,7 @@ class OpenEdXInstance(
         except models.ObjectDoesNotExist:
             return None
 
-    def _spawn_appserver(self):
+    def _spawn_appserver(self, source=Source.UNKNOWN, fail_emails=None):
         """
             Provision a new AppServer
 
@@ -298,14 +298,16 @@ class OpenEdXInstance(
         self.logger.info('Provisioning RabbitMQ vhost...')
         self.provision_rabbitmq()
 
-        return self._create_owned_appserver()
+        return self._create_owned_appserver(source=source, fail_emails=fail_emails)
 
     @log_exception
     def spawn_appserver(self,
                         mark_active_on_success=False,
                         num_attempts=1,
                         success_tag=None,
-                        failure_tag=None):
+                        failure_tag=None,
+                        fail_emails=None,
+                        source=Source.UNKNOWN):
         """
         Provision a new AppServer
 
@@ -320,7 +322,7 @@ class OpenEdXInstance(
         """
         for attempt in range(num_attempts):
             self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
-            app_server = self._spawn_appserver()
+            app_server = self._spawn_appserver(source=source, fail_emails=fail_emails)
 
             if app_server and app_server.provision():
                 break
@@ -355,7 +357,7 @@ class OpenEdXInstance(
 
         return app_server.pk
 
-    def _create_owned_appserver(self):
+    def _create_owned_appserver(self, source=Source.UNKNOWN, fail_emails=None):
         """
         Core internal code that actually creates the child appserver.
 
@@ -379,6 +381,9 @@ class OpenEdXInstance(
                 configuration_secret_keys=self.get_secret_key_settings(),
                 **instance_config
             )
+            app_server.source = source
+            if fail_emails:
+                app_server.extra_fail_emails = fail_emails
             app_server.add_lms_users(self.lms_users.all())
         return app_server
 
