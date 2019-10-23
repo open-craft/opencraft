@@ -19,6 +19,8 @@
 """
 Instance app models - Open EdX AppServer models
 """
+from enum import Enum
+
 import yaml
 
 import requests
@@ -49,6 +51,16 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
     # Convert this setting from a list of dicts to a list of SecurityGroupRuleDefinition tuples.
     SecurityGroupRuleDefinition(**rule) for rule in settings.OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 ]
+
+class Source(Enum):
+    """
+    Used to label an appserver with the source of where it was launched from.
+    """
+    API = 'api'
+    UNKNOWN = 'unknown'
+    WATCHED_PR = 'watched_pr'
+    REGISTRATION = 'registration'
+    INSTANCE_REDEPLOY = 'instance_redeploy_management_cmd'
 
 
 # Models ######################################################################
@@ -225,6 +237,22 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'playbook when configuring this AppServer.'
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
+    source = models.CharField(
+        max_length=100,
+        blank=True,
+        choices=[(tag, tag.value) for tag in Source],
+        default=Source.UNKNOWN.value,
+        help_text="A tag to denote where this appserver was spawned from",
+    )
+    extra_fail_emails = ArrayField(
+        models.CharField(max_length=200),
+        default=list,
+        blank=True,
+        help_text=(
+            "Optional: A list of extra emails to alert if AppServer fails to provision. "
+            "Set dynamically by spawn_appserver."
+        )
+    )
 
     INVENTORY_GROUP = 'openedx-app'
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'

@@ -65,7 +65,7 @@ class EmailMixin:
         """
         Send email notifications when instance provisioning is failed. Will
         send notifications to settings.ADMINs and the instance's
-        additional_monitoring_emails.
+        provision_failed_emails.
         """
         attachments = []
         if log is not None:
@@ -77,7 +77,7 @@ class EmailMixin:
             self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
             self._get_exc_info(default=None),
             attachments=attachments,
-            extra_recipients=self.instance.provision_failed_emails,
+            extra_recipients=self.instance.provision_failed_emails + self.extra_fail_emails,
         )
 
     def _send_email(self, subject, message, exc_info=None, attachments=None,

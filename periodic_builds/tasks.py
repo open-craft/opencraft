@@ -29,6 +29,7 @@ from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task
 
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.models.openedx_appserver import Source
 from instance.models.appserver import Status
 from instance.tasks import spawn_appserver
 
@@ -71,4 +72,5 @@ def launch_periodic_builds():
                     instance.ref.pk,
                     num_attempts=instance.periodic_builds_retries + 1,
                     mark_active_on_success=True,
+                    source=Source.PERIODIC_BUILD,
                 )

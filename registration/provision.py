@@ -29,6 +29,7 @@ from django.dispatch import receiver
 from simple_email_confirmation.signals import email_confirmed
 
 from registration.models import BetaTestApplication
+from instance.models.openedx_appserver import Source
 from instance.factories import production_instance_factory
 from instance.tasks import spawn_appserver
 
@@ -77,4 +78,6 @@ def _provision_instance(sender, **kwargs):
         )
         application.instance.lms_users.add(user)
         application.save()
-    spawn_appserver(application.instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+    # TODO: extra fail_emails set to help@opencraft.com or elsewhere visible
+    spawn_appserver(application.instance.ref.pk, mark_active_on_success=True,
+                    num_attempts=2, source=Source.REGISTRATION)

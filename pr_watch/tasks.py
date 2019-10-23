@@ -35,6 +35,7 @@ from pr_watch.github import (
 )
 from pr_watch.models import WatchedFork, WatchedPullRequest
 
+from instance.models.openedx_appserver import Source
 from instance.tasks import spawn_appserver
 
 
@@ -67,6 +68,8 @@ def watch_pr():
                 instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
                 if created:
                     logger.info('New PR found, creating sandbox: %s', pr)
-                    spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+                    # TODO: set fail_emails from pr username
+                    spawn_appserver(instance.ref.pk, mark_active_on_success=True,
+                                    num_attempts=2, source=Source.WATCHED_PR)
     except RateLimitExceeded as err:
         logger.warning('Could not complete PR scan due to an error: %s', str(err))

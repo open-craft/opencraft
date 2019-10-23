@@ -34,7 +34,7 @@ from huey.contrib.djhuey import db_task, db_periodic_task
 
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
-from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_appserver import OpenEdXAppServer, Source
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import sufficient_time_passed
 from pr_watch import github
@@ -54,7 +54,9 @@ def spawn_appserver(
         deactivate_old_appservers=False,
         num_attempts=1,
         success_tag=None,
-        failure_tag=None):
+        failure_tag=None,
+        fail_emails=None,
+        source=Source.UNKNOWN):
     """
     Create a new AppServer for an existing instance.
 
@@ -65,6 +67,8 @@ def spawn_appserver(
     Optionally retry up to 'num_attempts' times.
     Optionally tag the instance with 'success_tag' when the deployment succeeds,
     or failure_tag if it fails.
+    Optionally pass a list of extra `fail_emails` to alert if appserver provisioning fails.
+    Optionally provide a source to label where this appserver was launched from.
     """
     logger.info('Retrieving instance: ID=%s', instance_ref_id)
     instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
@@ -72,7 +76,9 @@ def spawn_appserver(
     appserver = instance.spawn_appserver(
         num_attempts=num_attempts,
         success_tag=success_tag,
-        failure_tag=failure_tag
+        failure_tag=failure_tag,
+        fail_emails=fail_emails,
+        source=source,
     )
 
     if appserver and mark_active_on_success:

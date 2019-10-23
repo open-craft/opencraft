@@ -29,7 +29,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
-from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_appserver import OpenEdXAppServer, Source
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.serializers.appserver import AppServerBasicSerializer
 from instance.serializers.openedx_appserver import (
@@ -89,7 +89,10 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         if not isinstance(instance, OpenEdXInstance):
             raise serializers.ValidationError('Invalid InstanceReference ID: Not an OpenEdXInstance.')
 
-        spawn_appserver(instance_id)
+        fail_emails = []
+        if request.user and request.user.email:
+            fail_emails.append(request.user.email)
+        spawn_appserver(instance_id, source=Source.API, fail_emails=fail_emails)
         return Response({'status': 'Instance provisioning started'})
 
     @detail_route(methods=['get'])
