@@ -427,9 +427,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertFalse(appserver.is_active)
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
-    
+
     @retry
     def assert_server_ready(self, instance):
+        """
+        Make sure the instance has an active, ready AppServer
+        """
         active_appservers = list(instance.get_active_appservers().all())
         self.assertEqual(len(active_appservers), 1)
         self.assertTrue(active_appservers[0].is_active)
