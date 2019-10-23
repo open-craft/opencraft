@@ -427,6 +427,14 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertFalse(appserver.is_active)
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
+    
+    @retry
+    def assert_server_ready(self, instance):
+        active_appservers = list(instance.get_active_appservers().all())
+        self.assertEqual(len(active_appservers), 1)
+        self.assertTrue(active_appservers[0].is_active)
+        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
+        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @patch_git_checkout
@@ -445,11 +453,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        active_appservers = list(instance.get_active_appservers().all())
-        self.assertEqual(len(active_appservers), 1)
-        self.assertTrue(active_appservers[0].is_active)
-        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
-        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
+        assert_server_ready(instance)
 
     @retry
     def assert_server_terminated(self, server):
