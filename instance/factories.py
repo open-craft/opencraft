@@ -151,6 +151,7 @@ def production_instance_factory(**kwargs):
         # Allow production instances to use a different OpenStack instance flavor by default.
         # This allows using a larger instance flavor for production instances.
         openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
+        provisioning_failure_notification_emails=settings.PROD_APPSERVER_FAIL_EMAILS,
     )
     instance_kwargs.update(kwargs)
 
