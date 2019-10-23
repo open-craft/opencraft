@@ -456,7 +456,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         instance.refresh_from_db()
-        assert_server_ready(instance)
+        self.assert_server_ready(instance)
 
     @retry
     def assert_server_terminated(self, server):
