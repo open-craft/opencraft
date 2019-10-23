@@ -86,18 +86,24 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
     )
 
     @retry
+    def assert_server_ready(self, instance):
+        """
+        Make sure the instance has an active, ready AppServer
+        """
+        instance.refresh_from_db()
+        active_appservers = instance.get_active_appservers()
+        self.assertEqual(active_appservers.count(), 1)
+        appserver = active_appservers.first()
+        self.assertTrue(appserver.is_active)
+        self.assertEqual(appserver.status, AppServerStatus.Running)
+        self.assertEqual(appserver.server.status, ServerStatus.Ready)
+
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
         """
-        instance.refresh_from_db()
         auth = (instance.http_auth_user, instance.http_auth_pass)
-        active_appservers = list(instance.get_active_appservers().all())
-        self.assertEqual(len(active_appservers), 1)
-        self.assertTrue(active_appservers[0].is_active)
-        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
-        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
-        server = active_appservers[0].server
+        server = instance.get_active_appservers().first().server
         check_url_accessible('http://{0}/'.format(server.public_ip), auth=auth)
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
             check_url_accessible(url)
@@ -358,6 +364,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
+        self.assert_server_ready(instance)
         self.assert_instance_up(instance)
         self.assert_bucket_configured(instance)
         self.assert_appserver_firewalled(instance)
@@ -372,6 +379,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         if settings.DEFAULT_INSTANCE_MYSQL_URL and settings.DEFAULT_INSTANCE_MONGO_URL:
             self.assert_swift_container_provisioned(instance)
+            self.assert_server_ready(instance)
             self.assert_instance_up(instance)
             self.assert_appserver_firewalled(instance)
             self.assertTrue(instance.successfully_provisioned)
@@ -428,17 +436,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
-    @retry
-    def assert_server_ready(self, instance):
-        """
-        Make sure the instance has an active, ready AppServer
-        """
-        active_appservers = list(instance.get_active_appservers().all())
-        self.assertEqual(len(active_appservers), 1)
-        self.assertTrue(active_appservers[0].is_active)
-        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
-        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
-
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
@@ -455,7 +452,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         )
         with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
-        instance.refresh_from_db()
         self.assert_server_ready(instance)
 
     @retry
