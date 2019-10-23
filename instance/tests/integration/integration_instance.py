@@ -302,6 +302,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             expected_domain_names
         )
 
+    # pylint: disable=too-many-branches
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_spawn_appserver(self):
