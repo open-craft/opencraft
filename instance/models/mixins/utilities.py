@@ -77,7 +77,7 @@ class EmailMixin:
             self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
             self._get_exc_info(default=None),
             attachments=attachments,
-            extra_recipients=self.instance.additional_monitoring_emails,
+            extra_recipients=self.instance.provision_failed_emails,
         )
 
     def _send_email(self, subject, message, exc_info=None, attachments=None,

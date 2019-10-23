@@ -786,10 +786,12 @@ class EmailMixinInstanceTestCase(TestCase):
         """
         Tests that provision_failed sends email when called from normal program flow
         """
-        additional_monitoring_emails = ['test1@localhost', 'test2@localhost']
+        additional_monitoring_emails = ['additionalmonitoring@localhost']
+        provision_failed_emails = ['provisionfailed@localhost']
 
         appserver = make_test_appserver()
         appserver.instance.additional_monitoring_emails = additional_monitoring_emails
+        appserver.instance.provision_failed_emails = provision_failed_emails
         reason = "something went wrong"
         log_lines = ["log line1", "log_line2"]
 
@@ -798,7 +800,7 @@ class EmailMixinInstanceTestCase(TestCase):
         expected_subject = OpenEdXAppServer.EmailSubject.PROVISION_FAILED.format(
             name=appserver.name, instance_name=appserver.instance.name,
         )
-        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS] + additional_monitoring_emails
+        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS] + provision_failed_emails
 
         self.assertEqual(len(django_mail.outbox), 1)
         mail = django_mail.outbox[0]
