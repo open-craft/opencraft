@@ -57,26 +57,22 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
-def retry(exception=AssertionError, tries=5, delay=10):
+def retry(f, exception=AssertionError, tries=5, delay=10):
     """
     Retry calling the decorated function
     """
-    def deco_retry(f):
+    @wraps(f)
+    def f_retry(*args, **kwargs):
+        mtries, mdelay = tries, delay
+        while mtries > 1:
+            try:
+                return f(*args, **kwargs)
+            except exception:
+                time.sleep(mdelay)
+                mtries -= 1
+        return f(*args, **kwargs)
 
-        @wraps(f)
-        def f_retry(*args, **kwargs):
-            mtries, mdelay = tries, delay
-            while mtries > 1:
-                try:
-                    return f(*args, **kwargs)
-                except exception:
-                    time.sleep(mdelay)
-                    mtries -= 1
-            return f(*args, **kwargs)
-
-        return f_retry  # true decorator
-
-    return deco_retry
+    return f_retry  # true decorator
 
 
 class InstanceIntegrationTestCase(IntegrationTestCase):
