@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+from functools import wraps
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -49,14 +50,33 @@ from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 
 
-RETRIES = 5
-DELAY = 10
-
 # TEST_GROUP should be an integer. This will skip any test that is not part of the group value.
 # If it's None every integration test will run.
 TEST_GROUP = os.getenv('TEST_GROUP')
 print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
+
+
+def retry(exception=AssertionError, tries=5, delay=10):
+    """
+    Retry calling the decorated function
+    """
+    def deco_retry(f):
+
+        @wraps(f)
+        def f_retry(*args, **kwargs):
+            mtries, mdelay = tries, delay
+            while mtries > 1:
+                try:
+                    return f(*args, **kwargs)
+                except exception:
+                    time.sleep(mdelay)
+                    mtries -= 1
+            return f(*args, **kwargs)
+
+        return f_retry  # true decorator
+
+    return deco_retry
 
 
 class InstanceIntegrationTestCase(IntegrationTestCase):
@@ -69,6 +89,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         'FORUM_API_KEY',
     )
 
+    @retry
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
@@ -302,7 +323,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             expected_domain_names
         )
 
-    # pylint: disable=too-many-branches
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_spawn_appserver(self):
@@ -342,15 +362,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
-        for i in range(RETRIES):
-            try:
-                time.sleep(DELAY)
-                self.assert_instance_up(instance)
-            except AssertionError:
-                if i + 1 == RETRIES:
-                    raise
-            else:
-                break
+        self.assert_instance_up(instance)
         self.assert_bucket_configured(instance)
         self.assert_appserver_firewalled(instance)
         self.assertTrue(instance.successfully_provisioned)
@@ -443,6 +455,13 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
         self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
 
+    @retry
+    def assert_server_terminated(self, server):
+        """
+        Makes sure the given server has been properly terminated.
+        """
+        self.assertEqual(server.update_status(), ServerStatus.Terminated)
+
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
@@ -454,15 +473,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         server.start()
         server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
         server.os_server.delete()
-        for i in range(RETRIES):
-            try:
-                time.sleep(DELAY)
-                self.assertEqual(server.update_status(), ServerStatus.Terminated)
-            except AssertionError:
-                if i + 1 == RETRIES:
-                    raise
-            else:
-                break
+        self.assert_server_terminated(server)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
