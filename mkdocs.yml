@@ -16,3 +16,4 @@ nav:
   - provisioning-sandboxes.md
   - monitoring.md
   - howtos.md
+  - periodic_builds.md
