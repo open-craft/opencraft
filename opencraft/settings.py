@@ -543,6 +543,8 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 # Email confirmation
 SIMPLE_EMAIL_CONFIRMATION_AUTO_ADD = False
 
+# Email addresses to alert for production instance appserver provisioning failures.
+PROD_APPSERVER_FAIL_EMAILS = env.json('PROD_APPSERVER_FAIL_EMAILS', default=[])
 
 # Logging #####################################################################
 

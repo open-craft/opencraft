@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+from functools import wraps
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
@@ -56,6 +57,24 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
+def retry(f, exception=AssertionError, tries=5, delay=10):
+    """
+    Retry calling the decorated function
+    """
+    @wraps(f)
+    def f_retry(*args, **kwargs):
+        mtries, mdelay = tries, delay
+        while mtries > 1:
+            try:
+                return f(*args, **kwargs)
+            except exception:
+                time.sleep(mdelay)
+                mtries -= 1
+        return f(*args, **kwargs)
+
+    return f_retry  # true decorator
+
+
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks
@@ -66,18 +85,25 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         'FORUM_API_KEY',
     )
 
+    @retry
+    def assert_server_ready(self, instance):
+        """
+        Make sure the instance has an active, ready AppServer
+        """
+        instance.refresh_from_db()
+        active_appservers = instance.get_active_appservers()
+        self.assertEqual(active_appservers.count(), 1)
+        appserver = active_appservers.first()
+        self.assertTrue(appserver.is_active)
+        self.assertEqual(appserver.status, AppServerStatus.Running)
+        self.assertEqual(appserver.server.status, ServerStatus.Ready)
+
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
         """
-        instance.refresh_from_db()
         auth = (instance.http_auth_user, instance.http_auth_pass)
-        active_appservers = list(instance.get_active_appservers().all())
-        self.assertEqual(len(active_appservers), 1)
-        self.assertTrue(active_appservers[0].is_active)
-        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
-        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
-        server = active_appservers[0].server
+        server = instance.get_active_appservers().first().server
         check_url_accessible('http://{0}/'.format(server.public_ip), auth=auth)
         for url in [instance.url, instance.lms_preview_url, instance.studio_url]:
             check_url_accessible(url)
@@ -338,6 +364,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
 
+        self.assert_server_ready(instance)
         self.assert_instance_up(instance)
         self.assert_bucket_configured(instance)
         self.assert_appserver_firewalled(instance)
@@ -348,51 +375,21 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_theme_provisioned(instance, appserver, application)
         self.assert_load_balanced_domains(instance)
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_external_databases(self):
-        """
-        Ensure that the instance can connect to external databases
-        """
-        if not settings.DEFAULT_INSTANCE_MYSQL_URL or not settings.DEFAULT_INSTANCE_MONGO_URL:
-            print('External databases not configured, skipping integration test')
-            return
-        OpenEdXInstanceFactory(name='Integration - test_external_databases')
-        instance = OpenEdXInstance.objects.get()
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
-        self.assert_swift_container_provisioned(instance)
-        self.assert_instance_up(instance)
-        self.assert_appserver_firewalled(instance)
-        self.assertTrue(instance.successfully_provisioned)
-        self.assertFalse(instance.require_user_creation_success())
-        for appserver in instance.appserver_set.all():
-            self.assert_secret_keys(instance, appserver)
-        self.assert_mysql_db_provisioned(instance)
-        self.assert_mongo_db_provisioned(instance)
+        # Test external databases
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '3', "Test not in test group.")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_activity_csv(self):
-        """
-        Run the activity_csv management command against a live instance.
-        """
-        OpenEdXInstanceFactory(name='Integration - test_activity_csv')
-        instance = OpenEdXInstance.objects.get()
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
-        self.assert_instance_up(instance)
-        self.assertTrue(instance.successfully_provisioned)
+        if settings.DEFAULT_INSTANCE_MYSQL_URL and settings.DEFAULT_INSTANCE_MONGO_URL:
+            self.assert_swift_container_provisioned(instance)
+            self.assert_server_ready(instance)
+            self.assert_instance_up(instance)
+            self.assert_appserver_firewalled(instance)
+            self.assertTrue(instance.successfully_provisioned)
+            self.assertFalse(instance.require_user_creation_success())
+            for appserver in instance.appserver_set.all():
+                self.assert_secret_keys(instance, appserver)
+            self.assert_mysql_db_provisioned(instance)
+            self.assert_mongo_db_provisioned(instance)
 
-        user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
-
-        BetaTestApplication.objects.create(
-            user=user,
-            subdomain='betatestdomain',
-            instance_name='betatestinstance',
-            public_contact_email='publicemail@example.com',
-            project_description='I want to beta test OpenCraft IM',
-            status=BetaTestApplication.ACCEPTED,
-            instance=instance,
-        )
+        # Test activity CSV
 
         # Run the management command and collect the CSV from stdout.
         out = StringIO()
@@ -411,14 +408,14 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             '"Age (Days)"',
             out_lines[0]
         )
-        self.assertIn('"Integration - test_activity_csv"', out_lines[1])
-        self.assertIn('"betatest@example.com"', out_lines[1])
+        self.assertIn('"Integration - test_spawn_appserver"', out_lines[1])
+        self.assertIn('"test@example.com"', out_lines[1])
         self.assertNotIn('N/A', out_lines[1])
 
         # stdout should contain 3 lines (as opposed to 2) to account for the last newline.
         self.assertEqual(len(out_lines), 3)
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @patch_git_checkout
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failure(self, git_checkout, git_working_dir):
@@ -439,7 +436,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @patch_git_checkout
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
@@ -455,14 +452,16 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         )
         with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
             spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
-        instance.refresh_from_db()
-        active_appservers = list(instance.get_active_appservers().all())
-        self.assertEqual(len(active_appservers), 1)
-        self.assertTrue(active_appservers[0].is_active)
-        self.assertEqual(active_appservers[0].status, AppServerStatus.Running)
-        self.assertEqual(active_appservers[0].server.status, ServerStatus.Ready)
+        self.assert_server_ready(instance)
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
+    @retry
+    def assert_server_terminated(self, server):
+        """
+        Makes sure the given server has been properly terminated.
+        """
+        self.assertEqual(server.update_status(), ServerStatus.Terminated)
+
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
         """
@@ -473,10 +472,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         server.start()
         server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
         server.os_server.delete()
-        time.sleep(10)
-        self.assertEqual(server.update_status(), ServerStatus.Terminated)
+        self.assert_server_terminated(server)
 
-    @skipIf(TEST_GROUP is not None and TEST_GROUP != '4', "Test not in test group.")
+    @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_betatest_accepted(self):
         """

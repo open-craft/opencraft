@@ -102,6 +102,7 @@ class FactoriesTestCase(TestCase):
         with self.assertRaises(AssertionError):
             instance_factory()
 
+    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['appserverfail@localhost'])
     def test_production_instance_factory(self):
         """
         Test that factory function for creating production instances produces expected results
@@ -111,6 +112,7 @@ class FactoriesTestCase(TestCase):
         instance = production_instance_factory(sub_domain=sub_domain)
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self._assert_field_values(instance, sub_domain, **self.PRODUCTION_DEFAULTS)
+        self.assertEqual(instance.provisioning_failure_notification_emails, ['appserverfail@localhost'])
 
         # Create instance with custom field values
         sub_domain = "production-instance-customized"

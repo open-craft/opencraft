@@ -169,7 +169,16 @@ class OpenEdXAppConfiguration(models.Model):
         help_text=(
             "Optional: A list of additional email addresses other than settings.ADMINS "
             "who should receive alerts from New Relic Synthetics Monitors when this instance "
-            "becomes unavailable, and alerts on AppServer provision failure."
+            "becomes unavailable."
+        )
+    )
+    provisioning_failure_notification_emails = ArrayField(  # pylint: disable=invalid-name
+        models.CharField(max_length=200),
+        default=list,
+        blank=True,
+        help_text=(
+            "Optional: A list of additional email addresses other than settings.ADMINS "
+            "who should receive alerts when an AppServer fails to provision."
         )
     )
 

@@ -99,6 +99,7 @@
         <tr><td>configuration_theme_settings</td><td><pre>{{ instance.configuration_theme_settings }}</pre></td></tr>
         <tr><td>Additional security groups</td><td><pre>{{ instance.additional_security_groups }}</pre></td></tr>
         <tr><td>Additional monitoring email addresses</td><td>{{ instance.additional_monitoring_emails }}</td></tr>
+        <tr><td>Email addresses monitoring AppServer provision failures</td><td>{{ instance.provisioning_failure_notification_emails }}</td></tr>
         <tr><td>Periodic builds enabled</td><td>{{ instance.periodic_builds_enabled }}</td></tr>
         <tr ng-if="instance.periodic_builds_enabled"><td>Periodic builds interval</td><td>{{ instance.periodic_builds_interval }}</td></tr>
         <tr ng-if="instance.periodic_builds_enabled"><td>Periodic builds retries</td><td>{{ instance.periodic_builds_retries }}</td></tr>
