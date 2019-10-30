@@ -695,7 +695,15 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_archive(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_archive(
+            self,
+            mock_run_appserver_playbook,
+            mock_reconfigure,
+            mock_disable_monitoring,
+            mock_remove_dns_records,
+            *mock
+    ):
         """
         Test that `archive` method terminates all app servers belonging to an instance
         and disables monitoring.
