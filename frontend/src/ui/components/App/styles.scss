@@ -1,0 +1,9 @@
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    min-height: 100vh;
+    background-image: url("~assets/header-background.jpg");
+    background-size: contain;
+    background-repeat: no-repeat;
+}

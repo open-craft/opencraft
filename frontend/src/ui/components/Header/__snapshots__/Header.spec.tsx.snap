@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<header
+  className="app-header row"
+>
+  <div
+    className="col-lg"
+  />
+  <div
+    className="col-lg"
+  >
+    <svg>
+      <use
+        xlinkHref="icons.svg#opencraft_logo"
+      />
+    </svg>
+  </div>
+  <div
+    className="col-lg"
+  />
+</header>
+`;

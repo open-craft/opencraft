@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="app-container container-fluid"
+>
+  <header
+    className="app-header row"
+  >
+    <div
+      className="col-lg"
+    />
+    <div
+      className="col-lg"
+    >
+      <svg>
+        <use
+          xlinkHref="icons.svg#opencraft_logo"
+        />
+      </svg>
+    </div>
+    <div
+      className="col-lg"
+    />
+  </header>
+  <div
+    className="app-main row"
+  >
+    <div
+      className="col"
+    >
+      <div
+        className="jumbotron"
+      >
+        <h1>
+          This is the home page
+        </h1>
+        <a
+          className="btn btn-primary"
+          href="/registration"
+          onClick={[Function]}
+        >
+          Start Registration
+        </a>
+      </div>
+    </div>
+  </div>
+  <footer
+    className="app-footer align-items-center row"
+  >
+    <div
+      className="col-auto mr-auto col"
+    >
+      OpenCraft 2013-2020
+    </div>
+    <div
+      className="col-auto col"
+    >
+      EdX and Open edX are registered trademarks of edX Inc. All rights reserved.
+    </div>
+  </footer>
+</div>
+`;

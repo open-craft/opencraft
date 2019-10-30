@@ -1,0 +1,19 @@
+@import '~styles/theme';
+
+
+header.app-header {
+    min-height: 6em;
+    color: white;
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+
+        .site-logo {
+            fill: white;
+            width: 152px;
+            height: 82px;
+            padding-top: 15px;
+        }
+    }
+}
