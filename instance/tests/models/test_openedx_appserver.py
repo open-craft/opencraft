@@ -37,6 +37,7 @@ from freezegun import freeze_time
 from pytz import utc
 
 from instance.models.appserver import Status as AppServerStatus, AppServer
+from instance.models.mixins.ansible import Playbook
 from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVER_SECURITY_GROUP_RULES
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
@@ -539,6 +540,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(instance.appserver_set.get().last_activated, activation_time)
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 2)
         self.assertEqual(mocks.mock_enable_monitoring.call_count, 1)
+        self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 1)
 
         # Test deactivate
         appserver.make_active(active=False)
@@ -549,6 +551,32 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 3)
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
+        self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 2)
+
+    @patch_services
+    def test_make_active_fails_to_start_services(self, mocks):
+        """
+        Test make_active() and check if its behaving correctly when the
+        playbooks to start services fail
+        """
+        mocks.mock_run_appserver_playbooks.return_value = ('', 2)
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
+        appserver_id = instance.spawn_appserver()
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
+        appserver = instance.appserver_set.get(pk=appserver_id)
+
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+
+        appserver.make_active()
+
+        instance.refresh_from_db()
+        appserver.refresh_from_db()
+        self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 1)
+        self.assertFalse(appserver.is_active)
+        self.assertEqual(appserver.last_activated, None)
+        self.assertEqual(instance.appserver_set.get().last_activated, None)
+        self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 1)
+        self.assertEqual(mocks.mock_enable_monitoring.call_count, 0)
 
     @patch_services
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
@@ -585,6 +613,31 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         self.assertEqual(mocks.mock_load_balancer_run_playbook.call_count, 0)
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
+
+    @override_settings(SITE_ROOT="/root/dir/")
+    @patch_services
+    def test_manage_instance_services(self, mocks):
+        """
+        Test if manage instance services is correctly running the playbook
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
+        appserver_id = instance.spawn_appserver()
+        appserver = instance.appserver_set.get(pk=appserver_id)
+        expected_playbook = Playbook(
+            source_repo=None,
+            playbook_path='playbooks/manage_services/manage_services.yml',
+            requirements_path='playbooks/manage_services/requirements.txt',
+            version=None,
+            variables='services: all\nsupervisord_action: start\n'
+        )
+
+        appserver.manage_instance_services(active=True)
+
+        self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 1)
+        mocks.mock_run_appserver_playbooks.assert_called_once_with(
+            playbook=expected_playbook,
+            working_dir='/root/dir/'
+        )
 
     @patch_services
     def test_terminate_vm(self, mocks, mock_consul):

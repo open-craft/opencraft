@@ -254,8 +254,16 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
     @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver_break_on_success(self, mark_active, mock_run_playbook, mock_provision,
-                                              mock_provision_rabbitmq, mock_consul):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_spawn_appserver_break_on_success(
+            self,
+            mark_active,
+            mock_run_appserver_playbook,
+            mock_run_playbook,
+            mock_provision,
+            mock_provision_rabbitmq,
+            mock_consul,
+    ):
         """
         This test makes sure that upon a successful instance creation, further instances are not created
         even when the num_attempts is more than 1.
@@ -327,7 +335,8 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_active(self, mock_run_playbook, mock_public_ip, mock_consul):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_make_active(self, mock_run_appserver_playbook, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - Make this OpenEdXAppServer active
         for its given instance.
@@ -375,7 +384,8 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive(self, mock_run_playbook, mock_public_ip, mock_consul):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_make_inactive(self, mock_run_appserver_playbook, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - Make this OpenEdXAppServer inactive
         for its given instance.
@@ -394,6 +404,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(list(instance.get_active_appservers().all()), [app_server])
         app_server.refresh_from_db()
         self.assertTrue(app_server.is_active)
+        self.assertEqual(mock_run_appserver_playbook.call_count, 1)
 
         # Make the server inactive
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
@@ -405,12 +416,14 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         app_server.refresh_from_db()
         self.assertFalse(app_server.is_active)
+        self.assertEqual(mock_run_appserver_playbook.call_count, 2)
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive_unhealthy(self, mock_run_playbook, mock_public_ip, mock_consul):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def test_make_inactive_unhealthy(self, mock_run_appserver_playbook, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - unheahtly AppServers can be deactivated
         """
@@ -426,10 +439,14 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(list(instance.get_active_appservers().all()), [app_server])
         app_server.refresh_from_db()
         self.assertTrue(app_server.is_active)
+        self.assertEqual(mock_run_appserver_playbook.call_count, 1)
 
         # Move to unhealthy status
         app_server._status_to_waiting_for_server()
         app_server._status_to_error()
+        # Returns false if playbook fails, but should enable deactivating
+        # unhealthy/unaccessible appservers
+        mock_run_appserver_playbook.return_value = ("", 2)
 
         # Make the server inactive
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
@@ -441,6 +458,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertFalse(instance.get_active_appservers().exists())
         app_server.refresh_from_db()
         self.assertFalse(app_server.is_active)
+        self.assertEqual(mock_run_appserver_playbook.call_count, 2)
 
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),
@@ -518,7 +536,8 @@ class OpenEdXAppServerAPITerminate(APITestCase):
         super().setUp()
         self.api_client.login(username='user3', password='pass')
 
-    def _create_appserver(self, is_active):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    def _create_appserver(self, is_active, mock_run_appserver_playbook):
         """
         Creates test instance and app server
         """
@@ -541,7 +560,7 @@ class OpenEdXAppServerAPITerminate(APITestCase):
 
         Inactive app servers are terminated.
         """
-        instance, app_server = self._create_appserver(False)
+        instance, app_server = self._create_appserver(False)  # pylint: disable=no-value-for-parameter
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/terminate/'.format(pk=app_server.pk))
         instance.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -558,7 +577,7 @@ class OpenEdXAppServerAPITerminate(APITestCase):
 
         AppServer must be deactivated to be terminated.
         """
-        instance, app_server = self._create_appserver(True)
+        instance, app_server = self._create_appserver(True)  # pylint: disable=no-value-for-parameter
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/terminate/'.format(pk=app_server.pk))
         instance.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
