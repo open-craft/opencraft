@@ -607,10 +607,24 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails)
 
-        with self.assertTemplateUsed('registration/fields_changed_email.txt'):
+        # Modifying before verifying emails don't send e-emails
+        with self.assertTemplateNotUsed('registration/fields_changed_email.txt'):
             modified.update({
                 'main_color': '#001188',
             })
+            self._register(modified)
+            self.assertEqual(len(mail.outbox), original_emails)
+
+        # After verification, e-mail is sent
+        with self.assertTemplateUsed('registration/fields_changed_email.txt'):
+            modified.update({
+                'main_color': '#002277',
+            })
+
+            user = User.objects.get()
+            for email in user.email_address_set.all():
+                EmailAddress.objects.confirm(email.key)
+
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails + 1)
 
