@@ -38,12 +38,16 @@ from instance.tests.utils import patch_services
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class AnsibleAppServerTestCase(TestCase):
     """
     Test cases for AnsibleAppServerMixin models
     """
     @patch_services
-    def test_inventory_str(self, mocks):
+    def test_inventory_str(self, mocks, mock_consul):
         """
         Ansible inventory string - should contain the public IP of the AppServer's VM
         """
@@ -61,7 +65,7 @@ class AnsibleAppServerTestCase(TestCase):
         )
 
     @patch_services
-    def test_inventory_str_no_server(self, mocks):
+    def test_inventory_str_no_server(self, mocks, mock_consul):
         """
         Ansible inventory string - should raise an exception if the server has no public IP
         """
@@ -92,7 +96,8 @@ class AnsibleAppServerTestCase(TestCase):
             mock_open_repo,
             mock_inventory,
             mock_run_playbook,
-            mock_poll_streams
+            mock_poll_streams,
+            mock_consul
     ):
         """
         The appserver gets provisioned with the appropriate playbooks.
@@ -130,7 +135,7 @@ class AnsibleAppServerTestCase(TestCase):
 
     @patch('instance.models.mixins.ansible.ansible.run_playbook')
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin.inventory_str')
-    def test_run_playbook_logging(self, mock_inventory_str, mock_run_playbook):
+    def test_run_playbook_logging(self, mock_inventory_str, mock_run_playbook, mock_consul):
         """
         Ensure logging routines are working on _run_playbook method
         """

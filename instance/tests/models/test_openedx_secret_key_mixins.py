@@ -25,6 +25,7 @@ OpenEdXInstance secret key mixins - Tests
 import codecs
 import json
 import re
+from unittest.mock import patch
 import yaml
 import six
 from Cryptodome.PublicKey import RSA
@@ -47,11 +48,15 @@ JWK_SET_KEY_NAMES = [
 
 # Tests #######################################################################
 
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
     """
     Test cases for SecretKeyInstanceMixin models
     """
-    def test_secret_key_creation(self):
+    def test_secret_key_creation(self, mock_consul):
         """
         Test that we can reliably produce derived secret keys for an instance with a particular
         existing secret key.
@@ -73,7 +78,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
             '21b5271f21ee6dacfde05cd97e20739f0e73dc8a43408ef14b657bfbf718e2b4',
         )
 
-    def test_secret_key_settings(self):
+    def test_secret_key_settings(self, mock_consul):
         """
         Test the YAML settings returned by SecretKeyInstanceMixin.
         """
@@ -99,7 +104,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         for to_var, from_var in OPENEDX_SHARED_KEYS.items():
             self.assertEqual(secret_key_settings[to_var], secret_key_settings[from_var])
 
-    def test_secret_key_settings_no_key(self):
+    def test_secret_key_settings_no_key(self, mock_consul):
         """
         Test that secret key settings are empty if the master key is not set.
         """
@@ -109,7 +114,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         instance.save()
         self.assertEqual(instance.get_secret_key_settings(), '')
 
-    def test_http_auth_settings(self):
+    def test_http_auth_settings(self, mock_consul):
         """
         Test HTTP auth username and password generation.
         """
@@ -122,7 +127,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         self.assertEqual(instance.http_auth_info_base64(), 'NzUxODJlZTlmNTMyZWU4MTphZjM1MGZjMWQzY2ViNmMw')
 
     @patch_services
-    def test_do_not_create_insecure_secret_keys(self, mocks):
+    def test_do_not_create_insecure_secret_keys(self, mocks, mock_consul):
         """
         Test that if we have a brand-new instance with no appservers, we refuse to create insecure
         keys for those appservers if we don't have a secure secret key for the instance.
@@ -140,7 +145,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
         with six.assertRaisesRegex(self, ValueError, expected_error_string):
             instance.spawn_appserver()
 
-    def test_rsa_key_creation(self):
+    def test_rsa_key_creation(self, mock_consul):
         """
         Test that we can produce public and private key pair for an
         instance with a particular existing secret key.
@@ -200,7 +205,7 @@ yF9iraiA2UvfpdwQSgXWsm7/+70kzVsb/MGl3rn63A==
             },
         )
 
-    def test_get_generate_rsa_if_empty(self):
+    def test_get_generate_rsa_if_empty(self, mock_consul):
         """
         Test if a RSA key is generated when it's request if theres no RSA keys
         stored

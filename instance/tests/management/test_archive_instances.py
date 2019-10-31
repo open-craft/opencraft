@@ -38,6 +38,11 @@ from instance.tests.base import get_fixture_filepath
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
+@patch('instance.models.openedx_instance.OpenEdXInstance.purge_consul_metadata')
 class ArchiveInstancesTestCase(TestCase):
     """
     Test cases for the `archive_instances` management command.
@@ -76,7 +81,7 @@ class ArchiveInstancesTestCase(TestCase):
 
         return instances
 
-    def test_zero_instances_archived(self):
+    def test_zero_instances_archived(self, *mock):
         """
         Verify that if no instances match the domains, the command exits
         without prompting.
@@ -86,7 +91,7 @@ class ArchiveInstancesTestCase(TestCase):
         self.assertEqual(out.getvalue().strip(), 'No active instances found (from 1 domains).')
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='no'))
-    def test_cancel_archive(self):
+    def test_cancel_archive(self, *mock):
         """
         Verify that the user can cancel the archiving by answering "no"
         """
@@ -100,8 +105,7 @@ class ArchiveInstancesTestCase(TestCase):
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
-    def test_confirm_archive(self, mock_remove_dns_records, mock_disable_monitoring,
-                             mock_reconfigure, mock_deprovision_rabbitmq):
+    def test_confirm_archive(self, *mock):
         """
         Verify that the user can continue with the archiving by answering "yes"
         """
@@ -122,8 +126,7 @@ class ArchiveInstancesTestCase(TestCase):
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
     def test_archiving_instances_by_domain(self, domains, expected_archived_count,
-                                           mock_remove_dns_records, mock_disable_monitoring,
-                                           mock_reconfigure, mock_deprovision_rabbitmq):
+                                           mock_deprovision_rabbitmq, *mock):
         """
         Test archiving single and multiple instances by passing invidividual domains.
         """
@@ -156,8 +159,7 @@ class ArchiveInstancesTestCase(TestCase):
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
     def test_archiving_instances_by_file(self, filename, expected_archived_count,
-                                         mock_remove_dns_records, mock_disable_monitoring,
-                                         mock_reconfigure, mock_deprovision_rabbitmq):
+                                         mock_deprovision_rabbitmq, *mock):
         """
         Test archiving instances from domains listed in a file.
         """
@@ -182,11 +184,10 @@ class ArchiveInstancesTestCase(TestCase):
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
-    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin.deprovision_rabbitmq')
-    def test_archive_exception_handling(self, mock_remove_dns_records, mock_disable_monitoring,
-                                        mock_reconfigure, mock_deprovision_rabbitmq):
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    def test_archive_exception_handling(self, mock_disable_monitoring, *mock):
         """
         Verify that if an instance fails to be archived, the other instances are still being archived.
         """

@@ -48,6 +48,10 @@ class ReprovisionBucketsTestCase(TestCase):
             'Found "0" active instances',
             [l[2] for l in captured_logs.actual()])
 
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._enable_bucket_versioning')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._update_bucket_lifecycle')
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin._update_bucket_cors')
@@ -60,7 +64,8 @@ class ReprovisionBucketsTestCase(TestCase):
                      mock_create_bucket,
                      mock_update_cors,
                      mock_update_lifecycle,
-                     mock_enable_versioning):
+                     mock_enable_versioning,
+                     mock_consul):
         """
         Verify that the command correctly reprovision the bucket for an instance.
         """

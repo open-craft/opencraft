@@ -297,7 +297,11 @@ class BetaTestApplicationViewTestMixin:
             'subdomain': ['This domain name is not publicly available.'],
         })
 
-    def test_instance_subdomain(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_instance_subdomain(self, mock_consul):
         """
         Subdomain used by an existing instance.
         """

@@ -52,15 +52,19 @@ class DeleteArchivedTestCase(TestCase):
             ('old', 200),
         ]
 
-        for name, days in instances:
-            instance = OpenEdXInstance.objects.create(
-                sub_domain=name,
-                openedx_release='z.1',
-                successfully_provisioned=True
-            )
-            instance.ref.is_archived = True
-            instance.ref.modified -= timedelta(days=days)
-            instance.ref.save(update_modified=False)
+        with patch(
+                'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            for name, days in instances:
+                instance = OpenEdXInstance.objects.create(
+                    sub_domain=name,
+                    openedx_release='z.1',
+                    successfully_provisioned=True
+                )
+                instance.ref.is_archived = True
+                instance.ref.modified -= timedelta(days=days)
+                instance.ref.save(update_modified=False)
 
     def test_zero_instances_deleted(self):
         """

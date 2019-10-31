@@ -38,6 +38,10 @@ from instance.tests.models.factories.server import OpenStackServerFactory
 
 # Tests #######################################################################
 
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class LoggingTestCase(TestCase):
     """
     Test cases for logging
@@ -47,8 +51,12 @@ class LoggingTestCase(TestCase):
         Set up an instance and server to use for testing.
         """
         super().setUp()
-        self.instance = OpenEdXInstanceFactory(sub_domain='my.instance', name="Test Instance 1")
-        self.app_server = make_test_appserver(instance=self.instance)
+        with patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            self.instance = OpenEdXInstanceFactory(sub_domain='my.instance', name="Test Instance 1")
+            self.app_server = make_test_appserver(instance=self.instance)
         self.server = self.app_server.server
 
         # Override the VM names for consistency:
@@ -76,14 +84,14 @@ class LoggingTestCase(TestCase):
             self.assertEqual(entry.level, level)
             self.assertEqual(entry.text, text)
 
-    def test_default_log_level(self):
+    def test_default_log_level(self, mock_consul):
         """
         Check that the default log level is INFO
         """
         log_entry = LogEntry(text='OHAI')
         self.assertEqual(log_entry.level, 'INFO')
 
-    def test_log_entries(self):
+    def test_log_entries(self, mock_consul):
         """
         Check `log_entries` output for combination of instance & server logs
         """
@@ -121,7 +129,7 @@ class LoggingTestCase(TestCase):
             self.check_log_entries(self.app_server.log_entries, expected[-2:])
 
     @patch('instance.logging.publish_data')
-    def test_log_publish(self, mock_publish_data):
+    def test_log_publish(self, mock_publish_data, mock_consul):
         """
         Logger sends an event to the client on each new entry added.
         """
@@ -162,7 +170,7 @@ class LoggingTestCase(TestCase):
             'instance_type': 'OpenEdXInstance',
         })
 
-    def test_log_delete(self):
+    def test_log_delete(self, mock_consul):
         """
         Check `log_entries` output for combination of instance & server logs
         """
@@ -192,7 +200,7 @@ class LoggingTestCase(TestCase):
             entries[2]
         )
 
-    def test_log_num_queries(self):
+    def test_log_num_queries(self, mock_consul):
         """
         Check that logging to the LogEntry table doesn't do more queries than necessary.
 
@@ -207,7 +215,7 @@ class LoggingTestCase(TestCase):
         with self.assertNumQueries(3):
             self.server.logger.info('some log message')
 
-    def test_log_delete_num_queries(self):
+    def test_log_delete_num_queries(self, mock_consul):
         """
         Check that the LogEntry.on_post_delete handler doesn't do more queries than necessary.
         """
@@ -219,7 +227,7 @@ class LoggingTestCase(TestCase):
         with self.assertNumQueries(1):
             log_entry.delete()
 
-    def test_str_repr(self):
+    def test_str_repr(self, mock_consul):
         """
         Test the string representation of a LogEntry object
         """
@@ -233,7 +241,7 @@ class LoggingTestCase(TestCase):
                 self.server.pk, self.server.name, msg)
         )
 
-    def test_invalid_content_type_object_id_combo(self):
+    def test_invalid_content_type_object_id_combo(self, mock_consul):
         """
         Test that content_type and object_id cannot be set on their own
         """
@@ -255,7 +263,7 @@ class LoggingTestCase(TestCase):
             LogEntry.objects.create(text=text, content_type_id=content_type.pk, object_id=None)
         check_exception(context.exception)
 
-    def test_invalid_object_id(self):
+    def test_invalid_object_id(self, mock_consul):
         """
         Test that object_id validity is enforced at the application level.
         """
@@ -271,7 +279,7 @@ class LoggingTestCase(TestCase):
             ['Object attached to LogEntry has bad content_type or primary key'],
         )
 
-    def test_log_error_entries(self):
+    def test_log_error_entries(self, mock_consul):
         """
         Check `log_error_entries` output for combination of AppServer & server logs
         """

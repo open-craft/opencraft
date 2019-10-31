@@ -51,12 +51,16 @@ from userprofile.models import Organization
 # Tests #######################################################################
 
 @ddt
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerTestCase(TestCase):
     """
     Test cases for OpenEdXAppServer objects
     """
 
-    def test_immutable_fields(self):
+    def test_immutable_fields(self, mock_consul):
         """
         Test that some appserver fields are immutable.
         """
@@ -66,7 +70,7 @@ class OpenEdXAppServerTestCase(TestCase):
             appserver.save(update_fields=["openedx_release"])
 
     @patch_services
-    def test_provision(self, mocks):
+    def test_provision(self, mocks, mock_consul):
         """
         Run provisioning sequence
         """
@@ -86,7 +90,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(mock_reboot.call_count, 1)
 
     @patch_services
-    def test_provision_build_failed(self, mocks):
+    def test_provision_build_failed(self, mocks, mock_consul):
         """
         Run provisioning sequence failing server creation on purpose to make sure
         server and instance statuses will be set accordingly.
@@ -104,7 +108,7 @@ class OpenEdXAppServerTestCase(TestCase):
         mocks.mock_provision_failed_email.assert_called_once_with('Unable to start an OpenStack server')
 
     @patch_services
-    def test_provision_failed(self, mocks):
+    def test_provision_failed(self, mocks, mock_consul):
         """
         Run provisioning sequence failing the deployment on purpose to make sure
         server and instance statuses will be set accordingly.
@@ -123,7 +127,7 @@ class OpenEdXAppServerTestCase(TestCase):
         )
 
     @patch_services
-    def test_provision_unhandled_exception(self, mocks):
+    def test_provision_unhandled_exception(self, mocks, mock_consul):
         """
         Make sure that if there is an unhandled exception during provisioning, the provision()
         method should return False and send an email.
@@ -134,7 +138,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
 
-    def test_admin_users(self):
+    def test_admin_users(self, mock_consul):
         """
         By default, all users that belong to an organization that owns the
         server and OCIM admins have access to the sandbox.
@@ -192,7 +196,7 @@ class OpenEdXAppServerTestCase(TestCase):
             ])
 
     @patch_services
-    def test_cannot_reprovision(self, mocks):
+    def test_cannot_reprovision(self, mocks, mock_consul):
         """
         Once an AppServer's provision() method has been called once, it cannot be called ever
         again. Instead, a new AppServer must be created.
@@ -223,7 +227,7 @@ class OpenEdXAppServerTestCase(TestCase):
                 app_server.provision()
 
     @patch('instance.openstack_utils.get_nova_client')
-    def test_launch_in_other_region(self, mock_get_nova_client):
+    def test_launch_in_other_region(self, mock_get_nova_client, mock_consul):
         """
         Test launching an appserver in a non-default region.
         """
@@ -238,7 +242,7 @@ class OpenEdXAppServerTestCase(TestCase):
         'INSIGHTS_VERSION',
         'NOTIFIER_VERSION',
     )
-    def test_default_component_versions(self, component_version):
+    def test_default_component_versions(self, component_version, mock_consul):
         """
         Test the default value of components' version
         """
@@ -259,7 +263,7 @@ class OpenEdXAppServerTestCase(TestCase):
         'INSIGHTS_VERSION',
         'NOTIFIER_VERSION',
     )
-    def test_component_versions_on_override(self, component_version):
+    def test_component_versions_on_override(self, component_version, mock_consul):
         """
         Test the components' version values on override
         """
@@ -277,7 +281,7 @@ class OpenEdXAppServerTestCase(TestCase):
             '{}: dummy-release'.format(component_version), appserver.configuration_settings
         )
 
-    def test_configuration_extra_settings(self):
+    def test_configuration_extra_settings(self, mock_consul):
         """
         Add extra settings in ansible vars, which can override existing settings
         """
@@ -291,7 +295,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertNotIn('Vars Instance', appserver.configuration_settings)
         self.assertIn("EDXAPP_CONTACT_EMAIL: vars@example.com", appserver.configuration_settings)
 
-    def test_lms_user_settings(self):
+    def test_lms_user_settings(self, mock_consul):
         """
         Test that lms_user_settings are initialised correctly for new AppServers.
         """
@@ -311,7 +315,7 @@ class OpenEdXAppServerTestCase(TestCase):
         INSTANCE_SMTP_RELAY_PASSWORD='smtppass',
         INSTANCE_SMTP_RELAY_SENDER_DOMAIN='opencraft.hosting'
     )
-    def test_postfix_queue_settings_present(self):
+    def test_postfix_queue_settings_present(self, mock_consul):
         """
         Check that ansible vars for postfix_queue role are set correctly.
         """
@@ -333,7 +337,7 @@ class OpenEdXAppServerTestCase(TestCase):
         )
 
     @override_settings(INSTANCE_SMTP_RELAY_HOST=None)
-    def test_postfix_queue_settings_absent(self):
+    def test_postfix_queue_settings_absent(self, mock_consul):
         """
         Check that ansible vars for postfix_queue role are not present when SMTP relay host is not configured.
         """
@@ -347,7 +351,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertNotIn('POSTFIX_QUEUE_HEADER_CHECKS', configuration_vars)
         self.assertNotIn('POSTFIX_QUEUE_SENDER_CANONICAL_MAPS', configuration_vars)
 
-    def test_youtube_api_key_unset(self):
+    def test_youtube_api_key_unset(self, mock_consul):
         """
         Check that EDXAPP_YOUTUBE_API_KEY is set to None by default.
         """
@@ -357,7 +361,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertIsNone(configuration_vars['EDXAPP_YOUTUBE_API_KEY'])
 
     @patch_services
-    def test_default_security_groups(self, mocks):
+    def test_default_security_groups(self, mocks, mock_consul):
         """
         Test that security groups are set when provisioning an AppServer
         """
@@ -368,7 +372,7 @@ class OpenEdXAppServerTestCase(TestCase):
 
     @override_settings(OPENEDX_APPSERVER_SECURITY_GROUP_NAME="default-group")
     @patch_services
-    def test_additional_security_groups(self, mocks):
+    def test_additional_security_groups(self, mocks, mock_consul):
         """
         Test a differently-named default security group, as well as the ability
         for an Instance to specify additional security groups.
@@ -381,7 +385,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(create_server_kwargs["security_groups"], ["default-group", "group_a", "group_b"])
 
     @patch_services
-    def test_provision_invalid_security_groups(self, mocks):
+    def test_provision_invalid_security_groups(self, mocks, mock_consul):
         """
         Test what happens when security groups cannot be created/synced/verified.
         The server VM should not be created, and the provisioning should fail.
@@ -397,7 +401,7 @@ class OpenEdXAppServerTestCase(TestCase):
 
     @patch("instance.models.openedx_appserver.get_openstack_connection")
     @patch("instance.models.openedx_appserver.sync_security_group_rules")
-    def test_check_security_groups(self, mock_sync_security_group_rules, mock_get_openstack_connection):
+    def test_check_security_groups(self, mock_sync_security_group_rules, mock_get_openstack_connection, mock_consul):
         """
         Test that check_security_groups() can create and synchronize security groups
         """
@@ -446,7 +450,7 @@ class OpenEdXAppServerTestCase(TestCase):
             app_server.check_security_groups()
 
     @patch_services
-    def test_default_openstack_settings(self, mocks):
+    def test_default_openstack_settings(self, mocks, mock_consul):
         """
         Test that the default openstack settings are used when starting an appserver
         """
@@ -458,7 +462,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(create_server_kwargs["key_name"], settings.OPENSTACK_SANDBOX_SSH_KEYNAME)
 
     @patch_services
-    def test_custom_openstack_settings(self, mocks):
+    def test_custom_openstack_settings(self, mocks, mock_consul):
         """
         Test that the instance's custom openstack settings are used when starting an appserver.
         """
@@ -511,8 +515,9 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(appserver.is_active)
         self.assertEqual(appserver.last_activated, activation_time)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_services
-    def test_make_active(self, mocks):
+    def test_make_active(self, mocks, mock_consul):
         """
         Test make_active() and make_active(active=False)
         """
@@ -547,7 +552,7 @@ class OpenEdXAppServerTestCase(TestCase):
 
     @patch_services
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
-    def test_make_active_no_load_balancer_reconfiguration(self, mocks):
+    def test_make_active_no_load_balancer_reconfiguration(self, mocks, mock_consul):
         """
         Test make_active() and make_active(active=False) when the load balancer
         reconfiguration is disabled
@@ -582,7 +587,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(mocks.mock_disable_monitoring.call_count, 0)
 
     @patch_services
-    def test_terminate_vm(self, mocks):
+    def test_terminate_vm(self, mocks, mock_consul):
         """
         Test AppServer termination
         """
@@ -647,6 +652,10 @@ class OpenEdXAppServerTestCase(TestCase):
 
 
 @ddt
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerStatusTestCase(TestCase):
     """
     Test cases for status switching in OpenEdXAppServer objects
@@ -659,7 +668,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
         self.assertEqual(app_server.status.is_steady_state, is_steady_state)
         self.assertEqual(app_server.status.is_healthy_state, is_healthy_state)
 
-    def test_status_transitions(self):
+    def test_status_transitions(self, mock_consul):
         """
         Test that status transitions work as expected for different app server workflows
         """
@@ -731,7 +740,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
             'from_states': [AppServerStatus.Running],
         },
     )
-    def test_invalid_status_transitions(self, transition):
+    def test_invalid_status_transitions(self, transition, mock_consul):
         """
         Test that invalid status transitions raise exception
         """
@@ -748,6 +757,10 @@ class OpenEdXAppServerStatusTestCase(TestCase):
                 getattr(appserver, transition['name'])()
 
 
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class EmailMixinInstanceTestCase(TestCase):
     """
     Test cases for EmailMixin
@@ -782,7 +795,7 @@ class EmailMixinInstanceTestCase(TestCase):
             self.assertEqual(attachment_mime, mimetype)
 
     @override_settings(ADMINS=(("admin1", "admin1@localhost"),))
-    def test_provision_failed_email(self):
+    def test_provision_failed_email(self, mock_consul):
         """
         Tests that provision_failed sends email when called from normal program flow
         """
@@ -819,7 +832,7 @@ class EmailMixinInstanceTestCase(TestCase):
         ("admin1", "admin1@localhost"),
         ("admin2", "admin2@localhost"),
     ))
-    def test_provision_failed_exception_email(self):
+    def test_provision_failed_exception_email(self, mock_consul):
         """
         Tests that provision_failed sends email when called from exception handler
         """
@@ -858,7 +871,7 @@ class EmailMixinInstanceTestCase(TestCase):
 
     @responses.activate
     @patch('instance.models.server.OpenStackServer.public_ip', new_callable=PropertyMock)
-    def test_heartbeat_active_succeeds(self, mock_public_ip):
+    def test_heartbeat_active_succeeds(self, mock_public_ip, mock_consul):
         """ Test that heartbeat_active method returns true when request to heartbeat is 200"""
         appserver = make_test_appserver()
         mock_public_ip.return_value = "1.1.1.1"
@@ -867,7 +880,7 @@ class EmailMixinInstanceTestCase(TestCase):
         self.assertTrue(appserver.heartbeat_active())
 
     @patch('requests.options')
-    def test_heartbeat_active_fails(self, mock_requests_options):
+    def test_heartbeat_active_fails(self, mock_requests_options, mock_consul):
         """ Test that heartbeat_active method returns false when request to heartbeat fails"""
         mock_requests_options.side_effect = requests.exceptions.ConnectionError()
         appserver = make_test_appserver()

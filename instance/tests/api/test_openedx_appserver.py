@@ -27,6 +27,7 @@ from unittest.mock import patch
 import ddt
 from rest_framework import status
 from django.conf import settings
+from django.test.utils import override_settings
 from instance.tasks import spawn_appserver
 
 from instance.tests.api.base import APITestCase
@@ -39,11 +40,15 @@ from instance.tests.utils import patch_gandi, patch_url
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerAPIAcessTestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to getting server information.
     """
-    def test_get_unauthenticated(self):
+    def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated
         """
@@ -52,7 +57,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
     @ddt.data('user1', 'user2')
-    def test_get_permission_denied(self, username):
+    def test_get_permission_denied(self, username, mock_consul):
         """
         GET - basic and staff users denied access
         """
@@ -62,7 +67,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
         self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
     @ddt.data('user3', 'user4')
-    def test_get_authenticated(self, username):
+    def test_get_authenticated(self, username, mock_consul):
         """
         GET - Authenticated - instance manager users (superuser or not) allowed access
         """
@@ -114,7 +119,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_get_details_permission_denied(self, username, message):
+    def test_get_details_permission_denied(self, username, message, mock_consul):
         """
         GET - Detailed attributes - anonymous, basic, and staff users denied access
         """
@@ -127,7 +132,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
     @ddt.data('user3', 'user4')
-    def test_get_details(self, username):
+    def test_get_details(self, username, mock_consul):
         """
         GET - Detailed attributes - instance manager (superuser or not) allowed access
         """
@@ -170,7 +175,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
         self.assertIn('log_entries', data)
         self.assertIn('log_error_entries', data)
 
-    def test_get_servers_from_different_org(self):
+    def test_get_servers_from_different_org(self, mock_consul):
         """
         GET - A non-superuser instance manager from organization 1 can't find servers from organization 2
         (that is, servers belonging to instances owned by organization 2).
@@ -205,6 +210,10 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to spawning new servers.
@@ -214,7 +223,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
     @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver(self, mock_run_playbook, mock_provision, mock_provision_rabbitmq):
+    def test_spawn_appserver(self, mock_run_playbook, mock_provision, mock_provision_rabbitmq, mock_consul):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
 
@@ -246,7 +255,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
     def test_spawn_appserver_break_on_success(self, mark_active, mock_run_playbook, mock_provision,
-                                              mock_provision_rabbitmq):
+                                              mock_provision_rabbitmq, mock_consul):
         """
         This test makes sure that upon a successful instance creation, further instances are not created
         even when the num_attempts is more than 1.
@@ -266,7 +275,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_spawn_appserver_denied(self, username, message):
+    def test_spawn_appserver_denied(self, username, message, mock_consul):
         """
         POST - Anonymous, basic, and staff users (without manage_own permission) can't spawn servers.
         """
@@ -277,7 +286,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
-    def test_spawn_appserver_no_organization(self):
+    def test_spawn_appserver_no_organization(self, mock_consul):
         """
         POST - An instance manager user without an organization can't spawn servers
         (because they can't see any instance either).
@@ -287,7 +296,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedx_appserver/', {'instance_id': instance.ref.pk})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_spawn_appserver_different_org(self):
+    def test_spawn_appserver_different_org(self, mock_consul):
         """
         POST - An instance manager can't spawn a server in an organization they don't belong to.
         """
@@ -305,15 +314,20 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to activation/deactivation of servers.
     """
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_active(self, mock_run_playbook, mock_public_ip):
+    def test_make_active(self, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - Make this OpenEdXAppServer active
         for its given instance.
@@ -339,7 +353,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertTrue(app_server.is_active)
 
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_active_unhealthy(self, mock_run_playbook):
+    def test_make_active_unhealthy(self, mock_run_playbook, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_active/ - AppServer must be healthy
         to be activated
@@ -357,10 +371,11 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(response.data, {'error': 'Cannot make an unhealthy app server active.'})
         self.assertEqual(mock_run_playbook.call_count, 0)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive(self, mock_run_playbook, mock_public_ip):
+    def test_make_inactive(self, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - Make this OpenEdXAppServer inactive
         for its given instance.
@@ -391,10 +406,11 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         app_server.refresh_from_db()
         self.assertFalse(app_server.is_active)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch_gandi
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
-    def test_make_inactive_unhealthy(self, mock_run_playbook, mock_public_ip):
+    def test_make_inactive_unhealthy(self, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/make_inactive/ - unheahtly AppServers can be deactivated
         """
@@ -432,7 +448,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_make_active_permission_denied(self, username, message):
+    def test_make_active_permission_denied(self, username, message, mock_consul):
         """
         POST - Anonymous, basic, and staff users (without manage_own permission) can't make servers active/inactive.
         """
@@ -451,7 +467,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
-    def test_make_active_no_organization(self):
+    def test_make_active_no_organization(self, mock_consul):
         """
         POST - An instance manager user without an organization can't activate/deactivate servers
         (since they don't belong to the user's organization, because there isn't one).
@@ -468,7 +484,7 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         response = self.api_client.post('/api/v1/openedx_appserver/{pk}/make_inactive/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_make_active_different_org(self):
+    def test_make_active_different_org(self, mock_consul):
         """
         POST - An instance manager can't activate/deactive a server in an organization they don't belong to.
         """
@@ -489,6 +505,10 @@ class OpenEdXAppServerAPIMakeActiveTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerAPITerminate(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to termination of servers.
@@ -515,7 +535,7 @@ class OpenEdXAppServerAPITerminate(APITestCase):
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
     @patch('instance.models.server.OpenStackServer.terminate')
-    def test_terminate_inactive(self, mock_terminate_server, mock_run_playbook, mock_public_ip):
+    def test_terminate_inactive(self, mock_terminate_server, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/terminate/ - Terminate this OpenEdXAppServer VM.
 
@@ -532,7 +552,7 @@ class OpenEdXAppServerAPITerminate(APITestCase):
     @patch('instance.models.server.OpenStackServer.public_ip')
     @patch('instance.models.load_balancer.LoadBalancingServer.run_playbook')
     @patch('instance.models.server.OpenStackServer.terminate')
-    def test_terminate_active(self, mock_terminate_server, mock_run_playbook, mock_public_ip):
+    def test_terminate_active(self, mock_terminate_server, mock_run_playbook, mock_public_ip, mock_consul):
         """
         POST /api/v1/openedx_appserver/:id/terminate/ - Terminate this OpenEdXAppServer VM.
 
@@ -547,13 +567,17 @@ class OpenEdXAppServerAPITerminate(APITestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXAppServerAPILogsTestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to logs
     """
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
-    def test_get_log_entries(self):
+    def test_get_log_entries(self, mock_consul):
         """
         GET - Log entries
         """
@@ -626,7 +650,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
             self.assertEqual(text, log_entry['text'])
 
     @patch_url(settings.OPENSTACK_AUTH_URL)
-    def test_get_log_error_entries(self):
+    def test_get_log_error_entries(self, mock_consul):
         """
         GET - Log error entries
         """
@@ -673,7 +697,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_get_logs_permission_denied(self, username, message):
+    def test_get_logs_permission_denied(self, username, message, mock_consul):
         """
         GET - Basic users and anonymous can't get an appserver's log entries.
         """
@@ -688,7 +712,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
-    def test_get_logs_different_organization(self):
+    def test_get_logs_different_organization(self, mock_consul):
         """
         GET - An instance manager can't get appserver logs if the instance belongs to a different organization.
         """
@@ -704,7 +728,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
         response = self.api_client.get('/api/v1/openedx_appserver/{pk}/logs/'.format(pk=app_server.pk))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_logs_no_organization(self):
+    def test_get_logs_no_organization(self, mock_consul):
         """
         GET - An instance manager without an organization can't get logs of any appserver.
         """
