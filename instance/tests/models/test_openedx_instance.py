@@ -696,6 +696,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    # pylint: disable=too-many-locals
     def test_archive(
             self,
             mock_run_appserver_playbook,
