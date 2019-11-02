@@ -3,6 +3,10 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.6-stretch-node-browsers
+        environment:
+          DEBUG: 'true'
+          DEFAULT_FORK: 'open-craft/edx-platform'
+          LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
       - image: redis
       - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
@@ -20,9 +24,6 @@ jobs:
             type: string
     environment:
         TEST_GROUP: <<parameters.tests_group>>
-        DEBUG: 'true'
-        DEFAULT_FORK: 'open-craft/edx-platform'
-        LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
     steps:
       - checkout
       - restore_cache:
@@ -123,9 +124,9 @@ jobs:
   cleanup:
     docker:
       - image: circleci/python:3.6-stretch
-    environment:
-      LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
-      DJANGO_SETTINGS_MODULE: 'opencraft.settings'
+        environment:
+          LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+          DJANGO_SETTINGS_MODULE: 'opencraft.settings'
     steps:
       - checkout
       - restore_cache:
