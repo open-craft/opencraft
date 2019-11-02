@@ -23,10 +23,6 @@ jobs:
         DEBUG: 'true'
         DEFAULT_FORK: 'open-craft/edx-platform'
         LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
-        DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
-        CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
-        CONSUL_ENABLED: true
-        DISABLE_LOAD_BALANCER_CONFIGURATION: true
     steps:
       - checkout
       - restore_cache:
@@ -130,10 +126,6 @@ jobs:
     environment:
       LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
       DJANGO_SETTINGS_MODULE: 'opencraft.settings'
-      DEFAULT_LOAD_BALANCING_SERVER: ubuntu@haproxy-integration.net.opencraft.hosting
-      CONSUL_SERVERS: haproxy-integration.net.opencraft.hosting
-      CONSUL_ENABLED: true
-      DISABLE_LOAD_BALANCER_CONFIGURATION: true
     steps:
       - checkout
       - restore_cache:
