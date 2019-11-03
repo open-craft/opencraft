@@ -549,6 +549,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 2)
 
     @patch_services
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     def test_make_active_fails_to_start_services(self, mocks, mock_consul):
         """
         Test make_active() and check if its behaving correctly when the
