@@ -19,6 +19,7 @@
 """
 Instance app models - Open EdX AppServer models
 """
+import os
 import yaml
 
 import requests
@@ -228,6 +229,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
     INVENTORY_GROUP = 'openedx-app'
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
+    MANAGE_SERVICES_PLAYBOOK_DIR = 'playbooks/manage_services/'
+    MANAGE_SERVICES_PLAYBOOK_NAME = 'manage_services.yml'
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',
@@ -249,8 +252,29 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         Parameters:
         * `active`: defaults to True.  Set to False to deactivate the appserver.
         """
-        self.logger.info('Making %s %s for instance %s...',
-                         self.name, "active" if active else "inactive", self.instance.name)
+        self.logger.info(
+            'Making %s %s for instance %s...',
+            self.name,
+            "active" if active else "inactive",
+            self.instance.name
+        )
+        # Try to start/stop services on VM.
+        # If this fails, block instance activation/deactivation
+        if not self.manage_instance_services(active=active):
+            self.logger.error(
+                'Failed to start/stop Open edX services on instance %s...',
+                self.instance.name
+            )
+            # Allow deactivating failing appservers but block activating
+            # appserver when the playbook fails
+            if active:
+                return
+
+            self.logger.info(
+                "Allowing appserver %s to be stopped since it's being deactivated.",
+                self.instance.name
+            )
+
         self.is_active = active
         self.save()
         self.instance.reconfigure_load_balancer()
@@ -290,6 +314,34 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             playbook_path=self.MANAGE_USERS_PLAYBOOK,
             version=self.configuration_version,
             variables=self.lms_user_settings,
+        )
+
+    def manage_services_playbook(self, action, services="all"):
+        """
+        Return a Playbook instance for creating LMS users.
+        """
+        playbook_settings = yaml.dump(
+            {
+                "supervisord_action": action,
+                "services": services,
+            },
+            default_flow_style=False
+        )
+        playbook_path = os.path.join(
+            self.MANAGE_SERVICES_PLAYBOOK_DIR,
+            self.MANAGE_SERVICES_PLAYBOOK_NAME
+        )
+        requirements_path = os.path.join(
+            self.MANAGE_SERVICES_PLAYBOOK_DIR,
+            'requirements.txt'
+        )
+
+        return Playbook(
+            source_repo=None,
+            version=None,
+            requirements_path=requirements_path,
+            playbook_path=playbook_path,
+            variables=playbook_settings,
         )
 
     def get_playbooks(self):
@@ -527,6 +579,32 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.logger.exception(message)
             self.provision_failed_email(message)
             return False
+
+    def manage_instance_services(self, active):
+        """
+        Manage services on appserver.
+
+        This function can start/stop services on the appserver. This is
+        used to stop edxapp services and prevent inactive appservers from
+        taking tasks from the celery queues.
+        """
+        if active:
+            action = 'start'
+        else:
+            action = 'stop'
+
+        playbook = self.manage_services_playbook(action=action)
+        _, returncode = self._run_playbook(
+            working_dir=settings.SITE_ROOT,
+            playbook=playbook
+        )
+
+        if returncode != 0:
+            self.logger.error('Playbook failed for AppServer %s', self)
+            return False
+
+        self.logger.info('Playbook completed for AppServer %s', self)
+        return True
 
     def terminate_vm(self):
         if self.is_active:

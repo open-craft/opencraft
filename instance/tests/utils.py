@@ -119,6 +119,10 @@ def patch_services(func):
                     'instance.models.mixins.ansible.AnsibleAppServerMixin.run_ansible_playbooks',
                     return_value=([], 0),
                 ),
+                mock_run_appserver_playbooks=stack_patch(
+                    'instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook',
+                    return_value=([], 0),
+                ),
                 mock_provision_failed_email=stack_patch(
                     'instance.models.mixins.utilities.EmailMixin.provision_failed_email',
                 ),
