@@ -271,7 +271,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                 return
 
             self.logger.info(
-                "Allowing appserver %s to be stopped since it's being deactivated."",
+                "Allowing appserver %s to be stopped since it's being deactivated.",
                 self.instance.name
             )
 
