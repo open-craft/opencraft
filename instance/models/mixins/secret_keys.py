@@ -198,7 +198,7 @@ class SecretKeyInstanceMixin(models.Model):
         keys['COMMON_JWT_PUBLIC_SIGNING_JWK_SET'] = jwk_key_pair.public
         keys['EDXAPP_JWT_PRIVATE_SIGNING_JWK'] = jwk_key_pair.private
 
-        # These two lines are here for backwards compatibility for the retirement
+        # TODO: These two lines are here for backwards compatibility for the retirement
         # service. They can be removed after the Juniper upgrade
         keys['RETIREMENT_SERVICE_OAUTH_CLIENT_ID'] = keys['RETIREMENT_SERVICE_EDX_OAUTH2_KEY']
         keys['RETIREMENT_SERVICE_OAUTH_CLIENT_SECRET'] = keys['RETIREMENT_SERVICE_EDX_OAUTH2_SECRET']
