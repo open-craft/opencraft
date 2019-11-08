@@ -149,7 +149,11 @@ else
 endif
 
 test.js: clean static_external ## Run JS tests.
+ifeq ($CIRCLECI,true)
+	@./node_modules/.bin/karma start --single-run
+else
 	@xvfb-run ./node_modules/.bin/karma start --single-run
+endif
 	@if [ -e coverage/text/coverage.txt ]; then cat coverage/text/coverage.txt; fi
 
 test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration cov.combine ## Run all tests.
