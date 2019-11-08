@@ -38,6 +38,10 @@ from pr_watch.tests.factories import make_watched_pr_and_instance, PRFactory
 
 
 @ddt.ddt
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class APITestCase(WithUserTestCase):
     """
     Tests of the Pull Request Watcher API
@@ -48,7 +52,7 @@ class APITestCase(WithUserTestCase):
         self.api_factory = APIRequestFactory()
         self.api_client = APIClient()
 
-    def test_get_unauthenticated(self):
+    def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated
         """
@@ -64,7 +68,7 @@ class APITestCase(WithUserTestCase):
         self.assertEqual(response.data, forbidden_message)
 
     @ddt.data('user1', 'user2')
-    def test_get_permission_denied(self, username):
+    def test_get_permission_denied(self, username, mock_consul):
         """
         GET - basic and staff users denied access
         """
@@ -81,7 +85,7 @@ class APITestCase(WithUserTestCase):
         self.assertEqual(response.data, forbidden_message)
 
     @ddt.data('user3', 'user4')
-    def test_get_authenticated(self, username):
+    def test_get_authenticated(self, username, mock_consul):
         """
         GET - Authenticated - instance manager users (superuser or not) allowed access
         """
@@ -118,7 +122,7 @@ class APITestCase(WithUserTestCase):
 
     @patch('pr_watch.github.get_commit_id_from_ref', return_value=('5' * 40))
     @patch('pr_watch.github.get_pr_by_number')
-    def test_get_filtered_by_organization(self, mock_get_pr_by_number, mock_get_commit_id_from_ref):
+    def test_get_filtered_by_organization(self, mock_get_pr_by_number, mock_get_commit_id_from_ref, mock_consul):
         """
         GET+POST - A user (instance manager) can only manage PRs from WF which belong to the user's organization.
         """
@@ -149,7 +153,7 @@ class APITestCase(WithUserTestCase):
         response = self.api_client.post('/api/v1/pr_watch/{pk}/update_instance/'.format(pk=wpr2.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_no_organization(self):
+    def test_no_organization(self, mock_consul):
         """
         GET+POST - An instance manager without an organization can't see/update any PR.
         """
@@ -168,7 +172,7 @@ class APITestCase(WithUserTestCase):
 
     @patch('pr_watch.github.get_pr_by_number')
     @ddt.data('user3', 'user4')
-    def test_update_instance(self, username, mock_get_pr_by_number):
+    def test_update_instance(self, username, mock_get_pr_by_number, mock_consul):
         """
         POST /pr_watch/:id/update_instance/ - Update instance with latest settings from the PR
         """
@@ -198,7 +202,7 @@ class APITestCase(WithUserTestCase):
         )
         self.assertEqual(instance.edx_platform_commit, '6' * 40)
 
-    def test_update_unauthenticated(self):
+    def test_update_unauthenticated(self, mock_consul):
         """
         POST /pr_watch/:id/update_instance/ - Denied to anonymous users
         """
@@ -212,7 +216,7 @@ class APITestCase(WithUserTestCase):
         self.assertEqual(response.data, forbidden_message)
 
     @ddt.data('user1', 'user2')
-    def test_update_permission_denied(self, username):
+    def test_update_permission_denied(self, username, mock_consul):
         """
         POST /pr_watch/:id/update_instance/ - Denied to non instance managers (basic user and staff)
         """
@@ -228,7 +232,7 @@ class APITestCase(WithUserTestCase):
 
     @patch('pr_watch.github.get_commit_id_from_ref', side_effect=github.ObjectDoesNotExist)
     @patch('pr_watch.github.get_pr_by_number')
-    def test_update_instance_branch_delete(self, mock_get_pr_by_number, mock_get_commit_id_from_ref):
+    def test_update_instance_branch_delete(self, mock_get_pr_by_number, mock_get_commit_id_from_ref, mock_consul):
         """
         Test what happens when we try to update an instance for a PR whose branch has been
         deleted.

@@ -325,7 +325,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_CELERY_HEARTBEAT_ENABLED": settings.EDX_WORKERS_ENABLE_CELERY_HEARTBEATS,
 
             # Set up User Retirement Pipeline
+            # TODO: RETIREMENT_SERVICE_SETUP can be removed after the Juniper upgrade
+            # as it's just here for backwards compatibility
             "RETIREMENT_SERVICE_SETUP": True,
+            "COMMON_RETIREMENT_SERVICE_SETUP": True,
             "RETIREMENT_SERVICE_ENABLE_CRON_JOB": True,
             "RETIREMENT_SERVICE_COOL_OFF_DAYS": 5,
             # Cron job scheduling

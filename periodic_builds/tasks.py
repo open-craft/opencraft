@@ -26,7 +26,7 @@ import logging
 import datetime
 
 from huey.api import crontab
-from huey.contrib.djhuey import db_periodic_task
+from huey.contrib.djhuey import db_periodic_task, lock_task
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.appserver import Status
@@ -41,18 +41,19 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 
-@db_periodic_task(crontab(minute="*/30"))
+@db_periodic_task(crontab(minute="34", hour="*/2"))
+@lock_task('launch_periodic_builds-lock')
 def launch_periodic_builds():
     """
     Automatically deploy new servers for all Open edX instances configured for periodic builds.
     """
-
-    # get all instances configured for periodic builds
     instances = OpenEdXInstance.objects.filter(periodic_builds_enabled=True)
 
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     for instance in instances:
         appservers = instance.appserver_set.order_by("-created").all()
+        # NOTE: 'created' is the time when the appserver was created, which is
+        # before provisioning begins.
         # if the instance has no appservers or latest appserver is past the
         # interval time, then we spawn a new appserver
         if not appservers or (now - appservers[0].created) >= instance.periodic_builds_interval:
@@ -67,8 +68,10 @@ def launch_periodic_builds():
                 ):
                     break
             else:
+                # NOTE: this is async - enqueues as a new huey task and returns immediately
                 spawn_appserver(
                     instance.ref.pk,
                     num_attempts=instance.periodic_builds_retries + 1,
                     mark_active_on_success=True,
+                    deactivate_old_appservers=True,
                 )

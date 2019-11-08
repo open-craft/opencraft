@@ -22,6 +22,8 @@ Views - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 import ddt
 from django.conf import settings
 from rest_framework import status
@@ -34,13 +36,17 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXInstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls. Checks data that is specific to OpenEdXInstance
     """
 
     @ddt.data('user3', 'user4')
-    def test_get_authenticated(self, username):
+    def test_get_authenticated(self, username, mock_consul):
         """
         GET - Authenticated - instance manager user (superuser or not) is allowed access
         """
@@ -66,7 +72,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('status_description', ''), instance_data)
         self.assertIn(('newest_appserver', None), instance_data)
 
-    def test_get_unauthenticated(self):
+    def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated in order to see the instance list.
         """
@@ -75,7 +81,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
     @ddt.data('user1', 'user2')
-    def test_get_permission_denied(self, username):
+    def test_get_permission_denied(self, username, mock_consul):
         """
         GET - basic and staff users denied access to the instance list.
         """
@@ -125,7 +131,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
             )
         return response
 
-    def test_instance_list_admin(self):
+    def test_instance_list_admin(self, mock_consul):
         """
         Instance list should return all instances when queried from an admin
         user.
@@ -142,7 +148,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(len(response.data), 2)
 
-    def test_instance_list_non_admin_same_organization(self):
+    def test_instance_list_non_admin_same_organization(self, mock_consul):
         """
         Instance list should return instance for the organization the
         user belongs to.
@@ -155,7 +161,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(len(response.data), 1)
 
-    def test_instance_list_non_admin_different_org(self):
+    def test_instance_list_non_admin_different_org(self, mock_consul):
         """
         A non-admin user shouldn't see an instance which belongs to a different organization.
         """
@@ -167,7 +173,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(len(response.data), 0)
 
-    def test_instance_list_user_no_organization(self):
+    def test_instance_list_user_no_organization(self, mock_consul):
         """
         Instance list should be empty if user doesn't belong to an organization.
         """
@@ -179,7 +185,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/')
         self.assertEqual(len(response.data), 0)
 
-    def test_instance_list_efficiency(self):
+    def test_instance_list_efficiency(self, mock_consul):
         """
         The number of database queries required to fetch /api/v1/instance/
         should be O(1)
@@ -208,7 +214,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
                 raise AssertionError(msg)
             self.assertEqual(len(response.data), num_instances)
 
-    def test_newest_appserver(self):
+    def test_newest_appserver(self, mock_consul):
         """
         GET - instance list - is 'newest_appserver' in fact the newest one?
         """
@@ -225,7 +231,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
 
         self.assertEqual(response.data[0]['newest_appserver']['id'], newest_appserver.id)
 
-    def test_get_details(self):
+    def test_get_details(self, mock_consul):
         """
         GET - Detailed attributes
         """
@@ -239,7 +245,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('status_description', 'Newly created'), instance_data)
         self.assertEqual(response.data['active_appservers'][0]['status'], 'new')
 
-    def test_get_details_unsteady(self):
+    def test_get_details_unsteady(self, mock_consul):
         """
         GET - Detailed attributes
         """
@@ -256,7 +262,7 @@ class OpenEdXInstanceAPITestCase(APITestCase):
         self.assertIn(('status_description', 'VM not yet accessible'), instance_data)
         self.assertEqual(response.data['active_appservers'][0]['status'], 'waiting')
 
-    def test_get_details_unhealthy(self):
+    def test_get_details_unhealthy(self, mock_consul):
         """
         GET - Detailed attributes
         """

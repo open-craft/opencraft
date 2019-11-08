@@ -21,6 +21,9 @@ OpenEdXInstance Theme Mixins - Tests
 """
 
 # Imports #####################################################################
+
+from unittest.mock import patch
+
 import ddt
 import yaml
 from django.contrib.auth import get_user_model
@@ -70,11 +73,15 @@ class OpenEdXThemeMixinTestCase(TestCase):
         ansible variables match those colors and images.
         """
         # Create objects
-        OpenEdXInstanceFactory(name='Integration - test_colors_applied', deploy_simpletheme=True)
-        instance = OpenEdXInstance.objects.get()
-        user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
-        self.make_test_application(instance, user)
-        appserver = make_test_appserver(instance)
+        with patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            OpenEdXInstanceFactory(name='Integration - test_colors_applied', deploy_simpletheme=True)
+            instance = OpenEdXInstance.objects.get()
+            user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
+            self.make_test_application(instance, user)
+            appserver = make_test_appserver(instance)
 
         # Test the results
         self.assertTrue(instance.deploy_simpletheme)
@@ -122,7 +129,11 @@ class OpenEdXThemeMixinTestCase(TestCase):
             self.assertIn('opencraft_logo_small.png', logo['url'])
             self.assertIn('favicon.ico', favicon['url'])
 
-    def test_simpletheme_optout(self):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_simpletheme_optout(self, mock_consul):
         """
         Test that opting out from simple_theme deployment produces no theme-related ansible vars.
         This feature is used by instances prior to simple_theme, so that they keep using the default
@@ -157,7 +168,11 @@ class OpenEdXThemeMixinTestCase(TestCase):
         ('#1f365b', '#ffffff'),    # dark blue, white
         ('#7c702f', '#ffffff'),    # dark gold, white
     )
-    def test_get_contrasting_font_color(self, test_colors):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_get_contrasting_font_color(self, test_colors, mock_consul):
         """
         Tests if the automatic font color selection is working properly
         """

@@ -50,6 +50,10 @@ from instance.tests.utils import patch_services
 
 # Tests #######################################################################
 
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class MySQLInstanceTestCase(TestCase):
     """
     Test cases for MySQLInstanceMixin and OpenEdXDatabaseMixin
@@ -60,7 +64,11 @@ class MySQLInstanceTestCase(TestCase):
 
     def tearDown(self):
         if self.instance:
-            self.instance.deprovision_mysql()
+            with patch(
+                    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                    return_value=(1, True)
+            ):
+                self.instance.deprovision_mysql()
         super().tearDown()
 
     def _assert_privileges(self, database):
@@ -133,7 +141,7 @@ class MySQLInstanceTestCase(TestCase):
             var_name = prefix + var_name
             self.assertEqual(db_vars[var_name], value)
 
-    def test__get_mysql_database_name(self):
+    def test__get_mysql_database_name(self, mock_consul):
         """
         Test that _get_mysql_database_name correctly builds database names.
         """
@@ -150,7 +158,7 @@ class MySQLInstanceTestCase(TestCase):
         with self.assertRaises(AssertionError):
             self.instance._get_mysql_database_name(suffix)
 
-    def test__get_mysql_user_name(self):
+    def test__get_mysql_user_name(self, mock_consul):
         """
         Test that _get_mysql_user_name correctly builds user names.
         """
@@ -167,7 +175,7 @@ class MySQLInstanceTestCase(TestCase):
         with self.assertRaises(AssertionError):
             self.instance._get_mysql_user_name(suffix)
 
-    def test__get_mysql_pass(self):
+    def test__get_mysql_pass(self, mock_consul):
         """
         Test behavior of _get_mysql_pass.
 
@@ -189,7 +197,7 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(pass1, self.instance._get_mysql_pass(user1))
         self.assertEqual(pass2, self.instance._get_mysql_pass(user2))
 
-    def test__get_mysql_pass_from_dbname(self):
+    def test__get_mysql_pass_from_dbname(self, mock_consul):
         """
         Test that _get_mysql_pass_from_dbname meets the same criteria as _get_mysql_pass
         """
@@ -204,7 +212,7 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(pass1, self.instance._get_mysql_pass_from_dbname(database1))
         self.assertEqual(pass2, self.instance._get_mysql_pass_from_dbname(database2))
 
-    def test_provision_mysql(self):
+    def test_provision_mysql(self, mock_consul):
         """
         Provision mysql database
         """
@@ -212,7 +220,7 @@ class MySQLInstanceTestCase(TestCase):
         self.instance.provision_mysql()
         self.check_mysql()
 
-    def test_provision_mysql_weird_domain(self):
+    def test_provision_mysql_weird_domain(self, mock_consul):
         """
         Make sure that database names are escaped correctly
         """
@@ -223,7 +231,7 @@ class MySQLInstanceTestCase(TestCase):
         self.instance.provision_mysql()
         self.check_mysql()
 
-    def test_provision_mysql_again(self):
+    def test_provision_mysql_again(self, mock_consul):
         """
         Only create the database once
         """
@@ -238,7 +246,7 @@ class MySQLInstanceTestCase(TestCase):
         self.assertEqual(self.instance.mysql_pass, mysql_pass)
         self.check_mysql()
 
-    def test_provision_mysql_no_mysql_server(self):
+    def test_provision_mysql_no_mysql_server(self, mock_consul):
         """
         Don't provision a mysql database if instance has no MySQL server
         """
@@ -252,7 +260,7 @@ class MySQLInstanceTestCase(TestCase):
 
     @patch_services
     @override_settings(DEFAULT_INSTANCE_MYSQL_URL='mysql://user:pass@mysql.opencraft.com')
-    def test_ansible_settings_mysql(self, mocks):
+    def test_ansible_settings_mysql(self, mocks, mock_consul):
         """
         Test that get_database_settings produces correct settings for MySQL databases
         """
@@ -366,7 +374,7 @@ class MySQLInstanceTestCase(TestCase):
             else:
                 self.check_vars(self.instance, db_vars, group_prefix, values=values)
 
-    def test_ansible_settings_no_mysql_server(self):
+    def test_ansible_settings_no_mysql_server(self, mock_consul):
         """
         Don't add mysql ansible vars if instance has no MySQL server
         """
@@ -378,7 +386,7 @@ class MySQLInstanceTestCase(TestCase):
     @patch('instance.models.mixins.database._get_mysql_cursor', return_value=Mock())
     @patch('instance.models.mixins.database._drop_database')
     @patch('instance.models.mixins.database._drop_user')
-    def test_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor):
+    def test_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor, mock_consul):
         """
         Test deprovision_mysql does correct calls.
         """
@@ -394,7 +402,7 @@ class MySQLInstanceTestCase(TestCase):
     @patch('instance.models.mixins.database._get_mysql_cursor', return_value=Mock())
     @patch('instance.models.mixins.database._drop_database', side_effect=MySQLError())
     @patch('instance.models.mixins.database._drop_user')
-    def test_ignore_errors_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor):
+    def test_ignore_errors_deprovision_mysql(self, mock_drop_user, mock_drop_database, mock_get_cursor, mock_consul):
         """
         Test mysql is set as deprovision when ignoring errors.
         """
@@ -405,6 +413,10 @@ class MySQLInstanceTestCase(TestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class MongoDBInstanceTestCase(TestCase):
     """
     Test cases for MongoDBInstanceMixin and OpenEdXDatabaseMixin
@@ -415,7 +427,11 @@ class MongoDBInstanceTestCase(TestCase):
 
     def tearDown(self):
         if self.instance:
-            self.instance.deprovision_mongo()
+            with patch(
+                    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                    return_value=(1, True)
+            ):
+                self.instance.deprovision_mongo()
         super().tearDown()
 
     def check_mongo(self):
@@ -463,7 +479,7 @@ class MongoDBInstanceTestCase(TestCase):
         self.assertIn('FORUM_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('FORUM_MONGO_DATABASE: {0}'.format(self.instance.forum_database_name), ansible_vars)
 
-    def test_provision_mongo(self):
+    def test_provision_mongo(self, mock_consul):
         """
         Provision mongo databases
         """
@@ -471,7 +487,7 @@ class MongoDBInstanceTestCase(TestCase):
         self.instance.provision_mongo()
         self.check_mongo()
 
-    def test_provision_mongo_again(self):
+    def test_provision_mongo_again(self, mock_consul):
         """
         Only create the databases once
         """
@@ -486,7 +502,7 @@ class MongoDBInstanceTestCase(TestCase):
         self.assertEqual(self.instance.mongo_pass, mongo_pass)
         self.check_mongo()
 
-    def test_provision_mongo_no_mongodb_server(self):
+    def test_provision_mongo_no_mongodb_server(self, mock_consul):
         """
         Don't provision a mongo database if instance has no MongoDB server
         """
@@ -500,7 +516,7 @@ class MongoDBInstanceTestCase(TestCase):
             self.assertNotIn(database, databases)
 
     @override_settings(DEFAULT_INSTANCE_MONGO_URL='mongodb://user:pass@mongo.opencraft.com')
-    def test_ansible_settings_mongo(self):
+    def test_ansible_settings_mongo(self, mock_consul):
         """
         Add mongo ansible vars if instance has a MongoDB server
         """
@@ -525,7 +541,7 @@ class MongoDBInstanceTestCase(TestCase):
         ('open-release/ginkgo', 'open-release/ginkgo'),
     )
     @ddt.unpack
-    def test_ansible_settings_no_replica_set(self, openedx_release, configuration_version):
+    def test_ansible_settings_no_replica_set(self, openedx_release, configuration_version, mock_consul):
         """
         Prior to Hawthorn, edx configuration does not support MongoDB replica sets,
         and the mongo hosts must be a single host, provided as a list of strings.
@@ -552,7 +568,7 @@ class MongoDBInstanceTestCase(TestCase):
         (settings.DEFAULT_OPENEDX_RELEASE, settings.DEFAULT_CONFIGURATION_VERSION),
     )
     @ddt.unpack
-    def test_ansible_settings_use_replica_set(self, openedx_release, configuration_version):
+    def test_ansible_settings_use_replica_set(self, openedx_release, configuration_version, mock_consul):
         """
         Add mongo ansible vars if instance has a MongoDB replica set
         Also, the mongo hosts are provied as a comma-separated string.
@@ -569,7 +585,7 @@ class MongoDBInstanceTestCase(TestCase):
                                                  r'test\d?.opencraft.hosting',
                                   expected_replica_set='test_name')
 
-    def test_ansible_settings_no_mongo_server(self):
+    def test_ansible_settings_no_mongo_server(self, mock_consul):
         """
         Don't add mongo ansible vars if instance has no MongoDB server
         """
@@ -587,7 +603,7 @@ class MongoDBInstanceTestCase(TestCase):
         DEFAULT_MONGO_REPLICA_SET_PRIMARY="test.opencraft.hosting",
         DEFAULT_MONGO_REPLICA_SET_HOSTS="test.opencraft.hosting,test1.opencraft.hosting,test2.opencraft.hosting"
     )
-    def test__get_main_database_url(self):
+    def test__get_main_database_url(self, mock_consul):
         """
         Main database url should be extracted from primary replica set MongoDBServer
         """
@@ -599,7 +615,7 @@ class MongoDBInstanceTestCase(TestCase):
 
     @patch('instance.models.mixins.database.MongoDBInstanceMixin._get_main_database_url')
     @patch('instance.models.mixins.database.pymongo.MongoClient', autospec=True)
-    def test_deprovision_mongo(self, mock_mongo_client_cls, mock_get_main_db_url):
+    def test_deprovision_mongo(self, mock_mongo_client_cls, mock_get_main_db_url, mock_consul):
         """
         Test deprovision_mongo calls drop_database.
         """
@@ -623,13 +639,21 @@ class MongoDBInstanceTestCase(TestCase):
 
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class RabbitMQInstanceTestCase(TestCase):
     """
     Test cases for RabbitMQInstanceMixin
     """
     def setUp(self):
         super().setUp()
-        self.instance = OpenEdXInstanceFactory()
+        with patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            self.instance = OpenEdXInstanceFactory()
 
     @responses.activate
     @ddt.data(
@@ -638,7 +662,7 @@ class RabbitMQInstanceTestCase(TestCase):
         ('DELETE', ['permissions', '/some_vhost', 'testuser'], '/api/permissions/%2Fsome_vhost/testuser')
     )
     @ddt.unpack
-    def test_rabbitmq_request(self, method, url_parts, expected_url):
+    def test_rabbitmq_request(self, method, url_parts, expected_url, mock_consul):
         """
         Test to make sure the _rabbitmq_request parameters form the correct URLs
         """
@@ -648,11 +672,15 @@ class RabbitMQInstanceTestCase(TestCase):
         )
         expected_body = {'info': 'This is a mocked request to URL {url}'.format(url=url)}
 
-        # Mock the URL with a uniquely identifying body so that we can verify that the
-        # correct URL is formed and called.
-        responses.add(method, url, json=expected_body)
-        self.instance = OpenEdXInstanceFactory()
-        response = self.instance._rabbitmq_request(method.lower(), *url_parts)
+        with patch(
+                'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                return_value=(1, True)
+        ):
+            # Mock the URL with a uniquely identifying body so that we can verify that the
+            # correct URL is formed and called.
+            responses.add(method, url, json=expected_body)
+            self.instance = OpenEdXInstanceFactory()
+            response = self.instance._rabbitmq_request(method.lower(), *url_parts)
 
         self.assertDictEqual(
             response.json(),
@@ -660,10 +688,10 @@ class RabbitMQInstanceTestCase(TestCase):
         )
 
     @responses.activate
-    def test_provision_rabbitmq(self):
+    def test_provision_rabbitmq(self, mock_consul):
         """
         Record the calls to the RabbitMQ API and make sure a new vhost along with
-        two new users are created during provision and deleted during deprobision.
+        two new users are created during provision and deleted during deprovision.
 
         The use of `responses.RequestsMock` raises an exception during context deconstruction
         if any of the URLs added to the `responses` object aren't ever called. Also,
@@ -712,7 +740,7 @@ class RabbitMQInstanceTestCase(TestCase):
             self.instance.deprovision_rabbitmq()
 
     @responses.activate
-    def test_rabbitmq_api_error(self):
+    def test_rabbitmq_api_error(self, mock_consul):
         """
         Test that RabbitMQAPIError is thrown during auth issues
         """
@@ -733,7 +761,7 @@ class RabbitMQInstanceTestCase(TestCase):
         ({'name': 'test', 'description': 'test description'}, 'test (test description)')
     )
     @ddt.unpack
-    def test_string_representation(self, fields, representation):
+    def test_string_representation(self, fields, representation, mock_consul):
         """
         Test that the str method returns the appropriate values.
         """
@@ -744,7 +772,7 @@ class RabbitMQInstanceTestCase(TestCase):
         self.assertEqual(str(rabbitmq), representation)
 
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin._rabbitmq_request')
-    def test_deprovision_rabbitmq(self, mock_rabbitmq_request):
+    def test_deprovision_rabbitmq(self, mock_rabbitmq_request, mock_consul):
         """
         Test deprovision_rabbitmq does correct calls.
         """
@@ -755,7 +783,7 @@ class RabbitMQInstanceTestCase(TestCase):
         mock_rabbitmq_request.assert_any_call('delete', 'users', self.instance.rabbitmq_provider_user.username)
 
     @patch('instance.models.mixins.rabbitmq.RabbitMQInstanceMixin._rabbitmq_request', side_effect=RabbitMQAPIError())
-    def test_ignore_errors_deprovision_rabbitmq(self, mock_rabbitmq_request):
+    def test_ignore_errors_deprovision_rabbitmq(self, mock_rabbitmq_request, mock_consul):
         """
         Test rabbitmq is set as deprovision when ignoring errors.
         """
@@ -764,12 +792,16 @@ class RabbitMQInstanceTestCase(TestCase):
         self.assertFalse(self.instance.rabbitmq_provisioned)
 
 
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class RabbitMQServerManagerTestCase(TestCase):
     """
     Tests for RabbitMQServerManager.
     """
     @override_settings(DEFAULT_RABBITMQ_API_URL=None)
-    def test_no_rabbitmq_server_available(self):
+    def test_no_rabbitmq_server_available(self, mock_consul):
         """
         Test that get_random() raises an exception when no rabbitmq servers are available.
         """
@@ -778,7 +810,7 @@ class RabbitMQServerManagerTestCase(TestCase):
             RabbitMQServer.objects.select_random()
 
     @override_settings(DEFAULT_RABBITMQ_API_URL="http://doesnotexist.example.com:12345")
-    def test_invalid_rabbitmq_server(self):
+    def test_invalid_rabbitmq_server(self, mock_consul):
         """
         Verify that an exception gets raised when the credentials are missing from from the
         setting for the default rabbitmq API url server.
@@ -787,7 +819,7 @@ class RabbitMQServerManagerTestCase(TestCase):
             RabbitMQServer.objects.select_random()
 
     @patch('instance.models.rabbitmq_server.logger')
-    def test_mismatch_warning(self, mock_logger):
+    def test_mismatch_warning(self, mock_logger, mock_consul):
         """
         Test that a warning is logged when trying to spawn the default, but a default already
         and contains mismatching parameters with the given settings.

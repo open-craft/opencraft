@@ -22,6 +22,8 @@ Views - Tests
 
 # Imports #####################################################################
 
+from unittest.mock import patch
+
 import ddt
 from rest_framework import status
 
@@ -35,6 +37,10 @@ from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFact
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class InstanceAPITestCase(APITestCase):
     """
     Test cases for Instance API calls
@@ -42,7 +48,7 @@ class InstanceAPITestCase(APITestCase):
     This only checks the data related to InstanceReference
     (i.e. ID, name, created, modified, and instance_type)
     """
-    def test_get_unauthenticated(self):
+    def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated
         """
@@ -51,7 +57,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.data, {"detail": "Authentication credentials were not provided."})
 
     @ddt.data('user1', 'user2')
-    def test_get_permission_denied(self, username):
+    def test_get_permission_denied(self, username, mock_consul):
         """
         GET - basic and staff users denied access
         """
@@ -61,7 +67,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {"detail": "You do not have permission to perform this action."})
 
-    def test_get_authenticated(self):
+    def test_get_authenticated(self, mock_consul):
         """
         GET - Authenticated - instance manager users allowed access
         """
@@ -75,7 +81,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data[0], instance)
 
-    def test_list_archived_instances(self):
+    def test_list_archived_instances(self, mock_consul):
         """
         GET - List of instances should exclude archived instances
         by default, but show them if explicitly requested.
@@ -108,7 +114,7 @@ class InstanceAPITestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_get_details_permission_denied(self, username, message):
+    def test_get_details_permission_denied(self, username, message, mock_consul):
         """
         GET - Detailed attributes - anonymous, basic, and staff users denied access
         """
@@ -130,7 +136,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertIn('modified', data)
         self.assertEqual(data['instance_type'], 'openedxinstance')
 
-    def test_get_details(self):
+    def test_get_details(self, mock_consul):
         """
         GET - Detailed attributes
         """
@@ -140,7 +146,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data, instance)
 
-    def test_not_all_appservers_are_loaded_by_default(self):
+    def test_not_all_appservers_are_loaded_by_default(self, mock_consul):
         """
         Tries to add e.g. 7 appservers and then verifies that only 5 are returned initially.
         That is, the results are filtered by the NUM_INITIAL_APPSERVERS_SHOWN setting.
@@ -160,7 +166,7 @@ class InstanceAPITestCase(APITestCase):
             "Too many initial app servers for instance detail"
         )
 
-    def test_get_log_entries(self):
+    def test_get_log_entries(self, mock_consul):
         """
         GET - Log entries
         """
@@ -190,7 +196,7 @@ class InstanceAPITestCase(APITestCase):
         ('user2', 'You do not have permission to perform this action.'),
     )
     @ddt.unpack
-    def test_get_logs_permission_denied(self, username, message):
+    def test_get_logs_permission_denied(self, username, message, mock_consul):
         """
         GET - Basic users and anonymous can't get log entries
         """
@@ -201,7 +207,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
-    def test_get_logs_different_organization(self):
+    def test_get_logs_different_organization(self, mock_consul):
         """
         GET - An instance manager can't get logs of an instance which belongs to a different organization.
         """
@@ -213,7 +219,7 @@ class InstanceAPITestCase(APITestCase):
         response = self.api_client.get('/api/v1/instance/{pk}/logs/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_logs_no_organization(self):
+    def test_get_logs_no_organization(self, mock_consul):
         """
         GET - An instance manager without an organization can't get logs of any instance.
         """
@@ -223,7 +229,7 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     @override_settings(NUM_INITIAL_APPSERVERS_SHOWN=5)
-    def test_get_app_servers_list(self):
+    def test_get_app_servers_list(self, mock_consul):
         """
         GET - App Servers
         """

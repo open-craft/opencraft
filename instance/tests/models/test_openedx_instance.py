@@ -53,6 +53,10 @@ from instance.tests.utils import patch_services, skip_unless_consul_running
 # Tests #######################################################################
 
 @ddt.ddt
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class OpenEdXInstanceTestCase(TestCase):
     """
     Test cases for OpenEdXInstance models
@@ -92,7 +96,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertTrue(instance.rabbitmq_consumer_user)
         self.assertTrue(instance.rabbitmq_provider_user)
 
-    def test_create_defaults(self):
+    def test_create_defaults(self, mock_consul):
         """
         Create an instance without specifying additional fields,
         leaving it up to the create method to set them
@@ -100,7 +104,7 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstance.objects.create(sub_domain='sandbox.defaults')
         self._assert_defaults(instance)
 
-    def test_id_different_from_ref_id(self):
+    def test_id_different_from_ref_id(self, mock_consul):
         """
         Check that InstanceReference IDs are always multiples of 10, and OpenEdXInstance IDs
         usually are different from the InstanceReference ID. This is established by the
@@ -123,7 +127,7 @@ class OpenEdXInstanceTestCase(TestCase):
             (instance1.id != instance1.ref.id) or (instance2.id != instance2.ref.id)
         )
 
-    def test_domain_url(self):
+    def test_domain_url(self, mock_consul):
         """
         Domain and URL attributes
         """
@@ -197,7 +201,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @ddt.data('http://example.com/default-test-spawn-privacy', '')
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver(self, mocks, privacy_policy_url, mock_provision):
+    def test_spawn_appserver(self, mocks, privacy_policy_url, mock_consul, mock_provision):
         """
         Run spawn_appserver() sequence
         """
@@ -259,7 +263,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @override_settings(NEWRELIC_LICENSE_KEY='newrelic-key')
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_newrelic_configuration(self, mocks, mock_provision):
+    def test_newrelic_configuration(self, mocks, mock_provision, mock_consul):
         """
         Check that newrelic ansible vars are set correctly
         """
@@ -275,7 +279,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_appserver_services_disabled(self, mocks, mock_provision):
+    def test_appserver_services_disabled(self, mocks, mock_provision, mock_consul):
         """
         Check that appservers are deployed with only the minimum services by default
         """
@@ -291,7 +295,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver_with_external_domains(self, mocks, mock_provision):
+    def test_spawn_appserver_with_external_domains(self, mocks, mock_provision, mock_consul):
         """
         Test that relevant configuration variables use external domains when provisioning a new app server.
         """
@@ -312,7 +316,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver_names(self, mocks, mock_provision):
+    def test_spawn_appserver_names(self, mocks, mock_provision, mock_consul):
         """
         Run spawn_appserver() sequence multiple times and check names of resulting app servers
         """
@@ -332,7 +336,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver_with_lms_users(self, mocks, mock_provision):
+    def test_spawn_appserver_with_lms_users(self, mocks, mock_provision, mock_consul):
         """
         Provision an AppServer with a user added to lms_users.
         """
@@ -346,7 +350,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertTrue(appserver.lms_user_settings)
 
     @patch_services
-    def test_spawn_appserver_detailed(self, mocks):
+    def test_spawn_appserver_detailed(self, mocks, mock_consul):
         """
         Test spawning an AppServer in more detail; this is partially an integration test
 
@@ -375,7 +379,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(appserver.server.status, Server.Status.Ready)
 
     @patch_services
-    def test_spawn_appserver_failed(self, mocks):
+    def test_spawn_appserver_failed(self, mocks, mock_consul):
         """
         Test what happens when unable to completely spawn an AppServer.
         """
@@ -397,7 +401,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_spawn_appserver_with_external_databases(self, mocks, mock_provision):
+    def test_spawn_appserver_with_external_databases(self, mocks, mock_provision, mock_consul):
         """
         Run spawn_appserver() sequence, with external databases
         """
@@ -417,7 +421,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    def test_forum_api_key(self, mocks, mock_provision):
+    def test_forum_api_key(self, mocks, mock_provision, mock_consul):
         """
         Ensure the FORUM_API_KEY matches EDXAPP_COMMENTS_SERVICE_KEY
         """
@@ -454,9 +458,10 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertIn('be-redirect-edxins', backend)
         self.assertIn(expected_config, config_str)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @ddt.data(False, True)
     @patch_services
-    def test_get_load_balancer_configuration(self, mocks, enable_prefix_domains_redirect):
+    def test_get_load_balancer_configuration(self, mocks, enable_prefix_domains_redirect, mock_consul):
         """
         Test that the load balancer configuration gets generated correctly.
         """
@@ -503,9 +508,10 @@ class OpenEdXInstanceTestCase(TestCase):
             appserver.server.save()
             self.assertRaises(WrongStateException, instance.get_load_balancer_configuration)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @ddt.data(False, True)
     @patch_services
-    def test_get_load_balancer_config_ext_domains(self, mocks, enable_prefix_domains_redirect):
+    def test_get_load_balancer_config_ext_domains(self, mocks, enable_prefix_domains_redirect, mock_consul):
         """
         Test the load balancer configuration when external domains are set.
         """
@@ -576,6 +582,8 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(sub_domain='test.deletion')
         instance_ref = instance.ref
         appserver = OpenEdXAppServer.objects.get(pk=instance.spawn_appserver())
+
+        mock_methods = list(mock_methods).pop()  # Remove mock_consul
 
         for method in mock_methods:
             self.assertEqual(
@@ -648,7 +656,7 @@ class OpenEdXInstanceTestCase(TestCase):
             server = OpenStackServer.objects.get(id=appserver.server.pk)
             self.assertEqual(server.status, expected_server_status)
 
-    def test_first_activated(self):
+    def test_first_activated(self, mock_consul):
         """
         Test that the ``first_activated`` property correctly fetches the ``last_activated``
         time for the first ``AppServer`` to activate.
@@ -692,10 +700,21 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_2._status_to_terminated()
         self.assertEqual(instance.first_activated, appserver_2.last_activated)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_archive(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
+    # pylint: disable=too-many-locals
+    def test_archive(
+            self,
+            mock_run_appserver_playbook,
+            mock_reconfigure,
+            mock_disable_monitoring,
+            mock_remove_dns_records,
+            *mock
+    ):
         """
         Test that `archive` method terminates all app servers belonging to an instance
         and disables monitoring.
@@ -762,10 +781,18 @@ class OpenEdXInstanceTestCase(TestCase):
             (newer_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_archive_no_active_appserver(self, mock_reconfigure, mock_disable_monitoring, mock_remove_dns_records):
+    def test_archive_no_active_appserver(
+            self,
+            mock_reconfigure,
+            mock_disable_monitoring,
+            mock_remove_dns_records,
+            mock_consul2,
+            mock_consul):
         """
         Test that the archive method works correctly if no appserver is active.
         """
@@ -785,7 +812,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.server.OpenStackServer.public_ip')
     @ddt.data(2, 5, 10)
     @patch_services
-    def test_terminate_obsolete_appservers(self, mock_services, days, mock_public_ip):
+    def test_terminate_obsolete_appservers(self, mock_services, days, mock_public_ip, mock_consul):
         """
         When there is an active appserver, test that `terminate_obsolete_appservers`
         correctly identifies and terminates app servers created more than `days` before now, except:
@@ -875,7 +902,7 @@ class OpenEdXInstanceTestCase(TestCase):
 
     @ddt.data(2, 5, 10)
     @patch_services
-    def test_terminate_obsolete_appservers_no_active(self, mock_services, days):
+    def test_terminate_obsolete_appservers_no_active(self, mock_services, days, mock_consul):
         """
         When there is NO active appserver, test that `terminate_obsolete_appservers`
         correctly identifies and terminates app servers created more than `days` before now,
@@ -925,7 +952,7 @@ class OpenEdXInstanceTestCase(TestCase):
             (rc_appserver_failed, AppServerStatus.ConfigurationFailed, ServerStatus.Terminated),
         ])
 
-    def test_shut_down_reminder(self):
+    def test_shut_down_reminder(self, mock_consul):
         """
         Test that if developers run the shut_down() method on the console, they see a warning
         """
@@ -1134,7 +1161,11 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         self.assertEqual(vm_indices, set(range(1, len(vm_indices) + 1)))
 
     @patch_services
-    def test_active_vm_dns_records(self, mocks):
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_active_vm_dns_records(self, mocks, mock_consul):
         """
         Test that DNS records for active app servers get set.
         """

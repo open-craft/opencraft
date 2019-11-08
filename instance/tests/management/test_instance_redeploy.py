@@ -22,7 +22,7 @@ Instance - Redeployment task unit tests
 # Imports #####################################################################
 
 from unittest.mock import patch, MagicMock
-from testfixtures import log_capture, LogCapture
+from testfixtures import LogCapture
 
 from django.core.management import call_command, CommandError
 from django.utils.six import StringIO
@@ -35,6 +35,10 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 
 # Tests #######################################################################
 
+@patch(
+    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
 class InstanceRedeployTestCase(TestCase):
     """
     Test cases for the `instance_redeploy` management command.
@@ -47,7 +51,7 @@ class InstanceRedeployTestCase(TestCase):
         self.cmd_module = 'instance.management.commands.instance_redeploy'
         self.log_level = 'INFO'
 
-    def test_required_args(self):
+    def test_required_args(self, mock_consul):
         """
         Verify that the command correctly requires the --tag parameter
         """
@@ -55,7 +59,7 @@ class InstanceRedeployTestCase(TestCase):
             call_command('instance_redeploy')
 
     @patch('instance.management.commands.instance_redeploy.input', MagicMock(return_value='no'))
-    def test_no_redeploy(self):
+    def test_no_redeploy(self, mock_consul):
         """
         Verify that the user can cancel the redeployment by answering "no"
         """
@@ -64,7 +68,7 @@ class InstanceRedeployTestCase(TestCase):
         self.assertEqual('Do you want to continue? [yes/No]\n', out.getvalue())
 
     @patch('instance.management.commands.instance_redeploy.input', MagicMock(return_value='yes'))
-    def test_yes_redeploy(self):
+    def test_yes_redeploy(self, mock_consul):
         """
         Verify that the user can continue with the redeployment by answering "yes"
         """
@@ -72,7 +76,7 @@ class InstanceRedeployTestCase(TestCase):
         call_command('instance_redeploy', '--tag=test-tag', stdout=out)
         self.assertEqual('Do you want to continue? [yes/No]\n', out.getvalue())
 
-    def test_force_redeploy(self):
+    def test_force_redeploy(self, mock_consul):
         """
         Verify that the user is not promped when --force is provided
         """
@@ -80,30 +84,30 @@ class InstanceRedeployTestCase(TestCase):
         call_command('instance_redeploy', '--tag=test-tag', '--force', stdout=out)
         self.assertEqual('', out.getvalue())
 
-    @log_capture()
-    def test_default_arguments(self, captured_logs):
+    def test_default_arguments(self, mock_consul):
         """
         Verify status is logged as expected with default arguments
         """
-        call_command('instance_redeploy', '--tag=test-tag', '--force')
-        expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
-            '******* Status *******',
-            'Instances pending redeployment: 0',
-            'Redeployments in progress: 0',
-            'Failed to redeploy: 0',
-            'Successfully redeployed (done): 0',
-            'Batch size: 2',
-            'Batch frequency: 0:10:00',
-            'Number of upgrade attempts per instance: 1',
-            '** Starting redeployment **',
-            '******* Status *******',
-            'Instances pending redeployment: 0',
-            'Redeployments in progress: 0',
-            'Failed to redeploy: 0',
-            'Successfully redeployed (done): 0',
-            '** Redeployment done **',
-        ))
-        captured_logs.check(*expected_logs)
+        with LogCapture() as captured_logs:
+            call_command('instance_redeploy', '--tag=test-tag', '--force')
+            expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
+                '******* Status *******',
+                'Instances pending redeployment: 0',
+                'Redeployments in progress: 0',
+                'Failed to redeploy: 0',
+                'Successfully redeployed (done): 0',
+                'Batch size: 2',
+                'Batch frequency: 0:10:00',
+                'Number of upgrade attempts per instance: 1',
+                '** Starting redeployment **',
+                '******* Status *******',
+                'Instances pending redeployment: 0',
+                'Redeployments in progress: 0',
+                'Failed to redeploy: 0',
+                'Successfully redeployed (done): 0',
+                '** Redeployment done **',
+            ))
+            captured_logs.check(*expected_logs)
 
     @staticmethod
     def create_test_instances(tag, success=True):
@@ -166,7 +170,7 @@ class InstanceRedeployTestCase(TestCase):
         return instances
 
     @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_success(self, mock_spawn_appserver):
+    def test_redeployment_success(self, mock_spawn_appserver, mock_consul):
         """
         Test the instance redeployment when everything goes well
 
@@ -249,7 +253,7 @@ class InstanceRedeployTestCase(TestCase):
             captured_logs.check(*expected_logs)
 
     @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_failure(self, mock_spawn_appserver):
+    def test_redeployment_failure(self, mock_spawn_appserver, mock_consul):
         """
         Test the instance redeployment when instances fail.
 

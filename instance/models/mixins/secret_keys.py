@@ -87,8 +87,8 @@ OPENEDX_SECRET_KEYS = [
     'INSIGHTS_SECRET_KEY',
     'NOTIFIER_LMS_SECRET_KEY',
     'PROGRAMS_SECRET_KEY',
-    'RETIREMENT_SERVICE_OAUTH_CLIENT_ID',
-    'RETIREMENT_SERVICE_OAUTH_CLIENT_SECRET',
+    'RETIREMENT_SERVICE_EDX_OAUTH2_KEY',
+    'RETIREMENT_SERVICE_EDX_OAUTH2_SECRET',
 ]
 
 # Translation table for keys that must match other keys (shared API keys)
@@ -197,6 +197,11 @@ class SecretKeyInstanceMixin(models.Model):
         jwk_key_pair = self.get_jwk_key_pair()
         keys['COMMON_JWT_PUBLIC_SIGNING_JWK_SET'] = jwk_key_pair.public
         keys['EDXAPP_JWT_PRIVATE_SIGNING_JWK'] = jwk_key_pair.private
+
+        # TODO: These two lines are here for backwards compatibility for the retirement
+        # service. They can be removed after the Juniper upgrade
+        keys['RETIREMENT_SERVICE_OAUTH_CLIENT_ID'] = keys['RETIREMENT_SERVICE_EDX_OAUTH2_KEY']
+        keys['RETIREMENT_SERVICE_OAUTH_CLIENT_SECRET'] = keys['RETIREMENT_SERVICE_EDX_OAUTH2_SECRET']
 
         return yaml.dump(keys)
 
