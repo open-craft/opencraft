@@ -152,6 +152,7 @@ test.js: clean static_external ## Run JS tests.
 ifeq ($(CIRCLE_CI),true)
 	@./node_modules/.bin/karma start --single-run
 else
+	echo $(CIRCLE_CI)
 	@xvfb-run ./node_modules/.bin/karma start --single-run
 endif
 	@if [ -e coverage/text/coverage.txt ]; then cat coverage/text/coverage.txt; fi
