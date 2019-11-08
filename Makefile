@@ -149,7 +149,7 @@ else
 endif
 
 test.js: clean static_external ## Run JS tests.
-ifeq ($CIRCLECI,true)
+ifeq ($(CIRCLE_CI),true)
 	@./node_modules/.bin/karma start --single-run
 else
 	@xvfb-run ./node_modules/.bin/karma start --single-run
