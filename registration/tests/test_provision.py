@@ -24,6 +24,7 @@ Test the provisioning of beta tester instances.
 
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from freezegun import freeze_time
@@ -67,3 +68,4 @@ class ApprovalTestCase(TestCase):
         self.assertTrue(instance.internal_lms_domain.startswith(application.subdomain))
         self.assertEqual(instance.email, application.public_contact_email)
         self.assertEqual(instance.lms_users.get(), user)
+        self.assertEqual(instance.provisioning_failure_notification_emails, settings.PROD_APPSERVER_FAIL_EMAILS)
