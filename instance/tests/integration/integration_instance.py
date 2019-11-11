@@ -98,6 +98,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.Running)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
+    @retry
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
@@ -379,13 +380,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
         if settings.DEFAULT_INSTANCE_MYSQL_URL and settings.DEFAULT_INSTANCE_MONGO_URL:
             self.assert_swift_container_provisioned(instance)
-            self.assert_server_ready(instance)
-            self.assert_instance_up(instance)
-            self.assert_appserver_firewalled(instance)
-            self.assertTrue(instance.successfully_provisioned)
             self.assertFalse(instance.require_user_creation_success())
-            for appserver in instance.appserver_set.all():
-                self.assert_secret_keys(instance, appserver)
             self.assert_mysql_db_provisioned(instance)
             self.assert_mongo_db_provisioned(instance)
 
