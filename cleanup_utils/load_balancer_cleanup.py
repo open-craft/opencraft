@@ -25,6 +25,8 @@ import logging
 import os
 import pathlib
 
+from django.conf import settings
+
 from instance import ansible
 
 # Logging #####################################################################
@@ -48,6 +50,10 @@ class LoadBalancerCleanup:
     def run_cleanup(self):
         """Run the actual cleanup"""
         logger.info("\n --- Starting Load balancer fragments cleanup ---")
+
+        if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
+            logger.info("DISABLE_LOAD_BALANCER_CONFIGURATION is set, nothing to do")
+            return
 
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken")

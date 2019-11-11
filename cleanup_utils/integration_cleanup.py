@@ -127,19 +127,15 @@ def run_integration_cleanup(dry_run=False):
         hashes_to_clean=hashes_to_clean
     )
 
-
     # Load Balancer cleanup
-    if os.environ.get('DISABLE_LOAD_BALANCER_CONFIGURATION', False):
-        logger.info('DISABLE_LOAD_BALANCER_CONFIGURATION is set, won\'t modify load balancers.')
-    else:
-        load_balancer_cleanup = LoadBalancerCleanup(
-            load_balancer_address=os.environ['DEFAULT_LOAD_BALANCING_SERVER'].partition('@')[-1],
-            fragment_prefix=os.environ.get('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', 'integration-'),
-            age_limit=DEFAULT_AGE_LIMIT,
-            dry_run=dry_run,
-        )
+    load_balancer_cleanup = LoadBalancerCleanup(
+        load_balancer_address=os.environ['DEFAULT_LOAD_BALANCING_SERVER'].partition('@')[-1],
+        fragment_prefix=os.environ.get('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', 'integration-'),
+        age_limit=DEFAULT_AGE_LIMIT,
+        dry_run=dry_run,
+    )
 
-        load_balancer_cleanup.run_cleanup()
+    load_balancer_cleanup.run_cleanup()
 
     logger.info("\nIntegration cleanup tool finished.")
 
