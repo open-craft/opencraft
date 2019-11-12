@@ -21,9 +21,11 @@ Open edX instance theme mixin, e.g. for simple_theme related settings
 """
 import yaml
 from colour import Color
-
-from django.db import models
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
+from django.db import models
+
+from instance.schemas.theming import theme_schema_validate
 
 
 # Classes #####################################################################
@@ -33,7 +35,7 @@ class OpenEdXThemeMixin(models.Model):
     Mixin that provides functionality to generate variables for simple_theme,
     e.g. to change logo/favicon and colors.
     """
-
+    # TODO: Deprecate once new registration flow is in place.
     deploy_simpletheme = models.BooleanField(
         default=False,
         verbose_name='Deploy simple_theme',
@@ -41,6 +43,13 @@ class OpenEdXThemeMixin(models.Model):
                    'available. A basic theme will be deployed through simple_theme and it may  change colors and '
                    'images. If set to False, no theme will be created and the default Open edX theme will be used; '
                    'this is recommended for instances registered before the theme fields were available.'),
+    )
+    theme_config = JSONField(
+        verbose_name='Final Theme Configuration JSON',
+        validators=[theme_schema_validate],
+        null=True, blank=True,
+        help_text=('The final theme configuration data committed by the user for deployment. This should be picked '
+                   'up by appservers launched for this instance'),
     )
 
     class Meta:

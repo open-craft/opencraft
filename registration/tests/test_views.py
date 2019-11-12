@@ -33,7 +33,6 @@ from django.core import mail
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.utils import timezone
 from freezegun import freeze_time
 from pytz import utc
 from simple_email_confirmation.models import EmailAddress
@@ -45,6 +44,7 @@ from registration.tests.utils import UserMixin
 
 
 # Tests #######################################################################
+
 
 @ddt
 class BetaTestApplicationViewTestMixin:
@@ -92,7 +92,7 @@ class BetaTestApplicationViewTestMixin:
 
         # Check that the application matches the submitted data
         application = BetaTestApplication.objects.get()
-        self.assertEqual(application.accepted_privacy_policy, accepted_time)
+        self.assertEqual(application.user.profile.accepted_privacy_policy, accepted_time)
         self._assert_application_matches_form_data(application)
 
         # Test the email verification flow
@@ -167,9 +167,9 @@ class BetaTestApplicationViewTestMixin:
                                   'public_contact_email'):
             self.assertEqual(getattr(application, application_field),
                              self.form_data[application_field])
-        self.assertEqual(application.subscribe_to_updates,
+        self.assertEqual(application.user.profile.subscribe_to_updates,
                          bool(self.form_data.get('subscribe_to_updates')))
-        self.assertNotEqual(None, application.accepted_privacy_policy)
+        self.assertNotEqual(None, application.user.profile.accepted_privacy_policy)
         self._assert_user_matches_form_data(application.user)
         self._assert_profile_matches_form_data(application.user.profile)
 
@@ -280,7 +280,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain=self.form_data['subdomain'],
             instance_name='I got here first',
             public_contact_email='test@example.com',
-            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username='test'),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -330,7 +329,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That username is mine',
             public_contact_email='test@example.com',
-            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username=self.form_data['username']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
@@ -354,7 +352,6 @@ class BetaTestApplicationViewTestMixin:
             subdomain='test',
             instance_name='That email address is mine',
             public_contact_email='test@example.com',
-            accepted_privacy_policy=timezone.now(),
             user=User.objects.create(username='test', email=self.form_data['email']),
         )
         self._assert_registration_fails(self.form_data, expected_errors={
