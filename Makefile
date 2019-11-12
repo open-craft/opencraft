@@ -75,10 +75,11 @@ install_system_dependencies: apt_get_update ## Install system-level dependencies
 	fi
 
 install_js_dependencies: ## Install dependencies for JS code.
+	curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 	curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 	sudo apt-get update
-	sudo apt-get install -y yarn
+	sudo apt-get install -y nodejs yarn
 	yarn install
 
 create_db: ## Create blanket DBs, i.e. `opencraft`.
