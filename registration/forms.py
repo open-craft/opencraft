@@ -415,7 +415,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             if not application.email_addresses_verified():
                 messages.add_message(self.request, messages.INFO,
                                      "Thank you for submitting these changes - we will build your instance to "
-                                     "apply them once your email address is confirmed.")
+                                     "apply them once your email address is verified.")
                 return
             messages.add_message(self.request, messages.INFO,
                                  "Thank you for submitting these changes - we will rebuild your instance to "
