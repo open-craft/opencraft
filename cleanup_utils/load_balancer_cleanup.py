@@ -24,7 +24,9 @@ Removes all the stale load balancer configuration fragments
 import logging
 import os
 import pathlib
+from operator import itemgetter
 
+from consul import Consul
 from django.conf import settings
 
 from instance import ansible
@@ -49,6 +51,9 @@ class LoadBalancerCleanup:
 
     def run_cleanup(self):
         """Run the actual cleanup"""
+        logger.info("\n --- Starting Consul cleanup ---")
+        self._clean_consul()
+
         logger.info("\n --- Starting Load balancer fragments cleanup ---")
 
         if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
@@ -82,3 +87,13 @@ class LoadBalancerCleanup:
         )
         if return_code != 0:
             raise Exception("Playbook to remove stale load balancer fragments failed")
+
+    def _clean_consul(self):
+        logger.info("Cleaning up consul instance entries")
+        client = Consul()
+        _, instances = client.kv.get('ocim/instances', recurse=True)
+        instances = sorted(instances, key=itemgetter('ModifyIndex'))[:-30]
+        logger.info("Removing {} instance entries".format(len(instances)))
+        for i in instances:
+            client.kv.delete(i['Key'])
+        logger.info("Finished")
