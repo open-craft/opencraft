@@ -1,5 +1,23 @@
 version: 2.1
 jobs:
+  build-frontend:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/repo/frontend
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Running frontend tests
+          command: npm test
   build:
     docker:
       - image: circleci/python:3.6-stretch-node-browsers
@@ -188,6 +206,9 @@ workflows:
           requires:
             - integration_tests_group_1
             - integration_tests_group_2
+  frontend-build-test:
+    jobs:
+      - build-frontend
   cleanup-workflow:
     triggers:
       - schedule:
