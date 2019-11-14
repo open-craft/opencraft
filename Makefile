@@ -76,8 +76,11 @@ install_system_dependencies: apt_get_update ## Install system-level dependencies
 
 install_js_dependencies: ## Install dependencies for JS code.
 	curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
-	sudo apt-get install -y nodejs
-	npm install
+	curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+	sudo apt-get update
+	sudo apt-get install -y nodejs yarn
+	yarn install
 
 create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \
@@ -149,7 +152,11 @@ else
 endif
 
 test.js: clean static_external ## Run JS tests.
+ifeq ($(CIRCLECI),true)
 	@./node_modules/.bin/karma start --single-run
+else
+	@xvfb-run ./node_modules/.bin/karma start --single-run
+endif
 	@if [ -e coverage/text/coverage.txt ]; then cat coverage/text/coverage.txt; fi
 
 test: clean test.quality test.unit test.migrations_missing test.js test.browser test.integration cov.combine ## Run all tests.
