@@ -23,22 +23,21 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
-from unittest.mock import patch, Mock
 import urllib
+from unittest.mock import patch, Mock
 
 import ddt
 import pymongo
-from pymongo.errors import PyMongoError
 import responses
 import yaml
+from MySQLdb import Error as MySQLError
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test.utils import override_settings
-
-from MySQLdb import Error as MySQLError
+from pymongo.errors import PyMongoError
 
 from instance.models.database_server import (
-    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer
+    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer,
 )
 from instance.models.mixins.rabbitmq import RabbitMQAPIError
 from instance.models.rabbitmq_server import RabbitMQServer
@@ -463,16 +462,25 @@ class MongoDBInstanceTestCase(TestCase):
         Check that the given OpenEdXAppServer is using the expected mongo settings.
         """
         ansible_vars = appserver.configuration_settings
+        ansible_vars_data = yaml.safe_load(ansible_vars)
         self.assertIn('EDXAPP_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('EDXAPP_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
         self.assertIn('EDXAPP_MONGO_PORT: {0}'.format(MONGODB_SERVER_DEFAULT_PORT), ansible_vars)
         self.assertIn('EDXAPP_MONGO_DB_NAME: {0}'.format(self.instance.mongo_database_name), ansible_vars)
-        # Use regex match, because sometimes the mongo hosts are unordered
-        self.assertRegex(ansible_vars, r"EDXAPP_MONGO_HOSTS:\s*{0}\n".format(expected_hosts))
+        if isinstance(ansible_vars_data['EDXAPP_MONGO_HOSTS'], list):
+            rendered_edxapp_mongo_hosts = ansible_vars_data['EDXAPP_MONGO_HOSTS']
+        else:
+            rendered_edxapp_mongo_hosts = ansible_vars_data['EDXAPP_MONGO_HOSTS'].split(',')
+        self.assertEqual(expected_hosts, rendered_edxapp_mongo_hosts)
         if expected_replica_set:
             self.assertIn('EDXAPP_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
+            self.assertIn('FORUM_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
+            self.assertIn('FORUM_MONGO_URL', ansible_vars_data)
+            self.assertListEqual(ansible_vars_data['FORUM_MONGO_HOSTS'], expected_hosts)
         else:
             self.assertNotIn('EDXAPP_MONGO_REPLICA_SET', ansible_vars)
+            self.assertNotIn('FORUM_MONGO_REPLICA_SET', ansible_vars)
+            self.assertEqual(ansible_vars_data['FORUM_MONGO_HOSTS'], expected_hosts)
 
         self.assertIn('FORUM_MONGO_USER: {0}'.format(self.instance.mongo_user), ansible_vars)
         self.assertIn('FORUM_MONGO_PASSWORD: {0}'.format(self.instance.mongo_pass), ansible_vars)
@@ -525,7 +533,7 @@ class MongoDBInstanceTestCase(TestCase):
         MongoDBServer.objects.all().delete()
         self.instance = OpenEdXInstanceFactory()
         appserver = make_test_appserver(self.instance)
-        self.check_mongo_vars_set(appserver, expected_hosts='mongo.opencraft.com')
+        self.check_mongo_vars_set(appserver, expected_hosts=['mongo.opencraft.com'])
 
     @override_settings(
         DEFAULT_INSTANCE_MONGO_URL=None,
@@ -552,7 +560,7 @@ class MongoDBInstanceTestCase(TestCase):
         self.instance = OpenEdXInstanceFactory(openedx_release=openedx_release,
                                                configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
-        self.check_mongo_vars_set(appserver, expected_hosts="\n- test.opencraft.hosting")
+        self.check_mongo_vars_set(appserver, expected_hosts=["test.opencraft.hosting"])
 
     @override_settings(
         DEFAULT_INSTANCE_MONGO_URL=None,
@@ -580,9 +588,9 @@ class MongoDBInstanceTestCase(TestCase):
                                                configuration_version=configuration_version)
         appserver = make_test_appserver(self.instance)
         self.check_mongo_vars_set(appserver,
-                                  expected_hosts=r'test\d?.opencraft.hosting,'
-                                                 r'test\d?.opencraft.hosting,'
-                                                 r'test\d?.opencraft.hosting',
+                                  expected_hosts=['test.opencraft.hosting',
+                                                  'test1.opencraft.hosting',
+                                                  'test2.opencraft.hosting'],
                                   expected_replica_set='test_name')
 
     def test_ansible_settings_no_mongo_server(self, mock_consul):

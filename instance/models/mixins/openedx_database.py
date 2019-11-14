@@ -21,11 +21,21 @@ Open edX instance database mixin
 """
 import hashlib
 import hmac
+
 import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
 
+FORUM_MONGO_REPLICA_SET_URL = (
+    "mongodb://{{ FORUM_MONGO_USER }}:{{ FORUM_MONGO_PASSWORD }}@"
+    "{%- for host in FORUM_MONGO_HOSTS -%}"
+    "{{ host }}:{{ FORUM_MONGO_PORT }}"
+    "{%- if not loop.last -%},{%- endif -%}"
+    "{%- endfor -%}"
+    "/{{ FORUM_MONGO_DATABASE }}"
+    "?replicaSet={{ FORUM_MONGO_REPLICA_SET }}"
+)
 
 # Classes #####################################################################
 
@@ -362,18 +372,25 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         # OpenCraft backported replicaset support into Ginkgo release branches.
         if (("ginkgo" in self.openedx_release and "opencraft" not in self.configuration_version) or
                 "ficus" in self.openedx_release):
-            edxapp_mongo_hosts = [primary_mongodb_server.hostname]
+            forum_mongo_hosts = edxapp_mongo_hosts = [primary_mongodb_server.hostname]
 
         # Replicasets are supported by OpenCraft's ginkgo, and upstream post-Ginkgo releases, and require a
         # comma-separated string of hostnames.
         elif self.mongodb_replica_set:
-            edxapp_mongo_hosts = ",".join(self.mongodb_servers.values_list('hostname', flat=True))
+            mongo_hosts = list(self.mongodb_servers.values_list('hostname', flat=True))
+            edxapp_mongo_hosts = ",".join(mongo_hosts)
+            forum_mongo_hosts = mongo_hosts
             extra_settings = {
-                "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name
+                "EDXAPP_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
+                "FORUM_MONGO_REPLICA_SET": self.mongodb_replica_set.name,
+                # The configuration script won't inject the replicaset config,
+                # but we can specify it by overriding the FORUM_MONGO_URL
+                "FORUM_MONGO_URL": FORUM_MONGO_REPLICA_SET_URL,
             }
         # If no replicaset is configured, use just the primary hostname
         else:
             edxapp_mongo_hosts = primary_mongodb_server.hostname
+            forum_mongo_hosts = [primary_mongodb_server.hostname]
 
         settings = {
             "EDXAPP_MONGO_USER": self.mongo_user,
@@ -381,10 +398,9 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "EDXAPP_MONGO_HOSTS": edxapp_mongo_hosts,
             "EDXAPP_MONGO_PORT": primary_mongodb_server.port,
             "EDXAPP_MONGO_DB_NAME": self.mongo_database_name,
-            # Forum doesn't support replicasets, so just use primary host
             "FORUM_MONGO_USER": self.mongo_user,
             "FORUM_MONGO_PASSWORD": self.mongo_pass,
-            "FORUM_MONGO_HOSTS": [primary_mongodb_server.hostname],
+            "FORUM_MONGO_HOSTS": forum_mongo_hosts,
             "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
             "FORUM_REBUILD_INDEX": True
