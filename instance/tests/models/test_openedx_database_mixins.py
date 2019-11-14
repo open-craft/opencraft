@@ -23,21 +23,21 @@ OpenEdXInstance Database Mixins - Tests
 # Imports #####################################################################
 
 import subprocess
+from unittest.mock import Mock, patch
 import urllib
-from unittest.mock import patch, Mock
 
-import ddt
-import pymongo
-import responses
-import yaml
 from MySQLdb import Error as MySQLError
+import ddt
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test.utils import override_settings
+import pymongo
 from pymongo.errors import PyMongoError
+import responses
+import yaml
 
 from instance.models.database_server import (
-    MYSQL_SERVER_DEFAULT_PORT, MONGODB_SERVER_DEFAULT_PORT, MySQLServer, MongoDBServer,
+    MONGODB_SERVER_DEFAULT_PORT, MYSQL_SERVER_DEFAULT_PORT, MongoDBServer, MySQLServer,
 )
 from instance.models.mixins.rabbitmq import RabbitMQAPIError
 from instance.models.rabbitmq_server import RabbitMQServer
@@ -57,6 +57,7 @@ class MySQLInstanceTestCase(TestCase):
     """
     Test cases for MySQLInstanceMixin and OpenEdXDatabaseMixin
     """
+
     def setUp(self):
         super().setUp()
         self.instance = None
@@ -352,10 +353,12 @@ class MySQLInstanceTestCase(TestCase):
             ),
             "PROGRAMS_": make_nested_group_info(
                 ["DEFAULT_DB_NAME", "DATABASES"],
-                [{"name": "programs", "user": "program", "additional_settings": {
-                    "ATOMIC_REQUESTS": True,
-                    "CONN_MAX_AGE": 0,
-                }}]
+                [{
+                    "name": "programs", "user": "program", "additional_settings": {
+                        "ATOMIC_REQUESTS": True,
+                        "CONN_MAX_AGE": 0,
+                    }
+                }]
             ),
             "INSIGHTS_": make_nested_group_info(
                 ["DATABASE_NAME", "DATABASES"],
@@ -420,6 +423,7 @@ class MongoDBInstanceTestCase(TestCase):
     """
     Test cases for MongoDBInstanceMixin and OpenEdXDatabaseMixin
     """
+
     def setUp(self):
         super().setUp()
         self.instance = None
@@ -655,6 +659,7 @@ class RabbitMQInstanceTestCase(TestCase):
     """
     Test cases for RabbitMQInstanceMixin
     """
+
     def setUp(self):
         super().setUp()
         with patch(
@@ -808,6 +813,7 @@ class RabbitMQServerManagerTestCase(TestCase):
     """
     Tests for RabbitMQServerManager.
     """
+
     @override_settings(DEFAULT_RABBITMQ_API_URL=None)
     def test_no_rabbitmq_server_available(self, mock_consul):
         """

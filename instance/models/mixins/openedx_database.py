@@ -39,6 +39,7 @@ FORUM_MONGO_REPLICA_SET_URL = (
 
 # Classes #####################################################################
 
+
 class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
