@@ -89,11 +89,14 @@ class LoadBalancerCleanup:
             raise Exception("Playbook to remove stale load balancer fragments failed")
 
     def _clean_consul(self):
+        """
+        Clean up stale Consul instances
+        """
         logger.info("Cleaning up consul instance entries")
         client = Consul()
         _, instances = client.kv.get('ocim/instances', recurse=True)
         instances = sorted(instances, key=itemgetter('ModifyIndex'))[:-30]
-        logger.info("Removing {} instance entries".format(len(instances)))
+        logger.info("Removing %d instance entries", len(instances))
         for i in instances:
             client.kv.delete(i['Key'])
         logger.info("Finished")
