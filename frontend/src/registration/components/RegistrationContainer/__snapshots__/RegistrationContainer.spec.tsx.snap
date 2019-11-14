@@ -2,7 +2,7 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="col"
+  className="registration-container col"
 >
   <h1>
     This is the registration page 
