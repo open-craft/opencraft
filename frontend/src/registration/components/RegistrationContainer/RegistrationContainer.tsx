@@ -6,7 +6,6 @@ import './styles.scss';
 export const RegistrationContainer: React.FC = () => {
     return (
         <Col className="registration-container">
-            <h1>This is the registration page </h1>
             <RegistrationRoutes/>
         </Col>
     )

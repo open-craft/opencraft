@@ -1,0 +1,36 @@
+@import "~styles/theme";
+
+.step-bar {
+    width: 400px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 1.5em 0;
+
+    .active-step {
+        color: $primary-2;
+        border-radius: 0.6em;
+        background-color: #fff;
+        font-size: 13px;
+        line-height: 1.2em;
+        width: 1.2em;
+        text-align: center;
+        outline: thin solid white;
+        outline-offset: 0.2em;
+        -moz-outline-radius: 0.6rem;
+    }
+
+    .step {
+        border-radius: 0.6em;
+        background-color: $primary-2;
+        width: 12px;
+        height: 12px;
+    }
+
+    span.line:not(:last-child) {
+        flex: 1;
+        border-top: 2px solid $primary-2;
+        height: 0;
+    }
+
+}

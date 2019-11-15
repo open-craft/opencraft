@@ -8,8 +8,8 @@ export const Header: React.FC = () => (
         <Col lg>
 
         </Col>
-        <Col lg>
-            <svg>
+        <Col lg className="logo-container">
+            <svg className="site-logo">
                 <use xlinkHref={logo + "#opencraft_logo"}/>
             </svg>
         </Col>

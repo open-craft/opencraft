@@ -5,6 +5,7 @@ import { Button, Form, FormControl, FormGroup, FormLabel, InputGroup } from "rea
 import { connect } from "react-redux";
 import { WrappedMessage } from "utils/intl";
 import { submitRegistration } from "../../actions";
+import { RegistrationPage } from "../RegistrationPage";
 import messages from "./displayMessages";
 
 interface ActionProps {
@@ -33,28 +34,34 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
 
     public render() {
         return (
-            <Form>
-                <FormGroup>
-                    <FormLabel htmlFor="domainNameInput">
-                        <WrappedMessage messages={messages} id="typeDomainNameBelow"/>
-                    </FormLabel>
-                    <InputGroup>
-                        <FormControl id="domainNameInput"
-                                     defaultValue=""
-                                     placeholder="yourdomain"
-                                     onChange={this.domainNameChange}/>
-                        <InputGroup.Append>
-                            <Button onClick={this.submitForm}>
-                                <WrappedMessage messages={messages} id="checkAvailability"/>
-                            </Button>
-                        </InputGroup.Append>
-                    </InputGroup>
-                </FormGroup>
+            <RegistrationPage title="Pro & Teacher Account"
+                              subtitle="Create your own Open edX instance now.">
+                <Form>
+                    <FormGroup>
+                        <FormLabel htmlFor="domainNameInput">
+                            <WrappedMessage messages={messages} id="typeDomainNameBelow"/>
+                        </FormLabel>
+                        <InputGroup>
+                            <FormControl id="domainNameInput"
+                                         defaultValue=""
+                                         placeholder="yourdomain"
+                                         onChange={this.domainNameChange}/>
+                            <InputGroup.Append>
+                                <Button onClick={this.submitForm}>
+                                    <WrappedMessage messages={messages} id="checkAvailability"/>
+                                </Button>
+                            </InputGroup.Append>
+                        </InputGroup>
+                    </FormGroup>
 
-                <a href="#">
-                    <WrappedMessage messages={messages} id="useOwnDomain"/>
-                </a>
-            </Form>
+
+                    <div className="use-own">
+                        <a href="#">
+                            <WrappedMessage messages={messages} id="useOwnDomain"/>
+                        </a>
+                    </div>
+                </Form>
+            </RegistrationPage>
         )
     }
 
