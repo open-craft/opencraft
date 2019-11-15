@@ -56,10 +56,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Note: use EDXAPP_CMS_ENV_EXTRA and/or EDXAPP_LMS_ENV_EXTRA; don't use
             # EDXAPP_ENV_EXTRA as the other two overwrite this.
             "EDXAPP_CMS_ENV_EXTRA": {
+                "BROKER_HEARTBEAT": 0,
                 "ADDL_INSTALLED_APPS": [
                 ],
             },
             "EDXAPP_LMS_ENV_EXTRA": {
+                "BROKER_HEARTBEAT": 0,
                 "ADDL_INSTALLED_APPS": [
                 ],
                 "HEARTBEAT_EXTENDED_CHECKS": [
