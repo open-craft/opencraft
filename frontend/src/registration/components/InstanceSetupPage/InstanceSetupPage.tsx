@@ -1,10 +1,11 @@
 import { RootState } from "global/state";
 import * as React from 'react';
-import { Col, Form, FormControl, FormGroup, FormLabel, Jumbotron } from "react-bootstrap";
+import { Form, FormControl, FormGroup, FormLabel, Jumbotron } from "react-bootstrap";
 import { connect } from "react-redux";
 import { WrappedMessage } from "utils/intl";
 import { submitRegistration } from "../../actions";
 import { getRegistrationData } from "../../selectors";
+import { RegistrationPage } from "../RegistrationPage";
 import messages from "./displayMessages";
 import './styles.scss';
 
@@ -32,7 +33,8 @@ interface Props extends StateProps, ActionProps {
 export class InstanceSetupPage extends React.PureComponent<Props> {
     render() {
         return (
-            <Col>
+            <RegistrationPage title="Create your Pro & Teacher Account"
+                              currentStep={2}>
                 <Jumbotron>
                     <p>
                         <WrappedMessage id="domainIsAvailable" messages={messages}/>
@@ -63,7 +65,7 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
                         <p><WrappedMessage id="publicContactEmailHelp" messages={messages}/></p>
                     </FormGroup>
                 </Form>
-            </Col>
+            </RegistrationPage>
         );
     }
 }

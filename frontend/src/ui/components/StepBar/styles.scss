@@ -1,28 +1,28 @@
 @import "~styles/theme";
 
 .step-bar {
-    width: 400px;
+    max-width: 400px;
+    min-width: 200px;
+    flex: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
     margin: 1.5em 0;
 
-    .active-step {
-        color: $primary-2;
-        border-radius: 0.6em;
-        background-color: #fff;
-        font-size: 13px;
-        line-height: 1.2em;
+    .circled-number {
         width: 1.2em;
-        text-align: center;
-        outline: thin solid white;
-        outline-offset: 0.2em;
-        -moz-outline-radius: 0.6rem;
+
+        .outer-circle {
+            fill: white;
+        }
+
+        .inner-circle {
+            fill: white;
+            stroke: $primary-1;
+        }
     }
 
     .step {
-        border-radius: 0.6em;
-        background-color: $primary-2;
         width: 12px;
         height: 12px;
     }

@@ -7,16 +7,17 @@ import { StepBar } from "ui/components/StepBar";
 
 interface Props {
     title: string;
-    subtitle: string;
+    subtitle?: string;
     children: ReactNode;
+    currentStep: number;
 }
 
-export const RegistrationPage: React.FC<Props> = ({title, subtitle, children}) => (
+export const RegistrationPage: React.FC<Props> = ({title, subtitle, children, currentStep}) => (
     <div className="registration-page">
         <h1>{title}</h1>
-        <h2>{subtitle}</h2>
+        {subtitle && <h2>{subtitle}</h2>}
         <div className="d-flex justify-content-center">
-            <StepBar count={4} currentStep={1}/>
+            <StepBar count={4} currentStep={currentStep}/>
         </div>
 
         <div className="registration-page-container">

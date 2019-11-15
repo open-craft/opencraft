@@ -35,7 +35,8 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     public render() {
         return (
             <RegistrationPage title="Pro & Teacher Account"
-                              subtitle="Create your own Open edX instance now.">
+                              subtitle="Create your own Open edX instance now."
+                              currentStep={1}>
                 <Form>
                     <FormGroup>
                         <FormLabel htmlFor="domainNameInput">
