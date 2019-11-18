@@ -34,6 +34,7 @@ from simple_email_confirmation.models import EmailAddress
 from registration.models import BetaTestApplication
 
 # Test cases ##################################################################
+from userprofile.models import UserProfile
 
 
 class ApprovalTestCase(TestCase):
@@ -45,13 +46,17 @@ class ApprovalTestCase(TestCase):
         with freeze_time('2019-01-02 09:30:00') as frozen_time:
             accepted_time = utc.localize(frozen_time())
             accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S%z')
+            UserProfile.objects.create(
+                user=user,
+                full_name='test name',
+                accepted_privacy_policy=accepted_time,
+            )
             application = BetaTestApplication.objects.create(
                 user=user,
                 subdomain='test',
                 instance_name='Test instance',
                 project_description='Test instance creation.',
                 public_contact_email=user.email,
-                accepted_privacy_policy=accepted_time
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
         with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver, \
