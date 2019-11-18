@@ -25,15 +25,15 @@ Forms for registration/login
 import logging
 
 from django import forms
-from django.contrib import messages
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.text import capfirst
-from django.template.loader import get_template
 from djng.forms import NgDeclarativeFieldsMetaclass, NgFormValidationMixin, NgModelForm, NgModelFormMixin
 
 from registration.models import BetaTestApplication
@@ -192,6 +192,12 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         },
     )
 
+    subscribe_to_updates = forms.BooleanField(
+        required=False,
+        help_text=('I want OpenCraft to keep me updated about important news, '
+                   'tips, and new features, and occasionally send me an email about it.'),
+    )
+
     # This field is created automatically from the model field, but the regex
     # validator is not copied over. We need to define the field manually so
     # that validation will work client-side. We do this by copying from the
@@ -249,9 +255,10 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
                 # If the user has already registered they have already accepted
                 # the terms, so the checkbox can default to checked
                 self.initial['accept_terms'] = True
+                self.initial['subscribe_to_updates'] = self.instance.user.profile.subscribe_to_updates
                 self.fields['accept_terms'].widget.attrs['checked'] = 'checked'
                 self.initial['accept_privacy_policy'] = bool(
-                    self.instance.accepted_privacy_policy
+                    self.instance.user.profile.accepted_privacy_policy
                 )
                 self.fields['accept_privacy_policy'].widget.attrs['checked'] = 'checked'
 
@@ -366,7 +373,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         with data from the form.
         """
         application = super().save(commit=False)
-        application.accepted_privacy_policy = timezone.now()
         if hasattr(application, 'user'):
             self.update_user(application, commit=commit)
         else:
@@ -385,6 +391,8 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         user.set_password(self.cleaned_data['password'])
         profile = UserProfile(
             full_name=self.cleaned_data['full_name'],
+            accepted_privacy_policy=timezone.now(),
+            subscribe_to_updates=self.cleaned_data['subscribe_to_updates'],
         )
         if commit:
             with transaction.atomic():
@@ -401,10 +409,14 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         """
         if hasattr(application.user, 'profile'):
             application.user.profile.full_name = self.cleaned_data['full_name']
+            application.user.profile.subscribe_to_updates = self.cleaned_data['subscribe_to_updates']
+            application.user.profile.accepted_privacy_policy = timezone.now()
         else:
             application.user.profile = UserProfile(
                 full_name=self.cleaned_data['full_name'],
                 user_id=application.user.pk,
+                subscribe_to_updates=self.cleaned_data['subscribe_to_updates'],
+                accepted_privacy_policy=timezone.now(),
             )
         if commit:
             with transaction.atomic():

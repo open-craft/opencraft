@@ -32,15 +32,10 @@ from registration.models import BetaTestApplication
 class BetaTestApplicationAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     list_display = ('user', 'domain', 'instance_name', 'public_contact_email',
                     'status', 'first_activated', 'created')
-    list_filter = ('status', 'subscribe_to_updates')
+    list_filter = ('status',)
     search_fields = ('user__username', 'subdomain', 'instance_name',
                      'public_contact_email')
     date_hierarchy = 'created'
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.accepted_privacy_policy:
-            return ('accepted_privacy_policy',)
-        return super(BetaTestApplicationAdmin, self).get_readonly_fields(request, obj)
 
 
 admin.site.register(BetaTestApplication, BetaTestApplicationAdmin)
