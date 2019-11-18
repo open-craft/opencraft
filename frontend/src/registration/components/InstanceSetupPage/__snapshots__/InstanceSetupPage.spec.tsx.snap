@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="col"
+>
+  <div
+    className="jumbotron"
+  >
+    <p>
+      Your domain name is available
+    </p>
+    <h3 />
+    <p>
+      To secure your domain now, please fill in the details below.
+    </p>
+  </div>
+  <form
+    className=""
+  >
+    <h2>
+      Secure your domain
+    </h2>
+    <div
+      className="form-group"
+    >
+      <label
+        className="form-label"
+      >
+        Instance name
+      </label>
+      <input
+        className="form-control"
+      />
+      <p>
+        The name of your institution, company or project.
+      </p>
+    </div>
+    <div
+      className="form-group"
+    >
+      <label
+        className="form-label"
+      >
+        Public contact email
+      </label>
+      <input
+        className="form-control"
+        type="email"
+      />
+      <p>
+        The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
+      </p>
+    </div>
+  </form>
+</div>
+`;

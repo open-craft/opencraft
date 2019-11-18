@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="col"
+>
+  <div
+    className="jumbotron"
+  >
+    <h1>
+      This is the home page
+    </h1>
+    <a
+      className="btn btn-primary"
+      href="/registration"
+      onClick={[Function]}
+    >
+      Start Registration
+    </a>
+  </div>
+</div>
+`;

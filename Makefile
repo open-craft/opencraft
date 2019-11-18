@@ -82,6 +82,9 @@ install_js_dependencies: ## Install dependencies for JS code.
 	sudo apt-get install -y nodejs yarn
 	yarn install
 
+install_frontend_dependencies:  ## Install depenedencies for frontend app.
+	npm install --prefix frontend
+
 create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \
 	    echo "Could not create database 'opencraft' - it probably already exists"
@@ -128,7 +131,10 @@ test.migrations_missing: clean ## Check if migrations are missing.
 test.browser: clean static_external ## Run browser-specific tests.
 	@echo -e "\nRunning browser tests..."
 	xvfb-run --auto-servernum $(HONCHO_COVERAGE_TEST) --pattern=browser_*.py
-	
+
+test.frontend:
+	npm test --prefix frontend
+
 test.integration: clean ## Run integration tests.
 ifneq ($(wildcard .env.integration),)
 	echo -e "\nRunning integration tests with credentials from .env.integration file..."
