@@ -52,6 +52,10 @@ class LoadBalancerCleanup:
     def run_cleanup(self):
         """Run the actual cleanup"""
         logger.info("\n --- Starting Consul cleanup ---")
+
+        if self.dry_run:
+            logger.info("Running in DRY_RUN mode, no actions will be taken")
+
         self._clean_consul()
 
         logger.info("\n --- Starting Load balancer fragments cleanup ---")
@@ -59,9 +63,6 @@ class LoadBalancerCleanup:
         if settings.DISABLE_LOAD_BALANCER_CONFIGURATION:
             logger.info("DISABLE_LOAD_BALANCER_CONFIGURATION is set, nothing to do")
             return
-
-        if self.dry_run:
-            logger.info("Running in DRY_RUN mode, no actions will be taken")
 
         playbook_path = pathlib.Path(
             os.path.abspath(os.path.dirname(__file__))
@@ -96,7 +97,10 @@ class LoadBalancerCleanup:
         client = Consul()
         _, instances = client.kv.get('ocim/instances', recurse=True)
         instances = sorted(instances, key=itemgetter('ModifyIndex'))[:-30]
-        logger.info("Removing %d instance entries", len(instances))
-        for i in instances:
-            client.kv.delete(i['Key'])
+        if self.dry_run:
+            logger.info("Would remove %d instance entries", len(instances))
+        else:
+            logger.info("Removing %d instance entries", len(instances))
+            for i in instances:
+                client.kv.delete(i['Key'])
         logger.info("Finished")
