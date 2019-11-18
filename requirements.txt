@@ -34,6 +34,7 @@ cmd2==0.9.16              # via cliff
 colorama==0.4.1           # via cmd2
 colour==0.1.5
 constantly==15.1.0        # via twisted
+contextlib2==0.5.5        # via schema
 cookies==2.2.1
 coverage==4.5.3
 cryptography==2.7         # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
@@ -161,6 +162,7 @@ responses==0.10.6
 rfc3986==1.3.2
 rjsmin==1.1.0             # via django-compressor
 s3transfer==0.2.1         # via boto3
+schema==0.7.1
 selenium==2.53.6
 service_identity==18.1.0
 setoptconf==0.2.0         # via prospector
@@ -178,7 +180,6 @@ tldextract==2.2.2         # via dns-lexicon
 traitlets==4.3.2          # via ipython
 twisted==19.7.0           # via daphne
 txaio==18.8.1             # via autobahn
-typed-ast==1.4.0          # via astroid
 urllib3==1.25.3
 virtualenv==16.6.1
 warlock==1.3.3            # via python-glanceclient
@@ -187,3 +188,6 @@ werkzeug==0.15.4
 wrapt==1.11.2             # via astroid, debtcollector, python-glanceclient
 zc.lockfile==2.0          # via cherrypy
 zope.interface==4.6.0     # via twisted
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools==41.6.0        # via ipdb, ipython, jsonschema, pyhamcrest, zc.lockfile, zope.interface

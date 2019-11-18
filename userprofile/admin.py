@@ -41,6 +41,11 @@ class UserProfileInline(admin.TabularInline):  # pylint: disable=missing-docstri
 
 class UserAdmin(BaseUserAdmin):  # pylint: disable=missing-docstring
     inlines = (UserProfileInline,)
+    list_filter = (
+        'profile__subscribe_to_updates',
+        'profile__accepted_privacy_policy',
+        'profile__accept_paid_support',
+    )
 
 
 class OrganizationAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
