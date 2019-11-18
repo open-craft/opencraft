@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<form
+  className=""
+>
+  <div
+    className="form-group"
+  >
+    <label
+      className="form-label"
+      htmlFor="domainNameInput"
+    >
+      Type your domain name below
+    </label>
+    <div
+      className="input-group"
+    >
+      <input
+        className="form-control"
+        defaultValue=""
+        id="domainNameInput"
+        onChange={[Function]}
+        placeholder="yourdomain"
+      />
+      <div
+        className="input-group-append"
+      >
+        <button
+          className="btn btn-primary"
+          disabled={false}
+          onClick={[Function]}
+          type="button"
+        >
+          Check Availability
+        </button>
+      </div>
+    </div>
+  </div>
+  <a
+    href="#"
+  >
+    I want to use my own domain
+  </a>
+</form>
+`;

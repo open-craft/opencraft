@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<footer
+  className="app-footer align-items-center row"
+>
+  <div
+    className="col-auto mr-auto col"
+  >
+    OpenCraft 2013-2020
+  </div>
+  <div
+    className="col-auto col"
+  >
+    EdX and Open edX are registered trademarks of edX Inc. All rights reserved.
+  </div>
+</footer>
+`;

@@ -1,0 +1,36 @@
+@import "~styles/theme";
+
+.step-bar {
+    max-width: 400px;
+    min-width: 200px;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 1.5em 0;
+
+    .circled-number {
+        width: 1.2em;
+
+        .outer-circle {
+            fill: white;
+        }
+
+        .inner-circle {
+            fill: white;
+            stroke: $primary-1;
+        }
+    }
+
+    .step {
+        width: 12px;
+        height: 12px;
+    }
+
+    span.line:not(:last-child) {
+        flex: 1;
+        border-top: 2px solid $primary-2;
+        height: 0;
+    }
+
+}
