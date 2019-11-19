@@ -50,7 +50,7 @@ jobs:
           paths:
             - .
 
-  deploy-frontend:
+  deploy-frontend-stage:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -263,18 +263,23 @@ workflows:
             - integration_tests_group_1
             - integration_tests_group_2
 
-  frontend-build-test:
+  frontend-build-and-deploy:
     jobs:
-      - test-frontend:
-          name: test_frontend
+      - test-frontend
       - build-frontend:
-          name: build_frontend
           requires:
-            - test_frontend
-      - deploy-frontend:
-          name: deploy-frontend-stage
+            - test-frontend
+      - allow-deployment:
+          type: approval
           requires:
-            - build_frontend
+            - build-frontend
+      - deploy-frontend-stage:
+          requires:
+            - allow-deployment
+          filters:
+            branches:
+              only:
+                - giovanni/add-frontend-ci-deployment
 
   cleanup-workflow:
     triggers:
