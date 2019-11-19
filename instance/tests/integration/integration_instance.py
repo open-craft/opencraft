@@ -40,7 +40,6 @@ import pymongo
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
-from instance.openstack_utils import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
@@ -98,6 +97,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.Running)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
+    @retry
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
@@ -137,16 +137,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 is_port_open(server_ip, port),
                 "Expected port {} on AppServer VM {} to be inaccessible.".format(port, server_ip)
             )
-
-    def assert_swift_container_provisioned(self, instance):
-        """
-        Verify the Swift container for the instance has been provisioned successfully.
-        """
-        if not instance.storage_type == instance.SWIFT_STORAGE:
-            return
-
-        stat_result = stat_container(instance.swift_container_name)
-        self.assertEqual(stat_result.read_acl, '.r:*')
 
     def assert_secret_keys(self, instance, appserver):
         """
@@ -378,14 +368,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # Test external databases
 
         if settings.DEFAULT_INSTANCE_MYSQL_URL and settings.DEFAULT_INSTANCE_MONGO_URL:
-            self.assert_swift_container_provisioned(instance)
-            self.assert_server_ready(instance)
-            self.assert_instance_up(instance)
-            self.assert_appserver_firewalled(instance)
-            self.assertTrue(instance.successfully_provisioned)
             self.assertFalse(instance.require_user_creation_success())
-            for appserver in instance.appserver_set.all():
-                self.assert_secret_keys(instance, appserver)
             self.assert_mysql_db_provisioned(instance)
             self.assert_mongo_db_provisioned(instance)
 
