@@ -262,14 +262,15 @@ workflows:
           requires:
             - integration_tests_group_1
             - integration_tests_group_2
+
   frontend-build-test:
     jobs:
       - test-frontend:
           name: test_frontend
       - build-frontend:
           name: build_frontend
-          # requires:
-          #   - test_frontend
+          requires:
+            - test_frontend
       - deploy-frontend:
           name: deploy-frontend-stage
           requires:
