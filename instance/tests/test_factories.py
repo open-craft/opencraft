@@ -122,7 +122,8 @@ class FactoriesTestCase(TestCase):
         instance = production_instance_factory(sub_domain=sub_domain)
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self._assert_field_values(instance, sub_domain, **self.PRODUCTION_DEFAULTS)
-        self.assertEqual(instance.provisioning_failure_notification_emails, ['appserverfail@localhost'])
+        # standard production instances should not have this set
+        self.assertEqual(instance.provisioning_failure_notification_emails, [])
 
         # Create instance with custom field values
         sub_domain = "production-instance-customized"
