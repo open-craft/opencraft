@@ -223,6 +223,10 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
+      - test-frontend
+      - build-frontend:
+          requires:
+            - test-frontend
       - build:
           name: quality_migrations_tests
           tests_group: 0
@@ -248,6 +252,7 @@ workflows:
             - python_unit_tests
             - browser_tests
             - js_tests
+            - build-frontend
       - build:
           name: integration_tests_group_2
           tests_group: 2
@@ -257,6 +262,7 @@ workflows:
             - python_unit_tests
             - browser_tests
             - js_tests
+            - build-frontend
       - coverage:
           name: coverage
           requires:
@@ -264,6 +270,13 @@ workflows:
             - integration_tests_group_2
 
   frontend-build-and-deploy:
+     triggers:
+       - schedule:
+           filters:
+             branches:
+               only:
+                 - giovanni/add-frontend-ci-deployment
+
     jobs:
       - test-frontend
       - build-frontend:
@@ -276,10 +289,6 @@ workflows:
       - deploy-frontend-stage:
           requires:
             - allow-deployment
-          filters:
-            branches:
-              only:
-                - giovanni/add-frontend-ci-deployment
 
   cleanup-workflow:
     triggers:
