@@ -1,11 +1,16 @@
 version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@1.0.11
+
 jobs:
-  build-frontend:
+  test-frontend:
     docker:
       - image: circleci/node:lts
-    working_directory: ~/repo/frontend
+    working_directory: ~/project/frontend
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - restore_cache:
           key: dependencies-{{ checksum "package-lock.json" }}
       - run:
@@ -20,6 +25,52 @@ jobs:
           command: npm test -- --reporters=default --reporters=jest-junit --ci --runInBand
       - store_test_results:
           path: .
+
+  build-frontend:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/project/frontend
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Build React frontend
+          command: npm run build
+      - persist_to_workspace:
+          root: build
+          paths:
+            - .
+
+  deploy-frontend:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - attach_workspace:
+          at: build-frontend
+      - aws-s3/sync:
+          from: build-frontend/
+          to: "s3://$FRONTEND_STAGE_AWS_S3_BUCKET/frontend"
+          overwrite: true
+          arguments: |
+            --acl public-read \
+            --profile=default
+          aws-access-key-id: FRONTEND_STAGE_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: FRONTEND_STAGE_AWS_SECRET_ACCESS_KEY
+          aws-region: FRONTEND_STAGE_AWS_REGION
+      - run:
+          name: Invalidate CloudFront cache
+          command: |
+            aws cloudfront create-invalidation --distribution-id $FRONTEND_STAGE_AWS_CLOUDFRONT_DISTRIBUTION_ID --paths '/*' --profile=default
+
   build:
     docker:
       - image: circleci/python:3.6-stretch-node-browsers
@@ -109,6 +160,7 @@ jobs:
           root: /tmp
           paths:
               - coverage
+
   coverage:
     docker:
       - image: circleci/python:3.6-stretch-node
@@ -141,6 +193,7 @@ jobs:
               coverage combine --append /tmp/workspace/coverage/
               make cov.html
               if [ -e /tmp/workspace/coverage/text/coverage.txt ]; then cat /tmp/workspace/coverage/text/coverage.txt; fi
+
   cleanup:
     docker:
       - image: circleci/python:3.6-stretch
@@ -165,6 +218,7 @@ jobs:
             make test.integration_cleanup
           no_output_timeout: 20m
           when: always
+
 workflows:
   version: 2
   build-test-and-deploy:
@@ -210,7 +264,17 @@ workflows:
             - integration_tests_group_2
   frontend-build-test:
     jobs:
-      - build-frontend
+      - test-frontend:
+          name: test_frontend
+      - build-frontend:
+          name: build_frontend
+          # requires:
+          #   - test_frontend
+      - deploy-frontend:
+          name: deploy-frontend-stage
+          requires:
+            - build_frontend
+
   cleanup-workflow:
     triggers:
       - schedule:

@@ -8,9 +8,11 @@ exports[`renders without crashing 1`] = `
     className="col-lg"
   />
   <div
-    className="col-lg"
+    className="logo-container col-lg"
   >
-    <svg>
+    <svg
+      className="site-logo"
+    >
       <use
         xlinkHref="icons.svg#opencraft_logo"
       />

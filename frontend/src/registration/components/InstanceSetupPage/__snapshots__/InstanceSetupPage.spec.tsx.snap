@@ -2,56 +2,154 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="col"
+  className="registration-page"
 >
+  <h1>
+    Create your Pro & Teacher Account
+  </h1>
   <div
-    className="jumbotron"
+    className="d-flex justify-content-center"
   >
-    <p>
-      Your domain name is available
-    </p>
-    <h3 />
-    <p>
-      To secure your domain now, please fill in the details below.
-    </p>
+    <div
+      className="step-bar"
+    >
+      <svg
+        className="step"
+        viewBox="0 0 10 10"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx={5}
+          cy={5}
+          fill="#6d9cae"
+          r={5}
+        />
+      </svg>
+      <span
+        className="line"
+      />
+      <svg
+        className="circled-number"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          className="outer-circle"
+          cx={10}
+          cy={10}
+          r={10}
+        />
+        <circle
+          className="inner-circle"
+          cx={10}
+          cy={10}
+          r={7}
+          strokeWidth={2}
+        />
+        <text
+          className="circle-text"
+          color="#1e4c59"
+          dy="0.4em"
+          fontSize="10px"
+          strokeWidth="1px"
+          textAnchor="middle"
+          x="50%"
+          y="50%"
+        >
+          2
+        </text>
+      </svg>
+      <span
+        className="line"
+      />
+      <svg
+        className="step"
+        viewBox="0 0 10 10"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx={5}
+          cy={5}
+          fill="#6d9cae"
+          r={5}
+        />
+      </svg>
+      <span
+        className="line"
+      />
+      <svg
+        className="step"
+        viewBox="0 0 10 10"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx={5}
+          cy={5}
+          fill="#6d9cae"
+          r={5}
+        />
+      </svg>
+      <span
+        className="line"
+      />
+    </div>
   </div>
-  <form
-    className=""
+  <div
+    className="registration-page-container"
   >
-    <h2>
-      Secure your domain
-    </h2>
     <div
-      className="form-group"
+      className="registration-page-content row"
     >
-      <label
-        className="form-label"
+      <div
+        className="jumbotron"
       >
-        Instance name
-      </label>
-      <input
-        className="form-control"
-      />
-      <p>
-        The name of your institution, company or project.
-      </p>
-    </div>
-    <div
-      className="form-group"
-    >
-      <label
-        className="form-label"
+        <p>
+          Your domain name is available
+        </p>
+        <h3 />
+        <p>
+          To secure your domain now, please fill in the details below.
+        </p>
+      </div>
+      <form
+        className=""
       >
-        Public contact email
-      </label>
-      <input
-        className="form-control"
-        type="email"
-      />
-      <p>
-        The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
-      </p>
+        <h2>
+          Secure your domain
+        </h2>
+        <div
+          className="form-group"
+        >
+          <label
+            className="form-label"
+          >
+            Instance name
+          </label>
+          <input
+            className="form-control"
+          />
+          <p>
+            The name of your institution, company or project.
+          </p>
+        </div>
+        <div
+          className="form-group"
+        >
+          <label
+            className="form-label"
+          >
+            Public contact email
+          </label>
+          <input
+            className="form-control"
+            type="email"
+          />
+          <p>
+            The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
+          </p>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 </div>
 `;
