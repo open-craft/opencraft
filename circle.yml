@@ -158,8 +158,6 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - cleanup:
-          name: cleanup
       - build:
           name: quality_migrations_tests
           tests_group: 0
