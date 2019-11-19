@@ -59,7 +59,7 @@ class AnsibleAppServerTestCase(TestCase):
         self.assertEqual(
             appserver.inventory_str,
             '[openedx-app]\n'
-            '192.168.100.200\n'
+            '192.168.100.200 ansible_ssh_common_args="-o StrictHostKeyChecking=no"\n'
             '[app:children]\n'
             'openedx-app'
         )

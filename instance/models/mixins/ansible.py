@@ -54,6 +54,8 @@ class AnsibleAppServerMixin(models.Model):
         help_text='YAML variables for commonly needed services.')
 
     INVENTORY_GROUP = 'generic'
+    # It is possible to get an IP address that has already appeared, so we want to disable strict host key checking.
+    HOST_ARGS = 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"'
 
     class Meta:
         abstract = True
@@ -96,9 +98,9 @@ class AnsibleAppServerMixin(models.Model):
             raise RuntimeError("Cannot prepare to run playbooks when server has no public IP.")
         return (
             '[{group}]\n'
-            '{server_ip}\n'
+            '{server_ip} {host_args}\n'
             '[app:children]\n'
-            '{group}'.format(group=self.INVENTORY_GROUP, server_ip=public_ip)
+            '{group}'.format(group=self.INVENTORY_GROUP, server_ip=public_ip, host_args=self.HOST_ARGS)
         )
 
     def _run_playbook(self, working_dir, playbook):
