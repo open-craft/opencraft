@@ -139,16 +139,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 "Expected port {} on AppServer VM {} to be inaccessible.".format(port, server_ip)
             )
 
-    def assert_swift_container_provisioned(self, instance):
-        """
-        Verify the Swift container for the instance has been provisioned successfully.
-        """
-        if not instance.storage_type == instance.SWIFT_STORAGE:
-            return
-
-        stat_result = stat_container(instance.swift_container_name)
-        self.assertEqual(stat_result.read_acl, '.r:*')
-
     def assert_secret_keys(self, instance, appserver):
         """
         Verify that the appserver's configuration includes expected secret keys.
@@ -379,7 +369,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # Test external databases
 
         if settings.DEFAULT_INSTANCE_MYSQL_URL and settings.DEFAULT_INSTANCE_MONGO_URL:
-            self.assert_swift_container_provisioned(instance)
             self.assertFalse(instance.require_user_creation_success())
             self.assert_mysql_db_provisioned(instance)
             self.assert_mongo_db_provisioned(instance)
