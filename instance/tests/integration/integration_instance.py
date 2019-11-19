@@ -40,7 +40,6 @@ import pymongo
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
-from instance.openstack_utils import stat_container
 from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
