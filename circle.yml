@@ -270,13 +270,12 @@ workflows:
             - integration_tests_group_2
 
   frontend-build-and-deploy:
-     triggers:
+    triggers:
        - schedule:
            filters:
              branches:
                only:
                  - giovanni/add-frontend-ci-deployment
-
     jobs:
       - test-frontend
       - build-frontend:
