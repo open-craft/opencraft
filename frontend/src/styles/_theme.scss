@@ -4,7 +4,14 @@ $secondary-1: #0f1f24;
 $secondary-2: #7a7a7a;
 $secondary-3: #000000;
 
+$theme-colors: (
+  "primary": $primary-1,
+  "secondary": $secondary-1
+);
 
 $playfair-font: 'Playfair Display', serif;
 $chivo-font: 'Chivo', sans-serif;
 $roboto-font: 'Roboto', sans-serif;
+
+// Disable rounded button corners
+$enable-rounded: false;
