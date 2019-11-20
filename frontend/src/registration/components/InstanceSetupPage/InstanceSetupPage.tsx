@@ -13,6 +13,7 @@ import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
+import iconCheck from 'assets/circle-check.png';
 import './styles.scss';
 
 interface ActionProps {
@@ -40,11 +41,14 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
         title="Create your Pro & Teacher Account"
         currentStep={2}
       >
-        <Jumbotron>
-          <p>
+        <Jumbotron className="domain-available">
+          <img src={iconCheck} alt="" />
+          <h2>
             <WrappedMessage id="domainIsAvailable" messages={messages} />
-          </p>
-          <h3>{this.props.domain}</h3>
+          </h2>
+          <div className="domain-name">
+            <p>{this.props.domain}</p>
+          </div>
           <p>
             <WrappedMessage id="secureDomainNow" messages={messages} />
           </p>
