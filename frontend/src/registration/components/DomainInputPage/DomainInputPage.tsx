@@ -81,8 +81,8 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
               </a>
             </div>
           </Form>
-        </RegistrationPage>
-        <InstitutionalAccountHero />
+          </RegistrationPage>
+          <InstitutionalAccountHero />
       </div>
     )
   }
