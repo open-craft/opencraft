@@ -26,6 +26,28 @@ jobs:
       - store_test_results:
           path: .
 
+  quality-frontend:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/project/frontend
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependencies-{{ checksum "package-lock.json" }}
+      - run:
+          name: Running frontend tests
+          command: npm run lint
+      - store_test_results:
+          path: .
+
   build-frontend:
     docker:
       - image: circleci/node:lts
@@ -269,6 +291,7 @@ workflows:
 
   build-frontend-test-and-deploy:
     jobs:
+      - quality-frontend
       - test-frontend
       - build-frontend:
           requires:
