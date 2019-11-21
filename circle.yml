@@ -4,7 +4,7 @@ orbs:
   aws-s3: circleci/aws-s3@1.0.11
 
 jobs:
-  test-frontend:
+  frontend-test:
     docker:
       - image: circleci/node:lts
     working_directory: ~/project/frontend
@@ -26,7 +26,7 @@ jobs:
       - store_test_results:
           path: .
 
-  quality-frontend:
+  frontend-quality:
     docker:
       - image: circleci/node:lts
     working_directory: ~/project/frontend
@@ -48,7 +48,7 @@ jobs:
       - store_test_results:
           path: .
 
-  build-frontend:
+  frontend-build:
     docker:
       - image: circleci/node:lts
     working_directory: ~/project/frontend
@@ -72,14 +72,14 @@ jobs:
           paths:
             - .
 
-  deploy-frontend-stage:
+  frontend-deploy-stage:
     docker:
       - image: circleci/python:3.8
     steps:
       - attach_workspace:
-          at: build-frontend
+          at: frontend-build
       - aws-s3/sync:
-          from: build-frontend/
+          from: frontend-build/
           to: "s3://$FRONTEND_STAGE_AWS_S3_BUCKET/frontend"
           overwrite: true
           # `acl public-read` is needed to make the objects in the bucket publicly accesible.
@@ -289,17 +289,17 @@ workflows:
             - integration_tests_group_1
             - integration_tests_group_2
 
-  build-frontend-test-and-deploy:
+  frontend-build-test-and-deploy:
     jobs:
-      - quality-frontend
-      - test-frontend
-      - build-frontend:
+      - frontend-quality
+      - frontend-test
+      - frontend-build:
           requires:
-            - test-frontend
+            - frontend-test
       # Frontend deployment (only on master branch)
-      - deploy-frontend-stage:
+      - frontend-deploy-stage:
           requires:
-            - build-frontend
+            - frontend-build
           filters:
             branches:
               only:
