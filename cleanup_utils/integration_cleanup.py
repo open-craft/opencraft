@@ -127,6 +127,7 @@ def run_integration_cleanup(dry_run=False):
         hashes_to_clean=hashes_to_clean
     )
 
+    # Load Balancer cleanup
     load_balancer_cleanup = LoadBalancerCleanup(
         load_balancer_address=os.environ['DEFAULT_LOAD_BALANCING_SERVER'].partition('@')[-1],
         fragment_prefix=os.environ.get('LOAD_BALANCER_FRAGMENT_NAME_PREFIX', 'integration-'),

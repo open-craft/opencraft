@@ -24,6 +24,7 @@ A Django signal handler to provision a beta tester instance upon successful emai
 
 import logging
 
+from django.conf import settings
 from django.db import transaction
 from django.dispatch import receiver
 from simple_email_confirmation.signals import email_confirmed
@@ -76,5 +77,8 @@ def _provision_instance(sender, **kwargs):
             deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)
+        if settings.PROD_APPSERVER_FAIL_EMAILS:
+            application.instance.provisioning_failure_notification_emails = settings.PROD_APPSERVER_FAIL_EMAILS
+            application.instance.save()
         application.save()
     spawn_appserver(application.instance.ref.pk, mark_active_on_success=True, num_attempts=2)
