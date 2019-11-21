@@ -60,6 +60,10 @@ jobs:
           from: build-frontend/
           to: "s3://$FRONTEND_STAGE_AWS_S3_BUCKET/frontend"
           overwrite: true
+          # `acl public-read` is needed to make the objects in the bucket publicly accesible.
+          # `profile=default` fixes a bug in the CircleCI aws-cli orb, without it
+          # awscli always picks up the credentials from the environment variables
+          # instead of the correct ones, set on the parametes below.
           arguments: |
             --acl public-read \
             --profile=default
@@ -270,21 +274,13 @@ workflows:
           requires:
             - test-frontend
       # Frontend deployment (only on master branch)
-      - allow-deployment:
-          type: approval
-          requires:
-            - build-frontend
-          filters:
-            branches:
-              only:
-                - giovanni/add-frontend-ci-deployment
       - deploy-frontend-stage:
           requires:
             - allow-deployment
           filters:
             branches:
               only:
-                - giovanni/add-frontend-ci-deployment
+                - new-registration-flow
 
   cleanup-workflow:
     triggers:
