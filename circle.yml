@@ -276,7 +276,7 @@ workflows:
       # Frontend deployment (only on master branch)
       - deploy-frontend-stage:
           requires:
-            - allow-deployment
+            - build-frontend
           filters:
             branches:
               only:
