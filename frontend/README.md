@@ -29,16 +29,4 @@ store is always an option.
 
 ## React Component Guidelines
 
-When coding React components, please keep the following in mind:
-
-* All components should subclass [`React.PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent).
-* All component props and redux state variables that are complex objects should be immutable (enforced via TypeScript by declaring them as `ReadOnlyArray<T>`, `ReadOnlySet<T>`, and `ReadOnly<T>`, mutated using [`immutability-helper`](https://github.com/kolodny/immutability-helper) or plain ES6).
-* Write sensible tests, including unit tests, [snapshot tests](https://jestjs.io/docs/en/snapshot-testing), and/or end-to-end tests.
-    - When reviewing changes to snapshot tests, carefully review the HTML diff to ensure the changes are expected.
-    - Test files should be located alongside the component they test (so `Card.tsx` is tested in `Card.spec.tsx`)    
-    - Never import jest/test related code in `.ts` files that are part of the application (only in `.spec.tsx` files); this avoids adding several megabytes of test code to the app bundle.
-    - When in doubt, end-to-end tests and Enzyme behavior tests are preferred. Snapshot tests are still useful, but not as important as an end to end test or even a regular React component test that simulates user interaction with the component and then make assertions about the result.
-* Prefer to split big components up into smaller components that get composed together.
-* Use the [Container Pattern](https://medium.freecodecamp.org/react-superpowers-container-pattern-20d664bdae65)
-    - Don't write a `FoobarComponent` that loads `Foobar` data from the REST API then renders it; instead write a `FoobarComponent` that accepts `Foobar` data as a prop (so its props are never `undefined`), and then write a `FoobarContainerComponent` which loads the `Foobar` data from the REST API and then once it's loaded renders a `<FoobarComponent data={foobarData}/>`. This lets us test the presentation/UX separately from the API/backend, provides better separation of concerns, and reduces the need to write code that checks if the prop has data or not when rendering.
-* Make sure the component is internationalized (see below) and accessible.
+Besides the general [coding standards](https://handbook.opencraft.com/en/latest/coding_standards/#coding-standards) in the OpenCraft handbook, there are [React specific tips](https://doc.opencraft.com/en/latest/coding-best-practices/#reactjs) in our tech repo. Please follow them when developing on the Ocim frontend.
