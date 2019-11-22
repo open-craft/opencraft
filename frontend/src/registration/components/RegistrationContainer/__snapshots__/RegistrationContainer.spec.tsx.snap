@@ -3,9 +3,5 @@
 exports[`renders without crashing 1`] = `
 <div
   className="registration-container col"
->
-  <h1>
-    This is the registration page 
-  </h1>
-</div>
+/>
 `;
