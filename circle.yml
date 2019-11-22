@@ -83,19 +83,12 @@ jobs:
           to: "s3://$FRONTEND_STAGE_AWS_S3_BUCKET/frontend"
           overwrite: true
           # `acl public-read` is needed to make the objects in the bucket publicly accesible.
-          # `profile=default` fixes a bug in the CircleCI aws-cli orb, without it
-          # awscli always picks up the credentials from the environment variables
-          # instead of the correct ones, set on the parametes below.
           arguments: |
-            --acl public-read \
-            --profile=default
-          aws-access-key-id: FRONTEND_STAGE_AWS_ACCESS_KEY_ID
-          aws-secret-access-key: FRONTEND_STAGE_AWS_SECRET_ACCESS_KEY
-          aws-region: FRONTEND_STAGE_AWS_REGION
+            --acl public-read
       - run:
           name: Invalidate CloudFront cache
           command: |
-            aws cloudfront create-invalidation --distribution-id $FRONTEND_STAGE_AWS_CLOUDFRONT_DISTRIBUTION_ID --paths '/*' --profile=default
+            aws cloudfront create-invalidation --distribution-id $FRONTEND_STAGE_AWS_CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
 
   build:
     docker:
@@ -295,10 +288,12 @@ workflows:
       # - frontend-quality
       - frontend-test
       - frontend-build:
+          context: ocim-frontend-stage
           requires:
             - frontend-test
       # Frontend deployment (only on master branch)
       - frontend-deploy-stage:
+          context: ocim-frontend-stage
           requires:
             - frontend-build
           filters:
