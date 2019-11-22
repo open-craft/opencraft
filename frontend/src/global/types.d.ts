@@ -8,4 +8,3 @@ export type OcimThunkAction<actionReturnType> =
 
 export type OcimThunkDispatch<actionReturnType> =
     ThunkDispatch<RootState, undefined, ActionTypes>;
-
