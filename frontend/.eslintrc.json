@@ -4,7 +4,8 @@
         "es6": true
     },
     "extends": [
-        "airbnb"
+        "airbnb",
+        "prettier"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -29,9 +30,11 @@
     },
     "plugins": [
         "react",
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "prettier"
     ],
     "rules": {
+      "prettier/prettier": ["error"],
       "no-unused-vars": "off",
       "import/prefer-default-export": "off",
       "react/destructuring-assignment": ["off"],
