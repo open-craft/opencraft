@@ -21,7 +21,7 @@ jobs:
             - node_modules
           key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
-          name: Running frontend tests
+          name: Run frontend tests
           command: npm test -- --reporters=default --reporters=jest-junit --ci --runInBand
       - store_test_results:
           path: .
