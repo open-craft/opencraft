@@ -57,7 +57,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
 
 
                     <div className="use-own">
-                        <a href="#">
+                        <a href="/#">
                             <WrappedMessage messages={messages} id="useOwnDomain"/>
                         </a>
                     </div>
