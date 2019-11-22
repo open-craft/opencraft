@@ -72,7 +72,7 @@ jobs:
           paths:
             - .
 
-  frontend-deploy-stage:
+  frontend-deploy:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -292,7 +292,7 @@ workflows:
           requires:
             - frontend-test
       # Frontend deployment (only on master branch)
-      - frontend-deploy-stage:
+      - frontend-deploy:
           context: ocim-frontend-stage
           requires:
             - frontend-build
