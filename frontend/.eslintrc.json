@@ -38,6 +38,13 @@
         {
           "devDependencies": true
         }
+      ],
+      "max-len": [
+        "error",
+        {
+          "comments": 100,
+          "code": 130
+        }
       ]
     }
 }

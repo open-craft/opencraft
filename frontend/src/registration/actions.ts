@@ -31,7 +31,10 @@ export type ActionTypes =
     | RegistrationSuccess
     | RegistrationFailure;
 
-export const submitRegistration = (data: RegistrationModel, nextStep?: string): OcimThunkAction<void> => async (dispatch) => {
+export const submitRegistration = (
+  data: RegistrationModel,
+  nextStep?: string,
+): OcimThunkAction<void> => async (dispatch) => {
   dispatch({
     type: Types.REGISTRATION_SUBMIT,
     data,
