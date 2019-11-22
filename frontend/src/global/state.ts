@@ -1,6 +1,6 @@
-import { LoginStatusModel } from "../auth/models";
-import { RegistrationModel } from "../registration/models";
-import { UiStateModel } from "../ui/models";
+import { LoginStatusModel } from '../auth/models';
+import { RegistrationModel } from '../registration/models';
+import { UiStateModel } from '../ui/models';
 
 export interface RootState {
     readonly registration: Readonly<RegistrationModel>,

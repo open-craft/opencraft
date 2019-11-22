@@ -1,6 +1,6 @@
 export enum Theme {
-    LIGHT = "light",
-    DARK = "dark",
+    LIGHT = 'light',
+    DARK = 'dark',
 }
 
 export interface DomainInfoModel {
@@ -33,11 +33,11 @@ export interface ThemeInfoModel {
 }
 
 export const DefaultTheme: Readonly<ThemeInfoModel> = {
-    theme: Theme.LIGHT,
-    mainColour: "blue",
-    accentColour: "green",
-    logo: null,
-    cover: null,
+  theme: Theme.LIGHT,
+  mainColour: 'blue',
+  accentColour: 'green',
+  logo: null,
+  cover: null,
 };
 
 export interface RegistrationModel extends DomainInfoModel, AccountInfoModel, InstanceInfoModel, ThemeInfoModel {
@@ -46,20 +46,19 @@ export interface RegistrationModel extends DomainInfoModel, AccountInfoModel, In
 
 export type RegistrationFields = keyof RegistrationModel;
 
-export const blankRegistration: Readonly<RegistrationModel> = Object.assign({
-        acceptSupport: null,
-        acceptTOS: null,
-        acceptTipsEmail: null,
-        cover: null,
-        domain: null,
-        emailAddress: null,
-        fullName: null,
-        instanceName: null,
-        logo: null,
-        password: null,
-        passwordConfirm: null,
-        publicEmail: null,
-        username: null
-    },
-    DefaultTheme,
-);
+export const blankRegistration: Readonly<RegistrationModel> = {
+  acceptSupport: null,
+  acceptTOS: null,
+  acceptTipsEmail: null,
+  cover: null,
+  domain: null,
+  emailAddress: null,
+  fullName: null,
+  instanceName: null,
+  logo: null,
+  password: null,
+  passwordConfirm: null,
+  publicEmail: null,
+  username: null,
+  ...DefaultTheme,
+};

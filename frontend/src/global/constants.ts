@@ -12,20 +12,20 @@ export enum RegistrationSteps {
 }
 
 export const ROUTES = {
-    Registration: {
-        HOME: '/registration',
-        DOMAIN: '/registration/domain',
-        INSTANCE: '/registration/instance',
-        ACCOUNT: '/registration/account',
-        THEME: '/registration/theme',
-        CONGRATS: '/registration/congrats',
-    },
+  Registration: {
+    HOME: '/registration',
+    DOMAIN: '/registration/domain',
+    INSTANCE: '/registration/instance',
+    ACCOUNT: '/registration/account',
+    THEME: '/registration/theme',
+    CONGRATS: '/registration/congrats',
+  },
 };
 
 export const REGISTRATION_STEPS = [
-    ROUTES.Registration.DOMAIN,
-    ROUTES.Registration.INSTANCE,
-    ROUTES.Registration.ACCOUNT,
-    ROUTES.Registration.THEME,
-    ROUTES.Registration.CONGRATS,
+  ROUTES.Registration.DOMAIN,
+  ROUTES.Registration.INSTANCE,
+  ROUTES.Registration.ACCOUNT,
+  ROUTES.Registration.THEME,
+  ROUTES.Registration.CONGRATS,
 ];
