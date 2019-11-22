@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import * as React from 'react';
 import { Row } from 'react-bootstrap';
 // import messages from './displayMessages';
@@ -8,23 +7,21 @@ import { StepBar } from 'ui/components/StepBar';
 interface Props {
     title: string;
     subtitle?: string;
-    children: ReactNode;
+    children: React.ReactNode;
     currentStep: number;
 }
 
-export const RegistrationPage: React.FC<Props> = ({
-  title, subtitle, children, currentStep,
-}) => (
+export const RegistrationPage: React.FC<Props> = (props: Props) => (
   <div className="registration-page">
-    <h1>{title}</h1>
-    {subtitle && <h2>{subtitle}</h2>}
+    <h1>{props.title}</h1>
+    {props.subtitle && <h2>{props.subtitle}</h2>}
     <div className="d-flex justify-content-center">
-      <StepBar count={4} currentStep={currentStep} />
+      <StepBar count={4} currentStep={props.currentStep} />
     </div>
 
     <div className="registration-page-container">
       <Row className="registration-page-content">
-        {children}
+        {props.children}
       </Row>
     </div>
   </div>

@@ -29,54 +29,59 @@ interface State {
   },
 )
 export class DomainInputPage extends React.PureComponent<Props, State> {
-    public state: State = {
+  public constructor(props: Props, state: State) {
+    super(props);
+    this.setState({
       domainName: '',
-    };
+    });
+  }
 
-    public render() {
-      return (
-        <RegistrationPage
-          title="Pro & Teacher Account"
-          subtitle="Create your own Open edX instance now."
-          currentStep={1}
-        >
-          <Form>
-            <FormGroup>
-              <FormLabel htmlFor="domainNameInput">
-                <WrappedMessage messages={messages} id="typeDomainNameBelow" />
-              </FormLabel>
-              <InputGroup>
-                <FormControl
-                  id="domainNameInput"
-                  defaultValue=""
-                  placeholder="yourdomain"
-                  onChange={this.domainNameChange}
-                />
-                <InputGroup.Append>
-                  <Button onClick={this.submitForm}>
-                    <WrappedMessage messages={messages} id="checkAvailability" />
-                  </Button>
-                </InputGroup.Append>
-              </InputGroup>
-            </FormGroup>
+  private domainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ domainName: event.target.value || '' });
+  }
+
+  private submitForm = () => {
+    this.props.submitRegistration(
+      { domain: this.state.domainName },
+      ROUTES.Registration.INSTANCE,
+    );
+  };
+
+  public render() {
+    return (
+      <RegistrationPage
+        title="Pro & Teacher Account"
+        subtitle="Create your own Open edX instance now."
+        currentStep={1}
+      >
+        <Form>
+          <FormGroup>
+            <FormLabel htmlFor="domainNameInput">
+              <WrappedMessage messages={messages} id="typeDomainNameBelow" />
+            </FormLabel>
+            <InputGroup>
+              <FormControl
+                id="domainNameInput"
+                defaultValue=""
+                placeholder="yourdomain"
+                onChange={this.domainNameChange}
+              />
+              <InputGroup.Append>
+                <Button onClick={this.submitForm}>
+                  <WrappedMessage messages={messages} id="checkAvailability" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </FormGroup>
 
 
-            <div className="use-own">
-              <a href="/#">
-                <WrappedMessage messages={messages} id="useOwnDomain" />
-              </a>
-            </div>
-          </Form>
-        </RegistrationPage>
-      );
-    }
-
-    private domainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => this.setState({ domainName: event.target.value || '' });
-
-    private submitForm = () => {
-      this.props.submitRegistration(
-        { domain: this.state.domainName },
-        ROUTES.Registration.INSTANCE,
-      );
-    };
+          <div className="use-own">
+            <a href="/#">
+              <WrappedMessage messages={messages} id="useOwnDomain" />
+            </a>
+          </div>
+        </Form>
+      </RegistrationPage>
+    );
+  }
 }
