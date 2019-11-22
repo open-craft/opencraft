@@ -12,10 +12,7 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key:
-            - frontend-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
-            - frontend-deps-
+          key: frontend-deps--{{ .Branch }}-{{ checksum "package-lock.json" }}
       - run:
           name: Installing frontend dependencies
           command: npm install
@@ -37,10 +34,7 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key:
-            - frontend-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
-            - frontend-deps-
+          key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Installing frontend dependencies
           command: npm install
@@ -62,10 +56,7 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key:
-            - frontend-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
-            - frontend-deps-
+          key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Installing frontend dependencies
           command: npm install
