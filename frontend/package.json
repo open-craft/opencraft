@@ -53,7 +53,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src/ --ext .ts,.tsx",
-    "prettier": "prettier --write src/*"
+    "prettier": "prettier --write src/**/*.ts src/**/*.tsx"
   },
   "eslintConfig": {
     "extends": "react-app"
