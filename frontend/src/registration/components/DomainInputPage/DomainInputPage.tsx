@@ -2,7 +2,12 @@ import { ROUTES } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import {
-  Button, Form, FormControl, FormGroup, FormLabel, InputGroup,
+  Button,
+  Form,
+  FormControl,
+  FormGroup,
+  FormLabel,
+  InputGroup
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
@@ -11,39 +16,34 @@ import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 
 interface ActionProps {
-    submitRegistration: Function
+  submitRegistration: Function;
 }
 
-
-interface Props extends ActionProps {
-
-}
+interface Props extends ActionProps {}
 
 interface State {
-    domainName: string;
+  domainName: string;
 }
 
-@connect<{}, ActionProps, {}, Props, RootState>(
-  (state: RootState) => ({}), {
-    submitRegistration,
-  },
-)
+@connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({}), {
+  submitRegistration
+})
 export class DomainInputPage extends React.PureComponent<Props, State> {
   public constructor(props: Props, state: State) {
     super(props);
     this.setState({
-      domainName: '',
+      domainName: ''
     });
   }
 
   private domainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ domainName: event.target.value || '' });
-  }
+  };
 
   private submitForm = () => {
     this.props.submitRegistration(
       { domain: this.state.domainName },
-      ROUTES.Registration.INSTANCE,
+      ROUTES.Registration.INSTANCE
     );
   };
 
@@ -73,7 +73,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
               </InputGroup.Append>
             </InputGroup>
           </FormGroup>
-
 
           <div className="use-own">
             <a href="/#">

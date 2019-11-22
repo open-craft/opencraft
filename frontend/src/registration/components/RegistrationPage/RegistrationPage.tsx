@@ -5,10 +5,10 @@ import './styles.scss';
 import { StepBar } from 'ui/components/StepBar';
 
 interface Props {
-    title: string;
-    subtitle?: string;
-    children: React.ReactNode;
-    currentStep: number;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  currentStep: number;
 }
 
 export const RegistrationPage: React.FC<Props> = (props: Props) => (
@@ -20,9 +20,7 @@ export const RegistrationPage: React.FC<Props> = (props: Props) => (
     </div>
 
     <div className="registration-page-container">
-      <Row className="registration-page-content">
-        {props.children}
-      </Row>
+      <Row className="registration-page-content">{props.children}</Row>
     </div>
   </div>
 );

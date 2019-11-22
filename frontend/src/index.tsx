@@ -9,7 +9,6 @@ import * as serviceWorker from './serviceWorker';
 import './styles/app.scss';
 import { App } from './ui/components';
 
-
 ReactDOM.render(
   <IntlProvider locale="en" textComponent={React.Fragment}>
     <Provider store={store}>
@@ -18,7 +17,7 @@ ReactDOM.render(
       </ConnectedRouter>
     </Provider>
   </IntlProvider>,
-  document.getElementById('root'),
+  document.getElementById('root')
 );
 
 // If you want your App to work offline and load faster, you can change

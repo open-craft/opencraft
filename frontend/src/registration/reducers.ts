@@ -3,8 +3,10 @@ import { blankRegistration, RegistrationModel } from './models';
 
 export const initialState: Readonly<RegistrationModel> = blankRegistration;
 
-export function registrationReducer(state = initialState,
-  action: RegistrationActions.ActionTypes): RegistrationModel {
+export function registrationReducer(
+  state = initialState,
+  action: RegistrationActions.ActionTypes
+): RegistrationModel {
   switch (action.type) {
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
       return state;

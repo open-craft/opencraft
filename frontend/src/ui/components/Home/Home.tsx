@@ -7,11 +7,9 @@ import './styles.scss';
 export const Home: React.FC = () => (
   <Col>
     <Jumbotron>
-      <h1>
-                This is the home page
-      </h1>
+      <h1>This is the home page</h1>
       <Link to={ROUTES.Registration.HOME} className="btn btn-primary">
-                Start Registration
+        Start Registration
       </Link>
     </Jumbotron>
   </Col>

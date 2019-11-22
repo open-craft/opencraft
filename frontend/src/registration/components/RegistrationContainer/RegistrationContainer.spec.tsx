@@ -5,7 +5,10 @@ import { RegistrationContainer } from './RegistrationContainer';
 
 it('renders without crashing', () => {
   const tree = setupComponentForTesting(
-    <RegistrationContainer step={RegistrationSteps.THEME} submitRegistration={jest.fn()} />,
+    <RegistrationContainer
+      step={RegistrationSteps.THEME}
+      submitRegistration={jest.fn()}
+    />
   ).toJSON();
   expect(tree).toMatchSnapshot();
 });

@@ -7,15 +7,19 @@ import * as renderer from 'react-test-renderer';
 import { createStore } from 'redux';
 import { createRootReducer } from '../global/reducers';
 
-export const setupComponentForTesting = (reactContent: JSX.Element, storeContents = {}) => {
-  const store = createStore(createRootReducer(createMemoryHistory()), storeContents);
+export const setupComponentForTesting = (
+  reactContent: JSX.Element,
+  storeContents = {}
+) => {
+  const store = createStore(
+    createRootReducer(createMemoryHistory()),
+    storeContents
+  );
   return renderer.create(
     <IntlProvider textComponent={React.Fragment} locale="en">
       <Provider store={store}>
-        <MemoryRouter>
-          {reactContent}
-        </MemoryRouter>
+        <MemoryRouter>{reactContent}</MemoryRouter>
       </Provider>
-    </IntlProvider>,
+    </IntlProvider>
   );
 };

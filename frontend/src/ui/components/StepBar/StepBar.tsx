@@ -2,11 +2,17 @@ import * as React from 'react';
 import './styles.scss';
 
 interface CircledNumberProps {
-    number: number;
+  number: number;
 }
 
-const CircledNumber: React.FC<CircledNumberProps> = ({ number }: CircledNumberProps) => (
-  <svg className="circled-number" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+const CircledNumber: React.FC<CircledNumberProps> = ({
+  number
+}: CircledNumberProps) => (
+  <svg
+    className="circled-number"
+    viewBox="0 0 20 20"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <circle r={10} cx={10} cy={10} className="outer-circle" />
     <circle r={7} cx={10} cy={10} strokeWidth={2} className="inner-circle" />
     <text
@@ -31,18 +37,18 @@ const circle = (
 );
 
 interface StepBarProps {
-    count: number;
-    currentStep: number;
+  count: number;
+  currentStep: number;
 }
 
-
-export const StepBar: React.FC<StepBarProps> = ({ count, currentStep }: StepBarProps) => (
+export const StepBar: React.FC<StepBarProps> = ({
+  count,
+  currentStep
+}: StepBarProps) => (
   <div className="step-bar">
-    {[...(Array(count).keys())].map((num) => (
+    {[...Array(count).keys()].map(num => (
       <>
-        {num + 1 === currentStep
-          ? <CircledNumber number={num + 1} />
-          : circle}
+        {num + 1 === currentStep ? <CircledNumber number={num + 1} /> : circle}
         <span className="line" />
       </>
     ))}

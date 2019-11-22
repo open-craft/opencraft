@@ -7,7 +7,10 @@ import { history } from './history';
 import { createRootReducer } from './reducers';
 import { RootState } from './state';
 
-function configureStore(useHistory: History, initialState?: RootState): Store<RootState> {
+function configureStore(
+  useHistory: History,
+  initialState?: RootState
+): Store<RootState> {
   let middleware = applyMiddleware(routerMiddleware(useHistory), thunk);
 
   if (process.env.NODE_ENV !== 'production') {
@@ -15,9 +18,9 @@ function configureStore(useHistory: History, initialState?: RootState): Store<Ro
   }
 
   return createStore(
-        createRootReducer(history) as any,
-        initialState as any,
-        middleware,
+    createRootReducer(history) as any,
+    initialState as any,
+    middleware
   ) as Store<RootState>;
 }
 
