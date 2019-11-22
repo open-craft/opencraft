@@ -13,6 +13,7 @@ interface Props<T, K extends keyof T> {
 export const WrappedMessage = (props: Props<MessageMap, string>) => {
   const { messages, id, ...values } = props;
   return (
+    /* eslint-disable react/jsx-props-no-spreading */
     <FormattedMessage {...messages[id]} id={id} {...values} />
   );
 };
