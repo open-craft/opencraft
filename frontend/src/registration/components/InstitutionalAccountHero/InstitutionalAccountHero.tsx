@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CONTACT_US_LINK, ENTERPRISE_COMPARISON_LINK } from 'global/constants'
+import { REACT_APP_CONTACT_US_LINK, REACT_APP_ENTERPRISE_COMPARISON_LINK } from 'global/constants'
 import { Button } from "react-bootstrap";
 import { WrappedMessage } from "utils/intl";
 
@@ -20,14 +20,14 @@ export const InstitutionalAccountHero: React.FC = () => (
               <Button
                 variant="outline-primary"
                 size="lg"
-                onClick={() => { window.location.href = CONTACT_US_LINK }}
+                onClick={() => { window.location.href = REACT_APP_CONTACT_US_LINK }}
               >
                 <WrappedMessage messages={messages} id="contactUsButton"/>
               </Button>
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={() => { window.location.href = ENTERPRISE_COMPARISON_LINK }}
+                onClick={() => { window.location.href = REACT_APP_ENTERPRISE_COMPARISON_LINK }}
               >
                 <WrappedMessage messages={messages} id="findOutMoreButton"/>
               </Button>
