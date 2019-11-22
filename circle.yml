@@ -304,7 +304,7 @@ workflows:
             branches:
               only:
                 # TODO: Change to master after frontend changes are merged into the master branch
-                - giovanni/add-frontend-ci-deployment
+                - new-registration-form
 
   cleanup-workflow:
     triggers:
