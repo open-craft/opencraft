@@ -12,14 +12,14 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key: frontend-deps--{{ .Branch }}-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
           paths:
             - node_modules
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Run frontend tests
           command: npm test -- --reporters=default --reporters=jest-junit --ci --runInBand
@@ -34,14 +34,14 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
           paths:
             - node_modules
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Run frontend quality tests
           command: npm run lint
@@ -56,14 +56,14 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
           paths:
             - node_modules
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .Branch }}
       - run:
           name: Render environment variables to .env file
           command: |
