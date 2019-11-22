@@ -299,9 +299,9 @@ workflows:
             - integration_tests_group_2
 
   frontend-build-test-and-deploy:
-    # TODO: Add this to the list below after fixing quality issues
-    # - frontend-quality
     jobs:
+      # TODO: Enable after fixing quality issues
+      # - frontend-quality
       - frontend-test
       - frontend-build:
           requires:
@@ -312,8 +312,8 @@ workflows:
             - frontend-build
           filters:
             branches:
-              # TODO: Change to master after frontend changes are merged into the master branch
               only:
+                # TODO: Change to master after frontend changes are merged into the master branch
                 - new-registration-flow
 
   cleanup-workflow:
