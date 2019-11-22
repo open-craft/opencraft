@@ -67,7 +67,7 @@ jobs:
       - run:
           name: Render environment variables to .env file
           command: |
-            echo $(env) >> .env
+            echo $(env | grep REACT_APP) >> .env
       - run:
           name: Build React frontend
           command: npm run build
