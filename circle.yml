@@ -65,6 +65,10 @@ jobs:
             - node_modules
           key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
+          name: Render environment variables to .env file
+          command: |
+            echo $(env) >> .env
+      - run:
           name: Build React frontend
           command: npm run build
       - persist_to_workspace:
