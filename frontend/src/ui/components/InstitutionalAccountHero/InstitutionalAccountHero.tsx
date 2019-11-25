@@ -1,8 +1,5 @@
 import * as React from 'react';
-import {
-  CONTACT_US_LINK,
-  ENTERPRISE_COMPARISON_LINK
-} from 'global/constants';
+import { CONTACT_US_LINK, ENTERPRISE_COMPARISON_LINK } from 'global/constants';
 import { Button } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 

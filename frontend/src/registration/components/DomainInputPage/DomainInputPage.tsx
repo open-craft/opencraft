@@ -44,7 +44,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
   };
 
   private submitForm = () => {
-    console.log(this.state);
     this.props.submitRegistration(
       { domain: this.state.domainName },
       ROUTES.Registration.INSTANCE
