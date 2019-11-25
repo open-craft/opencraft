@@ -306,9 +306,10 @@ workflows:
 
   frontend-build-test-and-deploy:
     jobs:
-      # TODO: Enable after fixing quality issues
-      # - frontend-quality
-      - frontend-test
+      - frontend-quality
+      - frontend-test:
+          requires:
+            - frontend-quality
       - frontend-build:
           context: ocim-frontend-stage
           requires:
