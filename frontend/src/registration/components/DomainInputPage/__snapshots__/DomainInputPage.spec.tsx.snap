@@ -4,12 +4,6 @@ exports[`renders without crashing 1`] = `
 <div
   className="div-fill"
 >
-  <h1>
-    Pro & Teacher Account
-  </h1>
-  <h2>
-    Create your own Open edX instance now.
-  </h2>
   <div
     className="registration-page"
   >
