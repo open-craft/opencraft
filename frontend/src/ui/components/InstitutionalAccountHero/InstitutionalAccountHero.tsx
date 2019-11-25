@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
-  REACT_APP_CONTACT_US_LINK,
-  REACT_APP_ENTERPRISE_COMPARISON_LINK
+  CONTACT_US_LINK,
+  ENTERPRISE_COMPARISON_LINK
 } from 'global/constants';
 import { Button } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
@@ -24,7 +24,7 @@ export const InstitutionalAccountHero: React.FC = () => (
           variant="outline-primary"
           size="lg"
           onClick={() => {
-            window.location.href = REACT_APP_CONTACT_US_LINK;
+            window.location.href = CONTACT_US_LINK;
           }}
         >
           <WrappedMessage messages={messages} id="contactUsButton" />
@@ -33,7 +33,7 @@ export const InstitutionalAccountHero: React.FC = () => (
           variant="secondary"
           size="lg"
           onClick={() => {
-            window.location.href = REACT_APP_ENTERPRISE_COMPARISON_LINK;
+            window.location.href = ENTERPRISE_COMPARISON_LINK;
           }}
         >
           <WrappedMessage messages={messages} id="findOutMoreButton" />
