@@ -1,1 +1,1 @@
-export * from "./DomainInputPage";
+export * from './DomainInputPage';

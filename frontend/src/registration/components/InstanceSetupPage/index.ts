@@ -1,1 +1,1 @@
-export * from "./InstanceSetupPage";
+export * from './InstanceSetupPage';
