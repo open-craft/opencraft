@@ -9,11 +9,11 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
+import iconCheck from 'assets/circle-check.png';
 import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
-import iconCheck from 'assets/circle-check.png';
 import './styles.scss';
 
 interface ActionProps {

@@ -59,7 +59,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           <Form>
             <FormGroup>
               <FormLabel htmlFor="domainNameInput">
-                <WrappedMessage messages={messages} id="typeDomainNameBelow"/>
+                <WrappedMessage messages={messages} id="typeDomainNameBelow" />
               </FormLabel>
               <InputGroup>
                 <FormControl
@@ -70,20 +70,23 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
                 />
                 <InputGroup.Append>
                   <Button onClick={this.submitForm}>
-                    <WrappedMessage messages={messages} id="checkAvailability"/>
+                    <WrappedMessage
+                      messages={messages}
+                      id="checkAvailability"
+                    />
                   </Button>
                 </InputGroup.Append>
               </InputGroup>
             </FormGroup>
             <div className="use-own">
-              <a href="#">
-                <WrappedMessage messages={messages} id="useOwnDomain"/>
+              <a href="/#">
+                <WrappedMessage messages={messages} id="useOwnDomain" />
               </a>
             </div>
           </Form>
-          </RegistrationPage>
-          <InstitutionalAccountHero />
+        </RegistrationPage>
+        <InstitutionalAccountHero />
       </div>
-    )
+    );
   }
 }
