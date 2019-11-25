@@ -29,19 +29,23 @@ interface State {
 @connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({}), {
   submitRegistration
 })
+
 export class DomainInputPage extends React.PureComponent<Props, State> {
   public constructor(props: Props, state: State) {
     super(props);
-    this.setState({
+    this.state = {
       domainName: ''
-    });
+    };
   }
 
   private domainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ domainName: event.target.value || '' });
+    this.setState({
+      domainName: event.target.value || ''
+    });
   };
 
   private submitForm = () => {
+    console.log(this.state);
     this.props.submitRegistration(
       { domain: this.state.domainName },
       ROUTES.Registration.INSTANCE
