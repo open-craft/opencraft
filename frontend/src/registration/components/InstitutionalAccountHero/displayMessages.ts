@@ -5,8 +5,8 @@ const messages = {
   },
   institutionalAccountText: {
     defaultMessage:
-      'An institutional account gives you access to analytics, paid courses and '
-      + 'certificates, mobile apps, priority support and more.',
+      'An institutional account gives you access to analytics, paid courses and ' +
+      'certificates, mobile apps, priority support and more.',
     description:
       'Text that goes on the hero to promote institutional instances.'
   },
