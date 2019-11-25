@@ -11,9 +11,9 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
+import { InstitutionalAccountHero } from 'ui/components';
 import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
-import { InstitutionalAccountHero } from 'ui/components';
 import messages from './displayMessages';
 
 interface ActionProps {
