@@ -29,7 +29,6 @@ interface State {
 @connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({}), {
   submitRegistration
 })
-
 export class DomainInputPage extends React.PureComponent<Props, State> {
   public constructor(props: Props, state: State) {
     super(props);

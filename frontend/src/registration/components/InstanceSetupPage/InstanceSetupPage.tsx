@@ -1,15 +1,9 @@
 import { RootState } from 'global/state';
 import * as React from 'react';
-import {
-  Form,
-  FormControl,
-  FormGroup,
-  FormLabel,
-  Jumbotron
-} from 'react-bootstrap';
+import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
-import iconCheck from 'assets/circle-check.png';
+import { DomainSuccessJumbotron } from 'ui/components/DomainSuccessJumbotron';
 import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
@@ -21,14 +15,16 @@ interface ActionProps {
 }
 
 interface StateProps {
-  domain: null | string;
+  domain: string;
+  domainIsExternal: boolean;
 }
 
 interface Props extends StateProps, ActionProps {}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    domain: getRegistrationData(state, 'domain')
+    domain: getRegistrationData(state, 'domain'),
+    domainIsExternal: getRegistrationData(state, 'domainIsExternal')
   }),
   {
     submitRegistration
@@ -41,18 +37,10 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
         title="Create your Pro & Teacher Account"
         currentStep={2}
       >
-        <Jumbotron className="domain-available">
-          <img src={iconCheck} alt="" />
-          <h2>
-            <WrappedMessage id="domainIsAvailable" messages={messages} />
-          </h2>
-          <div className="domain-name">
-            <p>{this.props.domain}</p>
-          </div>
-          <p>
-            <WrappedMessage id="secureDomainNow" messages={messages} />
-          </p>
-        </Jumbotron>
+        <DomainSuccessJumbotron
+          domain={this.props.domain}
+          domainIsExternal={this.props.domainIsExternal}
+        />
         <Form>
           <h2>
             <WrappedMessage id="secureYourDomain" messages={messages} />
