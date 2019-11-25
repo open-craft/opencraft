@@ -46,7 +46,6 @@ export const submitRegistration = (
       throw Error('Test error');
     }
     dispatch({ type: Types.REGISTRATION_SUCCESS, data });
-    console.log(nextStep);
     if (nextStep) {
       dispatch(push(nextStep));
     }
