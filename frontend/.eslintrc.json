@@ -4,7 +4,8 @@
         "es6": true
     },
     "extends": [
-        "airbnb"
+        "airbnb",
+        "prettier"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -22,20 +23,25 @@
     "settings": {
       "import/resolver": {
         "node": {
-          "extensions": [".js", ".jsx", ".ts", ".tsx"]
+          "extensions": [".js", ".jsx", ".ts", ".d.ts", ".tsx"],
+          "moduleDirectory": ["node_modules", "src/"]
         }
       }
     },
     "plugins": [
         "react",
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "prettier"
     ],
     "rules": {
-      "import/no-extraneous-dependencies": [
-        "error",
-        {
-          "devDependencies": true
-        }
+      "prettier/prettier": ["error"],
+      "no-unused-vars": "off",
+      "import/prefer-default-export": "off",
+      "react/destructuring-assignment": ["off"],
+      "react/jsx-filename-extension": ["error", {"extensions": [".ts", ".tsx"]}],
+      "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+      "max-len": ["error", {"comments": 100, "code": 130}],
+      "import/no-unresolved": ["error",{"ignore": [".scss"]}
       ]
     }
 }
