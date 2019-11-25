@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
-import { DomainSuccessJumbotron } from 'ui/components/DomainSuccessJumbotron';
+import { DomainSuccessJumbotron } from 'ui/components';
 import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';

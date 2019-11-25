@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
-import { InstitutionalAccountHero } from '../InstitutionalAccountHero';
+import { InstitutionalAccountHero } from 'ui/components';
 import messages from './displayMessages';
 
 interface ActionProps {
