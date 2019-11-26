@@ -1,12 +1,4 @@
 const messages = {
-  domainIsAvailable: {
-    defaultMessage: 'Your domain name is available',
-    description: 'Highlighted message telling user their domain is available.'
-  },
-  secureDomainNow: {
-    defaultMessage:
-      'To secure your domain now, please fill in the details below.'
-  },
   secureYourDomain: {
     defaultMessage: 'Secure your domain',
     description: 'Page title for domain setup page'

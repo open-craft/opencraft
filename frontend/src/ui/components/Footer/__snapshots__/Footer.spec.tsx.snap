@@ -5,12 +5,12 @@ exports[`renders without crashing 1`] = `
   className="app-footer align-items-center row"
 >
   <div
-    className="col-auto mr-auto col"
+    className="col-auto mr-auto copyright col"
   >
     OpenCraft 2013-2020
   </div>
   <div
-    className="col-auto col"
+    className="col-auto trademarks col"
   >
     EdX and Open edX are registered trademarks of edX Inc. All rights reserved.
   </div>

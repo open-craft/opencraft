@@ -101,12 +101,22 @@ exports[`renders without crashing 1`] = `
       className="registration-page-content row"
     >
       <div
-        className="jumbotron"
+        className="domain-available jumbotron"
       >
-        <p>
+        <img
+          alt=""
+          src="circle-check.png"
+        />
+        <h2>
           Your domain name is available
-        </p>
-        <h3 />
+        </h2>
+        <div
+          className="domain-name"
+        >
+          <p>
+            
+          </p>
+        </div>
         <p>
           To secure your domain now, please fill in the details below.
         </p>
