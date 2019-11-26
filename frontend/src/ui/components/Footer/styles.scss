@@ -4,4 +4,15 @@ footer.app-footer {
     background-color: $secondary-1;
     color: #fff;
     min-height: 105px;
+
+    .copyright {
+      height: 16px;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .trademarks {
+      height: 16px;
+      font-size: 14px;
+    }
 }

@@ -53,6 +53,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src/ --ext .ts,.tsx",
+    "lint-fix": "eslint src/ --ext .ts,.tsx --fix",
     "prettier": "prettier --write src/**/*.ts src/**/*.tsx"
   },
   "eslintConfig": {

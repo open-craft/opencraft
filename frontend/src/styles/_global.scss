@@ -1,11 +1,28 @@
 // FONTS
 @import url('https://fonts.googleapis.com/css?family=Chivo:400,400i,700|Playfair+Display:400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 body {
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: 'Chivo', sans-serif;
+    font-family: 'Chivo-Regular', sans-serif;
     font-size: 18px;
 }
 
+// Bootstrap overrides for theming buttons
+.btn {
+  text-transform: uppercase;
+  font-size: 10px;
+  padding: 10px 30px;
+}
+
+.btn-lg {
+  height: 50px;
+  letter-spacing: 2.04px;
+}
+
+.btn-secondary {
+  border: 1px solid $secondary-1;
+  background-color: $secondary-1;
+}
