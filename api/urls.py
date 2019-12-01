@@ -24,15 +24,32 @@ URL Patterns for api app
 
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework.permissions import AllowAny
 
-from api.router import router
-
+from api.router import v1_router, v2_router
 
 # URL Patterns ################################################################
 
 app_name = 'api'
+
+# pylint: disable=invalid-name
+schema_view = get_schema_view(
+    openapi.Info(
+        title="OpenCraft Instance Manager",
+        default_version="v1",
+        description="API for OpenCraft Instance Manager",
+    ),
+    public=True,
+    permission_classes=(AllowAny,),
+)
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='v1/', permanent=False), name='index'),
-    url(r'^v1/', include(router.urls)),
+    url(r'^v1/', include((v1_router.urls, 'api_v1'), namespace='v1')),
+    url(r'^v2/', include((v2_router.urls, 'api_v2'), namespace='v2')),
     url(r'^v1/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=10), name='schema-json'),
+    url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=10), name='schema-swagger-ui'),
+    url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=10), name='schema-redoc'),
 ]

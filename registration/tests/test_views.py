@@ -673,7 +673,7 @@ class BetaTestAjaxValidationTestCase(BetaTestApplicationViewTestMixin,
     """
     Tests the ajax validation view for the beta registration form.
     """
-    url = reverse('api:register-list')
+    url = reverse('api:v1:register-list')
     request_method = 'post'
 
     def _assert_registration_succeeds(self, form_data):

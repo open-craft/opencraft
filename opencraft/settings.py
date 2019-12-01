@@ -31,7 +31,6 @@ from urllib.parse import urlparse
 
 import environ
 
-
 # Functions ###################################################################
 
 env = environ.Env()
@@ -65,6 +64,23 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_URL = 'registration:login'
 LOGIN_REDIRECT_URL = 'index'
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 9,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 
 # Database ####################################################################
@@ -105,6 +121,7 @@ INSTALLED_APPS = (
     'huey.contrib.djhuey',
     'simple_email_confirmation',
     'channels',
+    'drf_yasg',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
@@ -205,6 +222,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'instance.api.permissions.ApiInstanceManagerPermission',
     ],
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
 }
 
 
