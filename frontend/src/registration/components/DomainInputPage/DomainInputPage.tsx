@@ -53,7 +53,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
         >
           <DomainInput
             domainName={this.state.domainName}
-            internalDomain
+            internalDomain={true}
             handleDomainChange={this.handleDomainChange}
             handleSubmitDomain={this.submitDomain}
           />
