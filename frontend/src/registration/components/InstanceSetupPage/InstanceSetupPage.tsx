@@ -4,6 +4,7 @@ import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron } from 'ui/components';
+import { RegistrationNavButtons } from 'registration/components';
 import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
@@ -64,6 +65,13 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
             </p>
           </FormGroup>
         </Form>
+        <RegistrationNavButtons
+          disableNextButton
+          showBackButton
+          showNextButton
+          handleBackClick={() => {}}
+          handleNextClick={() => {}}
+        />
       </RegistrationPage>
     );
   }
