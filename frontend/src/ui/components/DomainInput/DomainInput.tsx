@@ -11,7 +11,7 @@ interface Props {
   handleSubmitDomain: Function;
 }
 
-export const DomainInput: React.FC<Props> = (props: Props) => {
+export const DomainInput: React.SFC<Props> = (props: Props) => {
   return (
     <div>
       <div className="domain-label">
