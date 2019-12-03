@@ -7,6 +7,7 @@ import { RegistrationNavButtons } from 'registration/components';
 import { PRIVACY_POLICY_LINK, TOS_LINK } from 'global/constants';
 import { submitRegistration } from '../../actions';
 import { getRegistrationData } from '../../selectors';
+import { AccountInfoModel } from '../../models';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
@@ -15,23 +16,74 @@ interface ActionProps {
   submitRegistration: typeof submitRegistration;
 }
 
-interface StateProps {
-  domain: string;
-  domainIsExternal: boolean;
+interface Props extends AccountInfoModel, ActionProps {}
+
+interface InputFieldProps {
+  fieldName: string;
+  value: string;
+  onChange: any;
+  type?: string;
 }
 
-interface Props extends StateProps, ActionProps {}
+const InputField: React.SFC<InputFieldProps> = (props: InputFieldProps) => {
+  return (
+    <FormGroup>
+      <FormLabel>
+        <WrappedMessage id={props.fieldName} messages={messages} />
+      </FormLabel>
+      <FormControl
+        name={props.fieldName}
+        value={props.value}
+        onChange={props.onChange}
+        type={props.type}
+      />
+      <p>
+        <WrappedMessage id={`${props.fieldName}Help`} messages={messages} />
+      </p>
+    </FormGroup>
+  );
+};
 
-@connect<StateProps, ActionProps, {}, Props, RootState>(
+@connect<AccountInfoModel, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    domain: getRegistrationData(state, 'domain'),
-    domainIsExternal: getRegistrationData(state, 'domainIsExternal')
+    fullName: getRegistrationData(state, 'fullName'),
+    username: getRegistrationData(state, 'username'),
+    emailAddress: getRegistrationData(state, 'emailAddress'),
+    password: getRegistrationData(state, 'password'),
+    passwordConfirm: getRegistrationData(state, 'passwordConfirm'),
+    acceptTOS: getRegistrationData(state, 'acceptTOS'),
+    acceptSupport: getRegistrationData(state, 'acceptSupport'),
+    acceptTipsEmail: getRegistrationData(state, 'acceptTipsEmail')
   }),
   {
     submitRegistration
   }
 )
-export class AccountSetupPage extends React.PureComponent<Props> {
+export class AccountSetupPage extends React.PureComponent<
+  Props,
+  AccountInfoModel
+> {
+  public constructor(props: Props, state: AccountInfoModel) {
+    super(props);
+
+    this.state = {
+      fullName: props.fullName,
+      username: props.username,
+      emailAddress: props.emailAddress,
+      password: props.password,
+      passwordConfirm: props.passwordConfirm,
+      acceptTOS: props.acceptTOS,
+      acceptSupport: props.acceptSupport,
+      acceptTipsEmail: props.acceptTipsEmail
+    };
+  }
+
+  private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.name;
+    const { value } = e.target;
+    this.setState<never>({ [field]: value });
+  };
+
   render() {
     const checkboxLinks = {
       tos: (
@@ -54,52 +106,35 @@ export class AccountSetupPage extends React.PureComponent<Props> {
           <h2>
             <WrappedMessage id="createYourAccount" messages={messages} />
           </h2>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="fullName" messages={messages} />
-            </FormLabel>
-            <FormControl />
-            <p>
-              <WrappedMessage id="fullNameHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="username" messages={messages} />
-            </FormLabel>
-            <FormControl />
-            <p>
-              <WrappedMessage id="usernameHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="email" messages={messages} />
-            </FormLabel>
-            <FormControl type="email" />
-            <p>
-              <WrappedMessage id="emailHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="password" messages={messages} />
-            </FormLabel>
-            <FormControl type="password" />
-            <p>
-              <WrappedMessage id="passwordHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="confirmPassword" messages={messages} />
-            </FormLabel>
-            <FormControl type="password" />
-            <p>
-              <WrappedMessage id="confirmPasswordHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <Form.Check type="checkbox" id="acceptTos" custom>
+          <InputField
+            fieldName="fullName"
+            value={this.state.fullName}
+            onChange={this.onChange}
+          />
+          <InputField
+            fieldName="username"
+            value={this.state.username}
+            onChange={this.onChange}
+          />
+          <InputField
+            fieldName="emailAddress"
+            value={this.state.emailAddress}
+            onChange={this.onChange}
+            type="email"
+          />
+          <InputField
+            fieldName="password"
+            value={this.state.password}
+            onChange={this.onChange}
+            type="password"
+          />
+          <InputField
+            fieldName="passwordConfirm"
+            value={this.state.passwordConfirm}
+            onChange={this.onChange}
+            type="password"
+          />
+          <Form.Check type="checkbox" id="acceptTOS" custom>
             <Form.Check.Input type="checkbox" />
             <Form.Check.Label>
               <WrappedMessage
@@ -115,10 +150,14 @@ export class AccountSetupPage extends React.PureComponent<Props> {
               <WrappedMessage id="acceptSupport" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
-          <Form.Check type="checkbox" id="acceptNewsletter" custom>
+          <Form.Check
+            type="checkbox"
+            id="acceptTipsEmail"
+            custom
+          >
             <Form.Check.Input type="checkbox" />
             <Form.Check.Label>
-              <WrappedMessage id="acceptNewsletter" messages={messages} />
+              <WrappedMessage id="acceptTipsEmail" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
         </Form>

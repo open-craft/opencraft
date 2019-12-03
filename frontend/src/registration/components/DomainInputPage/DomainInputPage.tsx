@@ -6,6 +6,7 @@ import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
 import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
+import { getRegistrationData } from '../../selectors';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -15,30 +16,38 @@ interface ActionProps {
 
 interface Props extends ActionProps {}
 
-interface State {
-  domainName: string;
+interface StateProps {
+  domain: string;
 }
 
-@connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({}), {
-  submitRegistration
-})
-export class DomainInputPage extends React.PureComponent<Props, State> {
-  public constructor(props: Props, state: State) {
+interface Props extends StateProps, ActionProps {}
+
+@connect<{}, ActionProps, {}, Props, RootState>(
+  (state: RootState) => ({
+    domain: getRegistrationData(state, 'domain'),
+    domainIsExternal: getRegistrationData(state, 'domainIsExternal')
+  }),
+  {
+    submitRegistration
+  }
+)
+export class DomainInputPage extends React.PureComponent<Props, StateProps> {
+  public constructor(props: Props, state: StateProps) {
     super(props);
     this.state = {
-      domainName: ''
+      domain: props.domain
     };
   }
 
   private handleDomainChange = (newDomain: string) => {
     this.setState({
-      domainName: newDomain || ''
+      domain: newDomain || ''
     });
   };
 
   private submitDomain = () => {
     this.props.submitRegistration(
-      { domain: this.state.domainName },
+      { domain: this.state.domain },
       ROUTES.Registration.INSTANCE
     );
   };
@@ -52,7 +61,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           currentStep={1}
         >
           <DomainInput
-            domainName={this.state.domainName}
+            domainName={this.state.domain}
             internalDomain
             handleDomainChange={this.handleDomainChange}
             handleSubmitDomain={this.submitDomain}

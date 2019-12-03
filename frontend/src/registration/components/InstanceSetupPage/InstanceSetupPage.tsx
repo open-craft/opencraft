@@ -5,19 +5,22 @@ import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron } from 'ui/components';
 import { RegistrationNavButtons } from 'registration/components';
-import { submitRegistration } from '../../actions';
+import { ROUTES } from 'global/constants';
+import { submitInstanceInfo } from '../../actions';
 import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
 interface ActionProps {
-  submitRegistration: typeof submitRegistration;
+  submitInstanceInfo: typeof submitInstanceInfo;
 }
 
 interface StateProps {
   domain: string;
   domainIsExternal: boolean;
+  instanceName: string;
+  publicContactEmail: string;
 }
 
 interface Props extends StateProps, ActionProps {}
@@ -25,13 +28,43 @@ interface Props extends StateProps, ActionProps {}
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
     domain: getRegistrationData(state, 'domain'),
-    domainIsExternal: getRegistrationData(state, 'domainIsExternal')
+    domainIsExternal: getRegistrationData(state, 'domainIsExternal'),
+    instanceName: getRegistrationData(state, 'instanceName'),
+    publicContactEmail: getRegistrationData(state, 'publicContactEmail')
   }),
   {
-    submitRegistration
+    submitInstanceInfo
   }
 )
-export class InstanceSetupPage extends React.PureComponent<Props> {
+export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
+  public constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      domain: props.domain,
+      domainIsExternal: props.domainIsExternal,
+      instanceName: props.instanceName,
+      publicContactEmail: props.publicContactEmail
+    };
+  }
+
+  private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.name;
+    const { value } = e.target;
+
+    this.setState<never>({ [field]: value });
+  };
+
+  private submitInstanceData = () => {
+    this.props.submitInstanceInfo(
+      {
+        instanceName: this.state.instanceName,
+        publicContactEmail: this.state.publicContactEmail
+      },
+      ROUTES.Registration.ACCOUNT
+    );
+  };
+
   render() {
     return (
       <RegistrationPage
@@ -50,7 +83,11 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
             <FormLabel>
               <WrappedMessage id="instanceName" messages={messages} />
             </FormLabel>
-            <FormControl />
+            <FormControl
+              name="instanceName"
+              value={this.state.instanceName}
+              onChange={this.onChange}
+            />
             <p>
               <WrappedMessage id="instanceNameHelp" messages={messages} />
             </p>
@@ -59,7 +96,12 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
             <FormLabel>
               <WrappedMessage id="publicContactEmail" messages={messages} />
             </FormLabel>
-            <FormControl type="email" />
+            <FormControl
+              type="email"
+              name="publicContactEmail"
+              value={this.state.publicContactEmail}
+              onChange={this.onChange}
+            />
             <p>
               <WrappedMessage id="publicContactEmailHelp" messages={messages} />
             </p>
@@ -71,7 +113,7 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
           showBackButton
           showNextButton
           handleBackClick={() => {}}
-          handleNextClick={() => {}}
+          handleNextClick={this.submitInstanceData}
         />
       </RegistrationPage>
     );

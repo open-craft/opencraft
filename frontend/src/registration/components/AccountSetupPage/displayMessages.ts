@@ -38,11 +38,11 @@ const messages = {
       'Password must have 8 characters, 1 number, 1 capital letter and 1 special character.',
     description: 'A description of the translatable string.'
   },
-  confirmPassword: {
+  passwordConfirm: {
     defaultMessage: 'Confirm password*',
     description: 'A description of the translatable string.'
   },
-  confirmPasswordHelp: {
+  passwordConfirmHelp: {
     defaultMessage: 'Confirm the password in the field above.',
     description: 'A description of the translatable string.'
   },
@@ -58,7 +58,7 @@ const messages = {
       'and that requests for support are subject to hourly fees.*',
     description: 'A description of the translatable string.'
   },
-  acceptNewsletter: {
+  acceptTipsEmail: {
     defaultMessage:
       'I want OpenCraft to occasionally email me about important news, tips and new features.',
     description: 'A description of the translatable string.'
