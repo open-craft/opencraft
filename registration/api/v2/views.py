@@ -26,8 +26,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from opencraft.swagger import viewset_swagger_helper
 from registration.api.v2.serializers import AccountSerializer, OpenEdXInstanceConfigSerializer
-from registration.utils import verify_user_emails
 from registration.models import BetaTestApplication
+from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
@@ -56,10 +56,17 @@ class AccountViewSet(
     serializer_class = AccountSerializer
 
     def perform_update(self, serializer):
+        """
+        When a new user registers, initiate email verification.
+        """
         instance = serializer.save()
         verify_user_emails(instance, self.request, instance.email)
 
     def perform_create(self, serializer):
+        """
+        If a user updates their profile, initiate email verificaiton in case their
+        email has changed.
+        """
         instance = serializer.save()
         verify_user_emails(instance, self.request, instance.email)
 
