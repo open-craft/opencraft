@@ -29,7 +29,7 @@ from instance.api.openedx_appserver import OpenEdXAppServerViewSet
 from instance.api.server import OpenStackServerViewSet
 from pr_watch.api import WatchedPullRequestViewSet
 from registration.api.v1.views import BetaTestApplicationViewSet
-from registration.api.v2.views import RegistrationViewSet
+from registration.api.v2.views import AccountViewSet, OpenEdXInstanceConfigViewSet
 
 # Router ######################################################################
 
@@ -42,4 +42,5 @@ v1_router.register(r'registration/register/validate', BetaTestApplicationViewSet
 v1_router.register(r'pr_watch', WatchedPullRequestViewSet, base_name='pr_watch')
 
 v2_router = routers.DefaultRouter()
-v2_router.register(r'registration', RegistrationViewSet, base_name='registration')
+v2_router.register(r'accounts', AccountViewSet, base_name='accounts')
+v2_router.register(r'instances/openedx_config', OpenEdXInstanceConfigViewSet, base_name='openedx-instance-config')

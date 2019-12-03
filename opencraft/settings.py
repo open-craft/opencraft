@@ -226,6 +226,10 @@ REST_FRAMEWORK = {
 }
 
 
+REDOC_SETTINGS = {
+    'PATH_IN_MIDDLE': True,
+}
+
 # Redis cache & locking #######################################################
 
 REDIS_LOCK_TIMEOUT = env('REDIS_LOCK_TIMEOUT', default=900)

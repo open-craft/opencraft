@@ -20,128 +20,112 @@
 Registration api views for API v2
 """
 import logging
-from typing import List
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework import mixins, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from opencraft.swagger import ACCESS_ERROR_RESPONSE, VALIDATION_ERROR_RESPONSE
-from registration.api.v1.views import BetaTestApplicationMixin
-from registration.api.v2.serializers import ReadCreateRegistrationSerializer, UpdateOnlyRegistrationSerializer
+from opencraft.swagger import viewset_swagger_helper
+from registration.api.v2.serializers import AccountSerializer, OpenEdXInstanceConfigSerializer
+from registration.utils import verify_user_emails
+from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
 
-class RegistrationViewSet(BetaTestApplicationMixin, ViewSet):
+@viewset_swagger_helper(
+    create="Create new user registration",
+    list="Get current user registration data",
+    update="Update current user registration data",
+    partial_update="Update current user registration data",
+    public_actions=['create'],
+    tags=["v1", "Accounts", "Registration", "User", "UserProfile"],
+)
+class AccountViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     """
-    ViewSet for user registration data.
-    """
+    User account management API.
 
-    def get_permissions(self) -> List[BasePermission]:
+    This API can be used to register users, and to access user registration
+    information for the current user.
+    """
+    serializer_class = AccountSerializer
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        verify_user_emails(instance, self.request, instance.email)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        verify_user_emails(instance, self.request, instance.email)
+
+    def get_permissions(self):
         """
-        Use different permissions for different actions.
+        Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action in ('create', 'validate'):
-            # For registering or validating the registration we leave the permissions open.
+        if self.action == 'create':
+            # Allow any user to create an account, but limit other actions to logged-in users.
             permission_classes = [AllowAny]
         else:
-            # For other actions, such as viewing or updating the registration, we
-            # need authentication
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response('Registration info for current user', ReadCreateRegistrationSerializer),
-            403: ACCESS_ERROR_RESPONSE,
-        }
-    )
-    def list(self, request: Request):
+    def get_queryset(self):
         """
-        Get current user registration.
-
-        Get registration data for currently logged-in user. This includes the user's
-        profile information, and Open edX instance configuration.
+        Get user profile objects restricted to the current user.
+        Should be only one.
         """
-        return Response(
-            ReadCreateRegistrationSerializer({
-                'account': request.user.profile,
-                'instance': self.get_object()
-            }).data
-        )
+        return UserProfile.objects.filter(user=self.request.user)
 
-    @swagger_auto_schema(
-        responses={
-            201: openapi.Response('Account successfully registered.', ReadCreateRegistrationSerializer),
-            400: VALIDATION_ERROR_RESPONSE,
-        }
-    )
-    def create(self, request: Request):
+
+@viewset_swagger_helper(
+    list="Get all instances owned by user",
+    create="Create new user instance.",
+    retrieve="Get an instance owned by user",
+    update="Update instance owned by user",
+    partial_update="Update instance owned by user",
+    public_actions=['create'],
+    tags=["v2", "Instances", "OpenEdXInstanceConfig"],
+)
+class OpenEdXInstanceConfigViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Open edX Instance Configuration API.
+
+    This API can be used to manage the configuration for Open edX instances
+    owned by clients.
+    """
+    serializer_class = OpenEdXInstanceConfigSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
         """
-        Create new user registration.
-
-        Set up a new registration for a user by creating a new user object, a new user
-        profile and a new instance configuration.
+        When a new instance is registered queue its public contact email for verification.
         """
+        instance = serializer.save()
+        verify_user_emails(instance.user, self.request, instance.public_contact_email)
 
-        serializer = ReadCreateRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(
-        responses={
-            202: openapi.Response('Registration data successfully updated.'),
-            400: VALIDATION_ERROR_RESPONSE,
-            403: ACCESS_ERROR_RESPONSE,
-        }
-    )
-    @action(detail=False, url_path='update', methods=['patch'])
-    def update_registration(self, request: Request):
+    def perform_update(self, serializer):
         """
-        Update existing registration.
-
-        Updates the registration data for the current user.
+        If an instance has been changed, queuse its public contact email for verification
+        if it has been changed.
         """
+        instance = serializer.save()
+        verify_user_emails(instance.user, self.request, instance.public_contact_email)
 
-        logger.info(request.data)
-        serializer = UpdateOnlyRegistrationSerializer(
-            instance={
-                'account': request.user.profile,
-                'instance': request.user.betatestapplication,
-            },
-            data=request.data,
-            partial=True,
-            context={
-                'user': request.user
-            }
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response('Registration data successfully validated.', ReadCreateRegistrationSerializer),
-            400: VALIDATION_ERROR_RESPONSE,
-        }
-    )
-    @action(detail=False, methods=['post'])
-    def validate(self, request: Request):
-        """
-        Validate registration data.
-
-        Validate registration data without committing it to database.
-        """
-        serializer = ReadCreateRegistrationSerializer(data=request.data, partial=True)
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def get_queryset(self):
+    """
+    Get `BetaTestApplication` instances owned by current user.
+    Currently this should return a single object.
+    """
+    return BetaTestApplication.objects.filter(user=self.request.user)
