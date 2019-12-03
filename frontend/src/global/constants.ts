@@ -4,6 +4,9 @@ export const OCIM_API_BASE =
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
 export const ENTERPRISE_COMPARISON_LINK =
   process.env.REACT_APP_ENTERPRISE_COMPARISON_LINK || '/#';
+export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
+export const PRIVACY_POLICY_LINK =
+  process.env.REACT_APP_PRIVACY_POLICY_LINK || '/#';
 
 export enum RegistrationSteps {
   FIRST_STEP = 1,

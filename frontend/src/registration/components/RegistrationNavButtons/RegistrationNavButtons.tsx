@@ -1,11 +1,12 @@
 import * as React from 'react';
 import './styles.scss';
 
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import messages from './displayMessages';
 
 interface Props {
+  loading: boolean;
   showBackButton: boolean;
   showNextButton: boolean;
   disableNextButton: boolean;
@@ -20,11 +21,15 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
         <WrappedMessage messages={messages} id="back" />
       </Button>
       <Button
-        className="float-right"
+        className="float-right loading"
         variant="primary"
         size="lg"
-        disabled={props.disableNextButton}
+        disabled={props.disableNextButton || props.loading}
+        data-loading-text="</i> Processing Order"
       >
+        {props.loading === true && (
+          <Spinner animation="border" size="sm" className="spinner" />
+        )}
         <WrappedMessage messages={messages} id="Next" />
       </Button>
     </div>

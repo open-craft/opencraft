@@ -42,7 +42,7 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
           domain={this.props.domain}
           domainIsExternal={this.props.domainIsExternal}
         />
-        <Form>
+        <Form className="secure-domain-form">
           <h2>
             <WrappedMessage id="secureYourDomain" messages={messages} />
           </h2>
@@ -66,7 +66,8 @@ export class InstanceSetupPage extends React.PureComponent<Props> {
           </FormGroup>
         </Form>
         <RegistrationNavButtons
-          disableNextButton
+          loading={false}
+          disableNextButton={false}
           showBackButton
           showNextButton
           handleBackClick={() => {}}

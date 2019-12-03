@@ -1,6 +1,74 @@
 const messages = {
-  messageID: {
-    defaultMessage: 'A translatable string.',
+  createYourAccount: {
+    defaultMessage: 'Create your account',
+    description: 'A description of the translatable string.'
+  },
+  fullName: {
+    defaultMessage: 'Your full name*',
+    description: 'A description of the translatable string.'
+  },
+  fullNameHelp: {
+    defaultMessage: 'Name and surname.',
+    description: 'A description of the translatable string.'
+  },
+  username: {
+    defaultMessage: 'Username*',
+    description: 'A description of the translatable string.'
+  },
+  usernameHelp: {
+    defaultMessage:
+      'This would also be the username of the administrator account on the Open edX instance.',
+    description: 'A description of the translatable string.'
+  },
+  email: {
+    defaultMessage: 'Email address*',
+    description: 'A description of the translatable string.'
+  },
+  emailHelp: {
+    defaultMessage:
+      'This is also your account name, and where we will send important notices.',
+    description: 'A description of the translatable string.'
+  },
+  password: {
+    defaultMessage: 'Password*',
+    description: 'A description of the translatable string.'
+  },
+  passwordHelp: {
+    defaultMessage:
+      'Password must have 8 characters, 1 number, 1 capital letter and 1 special character.',
+    description: 'A description of the translatable string.'
+  },
+  confirmPassword: {
+    defaultMessage: 'Confirm password*',
+    description: 'A description of the translatable string.'
+  },
+  confirmPasswordHelp: {
+    defaultMessage: 'Confirm the password in the field above.',
+    description: 'A description of the translatable string.'
+  },
+  acceptTos: {
+    defaultMessage:
+      'I accept that this is a free trial, and that the instance is ' +
+      'provided without any guarantee. {tos} and {privacy_policy}.*',
+    description: 'A description of the translatable string.'
+  },
+  acceptSupport: {
+    defaultMessage:
+      'I understand that I can email OpenCraft with questions ' +
+      'and that requests for support are subject to hourly fees.*',
+    description: 'A description of the translatable string.'
+  },
+  acceptNewsletter: {
+    defaultMessage:
+      'I want OpenCraft to occasionally email me about important news, tips and new features.',
+    description: 'A description of the translatable string.'
+  },
+  privacyPolicy: {
+    defaultMessage: 'Privacy Policy',
+    description: 'A description of the translatable string.'
+  },
+  termsOfService: {
+    defaultMessage: 'Terms of Service',
     description: 'A description of the translatable string.'
   }
 };

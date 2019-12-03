@@ -1,5 +1,9 @@
 .registration-nav {
   display: inline-block;
   width: 100%;
-  padding-top: 32px; 
+  padding-top: 32px;
+
+  .spinner {
+    margin-right: 10px;
+  }
 }
