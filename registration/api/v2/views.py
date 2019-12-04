@@ -42,10 +42,10 @@ logger = logging.getLogger(__name__)
     tags=["v1", "Accounts", "Registration", "User", "UserProfile"],
 )
 class AccountViewSet(
-    mixins.CreateModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
+        mixins.CreateModelMixin,
+        mixins.UpdateModelMixin,
+        mixins.ListModelMixin,
+        viewsets.GenericViewSet,
 ):
     """
     User account management API.
@@ -99,11 +99,11 @@ class AccountViewSet(
     tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
 class OpenEdXInstanceConfigViewSet(
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
+        mixins.CreateModelMixin,
+        mixins.RetrieveModelMixin,
+        mixins.UpdateModelMixin,
+        mixins.ListModelMixin,
+        viewsets.GenericViewSet,
 ):
     """
     Open edX Instance Configuration API.
