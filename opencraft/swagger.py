@@ -67,13 +67,17 @@ VALIDATION_ERROR_RESPONSE = openapi.Response(
     schema=VALIDATION_ERROR,
 )
 
-VALIDATION_AND_AUTH_RESPONSES = {
-    status.HTTP_400_BAD_REQUEST: VALIDATION_ERROR_RESPONSE,
+AUTH_ERROR_RESPONSE = {
     status.HTTP_403_FORBIDDEN: ACCESS_ERROR_RESPONSE,
 }
 
 VALIDATION_RESPONSE = {
     status.HTTP_400_BAD_REQUEST: VALIDATION_ERROR_RESPONSE,
+}
+
+VALIDATION_AND_AUTH_RESPONSES = {
+    **AUTH_ERROR_RESPONSE,
+    **VALIDATION_ERROR_RESPONSE,
 }
 
 
@@ -113,6 +117,7 @@ def viewset_swagger_helper(
                         operation_summary=action_summary_docs.get(action),
                         responses=VALIDATION_RESPONSE if action in public_actions else VALIDATION_AND_AUTH_RESPONSES,
                         tags=tags,
+                        security=[] if action in public_actions else None,
                     ),
                 )
             )
