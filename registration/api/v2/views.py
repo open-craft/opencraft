@@ -34,7 +34,7 @@ from simple_email_confirmation.models import EmailAddress
 
 from instance.models.appserver import Status
 from instance.tasks import spawn_appserver
-from opencraft.swagger import (VALIDATION_AND_AUTH_RESPONSES, VALIDATION_RESPONSE, viewset_swagger_helper)
+from opencraft.swagger import VALIDATION_AND_AUTH_RESPONSES, VALIDATION_RESPONSE, viewset_swagger_helper
 from registration.api.v2.serializers import AccountSerializer, OpenEdXInstanceConfigSerializer
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -105,8 +105,13 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     partial_update="Update instance owned by user",
     tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
-class OpenEdXInstanceConfigViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin,
-                                   GenericViewSet):
+class OpenEdXInstanceConfigViewSet(
+        CreateModelMixin,
+        RetrieveModelMixin,
+        UpdateModelMixin,
+        ListModelMixin,
+        GenericViewSet,
+):
     """
     Open edX Instance Configuration API.
 
@@ -141,8 +146,7 @@ class OpenEdXInstanceConfigViewSet(CreateModelMixin, RetrieveModelMixin, UpdateM
         """
         serializer = self.get_serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        headers = self.get_success_headers(serializer.data)
-        return Response(status=status.HTTP_200_OK, headers=headers)
+        return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed")},
@@ -171,13 +175,16 @@ class OpenEdXInstanceConfigViewSet(CreateModelMixin, RetrieveModelMixin, UpdateM
         force = request.query_params.get('force', False)
         instance_config: BetaTestApplication = self.get_object()
         instance = instance_config.instance
-        in_progress_statuses = Status.New, Status.ConfiguringServer, Status.WaitingForServer
+        if instance is None:
+            # For a new user an instance will not exist until they've verified their email.
+            raise ValidationError("Must verify email before launching an instance", code="email-unverified")
+        in_progress_statuses = Status.New.state_id, Status.ConfiguringServer.state_id, Status.WaitingForServer.state_id
 
         if not force and instance.appserver_set.filter(_status__in=in_progress_statuses).exists():
-            raise ValidationError("Instance launch already in progress", code='in-progress')
+            raise ValidationError("Instance launch already in progress", code="in-progress")
 
         if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
-            raise ValidationError("Updated public email needs to be confirmed.", code='email-unconfirmed')
+            raise ValidationError("Updated public email needs to be confirmed.", code="email-unverified")
 
         instance.theme_config = instance_config.draft_theme_config
         instance.name = instance_config.instance_name

@@ -19,6 +19,7 @@
 """
 Tests for the registration API
 """
+from unittest.mock import patch
 
 import ddt
 from django.contrib.auth.models import User
@@ -27,7 +28,11 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 from simple_email_confirmation.models import EmailAddress
 
+from instance.models.appserver import Status
 from instance.tests.base import create_user_and_profile
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from registration.models import BetaTestApplication
 
 
 @ddt.ddt
@@ -222,3 +227,215 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
     """
     Tests for the OpenEdXInstanceConfig APIs.
     """
+
+    def setUp(self):
+        self.user_with_instance = create_user_and_profile("instance.user", "instance.user@example.com")
+        self.instance_config = BetaTestApplication.objects.create(
+            user=self.user_with_instance,
+            subdomain="somesubdomain",
+            instance_name="User's Instance",
+            public_contact_email="instance.user.public@example.com",
+            privacy_policy_url="http://www.some/url"
+        )
+        EmailAddress.objects.create_confirmed(
+            email=self.instance_config.public_contact_email,
+            user=self.user_with_instance,
+        )
+        self.instance_config_defaults = dict(
+            project_description="",
+            privacy_policy_url="",
+            use_advanced_theme=False,
+            draft_theme_config=None,
+        )
+        self.user_without_instance = create_user_and_profile("noinstance.user", "noinstance.user@example.com")
+
+    def _setup_user_instanace(self):
+        """
+        Set up an instance for the test user.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.instance_config.instance = instance
+        self.instance_config.save()
+        return instance
+
+    def test_allow_public_validation(self):
+        """
+        Ensure that users can validate instance configuration without logging in.
+        """
+        response = self.client.post(reverse('api:v2:openedx-instance-config-validate'))
+        self.assertNotEqual(response.status_code, 403)
+
+    def test_create_new_instance_existing_error(self):
+        """
+        Test that a user that already has an instance cannot create a new one.
+
+        This should hopefully be temporary if we support multiple instances per user.
+        """
+        self.client.force_login(self.user_with_instance)
+        response = self.client.post(reverse('api:v2:openedx-instance-config-list'))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json().get('user')[0],
+            "User has reached limit of allowed Open edX instances.",
+        )
+
+    def test_create_new_instance_success(self):
+        """
+        Test successfully creating a new instance
+        """
+        self.client.force_login(self.user_without_instance)
+        instance_data = dict(
+            subdomain="newsubdomain",
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-config-list'),
+            data=instance_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        # Checks that the instance data provided is a subset of the response.
+        self.assertTrue(instance_data.items() <= response.json().items())
+        # Make sure that the new public email is queued for verification
+        self.assertTrue(
+            EmailAddress.objects.filter(email="noinstance.user.public@example.com").exists()
+        )
+
+    @ddt.data(
+        dict(subdomain="invalid subdomain"),
+        dict(subdomain="invalid.subdomain"),
+        dict(subdomain="invalid_subdomain"),
+        dict(subdomain="invalid+subdomain"),
+        dict(subdomain="somesubdomain"),  # Existing subdomain
+        dict(instance_name=None),
+        dict(instance_name=" "),
+        dict(public_contact_email="invalid.email"),
+        dict(public_contact_email=None),
+        dict(draft_theme_config={}),
+    )
+    def test_instance_validation_failure(self, override):
+        """
+        Test validation issues when creating a new instance
+        """
+        self.client.force_login(self.user_without_instance)
+        instance_data = dict(
+            subdomain="newsubdomain",
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+        instance_data.update(override)
+        # Test validation with both the validate method and create method
+        for view in ("list", "validate"):
+            response = self.client.post(
+                reverse(f"api:v2:openedx-instance-config-{view}"),
+                data=instance_data,
+                format="json",
+            )
+            self.assertEqual(response.status_code, 400)
+
+    @ddt.data(
+        ("instance.user", True),
+        ("noinstance.user", False),
+        (None, False),
+    )
+    @ddt.unpack
+    def test_update_instance_permissions(self, username, has_permission):
+        """
+        Test that the owner of an instance has permission to update it, but others done.
+        """
+        if username is not None:
+            self.client.force_login(User.objects.get(username=username))
+        response = self.client.patch(reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)))
+        if has_permission:
+            self.assertNotIn(response.status_code, (403, 404))
+        else:
+            # An anonymous user should get 403 while an authenticated user should get 404
+            self.assertIn(response.status_code, (403, 404))
+
+    def test_commit_changes_fail_new_user(self):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,))
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Must verify email", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_commit_changes_fail_running_appserver(self, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,))
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Instance launch already in progress", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_commit_changes_email_validation_fail(self, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self._setup_user_instanace()
+        EmailAddress.objects.get(
+            email=self.instance_config.public_contact_email,
+            user=self.user_with_instance,
+        ).reset_confirmation()
+        self.client.force_login(self.user_with_instance)
+        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Updated public email", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.api.v2.views.spawn_appserver')
+    def test_commit_changes_success(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        self.assertEqual(instance.privacy_policy_url, '')
+        self.assertEqual(instance.email, 'contact@example.com')
+        self.assertRegex(instance.name, r'Test Instance \d+')
+        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        mock_spawn_appserver.assert_called()
+        instance.refresh_from_db()
+        self.assertEqual(instance.privacy_policy_url, "http://www.some/url")
+        self.assertEqual(instance.email, "instance.user.public@example.com")
+        self.assertEqual(instance.name, "User's Instance")
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.api.v2.views.spawn_appserver')
+    def test_commit_changes_force_running_appserver(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
+        response = self.client.post(f"{url}?force=true")
+        self.assertEqual(response.status_code, 200)
+        mock_spawn_appserver.assert_called()
