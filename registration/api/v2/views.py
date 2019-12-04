@@ -23,11 +23,13 @@ import logging
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import mixins, status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
 from instance.models.appserver import Status
@@ -49,12 +51,7 @@ logger = logging.getLogger(__name__)
     public_actions=['create'],
     tags=["v1", "Accounts", "Registration", "User", "UserProfile"],
 )
-class AccountViewSet(
-        mixins.CreateModelMixin,
-        mixins.UpdateModelMixin,
-        mixins.ListModelMixin,
-        viewsets.GenericViewSet,
-):
+class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
     """
     User account management API.
 
@@ -108,13 +105,8 @@ class AccountViewSet(
     partial_update="Update instance owned by user",
     tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
-class OpenEdXInstanceConfigViewSet(
-        mixins.CreateModelMixin,
-        mixins.RetrieveModelMixin,
-        mixins.UpdateModelMixin,
-        mixins.ListModelMixin,
-        viewsets.GenericViewSet,
-):
+class OpenEdXInstanceConfigViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin,
+                                   GenericViewSet):
     """
     Open edX Instance Configuration API.
 
@@ -135,9 +127,9 @@ class OpenEdXInstanceConfigViewSet(
         return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
-            responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful")},
-            tags=["v2", "Instances", "OpenEdXInstanceConfig"],
-            security=[],
+        responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful")},
+        tags=["v2", "Instances", "OpenEdXInstanceConfig"],
+        security=[],
     )
     @action(detail=False, methods=['post'])
     def validate(self, request):
@@ -153,16 +145,16 @@ class OpenEdXInstanceConfigViewSet(
         return Response(status=status.HTTP_200_OK, headers=headers)
 
     @swagger_auto_schema(
-            responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed")},
-            tags=["v2", "Instances", "OpenEdXInstanceConfig"],
-            manual_parameters=[
-                openapi.Parameter(
-                        'force',
-                        openapi.IN_QUERY,
-                        type=openapi.TYPE_BOOLEAN,
-                        description="Force launching a new instance even if one is already in progress.",
-                )
-            ]
+        responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed")},
+        tags=["v2", "Instances", "OpenEdXInstanceConfig"],
+        manual_parameters=[
+            openapi.Parameter(
+                'force',
+                openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Force launching a new instance even if one is already in progress.",
+            )
+        ]
     )
     @action(detail=True, methods=['post'])
     def commit_changes(self, request, pk=None):
