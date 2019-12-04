@@ -54,13 +54,16 @@ class AccountViewSet(
     information for the current user.
     """
     serializer_class = AccountSerializer
+    lookup_field = 'user__username'
+    lookup_url_kwarg = 'username'
+    lookup_value_regex = '[^/]+'
 
     def perform_update(self, serializer):
         """
         When a new user registers, initiate email verification.
         """
         instance = serializer.save()
-        verify_user_emails(instance, self.request, instance.email)
+        verify_user_emails(instance.user, self.request, instance.user.email)
 
     def perform_create(self, serializer):
         """
@@ -68,7 +71,7 @@ class AccountViewSet(
         email has changed.
         """
         instance = serializer.save()
-        verify_user_emails(instance, self.request, instance.email)
+        verify_user_emails(instance.user, self.request, instance.user.email)
 
     def get_permissions(self):
         """

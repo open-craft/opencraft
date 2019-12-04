@@ -25,6 +25,7 @@ from typing import Dict
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
@@ -52,6 +53,10 @@ class AccountSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         source="user.email",
+        validators=[
+            UniqueValidator(queryset=User.objects.all(),
+                            message="That email is already registered with a different account."),
+        ],
         required=True,
         help_text='This is also the account name, and where we will send important notices.',
     )
@@ -105,7 +110,7 @@ class AccountSerializer(serializers.ModelSerializer):
         """
         Update existing user profile model and user.
         """
-        self._update_user_account(instance.user, validated_data.pop('user'))
+        self._update_user_account(instance.user, validated_data.pop('user', {}))
         self._update_user_profile(instance, validated_data)
         return instance
 
@@ -117,10 +122,13 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("You must accept the privacy policy to register.")
         if (
                 self.instance and
-                self.instance.acceped_privacy_policy and
-                value < self.instance.acceped_privacy_policy
+                self.instance.accepted_privacy_policy and
+                value < self.instance.accepted_privacy_policy
         ):
-            raise ValidationError("New policy acceptance date cannot be lower than previous data")
+            raise ValidationError("New policy acceptance date cannot be earlier than previous acceptance date.")
+        if value >= timezone.now() + timezone.timedelta(hours=1):
+            raise ValidationError("Cannot accept policy for a future date.")
+        return value
 
     def validate_accept_paid_support(self, value):
         """
@@ -128,13 +136,18 @@ class AccountSerializer(serializers.ModelSerializer):
         """
         if not value:
             raise ValidationError("You must accept these terms to register.")
+        return value
 
     class Meta:
         model = UserProfile
         fields = (
-            'full_name', 'username', 'password', 'email',
-            'accepted_privacy_policy', 'accept_paid_support', 'subscribe_to_updates',
+            'full_name', 'username', 'password', 'email', 'accepted_privacy_policy',
+            'accept_paid_support', 'subscribe_to_updates',
         )
+        extra_kwargs = {
+            'accepted_privacy_policy': {'required': True},
+            'accept_paid_support': {'required': True},
+        }
 
 
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
