@@ -43,7 +43,7 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
         This serializer will work with any subclass of the AppServer abstract class.
         """
 
-        api_path = reverse('api:{}-detail'.format(instance._meta.model_name), kwargs={'pk': instance.pk})
+        api_path = reverse('api:v1:{}-detail'.format(instance._meta.model_name), kwargs={'pk': instance.pk})
         request = self.context.get('request')
         if request:
             api_url = request.build_absolute_uri(api_path)

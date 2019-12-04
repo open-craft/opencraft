@@ -64,7 +64,7 @@ class AccountViewSet(
 
     def perform_create(self, serializer):
         """
-        If a user updates their profile, initiate email verificaiton in case their
+        If a user updates their profile, initiate email verification in case their
         email has changed.
         """
         instance = serializer.save()
