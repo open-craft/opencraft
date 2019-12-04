@@ -32,7 +32,7 @@ from simple_email_confirmation.models import EmailAddress
 
 from instance.models.appserver import Status
 from instance.tasks import spawn_appserver
-from opencraft.swagger import AUTH_ERROR_RESPONSE, VALIDATION_RESPONSE, viewset_swagger_helper
+from opencraft.swagger import (VALIDATION_AND_AUTH_RESPONSES, VALIDATION_RESPONSE, viewset_swagger_helper)
 from registration.api.v2.serializers import AccountSerializer, OpenEdXInstanceConfigSerializer
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -134,12 +134,12 @@ class OpenEdXInstanceConfigViewSet(
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
-    @action(detail=False, methods=['post'])
     @swagger_auto_schema(
             responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful")},
             tags=["v2", "Instances", "OpenEdXInstanceConfig"],
             security=[],
     )
+    @action(detail=False, methods=['post'])
     def validate(self, request):
         """
         Validate instance configuration
@@ -152,14 +152,29 @@ class OpenEdXInstanceConfigViewSet(
         headers = self.get_success_headers(serializer.data)
         return Response(status=status.HTTP_200_OK, headers=headers)
 
-    @action(detail=True, methods=['post'])
     @swagger_auto_schema(
-            responses={**AUTH_ERROR_RESPONSE, 200: openapi.Response("Changes committed")},
+            responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed")},
             tags=["v2", "Instances", "OpenEdXInstanceConfig"],
+            manual_parameters=[
+                openapi.Parameter(
+                        'force',
+                        openapi.IN_QUERY,
+                        type=openapi.TYPE_BOOLEAN,
+                        description="Force launching a new instance even if one is already in progress.",
+                )
+            ]
     )
+    @action(detail=True, methods=['post'])
     def commit_changes(self, request, pk=None):
         """
-        Commit changes to theme and configuration to instance.
+        Commit configuration changes to instance and launch new AppServer.
+
+        This API call will copy over any changes made to the instance config to
+        the actual instance used to launch AppServers and launch a new AppServer
+        with the applied changes.
+
+        It checks to see if an AppServer is already being provisioned and in that
+        case prevents a new one from being launched unless forced.
         """
         force = request.query_params.get('force', False)
         instance_config: BetaTestApplication = self.get_object()

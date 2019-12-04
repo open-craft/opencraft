@@ -39,11 +39,6 @@ GENERIC_ERROR = openapi.Schema(
     required=['detail']
 )
 
-ACCESS_ERROR_RESPONSE = openapi.Response(
-    description="Authentication credentials were invalid, absent or insufficient.",
-    schema=GENERIC_ERROR,
-)
-
 VALIDATION_ERROR = openapi.Schema(
     'Validation Error',
     type=openapi.TYPE_OBJECT,
@@ -62,6 +57,11 @@ VALIDATION_ERROR = openapi.Schema(
     }
 )
 
+ACCESS_ERROR_RESPONSE = openapi.Response(
+    description="Authentication credentials were invalid, absent or insufficient.",
+    schema=GENERIC_ERROR,
+)
+
 VALIDATION_ERROR_RESPONSE = openapi.Response(
     description='Invalid data provided to API',
     schema=VALIDATION_ERROR,
@@ -77,7 +77,7 @@ VALIDATION_RESPONSE = {
 
 VALIDATION_AND_AUTH_RESPONSES = {
     **AUTH_ERROR_RESPONSE,
-    **VALIDATION_ERROR_RESPONSE,
+    **VALIDATION_RESPONSE,
 }
 
 
