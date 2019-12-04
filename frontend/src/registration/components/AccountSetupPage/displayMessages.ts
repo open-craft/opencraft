@@ -20,11 +20,11 @@ const messages = {
       'This would also be the username of the administrator account on the Open edX instance.',
     description: 'A description of the translatable string.'
   },
-  email: {
+  emailAddress: {
     defaultMessage: 'Email address*',
     description: 'A description of the translatable string.'
   },
-  emailHelp: {
+  emailAddressHelp: {
     defaultMessage:
       'This is also your account name, and where we will send important notices.',
     description: 'A description of the translatable string.'

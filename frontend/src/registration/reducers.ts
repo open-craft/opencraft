@@ -9,11 +9,25 @@ export function registrationReducer(
 ): RegistrationModel {
   switch (action.type) {
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
-      return state;
+      return {
+        ...state,
+        loading: true,
+        domainError: ''
+      };
     case RegistrationActions.Types.REGISTRATION_FAILURE:
-      return state;
+      return {
+        ...state,
+        loading: false,
+        // TODO: Internationalize this
+        domainError: 'This domain already exists!'
+      };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
-      return { ...state, ...action.data };
+    console.log(action.data)
+      return {
+        ...state,
+        ...action.data,
+        loading: false,
+      };
     default:
       return state;
   }

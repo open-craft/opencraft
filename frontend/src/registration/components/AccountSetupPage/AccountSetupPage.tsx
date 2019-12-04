@@ -80,7 +80,12 @@ export class AccountSetupPage extends React.PureComponent<
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
-    const { value } = e.target;
+    let value: boolean | string;
+    if (e.target.type === 'checkbox') {
+      value = e.target.checked;
+    } else {
+      value = e.target.value;
+    }
     this.setState<never>({ [field]: value });
   };
 
@@ -135,7 +140,12 @@ export class AccountSetupPage extends React.PureComponent<
             type="password"
           />
           <Form.Check type="checkbox" id="acceptTOS" custom>
-            <Form.Check.Input type="checkbox" />
+            <Form.Check.Input
+              type="checkbox"
+              name="acceptTOS"
+              checked={this.state.acceptTOS}
+              onChange={this.onChange}
+            />
             <Form.Check.Label>
               <WrappedMessage
                 id="acceptTos"
@@ -145,17 +155,23 @@ export class AccountSetupPage extends React.PureComponent<
             </Form.Check.Label>
           </Form.Check>
           <Form.Check type="checkbox" id="acceptSupport" custom>
-            <Form.Check.Input type="checkbox" />
+            <Form.Check.Input
+              type="checkbox"
+              name="acceptSupport"
+              checked={this.state.acceptSupport}
+              onChange={this.onChange}
+            />
             <Form.Check.Label>
               <WrappedMessage id="acceptSupport" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
-          <Form.Check
-            type="checkbox"
-            id="acceptTipsEmail"
-            custom
-          >
-            <Form.Check.Input type="checkbox" />
+          <Form.Check type="checkbox" id="acceptTipsEmail" custom>
+            <Form.Check.Input
+              type="checkbox"
+              name="acceptTipsEmail"
+              checked={this.state.acceptTipsEmail}
+              onChange={this.onChange}
+            />
             <Form.Check.Label>
               <WrappedMessage id="acceptTipsEmail" messages={messages} />
             </Form.Check.Label>

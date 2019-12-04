@@ -32,7 +32,6 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
         variant="primary"
         size="lg"
         disabled={props.disableNextButton || props.loading}
-        data-loading-text="</i> Processing Order"
         onClick={() => {
           props.handleNextClick();
         }}

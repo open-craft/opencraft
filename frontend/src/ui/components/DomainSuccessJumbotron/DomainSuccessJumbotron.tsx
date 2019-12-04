@@ -28,7 +28,10 @@ export const DomainSuccessJumbotron: React.FC<DomainProps> = (
         <WrappedMessage id={domainStatusText} messages={messages} />
       </h2>
       <div className="domain-name">
-        <p>{props.domain}</p>
+        <p>
+          {props.domain}
+          {props.domainIsExternal === false && <span>.opencraft.hosting</span>}
+        </p>
       </div>
       <p>
         <WrappedMessage id="secureDomainNow" messages={messages} />

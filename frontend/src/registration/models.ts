@@ -8,6 +8,10 @@ export interface DomainInfoModel {
   domainIsExternal: boolean;
 }
 
+export interface DomainInfoValidationModel {
+  domainError: string;
+}
+
 export interface InstanceInfoModel {
   instanceName: string;
   publicContactEmail: string;
@@ -40,11 +44,17 @@ export const DefaultTheme: Readonly<ThemeInfoModel> = {
   cover: null
 };
 
+export interface RegistrationStateModel {
+  loading: boolean;
+}
+
 export interface RegistrationModel
   extends DomainInfoModel,
+    DomainInfoValidationModel,
     AccountInfoModel,
     InstanceInfoModel,
-    ThemeInfoModel {}
+    ThemeInfoModel,
+    RegistrationStateModel {}
 
 export type RegistrationFields = keyof RegistrationModel;
 
@@ -54,6 +64,7 @@ export const blankRegistration: Readonly<RegistrationModel> = {
   acceptTipsEmail: false,
   cover: null,
   domain: '',
+  domainError: '',
   domainIsExternal: false,
   emailAddress: '',
   fullName: '',
@@ -63,5 +74,6 @@ export const blankRegistration: Readonly<RegistrationModel> = {
   passwordConfirm: '',
   publicContactEmail: '',
   username: '',
+  loading: false,
   ...DefaultTheme
 };
