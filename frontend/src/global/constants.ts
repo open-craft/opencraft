@@ -8,6 +8,9 @@ export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
 export const PRIVACY_POLICY_LINK =
   process.env.REACT_APP_PRIVACY_POLICY_LINK || '/#';
 
+export const INTERNAL_DOMAIN_NAME =
+  process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
+
 export enum RegistrationSteps {
   FIRST_STEP = 1,
   DOMAIN = 1,

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button, FormControl, InputGroup, Spinner } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
+import { INTERNAL_DOMAIN_NAME } from 'global/constants';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -28,9 +29,9 @@ export const DomainInput: React.SFC<Props> = (props: Props) => {
           }}
           isInvalid={isInvalid}
         />
-        {props.internalDomain === true && (
+        {props.internalDomain && (
           <InputGroup.Append>
-            <InputGroup.Text>.opencraft.hosting</InputGroup.Text>
+            <InputGroup.Text>{INTERNAL_DOMAIN_NAME}</InputGroup.Text>
           </InputGroup.Append>
         )}
         <InputGroup.Append>
@@ -41,7 +42,7 @@ export const DomainInput: React.SFC<Props> = (props: Props) => {
               props.handleSubmitDomain();
             }}
           >
-            {props.loading === true && (
+            {props.loading && (
               <Spinner animation="border" size="sm" className="spinner" />
             )}
             <WrappedMessage messages={messages} id="checkAvailability" />
