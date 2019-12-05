@@ -25,7 +25,7 @@ interface Props extends StateProps, ActionProps {}
     loading: state.registration.loading,
     registrationData: {
       ...state.registration.registrationData
-      },
+    },
     registrationFeedback: {
       ...state.registration.registrationFeedback
     }

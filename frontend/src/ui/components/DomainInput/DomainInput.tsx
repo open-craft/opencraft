@@ -26,7 +26,7 @@ export const DomainInput: React.SFC<Props> = (props: Props) => {
           onChange={(event: any) => {
             props.handleDomainChange(event.target.value);
           }}
-          isInvalid={!!(props.error)}
+          isInvalid={!!props.error}
         />
         {props.internalDomain && (
           <InputGroup.Append>

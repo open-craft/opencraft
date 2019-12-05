@@ -7,7 +7,7 @@ export function registrationReducer(
   state = initialState,
   action: RegistrationActions.ActionTypes
 ): RegistrationStateModel {
-  console.log(state)
+  console.log(state);
   switch (action.type) {
     case RegistrationActions.Types.ROOT_STATE_UPDATE:
       // Merge state without erasing previous values

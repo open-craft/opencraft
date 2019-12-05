@@ -11,7 +11,9 @@ interface InputFieldProps {
   type?: string;
 }
 
-export const TextInputField: React.SFC<InputFieldProps> = (props: InputFieldProps) => {
+export const TextInputField: React.SFC<InputFieldProps> = (
+  props: InputFieldProps
+) => {
   return (
     <FormGroup>
       <FormLabel>
@@ -24,7 +26,10 @@ export const TextInputField: React.SFC<InputFieldProps> = (props: InputFieldProp
         type={props.type}
       />
       <p>
-        <WrappedMessage id={`${props.fieldName}Help`} messages={props.messages} />
+        <WrappedMessage
+          id={`${props.fieldName}Help`}
+          messages={props.messages}
+        />
       </p>
     </FormGroup>
   );
