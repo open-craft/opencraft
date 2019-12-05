@@ -2,7 +2,11 @@ import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { Types as UIActionTypes } from 'ui/actions';
-import { RegistrationModel, InstanceInfoModel, DomainInfoModel } from './models';
+import {
+  RegistrationModel,
+  InstanceInfoModel,
+  DomainInfoModel
+} from './models';
 
 export enum Types {
   REGISTRATION_SUBMIT = 'REGISTRATION_SUBMIT',
@@ -30,15 +34,14 @@ export type ActionTypes =
   | RegistrationSuccess
   | RegistrationFailure;
 
-
 export const updateDomainInfoState = (
-  data: DomainInfoModel,
+  data: DomainInfoModel
 ): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.REGISTRATION_SUCCESS, data });
 };
 
 export const updateInstanceInfoState = (
-  data: InstanceInfoModel,
+  data: InstanceInfoModel
 ): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.REGISTRATION_SUCCESS, data });
 };

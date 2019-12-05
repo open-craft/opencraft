@@ -22,11 +22,11 @@ export function registrationReducer(
         domainError: 'This domain already exists!'
       };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
-    console.log(action.data)
+      console.log(action.data);
       return {
         ...state,
         ...action.data,
-        loading: false,
+        loading: false
       };
     default:
       return state;

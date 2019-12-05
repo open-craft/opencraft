@@ -45,8 +45,8 @@ export class DomainInputPage extends React.PureComponent<Props> {
 
   private handleDomainChange = (newDomain: string) => {
     this.props.updateDomainInfoState({
-        domain: newDomain,
-        domainError: ''
+      domain: newDomain,
+      domainError: ''
     });
   };
 
