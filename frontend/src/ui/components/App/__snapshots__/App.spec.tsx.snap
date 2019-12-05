@@ -136,52 +136,55 @@ exports[`renders without crashing 1`] = `
             <div
               className="registration-page-content row"
             >
-              <form
-                className=""
+              <div
+                className="domain-input-container"
               >
                 <div
-                  className="form-group"
+                  className="domain-label"
                 >
-                  <label
-                    className="form-label"
-                    htmlFor="domainNameInput"
-                  >
-                    Type your domain name below
-                  </label>
-                  <div
-                    className="input-group"
-                  >
-                    <input
-                      className="form-control"
-                      defaultValue=""
-                      id="domainNameInput"
-                      onChange={[Function]}
-                      placeholder="yourdomain"
-                    />
-                    <div
-                      className="input-group-append"
-                    >
-                      <button
-                        className="btn btn-primary"
-                        disabled={false}
-                        onClick={[Function]}
-                        type="button"
-                      >
-                        Check Availability
-                      </button>
-                    </div>
-                  </div>
+                  Type your domain name below
                 </div>
                 <div
-                  className="use-own"
+                  className="input-group"
                 >
-                  <a
-                    href="/#"
+                  <input
+                    className="form-control"
+                    onChange={[Function]}
+                    value=""
+                  />
+                  <div
+                    className="input-group-append"
                   >
-                    I want to use my own domain
-                  </a>
+                    <span
+                      className="input-group-text"
+                    >
+                      .opencraft.hosting
+                    </span>
+                  </div>
+                  <div
+                    className="input-group-append"
+                  >
+                    <button
+                      className="btn btn-primary"
+                      disabled={false}
+                      onClick={[Function]}
+                      type="button"
+                    >
+                      Check Availability
+                    </button>
+                  </div>
+                  
                 </div>
-              </form>
+              </div>
+              <div
+                className="use-own"
+              >
+                <a
+                  href="/#"
+                >
+                  I want to use my own domain
+                </a>
+              </div>
             </div>
           </div>
         </div>
