@@ -9,7 +9,7 @@ const messages = {
   },
   congratsMessage2: {
     defaultMessage:
-      'We have sent you an email to verify your email address. Please follow' +
+      'We have sent you an email to verify your email address. Please follow ' +
       'the link that we emailed you to complete your application process.',
     description: 'A description of the translatable string.'
   }

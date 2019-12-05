@@ -15,7 +15,6 @@ interface Props {
 }
 
 export const DomainInput: React.SFC<Props> = (props: Props) => {
-  const isInvalid = !!props.error;
   return (
     <div className="domain-input-container">
       <div className="domain-label">
@@ -27,7 +26,7 @@ export const DomainInput: React.SFC<Props> = (props: Props) => {
           onChange={(event: any) => {
             props.handleDomainChange(event.target.value);
           }}
-          isInvalid={isInvalid}
+          isInvalid={!!(props.error)}
         />
         {props.internalDomain && (
           <InputGroup.Append>
@@ -48,7 +47,7 @@ export const DomainInput: React.SFC<Props> = (props: Props) => {
             <WrappedMessage messages={messages} id="checkAvailability" />
           </Button>
         </InputGroup.Append>
-        {isInvalid && (
+        {props.error && (
           <FormControl.Feedback type="invalid">
             {props.error}
           </FormControl.Feedback>

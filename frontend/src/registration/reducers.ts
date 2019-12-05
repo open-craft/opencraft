@@ -7,26 +7,37 @@ export function registrationReducer(
   state = initialState,
   action: RegistrationActions.ActionTypes
 ): RegistrationStateModel {
+  console.log(state)
   switch (action.type) {
     case RegistrationActions.Types.ROOT_STATE_UPDATE:
+      // Merge state without erasing previous values
       return {
-        ...state,
-        ...action.data
+        loading: state.loading,
+        registrationData: {
+          ...state.registrationData,
+          ...action.data.registrationData
+        },
+        registrationFeedback: {
+          ...state.registrationFeedback,
+          ...action.data.registrationFeedback
+        }
       };
     case RegistrationActions.Types.REGISTRATION_VALIDATION:
       return {
         ...state,
-        ...action.data,
         loading: true
       };
     case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS:
+      // Merge state without erasing previous values
       return {
         ...state,
-        ...action.data,
-        loading: false
+        loading: false,
+        registrationData: {
+          ...state.registrationData,
+          ...action.data.registrationData
+        }
       };
     case RegistrationActions.Types.REGISTRATION_VALIDATION_FAILURE:
-      console.log(action);
       return {
         ...state,
         registrationFeedback: { ...action.error },
@@ -41,15 +52,11 @@ export function registrationReducer(
       return {
         ...state,
         loading: false,
-        registrationFeedback: {
-          domain: 'This domain already exists!'
-        }
+        registrationFeedback: { ...action.error }
       };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
-      console.log('registration ok');
       return {
         ...state,
-        ...action.data,
         loading: false
       };
     default:

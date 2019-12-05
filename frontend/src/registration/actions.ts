@@ -28,7 +28,6 @@ export interface RootStateUpdate extends Action {
 
 export interface RegistrationValidation extends Action {
   readonly type: Types.REGISTRATION_VALIDATION;
-  readonly data: RegistrationStateModel;
 }
 
 export interface RegistrationValidationSuccess extends Action {
@@ -43,7 +42,6 @@ export interface RegistrationValidationFailure extends Action {
 
 export interface SubmitRegistration extends Action {
   readonly type: Types.REGISTRATION_SUBMIT;
-  readonly data: RegistrationStateModel;
 }
 
 export interface RegistrationSuccess extends Action {
@@ -66,7 +64,7 @@ export type ActionTypes =
   | RegistrationFailure;
 
 export const updateRootState = (
-  data: RegistrationModel
+  data: RegistrationStateModel
 ): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.ROOT_STATE_UPDATE, data });
 };

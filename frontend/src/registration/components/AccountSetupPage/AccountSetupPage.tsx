@@ -1,43 +1,16 @@
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { RegistrationNavButtons } from 'registration/components';
+import { TextInputField } from 'ui/components';
 import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
+import { RegistrationStateModel } from 'registration/models';
 import { updateRootState, submitRegistration } from '../../actions';
-// import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-
-import { RegistrationStateModel } from 'registration/models';
-
-interface InputFieldProps {
-  fieldName: string;
-  value: string;
-  onChange: any;
-  type?: string;
-}
-
-const InputField: React.SFC<InputFieldProps> = (props: InputFieldProps) => {
-  return (
-    <FormGroup>
-      <FormLabel>
-        <WrappedMessage id={props.fieldName} messages={messages} />
-      </FormLabel>
-      <FormControl
-        name={props.fieldName}
-        value={props.value}
-        onChange={props.onChange}
-        type={props.type}
-      />
-      <p>
-        <WrappedMessage id={`${props.fieldName}Help`} messages={messages} />
-      </p>
-    </FormGroup>
-  );
-};
 
 interface ActionProps {
   submitRegistration: Function;
@@ -100,33 +73,38 @@ export class AccountSetupPage extends React.PureComponent<Props> {
           <h2>
             <WrappedMessage id="createYourAccount" messages={messages} />
           </h2>
-          <InputField
+          <TextInputField
             fieldName="fullName"
             value={this.props.registrationData.fullName}
             onChange={this.onChange}
+            messages={messages}
           />
-          <InputField
+          <TextInputField
             fieldName="username"
             value={this.props.registrationData.username}
             onChange={this.onChange}
+            messages={messages}
           />
-          <InputField
+          <TextInputField
             fieldName="emailAddress"
             value={this.props.registrationData.emailAddress}
             onChange={this.onChange}
             type="email"
+            messages={messages}
           />
-          <InputField
+          <TextInputField
             fieldName="password"
             value={this.props.registrationData.password}
             onChange={this.onChange}
             type="password"
+            messages={messages}
           />
-          <InputField
+          <TextInputField
             fieldName="passwordConfirm"
             value={this.props.registrationData.passwordConfirm}
             onChange={this.onChange}
             type="password"
+            messages={messages}
           />
           <Form.Check type="checkbox" id="acceptTOS" custom>
             <Form.Check.Input

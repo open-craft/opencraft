@@ -4,11 +4,11 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
+import { RegistrationStateModel } from 'registration/models';
 import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-import { RegistrationStateModel } from 'registration/models';
 
 interface ActionProps {
   performValidation: Function;
@@ -45,13 +45,14 @@ export class DomainInputPage extends React.PureComponent<Props> {
 
   private submitDomain = () => {
     this.props.performValidation(
-      { domain: this.props.registrationData.domain },
+      {
+        domain: this.props.registrationData.domain
+      },
       ROUTES.Registration.INSTANCE
     );
   };
 
   public render() {
-    console.log(this.props);
     return (
       <div className="div-fill">
         <RegistrationPage

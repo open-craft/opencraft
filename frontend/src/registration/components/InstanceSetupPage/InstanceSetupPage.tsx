@@ -1,16 +1,16 @@
 import { RootState } from 'global/state';
 import * as React from 'react';
-import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
-import { DomainSuccessJumbotron } from 'ui/components';
+import { DomainSuccessJumbotron, TextInputField } from 'ui/components';
 import { RegistrationNavButtons } from 'registration/components';
 import { ROUTES } from 'global/constants';
+import { RegistrationStateModel } from 'registration/models';
 import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-import { RegistrationStateModel } from 'registration/models';
 
 interface ActionProps {
   performValidation: Function;
@@ -23,8 +23,12 @@ interface Props extends StateProps, ActionProps {}
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
     loading: state.registration.loading,
-    registrationData: state.registration.registrationData,
-    registrationFeedback: state.registration.registrationFeedback
+    registrationData: {
+      ...state.registration.registrationData
+      },
+    registrationFeedback: {
+      ...state.registration.registrationFeedback
+    }
   }),
   {
     performValidation,
@@ -37,7 +41,12 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
     const { value } = e.target;
 
     this.props.updateRootState({
-      [field]: value
+      registrationData: {
+        [field]: value
+      },
+      registrationFeedback: {
+        [field]: ''
+      }
     });
   };
 
@@ -67,33 +76,20 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
           <h2>
             <WrappedMessage id="secureYourDomain" messages={messages} />
           </h2>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="instanceName" messages={messages} />
-            </FormLabel>
-            <FormControl
-              name="instanceName"
-              value={this.props.registrationData.instanceName}
-              onChange={this.onChange}
-            />
-            <p>
-              <WrappedMessage id="instanceNameHelp" messages={messages} />
-            </p>
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <WrappedMessage id="publicContactEmail" messages={messages} />
-            </FormLabel>
-            <FormControl
-              type="email"
-              name="publicContactEmail"
-              value={this.props.registrationData.publicContactEmail}
-              onChange={this.onChange}
-            />
-            <p>
-              <WrappedMessage id="publicContactEmailHelp" messages={messages} />
-            </p>
-          </FormGroup>
+
+          <TextInputField
+            fieldName="instanceName"
+            value={this.props.registrationData.instanceName}
+            onChange={this.onChange}
+            messages={messages}
+          />
+          <TextInputField
+            fieldName="publicContactEmail"
+            value={this.props.registrationData.publicContactEmail}
+            onChange={this.onChange}
+            messages={messages}
+            type="email"
+          />
         </Form>
         <RegistrationNavButtons
           loading={this.props.loading}

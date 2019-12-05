@@ -40,10 +40,6 @@ export const DefaultTheme: Readonly<ThemeInfoModel> = {
   cover: null
 };
 
-export interface RegistrationStateModel {
-  loading: boolean;
-}
-
 export interface RegistrationModel
   extends DomainInfoModel,
     AccountInfoModel,
