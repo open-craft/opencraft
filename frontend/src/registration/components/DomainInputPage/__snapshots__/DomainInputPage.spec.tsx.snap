@@ -143,7 +143,6 @@ exports[`renders without crashing 1`] = `
                 Check Availability
               </button>
             </div>
-            
           </div>
         </div>
         <div
