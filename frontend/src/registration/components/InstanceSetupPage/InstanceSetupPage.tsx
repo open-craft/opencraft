@@ -6,59 +6,47 @@ import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron } from 'ui/components';
 import { RegistrationNavButtons } from 'registration/components';
 import { ROUTES } from 'global/constants';
-import { validateInstanceInfo, updateInstanceInfoState } from '../../actions';
-import { getRegistrationData } from '../../selectors';
+import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
+import { RegistrationStateModel } from 'registration/models'
 
 interface ActionProps {
-  validateInstanceInfo: Function;
-  updateInstanceInfoState: Function;
+  performValidation: Function;
+  updateRootState: Function;
 }
 
-interface StateProps {
-  domain: string;
-  domainIsExternal: boolean;
-  instanceName: string;
-  publicContactEmail: string;
-  loading: boolean;
-}
-
+interface StateProps extends RegistrationStateModel {}
 interface Props extends StateProps, ActionProps {}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    domain: getRegistrationData(state, 'domain'),
-    domainIsExternal: getRegistrationData(state, 'domainIsExternal'),
-    instanceName: getRegistrationData(state, 'instanceName'),
-    publicContactEmail: getRegistrationData(state, 'publicContactEmail'),
-    loading: getRegistrationData(state, 'loading')
+    loading: state.registration.loading,
+    registrationData: state.registration.registrationData,
+    registrationFeedback: state.registration.registrationFeedback
   }),
   {
-    validateInstanceInfo,
-    updateInstanceInfoState
+    performValidation,
+    updateRootState
   }
 )
 export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
-  public constructor(props: Props) {
-    super(props);
-  }
-
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     const { value } = e.target;
 
-    this.props.updateInstanceInfoState({
+    this.props.updateRootState({
       [field]: value
     });
   };
 
   private submitInstanceData = () => {
-    this.props.validateInstanceInfo(
-      {
-        instanceName: this.props.instanceName,
-        publicContactEmail: this.props.publicContactEmail
+    this.props.performValidation({
+        registrationData: {
+          instanceName: this.props.registrationData.instanceName,
+          publicContactEmail: this.props.registrationData.publicContactEmail
+        }
       },
       ROUTES.Registration.ACCOUNT
     );
@@ -71,8 +59,8 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
         currentStep={2}
       >
         <DomainSuccessJumbotron
-          domain={this.props.domain}
-          domainIsExternal={this.props.domainIsExternal}
+          domain={this.props.registrationData.domain}
+          domainIsExternal={this.props.registrationData.domainIsExternal}
         />
         <Form className="secure-domain-form">
           <h2>
@@ -84,7 +72,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
             </FormLabel>
             <FormControl
               name="instanceName"
-              value={this.props.instanceName}
+              value={this.props.registrationData.instanceName}
               onChange={this.onChange}
             />
             <p>
@@ -98,7 +86,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
             <FormControl
               type="email"
               name="publicContactEmail"
-              value={this.props.publicContactEmail}
+              value={this.props.registrationData.publicContactEmail}
               onChange={this.onChange}
             />
             <p>

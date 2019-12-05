@@ -4,19 +4,14 @@ import { connect } from 'react-redux';
 import { Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { RegistrationNavButtons } from 'registration/components';
-import { PRIVACY_POLICY_LINK, TOS_LINK } from 'global/constants';
-import { submitRegistration } from '../../actions';
-import { getRegistrationData } from '../../selectors';
-import { AccountInfoModel } from '../../models';
+import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
+import { updateRootState, submitRegistration } from '../../actions';
+// import { getRegistrationData } from '../../selectors';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
-interface ActionProps {
-  submitRegistration: typeof submitRegistration;
-}
-
-interface Props extends AccountInfoModel, ActionProps {}
+import { RegistrationStateModel } from 'registration/models'
 
 interface InputFieldProps {
   fieldName: string;
@@ -44,49 +39,46 @@ const InputField: React.SFC<InputFieldProps> = (props: InputFieldProps) => {
   );
 };
 
-@connect<AccountInfoModel, ActionProps, {}, Props, RootState>(
+interface ActionProps {
+  submitRegistration: Function;
+  updateRootState: Function;
+}
+
+interface StateProps extends RegistrationStateModel {}
+
+interface Props extends StateProps, ActionProps {}
+
+@connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    fullName: getRegistrationData(state, 'fullName'),
-    username: getRegistrationData(state, 'username'),
-    emailAddress: getRegistrationData(state, 'emailAddress'),
-    password: getRegistrationData(state, 'password'),
-    passwordConfirm: getRegistrationData(state, 'passwordConfirm'),
-    acceptTOS: getRegistrationData(state, 'acceptTOS'),
-    acceptSupport: getRegistrationData(state, 'acceptSupport'),
-    acceptTipsEmail: getRegistrationData(state, 'acceptTipsEmail')
+    loading: state.registration.loading,
+    registrationData: state.registration.registrationData,
+    registrationFeedback: state.registration.registrationFeedback
   }),
   {
-    submitRegistration
+    submitRegistration,
+    updateRootState
   }
 )
-export class AccountSetupPage extends React.PureComponent<
-  Props,
-  AccountInfoModel
-> {
-  public constructor(props: Props, state: AccountInfoModel) {
-    super(props);
-
-    this.state = {
-      fullName: props.fullName,
-      username: props.username,
-      emailAddress: props.emailAddress,
-      password: props.password,
-      passwordConfirm: props.passwordConfirm,
-      acceptTOS: props.acceptTOS,
-      acceptSupport: props.acceptSupport,
-      acceptTipsEmail: props.acceptTipsEmail
-    };
-  }
-
+export class AccountSetupPage extends React.PureComponent<Props> {
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
-    let value: boolean | string;
-    if (e.target.type === 'checkbox') {
-      value = e.target.checked;
-    } else {
-      value = e.target.value;
-    }
-    this.setState<never>({ [field]: value });
+    const { value } = e.target;
+
+    this.props.updateRootState({
+      registrationData: {
+        [field]: value
+      },
+      registrationFeedback: {
+        [field]: ''
+      }
+    });
+  };
+
+  private submitRegistration = () => {
+    this.props.submitRegistration(
+      {},
+      ROUTES.Registration.CONGRATS
+    );
   };
 
   render() {
@@ -113,29 +105,29 @@ export class AccountSetupPage extends React.PureComponent<
           </h2>
           <InputField
             fieldName="fullName"
-            value={this.state.fullName}
+            value={this.props.registrationData.fullName}
             onChange={this.onChange}
           />
           <InputField
             fieldName="username"
-            value={this.state.username}
+            value={this.props.registrationData.username}
             onChange={this.onChange}
           />
           <InputField
             fieldName="emailAddress"
-            value={this.state.emailAddress}
+            value={this.props.registrationData.emailAddress}
             onChange={this.onChange}
             type="email"
           />
           <InputField
             fieldName="password"
-            value={this.state.password}
+            value={this.props.registrationData.password}
             onChange={this.onChange}
             type="password"
           />
           <InputField
             fieldName="passwordConfirm"
-            value={this.state.passwordConfirm}
+            value={this.props.registrationData.passwordConfirm}
             onChange={this.onChange}
             type="password"
           />
@@ -143,7 +135,7 @@ export class AccountSetupPage extends React.PureComponent<
             <Form.Check.Input
               type="checkbox"
               name="acceptTOS"
-              checked={this.state.acceptTOS}
+              checked={this.props.registrationData.acceptTOS}
               onChange={this.onChange}
             />
             <Form.Check.Label>
@@ -158,7 +150,7 @@ export class AccountSetupPage extends React.PureComponent<
             <Form.Check.Input
               type="checkbox"
               name="acceptSupport"
-              checked={this.state.acceptSupport}
+              checked={this.props.registrationData.acceptSupport}
               onChange={this.onChange}
             />
             <Form.Check.Label>
@@ -169,7 +161,7 @@ export class AccountSetupPage extends React.PureComponent<
             <Form.Check.Input
               type="checkbox"
               name="acceptTipsEmail"
-              checked={this.state.acceptTipsEmail}
+              checked={this.props.registrationData.acceptTipsEmail}
               onChange={this.onChange}
             />
             <Form.Check.Label>
@@ -178,12 +170,12 @@ export class AccountSetupPage extends React.PureComponent<
           </Form.Check>
         </Form>
         <RegistrationNavButtons
-          loading={false}
-          disableNextButton
+          loading={this.props.loading}
+          disableNextButton={false}
           showBackButton
           showNextButton
           handleBackClick={() => {}}
-          handleNextClick={() => {}}
+          handleNextClick={this.submitRegistration}
         />
       </RegistrationPage>
     );

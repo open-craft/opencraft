@@ -4,60 +4,54 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
-import { submitRegistration, updateDomainInfoState } from '../../actions';
+import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
-import { getRegistrationData } from '../../selectors';
 import messages from './displayMessages';
 import './styles.scss';
+import { RegistrationStateModel } from 'registration/models'
 
 interface ActionProps {
-  submitRegistration: Function;
-  updateDomainInfoState: Function;
+  performValidation: Function;
+  updateRootState: Function;
 }
 
 interface Props extends ActionProps {}
-
-interface StateProps {
-  domain: string;
-  domainIsExternal: boolean;
-  domainError: string;
-  loading: boolean;
-}
+interface StateProps extends RegistrationStateModel {}
 
 interface Props extends StateProps, ActionProps {}
 
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    domain: getRegistrationData(state, 'domain'),
-    domainIsExternal: getRegistrationData(state, 'domainIsExternal'),
-    domainError: getRegistrationData(state, 'domainError'),
-    loading: getRegistrationData(state, 'loading')
+    loading: state.registration.loading,
+    registrationData: state.registration.registrationData,
+    registrationFeedback: state.registration.registrationFeedback
   }),
   {
-    submitRegistration,
-    updateDomainInfoState
+    performValidation,
+    updateRootState
   }
 )
 export class DomainInputPage extends React.PureComponent<Props> {
-  public constructor(props: Props) {
-    super(props);
-  }
-
   private handleDomainChange = (newDomain: string) => {
-    this.props.updateDomainInfoState({
-      domain: newDomain,
-      domainError: ''
+    this.props.updateRootState({
+      registrationData: {
+        domain: newDomain
+      },
+      registrationFeedback: {
+        domain: ''
+      }
     });
   };
 
   private submitDomain = () => {
-    this.props.submitRegistration(
-      { domain: this.props.domain },
+    this.props.performValidation(
+      { domain: this.props.registrationData.domain },
       ROUTES.Registration.INSTANCE
     );
   };
 
   public render() {
+    console.log(this.props)
     return (
       <div className="div-fill">
         <RegistrationPage
@@ -66,8 +60,8 @@ export class DomainInputPage extends React.PureComponent<Props> {
           currentStep={1}
         >
           <DomainInput
-            domainName={this.props.domain}
-            error={this.props.domainError}
+            domainName={this.props.registrationData.domain}
+            error={this.props.registrationFeedback.domain}
             internalDomain
             loading={this.props.loading}
             handleDomainChange={this.handleDomainChange}
