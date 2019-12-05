@@ -11,7 +11,7 @@ import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
-import { RegistrationStateModel } from 'registration/models'
+import { RegistrationStateModel } from 'registration/models';
 
 interface InputFieldProps {
   fieldName: string;
@@ -75,10 +75,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
   };
 
   private submitRegistration = () => {
-    this.props.submitRegistration(
-      {},
-      ROUTES.Registration.CONGRATS
-    );
+    this.props.submitRegistration({}, ROUTES.Registration.CONGRATS);
   };
 
   render() {

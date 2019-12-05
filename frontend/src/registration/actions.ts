@@ -2,7 +2,11 @@ import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { Types as UIActionTypes } from 'ui/actions';
-import { RegistrationModel, RegistrationStateModel, RegistrationFeedbackModel } from './models';
+import {
+  RegistrationModel,
+  RegistrationStateModel,
+  RegistrationFeedbackModel
+} from './models';
 
 export enum Types {
   // Support action to update root state

@@ -8,7 +8,7 @@ import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-import { RegistrationStateModel } from 'registration/models'
+import { RegistrationStateModel } from 'registration/models';
 
 interface ActionProps {
   performValidation: Function;
@@ -51,7 +51,7 @@ export class DomainInputPage extends React.PureComponent<Props> {
   };
 
   public render() {
-    console.log(this.props)
+    console.log(this.props);
     return (
       <div className="div-fill">
         <RegistrationPage

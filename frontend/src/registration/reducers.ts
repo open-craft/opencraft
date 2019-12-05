@@ -35,7 +35,7 @@ export function registrationReducer(
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
       return {
         ...state,
-        loading: true,
+        loading: true
       };
     case RegistrationActions.Types.REGISTRATION_FAILURE:
       return {
@@ -46,7 +46,7 @@ export function registrationReducer(
         }
       };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
-    console.log('registration ok')
+      console.log('registration ok');
       return {
         ...state,
         ...action.data,

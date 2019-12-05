@@ -10,7 +10,7 @@ import { performValidation, updateRootState } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-import { RegistrationStateModel } from 'registration/models'
+import { RegistrationStateModel } from 'registration/models';
 
 interface ActionProps {
   performValidation: Function;
@@ -42,7 +42,8 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
   };
 
   private submitInstanceData = () => {
-    this.props.performValidation({
+    this.props.performValidation(
+      {
         registrationData: {
           instanceName: this.props.registrationData.instanceName,
           publicContactEmail: this.props.registrationData.publicContactEmail
