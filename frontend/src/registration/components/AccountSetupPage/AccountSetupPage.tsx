@@ -78,12 +78,14 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             value={this.props.registrationData.fullName}
             onChange={this.onChange}
             messages={messages}
+            error={this.props.registrationFeedback.fullName}
           />
           <TextInputField
             fieldName="username"
             value={this.props.registrationData.username}
             onChange={this.onChange}
             messages={messages}
+            error={this.props.registrationFeedback.username}
           />
           <TextInputField
             fieldName="emailAddress"
@@ -91,6 +93,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             onChange={this.onChange}
             type="email"
             messages={messages}
+            error={this.props.registrationFeedback.emailAddress}
           />
           <TextInputField
             fieldName="password"
@@ -98,6 +101,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             onChange={this.onChange}
             type="password"
             messages={messages}
+            error={this.props.registrationFeedback.password}
           />
           <TextInputField
             fieldName="passwordConfirm"
@@ -105,6 +109,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             onChange={this.onChange}
             type="password"
             messages={messages}
+            error={this.props.registrationFeedback.passwordConfirm}
           />
           <Form.Check type="checkbox" id="acceptTOS" custom>
             <Form.Check.Input
@@ -121,6 +126,11 @@ export class AccountSetupPage extends React.PureComponent<Props> {
               />
             </Form.Check.Label>
           </Form.Check>
+          {this.props.registrationFeedback.acceptTOS && (
+            <div className="invalid-feedback-checkbox">
+              {this.props.registrationFeedback.acceptTOS}
+            </div>
+          )}
           <Form.Check type="checkbox" id="acceptSupport" custom>
             <Form.Check.Input
               type="checkbox"
@@ -132,6 +142,11 @@ export class AccountSetupPage extends React.PureComponent<Props> {
               <WrappedMessage id="acceptSupport" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
+          {this.props.registrationFeedback.acceptSupport && (
+            <div className="invalid-feedback-checkbox">
+              {this.props.registrationFeedback.acceptSupport}
+            </div>
+          )}
           <Form.Check type="checkbox" id="acceptTipsEmail" custom>
             <Form.Check.Input
               type="checkbox"
@@ -143,6 +158,11 @@ export class AccountSetupPage extends React.PureComponent<Props> {
               <WrappedMessage id="acceptTipsEmail" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
+          {this.props.registrationFeedback.acceptTipsEmail && (
+            <div className="invalid-feedback-checkbox">
+              {this.props.registrationFeedback.acceptTipsEmail}
+            </div>
+          )}
         </Form>
         <RegistrationNavButtons
           loading={this.props.loading}

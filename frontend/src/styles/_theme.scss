@@ -30,10 +30,17 @@ $enable-rounded: false;
   }
   p {
     padding-top: 4px;
+    margin-bottom: 4px;
     font-family: $chivo-font;
     font-size: 12px;
     letter-spacing: 0.72px;
     color: $secondary-1;
+  }
+  .invalid-feedback {
+    font-family: $chivo-font;
+    font-size: 12px;
+    letter-spacing: 0.72px;
+    color: red;
   }
 }
 

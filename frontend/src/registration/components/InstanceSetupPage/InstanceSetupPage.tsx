@@ -82,6 +82,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
             value={this.props.registrationData.instanceName}
             onChange={this.onChange}
             messages={messages}
+            error={this.props.registrationFeedback.instanceName}
           />
           <TextInputField
             fieldName="publicContactEmail"
@@ -89,6 +90,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
             onChange={this.onChange}
             messages={messages}
             type="email"
+            error={this.props.registrationFeedback.publicContactEmail}
           />
         </Form>
         <RegistrationNavButtons

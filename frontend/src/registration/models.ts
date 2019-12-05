@@ -67,14 +67,12 @@ export const blankRegistration: Readonly<RegistrationModel> = {
 };
 
 export interface DomainInfoValidationModel {
-  domain: string;
+  [key: string]: string;
 }
 
 export interface RegistrationFeedbackModel extends DomainInfoValidationModel {}
 
-export const blankRegistrationFeedbackModel: Readonly<RegistrationFeedbackModel> = {
-  domain: ''
-};
+export const blankRegistrationFeedbackModel: Readonly<RegistrationFeedbackModel> = {};
 
 export interface RegistrationStateModel {
   loading: boolean;
