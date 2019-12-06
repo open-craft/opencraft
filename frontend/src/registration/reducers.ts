@@ -8,17 +8,13 @@ export function registrationReducer(
   action: RegistrationActions.ActionTypes
 ): RegistrationStateModel {
   switch (action.type) {
-    case RegistrationActions.Types.ROOT_STATE_UPDATE:
+    case RegistrationActions.Types.CLEAR_ERROR_MESSAGE:
       // Merge state without erasing previous values
       return {
-        loading: state.loading,
-        registrationData: {
-          ...state.registrationData,
-          ...action.data.registrationData
-        },
+        ...state,
         registrationFeedback: {
           ...state.registrationFeedback,
-          ...action.data.registrationFeedback
+          ...action.data
         }
       };
     case RegistrationActions.Types.REGISTRATION_VALIDATION:
@@ -33,7 +29,7 @@ export function registrationReducer(
         loading: false,
         registrationData: {
           ...state.registrationData,
-          ...action.data.registrationData
+          ...action.data
         }
       };
     case RegistrationActions.Types.REGISTRATION_VALIDATION_FAILURE:
@@ -54,9 +50,14 @@ export function registrationReducer(
         registrationFeedback: { ...action.error }
       };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
+      // Merge state without erasing previous values
       return {
         ...state,
-        loading: false
+        loading: false,
+        registrationData: {
+          ...state.registrationData,
+          ...action.data
+        }
       };
     default:
       return state;

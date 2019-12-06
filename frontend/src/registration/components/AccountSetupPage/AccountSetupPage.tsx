@@ -7,18 +7,29 @@ import { RegistrationNavButtons } from 'registration/components';
 import { TextInputField } from 'ui/components';
 import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
-import { updateRootState, submitRegistration } from '../../actions';
+import { clearErrorMessage, submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
 interface ActionProps {
   submitRegistration: Function;
-  updateRootState: Function;
+  clearErrorMessage: Function;
+}
+
+interface State {
+  [key: string]: string | boolean;
+  fullName: string;
+  username: string;
+  emailAddress: string;
+  password: string;
+  passwordConfirm: string;
+  acceptTOS: boolean;
+  acceptSupport: boolean;
+  acceptTipsEmail: boolean;
 }
 
 interface StateProps extends RegistrationStateModel {}
-
 interface Props extends StateProps, ActionProps {}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
@@ -29,29 +40,65 @@ interface Props extends StateProps, ActionProps {}
   }),
   {
     submitRegistration,
-    updateRootState
+    clearErrorMessage
   }
 )
-export class AccountSetupPage extends React.PureComponent<Props> {
+export class AccountSetupPage extends React.PureComponent<Props, State> {
+  constructor(props: Props, state: State){
+    super(props);
+
+    this.state = {
+      fullName: this.props.registrationData.fullName,
+      username: this.props.registrationData.username,
+      emailAddress: this.props.registrationData.emailAddress,
+      password: this.props.registrationData.password,
+      passwordConfirm: this.props.registrationData.passwordConfirm,
+      acceptTOS: this.props.registrationData.acceptTOS,
+      acceptSupport: this.props.registrationData.acceptSupport,
+      acceptTipsEmail: this.props.registrationData.acceptTipsEmail
+    }
+  }
+
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
-    const { value } = e.target;
+    let value: boolean | string;
 
-    this.props.updateRootState({
-      registrationData: {
-        [field]: value
-      },
-      registrationFeedback: {
-        [field]: ''
-      }
+    if (e.target.type === "checkbox"){
+      value = e.target.checked;
+    } else {
+      value = e.target.value
+    }
+
+    this.setState({
+      [field]: value
     });
+
+    // Clear error message when the user changes field
+    if (this.props.registrationFeedback[field]) {
+      this.props.clearErrorMessage({
+        [field]: ''
+      });
+    };
   };
 
   private submitRegistration = () => {
-    this.props.submitRegistration({}, ROUTES.Registration.CONGRATS);
+    this.props.submitRegistration(
+      {
+        fullName: this.state.fullName,
+        username: this.state.username,
+        emailAddress: this.state.emailAddress,
+        password: this.state.password,
+        passwordConfirm: this.state.passwordConfirm,
+        acceptTOS: this.state.acceptTOS,
+        acceptSupport: this.state.acceptSupport,
+        acceptTipsEmail: this.state.acceptTipsEmail
+      },
+      ROUTES.Registration.CONGRATS
+    );
   };
 
   render() {
+    console.log(this.props.registrationData)
     const checkboxLinks = {
       tos: (
         <a href={PRIVACY_POLICY_LINK}>
@@ -75,21 +122,21 @@ export class AccountSetupPage extends React.PureComponent<Props> {
           </h2>
           <TextInputField
             fieldName="fullName"
-            value={this.props.registrationData.fullName}
+            value={this.state.fullName}
             onChange={this.onChange}
             messages={messages}
             error={this.props.registrationFeedback.fullName}
           />
           <TextInputField
             fieldName="username"
-            value={this.props.registrationData.username}
+            value={this.state.username}
             onChange={this.onChange}
             messages={messages}
             error={this.props.registrationFeedback.username}
           />
           <TextInputField
             fieldName="emailAddress"
-            value={this.props.registrationData.emailAddress}
+            value={this.state.emailAddress}
             onChange={this.onChange}
             type="email"
             messages={messages}
@@ -97,7 +144,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
           />
           <TextInputField
             fieldName="password"
-            value={this.props.registrationData.password}
+            value={this.state.password}
             onChange={this.onChange}
             type="password"
             messages={messages}
@@ -105,7 +152,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
           />
           <TextInputField
             fieldName="passwordConfirm"
-            value={this.props.registrationData.passwordConfirm}
+            value={this.state.passwordConfirm}
             onChange={this.onChange}
             type="password"
             messages={messages}
@@ -115,7 +162,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             <Form.Check.Input
               type="checkbox"
               name="acceptTOS"
-              checked={this.props.registrationData.acceptTOS}
+              checked={this.state.acceptTOS}
               onChange={this.onChange}
             />
             <Form.Check.Label>
@@ -135,7 +182,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             <Form.Check.Input
               type="checkbox"
               name="acceptSupport"
-              checked={this.props.registrationData.acceptSupport}
+              checked={this.state.acceptSupport}
               onChange={this.onChange}
             />
             <Form.Check.Label>
@@ -151,7 +198,7 @@ export class AccountSetupPage extends React.PureComponent<Props> {
             <Form.Check.Input
               type="checkbox"
               name="acceptTipsEmail"
-              checked={this.props.registrationData.acceptTipsEmail}
+              checked={this.state.acceptTipsEmail}
               onChange={this.onChange}
             />
             <Form.Check.Label>

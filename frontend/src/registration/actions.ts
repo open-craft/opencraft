@@ -9,8 +9,8 @@ import {
 } from './models';
 
 export enum Types {
-  // Support action to update root state
-  ROOT_STATE_UPDATE = 'ROOT_STATE_UPDATE',
+  // Support action to update root state and clean error messages when users change fields
+  CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
   // Data validation actions
   REGISTRATION_VALIDATION = 'REGISTRATION_VALIDATION',
   REGISTRATION_VALIDATION_SUCCESS = 'REGISTRATION_VALIDATION_SUCCESS',
@@ -21,9 +21,9 @@ export enum Types {
   REGISTRATION_FAILURE = 'REGISTRATION_FAILURE'
 }
 
-export interface RootStateUpdate extends Action {
-  readonly type: Types.ROOT_STATE_UPDATE;
-  readonly data: RegistrationStateModel;
+export interface FeedbackMessageChange extends Action {
+  readonly type: Types.CLEAR_ERROR_MESSAGE;
+  readonly data: RegistrationFeedbackModel;
 }
 
 export interface RegistrationValidation extends Action {
@@ -32,7 +32,7 @@ export interface RegistrationValidation extends Action {
 
 export interface RegistrationValidationSuccess extends Action {
   readonly type: Types.REGISTRATION_VALIDATION_SUCCESS;
-  readonly data: RegistrationStateModel;
+  readonly data: RegistrationModel;
 }
 
 export interface RegistrationValidationFailure extends Action {
@@ -55,7 +55,7 @@ export interface RegistrationFailure extends Action {
 }
 
 export type ActionTypes =
-  | RootStateUpdate
+  | FeedbackMessageChange
   | RegistrationValidation
   | RegistrationValidationSuccess
   | RegistrationValidationFailure
@@ -63,13 +63,45 @@ export type ActionTypes =
   | RegistrationSuccess
   | RegistrationFailure;
 
-export const updateRootState = (
-  data: RegistrationStateModel
+export const clearErrorMessage = (
+  data: RegistrationFeedbackModel
 ): OcimThunkAction<void> => async dispatch => {
-  dispatch({ type: Types.ROOT_STATE_UPDATE, data });
+  dispatch({ type: Types.CLEAR_ERROR_MESSAGE, data });
 };
 
 export const performValidation = (
+  data: RegistrationModel,
+  nextStep?: string
+): OcimThunkAction<void> => async dispatch => {
+  // Placeholder for form validation method
+  dispatch({
+    type: Types.REGISTRATION_VALIDATION,
+    data
+  });
+  setTimeout(() => {
+    try {
+      // TODO
+      if (data.domain === 'existing') {
+        throw Error('Test error');
+      }
+      dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });
+      if (nextStep) {
+        dispatch(push(nextStep));
+      }
+      dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
+    } catch (e) {
+      const error = {
+        domain: 'Domain already exists!'
+      };
+      dispatch({
+        type: Types.REGISTRATION_VALIDATION_FAILURE,
+        error
+      });
+    }
+  }, 800);
+};
+
+export const performValidationAndStore = (
   data: RegistrationModel,
   nextStep?: string
 ): OcimThunkAction<void> => async dispatch => {

@@ -7,14 +7,20 @@ import { DomainSuccessJumbotron, TextInputField } from 'ui/components';
 import { RegistrationNavButtons } from 'registration/components';
 import { ROUTES } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
-import { performValidation, updateRootState } from '../../actions';
+import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
 interface ActionProps {
-  performValidation: Function;
-  updateRootState: Function;
+  performValidationAndStore: Function;
+  clearErrorMessage: Function;
+}
+
+interface State {
+  [key: string]: string;
+  instanceName: string;
+  publicContactEmail: string;
 }
 
 interface StateProps extends RegistrationStateModel {}
@@ -31,32 +37,41 @@ interface Props extends StateProps, ActionProps {}
     }
   }),
   {
-    performValidation,
-    updateRootState
+    performValidationAndStore,
+    clearErrorMessage
   }
 )
-export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
+export class InstanceSetupPage extends React.PureComponent<Props, State> {
+  constructor(props: Props, state: State){
+    super(props);
+
+    this.state = {
+      instanceName: props.registrationData.instanceName,
+      publicContactEmail: props.registrationData.publicContactEmail,
+    }
+  }
+
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     const { value } = e.target;
 
-    this.props.updateRootState({
-      registrationData: {
-        [field]: value
-      },
-      registrationFeedback: {
+    this.setState({
+      [field]: value
+    })
+
+    // Clear error message when the user changes field
+    if (this.props.registrationFeedback[field]) {
+      this.props.clearErrorMessage({
         [field]: ''
-      }
-    });
+      });
+    };
   };
 
   private submitInstanceData = () => {
-    this.props.performValidation(
+    this.props.performValidationAndStore(
       {
-        registrationData: {
-          instanceName: this.props.registrationData.instanceName,
-          publicContactEmail: this.props.registrationData.publicContactEmail
-        }
+        instanceName: this.state.instanceName,
+        publicContactEmail: this.state.publicContactEmail
       },
       ROUTES.Registration.ACCOUNT
     );
@@ -79,14 +94,14 @@ export class InstanceSetupPage extends React.PureComponent<Props, StateProps> {
 
           <TextInputField
             fieldName="instanceName"
-            value={this.props.registrationData.instanceName}
+            value={this.state.instanceName}
             onChange={this.onChange}
             messages={messages}
             error={this.props.registrationFeedback.instanceName}
           />
           <TextInputField
             fieldName="publicContactEmail"
-            value={this.props.registrationData.publicContactEmail}
+            value={this.state.publicContactEmail}
             onChange={this.onChange}
             messages={messages}
             type="email"
