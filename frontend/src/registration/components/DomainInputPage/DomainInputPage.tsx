@@ -36,19 +36,20 @@ interface Props extends StateProps, ActionProps {}
   }
 )
 export class DomainInputPage extends React.PureComponent<Props, State> {
-  constructor (props: Props, state: State) {
+  constructor(props: Props, state: State) {
     super(props);
 
     this.state = {
       domain: props.registrationData.domain
-    }
+    };
   }
+
   private handleDomainChange = (newDomain: string) => {
     this.setState({
       domain: newDomain
-    })
+    });
     // Clean up error feedback if any
-    if (this.props.registrationFeedback.domain){
+    if (this.props.registrationFeedback.domain) {
       this.props.clearErrorMessage({
         domain: ''
       });

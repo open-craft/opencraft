@@ -42,13 +42,13 @@ interface Props extends StateProps, ActionProps {}
   }
 )
 export class InstanceSetupPage extends React.PureComponent<Props, State> {
-  constructor(props: Props, state: State){
+  constructor(props: Props, state: State) {
     super(props);
 
     this.state = {
       instanceName: props.registrationData.instanceName,
-      publicContactEmail: props.registrationData.publicContactEmail,
-    }
+      publicContactEmail: props.registrationData.publicContactEmail
+    };
   }
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,14 +57,14 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
 
     this.setState({
       [field]: value
-    })
+    });
 
     // Clear error message when the user changes field
     if (this.props.registrationFeedback[field]) {
       this.props.clearErrorMessage({
         [field]: ''
       });
-    };
+    }
   };
 
   private submitInstanceData = () => {

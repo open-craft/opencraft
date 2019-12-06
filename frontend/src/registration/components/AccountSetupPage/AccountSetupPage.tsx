@@ -44,7 +44,7 @@ interface Props extends StateProps, ActionProps {}
   }
 )
 export class AccountSetupPage extends React.PureComponent<Props, State> {
-  constructor(props: Props, state: State){
+  constructor(props: Props, state: State) {
     super(props);
 
     this.state = {
@@ -56,17 +56,17 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       acceptTOS: this.props.registrationData.acceptTOS,
       acceptSupport: this.props.registrationData.acceptSupport,
       acceptTipsEmail: this.props.registrationData.acceptTipsEmail
-    }
+    };
   }
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     let value: boolean | string;
 
-    if (e.target.type === "checkbox"){
+    if (e.target.type === 'checkbox') {
       value = e.target.checked;
     } else {
-      value = e.target.value
+      value = e.target.value;
     }
 
     this.setState({
@@ -78,7 +78,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       this.props.clearErrorMessage({
         [field]: ''
       });
-    };
+    }
   };
 
   private submitRegistration = () => {
@@ -98,7 +98,6 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
   };
 
   render() {
-    console.log(this.props.registrationData)
     const checkboxLinks = {
       tos: (
         <a href={PRIVACY_POLICY_LINK}>
