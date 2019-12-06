@@ -24,11 +24,11 @@ URL Patterns for api app
 
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView
-from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
 from api.router import v1_router, v2_router
+from opencraft.swagger import api_info
 
 # URL Patterns ################################################################
 
@@ -36,11 +36,7 @@ app_name = 'api'
 
 # pylint: disable=invalid-name
 schema_view = get_schema_view(
-    openapi.Info(
-        title="OpenCraft Instance Manager",
-        default_version="v1",
-        description="API for OpenCraft Instance Manager",
-    ),
+    info=api_info,
     public=True,
     permission_classes=(AllowAny,),
 )

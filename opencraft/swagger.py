@@ -19,7 +19,7 @@
 """
 Swagger tools for OCIM.
 """
-from typing import Optional, Callable, List
+from typing import Callable, List, Optional
 
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
@@ -131,3 +131,10 @@ def viewset_swagger_helper(
         return viewset
 
     return inner
+
+
+api_info = openapi.Info(
+    title="OpenCraft Instance Manager",
+    default_version="v1",
+    description="API for OpenCraft Instance Manager",
+)
