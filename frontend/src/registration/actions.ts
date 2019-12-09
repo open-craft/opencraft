@@ -63,12 +63,14 @@ export type ActionTypes =
   | RegistrationSuccess
   | RegistrationFailure;
 
-export const clearErrorMessage = (field: keyof RegistrationStateModel) => async (dispatch: any) => {
+export const clearErrorMessage = (
+  field: keyof RegistrationStateModel
+) => async (dispatch: any) => {
   dispatch({
     type: Types.CLEAR_ERROR_MESSAGE,
-    field: field
+    field
   });
-}
+};
 
 export const performValidation = (
   data: RegistrationModel,
