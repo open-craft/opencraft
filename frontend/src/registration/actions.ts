@@ -23,7 +23,7 @@ export enum Types {
 
 export interface FeedbackMessageChange extends Action {
   readonly type: Types.CLEAR_ERROR_MESSAGE;
-  readonly data: RegistrationFeedbackModel;
+  readonly field: keyof RegistrationStateModel;
 }
 
 export interface RegistrationValidation extends Action {
@@ -63,11 +63,12 @@ export type ActionTypes =
   | RegistrationSuccess
   | RegistrationFailure;
 
-export const clearErrorMessage = (
-  data: RegistrationFeedbackModel
-): OcimThunkAction<void> => async dispatch => {
-  dispatch({ type: Types.CLEAR_ERROR_MESSAGE, data });
-};
+export const clearErrorMessage = (field: keyof RegistrationStateModel) => async (dispatch: any) => {
+  dispatch({
+    type: Types.CLEAR_ERROR_MESSAGE,
+    field: field
+  });
+}
 
 export const performValidation = (
   data: RegistrationModel,

@@ -61,9 +61,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
 
     // Clear error message when the user changes field
     if (this.props.registrationFeedback[field]) {
-      this.props.clearErrorMessage({
-        [field]: ''
-      });
+      this.props.clearErrorMessage(field);
     }
   };
 

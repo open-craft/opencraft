@@ -50,9 +50,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     });
     // Clean up error feedback if any
     if (this.props.registrationFeedback.domain) {
-      this.props.clearErrorMessage({
-        domain: ''
-      });
+      this.props.clearErrorMessage('domain');
     }
   };
 

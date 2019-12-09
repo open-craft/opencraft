@@ -1,4 +1,5 @@
 import * as RegistrationActions from './actions';
+import update from 'immutability-helper';
 import { blankRegistrationState, RegistrationStateModel } from './models';
 
 export const initialState: Readonly<RegistrationStateModel> = blankRegistrationState;
@@ -10,18 +11,11 @@ export function registrationReducer(
   switch (action.type) {
     case RegistrationActions.Types.CLEAR_ERROR_MESSAGE:
       // Merge state without erasing previous values
-      return {
-        ...state,
-        registrationFeedback: {
-          ...state.registrationFeedback,
-          ...action.data
-        }
-      };
+      return update(state, {
+        registrationFeedback: {[action.field]: {$set: ''}},
+      });
     case RegistrationActions.Types.REGISTRATION_VALIDATION:
-      return {
-        ...state,
-        loading: true
-      };
+      return update(state, { loading: { $set: true } });
     case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS:
       // Merge state without erasing previous values
       return {
