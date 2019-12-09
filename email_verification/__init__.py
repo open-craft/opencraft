@@ -23,10 +23,9 @@ Email verification
 # Imports #####################################################################
 
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import get_template
 from django.urls import reverse
 
+from opencraft.utils import get_site_url, html_email_helper
 
 # Settings ####################################################################
 
@@ -35,27 +34,22 @@ EMAIL_VERIFICATION_SENDER = getattr(settings, 'EMAIL_VERIFICATION_SENDER',
 EMAIL_VERIFICATION_SUBJECT = getattr(settings, 'EMAIL_VERIFICATION_SUBJECT',
                                      'Please verify this email address')
 EMAIL_VERIFICATION_TEMPLATE = getattr(settings, 'EMAIL_VERIFICATION_TEMPLATE',
-                                      'email_verification/email.txt')
+                                      'emails/verify_email')
 
 
 # Functions ###################################################################
 
-def send_email_verification(email, request):
+def send_email_verification(email: str):
     """
     Verify the given `EmailAddress`.
     """
     verification_url = reverse('email-verification:verify', kwargs={
         'code': email.key,
     })
-    template = get_template(EMAIL_VERIFICATION_TEMPLATE)
-    message = template.render({
-        'email': email,
-        'verification_url': request.build_absolute_uri(verification_url),
-        'signature': settings.BETATEST_EMAIL_SIGNATURE,
-    }, request)
-    send_mail(
+    html_email_helper(
+        template_base_name=EMAIL_VERIFICATION_TEMPLATE,
+        context={'verification_url': get_site_url(verification_url)},
         subject=EMAIL_VERIFICATION_SUBJECT,
-        message=message,
-        from_email=EMAIL_VERIFICATION_SENDER,
         recipient_list=(email.email,),
+        from_email=EMAIL_VERIFICATION_SENDER,
     )

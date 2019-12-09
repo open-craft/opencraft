@@ -1,0 +1,78 @@
+{% extends "emails/email_base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>Hello {{ user_name }},</h1>
+    <p>
+        Thank you very much for registering for a free 30-day trial
+        of our "Pro & Teacher" hosting plan for Open edX.
+    </p>
+    <p>
+        Your Open edX instance is now ready. Let’s get started!
+    </p>
+    <table class="welcome">
+        <tr class="icons">
+            <td>
+                <img src="{{ base_url }}{% static 'img/png/email-icon-lms.png' %}" alt="Link to LMS">
+            </td>
+            <td>
+                <img src="{{ base_url }}{% static 'img/png/email-icon-studio.png' %}" alt="Link to Studio">
+            </td>
+            <td>
+                <img src="{{ base_url }}{% static 'img/png/email-icon-customise.png' %}"
+                     alt="Link to instance customisation">
+            </td>
+        </tr>
+        <tr class="text">
+            <td>
+                Login as a student to see what your instance would look like.
+            </td>
+            <td>
+                Login as an educator and start creating courses.
+            </td>
+            <td>
+                Customise your instance to align with your institutions's look and feel.
+            </td>
+        </tr>
+        <tr class="buttons">
+            <td>
+                <a href="{{ lms_link }}">
+                    LMS
+                </a>
+            </td>
+            <td>
+                <a href="{{ studio_link }}">
+                    Studio
+                </a>
+            </td>
+            <td>
+                <a href="{{ customise_link }}">
+                    Customise
+                </a>
+            </td>
+        </tr>
+    </table>
+    <div class="block">
+        <h2>Open edX documentation</h2>
+        <p>
+            All product documentation for Open edX can be found at
+            <a href="https://docs.edx.org/.">
+                https://docs.edx.org/
+            </a>.
+        </p>
+    </div>
+
+    <div class="block">
+        <h2>Upgrade to institutional</h2>
+        <p>
+            The "Pro & Teacher" paid hosting plan offers you a stable and powerful dedicated Open edX instance. If you
+            would like to customize your site, or have access to great features like more data storage, guaranteed
+            availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask us
+            about our institutional offering.
+        </p>
+        <p>
+            Your questions are most welcome.
+        </p>
+    </div>
+    {% include "emails/_email_signature.html" %}
+{% endblock %}

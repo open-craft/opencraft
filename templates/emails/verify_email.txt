@@ -7,5 +7,3 @@ on the following link, or paste it in your browser's address bar and navigate to
 
 And if you need anything, or have any questions or remarks, don't hesitate to reply to this
 email.
-
-{{ signature }}

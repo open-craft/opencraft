@@ -1,0 +1,261 @@
+/*
+Common CSS for emails
+ */
+body {
+    background-color: #1e4c59;
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    margin: 0;
+}
+
+h1 {
+    margin: 0;
+}
+
+.main {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+img.header {
+    max-width: 600px;
+    width: 100%;
+    display: block;
+}
+
+img.opencraft-logo {
+    margin: 32px 0;
+    width: 120px;
+    height: 57px;
+}
+
+.content {
+    background-color: white;
+    padding: 32px;
+    color: #0f1f24;
+}
+
+.addendum {
+    color: white;
+    font: 18px Chivo, sans-serif;
+    letter-spacing: 1px;
+    padding: 32px;
+    background-color: #6d9cae;
+}
+
+.addendum p {
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.footer {
+    font: 16px Chivo, sans-serif;
+    color: white;
+    padding: 32px 0;
+}
+
+.footer a {
+    color: white;
+    line-height: 1.31;
+}
+
+/*
+CSS for verification email
+*/
+
+.content h1 {
+    font: 24px 'Times New Roman', serif;
+    font-weight: bold;
+}
+
+.content p {
+    font: 16px Arial, sans-serif;
+    line-height: 1.38;
+    max-width: 340px;
+    margin: 16px auto;
+    color: #0f1f24;
+}
+
+.content a.verify-link {
+    display: block;
+    background-color: #1e4c59;
+    border: 1px #1e4c59 solid;
+    color: white;
+    text-transform: uppercase;
+    font: 12px Chivo, sans-serif;;
+    text-decoration: none;
+    letter-spacing: 2px;
+    width: 220px;
+    margin: 20px auto;
+    padding: 14px 16px;
+}
+
+.content small {
+    font: 12px Arial, sans-serif;
+    color: #1e4c59;
+}
+
+
+/*
+CSS for welcome email
+*/
+
+table.welcome {
+    /*border-collapse: collapse;*/
+    border-spacing: 16px 0;
+    min-height: 275px;
+    height: 275px;
+    /*margin: 0 16px 0 -16px;*/
+    margin-left: -16px;
+}
+
+table.welcome td {
+    /*border: thin solid red;*/
+    color: white;
+    background-color: #6d9cae;
+    max-width: 136px;
+    width: 33.33%;
+    font: 14px Arial, sans-serif;
+    padding: 0 16px;
+    line-height: 18px;
+    vertical-align: top;
+}
+
+table.welcome td a {
+    display: block;
+    width: 136px;
+    border: solid 1px white;
+    padding: 12px 0;
+    text-transform: uppercase;
+    color: white;
+    text-decoration: none;
+}
+
+.block {
+    color: #0f1f24;
+    background-color: #e2ebef;
+    text-align: left;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.block h2 {
+    margin: 0;
+    font: 20px bold Times, serif;
+}
+
+.block p {
+    margin: 8px 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    font: 16px Arial, sans-serif;
+    line-height: 1.38;
+}
+
+/*
+CSS for common signoff block
+ */
+.signoff {
+    text-align: left;
+    margin: 16px 0;
+}
+
+.signoff p {
+    margin: 0;
+    padding: 0;
+    font: 16px Arial, sans-serif;
+    line-height: 1.38;
+    color: #0f1f24;
+}
+
+.signature span.title {
+    display: block;
+    font: 12px bold Arial, sans-serif;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    color: #0f1f24;
+}
+
+.signature span.name {
+    font: 12px Arial, sans-serif;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    color: #0f1f24;
+}
+
+
+/*
+CSS for account info email
+ */
+
+table.almost-ready {
+    border-collapse: collapse;
+    background-color: #d5e2e7;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 32px;
+}
+
+table.almost-ready td.icon img {
+    padding: 16px;
+}
+
+table.almost-ready td.message {
+    padding: 16px 0;
+}
+
+table.almost-ready td.message strong {
+    font: 20px bold Times, serif;
+    letter-spacing: 0.2px;
+}
+
+table.almost-ready td.message p {
+    font: 16px Chivo, serif;
+    margin: 0;
+    letter-spacing: 1px;
+    max-width: 100%;
+}
+
+.thank-you p {
+    font: 16px Chivo, sans-serif;
+    letter-spacing: 1px;
+    max-width: 100%;
+}
+
+h2 {
+    font: 20px 'Times New Roman', serif;
+    font-weight: bold;
+    text-align: left;
+    margin: 32px 0 6px 0;
+}
+
+table.details {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.details tr td {
+    border-spacing: 0;
+    border: 1px solid #c4c4c4;
+    text-align: left;
+    width: 50%;
+    padding: 8px;
+    font: 16px Arial, sans-serif;
+    letter-spacing: 0.16px;
+    color: #0f1f24;
+}
+
+span.swatch {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 1em;
+    height: 1em;
+    border: 2px solid #ccc;
+    margin: -2px;
+}
+
