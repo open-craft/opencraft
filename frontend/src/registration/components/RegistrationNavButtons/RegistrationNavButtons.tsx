@@ -39,7 +39,7 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
         {props.loading === true && (
           <Spinner animation="border" size="sm" className="spinner" />
         )}
-        <WrappedMessage messages={messages} id="Next" />
+        <WrappedMessage messages={messages} id="next" />
       </Button>
     </div>
   );

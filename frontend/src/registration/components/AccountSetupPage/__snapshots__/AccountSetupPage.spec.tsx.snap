@@ -275,7 +275,7 @@ exports[`renders without crashing 1`] = `
           onClick={[Function]}
           type="button"
         >
-          back
+          Back
         </button>
         <button
           className="float-right loading btn btn-primary btn-lg"

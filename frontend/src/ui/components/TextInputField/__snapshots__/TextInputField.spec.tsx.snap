@@ -22,7 +22,7 @@ exports[`renders without crashing 1`] = `
     test
   </div>
   <p>
-    testHelp
+    A translatable string.
   </p>
 </div>
 `;

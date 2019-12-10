@@ -6,6 +6,10 @@ const messages = {
   test: {
     defaultMessage: 'A translatable string.',
     description: 'A description of the translatable string.'
+  },
+  testHelp: {
+    defaultMessage: 'A translatable string.',
+    description: 'A description of the translatable string.'
   }
 };
 

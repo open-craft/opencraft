@@ -1,7 +1,11 @@
 const messages = {
-  messageID: {
-    defaultMessage: 'A translatable string.',
-    description: 'A description of the translatable string.'
+  back: {
+    defaultMessage: 'Back',
+    description: 'Text that goes in the back button in the registration form.'
+  },
+  next: {
+    defaultMessage: 'Next',
+    description: 'Text that goes in the next button in the registration form.'
   }
 };
 
