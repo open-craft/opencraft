@@ -1,19 +1,58 @@
+import update from 'immutability-helper';
 import * as RegistrationActions from './actions';
-import { blankRegistration, RegistrationModel } from './models';
+import { blankRegistrationState, RegistrationStateModel } from './models';
 
-export const initialState: Readonly<RegistrationModel> = blankRegistration;
+export const initialState: Readonly<RegistrationStateModel> = blankRegistrationState;
 
 export function registrationReducer(
   state = initialState,
   action: RegistrationActions.ActionTypes
-): RegistrationModel {
+): RegistrationStateModel {
   switch (action.type) {
+    case RegistrationActions.Types.CLEAR_ERROR_MESSAGE:
+      // Merge state without erasing previous values
+      return update(state, {
+        registrationFeedback: { [action.field]: { $set: '' } }
+      });
+    case RegistrationActions.Types.REGISTRATION_VALIDATION:
+      return update(state, { loading: { $set: true } });
+    case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS:
+      // Merge state without erasing previous values
+      return {
+        ...state,
+        loading: false,
+        registrationData: {
+          ...state.registrationData,
+          ...action.data
+        }
+      };
+    case RegistrationActions.Types.REGISTRATION_VALIDATION_FAILURE:
+      return {
+        ...state,
+        registrationFeedback: { ...action.error },
+        loading: false
+      };
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
-      return state;
+      return {
+        ...state,
+        loading: true
+      };
     case RegistrationActions.Types.REGISTRATION_FAILURE:
-      return state;
+      return {
+        ...state,
+        loading: false,
+        registrationFeedback: { ...action.error }
+      };
     case RegistrationActions.Types.REGISTRATION_SUCCESS:
-      return { ...state, ...action.data };
+      // Merge state without erasing previous values
+      return {
+        ...state,
+        loading: false,
+        registrationData: {
+          ...state.registrationData,
+          ...action.data
+        }
+      };
     default:
       return state;
   }

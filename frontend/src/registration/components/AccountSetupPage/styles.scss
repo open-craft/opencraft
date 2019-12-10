@@ -1,0 +1,27 @@
+@import '~styles/theme';
+
+.account-form {
+  width: 100%;
+
+  h2 {
+    font-family: PlayfairDisplay;
+    font-size: 30px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: 1.8px;
+    color: #1e4c59;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}
+
+.invalid-feedback-checkbox {
+  font-family: $chivo-font;
+  font-size: 12px;
+  letter-spacing: 0.72px;
+  color: red;
+}

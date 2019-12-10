@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    A translatable string.
+  </label>
+  <input
+    className="form-control is-invalid"
+    name="test"
+    onChange={[Function]}
+    type="password"
+    value="test"
+  />
+  <div
+    className="invalid-feedback"
+  >
+    test
+  </div>
+  <p>
+    A translatable string.
+  </p>
+</div>
+`;

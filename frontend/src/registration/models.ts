@@ -9,19 +9,19 @@ export interface DomainInfoModel {
 }
 
 export interface InstanceInfoModel {
-  instanceName: null | string;
-  publicEmail: null | string;
+  instanceName: string;
+  publicContactEmail: string;
 }
 
 export interface AccountInfoModel {
-  fullName: null | string;
-  username: null | string;
-  emailAddress: null | string;
-  password: null | string;
-  passwordConfirm: null | string;
-  acceptTOS: null | boolean;
-  acceptSupport: null | boolean;
-  acceptTipsEmail: null | boolean;
+  fullName: string;
+  username: string;
+  emailAddress: string;
+  password: string;
+  passwordConfirm: string;
+  acceptTOS: boolean;
+  acceptSupport: boolean;
+  acceptTipsEmail: boolean;
 }
 
 export interface ThemeInfoModel {
@@ -49,19 +49,39 @@ export interface RegistrationModel
 export type RegistrationFields = keyof RegistrationModel;
 
 export const blankRegistration: Readonly<RegistrationModel> = {
-  acceptSupport: null,
-  acceptTOS: null,
-  acceptTipsEmail: null,
+  acceptSupport: false,
+  acceptTOS: false,
+  acceptTipsEmail: false,
   cover: null,
   domain: '',
   domainIsExternal: false,
-  emailAddress: null,
-  fullName: null,
-  instanceName: null,
+  emailAddress: '',
+  fullName: '',
+  instanceName: '',
   logo: null,
-  password: null,
-  passwordConfirm: null,
-  publicEmail: null,
-  username: null,
+  password: '',
+  passwordConfirm: '',
+  publicContactEmail: '',
+  username: '',
   ...DefaultTheme
+};
+
+export interface DomainInfoValidationModel {
+  [key: string]: string;
+}
+
+export interface RegistrationFeedbackModel extends DomainInfoValidationModel {}
+
+export const blankRegistrationFeedbackModel: Readonly<RegistrationFeedbackModel> = {};
+
+export interface RegistrationStateModel {
+  loading: boolean;
+  registrationData: RegistrationModel;
+  registrationFeedback: RegistrationFeedbackModel;
+}
+
+export const blankRegistrationState: Readonly<RegistrationStateModel> = {
+  loading: false,
+  registrationData: blankRegistration,
+  registrationFeedback: blankRegistrationFeedbackModel
 };

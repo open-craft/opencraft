@@ -1,0 +1,41 @@
+@import '~styles/theme';
+
+.domain-available {
+  margin-top: -20px;
+  font-family: $chivo-font;
+  width: 100%;
+  padding: 32px 32px;
+  background-color: $primary-2;
+  text-align: center;
+
+  img {
+    padding-bottom: 16px;
+  }
+
+  h2 {
+    font-family: $playfair-font;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 0.28px;
+    margin-bottom: 9px;
+  }
+
+  .domain-name {
+    background-color: #1e4c59;
+    padding: 10px;
+    height: 45px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-family: Chivo;
+    font-size: 18px;
+    letter-spacing: 0.54px;
+    color: #ffffff;
+  }
+
+  @media (min-width: 800px)
+  {
+    max-width: 700px;
+  }
+}

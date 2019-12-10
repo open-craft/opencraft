@@ -7,4 +7,4 @@ export const getCurrentRegistrationStep = (state: RootState) =>
 export const getRegistrationData = <K extends keyof RegistrationModel>(
   state: RootState,
   field: K
-): RegistrationModel[K] => state.registration[field];
+): RegistrationModel[K] => state.registration.registrationData[field];

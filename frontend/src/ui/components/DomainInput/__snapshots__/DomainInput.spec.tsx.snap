@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="domain-input-container"
+>
+  <div
+    className="domain-label"
+  >
+    Type your domain name below
+  </div>
+  <div
+    className="input-group"
+  >
+    <input
+      className="form-control"
+      onChange={[Function]}
+    />
+    <div
+      className="input-group-append"
+    >
+      <button
+        className="btn btn-primary"
+        disabled={false}
+        onClick={[Function]}
+        type="button"
+      >
+        Check Availability
+      </button>
+    </div>
+  </div>
+</div>
+`;
