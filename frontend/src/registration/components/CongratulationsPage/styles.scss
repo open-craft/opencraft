@@ -1,0 +1,17 @@
+@import '~styles/theme';
+
+.congrats-page {
+  h1 {
+    text-align: left;
+    font-family: $playfair-font;
+    letter-spacing: 1.8px;
+    color: $primary-1;
+    padding-bottom: 36px;
+  }
+
+  p {
+    font-family: $chivo-font;
+    letter-spacing: 0.54px;
+    color: $secondary-1;
+  }
+}

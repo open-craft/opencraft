@@ -4,15 +4,20 @@ export const OCIM_API_BASE =
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
 export const ENTERPRISE_COMPARISON_LINK =
   process.env.REACT_APP_ENTERPRISE_COMPARISON_LINK || '/#';
+export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
+export const PRIVACY_POLICY_LINK =
+  process.env.REACT_APP_PRIVACY_POLICY_LINK || '/#';
+
+export const INTERNAL_DOMAIN_NAME =
+  process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
 
 export enum RegistrationSteps {
   FIRST_STEP = 1,
   DOMAIN = 1,
   INSTANCE = 2,
   ACCOUNT = 3,
-  THEME = 4,
-  CONGRATS = 5,
-  LAST_STEP = 5
+  CONGRATS = 4,
+  LAST_STEP = 4
 }
 
 export const ROUTES = {
@@ -21,7 +26,6 @@ export const ROUTES = {
     DOMAIN: '/registration/domain',
     INSTANCE: '/registration/instance',
     ACCOUNT: '/registration/account',
-    THEME: '/registration/theme',
     CONGRATS: '/registration/congrats'
   }
 };
@@ -30,6 +34,5 @@ export const REGISTRATION_STEPS = [
   ROUTES.Registration.DOMAIN,
   ROUTES.Registration.INSTANCE,
   ROUTES.Registration.ACCOUNT,
-  ROUTES.Registration.THEME,
   ROUTES.Registration.CONGRATS
 ];
