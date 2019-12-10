@@ -1,51 +1,64 @@
 import { ROUTES } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
-import {
-  Button,
-  Form,
-  FormControl,
-  FormGroup,
-  FormLabel,
-  InputGroup
-} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
-import { InstitutionalAccountHero } from 'ui/components';
-import { submitRegistration } from '../../actions';
+import { DomainInput, InstitutionalAccountHero } from 'ui/components';
+import { RegistrationStateModel } from 'registration/models';
+import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
+import './styles.scss';
 
 interface ActionProps {
-  submitRegistration: Function;
+  performValidationAndStore: Function;
+  clearErrorMessage: Function;
+}
+
+interface State {
+  domain: string;
 }
 
 interface Props extends ActionProps {}
+interface StateProps extends RegistrationStateModel {}
 
-interface State {
-  domainName: string;
-}
+interface Props extends StateProps, ActionProps {}
 
-@connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({}), {
-  submitRegistration
-})
+@connect<{}, ActionProps, {}, Props, RootState>(
+  (state: RootState) => ({
+    loading: state.registration.loading,
+    registrationData: state.registration.registrationData,
+    registrationFeedback: state.registration.registrationFeedback
+  }),
+  {
+    performValidationAndStore,
+    clearErrorMessage
+  }
+)
 export class DomainInputPage extends React.PureComponent<Props, State> {
-  public constructor(props: Props, state: State) {
+  constructor(props: Props, state: State) {
     super(props);
+
     this.state = {
-      domainName: ''
+      domain: props.registrationData.domain
     };
   }
 
-  private domainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  private handleDomainChange = (newDomain: string) => {
     this.setState({
-      domainName: event.target.value || ''
+      domain: newDomain
     });
+    // Clean up error feedback if any
+    if (this.props.registrationFeedback.domain) {
+      this.props.clearErrorMessage('domain');
+    }
   };
 
-  private submitForm = () => {
-    this.props.submitRegistration(
-      { domain: this.state.domainName },
+  private submitDomain = () => {
+    this.props.performValidationAndStore(
+      {
+        domain: this.state.domain
+      },
       ROUTES.Registration.INSTANCE
     );
   };
@@ -58,34 +71,19 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           subtitle="Create your own Open edX instance now."
           currentStep={1}
         >
-          <Form>
-            <FormGroup>
-              <FormLabel htmlFor="domainNameInput">
-                <WrappedMessage messages={messages} id="typeDomainNameBelow" />
-              </FormLabel>
-              <InputGroup>
-                <FormControl
-                  id="domainNameInput"
-                  defaultValue=""
-                  placeholder="yourdomain"
-                  onChange={this.domainNameChange}
-                />
-                <InputGroup.Append>
-                  <Button onClick={this.submitForm}>
-                    <WrappedMessage
-                      messages={messages}
-                      id="checkAvailability"
-                    />
-                  </Button>
-                </InputGroup.Append>
-              </InputGroup>
-            </FormGroup>
-            <div className="use-own">
-              <a href="/#">
-                <WrappedMessage messages={messages} id="useOwnDomain" />
-              </a>
-            </div>
-          </Form>
+          <DomainInput
+            domainName={this.state.domain}
+            error={this.props.registrationFeedback.domain}
+            internalDomain
+            loading={this.props.loading}
+            handleDomainChange={this.handleDomainChange}
+            handleSubmitDomain={this.submitDomain}
+          />
+          <div className="use-own">
+            <a href="/#">
+              <WrappedMessage messages={messages} id="useOwnDomain" />
+            </a>
+          </div>
         </RegistrationPage>
         <InstitutionalAccountHero />
       </div>

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
+import { INTERNAL_DOMAIN_NAME } from 'global/constants';
 import iconCheck from 'assets/circle-check.png';
 import messages from './displayMessages';
 import './styles.scss';
@@ -15,7 +16,7 @@ export const DomainSuccessJumbotron: React.FC<DomainProps> = (
 ) => {
   let domainStatusText: string;
 
-  if (props.domainIsExternal === true) {
+  if (props.domainIsExternal) {
     domainStatusText = 'domainIsConnected';
   } else {
     domainStatusText = 'domainIsAvailable';
@@ -28,7 +29,10 @@ export const DomainSuccessJumbotron: React.FC<DomainProps> = (
         <WrappedMessage id={domainStatusText} messages={messages} />
       </h2>
       <div className="domain-name">
-        <p>{props.domain}</p>
+        <p>
+          {props.domain}
+          {!props.domainIsExternal && <span>{INTERNAL_DOMAIN_NAME}</span>}
+        </p>
       </div>
       <p>
         <WrappedMessage id="secureDomainNow" messages={messages} />

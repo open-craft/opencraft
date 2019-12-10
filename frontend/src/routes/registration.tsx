@@ -2,7 +2,12 @@ import { ROUTES } from 'global/constants';
 import * as React from 'react';
 
 import { Redirect, Route, Switch } from 'react-router';
-import { DomainInputPage, InstanceSetupPage } from 'registration/components';
+import {
+  AccountSetupPage,
+  CongratulationsPage,
+  DomainInputPage,
+  InstanceSetupPage
+} from 'registration/components';
 
 export const RegistrationRoutes = () => (
   <Switch>
@@ -11,5 +16,10 @@ export const RegistrationRoutes = () => (
     </Route>
     <Route path={ROUTES.Registration.DOMAIN} component={DomainInputPage} />
     <Route path={ROUTES.Registration.INSTANCE} component={InstanceSetupPage} />
+    <Route path={ROUTES.Registration.ACCOUNT} component={AccountSetupPage} />
+    <Route
+      path={ROUTES.Registration.CONGRATS}
+      component={CongratulationsPage}
+    />
   </Switch>
 );
