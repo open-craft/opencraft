@@ -31,7 +31,7 @@ from django.utils import timezone
 
 from instance import gandi
 from instance.logging import log_exception
-from instance.models.appserver import Status, Status as AppServerStatus
+from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.domain_names import DomainNameInstance
@@ -552,8 +552,8 @@ class OpenEdXInstance(
         Returns a list of AppServers that are currently in the process of being launched.
         """
         in_progress_statuses = (
-            Status.New.state_id,
-            Status.ConfiguringServer.state_id,
-            Status.WaitingForServer.state_id,
+            AppServerStatus.New.state_id,
+            AppServerStatus.ConfiguringServer.state_id,
+            AppServerStatus.WaitingForServer.state_id,
         )
         return self.appserver_set.filter(_status__in=in_progress_statuses)
