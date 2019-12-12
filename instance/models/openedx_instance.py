@@ -52,9 +52,9 @@ from instance.utils import sufficient_time_passed
 
 
 class OpenEdXInstance(
-    DomainNameInstance,
-    LoadBalancedInstance,
-    OpenEdXAppConfiguration,
+        DomainNameInstance,
+        LoadBalancedInstance,
+        OpenEdXAppConfiguration,
         OpenEdXDatabaseMixin,
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
