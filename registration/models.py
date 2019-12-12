@@ -33,9 +33,11 @@ from simple_email_confirmation.models import EmailAddress
 from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
-# Models ######################################################################
 from instance.schemas.theming import theme_schema_validate
 from instance.tasks import spawn_appserver
+
+
+# Models ######################################################################
 
 
 def validate_color(color):
@@ -284,6 +286,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             )
             raise ValidationError({'subdomain': [subdomain_error]})
 
+    # pylint: disable=inconsistent-return-statements
     def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):
         """
         Copies over configuration changes stored in this model to the related instance,

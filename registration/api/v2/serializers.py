@@ -127,9 +127,9 @@ class AccountSerializer(serializers.ModelSerializer):
         if value is None:
             raise ValidationError("You must accept the privacy policy to register.")
         if (
-            self.instance
-            and self.instance.accepted_privacy_policy
-            and value < self.instance.accepted_privacy_policy
+                self.instance
+                and self.instance.accepted_privacy_policy
+                and value < self.instance.accepted_privacy_policy
         ):
             raise ValidationError(
                 "New policy acceptance date cannot be earlier than previous acceptance date."

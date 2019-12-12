@@ -125,7 +125,7 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
 class OpenEdXInstanceConfigViewSet(
-    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet,
+        CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet,
 ):
     """
     Open edX Instance Configuration API.
