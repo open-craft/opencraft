@@ -404,7 +404,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.api.v2.views.spawn_appserver')
+    @patch('registration.models.spawn_appserver')
     def test_commit_changes_success(self, mock_spawn_appserver, mock_consul):
         """
         Test that committing changes fails when a user is new.
@@ -427,7 +427,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.api.v2.views.spawn_appserver')
+    @patch('registration.models.spawn_appserver')
     def test_commit_changes_force_running_appserver(self, mock_spawn_appserver, mock_consul):
         """
         Test that committing changes fails when a user is new.

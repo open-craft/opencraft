@@ -207,7 +207,7 @@ class OpenEdXInstanceConfigViewSet(
 
         instance_config.commit_changes_to_instance(
             spawn_on_commit=True,
-            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS
+            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
         )
 
         return Response(status=status.HTTP_200_OK)
