@@ -21,21 +21,33 @@ Registration api views for API v2
 """
 import logging
 
+from django.conf import settings
+from django.contrib.auth.models import User
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
-from instance.models.appserver import Status
-from instance.tasks import spawn_appserver
-from opencraft.swagger import VALIDATION_AND_AUTH_RESPONSES, VALIDATION_RESPONSE, viewset_swagger_helper
-from registration.api.v2.serializers import AccountSerializer, OpenEdXInstanceConfigSerializer
+from opencraft.swagger import (
+    VALIDATION_AND_AUTH_RESPONSES,
+    VALIDATION_RESPONSE,
+    viewset_swagger_helper,
+)
+from registration.api.v2.serializers import (
+    AccountSerializer,
+    OpenEdXInstanceConfigSerializer,
+)
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
@@ -48,7 +60,7 @@ logger = logging.getLogger(__name__)
     list="Get current user registration data",
     update="Update current user registration data",
     partial_update="Update current user registration data",
-    public_actions=['create'],
+    public_actions=["create"],
     tags=["v1", "Accounts", "Registration", "User", "UserProfile"],
 )
 class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
@@ -58,10 +70,11 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     This API can be used to register users, and to access user registration
     information for the current user.
     """
+
     serializer_class = AccountSerializer
-    lookup_field = 'user__username'
-    lookup_url_kwarg = 'username'
-    lookup_value_regex = '[^/]+'
+    lookup_field = "user__username"
+    lookup_url_kwarg = "username"
+    lookup_value_regex = "[^/]+"
 
     def perform_update(self, serializer):
         """
@@ -82,7 +95,7 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'create':
+        if self.action == "create":
             # Allow any user to create an account, but limit other actions to logged-in users.
             permission_classes = [AllowAny]
         else:
@@ -94,7 +107,13 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
         Get user profile objects restricted to the current user.
         Should be only one.
         """
-        return UserProfile.objects.filter(user=self.request.user)
+        user: User = self.request.user
+        if not user.is_authenticated:
+            return UserProfile.objects.none()
+        elif user.is_staff:
+            return UserProfile.objects.all()
+        else:
+            return UserProfile.objects.filter(user=self.request.user)
 
 
 @viewset_swagger_helper(
@@ -106,11 +125,7 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
 class OpenEdXInstanceConfigViewSet(
-        CreateModelMixin,
-        RetrieveModelMixin,
-        UpdateModelMixin,
-        ListModelMixin,
-        GenericViewSet,
+    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet,
 ):
     """
     Open edX Instance Configuration API.
@@ -118,13 +133,14 @@ class OpenEdXInstanceConfigViewSet(
     This API can be used to manage the configuration for Open edX instances
     owned by clients.
     """
+
     serializer_class = OpenEdXInstanceConfigSerializer
 
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        if self.action == 'validate':
+        if self.action == "validate":
             # Allow validating instance configuration without an account
             permission_classes = [AllowAny]
         else:
@@ -132,11 +148,11 @@ class OpenEdXInstanceConfigViewSet(
         return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
-        responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful")},
+        responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful"), },
         tags=["v2", "Instances", "OpenEdXInstanceConfig"],
         security=[],
     )
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def validate(self, request):
         """
         Validate instance configuration
@@ -149,18 +165,18 @@ class OpenEdXInstanceConfigViewSet(
         return Response(status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed")},
+        responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed"), },
         tags=["v2", "Instances", "OpenEdXInstanceConfig"],
         manual_parameters=[
             openapi.Parameter(
-                'force',
+                "force",
                 openapi.IN_QUERY,
                 type=openapi.TYPE_BOOLEAN,
                 description="Force launching a new instance even if one is already in progress.",
             )
-        ]
+        ],
     )
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def commit_changes(self, request, pk=None):
         """
         Commit configuration changes to instance and launch new AppServer.
@@ -169,30 +185,30 @@ class OpenEdXInstanceConfigViewSet(
         the actual instance used to launch AppServers and launch a new AppServer
         with the applied changes.
 
-        It checks to see if an AppServer is already being provisioned and in that
+        It checks if an AppServer is already being provisioned and in that
         case prevents a new one from being launched unless forced.
         """
-        force = request.query_params.get('force', False)
+        force = request.query_params.get("force", False)
         instance_config: BetaTestApplication = self.get_object()
         instance = instance_config.instance
         if instance is None:
             # For a new user an instance will not exist until they've verified their email.
-            raise ValidationError("Must verify email before launching an instance", code="email-unverified")
-        in_progress_statuses = Status.New.state_id, Status.ConfiguringServer.state_id, Status.WaitingForServer.state_id
+            raise ValidationError(
+                "Must verify email before launching an instance", code="email-unverified",
+            )
 
-        if not force and instance.appserver_set.filter(_status__in=in_progress_statuses).exists():
+        if not force and instance.get_provisioning_appservers().exists():
             raise ValidationError("Instance launch already in progress", code="in-progress")
 
         if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
-            raise ValidationError("Updated public email needs to be confirmed.", code="email-unverified")
+            raise ValidationError(
+                "Updated public email needs to be confirmed.", code="email-unverified"
+            )
 
-        instance.theme_config = instance_config.draft_theme_config
-        instance.name = instance_config.instance_name
-        instance.privacy_policy_url = instance_config.privacy_policy_url
-        instance.email = instance_config.public_contact_email
-        instance.save()
-
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        instance_config.commit_changes_to_instance(
+            spawn_on_commit=True,
+            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS
+        )
 
         return Response(status=status.HTTP_200_OK)
 
@@ -216,4 +232,10 @@ class OpenEdXInstanceConfigViewSet(
         Get `BetaTestApplication` instances owned by current user.
         Currently this should return a single object.
         """
-        return BetaTestApplication.objects.filter(user=self.request.user)
+        user: User = self.request.user
+        if not user.is_authenticated:
+            return BetaTestApplication.objects.none()
+        elif user.is_staff:
+            return BetaTestApplication.objects.filter()
+        else:
+            return BetaTestApplication.objects.filter(user=self.request.user)

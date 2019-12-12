@@ -778,3 +778,10 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# Settings related to user self-service of launches
+
+#: How many times should OCIM retry launching an instance before giving up when
+#: the instance launch is triggered by a user.
+SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)

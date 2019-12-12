@@ -17,15 +17,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Utility function related to registration.
+Utility functions related to registration.
 """
-
+from django.contrib.auth.models import User
+from django.http import HttpRequest
 from simple_email_confirmation.models import EmailAddress
 
 from email_verification import send_email_verification
 
 
-def verify_user_emails(user, request, *email_addresses):
+def verify_user_emails(user: User, request: HttpRequest, *email_addresses: str):
     """
     Start email verification process for specified email addresses.
 

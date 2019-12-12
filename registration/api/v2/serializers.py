@@ -40,40 +40,46 @@ class AccountSerializer(serializers.ModelSerializer):
     """
     Serializer for User account information.
     """
+
     username = serializers.CharField(
         source="user.username",
         required=True,
         validators=[
-            UniqueValidator(queryset=User.objects.all(), message="That username is not available."),
-            RegexValidator(r'^[\w.+-]+$', message=('Usernames may contain only letters, numbers, and '
-                                                   './+/-/_ characters.'))
+            UniqueValidator(queryset=User.objects.all(), message="This username is not available."),
+            RegexValidator(
+                r"^[\w.+-]+$",
+                message="Usernames may contain only letters, numbers, and ./+/-/_ characters.",
+            ),
         ],
-        help_text=('This would also be the username of the administrator '
-                   'account on the users\'s instances.'),
+        help_text=(
+            "This would also be the username of the administrator account on the users's instances."
+        ),
     )
     email = serializers.EmailField(
         source="user.email",
         validators=[
-            UniqueValidator(queryset=User.objects.all(),
-                            message="That email is already registered with a different account."),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="This email is already registered with a different account.",
+            ),
         ],
         required=True,
-        help_text='This is also the account name, and where we will send important notices.',
+        help_text="This is also the account name, and where we will send important notices.",
     )
     password = serializers.CharField(
         source="user.password",
         required=True,
         write_only=True,
-        style={'input_type': 'password'},
+        style={"input_type": "password"},
         validators=[validate_password],
-        help_text='A password for the OpenCraft account.',
+        help_text="A password for the OpenCraft account.",
     )
 
     def create(self, validated_data: Dict) -> UserProfile:
         """
         Create a new user profile and user instance from serialised data.
         """
-        new_user = User.objects.create_user(**validated_data.pop('user'))
+        new_user = User.objects.create_user(**validated_data.pop("user"))
         new_user_profile = UserProfile.objects.create(**validated_data, user=new_user)
         return new_user_profile
 
@@ -82,13 +88,13 @@ class AccountSerializer(serializers.ModelSerializer):
         Update user from validated data.
         """
         # Can't change username, so remove it if present
-        user_data.pop('username', None)
+        user_data.pop("username", None)
         user_updated = False
-        if 'password' in user_data:
-            user.set_password(user_data.pop('password'))
+        if "password" in user_data:
+            user.set_password(user_data.pop("password"))
             user_updated = True
-        if 'email' in user_data:
-            user.email = user_data.pop('email')
+        if "email" in user_data:
+            user.email = user_data.pop("email")
             user_updated = True
         if user_updated:
             user.save()
@@ -110,7 +116,7 @@ class AccountSerializer(serializers.ModelSerializer):
         """
         Update existing user profile model and user.
         """
-        self._update_user_account(instance.user, validated_data.pop('user', {}))
+        self._update_user_account(instance.user, validated_data.pop("user", {}))
         self._update_user_profile(instance, validated_data)
         return instance
 
@@ -121,11 +127,13 @@ class AccountSerializer(serializers.ModelSerializer):
         if value is None:
             raise ValidationError("You must accept the privacy policy to register.")
         if (
-                self.instance and
-                self.instance.accepted_privacy_policy and
-                value < self.instance.accepted_privacy_policy
+            self.instance
+            and self.instance.accepted_privacy_policy
+            and value < self.instance.accepted_privacy_policy
         ):
-            raise ValidationError("New policy acceptance date cannot be earlier than previous acceptance date.")
+            raise ValidationError(
+                "New policy acceptance date cannot be earlier than previous acceptance date."
+            )
         if value >= timezone.now() + timezone.timedelta(hours=1):
             raise ValidationError("Cannot accept policy for a future date.")
         return value
@@ -141,12 +149,17 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
-            'full_name', 'username', 'password', 'email', 'accepted_privacy_policy',
-            'accept_paid_support', 'subscribe_to_updates',
+            "full_name",
+            "username",
+            "password",
+            "email",
+            "accepted_privacy_policy",
+            "accept_paid_support",
+            "subscribe_to_updates",
         )
         extra_kwargs = {
-            'accepted_privacy_policy': {'required': True},
-            'accept_paid_support': {'required': True},
+            "accepted_privacy_policy": {"required": True},
+            "accept_paid_support": {"required": True},
         }
 
 
@@ -154,6 +167,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
     """
+
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     def validate_user(self, value):
@@ -170,7 +184,13 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = BetaTestApplication
         fields = (
-            'id', 'user', 'subdomain', 'instance_name', 'public_contact_email',
-            'project_description', 'privacy_policy_url',
-            'use_advanced_theme', 'draft_theme_config',
+            "id",
+            "user",
+            "subdomain",
+            "instance_name",
+            "public_contact_email",
+            "project_description",
+            "privacy_policy_url",
+            "use_advanced_theme",
+            "draft_theme_config",
         )

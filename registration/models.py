@@ -35,6 +35,7 @@ from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 # Models ######################################################################
 from instance.schemas.theming import theme_schema_validate
+from instance.tasks import spawn_appserver
 
 
 def validate_color(color):
@@ -282,3 +283,21 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 code='unique',
             )
             raise ValidationError({'subdomain': [subdomain_error]})
+
+    def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):
+        """
+        Copies over configuration changes stored in this model to the related instance,
+        and optionally spawn a new instance.
+        """
+        instance = self.instance
+        if instance is None:
+            return
+
+        instance.theme_config = self.draft_theme_config
+        instance.name = self.instance_name
+        instance.privacy_policy_url = self.privacy_policy_url
+        instance.email = self.public_contact_email
+        instance.save()
+
+        if spawn_on_commit:
+            return spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=retry_attempts)
