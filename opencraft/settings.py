@@ -31,14 +31,12 @@ from urllib.parse import urlparse
 
 import environ
 
-
 # Functions ###################################################################
 
 env = environ.Env()
 root = environ.Path(os.path.dirname(__file__), os.pardir)
 
 SITE_ROOT = root()
-
 
 # Security ####################################################################
 
@@ -50,7 +48,6 @@ ALLOWED_HOSTS = env.json('ALLOWED_HOSTS', default=[])
 DEBUG = env.bool('DEBUG', default=False)
 
 ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
-
 
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
@@ -65,7 +62,23 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_URL = 'registration:login'
 LOGIN_REDIRECT_URL = 'index'
-
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 9,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 # Database ####################################################################
 
@@ -73,7 +86,6 @@ LOGIN_REDIRECT_URL = 'index'
 DATABASES = {
     'default': env.db(),
 }
-
 
 # Application definition ######################################################
 
@@ -105,6 +117,7 @@ INSTALLED_APPS = (
     'huey.contrib.djhuey',
     'simple_email_confirmation',
     'channels',
+    'drf_yasg',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
@@ -124,7 +137,6 @@ if DEBUG and ENABLE_DEBUG_TOOLBAR:
     DEBUG_TOOLBAR_CONFIG = {
         'SHOW_TOOLBAR_CALLBACK': lambda request: True,
     }
-
 
 ROOT_URLCONF = 'opencraft.urls'
 
@@ -147,7 +159,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'opencraft.wsgi.application'
 
-
 # Internationalization ########################################################
 
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -157,7 +168,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images) ######################################
 
@@ -181,23 +191,19 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
-
 # Test runner #################################################################
 
 TEST_RUNNER = env('TEST_RUNNER', default='django.test.runner.DiscoverRunner')
-
 
 # Django-extensions ###########################################################
 
 SHELL_PLUS = "ipython"
 RUNSERVERPLUS_SERVER_ADDRESS_PORT = env('RUNDEV_SERVER_ADDRESS_PORT', default='0.0.0.0:5000')
 
-
 # Grappelli ###################################################################
 
 GRAPPELLI_ADMIN_TITLE = 'OpenCraft'
 GRAPPELLI_SWITCH_USER = True
-
 
 # REST framework ##############################################################
 
@@ -205,8 +211,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'instance.api.permissions.ApiInstanceManagerPermission',
     ],
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
 }
 
+# Swagger #####################################################################
+
+REDOC_SETTINGS = {
+    "PATH_IN_MIDDLE": True,
+}
+
+SWAGGER_SETTINGS = {
+    "DEFAULT_INFO": "opencraft.swagger.api_info",
+    "DEFAULT_MODEL_RENDERING": "example",
+    "DOC_EXPANSION": None,
+}
 
 # Redis cache & locking #######################################################
 
@@ -224,7 +242,6 @@ CACHES = {
     }
 }
 
-
 # Huey (redis task queue) #####################################################
 
 HUEY = {
@@ -239,7 +256,6 @@ HUEY = {
     # Options to pass into the consumer when running ``manage.py run_huey``
     'consumer': {'workers': 1, 'loglevel': logging.INFO},
 }
-
 
 # OpenStack ###################################################################
 
@@ -273,7 +289,6 @@ SWIFT_OPENSTACK_REGION = env('SWIFT_OPENSTACK_REGION', default=OPENSTACK_REGION)
 BACKUP_SWIFT_ENABLED = env.bool('BACKUP_SWIFT_ENABLED', default=False)
 
 if BACKUP_SWIFT_ENABLED:
-
     BACKUP_SWIFT_TARGET = env('BACKUP_SWIFT_TARGET', default='/var/cache/swift-data-backup')
     BACKUP_SWIFT_TARSNAP_KEY_LOCATION = env(
         'BACKUP_SWIFT_TARSNAP_KEY_LOCATION', default='/var/www/opencraft/tarsnap.key')
@@ -281,7 +296,6 @@ if BACKUP_SWIFT_ENABLED:
     # Current date will be appended to the archive name:
     BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME = env('BACKUP_SWIFT_TARSNAP_KEY_ARCHIVE_NAME', default='im-swift-backup')
     BACKUP_SWIFT_SNITCH = env('BACKUP_SWIFT_SNITCH', default=None)
-
 
 # AWS S3 storage for media files. This configuration is used by Ocim
 # to store the files uploaded in the Ocim registration form. It will
@@ -310,7 +324,6 @@ elif MEDIAFILES_SWIFT_ENABLE:
     SWIFT_KEY = env('MEDIAFILES_SWIFT_KEY')
     SWIFT_CONTAINER_NAME = env('MEDIAFILES_SWIFT_CONTAINER_NAME')
 
-
 # RabbitMQ ####################################################################
 
 DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
@@ -319,6 +332,11 @@ DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 
 # This rate is per user per day in euros
 BILLING_RATE = env('BILLING_RATE', default=3)
+
+# DNS (Gandi) #################################################################
+
+# See https://www.gandi.net/admin/api_key
+GANDI_API_KEY = env('GANDI_API_KEY')
 
 # GitHub - Forks & organizations ##############################################
 
@@ -632,7 +650,6 @@ if 'file' in HANDLERS:
         'formatter': 'verbose'
     }
 
-
 # Instances ###################################################################
 
 # Configure external databases here
@@ -772,3 +789,10 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# Settings related to user self-service of launches
+
+#: How many times should OCIM retry launching an instance before giving up when
+#: the instance launch is triggered by a user.
+SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)

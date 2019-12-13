@@ -41,7 +41,7 @@ class ModelBackend(backends.ModelBackend):
         """
         if not username or not password:
             return None
-        UserModel = get_user_model()  # noqa
+        UserModel = get_user_model()  # noqa pylint: disable=invalid-name
         try:
             user = UserModel._default_manager.get(Q(username=username) |
                                                   Q(email=username))

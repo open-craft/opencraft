@@ -20,13 +20,13 @@
 all: js_external css_external scss_external fonts_external
 
 js_external:
-	$(MAKE) -C js
+	$(MAKE) -C js -j4
 
 css_external:
-	$(MAKE) -C css
+	$(MAKE) -C css -j4
 
 scss_external:
-	$(MAKE) -C scss
+	$(MAKE) -C scss -j4
 
 fonts_external:
-	$(MAKE) -C fonts
+	$(MAKE) -C fonts -j4

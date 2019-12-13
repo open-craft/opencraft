@@ -174,7 +174,7 @@ test.one: clean
 # Files #######################################################################
 
 static_external:
-	$(MAKE) -C static/external
+	$(MAKE) -C static/external -j4
 
 cov.html:
 	coverage html
