@@ -38,7 +38,7 @@ class InstanceReferenceMinimalSerializer(serializers.ModelSerializer):
     """
     Serializer for InstanceReference that includes only the ID and URL.
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:instance-detail')
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-detail')
 
     class Meta:
         model = InstanceReference
@@ -60,8 +60,8 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
     # summary_only: Uses less detailed serializers for related instances
     summary_only = True
 
-    logs_url = serializers.HyperlinkedIdentityField(view_name='api:instance-logs')
-    appservers_full_list_url = serializers.HyperlinkedIdentityField(view_name='api:instance-app-servers')
+    logs_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-logs')
+    appservers_full_list_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-app-servers')
 
     class Meta:
         model = InstanceReference

@@ -33,7 +33,7 @@ class OpenStackServerSerializer(serializers.ModelSerializer):
     """
     OpenStackServer API Serializer
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:openstackserver-detail')
+    api_url = serializers.HyperlinkedIdentityField(view_name='api:v1:openstackserver-detail')
 
     class Meta:
         model = OpenStackServer
