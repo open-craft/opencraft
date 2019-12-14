@@ -42,38 +42,6 @@ urlpatterns = [
     url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^email-test/verify',
-        TemplateView.as_view(template_name="emails/verify_email.html", extra_context={
-            'base_url': get_site_url(),
-        }),
-        name="email-test-verify"
-        ),
-    url(r'^email-test/welcome',
-        TemplateView.as_view(template_name="emails/welcome_email.html", extra_context={
-            'base_url': get_site_url(),
-            'user_name': 'John',
-        }),
-        name="email-test-welcome"
-        ),
-    url(r'^email-test/info',
-        TemplateView.as_view(template_name="emails/account_info_email.html", extra_context=dict(
-            base_url=get_site_url(),
-            user_name='John Doe',
-            instance_url="example.opencraft.hosting",
-            instance_name="Example High School",
-            full_name="John Doe",
-            email="john.doe@gmail.com",
-            public_contact_email="john@example.com",
-            theme="Dark",
-            primary_color="#000000",
-            secondary_color="#dddddd",
-            logo_url="http://logo",
-            logo_file="logo.png",
-            header_url="http://header",
-            header_file="header.png",
-        )),
-        name="email-test-info"
-        ),
 ]
 
 if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
