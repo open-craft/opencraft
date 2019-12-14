@@ -24,6 +24,7 @@ Utils for registration tests
 import time
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -62,11 +63,16 @@ class BrowserTestMixin:
     Runs tests with a real browser. Provides helper methods for filling in
     forms. Mix this in with LiveServerTestCase.
     """
+
     def setUp(self):
         """
         Start firefox.
         """
         super().setUp()
+        site = Site.objects.get()
+        site.name = 'testing'
+        site.domain = self.live_server_url.split('//')[1]
+        site.save()
         options = Options()
         options.headless = True
         # Ensure we don't attempt to use the new geckodriver method (which

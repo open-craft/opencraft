@@ -35,7 +35,7 @@ def get_site_url(relative_path: str = '') -> str:
     needing access to the request object.
     """
     domain = get_current_site(request=None).domain
-    if settings.DEBUG:
+    if settings.DEBUG or 'localhost' in domain:
         scheme = "http"
     else:
         scheme = "https"

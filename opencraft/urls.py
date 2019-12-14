@@ -25,9 +25,8 @@ Global URL Patterns
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.views.generic.base import RedirectView, TemplateView
+from django.views.generic.base import RedirectView
 
-from opencraft.utils import get_site_url
 import opencraft.views as views
 
 # URL Patterns ################################################################
