@@ -19,7 +19,7 @@
 """
 General utility functions for OCIM.
 """
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Optional
 
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
@@ -42,14 +42,21 @@ def get_site_url(relative_path: str = '') -> str:
     return f"{scheme}://{domain}{relative_path}"
 
 
-def build_email_context(context=None):
+def build_email_context(
+        context: Optional[Dict[str, str]] = None,
+        subject: Optional[str] = None,
+) -> Dict[str, str]:
     """
     Builds a context object with common settings for emails.
+
+    Fills in the common configuration variables needed by most email templates.
+    The values provided in context override the values this function fills in.
     """
     combined_context = dict(
         base_url=get_site_url(),
         signature_title=settings.EMAIL_SIGNATURE_TITLE,
         signature_name=settings.EMAIL_SIGNATURE_NAME,
+        subject=subject,
     )
     if context is not None:
         combined_context.update(context)
@@ -69,7 +76,7 @@ def html_email_helper(template_base_name: str, context: Dict[str, Any], subject:
     @param recipient_list: List of email addresses.
     @param from_email: The sender of the email. Uses default if nothing is passed.
     """
-    email_context = build_email_context(context)
+    email_context = build_email_context(context, subject=subject)
 
     text_template = get_template(f'{template_base_name}.txt')
     text_message = text_template.render(email_context)
@@ -81,6 +88,6 @@ def html_email_helper(template_base_name: str, context: Dict[str, Any], subject:
         subject=subject,
         message=text_message,
         html_message=html_message,
-        from_email=settings.DEFAULT_FROM_EMAIL if from_email is None else from_email,
+        from_email=from_email or settings.DEFAULT_FROM_EMAIL,
         recipient_list=recipient_list,
     )

@@ -22,10 +22,15 @@ Email verification
 
 # Imports #####################################################################
 
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 from django.urls import reverse
 
 from opencraft.utils import get_site_url, html_email_helper
+
+if TYPE_CHECKING:
+    from simple_email_confirmation.models import EmailAddress
 
 # Settings ####################################################################
 
@@ -39,7 +44,7 @@ EMAIL_VERIFICATION_TEMPLATE = getattr(settings, 'EMAIL_VERIFICATION_TEMPLATE',
 
 # Functions ###################################################################
 
-def send_email_verification(email: str):
+def send_email_verification(email: "EmailAddress"):
     """
     Verify the given `EmailAddress`.
     """

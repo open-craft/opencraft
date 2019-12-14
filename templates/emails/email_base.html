@@ -5,7 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html charset=UTF-8"/>
-    <title>Confirm your email address</title>
+    {% if subject %}
+        <title>{{ subject }}</title>
+    {% endif %}
     <style>
         @import url('https://fonts.googleapis.com/css?family=Chivo:400,400i,700|Playfair+Display:400,700&display=swap');
     </style>
@@ -14,9 +16,10 @@
     <body>
     <div class="main">
         <img class="opencraft-logo" src="{{ base_url }}{% static 'img/svg/logo-for-email.svg' %}"
-             alt="Opencraft Logo" aria-hidden="true">
+             alt="OpenCraft Logo" aria-hidden="true">
         <div class="main">
-            <img src="{{ base_url }}{% static 'img/jpg/header-background.jpg' %}" alt="Email Header" aria-hidden="true">
+            <img class="header" src="{{ base_url }}{% static 'img/jpg/header-background.jpg' %}" alt="Email Header"
+                 aria-hidden="true">
             <div class="content">
                 {% block content %}
                 {% endblock %}
@@ -30,7 +33,9 @@
         </div>
         <div class="footer">
             <p>
-                <a href="{{ unsubscribe_url }}">Unsubscribe</a> | edX and Open edX are registered trademarks of edX Inc.
+{#                TODO: Add the unsubscribe link. #}
+{#                <a href="{{ unsubscribe_url }}">Unsubscribe</a> | #}
+                edX and Open edX are registered trademarks of edX Inc.
             </p>
             <p>
                 All rights reserved.

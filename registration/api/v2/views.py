@@ -105,7 +105,7 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     def get_queryset(self):
         """
         Get user profile objects restricted to the current user.
-        Should be only one.
+        Should be only one for regular users.
         """
         user: User = self.request.user
         if not user.is_authenticated:
@@ -221,8 +221,8 @@ class OpenEdXInstanceConfigViewSet(
 
     def perform_update(self, serializer):
         """
-        If an instance has been changed, queuse its public contact email for verification
-        if it has been changed.
+        If an instance has been changed, requests user to verify their new email
+        if it has changed.
         """
         instance = serializer.save()
         verify_user_emails(instance.user, instance.public_contact_email)
@@ -230,7 +230,7 @@ class OpenEdXInstanceConfigViewSet(
     def get_queryset(self):
         """
         Get `BetaTestApplication` instances owned by current user.
-        Currently this should return a single object.
+        For a regular user it should return a single object.
         """
         user: User = self.request.user
         if not user.is_authenticated:
