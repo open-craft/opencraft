@@ -78,7 +78,7 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
             user = authenticate(username=form.cleaned_data['username'],
                                 password=form.cleaned_data['password'])
             login(self.request, user)
-        verify_user_emails(user, self.request, user.email, self.object.public_contact_email)
+        verify_user_emails(user, user.email, self.object.public_contact_email)
         return response
 
     def get_form_kwargs(self):

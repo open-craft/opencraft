@@ -29,7 +29,6 @@ from django.views.generic.base import RedirectView
 
 import opencraft.views as views
 
-
 # URL Patterns ################################################################
 
 urlpatterns = [

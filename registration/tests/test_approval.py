@@ -24,13 +24,13 @@ Tests for the betatest approval helper functions
 
 from unittest import mock
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from registration.approval import accept_application, ApplicationNotReady, on_appserver_spawned
-from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
+from registration.approval import ApplicationNotReady, accept_application, on_appserver_spawned
+from registration.models import BetaTestApplication
+
 
 # Test cases ##################################################################
 
@@ -65,13 +65,9 @@ class ApprovalTestCase(TestCase):
 
         # Test email is sent when everything is correct
         appserver.status = AppServer.Status.Running
-        with mock.patch('registration.approval._send_mail') as mock_send_mail:
+        with mock.patch('registration.approval.send_welcome_email') as mock_send_mail:
             accept_application(application, appserver)
-            mock_send_mail.assert_called_once_with(
-                application,
-                'registration/welcome_email.txt',
-                settings.BETATEST_WELCOME_SUBJECT
-            )
+            mock_send_mail.assert_called_once_with(application)
         self.assertEqual(application.status, BetaTestApplication.ACCEPTED)
 
     def test_no_application(self):
