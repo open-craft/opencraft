@@ -23,32 +23,15 @@ These functions are meant to be used manually from the interactive Python shell.
 
 # Imports #####################################################################
 
-from django.conf import settings
-from django.core.mail import EmailMessage
 from django.dispatch import receiver
-from django.template.loader import get_template
 
-from registration.models import BetaTestApplication
 from instance.models.appserver import AppServer
 from instance.signals import appserver_spawned
+from registration.models import BetaTestApplication
+from registration.utils import send_welcome_email
 
 
 # Functions ###################################################################
-
-def _send_mail(application, template_name, subject):
-    """Helper function to send an email to the user."""
-    template = get_template(template_name)
-    message = template.render(dict(
-        application=application,
-        signature=settings.BETATEST_EMAIL_SIGNATURE,
-    ))
-    EmailMessage(
-        subject=subject,
-        body=message,
-        from_email=settings.BETATEST_EMAIL_SENDER,
-        to=(application.user.email,),
-        bcc=(settings.BETATEST_EMAIL_INTERNAL,)
-    ).send()
 
 
 def accept_application(application, appserver):
@@ -71,7 +54,8 @@ def accept_application(application, appserver):
     if not instance.first_activated:
         appserver.make_active()
 
-    _send_mail(application, 'registration/welcome_email.txt', settings.BETATEST_WELCOME_SUBJECT)
+    send_welcome_email(application)
+
     application.status = BetaTestApplication.ACCEPTED
     application.save()
 

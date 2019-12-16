@@ -40,6 +40,7 @@ coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.5.3
 cryptography==2.7         # via autobahn, openstacksdk, pyopenssl, service-identity
+cssutils==1.0.2           # via pynliner
 daphne==2.3.0             # via channels
 ddt==1.2.1
 debtcollector==1.21.0     # via oslo.config, oslo.utils, python-keystoneclient
@@ -50,6 +51,7 @@ django-debug-toolbar==2.0
 django-environ==0.4.5
 django-extensions==2.1.9
 django-grappelli==2.12.3
+django-inlinecss==0.3.0
 django-libsass==0.7
 django-redis==4.10.0
 django-simple-email-confirmation==0.60
@@ -144,6 +146,7 @@ pylint-django==2.0.6
 pylint-plugin-utils==0.5
 pylint==2.2.3
 pymongo==3.8.0
+pynliner==0.8.0           # via django-inlinecss
 pyopenssl==19.0.0         # via python-glanceclient
 pyparsing==2.4.2          # via cliff, oslo.utils, packaging
 pyperclip==1.7.0          # via cmd2

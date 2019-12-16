@@ -49,6 +49,8 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 
+SITE_ID = 1
+
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
 OCIM_ID = env('OCIM_ID', default='ocim')
@@ -107,6 +109,7 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
@@ -118,6 +121,7 @@ INSTALLED_APPS = (
     'simple_email_confirmation',
     'channels',
     'drf_yasg',
+    'django_inlinecss',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
@@ -190,6 +194,8 @@ STATIC_URL = '/static/'
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
+
+INLINECSS_CSS_LOADER = 'django_inlinecss.css_loaders.StaticfilesFinderCSSLoader'
 
 # Test runner #################################################################
 
@@ -678,14 +684,18 @@ NUM_INITIAL_APPSERVERS_SHOWN = env('NUM_INITIAL_APPSERVERS_SHOWN', default=5)
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
-# Beta test email settings ####################################################
+# Email settings ####################################################
 
-BETATEST_EMAIL_INTERNAL = env('BETATEST_EMAIL_INTERNAL', default='help@example.com')
-BETATEST_EMAIL_SENDER = env('BETATEST_EMAIL_SENDER', default=DEFAULT_FROM_EMAIL)
-BETATEST_EMAIL_SIGNATURE = env('BETATEST_EMAIL_SIGNATURE', default='The Beta Test Team')
-BETATEST_WELCOME_SUBJECT = env(
-    'BETATEST_WELCOME_SUBJECT',
+EMAIL_SIGNATURE_TITLE = env('EMAIL_SIGNATURE_TITLE', default='Open edX Product Specialist')
+EMAIL_SIGNATURE_NAME = env('EMAIL_SIGNATURE_NAME', default='John Doe')
+INSTANCES_EMAIL_SENDER = env('INSTANCES_EMAIL_SENDER', default=DEFAULT_FROM_EMAIL)
+WELCOME_EMAIL_SUBJECT = env(
+    'WELCOME_EMAIL_SUBJECT',
     default='Welcome to the OpenCraft Instance Manager free 30-day trial!',
+)
+ACCOUNT_INFO_EMAIL_SUBJECT = env(
+    'ACCOUNT_INFO_EMAIL_SUBJECT',
+    default='Information about your new Open edX instance'
 )
 
 # Monitoring ##################################################################

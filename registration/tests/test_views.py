@@ -28,9 +28,9 @@ import re
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
-from ddt import ddt, data, unpack
-from django.core import mail
+from ddt import data, ddt, unpack
 from django.contrib.auth.models import User
+from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from freezegun import freeze_time
@@ -102,6 +102,7 @@ class BetaTestApplicationViewTestMixin:
             for verification_email in mail.outbox:
                 verify_url = re.search(r'https?://[^\s]+',
                                        verification_email.body).group(0)
+                print(verify_url)
                 self.client.get(verify_url)
                 expected_call_count += 1
             # Check to make sure we called _provision_instance when emails were verified.
