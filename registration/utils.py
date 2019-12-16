@@ -61,25 +61,6 @@ def send_welcome_email(application: BetaTestApplication) -> None:
     )
 
 
-def send_welcome_email_test(email: str) -> None:
-    """
-    Send a test welcome email.
-    """
-    context = dict(
-        user_name="John Doe",
-        lms_link="http://my.edx.site",
-        studio_link="http://studio.my.edx.site",
-        # TODO: add in once implemented
-        customise_link="http://ocim.site/customise/",
-    )
-    html_email_helper(
-        template_base_name='emails/welcome_email',
-        context=context,
-        subject=settings.WELCOME_EMAIL_SUBJECT,
-        recipient_list=(email,)
-    )
-
-
 def send_account_info_email(application: BetaTestApplication) -> None:
     """
     Send an email with account information to a new user after they have
