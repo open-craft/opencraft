@@ -30,6 +30,8 @@ from rest_framework.permissions import AllowAny
 from api.router import v1_router, v2_router
 from opencraft.swagger import api_info
 
+from api.auth import JWTAuthToken
+
 # URL Patterns ################################################################
 
 app_name = 'api'
@@ -40,11 +42,15 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(AllowAny,),
 )
+
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='v1/', permanent=False), name='index'),
+    # v1 urls
     url(r'^v1/', include((v1_router.urls, 'api_v1'), namespace='v1')),
-    url(r'^v2/', include((v2_router.urls, 'api_v2'), namespace='v2')),
     url(r'^v1/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # v2 urls
+    url(r'^v2/', include((v2_router.urls, 'api_v2'), namespace='v2')),
+    url(r'^v2/auth/token/', JWTAuthToken.as_view(), name='token_obtain_pair'),
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=10), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=10), name='schema-swagger-ui'),
     url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=10), name='schema-redoc'),

@@ -122,10 +122,12 @@ INSTALLED_APPS = (
     'channels',
     'drf_yasg',
     'django_inlinecss',
+    'corsheaders',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -143,6 +145,8 @@ if DEBUG and ENABLE_DEBUG_TOOLBAR:
     }
 
 ROOT_URLCONF = 'opencraft.urls'
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 TEMPLATES = [
     {
@@ -218,7 +222,13 @@ REST_FRAMEWORK = {
         'instance.api.permissions.ApiInstanceManagerPermission',
     ],
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    ]
 }
+
 
 # Swagger #####################################################################
 
@@ -230,6 +240,16 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "opencraft.swagger.api_info",
     "DEFAULT_MODEL_RENDERING": "example",
     "DOC_EXPANSION": None,
+    "SECURITY_DEFINITIONS": {
+        "api_key": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "basic": {
+            "type": "basic",
+        },
+    }
 }
 
 # Redis cache & locking #######################################################
