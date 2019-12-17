@@ -16,7 +16,7 @@ interface ActionProps {
 }
 
 interface State {
-  domain: string;
+  subdomain: string;
 }
 
 interface Props extends ActionProps {}
@@ -40,24 +40,24 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      domain: props.registrationData.domain
+      subdomain: props.registrationData.subdomain
     };
   }
 
   private handleDomainChange = (newDomain: string) => {
     this.setState({
-      domain: newDomain
+      subdomain: newDomain
     });
     // Clean up error feedback if any
-    if (this.props.registrationFeedback.domain) {
-      this.props.clearErrorMessage('domain');
+    if (this.props.registrationFeedback.subdomain) {
+      this.props.clearErrorMessage('subdomain');
     }
   };
 
   private submitDomain = () => {
     this.props.performValidationAndStore(
       {
-        domain: this.state.domain
+        subdomain: this.state.subdomain
       },
       ROUTES.Registration.INSTANCE
     );
@@ -72,8 +72,8 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           currentStep={1}
         >
           <DomainInput
-            domainName={this.state.domain}
-            error={this.props.registrationFeedback.domain}
+            domainName={this.state.subdomain}
+            error={this.props.registrationFeedback.subdomain}
             internalDomain
             loading={this.props.loading}
             handleDomainChange={this.handleDomainChange}

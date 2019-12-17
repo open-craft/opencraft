@@ -82,7 +82,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
         currentStep={2}
       >
         <DomainSuccessJumbotron
-          domain={this.props.registrationData.domain}
+          domain={this.props.registrationData.subdomain}
           domainIsExternal={this.props.registrationData.domainIsExternal}
         />
         <Form className="secure-domain-form">
