@@ -7,5 +7,8 @@ export * from './OpenEdXAppServer';
 export * from './OpenEdXInstanceConfig';
 export * from './OpenStackServer';
 export * from './SpawnAppServer';
+export * from './Token';
+export * from './TokenError';
+export * from './TokenObtainPair';
 export * from './ValidationError';
 export * from './WatchedPullRequest';
