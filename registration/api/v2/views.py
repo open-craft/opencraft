@@ -61,7 +61,6 @@ logger = logging.getLogger(__name__)
     update="Update current user registration data",
     partial_update="Update current user registration data",
     public_actions=["create"],
-    tags=["v1", "Accounts", "Registration", "User", "UserProfile"],
 )
 class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
     """
@@ -122,7 +121,6 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     retrieve="Get an instance owned by user",
     update="Update instance owned by user",
     partial_update="Update instance owned by user",
-    tags=["v2", "Instances", "OpenEdXInstanceConfig"],
 )
 class OpenEdXInstanceConfigViewSet(
         CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet,
@@ -149,7 +147,6 @@ class OpenEdXInstanceConfigViewSet(
 
     @swagger_auto_schema(
         responses={**VALIDATION_RESPONSE, 200: openapi.Response("Validation Successful"), },
-        tags=["v2", "Instances", "OpenEdXInstanceConfig"],
         security=[],
     )
     @action(detail=False, methods=["post"])
@@ -166,7 +163,6 @@ class OpenEdXInstanceConfigViewSet(
 
     @swagger_auto_schema(
         responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed"), },
-        tags=["v2", "Instances", "OpenEdXInstanceConfig"],
         manual_parameters=[
             openapi.Parameter(
                 "force",
