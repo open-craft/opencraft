@@ -16,12 +16,12 @@ export interface InstanceInfoModel {
 export interface AccountInfoModel {
   fullName: string;
   username: string;
-  emailAddress: string;
+  email: string;
   password: string;
   passwordConfirm: string;
   acceptTOS: boolean;
-  acceptSupport: boolean;
-  acceptTipsEmail: boolean;
+  acceptPaidSupport: boolean;
+  subscribeToUpdates: boolean;
 }
 
 export interface ThemeInfoModel {
@@ -49,13 +49,13 @@ export interface RegistrationModel
 export type RegistrationFields = keyof RegistrationModel;
 
 export const blankRegistration: Readonly<RegistrationModel> = {
-  acceptSupport: false,
+  acceptPaidSupport: false,
   acceptTOS: false,
-  acceptTipsEmail: false,
+  subscribeToUpdates: false,
   cover: null,
   subdomain: '',
   domainIsExternal: false,
-  emailAddress: '',
+  email: '',
   fullName: '',
   instanceName: '',
   logo: null,

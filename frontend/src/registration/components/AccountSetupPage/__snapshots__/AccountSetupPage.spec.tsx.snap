@@ -235,14 +235,14 @@ exports[`renders without crashing 1`] = `
           <input
             checked={false}
             className="custom-control-input"
-            id="acceptSupport"
-            name="acceptSupport"
+            id="acceptPaidSupport"
+            name="acceptPaidSupport"
             onChange={[Function]}
             type="checkbox"
           />
           <label
             className="custom-control-label"
-            htmlFor="acceptSupport"
+            htmlFor="acceptPaidSupport"
           >
             I understand that I can email OpenCraft with questions and that requests for support are subject to hourly fees.*
           </label>
@@ -253,14 +253,14 @@ exports[`renders without crashing 1`] = `
           <input
             checked={false}
             className="custom-control-input"
-            id="acceptTipsEmail"
-            name="acceptTipsEmail"
+            id="subscribeToUpdates"
+            name="subscribeToUpdates"
             onChange={[Function]}
             type="checkbox"
           />
           <label
             className="custom-control-label"
-            htmlFor="acceptTipsEmail"
+            htmlFor="subscribeToUpdates"
           >
             I want OpenCraft to occasionally email me about important news, tips and new features.
           </label>

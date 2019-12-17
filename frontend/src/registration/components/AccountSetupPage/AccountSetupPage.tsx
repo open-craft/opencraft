@@ -21,12 +21,12 @@ interface State {
   [key: string]: string | boolean;
   fullName: string;
   username: string;
-  emailAddress: string;
+  email: string;
   password: string;
   passwordConfirm: string;
   acceptTOS: boolean;
-  acceptSupport: boolean;
-  acceptTipsEmail: boolean;
+  acceptPaidSupport: boolean;
+  subscribeToUpdates: boolean;
 }
 
 interface StateProps extends RegistrationStateModel {}
@@ -50,12 +50,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
     this.state = {
       fullName: this.props.registrationData.fullName,
       username: this.props.registrationData.username,
-      emailAddress: this.props.registrationData.emailAddress,
+      email: this.props.registrationData.email,
       password: this.props.registrationData.password,
       passwordConfirm: this.props.registrationData.passwordConfirm,
       acceptTOS: this.props.registrationData.acceptTOS,
-      acceptSupport: this.props.registrationData.acceptSupport,
-      acceptTipsEmail: this.props.registrationData.acceptTipsEmail
+      acceptPaidSupport: this.props.registrationData.acceptPaidSupport,
+      subscribeToUpdates: this.props.registrationData.subscribeToUpdates
     };
   }
 
@@ -84,12 +84,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       {
         fullName: this.state.fullName,
         username: this.state.username,
-        emailAddress: this.state.emailAddress,
+        email: this.state.email,
         password: this.state.password,
         passwordConfirm: this.state.passwordConfirm,
         acceptTOS: this.state.acceptTOS,
-        acceptSupport: this.state.acceptSupport,
-        acceptTipsEmail: this.state.acceptTipsEmail
+        acceptPaidSupport: this.state.acceptPaidSupport,
+        subscribeToUpdates: this.state.subscribeToUpdates
       },
       ROUTES.Registration.CONGRATS
     );
@@ -132,12 +132,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
             error={this.props.registrationFeedback.username}
           />
           <TextInputField
-            fieldName="emailAddress"
-            value={this.state.emailAddress}
+            fieldName="email"
+            value={this.state.email}
             onChange={this.onChange}
             type="email"
             messages={messages}
-            error={this.props.registrationFeedback.emailAddress}
+            error={this.props.registrationFeedback.email}
           />
           <TextInputField
             fieldName="password"
@@ -175,36 +175,36 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
               {this.props.registrationFeedback.acceptTOS}
             </div>
           )}
-          <Form.Check type="checkbox" id="acceptSupport" custom>
+          <Form.Check type="checkbox" id="acceptPaidSupport" custom>
             <Form.Check.Input
               type="checkbox"
-              name="acceptSupport"
-              checked={this.state.acceptSupport}
+              name="acceptPaidSupport"
+              checked={this.state.acceptPaidSupport}
               onChange={this.onChange}
             />
             <Form.Check.Label>
-              <WrappedMessage id="acceptSupport" messages={messages} />
+              <WrappedMessage id="acceptPaidSupport" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
-          {this.props.registrationFeedback.acceptSupport && (
+          {this.props.registrationFeedback.acceptPaidSupport && (
             <div className="invalid-feedback-checkbox">
-              {this.props.registrationFeedback.acceptSupport}
+              {this.props.registrationFeedback.acceptPaidSupport}
             </div>
           )}
-          <Form.Check type="checkbox" id="acceptTipsEmail" custom>
+          <Form.Check type="checkbox" id="subscribeToUpdates" custom>
             <Form.Check.Input
               type="checkbox"
-              name="acceptTipsEmail"
-              checked={this.state.acceptTipsEmail}
+              name="subscribeToUpdates"
+              checked={this.state.subscribeToUpdates}
               onChange={this.onChange}
             />
             <Form.Check.Label>
-              <WrappedMessage id="acceptTipsEmail" messages={messages} />
+              <WrappedMessage id="subscribeToUpdates" messages={messages} />
             </Form.Check.Label>
           </Form.Check>
-          {this.props.registrationFeedback.acceptTipsEmail && (
+          {this.props.registrationFeedback.subscribeToUpdates && (
             <div className="invalid-feedback-checkbox">
-              {this.props.registrationFeedback.acceptTipsEmail}
+              {this.props.registrationFeedback.subscribeToUpdates}
             </div>
           )}
         </Form>
