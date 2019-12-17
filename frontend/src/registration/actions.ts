@@ -2,6 +2,8 @@ import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { Types as UIActionTypes } from 'ui/actions';
+import { V2Api } from 'global/api';
+import { toCamelCase } from 'utils/string_utils';
 import {
   RegistrationModel,
   RegistrationStateModel,
@@ -72,68 +74,44 @@ export const clearErrorMessage = (
   });
 };
 
-export const performValidation = (
-  data: RegistrationModel,
-  nextStep?: string
-): OcimThunkAction<void> => async dispatch => {
-  // Placeholder for form validation method
-  dispatch({
-    type: Types.REGISTRATION_VALIDATION,
-    data
-  });
-  setTimeout(() => {
-    try {
-      // TODO
-      if (data.domain === 'existing') {
-        throw Error('Test error');
-      }
-      dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });
-      if (nextStep) {
-        dispatch(push(nextStep));
-      }
-      dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
-    } catch (e) {
-      const error = {
-        domain: 'Domain already exists!'
-      };
-      dispatch({
-        type: Types.REGISTRATION_VALIDATION_FAILURE,
-        error
-      });
-    }
-  }, 800);
-};
-
 export const performValidationAndStore = (
   data: RegistrationModel,
   nextStep?: string
 ): OcimThunkAction<void> => async dispatch => {
-  // Placeholder for form validation method
   dispatch({
     type: Types.REGISTRATION_VALIDATION,
     data
   });
-  setTimeout(() => {
-    try {
-      // TODO
-      if (data.domain === 'existing') {
-        throw Error('Test error');
-      }
+
+  const registrationData: any = { ...data };
+
+  console.log(registrationData);
+  V2Api.instancesOpenedxConfigValidate({
+    data: { ...registrationData }
+  })
+    .then(() => {
+      // If validation succeeds, then save data and go to next step
       dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });
       if (nextStep) {
         dispatch(push(nextStep));
       }
       dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
-    } catch (e) {
-      const error = {
-        domain: 'Domain already exists!'
-      };
-      dispatch({
-        type: Types.REGISTRATION_VALIDATION_FAILURE,
-        error
+    })
+    .catch((e: any) => {
+      e.json().then((feedback: any) => {
+        // If validation fails, return error to form through state
+        const error = { ...feedback };
+        // Loop at each error message and join them.
+        // Also convert keys from snake_case to camelCase
+        Object.keys(error).forEach(key => {
+          error[toCamelCase(key)] = error[key].join();
+        });
+        dispatch({
+          type: Types.REGISTRATION_VALIDATION_FAILURE,
+          error
+        });
       });
-    }
-  }, 800);
+    });
 };
 
 export const submitRegistration = (
@@ -149,7 +127,7 @@ export const submitRegistration = (
   setTimeout(() => {
     try {
       // TODO
-      if (data.domain === 'existing') {
+      if (data.subdomain === 'existing') {
         throw Error('Test error');
       }
       dispatch({ type: Types.REGISTRATION_SUCCESS, data });
