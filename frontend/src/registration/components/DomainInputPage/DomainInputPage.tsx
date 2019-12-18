@@ -4,6 +4,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
+import { RedirectToCorrectStep } from 'registration/components';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -26,9 +27,7 @@ interface Props extends StateProps, ActionProps {}
 
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    loading: state.registration.loading,
-    registrationData: state.registration.registrationData,
-    registrationFeedback: state.registration.registrationFeedback
+    ...state.registration
   }),
   {
     performValidationAndStore,
@@ -71,6 +70,10 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           subtitle="Create your own Open edX instance now."
           currentStep={1}
         >
+          <RedirectToCorrectStep
+            currentPageStep={1}
+            currentRegistrationStep={this.props.currentRegistrationStep}
+          />
           <DomainInput
             domainName={this.state.subdomain}
             error={this.props.registrationFeedback.subdomain}

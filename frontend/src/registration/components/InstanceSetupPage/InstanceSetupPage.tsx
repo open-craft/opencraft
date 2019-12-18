@@ -4,7 +4,7 @@ import { Form } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron, TextInputField } from 'ui/components';
-import { RegistrationNavButtons } from 'registration/components';
+import { RegistrationNavButtons, RedirectToCorrectStep } from 'registration/components';
 import { ROUTES } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
@@ -28,13 +28,7 @@ interface Props extends StateProps, ActionProps {}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    loading: state.registration.loading,
-    registrationData: {
-      ...state.registration.registrationData
-    },
-    registrationFeedback: {
-      ...state.registration.registrationFeedback
-    }
+    ...state.registration
   }),
   {
     performValidationAndStore,
@@ -79,8 +73,12 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
-        currentStep={2}
+        currentStep={this.props.currentRegistrationStep}
       >
+        <RedirectToCorrectStep
+          currentPageStep={2}
+          currentRegistrationStep={this.props.currentRegistrationStep}
+        />
         <DomainSuccessJumbotron
           domain={this.props.registrationData.subdomain}
           domainIsExternal={this.props.registrationData.domainIsExternal}

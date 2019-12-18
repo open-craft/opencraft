@@ -1,3 +1,5 @@
+import { RegistrationSteps } from '../global/constants';
+
 export enum Theme {
   LIGHT = 'light',
   DARK = 'dark'
@@ -75,12 +77,14 @@ export interface RegistrationFeedbackModel extends DomainInfoValidationModel {}
 export const blankRegistrationFeedbackModel: Readonly<RegistrationFeedbackModel> = {};
 
 export interface RegistrationStateModel {
+  currentRegistrationStep: RegistrationSteps;
   loading: boolean;
   registrationData: RegistrationModel;
   registrationFeedback: RegistrationFeedbackModel;
 }
 
 export const blankRegistrationState: Readonly<RegistrationStateModel> = {
+  currentRegistrationStep: RegistrationSteps.FIRST_STEP,
   loading: false,
   registrationData: blankRegistration,
   registrationFeedback: blankRegistrationFeedbackModel

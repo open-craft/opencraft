@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Form } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
-import { RegistrationNavButtons } from 'registration/components';
+import { RegistrationNavButtons, RedirectToCorrectStep  } from 'registration/components';
 import { TextInputField } from 'ui/components';
 import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
@@ -34,9 +34,7 @@ interface Props extends StateProps, ActionProps {}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    loading: state.registration.loading,
-    registrationData: state.registration.registrationData,
-    registrationFeedback: state.registration.registrationFeedback
+    ...state.registration
   }),
   {
     submitRegistration,
@@ -116,8 +114,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
-        currentStep={3}
+        currentStep={1}
       >
+        <RedirectToCorrectStep
+          currentPageStep={3}
+          currentRegistrationStep={this.props.currentRegistrationStep}
+        />
         <Form className="account-form">
           <h2>
             <WrappedMessage id="createYourAccount" messages={messages} />

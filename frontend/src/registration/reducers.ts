@@ -1,6 +1,8 @@
 import update from 'immutability-helper';
+import { RegistrationSteps } from 'global/constants';
 import * as RegistrationActions from './actions';
 import { blankRegistrationState, RegistrationStateModel } from './models';
+
 
 export const initialState: Readonly<RegistrationStateModel> = blankRegistrationState;
 
@@ -21,6 +23,7 @@ export function registrationReducer(
       return {
         ...state,
         loading: false,
+        currentRegistrationStep: state.currentRegistrationStep + 1,
         registrationData: {
           ...state.registrationData,
           ...action.data
@@ -48,6 +51,7 @@ export function registrationReducer(
       return {
         ...state,
         loading: false,
+        currentRegistrationStep: RegistrationSteps.CONGRATS,
         registrationData: {
           ...state.registrationData,
           ...action.data
