@@ -46,14 +46,12 @@ export const performLogin = (
       data: { ...data }
     }).then((response) => {
       // Perform authentication and create new instance
-      dispatch({ type: Types.LOGIN_SUCCESS, response });
+      dispatch({ type: Types.LOGIN_SUCCESS, data: {...response} });
     })
     .catch((e: any) => {
       e.json().then((feedback: any) => {
         // If validation fails, return error to form through state
-        const error = { ...feedback };
-        // Loop at each error message and join them.
-        // Also convert keys from snake_case to camelCase
+        const error = feedback.detail;
         dispatch({
           type: Types.LOGIN_FAILURE,
           error

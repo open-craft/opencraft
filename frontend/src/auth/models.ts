@@ -10,15 +10,15 @@ export interface LoginFormModel {
 export interface LoginStateModel extends LoginFormModel {
   error: null | string;
   /** The JWT token used to call Ocim API */
-  authToken: string;
+  access: string;
   /** The JWT refresh token to renew auth token */
-  refreshToken: string;
+  refresh: string;
 }
 
 export const notLoggedInStatus: LoginStateModel = {
   error: null,
   username: "",
   password: "",
-  authToken: "",
-  refreshToken: ""
+  access: "",
+  refresh: ""
 }
