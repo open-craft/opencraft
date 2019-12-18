@@ -91,6 +91,11 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         acceptPaidSupport: this.state.acceptPaidSupport,
         subscribeToUpdates: this.state.subscribeToUpdates
       },
+      {
+        subdomain: this.props.registrationData.subdomain,
+        instanceName: this.props.registrationData.instanceName,
+        publicContactEmail: this.props.registrationData.publicContactEmail
+      },
       ROUTES.Registration.CONGRATS
     );
   };

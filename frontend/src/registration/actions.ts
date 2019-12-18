@@ -114,42 +114,50 @@ export const performValidationAndStore = (
 
 
 export const submitRegistration = (
-  data: RegistrationModel,
+  userData: RegistrationModel,
+  instanceData: RegistrationModel,
   nextStep?: string
-): OcimThunkAction<void> => async dispatch => {
-  const registrationData: any = { ...data };
+): OcimThunkAction<void> => async (dispatch: any) => {
+  const userRegistrationData: any = { ...userData };
   let registrationFeedback: any = {};
 
   // Check for privacy policy and replace by current date
-  if (registrationData.acceptTOS) {
-    delete registrationData.acceptTOS
-    registrationData.acceptedPrivacyPolicy = new Date();
+  if (userRegistrationData.acceptTOS) {
+    delete userRegistrationData.acceptTOS
+    userRegistrationData.acceptedPrivacyPolicy = new Date();
   } else {
     registrationFeedback.acceptTOS = "You must accept the Terms of Service and Privacy policy."
   }
 
   // Check if password confirmation is correct
-  if (registrationData.password === registrationData.passwordConfirm) {
-    delete registrationData.passwordConfirm
+  if (userRegistrationData.password === userRegistrationData.passwordConfirm) {
+    delete userRegistrationData.passwordConfirm
   } else {
     registrationFeedback.passwordConfirm = "The password confirmation should match the password from the field above."
   }
 
   if (Object.entries(registrationFeedback).length === 0) {
     V2Api.accountsCreate({
-      data: { ...registrationData }
+      data: { ...userRegistrationData }
     }).then(() => {
       // Perform authentication and create new instance
-      let x = dispatch(performLogin({
-        username: registrationData.username,
-        password: registrationData.password
-      }));
-      console.log(x)
-      // dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });
-      // if (nextStep) {
-      //   dispatch(push(nextStep));
-      // }
-      // dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
+      dispatch(performLogin({
+        username: userRegistrationData.username,
+        password: userRegistrationData.password
+      })).then(() => {
+        // Create instance
+        V2Api.instancesOpenedxConfigCreate({
+          data: { ...instanceData }
+        }).then(() => {
+          dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, userData });
+          if (nextStep) {
+            dispatch(push(nextStep));
+          }
+          dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
+        }).catch(e => {
+          console.log("Something happened! We'll be in touch soon.", e)
+        })
+      });
     })
     .catch((e: any) => {
       e.json().then((feedback: any) => {

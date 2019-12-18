@@ -3,7 +3,24 @@ import { OCIM_API_BASE } from 'global/constants';
 import { V2Api as _V2Api, Configuration } from 'ocim-client';
 
 const config = new Configuration({
-  basePath: `${OCIM_API_BASE}/api`
+  basePath: `${OCIM_API_BASE}/api`,
+  apiKey: (name: string, scopes?: string[]) => {
+      const authToken = localStorage.getItem('token_access');
+      // The current version of the API client requires us to specify the word "Bearer"
+      // The previous version did not.
+      return authToken ? `Bearer ${authToken}` : '';
+  }
+  // Add middleware to refresh token
+  // middleware: [
+  //     {
+  //         post: async (context) => {
+  //             if (context.response.status === 401) {
+  //                 redirectToLogin();
+  //             }
+  //             return context.response;
+  //         },
+  //     },
+  // ],
 });
 
 export const V2Api = new _V2Api(config);

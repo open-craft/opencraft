@@ -41,12 +41,14 @@ export type ActionTypes =
 export const performLogin = (
   data: LoginFormModel
 ): OcimThunkAction<void> => async dispatch => {
-    console.log(data)
-    V2Api.authTokenCreate({
+    await V2Api.authTokenCreate({
       data: { ...data }
     }).then((response) => {
       // Perform authentication and create new instance
       dispatch({ type: Types.LOGIN_SUCCESS, data: {...response} });
+      // Save auth data to localStorage so the API client picks it up
+      window.localStorage.setItem('token_access', response.access);
+      window.localStorage.setItem('token_refresh', response.refresh);
     })
     .catch((e: any) => {
       e.json().then((feedback: any) => {
@@ -61,6 +63,8 @@ export const performLogin = (
 };
 
 export const performLogout = () => async (dispatch: any) => {
+  window.localStorage.removeItem('token_access');
+  window.localStorage.removeItem('token_refresh');
   dispatch({
     type: Types.LOGOUT
   });
