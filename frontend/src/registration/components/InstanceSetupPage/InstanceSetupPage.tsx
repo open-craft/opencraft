@@ -4,7 +4,10 @@ import { Form } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron, TextInputField } from 'ui/components';
-import { RegistrationNavButtons, RedirectToCorrectStep } from 'registration/components';
+import {
+  RegistrationNavButtons,
+  RedirectToCorrectStep
+} from 'registration/components';
 import { ROUTES } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';

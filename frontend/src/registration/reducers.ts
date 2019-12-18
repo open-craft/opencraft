@@ -3,7 +3,6 @@ import { RegistrationSteps } from 'global/constants';
 import * as RegistrationActions from './actions';
 import { blankRegistrationState, RegistrationStateModel } from './models';
 
-
 export const initialState: Readonly<RegistrationStateModel> = blankRegistrationState;
 
 export function registrationReducer(

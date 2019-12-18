@@ -1,1 +1,1 @@
-export * from "./RedirectToCorrectStep";
+export * from './RedirectToCorrectStep';

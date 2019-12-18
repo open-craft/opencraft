@@ -2,10 +2,10 @@ import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
-import { submitRegistration } from '../../actions';
-import { RegistrationPage } from '../RegistrationPage';
 import { RegistrationSteps } from 'global/constants';
 import { RedirectToCorrectStep } from 'registration/components';
+import { submitRegistration } from '../../actions';
+import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -13,17 +13,20 @@ interface ActionProps {
   submitRegistration: Function;
 }
 
-interface Props extends ActionProps  {
+interface Props extends ActionProps {
   currentRegistrationStep: RegistrationSteps;
 }
 
 interface State {}
 
-@connect<{}, ActionProps, {}, Props, RootState>((state: RootState) => ({
-  ...state.registration
-}), {
-  submitRegistration
-})
+@connect<{}, ActionProps, {}, Props, RootState>(
+  (state: RootState) => ({
+    ...state.registration
+  }),
+  {
+    submitRegistration
+  }
+)
 export class CongratulationsPage extends React.PureComponent<Props, State> {
   public render() {
     return (

@@ -3,7 +3,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Form } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
-import { RegistrationNavButtons, RedirectToCorrectStep  } from 'registration/components';
+import {
+  RegistrationNavButtons,
+  RedirectToCorrectStep
+} from 'registration/components';
 import { TextInputField } from 'ui/components';
 import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
