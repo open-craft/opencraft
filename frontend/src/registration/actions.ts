@@ -1,7 +1,6 @@
 import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
-import { Types as UIActionTypes } from 'ui/actions';
 import { V2Api } from 'global/api';
 import { toCamelCase } from 'utils/string_utils';
 import { performLogin } from 'auth/actions';
@@ -94,7 +93,6 @@ export const performValidationAndStore = (
       if (nextStep) {
         dispatch(push(nextStep));
       }
-      dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
     })
     .catch((e: any) => {
       e.json().then((feedback: any) => {
@@ -162,7 +160,6 @@ export const submitRegistration = (
               if (nextStep) {
                 dispatch(push(nextStep));
               }
-              dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
             })
             .catch(e => {
               console.log("This isn't supposed to happen!", e);
