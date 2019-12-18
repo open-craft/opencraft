@@ -17,8 +17,8 @@ export interface LoginStateModel extends LoginFormModel {
 
 export const notLoggedInStatus: LoginStateModel = {
   error: null,
-  username: "",
-  password: "",
-  access: "",
-  refresh: ""
-}
+  username: '',
+  password: '',
+  access: '',
+  refresh: ''
+};
