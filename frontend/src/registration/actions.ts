@@ -165,7 +165,7 @@ export const submitRegistration = (
               dispatch({ type: UIActionTypes.NAVIGATE_NEXT_PAGE });
             })
             .catch(e => {
-              console.log("Something happened! We'll be in touch soon.", e);
+              console.log("This isn't supposed to happen!", e);
             });
         });
       })
