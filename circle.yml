@@ -18,7 +18,7 @@ jobs:
             - frontend-deps-
       - run:
           name: Build and install Ocim API client
-          comand: ./scripts/build-api-client.sh 
+          command: ./scripts/build-api-client.sh
       - run:
           name: Installing frontend dependencies
           command: npm install
@@ -45,6 +45,9 @@ jobs:
             - frontend-deps-{{ .Branch }}-
             - frontend-deps-
       - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
@@ -69,6 +72,9 @@ jobs:
             - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
             - frontend-deps-{{ .Branch }}-
             - frontend-deps-
+      - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh 
       - run:
           name: Installing frontend dependencies
           command: npm install
