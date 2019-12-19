@@ -10,17 +10,6 @@ const config = new Configuration({
     // The previous version did not.
     return authToken ? `Bearer ${authToken}` : '';
   }
-  // Add middleware to refresh token
-  // middleware: [
-  //     {
-  //         post: async (context) => {
-  //             if (context.response.status === 401) {
-  //                 redirectToLogin();
-  //             }
-  //             return context.response;
-  //         },
-  //     },
-  // ],
 });
 
 export const V2Api = new _V2Api(config);

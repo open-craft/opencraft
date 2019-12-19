@@ -82,11 +82,8 @@ export const performValidationAndStore = (
     type: Types.REGISTRATION_VALIDATION,
     data
   });
-  const registrationData: any = { ...data };
 
-  V2Api.instancesOpenedxConfigValidate({
-    data: { ...registrationData }
-  })
+  V2Api.instancesOpenedxConfigValidate({data})
     .then(() => {
       // If validation succeeds, then save data and go to next step
       dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });

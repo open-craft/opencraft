@@ -3,6 +3,7 @@ import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 // import { Types as UIActionTypes } from 'ui/actions';
 import { V2Api } from 'global/api';
+import { Token } from 'ocim-client';
 // import { toCamelCase } from 'utils/string_utils';
 import { LoginFormModel, LoginStateModel } from './models';
 
@@ -36,12 +37,10 @@ export type ActionTypes = SubmitLogin | LoginSuccess | LoginFailure | Logout;
 export const performLogin = (
   data: LoginFormModel
 ): OcimThunkAction<void> => async dispatch => {
-  await V2Api.authTokenCreate({
-    data: { ...data }
-  })
-    .then(response => {
+  await V2Api.authTokenCreate({data})
+    .then((response: Token) => {
       // Perform authentication and create new instance
-      dispatch({ type: Types.LOGIN_SUCCESS, data: { ...response } });
+      dispatch({ type: Types.LOGIN_SUCCESS, data: response });
       // Save auth data to localStorage so the API client picks it up
       window.localStorage.setItem('token_access', response.access);
       window.localStorage.setItem('token_refresh', response.refresh);

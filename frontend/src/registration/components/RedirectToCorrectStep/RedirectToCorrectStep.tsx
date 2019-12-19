@@ -22,5 +22,5 @@ export const RedirectToCorrectStep: React.FC<Props> = (props: Props) => {
     );
     return <Redirect to={REGISTRATION_STEPS[page]} />;
   }
-  return <></>;
+  return null;
 };

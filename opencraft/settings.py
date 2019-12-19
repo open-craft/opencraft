@@ -146,8 +146,6 @@ if DEBUG and ENABLE_DEBUG_TOOLBAR:
 
 ROOT_URLCONF = 'opencraft.urls'
 
-CORS_ORIGIN_ALLOW_ALL = True
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -815,3 +813,18 @@ CHANNEL_LAYERS = {
 #: How many times should OCIM retry launching an instance before giving up when
 #: the instance launch is triggered by a user.
 SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)
+
+
+# Instances ###################################################################
+
+# User Console - React SPA
+# This is used to handle redirects from validation links back to the SPA
+USER_CONSOLE_FRONTEND_URL = env('USER_CONSOLE_FRONTEND_URL', default='https://app.console.opencraft.com')
+
+# CORS Settings - https://github.com/adamchainz/django-cors-headers
+CORS_ORIGIN_REGEX_WHITELIST = [
+    r"(http|https)://(.*).opencraft.com",
+]
+# Enable cross domain requests to make testing easier on devstack
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
