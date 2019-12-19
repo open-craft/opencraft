@@ -9,6 +9,6 @@ cd packages/api_client
 rm -rf dist
 npm install
 npm run build
-cd ../..
+cd ../../
 
 printf "\API Client build complete.\n"

@@ -18,8 +18,7 @@ jobs:
             - frontend-deps-
       - run:
           name: Build and install Ocim API client
-          script:
-            - ./scripts/build-api-client.sh 
+          comand: ./scripts/build-api-client.sh 
       - run:
           name: Installing frontend dependencies
           command: npm install
