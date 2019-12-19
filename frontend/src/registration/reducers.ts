@@ -39,10 +39,7 @@ export function registrationReducer(
         loading: false
       };
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
-      return {
-        ...state,
-        loading: true
-      };
+      return update(state, { loading: { $set: true } });
     case RegistrationActions.Types.REGISTRATION_FAILURE:
       return {
         ...state,

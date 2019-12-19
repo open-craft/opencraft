@@ -119,6 +119,10 @@ export const submitRegistration = (
   instanceData: RegistrationModel,
   nextStep?: RegistrationSteps
 ): OcimThunkAction<void> => async (dispatch: any) => {
+  dispatch({
+    type: Types.REGISTRATION_SUBMIT
+  });
+
   const userRegistrationData: any = { ...userData };
   const registrationFeedback: any = {};
 

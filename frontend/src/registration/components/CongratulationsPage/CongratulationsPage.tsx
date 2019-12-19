@@ -32,7 +32,7 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
     return (
       <RegistrationPage title="Pro & Teacher Account" currentStep={4}>
         <RedirectToCorrectStep
-          currentPageStep={4}
+          currentPageStep={3}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <div className="congrats-page">
