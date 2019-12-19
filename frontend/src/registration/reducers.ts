@@ -17,17 +17,21 @@ export function registrationReducer(
       });
     case RegistrationActions.Types.REGISTRATION_VALIDATION:
       return update(state, { loading: { $set: true } });
-    case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS:
-      // Merge state without erasing previous values
-      return {
+    case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS: {
+      const newState = {
         ...state,
         loading: false,
-        currentRegistrationStep: state.currentRegistrationStep + 1,
         registrationData: {
           ...state.registrationData,
           ...action.data
         }
       };
+      if (action.nextStep) {
+        newState.currentRegistrationStep = action.nextStep;
+      }
+      // Merge state without erasing previous values
+      return newState;
+    }
     case RegistrationActions.Types.REGISTRATION_VALIDATION_FAILURE:
       return {
         ...state,

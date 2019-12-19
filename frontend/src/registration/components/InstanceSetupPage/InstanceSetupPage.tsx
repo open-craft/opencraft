@@ -8,7 +8,7 @@ import {
   RegistrationNavButtons,
   RedirectToCorrectStep
 } from 'registration/components';
-import { ROUTES } from 'global/constants';
+import { RegistrationSteps } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -68,7 +68,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
         instanceName: this.state.instanceName,
         publicContactEmail: this.state.publicContactEmail
       },
-      ROUTES.Registration.ACCOUNT
+      RegistrationSteps.ACCOUNT
     );
   };
 
@@ -76,10 +76,10 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
-        currentStep={this.props.currentRegistrationStep}
+        currentStep={2}
       >
         <RedirectToCorrectStep
-          currentPageStep={2}
+          currentPageStep={1}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <DomainSuccessJumbotron

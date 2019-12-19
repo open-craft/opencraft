@@ -17,7 +17,7 @@ export const RedirectToCorrectStep: React.FC<Props> = (props: Props) => {
   }
   if (props.currentPageStep > props.currentRegistrationStep) {
     const page = Math.min(
-      props.currentRegistrationStep - 1,
+      props.currentRegistrationStep,
       RegistrationSteps.FIRST_STEP
     );
     return <Redirect to={REGISTRATION_STEPS[page]} />;

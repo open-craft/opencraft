@@ -4,6 +4,7 @@ import { Action } from 'redux';
 import { V2Api } from 'global/api';
 import { toCamelCase } from 'utils/string_utils';
 import { performLogin } from 'auth/actions';
+import { RegistrationSteps, REGISTRATION_STEPS } from 'global/constants';
 import {
   RegistrationModel,
   RegistrationStateModel,
@@ -35,6 +36,7 @@ export interface RegistrationValidation extends Action {
 export interface RegistrationValidationSuccess extends Action {
   readonly type: Types.REGISTRATION_VALIDATION_SUCCESS;
   readonly data: RegistrationModel;
+  readonly nextStep?: RegistrationSteps;
 }
 
 export interface RegistrationValidationFailure extends Action {
@@ -76,7 +78,7 @@ export const clearErrorMessage = (
 
 export const performValidationAndStore = (
   data: RegistrationModel,
-  nextStep?: string
+  nextStep?: RegistrationSteps
 ): OcimThunkAction<void> => async dispatch => {
   dispatch({
     type: Types.REGISTRATION_VALIDATION,
@@ -86,32 +88,36 @@ export const performValidationAndStore = (
   V2Api.instancesOpenedxConfigValidate({ data })
     .then(() => {
       // If validation succeeds, then save data and go to next step
-      dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data });
+      dispatch({ type: Types.REGISTRATION_VALIDATION_SUCCESS, data, nextStep });
       if (nextStep) {
-        dispatch(push(nextStep));
+        dispatch(push(REGISTRATION_STEPS[nextStep]));
       }
     })
     .catch((e: any) => {
-      e.json().then((feedback: any) => {
-        // If validation fails, return error to form through state
-        const error = { ...feedback };
-        // Loop at each error message and join them.
-        // Also convert keys from snake_case to camelCase
-        Object.keys(error).forEach(key => {
-          error[toCamelCase(key)] = error[key].join();
+      try {
+        e.json().then((feedback: any) => {
+          // If validation fails, return error to form through state
+          const error = { ...feedback };
+          // Loop at each error message and join them.
+          // Also convert keys from snake_case to camelCase
+          Object.keys(error).forEach(key => {
+            error[toCamelCase(key)] = error[key].join();
+          });
+          dispatch({
+            type: Types.REGISTRATION_VALIDATION_FAILURE,
+            error
+          });
         });
-        dispatch({
-          type: Types.REGISTRATION_VALIDATION_FAILURE,
-          error
-        });
-      });
+      } catch (error) {
+        dispatch(push('/error'));
+      }
     });
 };
 
 export const submitRegistration = (
   userData: RegistrationModel,
   instanceData: RegistrationModel,
-  nextStep?: string
+  nextStep?: RegistrationSteps
 ): OcimThunkAction<void> => async (dispatch: any) => {
   const userRegistrationData: any = { ...userData };
   const registrationFeedback: any = {};
@@ -152,10 +158,11 @@ export const submitRegistration = (
             .then(() => {
               dispatch({
                 type: Types.REGISTRATION_VALIDATION_SUCCESS,
-                userData
+                userData,
+                nextStep
               });
               if (nextStep) {
-                dispatch(push(nextStep));
+                dispatch(push(REGISTRATION_STEPS[nextStep]));
               }
             })
             .catch(e => {

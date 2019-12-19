@@ -8,7 +8,11 @@ import {
   RedirectToCorrectStep
 } from 'registration/components';
 import { TextInputField } from 'ui/components';
-import { PRIVACY_POLICY_LINK, ROUTES, TOS_LINK } from 'global/constants';
+import {
+  RegistrationSteps,
+  PRIVACY_POLICY_LINK,
+  TOS_LINK
+} from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
 import { clearErrorMessage, submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -97,7 +101,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         instanceName: this.props.registrationData.instanceName,
         publicContactEmail: this.props.registrationData.publicContactEmail
       },
-      ROUTES.Registration.CONGRATS
+      RegistrationSteps.CONGRATS
     );
   };
 
@@ -117,10 +121,10 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
-        currentStep={1}
+        currentStep={3}
       >
         <RedirectToCorrectStep
-          currentPageStep={3}
+          currentPageStep={2}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <Form className="account-form">

@@ -14,35 +14,16 @@ exports[`renders without crashing 1`] = `
       className="step-bar"
     >
       <svg
-        className="circled-number"
-        viewBox="0 0 20 20"
+        className="step"
+        viewBox="0 0 10 10"
         xmlns="http://www.w3.org/2000/svg"
       >
         <circle
-          className="outer-circle"
-          cx={10}
-          cy={10}
-          r={10}
+          cx={5}
+          cy={5}
+          fill="#6d9cae"
+          r={5}
         />
-        <circle
-          className="inner-circle"
-          cx={10}
-          cy={10}
-          r={7}
-          strokeWidth={2}
-        />
-        <text
-          className="circle-text"
-          color="#1e4c59"
-          dy="0.4em"
-          fontSize="10px"
-          strokeWidth="1px"
-          textAnchor="middle"
-          x="50%"
-          y="50%"
-        >
-          1
-        </text>
       </svg>
       <span
         className="line"

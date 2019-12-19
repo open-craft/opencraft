@@ -1,4 +1,4 @@
-import { ROUTES } from 'global/constants';
+import { RegistrationSteps } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
@@ -58,7 +58,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
       {
         subdomain: this.state.subdomain
       },
-      ROUTES.Registration.INSTANCE
+      RegistrationSteps.INSTANCE
     );
   };
 
@@ -71,7 +71,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           currentStep={1}
         >
           <RedirectToCorrectStep
-            currentPageStep={1}
+            currentPageStep={0}
             currentRegistrationStep={this.props.currentRegistrationStep}
           />
           <DomainInput
