@@ -37,7 +37,7 @@ export type ActionTypes = SubmitLogin | LoginSuccess | LoginFailure | Logout;
 export const performLogin = (
   data: LoginFormModel
 ): OcimThunkAction<void> => async dispatch => {
-  await V2Api.authTokenCreate({data})
+  await V2Api.authTokenCreate({ data })
     .then((response: Token) => {
       // Perform authentication and create new instance
       dispatch({ type: Types.LOGIN_SUCCESS, data: response });
