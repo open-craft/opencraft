@@ -74,7 +74,7 @@ jobs:
             - frontend-deps-
       - run:
           name: Build and install Ocim API client
-          command: ./scripts/build-api-client.sh 
+          command: ./scripts/build-api-client.sh
       - run:
           name: Installing frontend dependencies
           command: npm install
@@ -333,7 +333,16 @@ workflows:
               only:
                 # TODO: Change to master after frontend changes are merged into the master branch
                 - new-registration-flow
-
+      # Deploy production
+      - frontend-deploy:
+          context: ocim-frontend-production
+          requires:
+            - frontend-build
+          filters:
+            branches:
+              only:
+                # TODO: Change to master after frontend changes are merged into the master branch
+                - giovanni/bb-1970-connect-backend
   cleanup-workflow:
     triggers:
       - schedule:
