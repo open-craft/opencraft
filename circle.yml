@@ -339,12 +339,12 @@ workflows:
           name: frontend-build-production
           context: ocim-frontend-production
           requires:
-            - frontend-build
+            - frontend-deploy-stage
           filters:
             branches:
               only:
                 # TODO: Change to master after frontend changes are merged into the master branch
-                - giovanni/bb-1970-connect-registration
+                - new-registration-flow
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
@@ -354,7 +354,7 @@ workflows:
             branches:
               only:
                 # TODO: Change to master after frontend changes are merged into the master branch
-                - giovanni/bb-1970-connect-registration
+                - new-registration-flow
   cleanup-workflow:
     triggers:
       - schedule:
