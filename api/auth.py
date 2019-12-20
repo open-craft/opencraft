@@ -19,7 +19,7 @@
 """
 JWT Auth overrides to generate swagger models
 """
-# pylint: disable=abstract-method,arguments-differ
+# pylint: disable=abstract-method,arguments-differ,missing-docstring
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
@@ -33,6 +33,11 @@ class TokenSerializer(serializers.Serializer):
 
     This overrides the serializer returned by the JSON library and
     fixes the generated swagger schema.
+    Desired return format:
+    {
+        "access": "<TOKEN>",
+        "refresh": "<TOKEN>",
+    }
     """
     refresh = serializers.CharField()
     access = serializers.CharField()
@@ -44,11 +49,20 @@ class TokenErrorSerializer(serializers.Serializer):
 
     This overrides the serializer returned by the JSON library and
     fixes the generated swagger schema.
+    Desired return format:
+    {
+        "details": "error"
+    }
     """
     details = serializers.CharField()
 
 
 class JWTAuthToken(TokenObtainPairView):
+    """
+    JWTAuthToken - for swagger
+
+    This overrides the method just to add the Swagger schema overrides
+    """
     @swagger_auto_schema(responses={201: TokenSerializer, 491: TokenErrorSerializer})
     def post(self, *args, **kwargs):
         return super(JWTAuthToken, self).post(*args, **kwargs)
