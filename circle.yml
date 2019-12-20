@@ -325,6 +325,7 @@ workflows:
             - frontend-test
       # Frontend deployment (only on master branch)
       - frontend-deploy:
+          name: frontend-deploy-stage
           context: ocim-frontend-stage
           requires:
             - frontend-build
@@ -334,10 +335,21 @@ workflows:
                 # TODO: Change to master after frontend changes are merged into the master branch
                 - new-registration-flow
       # Deploy production
-      - frontend-deploy:
+      - frontend-build:
+          name: frontend-build-production
           context: ocim-frontend-production
           requires:
             - frontend-build
+          filters:
+            branches:
+              only:
+                # TODO: Change to master after frontend changes are merged into the master branch
+                - giovanni/bb-1970-connect-registration
+      - frontend-deploy:
+          name: frontend-deploy-production
+          context: ocim-frontend-production
+          requires:
+            - frontend-build-production
           filters:
             branches:
               only:
