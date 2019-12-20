@@ -19,7 +19,7 @@
 """
 JWT Auth overrides to generate swagger models
 """
-# pylint: disable=abstract-method,arguments-differ,missing-docstring
+# pylint: disable=abstract-method,arguments-differ
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
