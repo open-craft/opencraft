@@ -27,7 +27,11 @@ interface State {
 }
 
 interface StateProps extends RegistrationStateModel {}
-interface Props extends StateProps, ActionProps {}
+interface Props extends StateProps, ActionProps {
+  history: {
+    goBack: Function;
+  }
+}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
@@ -112,7 +116,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
           disableNextButton={false}
           showBackButton
           showNextButton
-          handleBackClick={() => {}}
+          handleBackClick={() => {this.props.history.goBack()}}
           handleNextClick={this.submitInstanceData}
         />
       </RegistrationPage>
