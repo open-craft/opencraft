@@ -332,8 +332,7 @@ workflows:
           filters:
             branches:
               only:
-                # TODO: Change to master after frontend changes are merged into the master branch
-                - new-registration-flow
+                - master
       # Deploy production
       - frontend-build:
           name: frontend-build-production
@@ -343,8 +342,7 @@ workflows:
           filters:
             branches:
               only:
-                # TODO: Change to master after frontend changes are merged into the master branch
-                - new-registration-flow
+                - master
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
@@ -353,8 +351,7 @@ workflows:
           filters:
             branches:
               only:
-                # TODO: Change to master after frontend changes are merged into the master branch
-                - new-registration-flow
+                - master
   cleanup-workflow:
     triggers:
       - schedule:
