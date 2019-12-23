@@ -51,8 +51,6 @@ urlpatterns = [
     # v2 urls
     url(r'^v2/', include((v2_router.urls, 'api_v2'), namespace='v2')),
     url(r'^v2/auth/token/', JWTAuthToken.as_view(), name='token_obtain_pair'),
-    # url(r'^v2/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    # url(r'^v2/auth/verify/', TokenVerifyView.as_view(), name='token_verify'),
     # Documentation
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=10), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=10), name='schema-swagger-ui'),

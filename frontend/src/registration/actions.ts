@@ -2,9 +2,9 @@ import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { V2Api } from 'global/api';
-import { toCamelCase } from 'utils/string_utils';
+import { sanitizeErrorFeedback } from 'utils/string_utils';
 import { performLogin } from 'auth/actions';
-import { RegistrationSteps, REGISTRATION_STEPS } from 'global/constants';
+import { RegistrationSteps, REGISTRATION_STEPS, ROUTES } from 'global/constants';
 import {
   RegistrationModel,
   RegistrationStateModel,
@@ -97,19 +97,14 @@ export const performValidationAndStore = (
       try {
         e.json().then((feedback: any) => {
           // If validation fails, return error to form through state
-          const error = { ...feedback };
-          // Loop at each error message and join them.
-          // Also convert keys from snake_case to camelCase
-          Object.keys(error).forEach(key => {
-            error[toCamelCase(key)] = error[key].join();
-          });
+          let error: any = sanitizeErrorFeedback(feedback);
           dispatch({
             type: Types.REGISTRATION_VALIDATION_FAILURE,
             error
           });
         });
       } catch (error) {
-        dispatch(push('/error'));
+        dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
       }
     });
 };
@@ -145,7 +140,7 @@ export const submitRegistration = (
 
   if (Object.entries(registrationFeedback).length === 0) {
     V2Api.accountsCreate({
-      data: { ...userRegistrationData }
+      data: userRegistrationData
     })
       .then(() => {
         // Perform authentication and create new instance
@@ -157,7 +152,7 @@ export const submitRegistration = (
         ).then(() => {
           // Create instance
           V2Api.instancesOpenedxConfigCreate({
-            data: { ...instanceData }
+            data: instanceData
           })
             .then(() => {
               dispatch({
@@ -177,12 +172,7 @@ export const submitRegistration = (
       .catch((e: any) => {
         e.json().then((feedback: any) => {
           // If validation fails, return error to form through state
-          const error = { ...feedback };
-          // Loop at each error message and join them.
-          // Also convert keys from snake_case to camelCase
-          Object.keys(error).forEach(key => {
-            error[toCamelCase(key)] = error[key].join();
-          });
+          let error: any = sanitizeErrorFeedback(feedback);
           dispatch({
             type: Types.REGISTRATION_VALIDATION_FAILURE,
             error
@@ -193,7 +183,7 @@ export const submitRegistration = (
     // Failing local validation
     dispatch({
       type: Types.REGISTRATION_VALIDATION_FAILURE,
-      error: { ...registrationFeedback }
+      error: registrationFeedback
     });
   }
 };

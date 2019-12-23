@@ -5,10 +5,10 @@ set -euxo pipefail
 
 printf "\n"
 
-cd packages/api_client
-rm -rf dist
-npm install
-npm run build
-cd ../../
+API_CLIENT_PATH="packages/api_client"
 
-printf "\API Client build complete.\n"
+rm -rf $API_CLIENT_PATH/dist
+npm install --prefix=$API_CLIENT_PATH
+npm run build --prefix=$API_CLIENT_PATH
+
+printf "API Client build complete."

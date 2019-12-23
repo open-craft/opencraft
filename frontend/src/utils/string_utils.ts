@@ -6,3 +6,16 @@ export const toCamelCase = (s: string) => {
       .replace('_', '');
   });
 };
+
+
+export const sanitizeErrorFeedback = (input: {[key:string]: Array<string>}) => {
+  // Loop at each error message and join them.
+  // Also convert keys from snake_case to camelCase
+  let newObject: any = {};
+
+  Object.keys(input).forEach(key => {
+    newObject[toCamelCase(key)] = input[key].join();
+  });
+
+  return newObject;
+};

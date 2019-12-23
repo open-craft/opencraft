@@ -17,7 +17,7 @@ export enum RegistrationSteps {
   INSTANCE = 1,
   ACCOUNT = 2,
   CONGRATS = 3,
-  LAST_STEP = 4
+  LAST_STEP = 3
 }
 
 export const ROUTES = {
@@ -27,6 +27,9 @@ export const ROUTES = {
     INSTANCE: '/registration/instance',
     ACCOUNT: '/registration/account',
     CONGRATS: '/registration/congrats'
+  },
+  Error: {
+    UNKNOWN_ERROR: '/error'
   }
 };
 
