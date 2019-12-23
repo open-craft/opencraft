@@ -4,7 +4,11 @@ import { Action } from 'redux';
 import { V2Api } from 'global/api';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 import { performLogin } from 'auth/actions';
-import { RegistrationSteps, REGISTRATION_STEPS, ROUTES } from 'global/constants';
+import {
+  RegistrationSteps,
+  REGISTRATION_STEPS,
+  ROUTES
+} from 'global/constants';
 import {
   RegistrationModel,
   RegistrationStateModel,
@@ -97,7 +101,7 @@ export const performValidationAndStore = (
       try {
         e.json().then((feedback: any) => {
           // If validation fails, return error to form through state
-          let error: any = sanitizeErrorFeedback(feedback);
+          const error: any = sanitizeErrorFeedback(feedback);
           dispatch({
             type: Types.REGISTRATION_VALIDATION_FAILURE,
             error
@@ -172,7 +176,7 @@ export const submitRegistration = (
       .catch((e: any) => {
         e.json().then((feedback: any) => {
           // If validation fails, return error to form through state
-          let error: any = sanitizeErrorFeedback(feedback);
+          const error: any = sanitizeErrorFeedback(feedback);
           dispatch({
             type: Types.REGISTRATION_VALIDATION_FAILURE,
             error
