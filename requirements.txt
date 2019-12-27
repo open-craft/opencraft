@@ -47,6 +47,7 @@ debtcollector==1.21.0     # via oslo.config, oslo.utils, python-keystoneclient
 decorator==4.4.0          # via dogpile.cache, ipython, openstacksdk, traitlets
 django-appconf==1.0.3     # via django-compressor
 django-compressor==2.3
+django-cors-headers==3.2.0
 django-debug-toolbar==2.0
 django-environ==0.4.5
 django-extensions==2.1.9
@@ -59,6 +60,7 @@ django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
 django==2.2.9
+djangorestframework-simplejwt==4.4.0
 djangorestframework==3.9.4
 dns-lexicon==3.3.13
 docutils==0.14
@@ -141,6 +143,7 @@ pyflakes==1.6.0
 pygments==2.4.2           # via ipython
 pyhamcrest==1.9.0         # via twisted
 pyjwkest==1.4.0
+pyjwt==1.7.1              # via djangorestframework-simplejwt
 pylint-celery==0.3
 pylint-common==0.2.5
 pylint-django==2.0.6
@@ -193,6 +196,7 @@ tldextract==2.2.2         # via dns-lexicon
 traitlets==4.3.2          # via ipython
 twisted==19.7.0           # via daphne
 txaio==18.8.1             # via autobahn
+typed-ast==1.4.0          # via astroid
 uritemplate==3.0.0        # via coreapi, drf-yasg
 urllib3==1.25.3
 virtualenv==16.6.1

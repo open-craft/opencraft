@@ -12,12 +12,12 @@ export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
 
 export enum RegistrationSteps {
-  FIRST_STEP = 1,
-  DOMAIN = 1,
-  INSTANCE = 2,
-  ACCOUNT = 3,
-  CONGRATS = 4,
-  LAST_STEP = 4
+  FIRST_STEP = 0,
+  DOMAIN = 0,
+  INSTANCE = 1,
+  ACCOUNT = 2,
+  CONGRATS = 3,
+  LAST_STEP = 3
 }
 
 export const ROUTES = {
@@ -27,6 +27,9 @@ export const ROUTES = {
     INSTANCE: '/registration/instance',
     ACCOUNT: '/registration/account',
     CONGRATS: '/registration/congrats'
+  },
+  Error: {
+    UNKNOWN_ERROR: '/error'
   }
 };
 

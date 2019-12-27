@@ -5,3 +5,5 @@ export * from './RegistrationPage';
 export * from './AccountSetupPage';
 export * from './CongratulationsPage';
 export * from './RegistrationNavButtons';
+
+export * from './RedirectToCorrectStep';

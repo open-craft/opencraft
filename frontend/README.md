@@ -2,12 +2,26 @@
 
 A single-page app for the [OpenCraft Instance Manager (OCIM)](https://github.com/open-craft/opencraft).
 
+# Provisioning
+
+1. Install the API client:
+```
+./scripts/build-api-client.sh
+```
+2. Install requirements:
+```
+npm install
+```
+3. Run frontend:
+```
+npm start
+```
+
 # Running with Vagrant
 
-While it is possible to run this frontend server within Vagrant during 
-development, for performance reasons it's better to run it separately 
-outside of Vagrant instead. 
-
+While it is possible to run this frontend server within Vagrant during
+development, for performance reasons it's better to run it separately
+outside of Vagrant instead.
 
 # Frontend Architecture/Stack
 

@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+import { RegistrationSteps } from 'global/constants';
 import * as RegistrationActions from './actions';
 import { blankRegistrationState, RegistrationStateModel } from './models';
 
@@ -16,9 +17,8 @@ export function registrationReducer(
       });
     case RegistrationActions.Types.REGISTRATION_VALIDATION:
       return update(state, { loading: { $set: true } });
-    case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS:
-      // Merge state without erasing previous values
-      return {
+    case RegistrationActions.Types.REGISTRATION_VALIDATION_SUCCESS: {
+      const newState = {
         ...state,
         loading: false,
         registrationData: {
@@ -26,6 +26,12 @@ export function registrationReducer(
           ...action.data
         }
       };
+      if (action.nextStep) {
+        newState.currentRegistrationStep = action.nextStep;
+      }
+      // Merge state without erasing previous values
+      return newState;
+    }
     case RegistrationActions.Types.REGISTRATION_VALIDATION_FAILURE:
       return {
         ...state,
@@ -33,10 +39,7 @@ export function registrationReducer(
         loading: false
       };
     case RegistrationActions.Types.REGISTRATION_SUBMIT:
-      return {
-        ...state,
-        loading: true
-      };
+      return update(state, { loading: { $set: true } });
     case RegistrationActions.Types.REGISTRATION_FAILURE:
       return {
         ...state,
@@ -48,6 +51,7 @@ export function registrationReducer(
       return {
         ...state,
         loading: false,
+        currentRegistrationStep: RegistrationSteps.CONGRATS,
         registrationData: {
           ...state.registrationData,
           ...action.data

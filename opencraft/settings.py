@@ -122,10 +122,12 @@ INSTALLED_APPS = (
     'channels',
     'drf_yasg',
     'django_inlinecss',
+    'corsheaders',
 ) + LOCAL_APPS
 
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -218,7 +220,13 @@ REST_FRAMEWORK = {
         'instance.api.permissions.ApiInstanceManagerPermission',
     ],
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    ]
 }
+
 
 # Swagger #####################################################################
 
@@ -230,6 +238,16 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "opencraft.swagger.api_info",
     "DEFAULT_MODEL_RENDERING": "example",
     "DOC_EXPANSION": None,
+    "SECURITY_DEFINITIONS": {
+        "api_key": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "basic": {
+            "type": "basic",
+        },
+    }
 }
 
 # Redis cache & locking #######################################################
@@ -806,3 +824,18 @@ CHANNEL_LAYERS = {
 #: How many times should OCIM retry launching an instance before giving up when
 #: the instance launch is triggered by a user.
 SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)
+
+
+# Instances ###################################################################
+
+# User Console - React SPA
+# This is used to handle redirects from validation links back to the SPA
+USER_CONSOLE_FRONTEND_URL = env('USER_CONSOLE_FRONTEND_URL', default='https://app.console.opencraft.com')
+
+# CORS Settings - https://github.com/adamchainz/django-cors-headers
+CORS_ORIGIN_REGEX_WHITELIST = [
+    r"(http|https)://(.*).opencraft.com",
+]
+# Enable cross domain requests to make testing easier on devstack
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True

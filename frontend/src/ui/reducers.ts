@@ -11,22 +11,6 @@ export function uiStateReducer(
   action: UIActions.ActionTypes
 ): UiStateModel {
   switch (action.type) {
-    case UIActions.Types.NAVIGATE_NEXT_PAGE: {
-      if (state.currentRegistrationStep == null) return initialState;
-      const nextStep = Math.min(
-        state.currentRegistrationStep + 1,
-        RegistrationSteps.LAST_STEP
-      );
-      return { ...state, currentRegistrationStep: nextStep };
-    }
-    case UIActions.Types.NAVIGATE_PREV_PAGE: {
-      if (state.currentRegistrationStep == null) return initialState;
-      const prevStep = Math.min(
-        state.currentRegistrationStep + 1,
-        RegistrationSteps.LAST_STEP
-      );
-      return { ...state, currentRegistrationStep: prevStep };
-    }
     default:
       return state;
   }
