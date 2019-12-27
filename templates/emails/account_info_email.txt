@@ -17,10 +17,3 @@ Instance name: {{ instance_name }}
 Full name: {{ full_name }}
 Email address: {{ email }}
 Public contact email address: {{ public_contact_email }}
-
-Customisation details:
-Theme: {{ theme }}
-Primary color: {{ primary_color }}
-Secondary colour: {{ secondary_color }}
-Logo: {{ logo_url }}
-Header image: {{ header_url }}
