@@ -67,10 +67,6 @@ def send_account_info_email(application: BetaTestApplication) -> None:
     confirmed their email addresses and their instance is set up.
     """
     user = application.user
-    logo_url = application.draft_theme_config.get('images', {}).get('logo', 'logo')
-    logo_file = logo_url.split('/')[-1]
-    header_url = application.draft_theme_config.get('images', {}).get('cover', 'header')
-    header_file = header_url.split('/')[-1]
     context = dict(
         user_name=user.profile.full_name,
         instance_url=application.instance.get_domain('lms'),
@@ -78,13 +74,6 @@ def send_account_info_email(application: BetaTestApplication) -> None:
         full_name=user.profile.full_name,
         email=user.email,
         public_contact_email=application.public_contact_email,
-        theme=application.draft_theme_config.get('theme'),
-        primary_color=application.draft_theme_config.get('colors').get('main'),
-        secondary_color=application.draft_theme_config.get('colors').get('accent'),
-        logo_url=logo_url,
-        logo_file=logo_file,
-        header_url=header_url,
-        header_file=header_file,
     )
     html_email_helper(
         template_base_name='emails/account_info_email',
