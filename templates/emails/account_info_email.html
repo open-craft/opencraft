@@ -54,34 +54,5 @@
             <td>{{ public_contact_email }}</td>
         </tr>
     </table>
-    <h2>Customisation details</h2>
-    <table class="details">
-        <tr>
-            <td>Theme</td>
-            <td>{{ theme }}</td>
-        </tr>
-        <tr>
-            <td>Primary color</td>
-            <td>
-                <span class="swatch" style="background-color: {{ primary_color }}"/>
-                {{ primary_color }}
-            </td>
-        </tr>
-        <tr>
-            <td>Secondary colour</td>
-            <td>
-                <span class="swatch" style="background-color: {{ secondary_color }}"/>
-                {{ secondary_color }}
-            </td>
-        </tr>
-        <tr>
-            <td>Logo</td>
-            <td><a href="{{ logo_url }}">{{ logo_file }}</a></td>
-        </tr>
-        <tr>
-            <td>Header image</td>
-            <td><a href="{{ header_url }}">{{ header_file }}</a></td>
-        </tr>
-    </table>
     {% include "emails/_email_signature.html" %}
 {% endblock %}
