@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="error-page"
+>
+  <div
+    className="error-container"
+  >
+    <div
+      className="error-page-content row"
+    >
+      <p>
+        Something went wrong!
+      </p>
+      We hit an internal server error, try again soon, or, if that doesn'twork, contact us.
+    </div>
+  </div>
+</div>
+`;

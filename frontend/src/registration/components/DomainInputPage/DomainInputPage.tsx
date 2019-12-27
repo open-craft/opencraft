@@ -1,9 +1,10 @@
-import { ROUTES } from 'global/constants';
+import { RegistrationSteps } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
+import { RedirectToCorrectStep } from 'registration/components';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -16,7 +17,7 @@ interface ActionProps {
 }
 
 interface State {
-  domain: string;
+  subdomain: string;
 }
 
 interface Props extends ActionProps {}
@@ -26,9 +27,7 @@ interface Props extends StateProps, ActionProps {}
 
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    loading: state.registration.loading,
-    registrationData: state.registration.registrationData,
-    registrationFeedback: state.registration.registrationFeedback
+    ...state.registration
   }),
   {
     performValidationAndStore,
@@ -40,26 +39,26 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      domain: props.registrationData.domain
+      subdomain: props.registrationData.subdomain
     };
   }
 
   private handleDomainChange = (newDomain: string) => {
     this.setState({
-      domain: newDomain
+      subdomain: newDomain
     });
     // Clean up error feedback if any
-    if (this.props.registrationFeedback.domain) {
-      this.props.clearErrorMessage('domain');
+    if (this.props.registrationFeedback.subdomain) {
+      this.props.clearErrorMessage('subdomain');
     }
   };
 
   private submitDomain = () => {
     this.props.performValidationAndStore(
       {
-        domain: this.state.domain
+        subdomain: this.state.subdomain
       },
-      ROUTES.Registration.INSTANCE
+      RegistrationSteps.INSTANCE
     );
   };
 
@@ -71,9 +70,13 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
           subtitle="Create your own Open edX instance now."
           currentStep={1}
         >
+          <RedirectToCorrectStep
+            currentPageStep={0}
+            currentRegistrationStep={this.props.currentRegistrationStep}
+          />
           <DomainInput
-            domainName={this.state.domain}
-            error={this.props.registrationFeedback.domain}
+            domainName={this.state.subdomain}
+            error={this.props.registrationFeedback.subdomain}
             internalDomain
             loading={this.props.loading}
             handleDomainChange={this.handleDomainChange}

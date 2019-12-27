@@ -17,6 +17,9 @@ jobs:
             - frontend-deps-{{ .Branch }}-
             - frontend-deps-
       - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
@@ -42,6 +45,9 @@ jobs:
             - frontend-deps-{{ .Branch }}-
             - frontend-deps-
       - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
           name: Installing frontend dependencies
           command: npm install
       - save_cache:
@@ -66,6 +72,9 @@ jobs:
             - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
             - frontend-deps-{{ .Branch }}-
             - frontend-deps-
+      - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
       - run:
           name: Installing frontend dependencies
           command: npm install
@@ -316,15 +325,33 @@ workflows:
             - frontend-test
       # Frontend deployment (only on master branch)
       - frontend-deploy:
+          name: frontend-deploy-stage
           context: ocim-frontend-stage
           requires:
             - frontend-build
           filters:
             branches:
               only:
-                # TODO: Change to master after frontend changes are merged into the master branch
-                - new-registration-flow
-
+                - master
+      # Deploy production
+      - frontend-build:
+          name: frontend-build-production
+          context: ocim-frontend-production
+          requires:
+            - frontend-deploy-stage
+          filters:
+            branches:
+              only:
+                - master
+      - frontend-deploy:
+          name: frontend-deploy-production
+          context: ocim-frontend-production
+          requires:
+            - frontend-build-production
+          filters:
+            branches:
+              only:
+                - master
   cleanup-workflow:
     triggers:
       - schedule:

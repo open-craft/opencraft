@@ -4,8 +4,11 @@ import { Form } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { DomainSuccessJumbotron, TextInputField } from 'ui/components';
-import { RegistrationNavButtons } from 'registration/components';
-import { ROUTES } from 'global/constants';
+import {
+  RegistrationNavButtons,
+  RedirectToCorrectStep
+} from 'registration/components';
+import { RegistrationSteps } from 'global/constants';
 import { RegistrationStateModel } from 'registration/models';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -24,17 +27,15 @@ interface State {
 }
 
 interface StateProps extends RegistrationStateModel {}
-interface Props extends StateProps, ActionProps {}
+interface Props extends StateProps, ActionProps {
+  history: {
+    goBack: Function;
+  };
+}
 
 @connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
-    loading: state.registration.loading,
-    registrationData: {
-      ...state.registration.registrationData
-    },
-    registrationFeedback: {
-      ...state.registration.registrationFeedback
-    }
+    ...state.registration
   }),
   {
     performValidationAndStore,
@@ -71,7 +72,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
         instanceName: this.state.instanceName,
         publicContactEmail: this.state.publicContactEmail
       },
-      ROUTES.Registration.ACCOUNT
+      RegistrationSteps.ACCOUNT
     );
   };
 
@@ -81,8 +82,12 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
         title="Create your Pro & Teacher Account"
         currentStep={2}
       >
+        <RedirectToCorrectStep
+          currentPageStep={1}
+          currentRegistrationStep={this.props.currentRegistrationStep}
+        />
         <DomainSuccessJumbotron
-          domain={this.props.registrationData.domain}
+          domain={this.props.registrationData.subdomain}
           domainIsExternal={this.props.registrationData.domainIsExternal}
         />
         <Form className="secure-domain-form">
@@ -111,7 +116,9 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
           disableNextButton={false}
           showBackButton
           showNextButton
-          handleBackClick={() => {}}
+          handleBackClick={() => {
+            this.props.history.goBack();
+          }}
           handleNextClick={this.submitInstanceData}
         />
       </RegistrationPage>

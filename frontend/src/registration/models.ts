@@ -1,10 +1,12 @@
+import { RegistrationSteps } from '../global/constants';
+
 export enum Theme {
   LIGHT = 'light',
   DARK = 'dark'
 }
 
 export interface DomainInfoModel {
-  domain: string;
+  subdomain: string;
   domainIsExternal: boolean;
 }
 
@@ -16,12 +18,12 @@ export interface InstanceInfoModel {
 export interface AccountInfoModel {
   fullName: string;
   username: string;
-  emailAddress: string;
+  email: string;
   password: string;
   passwordConfirm: string;
   acceptTOS: boolean;
-  acceptSupport: boolean;
-  acceptTipsEmail: boolean;
+  acceptPaidSupport: boolean;
+  subscribeToUpdates: boolean;
 }
 
 export interface ThemeInfoModel {
@@ -49,13 +51,13 @@ export interface RegistrationModel
 export type RegistrationFields = keyof RegistrationModel;
 
 export const blankRegistration: Readonly<RegistrationModel> = {
-  acceptSupport: false,
+  acceptPaidSupport: false,
   acceptTOS: false,
-  acceptTipsEmail: false,
+  subscribeToUpdates: false,
   cover: null,
-  domain: '',
+  subdomain: '',
   domainIsExternal: false,
-  emailAddress: '',
+  email: '',
   fullName: '',
   instanceName: '',
   logo: null,
@@ -75,12 +77,14 @@ export interface RegistrationFeedbackModel extends DomainInfoValidationModel {}
 export const blankRegistrationFeedbackModel: Readonly<RegistrationFeedbackModel> = {};
 
 export interface RegistrationStateModel {
+  currentRegistrationStep: RegistrationSteps;
   loading: boolean;
   registrationData: RegistrationModel;
   registrationFeedback: RegistrationFeedbackModel;
 }
 
 export const blankRegistrationState: Readonly<RegistrationStateModel> = {
+  currentRegistrationStep: RegistrationSteps.FIRST_STEP,
   loading: false,
   registrationData: blankRegistration,
   registrationFeedback: blankRegistrationFeedbackModel
