@@ -11,7 +11,7 @@ colour==0.1.5
 cookies==2.2.1
 coverage==4.5.3
 ddt==1.2.1
-Django==2.2.6
+Django==2.2.9
 # using the latest django-angular (2.2 or later) requires a heavy rewrite of the registration form, so we use the old 1.0.0 version patched to work under Django 2
 -e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular
 django-compressor==2.3
