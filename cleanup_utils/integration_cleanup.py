@@ -31,7 +31,7 @@ import os
 from pytz import UTC
 
 from cleanup_utils.aws_cleanup import AwsCleanupInstance
-from cleanup_utils.dns_cleanup import DnsCleanupInstance
+from cleanup_utils.dns_cleanup import DNSCleanupInstance
 from cleanup_utils.load_balancer_cleanup import LoadBalancerCleanup
 from cleanup_utils.mysql_cleanup import MySqlCleanupInstance
 from cleanup_utils.openstack_cleanup import OpenStackCleanupInstance
@@ -112,8 +112,7 @@ def run_integration_cleanup(dry_run=False):
     mysql_cleanup.run_cleanup()
 
     # Run DNS cleanup
-    dns_cleanup = DnsCleanupInstance(
-        zone_id=int(os.environ['GANDI_ZONE_ID']),
+    dns_cleanup = DNSCleanupInstance(
         api_key=os.environ['GANDI_API_KEY'],
         dry_run=dry_run
     )

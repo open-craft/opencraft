@@ -29,8 +29,7 @@ from unittest.mock import Mock, patch
 import requests
 import responses
 import consul
-from instance import gandi
-from instance.tests.fake_gandi_client import FakeGandiClient
+from instance.tests.fake_gandi_client import FakeGandiV5APIClient
 from instance.tests.models.factories.server import OSServerMockManager
 
 
@@ -40,7 +39,7 @@ def patch_gandi(func=None):
     """
     Decorator to temporarily replace the Gandi API by the fake implementation.
     """
-    patcher = patch('instance.gandi.api', gandi.GandiAPI(client=FakeGandiClient()))
+    patcher = patch('instance.gandi.api', FakeGandiV5APIClient())
     if func:
         return patcher(func)
     return patcher

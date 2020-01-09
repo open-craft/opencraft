@@ -22,10 +22,11 @@ Gandi - Tests
 
 # Imports #####################################################################
 
-from unittest.mock import call, patch
+from unittest.mock import call, MagicMock, patch
 import xmlrpc.client
 
 from instance import gandi
+from instance.gandi import GandiV5API
 from instance.tests.base import TestCase
 from instance.tests.fake_gandi_client import FakeGandiClient
 
@@ -168,3 +169,113 @@ class GandiTestCase(TestCase):
             ),
             call.zone.version.set('TEST_GANDI_API_KEY', 9900, 1),
         ])
+
+
+class GandiV5TestCase(TestCase):
+    """
+    Test cases for Gandi V5 API calls.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.api = gandi.GandiV5API(api_key='api-key')
+
+    def populate_domain_cache(self):
+        """
+        Populate the domain cache of the API client.
+        """
+        self.api._domain_cache = ['test.com', 'opencraft.co.uk', 'example.com']
+
+    @patch('instance.gandi.requests.get')
+    def test_populate_domain_cache(self, mocked_get):
+        """
+        Test that populating the domain cache results in the expected API calls.
+        """
+        mock_response = MagicMock()
+        mock_response.json.return_value = [{'fqdn': 'test.com'}, {'fqdn': 'example.com'}]
+        mocked_get.return_value = mock_response
+        self.api._populate_domain_cache()
+        assert self.api._domain_cache == ['test.com', 'example.com']
+
+    def test_split_domain_name(self):
+        """
+        Test that splitting domain names in subdomain and registered domain works correctly.
+        """
+        self.populate_domain_cache()
+        self.assertEqual(self.api._split_domain_name('sub.domain.test.com'), ('sub.domain', 'test.com'))
+        self.assertEqual(self.api._split_domain_name('sub.domain.opencraft.co.uk'), ('sub.domain', 'opencraft.co.uk'))
+        self.assertEqual(self.api._split_domain_name('example.com'), ('@', 'example.com'))
+        with self.assertRaises(ValueError) as error:
+            self.api._split_domain_name('sub.domain.unknown.com')
+        self.assertEqual(
+            str(error.exception),
+            'The given domain name "sub.domain.unknown.com" does not match any domain registered in the Gandi account.'
+        )
+
+    @patch('lexicon.client.Client.execute')
+    def test_set_dns_record(self, mocked_lexicon_client_execute):
+        """
+        Test setting a DNS record calls the expected library method.
+        """
+        mocked_lexicon_client_execute.return_value = True
+        self.populate_domain_cache()
+        self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+        assert mocked_lexicon_client_execute.call_count == 2
+
+    @patch.object(GandiV5API, 'add_dns_record')
+    @patch.object(GandiV5API, 'delete_dns_record')
+    def test_set_dns_record_calls_delete_and_add_methods(self, mocked_delete_method, mocked_add_method):
+        """
+        Test setting a DNS record calls the delete record method and the add record method.
+        """
+        mocked_delete_method.return_value = True
+        mocked_add_method.return_value = True
+        self.populate_domain_cache()
+        self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+        mocked_delete_method.assert_called_once()
+        mocked_add_method.assert_called_once()
+        expected_call_args = {'name': 'sub.domain', 'domain': 'test.com', 'type': 'A', 'value': '1.2.3.4', 'ttl': 1200}
+        assert mocked_delete_method.call_args_list == [call(expected_call_args)]
+        assert mocked_add_method.call_args_list == [call(expected_call_args)]
+
+
+    @patch.object(GandiV5API, 'add_dns_record')
+    @patch.object(GandiV5API, 'delete_dns_record')
+    @patch('time.sleep')
+    def test_set_dns_record_error_retry_and_succeed(self, mocked_sleep, mocked_delete, mocked_add):
+        """
+        Test retry behaviour when setting a DNS record. Succeed in the fourth attempt.
+        """
+        mocked_delete.return_value = True
+        mocked_add.side_effect = [Exception(), Exception(), Exception(), True]
+        self.populate_domain_cache()
+        self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+        assert mocked_delete.call_count == 4
+        assert mocked_add.call_count == 4
+
+    @patch.object(GandiV5API, 'add_dns_record')
+    @patch.object(GandiV5API, 'delete_dns_record')
+    @patch('time.sleep')
+    def test_set_dns_record_error_retry_and_fail(self, mocked_sleep, mocked_delete, mocked_add):
+        """
+        Test retry behaviour raises an Exception when all retry attempts have failed.
+        """
+        mocked_delete.return_value = True
+        mocked_add.side_effect = [Exception(), Exception(), Exception(), Exception()]
+        self.populate_domain_cache()
+        with self.assertRaises(Exception):
+            self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+        assert mocked_delete.call_count == 4
+        assert mocked_add.call_count == 4
+
+    @patch.object(GandiV5API, 'delete_dns_record')
+    def test_remove_dns_record(self, mocked_delete):
+        """
+        Test removing a DNS record.
+        """
+        mocked_delete.return_value = True
+        self.populate_domain_cache()
+        self.api.remove_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+        mocked_delete.assert_called_once()
+        expected_call_args = {'name': 'sub.domain', 'domain': 'test.com', 'type': 'A', 'value': '1.2.3.4'}
+        assert mocked_delete.call_args_list == [call(expected_call_args)]

@@ -67,7 +67,7 @@ class LoadBalancedInstance(models.Model):
         for domain in self.get_managed_domains():
             self.logger.info('Removing domain "%s" from DNS Records.', domain)
             try:
-                gandi.api.remove_dns_record(domain)
+                gandi.api.remove_dns_record(domain, type='CNAME')
             except ValueError:
                 if not ignore_errors:
                     raise

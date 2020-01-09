@@ -67,7 +67,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         lb_domain = instance.load_balancing_server.domain + '.'
         expected_records = [dict(name=domain, type='CNAME', value=lb_domain, ttl=1200) for domain in expected_domains]
-        dns_records = gandi.api.client.list_records(domain)
+        dns_records = gandi.api.list_records(domain)
         self.assertCountEqual(dns_records, expected_records)
 
     @ddt.data(False, True)
@@ -112,7 +112,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance.save()
         instance.set_dns_records()
         instance.remove_dns_records()
-        dns_records = gandi.api.client.list_records('opencraft.co.uk')
+        dns_records = gandi.api.list_records('opencraft.co.uk')
         self.assertEqual(dns_records, [])
 
     def test_domains(self, mock_consul):

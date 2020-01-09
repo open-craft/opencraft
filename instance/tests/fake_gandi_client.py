@@ -219,3 +219,59 @@ class FakeGandiClient:
         """
         zone = self._get_zone(zone_id)
         return zone.set_version(zone_version_id)
+
+
+class FakeGandiV5APIClient:
+    """
+    Fake implementation of the Gandi V5 API client.
+    """
+    def __init__(self):
+        self._domains = {
+            "test.com": [],
+            "example.com": [],
+            "opencraft.co.uk": [],
+        }
+
+    def _split_domain(self, domain):
+        """
+        Split a FQDN into the registered domain and its subdomain.
+        """
+        subdomain = None
+        registered_domain = None
+        labels = domain.lower().split('.')
+        for split_index in range(len(labels) - 1):
+            registered_domain = '.'.join(labels[split_index:])
+            if registered_domain in self._domains:
+                subdomain = '.'.join(labels[:split_index]) or '@'
+                break
+        return subdomain, registered_domain
+
+    def set_dns_record(self, domain, **record):
+        """
+        Set the given DNS record for the domain.
+        """
+        subdomain, registered_domain = self._split_domain(domain)
+        record['name'] = subdomain
+        if 'ttl' not in record:
+            record['ttl'] = 1200
+        if registered_domain in self._domains:
+            self._domains[registered_domain] = [
+                item for item in self._domains[registered_domain] if item['name'] != subdomain
+            ]
+            self._domains[registered_domain].append(record)
+
+    def remove_dns_record(self, domain, **record):
+        """
+        Remove the given DNS record for the domain.
+        """
+        subdomain, registered_domain = self._split_domain(domain)
+        if registered_domain in self._domains:
+            self._domains[registered_domain] = [
+                item for item in self._domains[registered_domain] if item['name'] != subdomain
+            ]
+
+    def list_records(self, domain):
+        """
+        List the DNS records for the given registered domain.
+        """
+        return self._domains[domain]
