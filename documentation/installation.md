@@ -34,7 +34,7 @@ repository – most notably Ansible:
 
     virtualenv ~/venvs/ansible    # Adjust the path, or use mkvirtualenv
                                   # if you have virtualenvwrapper installed.
-    ~/venvs/ansible/bin/activate
+    . ~/venvs/ansible/bin/activate
     pip install -r deploy/requirements.txt
 
 Now you can run
