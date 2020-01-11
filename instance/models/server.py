@@ -23,6 +23,7 @@ Instance app models - Server
 # Imports #####################################################################
 
 import logging
+import subprocess
 import time
 
 from django.conf import settings
@@ -441,6 +442,8 @@ class OpenStackServer(Server):
             self._status_to_terminated()
             return
 
+        ip = str(self.public_ip)  # We should retrieve this before terminating the server.
+
         try:
             os_server = self.os_server
             server_closed = self._shutdown(os_server)
@@ -451,6 +454,7 @@ class OpenStackServer(Server):
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
             self._status_to_terminated()
+            self._delete_ssh_key(ip)
         except (requests.RequestException,
                 novaclient.exceptions.ClientException,
                 novaclient.exceptions.EndpointNotFound) as exc:
@@ -459,6 +463,7 @@ class OpenStackServer(Server):
                 self._status_to_unknown()
         else:
             self._status_to_terminated()
+            self._delete_ssh_key(ip)
 
     def _shutdown(self, os_server, poll_interval=10, max_wait=None):
         """
@@ -477,3 +482,15 @@ class OpenStackServer(Server):
             max_wait -= poll_interval
             os_server = self.os_server
         return os_server.status == 'SHUTOFF'
+
+    def _delete_ssh_key(self, ip: str) -> None:
+        """
+        Delete SSH key from `~/.ssh/known_hosts`.
+
+        We can safely ignore the command's return code, because we just need to be sure that the key has been removed
+        for non-existing server - we don't care about non-existing keys.
+        """
+        self.logger.info('Deleting SSH key of "%s" host.', ip)
+        command = f'ssh-keygen -R {ip}'
+        subprocess.Popen(command, shell=True)
+

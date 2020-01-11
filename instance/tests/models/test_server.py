@@ -342,9 +342,11 @@ class OpenStackServerTestCase(TestCase):
         Terminate a server with a VM
         """
         server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        ip = str(server.public_ip)
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
+        server._delete_ssh_key.assert_called_once_with(ip)
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -383,9 +385,11 @@ class OpenStackServerTestCase(TestCase):
         server.logger = Mock()
         mock_logger = server.logger
 
+        ip = str(server.public_ip)
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
+        server._delete_ssh_key.assert_called_once_with(ip)
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
