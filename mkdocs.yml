@@ -3,6 +3,7 @@ site_dir: build
 docs_dir: documentation
 theme: readthedocs
 repo_url: https://github.com/open-craft/opencraft
+edit_uri: edit/master/documentation/
 markdown_extensions:
   - codehilite
 extra_css:
