@@ -40,13 +40,17 @@ class EmailMixin:
         """
         Class holding email subject constants
         """
-        PROVISION_FAILED = "AppServer {name} ({instance_name}) failed to provision. FIXME:update1"
+        # FIXME improve messages for subject and body. Maybe include the server number? A link?
+        PROVISION_FAILED = "AppServer failed to provision ({instance_name})"
 
     class EmailBody:
         """
         Class holding email body constants
         """
-        PROVISION_FAILED = "AppServer {name} for Instance {instance_name} failed to provision.\nFIXME:update2"
+        PROVISION_FAILED = (
+            "An AppServer for Instance {instance_name} failed to provision.\n"
+            "You can find the details in Ocim's web interface.\n"
+        )
 
     @staticmethod
     def _get_exc_info(default=None):
@@ -72,11 +76,9 @@ class EmailMixin:
         if log is not None:
             log_str = "\n".join(log)
             attachments.append(("provision.log", log_str, "text/plain"))
-        # FIXME remove support for appserver's name
-        appserver_name = "Appserver without a name"
         self._send_email(
-            self.EmailSubject.PROVISION_FAILED.format(name=appserver_name, instance_name=self.name),
-            self.EmailBody.PROVISION_FAILED.format(name=appserver_name, instance_name=self.name),
+            self.EmailSubject.PROVISION_FAILED.format(instance_name=self.name),
+            self.EmailBody.PROVISION_FAILED.format(instance_name=self.name),
             self._get_exc_info(default=None),
             attachments=attachments,
             extra_recipients=self.provisioning_failure_notification_emails,
