@@ -89,7 +89,9 @@ def on_appserver_spawned(sender, **kwargs):
         return
 
     elif appserver is None:
-        # FIXME send instance failure e-mail here? This looks like a good place, since it happens after N attempts (not after each attempt). Clarify this (the function name isn't very clear now) and move the code here
+        # FIXME send instance failure e-mail here?
+        # FIXME (cont): This looks like a good place, since it happens after N attempts (not after each attempt).
+        # FIXME (cont): Clarify this (the function name isn't very clear now) and move the code here
 
         raise ApplicationNotReady('Provisioning of AppServer failed.')
 

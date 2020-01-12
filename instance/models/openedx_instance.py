@@ -257,17 +257,17 @@ class OpenEdXInstance(
             Returns the ID of the new AppServer on success or None on failure.
         """
         # FIXME: restore. This is just disabled because it's not needed to make the deployments fail
-        if 0:
+        if 0:  # pylint: disable=using-constant-test
             if not self.load_balancing_server:
                 self.load_balancing_server = LoadBalancingServer.objects.select_random()
                 self.save()
                 self.reconfigure_load_balancer()
-    
+
             # We unconditionally set the DNS records here, though this would only be strictly needed
             # when the first AppServer is spawned.  However, there is no easy way to tell whether the
             # DNS records have already been successfully set, and it doesn't hurt to always do it.
             self.set_dns_records()
-    
+
             # Provision external databases:
             # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
             # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
@@ -315,7 +315,8 @@ class OpenEdXInstance(
 
         else:
             self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
-            # FIXME send e-mail here. Maybe pass the number of attempts. And maybe attach the e-mail-sending code into the signal instead
+            # FIXME send e-mail here. Maybe pass the number of attempts.
+            # FIXME (cont): And maybe attach the e-mail-sending code into the signal instead
             self.provision_failed_email()
             if failure_tag:
                 self.tags.add(failure_tag)

@@ -205,7 +205,8 @@ class OpenEdXAppConfiguration(models.Model):
         return [field.name for field in cls._meta.fields if field.name not in ('id', )]
 
 
-class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, OpenEdXConfigMixin):  # FIXME remove rests of EmailMixin
+# FIXME remove rests of EmailMixin, if any
+class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, OpenEdXConfigMixin):
     """
     OpenEdXAppServer: One or more of the Open edX apps, running on a single VM
 
