@@ -35,7 +35,6 @@ from instance import ansible
 from instance.logging import log_exception
 from instance.models.appserver import AppServer
 from instance.models.mixins.ansible import AnsibleAppServerMixin, Playbook
-from instance.models.mixins.utilities import EmailMixin
 from instance.models.mixins.openedx_config import OpenEdXConfigMixin
 from instance.models.utils import default_setting, format_help_text, get_base_playbook_name
 from instance.openstack_utils import get_openstack_connection, sync_security_group_rules, SecurityGroupRuleDefinition
@@ -206,7 +205,7 @@ class OpenEdXAppConfiguration(models.Model):
         return [field.name for field in cls._meta.fields if field.name not in ('id', )]
 
 
-class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, OpenEdXConfigMixin, EmailMixin):
+class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin, OpenEdXConfigMixin):  # FIXME remove rests of EmailMixin
     """
     OpenEdXAppServer: One or more of the Open edX apps, running on a single VM
 
@@ -517,10 +516,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # Check firewall rules:
         try:
             self.check_security_groups()
+            raise NotImplementedError("You won't deploy today")
         except:  # pylint: disable=bare-except
-            message = "Unable to check/update the network security groups for the new VM"
-            self.logger.exception(message)
-            self.provision_failed_email(message)
+            self.logger.exception("Unable to check/update the network security groups for the new VM")
             return False
 
         # Requesting a new server/VM:
@@ -546,20 +544,17 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.server.sleep_until(accepts_ssh_commands)
         except:  # pylint: disable=bare-except
             self._status_to_error()
-            message = 'Unable to start an OpenStack server'
-            self.logger.exception(message)
-            self.provision_failed_email(message)
+            self.logger.exception('Unable to start an OpenStack server')
             return False
 
         try:
             # Provisioning (ansible)
             self.logger.info('Provisioning server...')
             self._status_to_configuring_server()
-            log, exit_code = self.run_ansible_playbooks()
+            _, exit_code = self.run_ansible_playbooks()
             if exit_code != 0:
                 self.logger.info('Provisioning failed')
                 self._status_to_configuration_failed()
-                self.provision_failed_email("AppServer deploy failed: Ansible play exited with non-zero exit code", log)
                 return False
 
             # Reboot
@@ -575,9 +570,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         except:  # pylint: disable=bare-except
             self._status_to_configuration_failed()
-            message = "AppServer deploy failed: unhandled exception"
-            self.logger.exception(message)
-            self.provision_failed_email(message)
+            self.logger.exception("AppServer deploy failed: unhandled exception")
             return False
 
     def manage_instance_services(self, active):

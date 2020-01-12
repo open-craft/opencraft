@@ -34,20 +34,19 @@ from django.views.debug import ExceptionReporter
 
 class EmailMixin:
     """
-    Mixin that enables AppServer to send emails
+    Mixin that enables OpenEdXInstance to send emails
     """
     class EmailSubject:
         """
         Class holding email subject constants
         """
-        PROVISION_FAILED = "AppServer {name} ({instance_name}) failed to provision"
+        PROVISION_FAILED = "AppServer {name} ({instance_name}) failed to provision. FIXME:update1"
 
     class EmailBody:
         """
         Class holding email body constants
         """
-        PROVISION_FAILED = "AppServer {name} for Instance {instance_name} failed to provision.\n" \
-                           "Reason: {reason}\n"
+        PROVISION_FAILED = "AppServer {name} for Instance {instance_name} failed to provision.\nFIXME:update2"
 
     @staticmethod
     def _get_exc_info(default=None):
@@ -61,23 +60,26 @@ class EmailMixin:
         else:
             return exc_info
 
-    def provision_failed_email(self, reason, log=None):
+    def provision_failed_email(self):
         """
-        Send email notifications when instance provisioning is failed. Will
+        Send email notifications when instance provisioning has failed. Will
         send notifications to settings.ADMINs and the instance's
         provisioning_failure_notification_emails.
         """
         attachments = []
+        # FIXME remove support for attachments, since we can't get them. Or maybe take last deployed server's log?
+        log = None
         if log is not None:
             log_str = "\n".join(log)
             attachments.append(("provision.log", log_str, "text/plain"))
-
+        # FIXME remove support for appserver's name
+        appserver_name = "Appserver without a name"
         self._send_email(
-            self.EmailSubject.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name),
-            self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
+            self.EmailSubject.PROVISION_FAILED.format(name=appserver_name, instance_name=self.name),
+            self.EmailBody.PROVISION_FAILED.format(name=appserver_name, instance_name=self.name),
             self._get_exc_info(default=None),
             attachments=attachments,
-            extra_recipients=self.instance.provisioning_failure_notification_emails,
+            extra_recipients=self.provisioning_failure_notification_emails,
         )
 
     def _send_email(self, subject, message, exc_info=None, attachments=None,
