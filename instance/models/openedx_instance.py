@@ -257,32 +257,31 @@ class OpenEdXInstance(
             Returns the ID of the new AppServer on success or None on failure.
         """
         # FIXME: restore. This is just disabled because it's not needed to make the deployments fail
-        if 0:  # pylint: disable=using-constant-test
-            if not self.load_balancing_server:
-                self.load_balancing_server = LoadBalancingServer.objects.select_random()
-                self.save()
-                self.reconfigure_load_balancer()
-
-            # We unconditionally set the DNS records here, though this would only be strictly needed
-            # when the first AppServer is spawned.  However, there is no easy way to tell whether the
-            # DNS records have already been successfully set, and it doesn't hurt to always do it.
-            self.set_dns_records()
-
-            # Provision external databases:
-            # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
-            # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
-            self.logger.info('Provisioning MySQL database...')
-            self.provision_mysql()
-            self.logger.info('Provisioning MongoDB databases...')
-            self.provision_mongo()
-            if self.storage_type == self.SWIFT_STORAGE:
-                self.logger.info('Provisioning Swift container...')
-                self.provision_swift()
-            elif self.storage_type == self.S3_STORAGE:
-                self.logger.info('Provisioning S3 bucket...')
-                self.provision_s3()
-            self.logger.info('Provisioning RabbitMQ vhost...')
-            self.provision_rabbitmq()
+        # if not self.load_balancing_server:
+        #     self.load_balancing_server = LoadBalancingServer.objects.select_random()
+        #     self.save()
+        #     self.reconfigure_load_balancer()
+        #
+        # # We unconditionally set the DNS records here, though this would only be strictly needed
+        # # when the first AppServer is spawned.  However, there is no easy way to tell whether the
+        # # DNS records have already been successfully set, and it doesn't hurt to always do it.
+        # self.set_dns_records()
+        #
+        # # Provision external databases:
+        # # TODO: Use db row-level locking to ensure we don't get any race conditions when creating these DBs.
+        # # Use select_for_update(nowait=True) to lock this object's row, then do these steps, then refresh_from_db
+        # self.logger.info('Provisioning MySQL database...')
+        # self.provision_mysql()
+        # self.logger.info('Provisioning MongoDB databases...')
+        # self.provision_mongo()
+        # if self.storage_type == self.SWIFT_STORAGE:
+        #     self.logger.info('Provisioning Swift container...')
+        #     self.provision_swift()
+        # elif self.storage_type == self.S3_STORAGE:
+        #     self.logger.info('Provisioning S3 bucket...')
+        #     self.provision_s3()
+        # self.logger.info('Provisioning RabbitMQ vhost...')
+        # self.provision_rabbitmq()
 
         return self._create_owned_appserver()
 
