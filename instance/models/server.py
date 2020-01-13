@@ -433,6 +433,10 @@ class OpenStackServer(Server):
         This ensures any daemons that need to perform cleanup tasks can do so, or that any
         shutdown scripts/tasks get executed.
         """
+        # We should delete SSH key before terminating a server.
+        # Edge cases: server is still being configured or has incorrect status due to an error.
+        self._delete_ssh_key()
+
         if self.status == Status.Terminated:
             return
 
@@ -441,8 +445,6 @@ class OpenStackServer(Server):
             self.logger.info('Note: server was not created when terminated.')
             self._status_to_terminated()
             return
-
-        ip = str(self.public_ip)  # We should retrieve this before terminating the server.
 
         try:
             os_server = self.os_server
@@ -454,7 +456,6 @@ class OpenStackServer(Server):
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
             self._status_to_terminated()
-            self._delete_ssh_key(ip)
         except (requests.RequestException,
                 novaclient.exceptions.ClientException,
                 novaclient.exceptions.EndpointNotFound) as exc:
@@ -463,7 +464,6 @@ class OpenStackServer(Server):
                 self._status_to_unknown()
         else:
             self._status_to_terminated()
-            self._delete_ssh_key(ip)
 
     def _shutdown(self, os_server, poll_interval=10, max_wait=None):
         """
@@ -483,13 +483,13 @@ class OpenStackServer(Server):
             os_server = self.os_server
         return os_server.status == 'SHUTOFF'
 
-    def _delete_ssh_key(self, ip: str) -> None:
+    def _delete_ssh_key(self) -> None:
         """
         Delete SSH key from `~/.ssh/known_hosts`.
 
         We can safely ignore the command's return code, because we just need to be sure that the key has been removed
         for non-existing server - we don't care about non-existing keys.
         """
-        self.logger.info('Deleting SSH key of "%s" host.', ip)
-        command = f'ssh-keygen -R {ip}'
+        self.logger.info('Deleting SSH key of "%s" host.', self.public_ip)
+        command = f'ssh-keygen -R {self.public_ip}'
         subprocess.Popen(command, shell=True)
