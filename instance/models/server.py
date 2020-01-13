@@ -493,4 +493,3 @@ class OpenStackServer(Server):
         self.logger.info('Deleting SSH key of "%s" host.', ip)
         command = f'ssh-keygen -R {ip}'
         subprocess.Popen(command, shell=True)
-

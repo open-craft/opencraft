@@ -341,12 +341,12 @@ class OpenStackServerTestCase(TestCase):
         """
         Terminate a server with a VM
         """
-        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
-        ip = str(server.public_ip)
+        local_ip = '127.0.0.1'
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status, _public_ip=local_ip)
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
-        server._delete_ssh_key.assert_called_once_with(ip)
+        server._delete_ssh_key.assert_called_once_with(local_ip)
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -377,7 +377,8 @@ class OpenStackServerTestCase(TestCase):
         """
         Terminate a server for which the corresponding VM doesn't exist anymore
         """
-        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        local_ip = '127.0.0.1'
+        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status, _public_ip=local_ip)
 
         def raise_not_found():
             raise novaclient.exceptions.NotFound('not-found')
@@ -385,12 +386,11 @@ class OpenStackServerTestCase(TestCase):
         server.logger = Mock()
         mock_logger = server.logger
 
-        ip = str(server.public_ip)
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
-        server._delete_ssh_key.assert_called_once_with(ip)
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
+        server._delete_ssh_key.assert_called_once_with(local_ip)
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -402,7 +402,7 @@ class OpenStackServerTestCase(TestCase):
         """
         Terminate a server when there are errors connecting to the OpenStack API
         """
-        server = OpenStackServerFactory()
+        server = OpenStackServerFactory(_public_ip='127.0.0.1')
 
         def raise_openstack_api_error():
             raise exception
@@ -418,6 +418,7 @@ class OpenStackServerTestCase(TestCase):
         mock_logger.error.assert_called_once_with(
             AnyStringMatching('Unable to reach the OpenStack API due to'), exception
         )
+        server._delete_ssh_key.assert_not_called()
 
     def test_public_ip_new_server(self):
         """
