@@ -492,4 +492,7 @@ class OpenStackServer(Server):
         """
         self.logger.info('Deleting SSH key of "%s" host.', self.public_ip)
         command = f'ssh-keygen -R {self.public_ip}'
-        subprocess.Popen(command, shell=True)
+        try:
+            subprocess.Popen(command, shell=True)
+        except subprocess.SubprocessError as e:
+            self.logger.error('Failed to delete SSH key of "%s" host: %s', self.public_ip, e)
