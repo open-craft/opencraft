@@ -10,5 +10,7 @@ export * from './SpawnAppServer';
 export * from './Token';
 export * from './TokenError';
 export * from './TokenObtainPair';
+export * from './TokenRefresh';
+export * from './TokenVerify';
 export * from './ValidationError';
 export * from './WatchedPullRequest';
