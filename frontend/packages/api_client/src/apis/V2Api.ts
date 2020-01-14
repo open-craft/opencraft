@@ -33,6 +33,12 @@ import {
     TokenObtainPair,
     TokenObtainPairFromJSON,
     TokenObtainPairToJSON,
+    TokenRefresh,
+    TokenRefreshFromJSON,
+    TokenRefreshToJSON,
+    TokenVerify,
+    TokenVerifyFromJSON,
+    TokenVerifyToJSON,
     ValidationError,
     ValidationErrorFromJSON,
     ValidationErrorToJSON,
@@ -52,8 +58,16 @@ export interface AccountsUpdateRequest {
     data: Account;
 }
 
+export interface AuthRefreshCreateRequest {
+    data: TokenRefresh;
+}
+
 export interface AuthTokenCreateRequest {
     data: TokenObtainPair;
+}
+
+export interface AuthVerifyCreateRequest {
+    data: TokenVerify;
 }
 
 export interface InstancesOpenedxConfigCommitChangesRequest {
@@ -259,6 +273,50 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Refresh a JWT auth token from refresh token.
+     */
+    async authRefreshCreateRaw(requestParameters: AuthRefreshCreateRequest): Promise<runtime.ApiResponse<Token>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authRefreshCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/auth/refresh/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenRefreshToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Refresh a JWT auth token from refresh token.
+     */
+    async authRefreshCreate(requestParameters: AuthRefreshCreateRequest): Promise<Token> {
+        const response = await this.authRefreshCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Generate a JWT auth token from user credentials.
      */
     async authTokenCreateRaw(requestParameters: AuthTokenCreateRequest): Promise<runtime.ApiResponse<Token>> {
         if (requestParameters.data === null || requestParameters.data === undefined) {
@@ -290,10 +348,53 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Generate a JWT auth token from user credentials.
      */
     async authTokenCreate(requestParameters: AuthTokenCreateRequest): Promise<Token> {
         const response = await this.authTokenCreateRaw(requestParameters);
         return await response.value();
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Check if a JWT auth token is valid.
+     */
+    async authVerifyCreateRaw(requestParameters: AuthVerifyCreateRequest): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authVerifyCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/auth/verify/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenVerifyToJSON(requestParameters.data),
+        });
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Check if a JWT auth token is valid.
+     */
+    async authVerifyCreate(requestParameters: AuthVerifyCreateRequest): Promise<void> {
+        await this.authVerifyCreateRaw(requestParameters);
     }
 
     /**
