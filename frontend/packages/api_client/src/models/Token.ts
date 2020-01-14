@@ -24,13 +24,13 @@ export interface Token {
      * @type {string}
      * @memberof Token
      */
-    refresh: string;
+    refresh?: string;
     /**
      * 
      * @type {string}
      * @memberof Token
      */
-    access: string;
+    access?: string;
 }
 
 export function TokenFromJSON(json: any): Token {
@@ -43,8 +43,8 @@ export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tok
     }
     return {
         
-        'refresh': json['refresh'],
-        'access': json['access'],
+        'refresh': !exists(json, 'refresh') ? undefined : json['refresh'],
+        'access': !exists(json, 'access') ? undefined : json['access'],
     };
 }
 
