@@ -24,7 +24,13 @@ export interface TokenError {
      * @type {string}
      * @memberof TokenError
      */
-    details: string;
+    detail?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TokenError
+     */
+    code?: string;
 }
 
 export function TokenErrorFromJSON(json: any): TokenError {
@@ -37,7 +43,8 @@ export function TokenErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     }
     return {
         
-        'details': json['details'],
+        'detail': !exists(json, 'detail') ? undefined : json['detail'],
+        'code': !exists(json, 'code') ? undefined : json['code'],
     };
 }
 
@@ -50,7 +57,8 @@ export function TokenErrorToJSON(value?: TokenError | null): any {
     }
     return {
         
-        'details': value.details,
+        'detail': value.detail,
+        'code': value.code,
     };
 }
 
