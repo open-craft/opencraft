@@ -43,8 +43,8 @@ class TokenSerializer(serializers.Serializer):
         "refresh": "<TOKEN>",
     }
     """
-    refresh = serializers.CharField(required=False)
-    access = serializers.CharField(required=False)
+    refresh = serializers.CharField()
+    access = serializers.CharField()
 
 
 class TokenErrorSerializer(serializers.Serializer):
