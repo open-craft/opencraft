@@ -23,7 +23,9 @@ export const PrivateRoute: React.FC<RouteProps> = (props: RouteProps) => {
     const renderComponent = () => (
       <Redirect to={{ pathname: ROUTES.Auth.LOGOUT }} />
     );
-    return <Route path={props.path} component={renderComponent} render={undefined} />;
+    return (
+      <Route path={props.path} component={renderComponent} render={undefined} />
+    );
   }
   return <Route path={props.path} component={props.component} />;
 };
