@@ -25,3 +25,16 @@ export const notLoggedInStatus: LoginStateModel = {
   refresh: '',
   loading: false
 };
+
+export const getInitialState = () => {
+  let refreshToken = localStorage.getItem('token_refresh')
+  let accessToken = localStorage.getItem('token_access')
+  let loginState: LoginStateModel = notLoggedInStatus;
+
+  if (refreshToken && accessToken){
+    loginState.access = accessToken;
+    loginState.refresh = refreshToken;
+  }
+
+  return loginState;
+}

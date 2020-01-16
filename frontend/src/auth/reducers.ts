@@ -1,8 +1,8 @@
 import update from 'immutability-helper';
 import * as LoginActions from './actions';
-import { notLoggedInStatus, LoginStateModel } from './models';
+import { getInitialState, notLoggedInStatus, LoginStateModel } from './models';
 
-export const initialState: Readonly<LoginStateModel> = notLoggedInStatus;
+export const initialState: Readonly<LoginStateModel> = getInitialState();
 
 export function loginStateReducer(
   state = initialState,
