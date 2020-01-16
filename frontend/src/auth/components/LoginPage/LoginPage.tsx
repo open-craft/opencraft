@@ -2,6 +2,7 @@ import * as React from 'react';
 import { RootState } from 'global/state';
 import messages from './displayMessages';
 import { connect } from 'react-redux';
+import { ROUTES } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { Alert, Button, Spinner, Form } from 'react-bootstrap';
 import { ContentPage, TextInputField } from 'ui/components';
@@ -46,7 +47,8 @@ export class LoginPage extends React.PureComponent<Props, State> {
       {
         username: this.state.username,
         password: this.state.password
-      }
+      },
+      ROUTES.Console.HOME
     );
   };
 

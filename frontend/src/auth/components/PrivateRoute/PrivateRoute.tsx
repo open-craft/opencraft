@@ -1,28 +1,29 @@
 import * as React from 'react';
+import { ROUTES } from 'global/constants';
 import { Redirect, Route, RouteProps } from 'react-router';
 import './styles.scss';
+import { checkAuthAndRefreshToken } from 'auth/utils/helpers';
 
 
-export interface ProtectedRouteProps extends RouteProps {
-  isAuthenticated: boolean;
-  isAllowed: boolean;
-  restrictedPath: string;
-  authenticationPath: string;
-}
+export const PrivateRoute: React.FC<RouteProps> = props => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
-export const PrivateRoute: React.FC<ProtectedRouteProps> = props => {
-  let redirectPath = '';
-  if (!props.isAuthenticated) {
-    redirectPath = props.authenticationPath;
+  React.useEffect(() => {
+    checkAuthAndRefreshToken().then((authenticated: boolean) => {
+      setIsAuthenticated(authenticated);
+      setIsLoading(false);
+    });
+  });
+
+  if (isLoading) {
+    return null;
   }
-  if (props.isAuthenticated && !props.isAllowed) {
-    redirectPath = props.restrictedPath;
-  }
 
-  if (redirectPath) {
-    const renderComponent = () => <Redirect to={{ pathname: redirectPath }} />;
+  if (!isAuthenticated) {
+    const renderComponent = () => <Redirect to={{ pathname: ROUTES.Auth.LOGOUT }} />;
     return <Route {...props} component={renderComponent} render={undefined} />;
   } else {
-    return <Route {...props} />;
+      return <Route {...props} />;
   }
 };
