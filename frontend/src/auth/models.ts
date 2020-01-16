@@ -27,14 +27,14 @@ export const notLoggedInStatus: LoginStateModel = {
 };
 
 export const getInitialState = () => {
-  let refreshToken = localStorage.getItem('token_refresh')
-  let accessToken = localStorage.getItem('token_access')
-  let loginState: LoginStateModel = notLoggedInStatus;
+  const refreshToken = localStorage.getItem('token_refresh');
+  const accessToken = localStorage.getItem('token_access');
+  const loginState: LoginStateModel = notLoggedInStatus;
 
-  if (refreshToken && accessToken){
+  if (refreshToken && accessToken) {
     loginState.access = accessToken;
     loginState.refresh = refreshToken;
   }
 
   return loginState;
-}
+};

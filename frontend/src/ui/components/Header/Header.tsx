@@ -6,7 +6,6 @@ import { performLogout } from 'auth/actions';
 import logo from 'assets/icons.svg';
 import './styles.scss';
 
-
 interface ActionProps {
   performLogout: Function;
 }
@@ -33,7 +32,13 @@ export class HeaderComponent extends React.PureComponent<Props> {
               <Nav.Link>Customize</Nav.Link>
               <Nav.Link>Support Request</Nav.Link>
               <Nav.Link>Status & Notifications</Nav.Link>
-              <Nav.Link onClick={() => {this.props.performLogout()}}>Log out</Nav.Link>
+              <Nav.Link
+                onClick={() => {
+                  this.props.performLogout();
+                }}
+              >
+                Log out
+              </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Navbar>
@@ -62,14 +67,13 @@ export class HeaderComponent extends React.PureComponent<Props> {
   };
 
   public render() {
-    let authenticated = !!(this.props.refresh);
+    const authenticated = !!this.props.refresh;
     if (authenticated) {
-      return this.renderAuthenticatedHeader()
-    } else {
-      return this.renderUnauthenticatedHeader()
+      return this.renderAuthenticatedHeader();
     }
+    return this.renderUnauthenticatedHeader();
   }
-};
+}
 
 export const Header = connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({

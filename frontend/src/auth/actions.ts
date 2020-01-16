@@ -45,7 +45,13 @@ export interface Logout extends Action {
   readonly type: Types.LOGOUT;
 }
 
-export type ActionTypes = SubmitLogin | LoginSuccess | LoginFailure | TokenRefresh | TokenRefreshSuccess | Logout;
+export type ActionTypes =
+  | SubmitLogin
+  | LoginSuccess
+  | LoginFailure
+  | TokenRefresh
+  | TokenRefreshSuccess
+  | Logout;
 
 export const performLogin = (
   data: LoginFormModel,
@@ -83,7 +89,9 @@ export const performLogout = () => async (dispatch: any) => {
   });
 };
 
-export const refreshAccessToken = (refreshToken: string): OcimThunkAction<void> => async dispatch => {
+export const refreshAccessToken = (
+  refreshToken: string
+): OcimThunkAction<void> => async dispatch => {
   await V2Api.authRefreshCreate({ data: { refresh: refreshToken } })
     .then((response: Token) => {
       // Perform authentication and create new instance
