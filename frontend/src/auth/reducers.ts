@@ -21,6 +21,13 @@ export function loginStateReducer(
         error: { $set: action.error },
         loading: { $set: false }
       });
+    case LoginActions.Types.TOKEN_REFRESH:
+      return update(state, { loading: { $set: true } });
+    case LoginActions.Types.TOKEN_REFRESH_SUCCESS:
+      return update(state, {
+        $merge: action.data,
+        loading: { $set: false }
+      });
     case LoginActions.Types.LOGOUT:
       return notLoggedInStatus;
     default:
