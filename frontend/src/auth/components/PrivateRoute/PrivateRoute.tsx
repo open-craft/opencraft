@@ -4,7 +4,7 @@ import { Redirect, Route, RouteProps } from 'react-router';
 import './styles.scss';
 import { checkAuthAndRefreshToken } from 'auth/utils/helpers';
 
-export const PrivateRoute: React.FC<RouteProps> = props => {
+export const PrivateRoute: React.FC<RouteProps> = (props: RouteProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
