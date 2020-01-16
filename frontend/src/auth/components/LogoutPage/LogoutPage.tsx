@@ -13,12 +13,8 @@ interface Props extends ActionProps {}
 
 @connect<{}, ActionProps, {}, Props, {}>(() => ({}), { performLogout })
 export class LogoutPage extends React.PureComponent<Props> {
-  private logOut = () => {
-    this.props.performLogout();
-  };
-
   public render() {
-    this.logOut();
+    this.props.performLogout();
 
     return <Redirect to={ROUTES.Auth.LOGIN} />;
   }
