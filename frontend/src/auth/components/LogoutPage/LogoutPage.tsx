@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { RootState } from 'global/state';
 import { connect } from 'react-redux';
 import { ROUTES } from 'global/constants';
 import { Redirect } from 'react-router';
@@ -12,17 +11,14 @@ interface ActionProps {
 
 interface Props extends ActionProps {}
 
-@connect<{}, ActionProps, {}, Props, RootState>(
-  (state: RootState) => ({
-    ...state.loginState
-  }),
-  {
-    performLogout
-  }
-)
+@connect<{}, ActionProps, {}, Props, {}>(() => ({}), { performLogout })
 export class LogoutPage extends React.PureComponent<Props> {
-  public render() {
+  private logOut = () => {
     this.props.performLogout();
+  };
+
+  public render() {
+    this.logOut();
 
     return <Redirect to={ROUTES.Auth.LOGIN} />;
   }
