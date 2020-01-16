@@ -84,9 +84,8 @@ export const performLogin = (
 export const performLogout = () => async (dispatch: any) => {
   window.localStorage.removeItem('token_access');
   window.localStorage.removeItem('token_refresh');
-  dispatch({
-    type: Types.LOGOUT
-  });
+  dispatch({ type: Types.LOGOUT });
+  dispatch(push(ROUTES.Auth.LOGIN));
 };
 
 export const refreshAccessToken = (
@@ -105,8 +104,6 @@ export const refreshAccessToken = (
       window.localStorage.removeItem('token_refresh');
 
       dispatch(push(ROUTES.Auth.LOGIN));
-      dispatch({
-        type: Types.LOGOUT
-      });
+      dispatch({ type: Types.LOGOUT });
     });
 };
