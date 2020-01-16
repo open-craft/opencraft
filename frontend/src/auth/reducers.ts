@@ -12,21 +12,15 @@ export function loginStateReducer(
     case LoginActions.Types.LOGIN_SUBMIT:
       return update(state, { loading: { $set: true } });
     case LoginActions.Types.LOGIN_SUCCESS:
-      return update(
-        state,
-        {
-          $merge: action.data,
-          loading: { $set: false }
-        }
-      );
+      return update(state, {
+        $merge: action.data,
+        loading: { $set: false }
+      });
     case LoginActions.Types.LOGIN_FAILURE:
-      return update(
-        state,
-        {
-          error: { $set: action.error },
-          loading: { $set: false }
-        }
-      );
+      return update(state, {
+        error: { $set: action.error },
+        loading: { $set: false }
+      });
     case LoginActions.Types.LOGOUT:
       return notLoggedInStatus;
     default:

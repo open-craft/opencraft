@@ -5,7 +5,6 @@ import { ROUTES } from 'global/constants';
 import { Redirect } from 'react-router';
 import './styles.scss';
 import { performLogout } from 'auth/actions';
-import './styles.scss';
 
 interface ActionProps {
   performLogout: Function;
@@ -25,6 +24,6 @@ export class LogoutPage extends React.PureComponent<Props> {
   public render() {
     this.props.performLogout();
 
-    return <Redirect to={ROUTES.Auth.LOGIN} />
+    return <Redirect to={ROUTES.Auth.LOGIN} />;
   }
-};
+}

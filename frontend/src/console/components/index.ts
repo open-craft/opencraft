@@ -1,4 +1,3 @@
+export * from './InstanceSettings';
 
-export * from "./InstanceSettings";
-
-export * from "./ConsoleContainer";
+export * from './ConsoleContainer';

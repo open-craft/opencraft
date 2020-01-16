@@ -4,7 +4,6 @@ import { Redirect, Route, RouteProps } from 'react-router';
 import './styles.scss';
 import { checkAuthAndRefreshToken } from 'auth/utils/helpers';
 
-
 export const PrivateRoute: React.FC<RouteProps> = props => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
@@ -21,9 +20,10 @@ export const PrivateRoute: React.FC<RouteProps> = props => {
   }
 
   if (!isAuthenticated) {
-    const renderComponent = () => <Redirect to={{ pathname: ROUTES.Auth.LOGOUT }} />;
+    const renderComponent = () => (
+      <Redirect to={{ pathname: ROUTES.Auth.LOGOUT }} />
+    );
     return <Route {...props} component={renderComponent} render={undefined} />;
-  } else {
-      return <Route {...props} />;
   }
+  return <Route {...props} />;
 };

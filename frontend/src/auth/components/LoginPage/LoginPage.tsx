@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { RootState } from 'global/state';
-import messages from './displayMessages';
 import { connect } from 'react-redux';
 import { ROUTES } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { Alert, Button, Spinner, Form } from 'react-bootstrap';
 import { ContentPage, TextInputField } from 'ui/components';
 import { performLogin } from 'auth/actions';
+import messages from './displayMessages';
 import './styles.scss';
 
 interface ActionProps {
@@ -54,7 +54,7 @@ export class LoginPage extends React.PureComponent<Props, State> {
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
-    let value = e.target.value;
+    const { value } = e.target;
 
     this.setState({
       [field]: value
@@ -63,9 +63,7 @@ export class LoginPage extends React.PureComponent<Props, State> {
 
   public render() {
     return (
-      <ContentPage
-        title="Log in to customize your instance"
-      >
+      <ContentPage title="Log in to customize your instance">
         <Form className="login">
           <TextInputField
             fieldName="username"
@@ -83,11 +81,8 @@ export class LoginPage extends React.PureComponent<Props, State> {
           />
 
           {this.props.error && (
-            <Alert variant="danger">
-              {this.props.error}
-            </Alert>
+            <Alert variant="danger">{this.props.error}</Alert>
           )}
-
 
           <Button
             className="pull-left loading"
@@ -109,10 +104,8 @@ export class LoginPage extends React.PureComponent<Props, State> {
               <WrappedMessage messages={messages} id="forgotPassword" />
             </a>
           </p>
-
         </Form>
-
       </ContentPage>
     );
-  };
-};
+  }
+}

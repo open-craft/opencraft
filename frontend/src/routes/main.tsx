@@ -3,9 +3,9 @@ import * as React from 'react';
 import { Redirect, Route, Switch } from 'react-router';
 import { ErrorPage } from 'ui/components';
 import { LoginPage, LogoutPage } from 'auth/components';
-import { ROUTES } from '../global/constants';
 import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
+import { ROUTES } from '../global/constants';
 
 export const MainRoutes = () => (
   <Switch>

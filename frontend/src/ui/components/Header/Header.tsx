@@ -1,10 +1,6 @@
 import logo from 'assets/icons.svg';
 import * as React from 'react';
-import {
-  Navbar,
-  Nav,
-  Container
-} from 'react-bootstrap';
+import { Navbar, Nav, Container } from 'react-bootstrap';
 import './styles.scss';
 
 export const Header: React.FC = () => (

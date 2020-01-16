@@ -10,7 +10,7 @@ export const ConsoleRoutes = () => {
       <PrivateRoute
         path="/console/instance-settings"
         component={InstanceSettings}
-        />
+      />
     </Switch>
   );
 };

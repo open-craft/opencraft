@@ -23,7 +23,7 @@ export enum RegistrationSteps {
 export const ROUTES = {
   Auth: {
     LOGIN: '/login',
-    LOGOUT: '/logout',
+    LOGOUT: '/logout'
   },
   Console: {
     HOME: '/console',

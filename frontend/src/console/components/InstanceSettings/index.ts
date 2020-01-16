@@ -1,1 +1,1 @@
-export * from "./InstanceSettings";
+export * from './InstanceSettings';
