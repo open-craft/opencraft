@@ -38,9 +38,14 @@
   }
 
   .navbar-nav .nav-link {
-    font: $chivo-font;
+    font-family: $chivo-font;
+    font-size: 24px;
+    letter-spacing: 0.72px;
     color: white;
     border-bottom: 3px solid transparent;
+    padding-left: none;
+    padding-right: none;
+    margin: auto 7px;
 
     &:hover, &:focus {
       color: white;

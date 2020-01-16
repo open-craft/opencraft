@@ -40,8 +40,8 @@ exports[`renders without crashing 1`] = `
       >
         <a
           className="nav-link"
-          data-rb-event-key="#home"
-          href="#home"
+          data-rb-event-key="/login"
+          href="/login"
           onClick={[Function]}
           onKeyDown={[Function]}
         >
