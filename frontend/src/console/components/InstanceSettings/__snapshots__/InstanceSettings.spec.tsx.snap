@@ -1,0 +1,88 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+        href="https://courses.opencraft.hosting"
+      >
+        Wellington High School
+        <div
+          className="instance-link"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+        href="https://studio.courses.opencraft.hosting"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <div
+        className="status-pill"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
+      >
+        <span
+          className="dot"
+        />
+        <span
+          className="text"
+        >
+          Status: Up to date
+        </span>
+      </div>
+      <button
+        className="float-right loading btn btn-primary btn-lg"
+        disabled={false}
+        type="button"
+      >
+        Deploy (10 updates)
+      </button>
+    </div>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="row"
+        >
+          <div
+            className="col"
+          >
+            Menu
+          </div>
+          <div
+            className="col"
+          >
+            Instance settings
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

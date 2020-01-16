@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <div
+      className="status-pill"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+      />
+      <span
+        className="text"
+      >
+        Status: Up to date
+      </span>
+    </div>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={false}
+      type="button"
+    >
+      Deploy (10 updates)
+    </button>
+  </div>
+</div>
+`;
