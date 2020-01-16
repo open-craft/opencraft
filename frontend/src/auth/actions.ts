@@ -1,4 +1,4 @@
-// import { push } from 'connected-react-router';
+import { push } from 'connected-react-router';
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 // import { Types as UIActionTypes } from 'ui/actions';
@@ -11,6 +11,8 @@ export enum Types {
   LOGIN_SUBMIT = 'LOGIN_SUBMIT',
   LOGIN_SUCCESS = 'LOGIN_SUCCESS',
   LOGIN_FAILURE = 'LOGIN_FAILURE',
+  TOKEN_CHECK = 'TOKEN_CHECK',
+  TOKEN_REFRESH = 'TOKEN_REFRESH',
   LOGOUT = 'LOGOUT'
 }
 
@@ -35,7 +37,8 @@ export interface Logout extends Action {
 export type ActionTypes = SubmitLogin | LoginSuccess | LoginFailure | Logout;
 
 export const performLogin = (
-  data: LoginFormModel
+  data: LoginFormModel,
+  redirectTo?: string
 ): OcimThunkAction<void> => async dispatch => {
   await V2Api.authTokenCreate({ data })
     .then((response: Token) => {
@@ -44,6 +47,10 @@ export const performLogin = (
       // Save auth data to localStorage so the API client picks it up
       window.localStorage.setItem('token_access', response.access);
       window.localStorage.setItem('token_refresh', response.refresh);
+
+      if (redirectTo) {
+        dispatch(push(redirectTo));
+      }
     })
     .catch((e: any) => {
       e.json().then((feedback: any) => {

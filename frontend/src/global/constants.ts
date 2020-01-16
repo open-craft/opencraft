@@ -21,6 +21,13 @@ export enum RegistrationSteps {
 }
 
 export const ROUTES = {
+  Auth: {
+    LOGIN: '/login',
+  },
+  Console: {
+    HOME: '/console',
+    INSTANCE_SETTINGS: '/console/instance_settings'
+  },
   Registration: {
     HOME: '/registration',
     DOMAIN: '/registration/domain',

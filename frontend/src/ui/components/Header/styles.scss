@@ -1,19 +1,50 @@
 @import '~styles/theme';
 
 
-header.app-header {
-    min-height: 6em;
-    color: #fff;
+.app-header {
+  min-height: 6em;
+  color: #fff;
+  display: flex;
 
-    .logo-container {
-        display: flex;
-        justify-content: center;
+  .menu-item {
+    font-family: $chivo-font;
+    font-size: 18px;
+    letter-spacing: 0.72px;
+    color: #ffffff;
 
-        .site-logo {
-            fill: #fff;
-            width: 152px;
-            height: 82px;
-            padding-top: 15px;
-        }
+    &:hover {
+      border-bottom: 3px solid white;
     }
+  }
+}
+
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+
+  .site-logo {
+    fill: #fff;
+    width: 152px;
+    height: 82px;
+    padding-top: 15px;
+  }
+}
+
+/* change the link color */
+.navbar-dark {
+  .navbar-toggler {
+    border: none;
+  }
+
+  .navbar-nav .nav-link {
+    font: $chivo-font;
+    color: white;
+    border-bottom: 3px solid transparent;
+
+    &:hover, &:focus {
+      color: white;
+      border-bottom: 3px solid white;
+    }
+  }
 }

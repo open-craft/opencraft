@@ -10,11 +10,23 @@ export function loginStateReducer(
 ): LoginStateModel {
   switch (action.type) {
     case LoginActions.Types.LOGIN_SUBMIT:
-      return state;
+      return update(state, { loading: { $set: true } });
     case LoginActions.Types.LOGIN_SUCCESS:
-      return update(state, { $merge: action.data });
+      return update(
+        state,
+        {
+          $merge: action.data,
+          loading: { $set: false }
+        }
+      );
     case LoginActions.Types.LOGIN_FAILURE:
-      return update(state, { error: { $set: action.error } });
+      return update(
+        state,
+        {
+          error: { $set: action.error },
+          loading: { $set: false }
+        }
+      );
     case LoginActions.Types.LOGOUT:
       return notLoggedInStatus;
     default:

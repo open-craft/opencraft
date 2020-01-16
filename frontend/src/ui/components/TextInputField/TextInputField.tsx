@@ -5,8 +5,8 @@ import './styles.scss';
 
 interface InputFieldProps {
   fieldName: string;
-  value: string;
-  onChange: any;
+  value?: string;
+  onChange?: any;
   error?: string;
   messages: any;
   type?: string;
