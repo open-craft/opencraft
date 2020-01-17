@@ -1,24 +1,6 @@
 @import '~styles/theme';
 
 
-.app-header {
-  min-height: 6em;
-  color: #fff;
-  display: flex;
-
-  .menu-item {
-    font-family: $chivo-font;
-    font-size: 18px;
-    letter-spacing: 0.72px;
-    color: #ffffff;
-
-    &:hover {
-      border-bottom: 3px solid white;
-    }
-  }
-}
-
-
 .logo-container {
   display: flex;
   justify-content: center;
@@ -39,7 +21,7 @@
 
   .navbar-nav .nav-link {
     font-family: $chivo-font;
-    font-size: 24px;
+    font-size: 20px;
     letter-spacing: 0.72px;
     color: white;
     border-bottom: 3px solid transparent;
