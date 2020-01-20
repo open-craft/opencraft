@@ -222,7 +222,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_swift.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
-        dns_records = gandi.api.client.list_records('example.com')
+        dns_records = gandi.api.list_records('example.com')
         self.assertCountEqual(dns_records, [
             dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='preview.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
@@ -1151,7 +1151,7 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         """
         dns_ips = set()
         vm_indices = set()
-        for record in gandi.api.client.list_records(domain):
+        for record in gandi.api.list_records(domain):
             match = re.match(r'vm(\d+)\.', record['name'])
             if match:
                 self.assertEqual(record['type'], 'A')

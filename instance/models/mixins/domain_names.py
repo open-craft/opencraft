@@ -166,6 +166,14 @@ class DomainNameInstance(models.Model):
         prefixes = ['studio', 'preview', 'discovery', 'ecommerce']
         return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in prefixes]
 
+    def get_custom_domains(self):
+        """
+        Returns a list of custom sub-domains configured for the instance.
+        """
+        return [
+            domain for domain in self.extra_custom_domains.split("\r\n") if domain.endswith(self.internal_lms_domain)
+        ]
+
     def get_load_balanced_domains(self):
         """
         Return an iterable of domains that should be handled by the load balancer.
@@ -199,7 +207,9 @@ class DomainNameInstance(models.Model):
         ]
         if self.enable_prefix_domains_redirect:
             managed_domains += self.get_prefix_domain_names()
-        return managed_domains
+
+        managed_domains += self.get_custom_domains()
+        return [name for name in managed_domains if name]
 
     @property
     def domain_slug(self):

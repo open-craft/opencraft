@@ -36,7 +36,7 @@ colour==0.1.5
 constantly==15.1.0        # via twisted
 cookies==2.2.1
 coverage==4.5.3
-cryptography==2.7         # via autobahn, openstacksdk, pyopenssl, service-identity
+cryptography==2.7         # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
 daphne==2.3.0             # via channels
 ddt==1.2.1
 debtcollector==1.21.0     # via oslo.config, oslo.utils, python-keystoneclient
@@ -53,8 +53,9 @@ django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
-django==2.2.6
+django==2.2.9
 djangorestframework==3.9.4
+dns-lexicon==3.3.13
 docutils==0.14
 dodgy==0.1.9
 dogpile.cache==0.7.1      # via openstacksdk
@@ -135,7 +136,7 @@ pylint-django==2.0.6
 pylint-plugin-utils==0.5
 pylint==2.2.3
 pymongo==3.8.0
-pyopenssl==19.0.0         # via python-glanceclient
+pyopenssl==19.0.0         # via python-glanceclient, requests
 pyparsing==2.4.2          # via cliff, oslo.utils
 pyperclip==1.7.0          # via cmd2
 pyrsistent==0.15.4        # via jsonschema
@@ -153,7 +154,7 @@ pyyaml==5.1.2
 rcssmin==1.0.6            # via django-compressor
 redis==3.2.1
 requests-file==1.4.3
-requests==2.22.0
+requests[security]==2.22.0
 requestsexceptions==1.4.0  # via openstacksdk
 requirements-detector==0.6  # via prospector
 responses==0.10.6
@@ -173,6 +174,7 @@ stevedore==1.30.1         # via cliff, keystoneauth1, osc-lib, oslo.config, pyth
 tempora==1.14.1           # via portend
 testfixtures==6.10.0
 text-unidecode==1.2       # via faker
+tldextract==2.2.2         # via dns-lexicon
 traitlets==4.3.2          # via ipython
 twisted==19.7.0           # via daphne
 txaio==18.8.1             # via autobahn

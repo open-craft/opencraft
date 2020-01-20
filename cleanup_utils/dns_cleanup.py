@@ -25,6 +25,8 @@ Cleans up all DNS entries left behind from CI
 import logging
 import xmlrpc
 
+from instance.gandi import GandiV5API
+
 # Logging #####################################################################
 
 logger = logging.getLogger('integration_cleanup')
@@ -173,3 +175,28 @@ class DnsCleanupInstance():
                         zone_id=self.zone_id,
                         zone_version_id=new_zone_version
                     )
+
+
+class DNSCleanupInstance:
+    """
+    Clean up the DNS records.
+    """
+    def __init__(self, api_key, dry_run=False):
+        self.client = GandiV5API(api_key=api_key)
+        self.dry_run = dry_run
+
+    def run_cleanup(self, hashes_to_clean):
+        """
+        Cleans up the DNS records using the Gandi API.
+        """
+
+        logger.info('\n --- Starting Gandi DNS cleanup ---')
+        if self.dry_run:
+            logger.info('Running in DRY_RUN mode, no actions will be taken.')
+
+        logger.info('Deleting the following DNS records:')
+        for hash_ in hashes_to_clean:
+            logger.info('  %s', hash_)
+
+            if not self.dry_run:
+                self.client.remove_dns_record(hash_, type='CNAME')
