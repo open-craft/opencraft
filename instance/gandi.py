@@ -221,9 +221,9 @@ class GandiV5API:
             logger.warning(
                 'Using the default instance base domain %s as the fallback. '
                 'This will not work if the API key has no permission to manage the DNS records for this domain',
-                settings.DEFAULT_INSTANCE_BASE_DOMAIN
+                settings.GANDI_DEFAULT_BASE_DOMAIN
             )
-            self._domain_cache = [settings.DEFAULT_INSTANCE_BASE_DOMAIN]
+            self._domain_cache = [settings.GANDI_DEFAULT_BASE_DOMAIN]
 
     def _split_domain_name(self, domain):
         """

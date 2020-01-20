@@ -25,6 +25,8 @@ Gandi - Tests
 from unittest.mock import call, MagicMock, patch
 import xmlrpc.client
 
+from django.conf import settings
+
 from instance import gandi
 from instance.gandi import GandiV5API
 from instance.tests.base import TestCase
@@ -196,6 +198,18 @@ class GandiV5TestCase(TestCase):
         mocked_get.return_value = mock_response
         self.api._populate_domain_cache()
         assert self.api._domain_cache == ['test.com', 'example.com']
+
+    @patch('instance.gandi.requests.get')
+    def test_populate_domain_cache_empty_result_from_api_call(self, mocked_get):
+        """
+        Test that settings.GANDI_DEFAULT_BASE_DOMAIN is added to the domain cache when the API
+        returns an empty list of domains.
+        """
+        mock_response = MagicMock()
+        mock_response.json.return_value = []
+        mocked_get.return_value = mock_response
+        self.api._populate_domain_cache()
+        assert self.api._domain_cache == [settings.GANDI_DEFAULT_BASE_DOMAIN]
 
     def test_split_domain_name(self):
         """

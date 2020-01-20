@@ -320,12 +320,6 @@ DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 # This rate is per user per day in euros
 BILLING_RATE = env('BILLING_RATE', default=3)
 
-# DNS (Gandi) #################################################################
-
-# See https://www.gandi.net/admin/api_key
-GANDI_API_KEY = env('GANDI_API_KEY')
-
-
 # GitHub - Forks & organizations ##############################################
 
 # The worker queue will watch for PRs from members of a given organization
@@ -496,6 +490,17 @@ SIMPLE_THEME_SKELETON_THEME_REPO = env(
     default='https://github.com/open-craft/edx-simple-theme/'
 )
 SIMPLE_THEME_SKELETON_THEME_VERSION = env('SIMPLE_THEME_SKELETON_THEME_VERSION', default='master')
+
+# DNS (Gandi) #################################################################
+
+# See https://doc.livedns.gandi.net/
+GANDI_API_KEY = env('GANDI_API_KEY')
+
+# The base domain to use as a fallback when the list of domains in the account returned by the Gandi
+# API is empty. This should be explicitly set only when  the 'DEFAULT_INSTANCE_BASE_DOMAIN' is not a
+# domain listed in the Gandi account and is instead a sub-domain. For example, 'stage.ocim.domain' where
+# 'ocim.domain' is the domain registered in the Gandi account.
+GANDI_DEFAULT_BASE_DOMAIN = env('GANDI_DEFAULT_BASE_DOMAIN', default=DEFAULT_INSTANCE_BASE_DOMAIN)
 
 # Ansible #####################################################################
 
