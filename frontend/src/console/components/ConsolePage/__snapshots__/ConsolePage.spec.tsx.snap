@@ -77,9 +77,7 @@ exports[`renders without crashing 1`] = `
           </div>
           <div
             className="col"
-          >
-            Instance settings
-          </div>
+          />
         </div>
       </div>
     </div>

@@ -3,10 +3,11 @@ import { Row } from 'react-bootstrap';
 import './styles.scss';
 
 interface Props {
-  title: string;
-  subtitle?: string;
+  title: any;
+  subtitle?: any;
   children: React.ReactNode;
-  headerExtra?: React.ReactNode;
+  titleExtra?: React.ReactNode;
+  toolbar?: React.ReactNode;
 }
 
 export const ContentPage: React.FC<Props> = (props: Props) => {
@@ -16,8 +17,10 @@ export const ContentPage: React.FC<Props> = (props: Props) => {
         <h1>{props.title}</h1>
         {props.subtitle && <h2>{props.subtitle}</h2>}
 
-        {props.headerExtra}
+        {props.titleExtra}
       </div>
+
+      {props.toolbar}
 
       <div className="content-page-container">
         <Row className="content-page-content">{props.children}</Row>

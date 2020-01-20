@@ -1,0 +1,19 @@
+@import "~styles/theme";
+
+
+.header-link {
+  color: white;
+
+  &:hover {
+    color: white;
+  }
+
+  .instance-link {
+    margin-left: 15px;
+    height: 35px;
+    width: 35px;
+    background-color: white;
+    border-radius: 50%;
+    display: inline-block;
+  }
+}
