@@ -24,6 +24,7 @@ Instance - Integration Tests
 import os
 import re
 import time
+from datetime import datetime
 from functools import wraps
 from unittest import skipIf
 from unittest.mock import MagicMock, patch
@@ -47,6 +48,7 @@ from instance.tests.integration.utils import check_url_accessible, get_url_conte
 from instance.tasks import spawn_appserver
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 
 # TEST_GROUP should be an integer. This will skip any test that is not part of the group value.
@@ -331,6 +333,16 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
         instance.lms_users.add(user)
 
+        # Create user profile and update user model from db
+        UserProfile.objects.create(
+            user=user,
+            full_name="Test user 1",
+            accepted_privacy_policy=datetime.now(),
+            accept_paid_support=True,
+            subscribe_to_updates=True,
+        )
+        user.refresh_from_db()
+
         # Simulate that the application form was filled. This doesn't create another instance nor user
         application = BetaTestApplication.objects.create(
             user=user,
@@ -472,6 +484,16 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         # Add an lms user, as happens with beta registration
         user, _ = get_user_model().objects.get_or_create(username='test', email='test@example.com')
         instance.lms_users.add(user)
+
+        # Create user profile and update user model from db
+        UserProfile.objects.create(
+            user=user,
+            full_name="Test user 1",
+            accepted_privacy_policy=datetime.now(),
+            accept_paid_support=True,
+            subscribe_to_updates=True,
+        )
+        user.refresh_from_db()
 
         # Simulate that the application form was filled. This doesn't create another instance nor user
         BetaTestApplication.objects.create(
