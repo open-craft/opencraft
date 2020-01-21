@@ -215,6 +215,8 @@ Required settings:
 * `DEFAULT_DISCOVERY_DOMAIN_PREFIX`: String to prepend to internal LMS domain when
   generating the Course Discovery domain (default: `"discovery-"`)
 * `GANDI_API_KEY`: Your Gandi API key (required)
+* `GANDI_DEFAULT_BASE_DOMAIN`: The base domain owned in the Gandi account if the `DEFAULT_INSTANCE_BASE_DOMAIN`
+  its sub-domain. (optional, default: `DEFAULT_INSTANCE_BASE_DOMAIN`).
 
 ### GitHub settings
 
