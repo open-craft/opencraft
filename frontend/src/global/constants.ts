@@ -27,7 +27,7 @@ export const ROUTES = {
   },
   Console: {
     HOME: '/console',
-    INSTANCE_SETTINGS: '/console/instance_settings'
+    INSTANCE_SETTINGS_GENERAL: '/console/settings/general'
   },
   Registration: {
     HOME: '/registration',

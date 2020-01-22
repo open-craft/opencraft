@@ -9,10 +9,10 @@ export const ConsoleRoutes = () => {
   return (
     <Switch>
       <Route exact path={ROUTES.Console.HOME}>
-        <Redirect to={ROUTES.Console.INSTANCE_SETTINGS} />
+        <Redirect to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL} />
       </Route>
       <PrivateRoute
-        path={ROUTES.Console.INSTANCE_SETTINGS}
+        path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
       />
     </Switch>

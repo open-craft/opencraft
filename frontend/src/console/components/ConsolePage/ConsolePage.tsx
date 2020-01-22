@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { ContentPage } from 'ui/components';
-import { RedeploymentToolbar } from 'console/components';
+import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
 import { Row, Col, Container } from 'react-bootstrap';
 
 import './styles.scss';
@@ -28,17 +27,26 @@ export const ConsolePage: React.FC<Props> = (props: Props) => {
   );
 
   return (
-    <ContentPage
-      title={instanceName}
-      subtitle={instanceStudioLink}
-      toolbar={<RedeploymentToolbar />}
-    >
-      <Container fluid>
-        <Row>
-          <Col>Menu</Col>
-          <Col>{props.children}</Col>
+    <div className="console-page">
+      <div className="title-container">
+        <h1>{instanceName}</h1>
+        <h2>{instanceStudioLink}</h2>
+      </div>
+
+      <RedeploymentToolbar />
+
+      <div className="console-page-container">
+        <Row className="console-page-content">
+          <Container fluid>
+            <Row>
+              <Col md="4">
+                <CustomizationSideMenu />
+              </Col>
+              <Col md="8">{props.children}</Col>
+            </Row>
+          </Container>
         </Row>
-      </Container>
-    </ContentPage>
+      </div>
+    </div>
   );
 };

@@ -1,0 +1,49 @@
+@import "~styles/theme";
+
+
+.customization-menu {
+  padding-bottom: 30px;
+
+  .card {
+    border: none;
+
+    .card-header {
+      background-color: white;
+      border: none;
+      padding: 5px 15px 5px;
+      font-family: $chivo-font;
+      font-size: 22px;
+      letter-spacing: 0.66px;
+      color: #0f1f24;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .card-body {
+      padding: 0 15px 0;
+
+      .nav-link {
+        padding: 10px 15px;
+        border-top: 1px solid $light-gray;
+        font-family: $chivo-font;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: $secondary-1;
+
+        &:hover, &:focus {
+          text-decoration: underline;
+        }
+
+        &.disabled {
+          color: $secondary-2;
+        }
+
+        &.active {
+          background-color: $light-blue-2;
+        }
+      }
+    }
+  }
+}

@@ -59,6 +59,7 @@ export class HeaderComponent extends React.PureComponent<Props> {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">
               <Nav.Link href="/login">Login</Nav.Link>
+              <Nav.Link href="/registration">Create your account</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Navbar>
