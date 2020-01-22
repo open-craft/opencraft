@@ -23,6 +23,7 @@ Instance app models - Server
 # Imports #####################################################################
 
 import logging
+import subprocess
 import time
 
 from django.conf import settings
@@ -432,6 +433,10 @@ class OpenStackServer(Server):
         This ensures any daemons that need to perform cleanup tasks can do so, or that any
         shutdown scripts/tasks get executed.
         """
+        # We should delete SSH key before terminating a server.
+        # Edge cases: server is still being configured or has incorrect status due to an error.
+        self._delete_ssh_key()
+
         if self.status == Status.Terminated:
             return
 
@@ -477,3 +482,17 @@ class OpenStackServer(Server):
             max_wait -= poll_interval
             os_server = self.os_server
         return os_server.status == 'SHUTOFF'
+
+    def _delete_ssh_key(self) -> None:
+        """
+        Delete SSH key from `~/.ssh/known_hosts`.
+
+        We can safely ignore the command's return code, because we just need to be sure that the key has been removed
+        for non-existing server - we don't care about non-existing keys.
+        """
+        self.logger.info('Deleting SSH key of "%s" host.', self.public_ip)
+        command = f'ssh-keygen -R {self.public_ip}'
+        try:
+            subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.SubprocessError as e:
+            self.logger.error('Failed to delete SSH key of "%s" host: %s', self.public_ip, e)
