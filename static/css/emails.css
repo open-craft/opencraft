@@ -187,6 +187,11 @@ CSS for common signoff block
     color: #0f1f24;
 }
 
+.signature img {
+  width: 228.1px;
+  height: 51px;
+}
+
 
 /*
 CSS for account info email
@@ -257,4 +262,3 @@ span.swatch {
     border: 2px solid #ccc;
     margin: -2px;
 }
-

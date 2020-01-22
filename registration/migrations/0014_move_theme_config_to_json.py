@@ -12,7 +12,7 @@ def move_separate_theme_fields_to_json(apps, schema_editor):
             'link_color': application.link_color,
             'header_bg_color': application.header_bg_color,
             'footer_bg_color': application.footer_bg_color,
-            'logo': application.logo.url,
+            'logo': application.logo.logo_url if application.logo else None,
             'favicon': application.favicon.url,
         }
         application.draft_theme_config = draft_theme_config
