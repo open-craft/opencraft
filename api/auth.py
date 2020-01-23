@@ -24,7 +24,11 @@ JWT Auth overrides to generate swagger models
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 
 class TokenSerializer(serializers.Serializer):
@@ -49,20 +53,43 @@ class TokenErrorSerializer(serializers.Serializer):
 
     This overrides the serializer returned by the JSON library and
     fixes the generated swagger schema.
-    Desired return format:
     {
-        "details": "error"
+        "detail": "error",
+        "code": "error"
     }
     """
-    details = serializers.CharField()
+    detail = serializers.CharField(required=False)
+    code = serializers.CharField(required=False)
 
 
 class JWTAuthToken(TokenObtainPairView):
     """
-    JWTAuthToken - for swagger
+    Generate a JWT auth token from user credentials.
 
     This overrides the method just to add the Swagger schema overrides
     """
-    @swagger_auto_schema(responses={201: TokenSerializer, 491: TokenErrorSerializer})
+    @swagger_auto_schema(responses={201: TokenSerializer, 401: TokenErrorSerializer})
     def post(self, *args, **kwargs):
         return super(JWTAuthToken, self).post(*args, **kwargs)
+
+
+class JwtTokenRefresh(TokenRefreshView):
+    """
+    Refresh a JWT auth token from refresh token.
+
+    This overrides the method just to add the Swagger schema overrides
+    """
+    @swagger_auto_schema(responses={201: TokenSerializer, 401: TokenErrorSerializer})
+    def post(self, *args, **kwargs):
+        return super(JwtTokenRefresh, self).post(*args, **kwargs)
+
+
+class JwtTokenVerify(TokenVerifyView):
+    """
+    Check if a JWT auth token is valid.
+
+    This overrides the method just to add the Swagger schema overrides
+    """
+    @swagger_auto_schema(responses={201: None, 401: TokenErrorSerializer})
+    def post(self, *args, **kwargs):
+        return super(JwtTokenVerify, self).post(*args, **kwargs)
