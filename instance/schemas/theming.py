@@ -63,12 +63,6 @@ theme_schema_v0 = Schema({
     Optional('header_bg_color', default=header_bg_color): color,
     # Footer background color: Used as the background color for the footer.
     Optional('footer_bg_color', default=header_bg_color): color,
-    # Your branding to be displayed throughout your instance. It should be 48px tall.
-    # If unset, OpenCraft's logo will be used.
-    Optional('logo', default='opencraft_logo_small.png'): nullable(str),
-    # This is used as the browser tab icon for your instance's pages.
-    # If unset, OpenCraft's icon will be used.
-    Optional('favicon', default='opencraft_favicon.ico'): nullable(str),
 })
 
 theme_schema_v1 = Schema({
@@ -81,12 +75,7 @@ theme_schema_v1 = Schema({
             'primary': button_color_schema,
             'secondary': button_color_schema,
         }
-    },
-    'images': {
-        'cover': Or(str, None),
-        'logo': Or(str, None),
-        'favicon': Or(str, None),
-    },
+    }
 })
 
 theme_schema = Or(theme_schema_v0, theme_schema_v1)

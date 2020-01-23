@@ -12,8 +12,6 @@ def move_separate_theme_fields_to_json(apps, schema_editor):
             'link_color': application.link_color,
             'header_bg_color': application.header_bg_color,
             'footer_bg_color': application.footer_bg_color,
-            'logo': application.logo.logo_url if application.logo else None,
-            'favicon': application.favicon.url,
         }
         application.draft_theme_config = draft_theme_config
         application.save()
@@ -23,13 +21,12 @@ def move_json_to_separate_theme_fields(apps, schema_editor):
     BetaTestApplication = apps.get_model('registration', 'BetaTestApplication')
     for application in BetaTestApplication.objects.all():
         theme_config = application.draft_theme_config
-        application.main_color = theme_config['main_color']
-        application.link_color = theme_config['link_color']
-        application.header_bg_color = theme_config['header_bg_color']
-        application.footer_bg_color = theme_config['footer_bg_color']
-        application.logo = theme_config['logo']
-        application.favicon = theme_config['favicon']
-        application.save()
+        if (theme_config):
+            application.main_color = theme_config['main_color']
+            application.link_color = theme_config['link_color']
+            application.header_bg_color = theme_config['header_bg_color']
+            application.footer_bg_color = theme_config['footer_bg_color']
+            application.save()
 
 
 class Migration(migrations.Migration):
