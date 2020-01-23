@@ -23,6 +23,7 @@ Models for the Instance Manager beta test
 # Imports #####################################################################
 
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -32,9 +33,12 @@ from simple_email_confirmation.models import EmailAddress
 from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
+from instance.schemas.theming import theme_schema_validate
+from instance.tasks import spawn_appserver
 
 
 # Models ######################################################################
+
 
 def validate_color(color):
     """
@@ -196,7 +200,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text="Your branding to be displayed throughout your instance. "
                   "It should be 48px tall. "
                   "If unset, OpenCraft's logo will be used.",
-        null=True, # to ease migrations
+        null=True,  # to ease migrations
         blank=False,
         default='opencraft_logo_small.png',
         validators=[validate_logo_height],
@@ -205,21 +209,9 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     favicon = models.ImageField(
         help_text="This is used as the browser tab icon for your instance's "
                   "pages. If unset, OpenCraft's icon will be used.",
-        null=True, # to ease migrations
+        null=True,  # to ease migrations
         blank=False,
         default='opencraft_favicon.ico',
-    )
-
-    accepted_privacy_policy = models.DateTimeField(
-        verbose_name='Accept privacy policy',
-        blank=True,
-        null=True,
-        help_text=('Date the user accepted the privacy policy.'),
-    )
-    subscribe_to_updates = models.BooleanField(
-        default=False,
-        help_text=('I want OpenCraft to keep me updated about important news, '
-                   'tips, and new features, and occasionally send me an email about it.'),
     )
     status = models.CharField(
         max_length=255,
@@ -231,6 +223,20 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+    )
+    use_advanced_theme = models.BooleanField(
+        default=False,
+        help_text=('The advanced theme allows users to pick a lot more details than the regular theme.'
+                   'Setting this flag will enable the more complex theme editor.'),
+    )
+    draft_theme_config = JSONField(
+        verbose_name='Draft Theme Configuration JSON',
+        validators=[theme_schema_validate],
+        null=True,
+        blank=True,
+        help_text=('The theme configuration data currently being edited by the user. When finalised it will'
+                   'be copied over to the final theme config which will then be deployed to the next appserver'
+                   'that is launched.'),
     )
 
     def __str__(self):
@@ -279,3 +285,22 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 code='unique',
             )
             raise ValidationError({'subdomain': [subdomain_error]})
+
+    # pylint: disable=inconsistent-return-statements
+    def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):
+        """
+        Copies over configuration changes stored in this model to the related instance,
+        and optionally spawn a new instance.
+        """
+        instance = self.instance
+        if instance is None:
+            return
+
+        instance.theme_config = self.draft_theme_config
+        instance.name = self.instance_name
+        instance.privacy_policy_url = self.privacy_policy_url
+        instance.email = self.public_contact_email
+        instance.save()
+
+        if spawn_on_commit:
+            return spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=retry_attempts)

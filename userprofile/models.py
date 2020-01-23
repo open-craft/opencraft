@@ -51,6 +51,22 @@ class UserProfile(ValidateModelMixin, TimeStampedModel):
     full_name = models.CharField(max_length=255)
     github_username = models.CharField(max_length=255, unique=True, null=True, blank=True)
     organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
+    accepted_privacy_policy = models.DateTimeField(
+        verbose_name='Accept privacy policy',
+        blank=True,
+        null=True,
+        help_text=('Date the user accepted the privacy policy.'),
+    )
+    accept_paid_support = models.BooleanField(
+        default=False,
+        help_text=('User understands that they may email OpenCraft for support, '
+                   'and that such emails are subject to hourly fees.'),
+    )
+    subscribe_to_updates = models.BooleanField(
+        default=False,
+        help_text=('I want OpenCraft to keep me updated about important news, '
+                   'tips, and new features, and occasionally send me an email about it.'),
+    )
 
     def __str__(self):
         return self.full_name

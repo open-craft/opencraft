@@ -1,0 +1,13 @@
+@import '~styles/theme';
+
+.secure-domain-form {
+  h2 {
+    font-family: $playfair-font;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1.44px;
+    color: $primary-1;
+    text-align: left;
+    margin-bottom: 32px;
+  }
+}

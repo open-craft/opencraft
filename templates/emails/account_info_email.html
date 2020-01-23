@@ -1,0 +1,58 @@
+{% extends "emails/email_base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <table class="almost-ready">
+        <tr>
+            <td class="icon">
+                <img src="{{ base_url }}{% static 'img/png/email-icon-clock.png' %}" alt="Clock icon">
+            </td>
+            <td class="message">
+                <strong>Your instance is almost ready.</strong>
+                <p>
+                    You will receive an email when your instance is ready which should be in the next 2 hours.
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <h1>Welcome {{ user_name }}!</h1>
+
+    <div class="thank-you">
+
+        <p>
+            Thank you for signing up with OpenCraft!
+            <br>
+            We are very excited to have you onboard.
+        </p>
+        <p>
+            Your account details are as follows:
+        </p>
+    </div>
+
+    <h2>Account details</h2>
+    <table class="details">
+        <tr>
+            <td>Instance address</td>
+            <td>{{ instance_url }}</td>
+        </tr>
+        <tr>
+            <td>Instance name</td>
+            <td>{{ instance_name }}</td>
+        </tr>
+        <tr>
+            <td>Full name</td>
+            <td>{{ full_name }}</td>
+        </tr>
+        <tr>
+            <td>Email address</td>
+            <td>{{ email }}</td>
+        </tr>
+        <tr>
+            <td>Public contact email address</td>
+            <td>{{ public_contact_email }}</td>
+        </tr>
+    </table>
+    {% include "emails/_email_signature.html" %}
+{% endblock %}

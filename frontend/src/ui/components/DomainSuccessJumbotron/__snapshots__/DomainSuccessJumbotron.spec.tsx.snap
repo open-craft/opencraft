@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="domain-available jumbotron"
+>
+  <img
+    alt=""
+    src="circle-check.png"
+  />
+  <h2>
+    Your domain name is available
+  </h2>
+  <div
+    className="domain-name"
+  >
+    <p>
+      <span>
+        .opencraft.hosting
+      </span>
+    </p>
+  </div>
+  <p>
+    To secure your domain now, please fill in the details below.
+  </p>
+</div>
+`;

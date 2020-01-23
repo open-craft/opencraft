@@ -1,0 +1,16 @@
+import logo from 'assets/icons.svg';
+import * as React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import './styles.scss';
+
+export const Header: React.FC = () => (
+  <Row as="header" className="app-header">
+    <Col lg />
+    <Col lg className="logo-container">
+      <svg className="site-logo">
+        <use xlinkHref={`${logo}#opencraft_logo`} />
+      </svg>
+    </Col>
+    <Col lg />
+  </Row>
+);

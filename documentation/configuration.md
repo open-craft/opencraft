@@ -149,8 +149,16 @@ edit its security group rules to only allow access to VMs in the
 * `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
 * `SUBDOMAIN_BLACKLIST`: A comma-separated list of subdomains that are to be
   rejected when registering new instances
-* `BETATEST_EMAIL_SENDER`: Sender of the emails related to the beta test
-* `BETATEST_EMAIL_SIGNATURE`: The email signature to be used for beta test emails
+  
+### Email settings
+* `INSTANCES_EMAIL_SENDER`: Sender of the emails related to user instances before 
+  and after trial period
+* `EMAIL_SIGNATURE_NAME`: The name of the person signing off emails sent to users
+* `EMAIL_SIGNATURE_TITLE`: The title of the person signing off emails sent to users
+* `WELCOME_EMAIL_SUBJECT`: The subject for welcome email sent to users when their 
+  instance has been successfully set up
+* `ACCOUNT_INFO_EMAIL_SUBJECT`: The subject for the email sent to users with their
+  instance config and account info right after they finish registration 
 
 ### OpenStack credentials
 

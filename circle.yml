@@ -1,5 +1,117 @@
 version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@1.0.11
+
 jobs:
+  frontend-test:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/project/frontend
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          keys:
+            - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - frontend-deps-{{ .Branch }}-
+            - frontend-deps-
+      - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: Run frontend tests
+          command: npm test -- --reporters=default --reporters=jest-junit --ci --runInBand
+      - store_test_results:
+          path: .
+
+  frontend-quality:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/project/frontend
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          keys:
+            - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - frontend-deps-{{ .Branch }}-
+            - frontend-deps-
+      - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: Run frontend quality tests
+          command: npm run lint
+      - store_test_results:
+          path: .
+
+  frontend-build:
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/project/frontend
+    steps:
+      - checkout:
+          path: ~/project
+      - restore_cache:
+          keys:
+            - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - frontend-deps-{{ .Branch }}-
+            - frontend-deps-
+      - run:
+          name: Build and install Ocim API client
+          command: ./scripts/build-api-client.sh
+      - run:
+          name: Installing frontend dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: Render environment variables to .env file
+          command: |
+            echo $(env | grep REACT_APP) >> .env
+      - run:
+          name: Build React frontend
+          command: npm run build
+      - persist_to_workspace:
+          root: build
+          paths:
+            - .
+
+  frontend-deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - attach_workspace:
+          at: frontend-build
+      - aws-s3/sync:
+          from: frontend-build/
+          to: "s3://$AWS_S3_BUCKET/frontend"
+          overwrite: true
+          # `acl public-read` is needed to make the objects in the bucket publicly accesible.
+          arguments: |
+            --acl public-read
+      - run:
+          name: Invalidate CloudFront cache
+          command: |
+            aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
+
   build:
     docker:
       - image: circleci/python:3.6-stretch-node-browsers
@@ -89,6 +201,7 @@ jobs:
           root: /tmp
           paths:
               - coverage
+
   coverage:
     docker:
       - image: circleci/python:3.6-stretch-node
@@ -121,6 +234,7 @@ jobs:
               coverage combine --append /tmp/workspace/coverage/
               make cov.html
               if [ -e /tmp/workspace/coverage/text/coverage.txt ]; then cat /tmp/workspace/coverage/text/coverage.txt; fi
+
   cleanup:
     docker:
       - image: circleci/python:3.6-stretch
@@ -154,6 +268,7 @@ jobs:
             make test.integration_cleanup
           no_output_timeout: 20m
           when: always
+
 workflows:
   version: 2
   build-test-and-deploy:
@@ -197,6 +312,46 @@ workflows:
           requires:
             - integration_tests_group_1
             - integration_tests_group_2
+
+  frontend-build-test-and-deploy:
+    jobs:
+      - frontend-quality
+      - frontend-test:
+          requires:
+            - frontend-quality
+      - frontend-build:
+          context: ocim-frontend-stage
+          requires:
+            - frontend-test
+      # Frontend deployment (only on master branch)
+      - frontend-deploy:
+          name: frontend-deploy-stage
+          context: ocim-frontend-stage
+          requires:
+            - frontend-build
+          filters:
+            branches:
+              only:
+                - master
+      # Deploy production
+      - frontend-build:
+          name: frontend-build-production
+          context: ocim-frontend-production
+          requires:
+            - frontend-deploy-stage
+          filters:
+            branches:
+              only:
+                - master
+      - frontend-deploy:
+          name: frontend-deploy-production
+          context: ocim-frontend-production
+          requires:
+            - frontend-build-production
+          filters:
+            branches:
+              only:
+                - master
   cleanup-workflow:
     triggers:
       - schedule:

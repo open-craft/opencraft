@@ -1,0 +1,47 @@
+{% load static %}
+{% load inlinecss %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html charset=UTF-8"/>
+    {% if subject %}
+        <title>{{ subject }}</title>
+    {% endif %}
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Chivo:400,400i,700|Playfair+Display:400,700&display=swap');
+    </style>
+</head>
+{% inlinecss "css/emails.css" %}
+    <body>
+    <div class="main">
+        <img class="opencraft-logo" src="{{ base_url }}{% static 'img/png/logo-for-email.png' %}"
+             alt="OpenCraft Logo" aria-hidden="true">
+        <div class="main">
+            <img class="header" src="{{ base_url }}{% static 'img/jpg/header-background.jpg' %}" alt="Email Header"
+                 aria-hidden="true">
+            <div class="content">
+                {% block content %}
+                {% endblock %}
+            </div>
+            <div class="addendum">
+                <p>
+                    And if you need anything, or have any questions
+                    or remarks, don't hesitate to reply to this email.
+                </p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>
+{#                TODO: Add the unsubscribe link. #}
+{#                <a href="{{ unsubscribe_url }}">Unsubscribe</a> | #}
+                edX and Open edX are registered trademarks of edX Inc.
+            </p>
+            <p>
+                All rights reserved.
+            </p>
+        </div>
+    </div>
+    </body>
+{% endinlinecss %}
+</html>

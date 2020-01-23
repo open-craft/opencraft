@@ -1,0 +1,54 @@
+$primary-1: #1e4c59;
+$primary-2: #6d9cae;
+$secondary-1: #0f1f24;
+$secondary-2: #7a7a7a;
+$secondary-4: #666666;
+
+$theme-colors: (
+  "primary": $primary-1,
+  "secondary": $secondary-1
+);
+
+$playfair-font: 'Playfair Display', serif;
+$chivo-font: 'Chivo', sans-serif;
+$roboto-font: 'Roboto', sans-serif;
+
+// Disable rounded button corners
+$enable-rounded: false;
+
+// Form group styling
+.form-group {
+  .form-label {
+    font-family: $chivo-font;
+    font-size: 14px;
+    letter-spacing: 0.14px;
+    color: $secondary-1;
+    margin-bottom: 4px;
+  }
+  .form-control {
+    border: solid 1px $secondary-4;
+  }
+  p {
+    padding-top: 4px;
+    margin-bottom: 4px;
+    font-family: $chivo-font;
+    font-size: 12px;
+    letter-spacing: 0.72px;
+    color: $secondary-1;
+  }
+  .invalid-feedback {
+    font-family: $chivo-font;
+    font-size: 12px;
+    letter-spacing: 0.72px;
+    color: red;
+  }
+}
+
+.custom-checkbox {
+  margin: 20px 0;
+  label {
+    font-family: $chivo-font;
+    font-size: 16px;
+    color: $secondary-1;
+  }
+}

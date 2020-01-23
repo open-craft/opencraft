@@ -1,0 +1,39 @@
+@import "~styles/theme";
+
+.domain-input-container {
+  width: 100%;
+
+  .domain-label {
+    font-family: Chivo;
+    font-size: 18px;
+    letter-spacing: 0.54px;
+    color: #0f1f24;
+    margin-bottom: 20px;
+  }
+
+  .input-group {
+    font-family: $chivo-font;
+    font-size: 16px;
+    letter-spacing: 0.96px;
+    color: #000000;
+
+    .form-control {
+      border: 1px solid $primary-1;
+      border-right-width: 0px;
+    }
+    .input-group-text {
+      height: 38px;
+      border: 1px solid $primary-1;
+      background-color: white;
+      color: black;
+    }
+
+    button {
+      height: 38px;
+      width: 200px;
+      .spinner {
+        margin-right: 10px;
+      }
+    }
+  }
+}

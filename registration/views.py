@@ -28,9 +28,8 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic.edit import UpdateView
-from simple_email_confirmation.models import EmailAddress
 
-from email_verification import send_email_verification
+from registration.utils import verify_user_emails
 from registration.forms import BetaTestApplicationForm
 from registration.models import BetaTestApplication
 
@@ -79,10 +78,7 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
             user = authenticate(username=form.cleaned_data['username'],
                                 password=form.cleaned_data['password'])
             login(self.request, user)
-        for email_address in {user.email, self.object.public_contact_email}:
-            if not EmailAddress.objects.filter(email=email_address).exists():
-                email = EmailAddress.objects.create_unconfirmed(email_address, user)
-                send_email_verification(email, self.request)
+        verify_user_emails(user, user.email, self.object.public_contact_email)
         return response
 
     def get_form_kwargs(self):

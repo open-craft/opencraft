@@ -1,0 +1,19 @@
+{% load static %}
+
+Welcome {{ user_name }}!
+
+Thank you for signing up with OpenCraft!
+We are very excited to have you onboard.
+
+Your instance is almost ready. You will receive another email when your instance
+is ready which should be in the next 2 hours.
+
+Your account details are as follows:
+
+Account details:
+
+Instance address: {{ instance_url }}
+Instance name: {{ instance_name }}
+Full name: {{ full_name }}
+Email address: {{ email }}
+Public contact email address: {{ public_contact_email }}
