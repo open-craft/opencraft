@@ -345,6 +345,7 @@ class OpenStackServerTestCase(TestCase):
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
+        server._delete_ssh_key.assert_called_once()
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -364,6 +365,7 @@ class OpenStackServerTestCase(TestCase):
             self.fail('Termination logic tried to operate on non-existent VM.')
         else:
             self.assertEqual(server.status, ServerStatus.Terminated)
+            server._delete_ssh_key.assert_called_once()
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -387,6 +389,7 @@ class OpenStackServerTestCase(TestCase):
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
         mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
+        server._delete_ssh_key.assert_called_once()
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -414,6 +417,7 @@ class OpenStackServerTestCase(TestCase):
         mock_logger.error.assert_called_once_with(
             AnyStringMatching('Unable to reach the OpenStack API due to'), exception
         )
+        server._delete_ssh_key.assert_called_once()
 
     def test_public_ip_new_server(self):
         """
