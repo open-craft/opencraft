@@ -41,6 +41,20 @@
       margin: 0 auto;
       max-width: 1100px;
       justify-content: center;
+
+      .customization-form {
+        background-color: #f0f5f7;
+        padding: 32px;
+
+        h2 {
+          font-family: $chivo-font;
+          font-size: 24px;
+          letter-spacing: 0.72px;
+          color: $secondary-1;
+          text-align: left;
+          margin-bottom: 32px;
+        }
+      }
     }
   }
 }

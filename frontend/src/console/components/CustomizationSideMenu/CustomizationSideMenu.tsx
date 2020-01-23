@@ -7,8 +7,8 @@ import { useLocation, useHistory } from "react-router-dom";
 
 
 export const CustomizationSideMenu: React.FC = () => {
-  // Using a react hook to fetch full path and highlight currently active
-  // page and extend correct accordion
+  // Using react hooks to fetch full path and highlight currently active
+  // page and extend correct accordion and push pages to history.
   const currentLocation = useLocation().pathname;
   const history = useHistory();
 

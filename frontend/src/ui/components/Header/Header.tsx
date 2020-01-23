@@ -1,23 +1,20 @@
 import * as React from 'react';
-import { RootState } from 'global/state';
-import { connect } from 'react-redux';
 import { Navbar, Nav, Container } from 'react-bootstrap';
-import { performLogout } from 'auth/actions';
+import { ROUTES, CONTACT_US_LINK } from 'global/constants';
+import { useLocation, useHistory } from "react-router-dom";
 import logo from 'assets/icons.svg';
 import './styles.scss';
 
-interface ActionProps {
-  performLogout: Function;
-}
 
-interface StateProps {
-  refresh: string;
-}
+export const Header: React.FC = () => {
+  const currentLocation = useLocation().pathname;
+  const history = useHistory();
 
-interface Props extends StateProps, ActionProps {}
+  // Workaround to check authentication on header instead of connecting
+  // component to redux
+  let authenticated = currentLocation.includes(ROUTES.Console.HOME)
 
-export class HeaderComponent extends React.PureComponent<Props> {
-  private renderAuthenticatedHeader = () => {
+  if (authenticated) {
     return (
       <Container>
         <Navbar bg="transparent" expand="lg" variant="dark">
@@ -30,13 +27,11 @@ export class HeaderComponent extends React.PureComponent<Props> {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">
               <Nav.Link>Customize</Nav.Link>
-              <Nav.Link>Support Request</Nav.Link>
-              <Nav.Link>Status & Notifications</Nav.Link>
-              <Nav.Link
-                onClick={() => {
-                  this.props.performLogout();
-                }}
-              >
+              <Nav.Link onClick={()=> window.open(CONTACT_US_LINK, "_blank")}>
+                Support Request
+              </Nav.Link>
+              <Nav.Link disabled>Status & Notifications</Nav.Link>
+              <Nav.Link onClick={() => {history.push(ROUTES.Auth.LOGOUT)}}>
                 Log out
               </Nav.Link>
             </Nav>
@@ -44,43 +39,34 @@ export class HeaderComponent extends React.PureComponent<Props> {
         </Navbar>
       </Container>
     );
-  };
-
-  private renderUnauthenticatedHeader = () => {
-    return (
-      <Container>
-        <Navbar bg="transparent" expand="md" variant="dark">
-          <Navbar.Brand className="logo-container mx-auto">
-            <svg className="site-logo">
-              <use xlinkHref={`${logo}#opencraft_logo`} />
-            </svg>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ml-auto">
-              <Nav.Link href="/login">Login</Nav.Link>
-              <Nav.Link href="/registration">Create your account</Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
-      </Container>
-    );
-  };
-
-  public render() {
-    const authenticated = !!this.props.refresh;
-    if (authenticated) {
-      return this.renderAuthenticatedHeader();
-    }
-    return this.renderUnauthenticatedHeader();
   }
-}
 
-export const Header = connect<StateProps, ActionProps, {}, Props, RootState>(
-  (state: RootState) => ({
-    refresh: state.loginState.refresh
-  }),
-  {
-    performLogout
-  }
-)(HeaderComponent);
+  // Only show login link when on registration page and only show registration
+  // link when on login page
+  return (
+    <Container>
+      <Navbar bg="transparent" expand="md" variant="dark">
+        <Navbar.Brand className="logo-container mx-auto">
+          <svg className="site-logo">
+            <use xlinkHref={`${logo}#opencraft_logo`} />
+          </svg>
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ml-auto">
+            { currentLocation.includes(ROUTES.Registration.HOME) &&
+              <Nav.Link onClick={() => history.push(ROUTES.Auth.LOGIN)}>
+                Login
+              </Nav.Link>
+            }
+            { currentLocation.includes(ROUTES.Auth.LOGIN) &&
+              <Nav.Link onClick={() => history.push(ROUTES.Registration.HOME)}>
+                Create your account
+              </Nav.Link>
+            }
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+    </Container>
+  );
+};
