@@ -6,8 +6,7 @@ import './styles.scss';
 export const RedeploymentToolbar: React.FC = () => {
   const tooltip = (
     <Tooltip id="redeployment-status">
-      Tooltip on
-      <strong>test</strong>
+      Your instance is <strong>up-to-date</strong> with the latest settings.
     </Tooltip>
   );
 
@@ -20,8 +19,7 @@ export const RedeploymentToolbar: React.FC = () => {
             <span className="text">Status: Up to date</span>
           </div>
         </OverlayTrigger>
-        THIS IS A PLACEHOLDER COMPONENT
-        <Button className="float-right loading" variant="primary" size="lg">
+        <Button className="float-right loading" disabled variant="primary" size="lg">
           Deploy (10 updates)
         </Button>
       </div>
