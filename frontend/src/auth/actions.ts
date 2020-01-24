@@ -72,7 +72,17 @@ export const performLogin = (
     .catch((e: any) => {
       e.json().then((feedback: any) => {
         // If validation fails, return error to form through state
-        const error = feedback.detail;
+        let error = feedback.detail;
+        // Don't provide individual feedback on each field for login
+        // If feedback.detail isn't set, then it means we got an
+        // response like this:
+        // {
+        //    username: ["This field is required.]
+        // }
+        // So manually set feedback error message.
+        if (!feedback.detail) {
+          error = "Both the username and password fields are required.";
+        }
         dispatch({
           type: Types.LOGIN_FAILURE,
           error
