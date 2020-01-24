@@ -81,7 +81,7 @@ export const performLogin = (
         // }
         // So manually set feedback error message.
         if (!feedback.detail) {
-          error = "Both the username and password fields are required.";
+          error = 'Both the username and password fields are required.';
         }
         dispatch({
           type: Types.LOGIN_FAILURE,
