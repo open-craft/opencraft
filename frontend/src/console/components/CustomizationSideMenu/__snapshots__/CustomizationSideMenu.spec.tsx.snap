@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`renders without crashing 1`] = `
+exports[`Custom Side Menu Page Renders with correct accordion expanded, and with current page highlighted 1`] = `
 <div
   className="customization-menu accordion"
 >
@@ -20,7 +20,7 @@ exports[`renders without crashing 1`] = `
     </div>
     <div
       aria-expanded={null}
-      className="collapse show"
+      className="collapse"
     >
       <div
         className="card-body"
@@ -174,7 +174,7 @@ exports[`renders without crashing 1`] = `
     </div>
     <div
       aria-expanded={null}
-      className="collapse"
+      className="collapse show"
     >
       <div
         className="card-body"
@@ -184,7 +184,7 @@ exports[`renders without crashing 1`] = `
           onKeyDown={[Function]}
         >
           <a
-            className="nav-link"
+            className="nav-link active"
             data-rb-event-key={null}
             href="#"
             onClick={[Function]}

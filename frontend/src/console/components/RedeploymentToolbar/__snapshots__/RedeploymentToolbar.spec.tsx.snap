@@ -23,10 +23,9 @@ exports[`renders without crashing 1`] = `
         Status: Up to date
       </span>
     </div>
-    THIS IS A PLACEHOLDER COMPONENT
     <button
       className="float-right loading btn btn-primary btn-lg"
-      disabled={false}
+      disabled={true}
       type="button"
     >
       Deploy (10 updates)
