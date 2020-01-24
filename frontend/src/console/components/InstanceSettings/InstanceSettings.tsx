@@ -8,16 +8,8 @@ import { TextInputField } from 'ui/components';
 export const InstanceSettings: React.FC = () => {
   let loading = true;
 
-  if (loading) {
-    return (
-      <ConsolePage>
-        
-      </ConsolePage>
-    );
-  }
-
   return (
-    <ConsolePage>
+    <ConsolePage loading={loading}>
       <h2>Instance settings</h2>
 
       <TextInputField

@@ -7,6 +7,7 @@ import './styles.scss';
 
 interface Props {
   children: React.ReactNode;
+  loading: boolean;
   titleExtra?: React.ReactNode;
   instanceSettings?: InstanceSettingsModel;
 }
@@ -49,11 +50,23 @@ export const ConsolePage: React.FC<Props> = (props: Props) => {
       };
   };
 
+  const content = () => {
+    if (props.loading) {
+      return (
+        <div className="loading">
+          <i className="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+      )
+    } else {
+      return props.children
+    }
+  }
+
   return (
     <div className="console-page">
       <div className="title-container">
-        <h1>{instanceName}</h1>
-        <h2>{instanceStudioLink}</h2>
+        <h1>{instanceName()}</h1>
+        <h2>{instanceStudioLink()}</h2>
       </div>
 
       <RedeploymentToolbar />
@@ -66,7 +79,7 @@ export const ConsolePage: React.FC<Props> = (props: Props) => {
                 <CustomizationSideMenu />
               </Col>
               <Col md="8" className="customization-form">
-                {props.children}
+                {content()}
               </Col>
             </Row>
           </Container>
