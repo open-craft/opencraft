@@ -34,7 +34,7 @@ repository – most notably Ansible:
 
     virtualenv ~/venvs/ansible    # Adjust the path, or use mkvirtualenv
                                   # if you have virtualenvwrapper installed.
-    ~/venvs/ansible/bin/activate
+    . ~/venvs/ansible/bin/activate
     pip install -r deploy/requirements.txt
 
 Now you can run
@@ -63,7 +63,7 @@ server at http://localhost:5000/ using your web browser.
 ### Local installation (skip this if using Vagrant)
 
 If you prefer not to use Vagrant, you can install OpenCraft Instance Manager manually.
-Refer to the [Ansible playbooks](https://github.com/open-craft/ansible-opencraft) used
+Refer to the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks) used
 by Vagrant for an example. Ocim requires Python 3.6 or a newer version. The instructions
 here are based on Ubuntu 16.04. Since Ubuntu 16.04 ships with Python 3.5, we will use `pyenv`
 to install a newer, supported version on it. This is not required when a supported version of
