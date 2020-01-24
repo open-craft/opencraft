@@ -31,9 +31,7 @@ export type ActionTypes =
   | UserInstanceListSuccess
   | UserInstanceListFailure;
 
-export const listUserInstances = (
-  instanceId: number
-): OcimThunkAction<void> => async dispatch => {
+export const listUserInstances = (): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
 
   V2Api.instancesOpenedxConfigList()
