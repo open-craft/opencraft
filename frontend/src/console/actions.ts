@@ -9,7 +9,7 @@ export enum Types {
   // To handle multiple user instances
   USER_INSTANCE_LIST = 'USER_INSTANCE_LIST',
   USER_INSTANCE_LIST_SUCCESS = 'USER_INSTANCE_LIST_SUCCESS',
-  USER_INSTANCE_LIST_FAILURE = 'USER_INSTANCE_LIST_FAILURE',
+  USER_INSTANCE_LIST_FAILURE = 'USER_INSTANCE_LIST_FAILURE'
 }
 
 export interface UserInstanceList extends Action {
@@ -32,19 +32,20 @@ export type ActionTypes =
   | UserInstanceListFailure;
 
 export const listUserInstances = (
-  instanceId: number,
+  instanceId: number
 ): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
 
-  V2Api.instancesOpenedxConfigList().then((response) => {
-    dispatch({
-      type: Types.USER_INSTANCE_LIST_SUCCESS,
-      data: response
+  V2Api.instancesOpenedxConfigList()
+    .then(response => {
+      dispatch({
+        type: Types.USER_INSTANCE_LIST_SUCCESS,
+        data: response
+      });
+    })
+    .catch((e: any) => {
+      dispatch({
+        type: Types.USER_INSTANCE_LIST_FAILURE
+      });
     });
-  })
-  .catch((e: any) => {
-    dispatch({
-      type: Types.USER_INSTANCE_LIST_FAILURE,
-    });
-  });
 };

@@ -3,8 +3,7 @@ import * as React from 'react';
 import { Accordion, Card, Nav } from 'react-bootstrap';
 import { ROUTES } from 'global/constants';
 import './styles.scss';
-import { useLocation, useHistory } from "react-router-dom";
-
+import { useLocation, useHistory } from 'react-router-dom';
 
 export const CustomizationSideMenu: React.FC = () => {
   // Using react hooks to fetch full path and highlight currently active
@@ -13,16 +12,16 @@ export const CustomizationSideMenu: React.FC = () => {
   const history = useHistory();
 
   let activeKey = 0;
-  if (currentLocation.includes("custom_pages")) {
+  if (currentLocation.includes('custom_pages')) {
     activeKey = 1;
-  }
-  else if (currentLocation.includes("settings")) {
+  } else if (currentLocation.includes('settings')) {
     activeKey = 2;
   }
 
-  const customNavLink = (name: string, link: string) => (<Nav.Link
+  const customNavLink = (name: string, link: string) => (
+    <Nav.Link
       active={currentLocation === link}
-      disabled={link === ""}
+      disabled={link === ''}
       onClick={() => history.push(link)}
     >
       {name}
@@ -40,11 +39,11 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
-              {customNavLink("Preview & colors", "")}
-              {customNavLink("Logos", "")}
-              {customNavLink("Domain", "")}
-              {customNavLink("Buttons", "")}
-              {customNavLink("Navigation", "")}
+              {customNavLink('Preview & colors', '')}
+              {customNavLink('Logos', '')}
+              {customNavLink('Domain', '')}
+              {customNavLink('Buttons', '')}
+              {customNavLink('Navigation', '')}
             </Nav>
           </Card.Body>
         </Accordion.Collapse>
@@ -58,9 +57,9 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
-              {customNavLink("About", "")}
-              {customNavLink("Terms of Service", "")}
-              {customNavLink("Contact", "")}
+              {customNavLink('About', '')}
+              {customNavLink('Terms of Service', '')}
+              {customNavLink('Contact', '')}
             </Nav>
           </Card.Body>
         </Accordion.Collapse>
@@ -74,8 +73,11 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="2">
           <Card.Body>
             <Nav defaultActiveKey="/home" className="flex-column">
-              {customNavLink("General", ROUTES.Console.INSTANCE_SETTINGS_GENERAL)}
-              {customNavLink("Domain", "")}
+              {customNavLink(
+                'General',
+                ROUTES.Console.INSTANCE_SETTINGS_GENERAL
+              )}
+              {customNavLink('Domain', '')}
             </Nav>
           </Card.Body>
         </Accordion.Collapse>

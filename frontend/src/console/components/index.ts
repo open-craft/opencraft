@@ -4,4 +4,4 @@ export * from './ConsoleContainer';
 
 export * from './RedeploymentToolbar';
 
-export * from "./CustomizationSideMenu";
+export * from './CustomizationSideMenu';

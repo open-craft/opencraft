@@ -37,17 +37,7 @@ exports[`renders without crashing 1`] = `
       <div
         className="ml-auto navbar-nav"
         onKeyDown={[Function]}
-      >
-        <a
-          className="nav-link"
-          data-rb-event-key="/login"
-          href="/login"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-        >
-          Login
-        </a>
-      </div>
+      />
     </div>
   </nav>
 </div>

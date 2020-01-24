@@ -5,7 +5,7 @@ import './styles.scss';
 
 export const App: React.FC = () => (
   <Container fluid className="app-container">
-    <Header/>
+    <Header />
     <Main />
     <Footer />
   </Container>

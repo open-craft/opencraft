@@ -1,0 +1,213 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="customization-menu accordion"
+>
+  <div
+    className="card"
+  >
+    <div
+      className="card-header"
+    >
+      <div
+        className="card-header"
+        onClick={[Function]}
+        variant="link"
+      >
+        Theme
+      </div>
+    </div>
+    <div
+      aria-expanded={null}
+      className="collapse show"
+    >
+      <div
+        className="card-body"
+      >
+        <div
+          className="flex-column nav card-header-undefined"
+          onKeyDown={[Function]}
+        >
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Preview & colors
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Logos
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Domain
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Buttons
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Navigation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="card"
+  >
+    <div
+      className="card-header"
+    >
+      <div
+        className="card-header"
+        onClick={[Function]}
+        variant="link"
+      >
+        Custom Pages
+      </div>
+    </div>
+    <div
+      aria-expanded={null}
+      className="collapse"
+    >
+      <div
+        className="card-body"
+      >
+        <div
+          className="flex-column nav card-header-undefined"
+          onKeyDown={[Function]}
+        >
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            About
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Terms of Service
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Contact
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    className="card"
+  >
+    <div
+      className="card-header"
+    >
+      <div
+        className="card-header"
+        onClick={[Function]}
+        variant="link"
+      >
+        Instance Settings
+      </div>
+    </div>
+    <div
+      aria-expanded={null}
+      className="collapse"
+    >
+      <div
+        className="card-body"
+      >
+        <div
+          className="flex-column nav card-header-undefined"
+          onKeyDown={[Function]}
+        >
+          <a
+            className="nav-link"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+          >
+            General
+          </a>
+          <a
+            aria-disabled={true}
+            className="nav-link disabled"
+            data-rb-event-key={null}
+            href="#"
+            onClick={[Function]}
+            onKeyDown={[Function]}
+            role="button"
+            tabIndex={-1}
+          >
+            Domain
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

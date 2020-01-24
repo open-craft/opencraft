@@ -20,9 +20,7 @@ export const RedeploymentToolbar: React.FC = () => {
             <span className="text">Status: Up to date</span>
           </div>
         </OverlayTrigger>
-
         THIS IS A PLACEHOLDER COMPONENT
-
         <Button className="float-right loading" variant="primary" size="lg">
           Deploy (10 updates)
         </Button>

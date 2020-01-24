@@ -9,7 +9,6 @@ import { listUserInstances } from 'console/actions';
 
 import './styles.scss';
 
-
 interface ActionProps {
   listUserInstances: Function;
 }
@@ -22,55 +21,53 @@ interface Props extends StateProps, ActionProps {
 
 export class ConsolePageComponent extends React.PureComponent<Props> {
   private renderHeader() {
-    if (this.props.loading || (this.props.selectedInstance === null)) {
+    if (this.props.loading || this.props.selectedInstance === null) {
       return (
         <div className="title-container">
           <h1>
-            <i className="fas fa-sync-alt fa-spin"></i>
+            <i className="fas fa-sync-alt fa-spin" />
           </h1>
-        </div>
-      )
-    } else {
-      let instanceData = this.props.instances[this.props.selectedInstance];
-      let instanceLink = `https://${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || "";
-      let studioLink = `https://studio.${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || "";
-
-      return (
-        <div className="title-container">
-          <h1>
-            <a className="header-link" href={instanceLink}>
-              {instanceData.instanceName}
-              <i className="instance-link fas fa-link fa-xs"></i>
-            </a>
-          </h1>
-          <h2>
-            <a className="header-link" href={studioLink}>
-              Edit courses (Studio)
-            </a>
-          </h2>
         </div>
       );
     }
+    const instanceData = this.props.instances[this.props.selectedInstance];
+    const instanceLink =
+      `https://${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || '';
+    const studioLink =
+      `https://studio.${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || '';
+
+    return (
+      <div className="title-container">
+        <h1>
+          <a className="header-link" href={instanceLink}>
+            {instanceData.instanceName}
+            <i className="instance-link fas fa-link fa-xs" />
+          </a>
+        </h1>
+        <h2>
+          <a className="header-link" href={studioLink}>
+            Edit courses (Studio)
+          </a>
+        </h2>
+      </div>
+    );
   }
 
   public render() {
-    console.log(this.props)
     if (!this.props.loading && this.props.selectedInstance === null) {
-      this.props.listUserInstances()
+      this.props.listUserInstances();
     }
-
 
     const content = () => {
       if (this.props.contentLoading) {
         return (
           <div className="loading">
-            <i className="fas fa-2x fa-sync-alt fa-spin"></i>
+            <i className="fas fa-2x fa-sync-alt fa-spin" />
           </div>
-        )
-      } else {
-        return this.props.children
+        );
       }
-    }
+      return this.props.children;
+    };
 
     return (
       <div className="console-page">
@@ -94,10 +91,16 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         </div>
       </div>
     );
-  };
-};
+  }
+}
 
-export const ConsolePage = connect<StateProps, ActionProps, {}, Props, RootState>(
+export const ConsolePage = connect<
+  StateProps,
+  ActionProps,
+  {},
+  Props,
+  RootState
+>(
   (state: RootState) => ({
     ...state.console
   }),

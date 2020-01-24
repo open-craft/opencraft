@@ -1,12 +1,11 @@
 import * as React from 'react';
-import messages from './displayMessages';
 import './styles.scss';
 import { ConsolePage } from 'console/components';
 import { TextInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
-
+import messages from './displayMessages';
 
 interface ActionProps {}
 interface StateProps extends InstancesModel {}
@@ -20,26 +19,32 @@ export class InstanceSettingsComponent extends React.PureComponent<Props> {
 
         <TextInputField
           fieldName="instanceName"
-          value={""}
+          value=""
           onChange={() => {}}
           messages={messages}
-          error={""}
+          error=""
         />
 
         <TextInputField
           fieldName="publicContactEmail"
-          value={""}
+          value=""
           onChange={() => {}}
           messages={messages}
           type="email"
-          error={""}
+          error=""
         />
       </ConsolePage>
     );
-  };
-};
+  }
+}
 
-export const InstanceSettings = connect<StateProps, ActionProps, {}, Props, RootState>(
+export const InstanceSettings = connect<
+  StateProps,
+  ActionProps,
+  {},
+  Props,
+  RootState
+>(
   (state: RootState) => ({
     ...state.console
   }),
