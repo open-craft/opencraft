@@ -1,7 +1,0 @@
-export enum RedeploymentStatus {
-  REDEPLOYING = "REDEPLOYING",
-  UPDATED = "UPDATED",
-  FAILED = "FAILED",
-  MAINTENANCE = "MAINTENANCE",
-  NO_STATUS = "NO_STATUS"
-}

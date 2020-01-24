@@ -9,7 +9,7 @@ export const InstanceSettings: React.FC = () => {
   let loading = true;
 
   return (
-    <ConsolePage loading={loading}>
+    <ConsolePage contentLoading={loading}>
       <h2>Instance settings</h2>
 
       <TextInputField
