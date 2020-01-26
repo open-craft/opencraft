@@ -170,6 +170,7 @@ class GandiV5API:
         config = ConfigResolver()
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
+        result = False
         try:
             result = client.execute()
         except Exception as e:  # pylint: disable=broad-except

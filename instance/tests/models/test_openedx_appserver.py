@@ -867,7 +867,8 @@ class EmailMixinInstanceTestCase(TestCase):
         expected_subject = OpenEdXAppServer.EmailSubject.PROVISION_FAILED.format(
             name=appserver.name, instance_name=appserver.instance.name,
         )
-        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS] + failure_emails
+        # failure_emails isn't included here because they get a different type of email (an urgent one)
+        expected_recipients = [admin_tuple[1] for admin_tuple in settings.ADMINS]
 
         self.assertEqual(len(django_mail.outbox), 1)
         mail = django_mail.outbox[0]

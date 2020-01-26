@@ -26,6 +26,7 @@ from datetime import timedelta
 from unittest.mock import patch, Mock, PropertyMock
 
 import ddt
+from django.core import mail as django_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import F
@@ -48,6 +49,9 @@ from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services, skip_unless_consul_running
+from registration.models import BetaTestApplication
+from registration.approval import ApplicationNotReady
+from userprofile.models import UserProfile
 
 
 # Tests #######################################################################
@@ -398,6 +402,72 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.appserver_set.count(), 1)
         appserver = instance.appserver_set.last()
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
+
+    @patch_services
+    def test_spawn_appserver_failed_all_attempts_betatest(self, mocks, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts).
+        After the last attempt, an urgent e-mail should be sent if the instance likely
+        belongs to an user (i.e. it has a BetaTestApplication).
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log: provisioning failed'], 1)
+        mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        failure_emails = ['provisionfailed@localhost']
+        instance.provisioning_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+
+        UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+        )
+        self.assertEqual(instance.betatestapplication_set.count(), 1)
+
+        self.assertEqual(instance.appserver_set.count(), 0)
+        with self.assertRaises(ApplicationNotReady):
+            instance.spawn_appserver(num_attempts=5)
+
+        # each attempt did create a server (though with a failed status)
+        self.assertEqual(instance.appserver_set.count(), 5)
+
+        # One urgent e-mail (not 5) should have been generated
+        # Note that the usual, non-urgent, e-mails (1 per attempt) have been mocked out by patch_services
+        self.assertEqual(len(django_mail.outbox), 1)
+        self.assertEqual(django_mail.outbox[0].to, failure_emails)
+
+    @patch_services
+    def test_spawn_appserver_failed_all_attempts_not_betatest(self, mocks, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts).
+        When the instance doesn't belong to an external user (BetaTestApplication),
+        don't send the urgent e-mail about the deployment failure.
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log: provisioning failed'], 1)
+        mocks.mock_create_server.side_effect = [Mock(id='test-run-provisioning-server'), None]
+        mocks.os_server_manager.add_fixture('test-run-provisioning-server', 'openstack/api_server_2_active.json')
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        failure_emails = ['provisionfailed@localhost']
+        instance.provisioning_failure_notification_emails = failure_emails
+
+        self.assertEqual(instance.appserver_set.count(), 0)
+        result = instance.spawn_appserver(num_attempts=5)
+        self.assertIsNone(result)
+
+        # each attempt did create a server (though with a failed status)
+        self.assertEqual(instance.appserver_set.count(), 5)
+
+        self.assertEqual(len(django_mail.outbox), 0)
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
