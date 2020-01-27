@@ -25,9 +25,7 @@ interface Props extends ActionProps {
 }
 
 @connect<{}, ActionProps, {}, Props, RootState>(
-  (state: RootState) => ({
-    ...state.loginState
-  }),
+  (state: RootState) => state.loginState,
   {
     performLogin
   }
