@@ -3,11 +3,11 @@ import { INTERNAL_DOMAIN_NAME } from 'global/constants';
 import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
-import messages from './displayMessages';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
 import { listUserInstances } from 'console/actions';
+import messages from './displayMessages';
 
 import './styles.scss';
 

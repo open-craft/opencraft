@@ -5,8 +5,8 @@ import { TextInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
-import messages from './displayMessages';
 import { WrappedMessage } from 'utils/intl';
+import messages from './displayMessages';
 
 interface State {
   [key: string]: string;
@@ -18,14 +18,17 @@ interface ActionProps {}
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
-export class InstanceSettingsComponent extends React.PureComponent<Props, State> {
+export class InstanceSettingsComponent extends React.PureComponent<
+  Props,
+  State
+> {
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      instanceName: "",
-      publicContactEmail: "",
-    }
+      instanceName: '',
+      publicContactEmail: ''
+    };
   }
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {

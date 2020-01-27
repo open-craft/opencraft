@@ -112,15 +112,6 @@ exports[`renders without crashing 1`] = `
                         onClick={[Function]}
                         style={Object {}}
                       >
-                        Domain
-                      </a>
-                      <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
-                        onClick={[Function]}
-                        style={Object {}}
-                      >
                         Buttons
                       </a>
                       <a

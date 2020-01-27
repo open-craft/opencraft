@@ -1,10 +1,10 @@
 import * as React from 'react';
-import messages from './displayMessages';
 import { WrappedMessage } from 'utils/intl';
 import { Accordion, Card, Nav } from 'react-bootstrap';
 import { ROUTES } from 'global/constants';
 import './styles.scss';
 import { useLocation, NavLink } from 'react-router-dom';
+import messages from './displayMessages';
 
 export const CustomizationSideMenu: React.FC = () => {
   // Using react hooks to fetch full path and highlight currently active
@@ -119,7 +119,10 @@ export const CustomizationSideMenu: React.FC = () => {
       <Card>
         <Card.Header>
           <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
-            <WrappedMessage messages={messages} id="accordionInstanceSettings" />
+            <WrappedMessage
+              messages={messages}
+              id="accordionInstanceSettings"
+            />
           </Accordion.Toggle>
         </Card.Header>
         <Accordion.Collapse eventKey="2">

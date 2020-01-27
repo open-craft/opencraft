@@ -46,7 +46,6 @@ export interface UpdateInstanceInfoFailure extends Action {
   readonly error: any;
 }
 
-
 export type ActionTypes =
   | UserInstanceList
   | UserInstanceListSuccess

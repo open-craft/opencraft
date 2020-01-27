@@ -112,15 +112,6 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         onClick={[Function]}
                         style={Object {}}
                       >
-                        Domain
-                      </a>
-                      <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
-                        onClick={[Function]}
-                        style={Object {}}
-                      >
                         Buttons
                       </a>
                       <a
@@ -375,15 +366,6 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         style={Object {}}
                       >
                         Logos
-                      </a>
-                      <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
-                        onClick={[Function]}
-                        style={Object {}}
-                      >
-                        Domain
                       </a>
                       <a
                         aria-current="page"
