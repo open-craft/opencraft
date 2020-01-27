@@ -8,11 +8,35 @@ import { RootState } from 'global/state';
 import messages from './displayMessages';
 import { WrappedMessage } from 'utils/intl';
 
+interface State {
+  [key: string]: string;
+  instanceName: string;
+  publicContactEmail: string;
+}
+
 interface ActionProps {}
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
-export class InstanceSettingsComponent extends React.PureComponent<Props> {
+export class InstanceSettingsComponent extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      instanceName: "",
+      publicContactEmail: "",
+    }
+  }
+
+  private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.name;
+    const { value } = e.target;
+
+    this.setState({
+      [field]: value
+    });
+  };
+
   public render() {
     return (
       <ConsolePage contentLoading={this.props.loading}>
@@ -22,16 +46,16 @@ export class InstanceSettingsComponent extends React.PureComponent<Props> {
 
         <TextInputField
           fieldName="instanceName"
-          value=""
-          onChange={() => {}}
+          value={this.state.instanceName}
+          onChange={this.onChange}
           messages={messages}
           error=""
         />
 
         <TextInputField
           fieldName="publicContactEmail"
-          value=""
-          onChange={() => {}}
+          value={this.state.publicContactEmail}
+          onChange={this.onChange}
           messages={messages}
           type="email"
           error=""
@@ -48,8 +72,6 @@ export const InstanceSettings = connect<
   Props,
   RootState
 >(
-  (state: RootState) => ({
-    ...state.console
-  }),
+  (state: RootState) => state.console,
   {}
 )(InstanceSettingsComponent);

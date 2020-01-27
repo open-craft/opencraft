@@ -7,9 +7,12 @@ interface InputFieldProps {
   fieldName: string;
   value?: string;
   onChange?: any;
+  onBlur?: any;
   error?: string;
   messages: any;
   type?: string;
+  isValid?: boolean;
+  loading?: boolean;
 }
 
 export const TextInputField: React.SFC<InputFieldProps> = (
@@ -25,9 +28,12 @@ export const TextInputField: React.SFC<InputFieldProps> = (
       <FormControl
         name={props.fieldName}
         value={props.value}
+        disabled={props.loading}
         onChange={props.onChange}
+        onBlur={props.onBlur}
         type={props.type}
         isInvalid={!!props.error}
+        isValid={props.isValid}
       />
       {props.error && (
         <FormControl.Feedback type="invalid">
