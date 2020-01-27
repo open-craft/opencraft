@@ -1,5 +1,6 @@
 import * as React from 'react';
-// import messages from './displayMessages';
+import messages from './displayMessages';
+import { WrappedMessage } from 'utils/intl';
 import { Accordion, Card, Nav } from 'react-bootstrap';
 import { ROUTES } from 'global/constants';
 import './styles.scss';
@@ -7,7 +8,7 @@ import { useLocation, NavLink } from 'react-router-dom';
 
 export const CustomizationSideMenu: React.FC = () => {
   // Using react hooks to fetch full path and highlight currently active
-  // page and extend correct accordion and push pages to history.
+  // page and extend correct accordion.
   const currentLocation = useLocation().pathname;
 
   let activeKey = 0;
@@ -22,7 +23,7 @@ export const CustomizationSideMenu: React.FC = () => {
       <Card>
         <Card.Header>
           <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
-            Theme
+            <WrappedMessage messages={messages} id="accordionTheme" />
           </Accordion.Toggle>
         </Card.Header>
         <Accordion.Collapse eventKey="0">
@@ -36,7 +37,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Preview & colors
+                <WrappedMessage messages={messages} id="linkPreviewColors" />
               </NavLink>
               <NavLink
                 exact
@@ -46,7 +47,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Logos
+                <WrappedMessage messages={messages} id="linkLogos" />
               </NavLink>
               <NavLink
                 exact
@@ -56,7 +57,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Domain
+                <WrappedMessage messages={messages} id="linkButtons" />
               </NavLink>
               <NavLink
                 exact
@@ -66,17 +67,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Buttons
-              </NavLink>
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
-                Navigation
+                <WrappedMessage messages={messages} id="linkNavigation" />
               </NavLink>
             </Nav>
           </Card.Body>
@@ -85,7 +76,7 @@ export const CustomizationSideMenu: React.FC = () => {
       <Card>
         <Card.Header>
           <Accordion.Toggle as={Card.Header} variant="link" eventKey="1">
-            Custom Pages
+            <WrappedMessage messages={messages} id="accordionCustomPages" />
           </Accordion.Toggle>
         </Card.Header>
         <Accordion.Collapse eventKey="1">
@@ -99,7 +90,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                About
+                <WrappedMessage messages={messages} id="linkAbout" />
               </NavLink>
               <NavLink
                 exact
@@ -109,7 +100,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Terms of Service
+                <WrappedMessage messages={messages} id="linkTOS" />
               </NavLink>
               <NavLink
                 exact
@@ -119,7 +110,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Contact
+                <WrappedMessage messages={messages} id="linkContact" />
               </NavLink>
             </Nav>
           </Card.Body>
@@ -128,14 +119,14 @@ export const CustomizationSideMenu: React.FC = () => {
       <Card>
         <Card.Header>
           <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
-            Instance Settings
+            <WrappedMessage messages={messages} id="accordionInstanceSettings" />
           </Accordion.Toggle>
         </Card.Header>
         <Accordion.Collapse eventKey="2">
           <Card.Body>
             <Nav defaultActiveKey="/home" className="flex-column">
               <NavLink exact to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}>
-                General
+                <WrappedMessage messages={messages} id="linkGeneral" />
               </NavLink>
               <NavLink
                 exact
@@ -145,7 +136,7 @@ export const CustomizationSideMenu: React.FC = () => {
                   e.preventDefault();
                 }}
               >
-                Domain
+                <WrappedMessage messages={messages} id="linkDomain" />
               </NavLink>
             </Nav>
           </Card.Body>

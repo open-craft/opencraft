@@ -2,6 +2,8 @@ import * as React from 'react';
 import { INTERNAL_DOMAIN_NAME } from 'global/constants';
 import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
 import { Row, Col, Container } from 'react-bootstrap';
+import { WrappedMessage } from 'utils/intl';
+import messages from './displayMessages';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -52,7 +54,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         </h1>
         <h2>
           <a className="header-link" href={studioLink}>
-            Edit courses (Studio)
+            <WrappedMessage messages={messages} id="editCourses" />
           </a>
         </h2>
       </div>

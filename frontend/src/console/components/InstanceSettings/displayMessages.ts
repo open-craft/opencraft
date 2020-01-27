@@ -17,6 +17,10 @@ const messages = {
       'emails, and where your users should send their support ' +
       'requests. This needs to be a valid email.',
     description: 'Help text for email input'
+  },
+  instanceSettings: {
+    defaultMessage: 'Instance Settings',
+    description: 'Page title'
   }
 };
 export default messages;

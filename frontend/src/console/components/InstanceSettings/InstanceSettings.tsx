@@ -6,6 +6,7 @@ import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import messages from './displayMessages';
+import { WrappedMessage } from 'utils/intl';
 
 interface ActionProps {}
 interface StateProps extends InstancesModel {}
@@ -15,7 +16,9 @@ export class InstanceSettingsComponent extends React.PureComponent<Props> {
   public render() {
     return (
       <ConsolePage contentLoading={this.props.loading}>
-        <h2>Instance settings</h2>
+        <h2>
+          <WrappedMessage messages={messages} id="instanceSettings" />
+        </h2>
 
         <TextInputField
           fieldName="instanceName"
