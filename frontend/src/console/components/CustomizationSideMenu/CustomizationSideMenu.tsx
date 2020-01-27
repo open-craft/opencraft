@@ -3,13 +3,12 @@ import * as React from 'react';
 import { Accordion, Card, Nav } from 'react-bootstrap';
 import { ROUTES } from 'global/constants';
 import './styles.scss';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, NavLink } from 'react-router-dom';
 
 export const CustomizationSideMenu: React.FC = () => {
   // Using react hooks to fetch full path and highlight currently active
   // page and extend correct accordion and push pages to history.
   const currentLocation = useLocation().pathname;
-  const history = useHistory();
 
   let activeKey = 0;
   if (currentLocation.includes('custom_pages')) {
@@ -17,16 +16,6 @@ export const CustomizationSideMenu: React.FC = () => {
   } else if (currentLocation.includes('settings')) {
     activeKey = 2;
   }
-
-  const customNavLink = (name: string, link: string) => (
-    <Nav.Link
-      active={currentLocation === link}
-      disabled={link === ''}
-      onClick={() => history.push(link)}
-    >
-      {name}
-    </Nav.Link>
-  );
 
   return (
     <Accordion defaultActiveKey={`${activeKey}`} className="customization-menu">
@@ -39,11 +28,21 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
-              {customNavLink('Preview & colors', '')}
-              {customNavLink('Logos', '')}
-              {customNavLink('Domain', '')}
-              {customNavLink('Buttons', '')}
-              {customNavLink('Navigation', '')}
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Preview & colors
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Logos
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Domain
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Buttons
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Navigation
+              </NavLink>
             </Nav>
           </Card.Body>
         </Accordion.Collapse>
@@ -57,9 +56,15 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
-              {customNavLink('About', '')}
-              {customNavLink('Terms of Service', '')}
-              {customNavLink('Contact', '')}
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                About
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Terms of Service
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Contact
+              </NavLink>
             </Nav>
           </Card.Body>
         </Accordion.Collapse>
@@ -73,11 +78,12 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="2">
           <Card.Body>
             <Nav defaultActiveKey="/home" className="flex-column">
-              {customNavLink(
-                'General',
-                ROUTES.Console.INSTANCE_SETTINGS_GENERAL
-              )}
-              {customNavLink('Domain', '')}
+              <NavLink exact to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}>
+                General
+              </NavLink>
+              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+                Domain
+              </NavLink>
             </Nav>
           </Card.Body>
         </Accordion.Collapse>

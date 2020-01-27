@@ -34,9 +34,7 @@ exports[`Login Page disables login button when loading login 1`] = `
             onChange={[Function]}
             type="username"
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <div
           className="form-group"
@@ -53,9 +51,7 @@ exports[`Login Page disables login button when loading login 1`] = `
             type="password"
             value=""
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <button
           className="pull-left loading btn btn-primary btn-lg"
@@ -117,9 +113,7 @@ exports[`Login Page renders error messages 1`] = `
             onChange={[Function]}
             type="username"
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <div
           className="form-group"
@@ -136,9 +130,7 @@ exports[`Login Page renders error messages 1`] = `
             type="password"
             value=""
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <div
           className="fade alert alert-danger show"
@@ -203,9 +195,7 @@ exports[`Login Page renders without crashing 1`] = `
             onChange={[Function]}
             type="username"
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <div
           className="form-group"
@@ -222,9 +212,7 @@ exports[`Login Page renders without crashing 1`] = `
             type="password"
             value=""
           />
-          <p>
-             
-          </p>
+          <p />
         </div>
         <button
           className="pull-left loading btn btn-primary btn-lg"

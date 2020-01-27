@@ -7,17 +7,9 @@ const messages = {
     defaultMessage: 'Username',
     description: 'Username'
   },
-  usernameHelp: {
-    defaultMessage: ' ',
-    description: 'Keep empty'
-  },
   password: {
     defaultMessage: 'Password',
     description: 'Password'
-  },
-  passwordHelp: {
-    defaultMessage: ' ',
-    description: 'Keep empty'
   },
   login: {
     defaultMessage: 'Login',

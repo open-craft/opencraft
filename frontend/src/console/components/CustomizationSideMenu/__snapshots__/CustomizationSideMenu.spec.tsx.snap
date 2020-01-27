@@ -30,62 +30,47 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           onKeyDown={[Function]}
         >
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Preview & colors
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Logos
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Domain
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Buttons
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Navigation
           </a>
@@ -119,38 +104,29 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           onKeyDown={[Function]}
         >
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             About
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Terms of Service
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Contact
           </a>
@@ -184,24 +160,18 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           onKeyDown={[Function]}
         >
           <a
-            className="nav-link active"
-            data-rb-event-key={null}
-            href="#"
+            aria-current={null}
+            href="/console/settings/general"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
           >
             General
           </a>
           <a
-            aria-disabled={true}
-            className="nav-link disabled"
-            data-rb-event-key={null}
-            href="#"
+            aria-current="page"
+            className="disabled active"
+            href="/"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
-            tabIndex={-1}
+            style={Object {}}
           >
             Domain
           </a>

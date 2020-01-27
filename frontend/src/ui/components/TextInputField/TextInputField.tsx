@@ -15,6 +15,8 @@ interface InputFieldProps {
 export const TextInputField: React.SFC<InputFieldProps> = (
   props: InputFieldProps
 ) => {
+  let hasHelpMessage = `${props.fieldName}Help` in props.messages;
+
   return (
     <FormGroup>
       <FormLabel>
@@ -33,10 +35,12 @@ export const TextInputField: React.SFC<InputFieldProps> = (
         </FormControl.Feedback>
       )}
       <p>
-        <WrappedMessage
-          id={`${props.fieldName}Help`}
-          messages={props.messages}
-        />
+        { hasHelpMessage && (
+          <WrappedMessage
+            id={`${props.fieldName}Help`}
+            messages={props.messages}
+          />
+        )}
       </p>
     </FormGroup>
   );

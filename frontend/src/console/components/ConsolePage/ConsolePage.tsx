@@ -53,11 +53,13 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     );
   }
 
-  public render() {
+  public componentDidMount() {
     if (!this.props.loading && this.props.selectedInstance === null) {
       this.props.listUserInstances();
     }
+  }
 
+  public render() {
     const content = () => {
       if (this.props.contentLoading) {
         return (
@@ -101,9 +103,7 @@ export const ConsolePage = connect<
   Props,
   RootState
 >(
-  (state: RootState) => ({
-    ...state.console
-  }),
+  (state: RootState) => state.console,
   {
     listUserInstances
   }

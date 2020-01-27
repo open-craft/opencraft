@@ -24,7 +24,7 @@
     .card-body {
       padding: 0 15px 0;
 
-      .nav-link {
+      a {
         padding: 10px 15px;
         border-top: 1px solid $light-gray;
         font-family: $chivo-font;
@@ -38,6 +38,8 @@
 
         &.disabled {
           color: $secondary-2;
+          text-decoration: none;
+          cursor: default;
         }
 
         &.active {
