@@ -20,6 +20,12 @@ interface Props extends StateProps, ActionProps {
 }
 
 export class ConsolePageComponent extends React.PureComponent<Props> {
+  public componentDidMount() {
+    if (!this.props.loading && this.props.selectedInstance === null) {
+      this.props.listUserInstances();
+    }
+  }
+
   private renderHeader() {
     if (this.props.loading || this.props.selectedInstance === null) {
       return (
@@ -51,12 +57,6 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         </h2>
       </div>
     );
-  }
-
-  public componentDidMount() {
-    if (!this.props.loading && this.props.selectedInstance === null) {
-      this.props.listUserInstances();
-    }
   }
 
   public render() {
@@ -102,9 +102,6 @@ export const ConsolePage = connect<
   {},
   Props,
   RootState
->(
-  (state: RootState) => state.console,
-  {
-    listUserInstances
-  }
-)(ConsolePageComponent);
+>((state: RootState) => state.console, {
+  listUserInstances
+})(ConsolePageComponent);

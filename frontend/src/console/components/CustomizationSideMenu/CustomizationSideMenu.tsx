@@ -28,19 +28,54 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Preview & colors
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Logos
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Domain
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Buttons
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Navigation
               </NavLink>
             </Nav>
@@ -56,13 +91,34 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 About
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Terms of Service
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Contact
               </NavLink>
             </Nav>
@@ -81,7 +137,14 @@ export const CustomizationSideMenu: React.FC = () => {
               <NavLink exact to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}>
                 General
               </NavLink>
-              <NavLink exact to={''} className="disabled" onClick={(e) => {e.preventDefault()}}>
+              <NavLink
+                exact
+                to=""
+                className="disabled"
+                onClick={e => {
+                  e.preventDefault();
+                }}
+              >
                 Domain
               </NavLink>
             </Nav>
