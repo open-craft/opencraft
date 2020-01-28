@@ -77,7 +77,12 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       <div className="console-page">
         {this.renderHeader()}
 
-        <RedeploymentToolbar />
+        <RedeploymentToolbar
+          redeploymentStatus="DEPLOYING"
+          numberOfChanges={10}
+          cancelRedeployment={() => {}}
+          performDeployment={() => {}}
+        />
 
         <div className="console-page-container">
           <Row className="console-page-content">

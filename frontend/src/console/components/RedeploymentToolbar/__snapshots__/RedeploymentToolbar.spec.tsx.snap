@@ -7,8 +7,8 @@ exports[`renders without crashing 1`] = `
   <div
     className="redeployment-nav"
   >
-    <div
-      className="status-pill"
+    <span
+      className="status-pill badge badge-pill badge-primary"
       onBlur={[Function]}
       onFocus={[Function]}
       onMouseOut={[Function]}
@@ -16,19 +16,25 @@ exports[`renders without crashing 1`] = `
     >
       <span
         className="dot"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
       />
-      <span
+      <div
         className="text"
       >
-        Status: Up to date
-      </span>
-    </div>
+        Status: loading
+      </div>
+    </span>
     <button
       className="float-right loading btn btn-primary btn-lg"
       disabled={true}
+      onClick={[Function]}
       type="button"
     >
-      Deploy (10 updates)
+      Deploy ( updates)
     </button>
   </div>
 </div>

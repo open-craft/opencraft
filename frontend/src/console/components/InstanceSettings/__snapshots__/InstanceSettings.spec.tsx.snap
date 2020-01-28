@@ -19,8 +19,8 @@ exports[`renders without crashing 1`] = `
     <div
       className="redeployment-nav"
     >
-      <div
-        className="status-pill"
+      <span
+        className="status-pill badge badge-pill badge-primary"
         onBlur={[Function]}
         onFocus={[Function]}
         onMouseOut={[Function]}
@@ -28,16 +28,32 @@ exports[`renders without crashing 1`] = `
       >
         <span
           className="dot"
+          style={
+            Object {
+              "backgroundColor": "#ff9b04",
+            }
+          }
         />
-        <span
+        <div
           className="text"
         >
-          Status: Up to date
-        </span>
-      </div>
+          Status: deploying changes
+        </div>
+        <div
+          className="text cancel-deployment nav"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+        >
+          <i
+            className="fas fa-xs fa-times"
+          />
+          Cancel deployment
+        </div>
+      </span>
       <button
         className="float-right loading btn btn-primary btn-lg"
         disabled={true}
+        onClick={[Function]}
         type="button"
       >
         Deploy (10 updates)

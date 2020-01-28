@@ -1,33 +1,84 @@
 import * as React from 'react';
-// import messages from './displayMessages';
-import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { WrappedMessage } from 'utils/intl';
+import { Button, Modal } from 'react-bootstrap';
+import { RedeploymentStatus } from 'global/constants';
+import { CustomStatusPill } from 'ui/components';
+import messages from './displayMessages';
 import './styles.scss';
 
-export const RedeploymentToolbar: React.FC = () => {
-  const tooltip = (
-    <Tooltip id="redeployment-status">
-      Your instance is up-to-date with the latest settings.
-    </Tooltip>
-  );
+interface Props {
+  redeploymentStatus: string;
+  numberOfChanges: number;
+  cancelRedeployment: Function;
+  performDeployment: Function;
+}
+
+export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
+  const [show, setShow] = React.useState(false);
+
+  const handleCloseModal = () => setShow(false);
+  const handleShowModal = () => setShow(true);
+
+  const redeploymentDisabled =
+    !props.numberOfChanges ||
+    props.redeploymentStatus === RedeploymentStatus.DEPLOYING ||
+    props.redeploymentStatus === RedeploymentStatus.NO_STATUS ||
+    props.redeploymentStatus === RedeploymentStatus.CANCELLING_DEPLOYMENT;
 
   return (
     <div className="d-flex justify-content-center align-middle redeployment-toolbar">
       <div className="redeployment-nav">
-        <OverlayTrigger placement="right" overlay={tooltip}>
-          <div className="status-pill">
-            <span className="dot" />
-            <span className="text">Status: Up to date</span>
-          </div>
-        </OverlayTrigger>
+        <CustomStatusPill
+          redeploymentStatus={props.redeploymentStatus}
+          cancelRedeployment={handleShowModal}
+        />
+
         <Button
           className="float-right loading"
-          disabled
           variant="primary"
           size="lg"
+          onClick={() => {
+            handleShowModal();
+          }}
+          disabled={redeploymentDisabled}
         >
-          Deploy (10 updates)
+          <WrappedMessage
+            id="deploy"
+            messages={messages}
+            values={{ numberOfChanges: props.numberOfChanges }}
+          />
         </Button>
       </div>
+
+      <Modal
+        show={show}
+        onHide={handleCloseModal}
+        className="cancel-redeployment-modal"
+        centered
+      >
+        <Modal.Header>
+          <Modal.Title>
+            <p>Are you sure you want to cancel this redeployment?</p>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Your instance is being updated with the latest settings. If you cancel
+          this deployment, your changes wont be lost, but they will need to be
+          redeployed.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="outline-primary"
+            size="lg"
+            onClick={handleCloseModal}
+          >
+            Close
+          </Button>
+          <Button variant="primary" size="lg" onClick={handleCloseModal}>
+            Cancel redeployment
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

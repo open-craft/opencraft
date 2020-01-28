@@ -1,7 +1,7 @@
 const messages = {
-  messageID: {
-    defaultMessage: 'A translatable string.',
-    description: 'A description of the translatable string.'
+  deploy: {
+    defaultMessage: 'Deploy ({numberOfChanges} updates)',
+    description: 'Deployment button text.'
   }
 };
 

@@ -13,33 +13,31 @@
     display: inline-block;
     width: 100%;
     max-width: 1100px;
+  }
+}
 
-    .status-pill {
-      background-color: #ddd;
-      padding: 8px 20px;
-      margin: 4px 2px;
-      border-radius: 39px;
-      text-align: center;
-      display: inline-block;
-      cursor: pointer;
-      background-color: $primary-2;
-      height: 44px;
+.cancel-redeployment-modal {
+  text-align: center;
 
-      .text {
-        font-family: $roboto-font;
-        font-weight: 500;
-        font-size: 18px;
-        color: #ffffff;
-      }
+  .modal-header {
+    border-bottom: none;
+    font-family: $playfair-font;
+    font-size: 24px;
+    color: #0f1f24;
+    margin-bottom: -15px
+  }
 
-      .dot {
-        height: 25px;
-        width: 25px;
-        border: 2px solid black;
-        background-color: lightgreen;
-        border-radius: 50%;
-        display: inline-block;
-      }
-    }
+  .modal-body {
+    background-color: #d3e1e7;
+    margin: 20px;
+    font-family: $chivo-font;
+    font-size: 16px;
+    color: #0f1f24;
+  }
+
+  .modal-footer {
+    border: none;
+    justify-content: center;
+    margin-bottom: 15px;
   }
 }
