@@ -181,8 +181,9 @@ class DNSCleanupInstance:
     """
     Clean up the DNS records.
     """
-    def __init__(self, api_key, dry_run=False):
+    def __init__(self, api_key, base_domain, dry_run=False):
         self.client = GandiV5API(api_key=api_key)
+        self.base_domain = base_domain
         self.dry_run = dry_run
 
     def run_cleanup(self, hashes_to_clean):
@@ -196,7 +197,8 @@ class DNSCleanupInstance:
 
         logger.info('Deleting the following DNS records:')
         for hash_ in hashes_to_clean:
-            logger.info('  %s', hash_)
+            record = hash_ + self.base_domain if not hash_.endswith(self.base_domain) else hash_
+            logger.info('  %s', record)
 
             if not self.dry_run:
-                self.client.remove_dns_record(hash_, type='CNAME')
+                self.client.remove_dns_record(record, type='CNAME')
