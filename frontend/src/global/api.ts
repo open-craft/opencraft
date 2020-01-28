@@ -1,4 +1,3 @@
-// import { redirectToLogin } from 'auth/actions';
 import { OCIM_API_BASE } from 'global/constants';
 import { V2Api as _V2Api, Configuration } from 'ocim-client';
 

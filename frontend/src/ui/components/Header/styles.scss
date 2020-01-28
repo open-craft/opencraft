@@ -1,19 +1,37 @@
 @import '~styles/theme';
 
 
-header.app-header {
-    min-height: 6em;
-    color: #fff;
+.logo-container {
+  display: flex;
+  justify-content: center;
 
-    .logo-container {
-        display: flex;
-        justify-content: center;
+  .site-logo {
+    fill: #fff;
+    width: 152px;
+    height: 82px;
+    padding-top: 15px;
+  }
+}
 
-        .site-logo {
-            fill: #fff;
-            width: 152px;
-            height: 82px;
-            padding-top: 15px;
-        }
+/* change the link color */
+.navbar-dark {
+  .navbar-toggler {
+    border: none;
+  }
+
+  .navbar-nav .nav-link {
+    font-family: $chivo-font;
+    font-size: 20px;
+    letter-spacing: 0.72px;
+    color: white;
+    border-bottom: 3px solid transparent;
+    padding-left: none;
+    padding-right: none;
+    margin: auto 7px;
+
+    &:hover, &:focus {
+      color: white;
+      border-bottom: 3px solid white;
     }
+  }
 }
