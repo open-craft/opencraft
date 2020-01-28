@@ -74,6 +74,7 @@
     ]
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.12.0",
     "history": "^4.10.1",
     "immutability-helper": "^3.0.1"
   }

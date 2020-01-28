@@ -4,16 +4,20 @@ import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
 import * as renderer from 'react-test-renderer';
-import { createStore } from 'redux';
+import { applyMiddleware, createStore } from 'redux';
+import thunk from 'redux-thunk';
 import { createRootReducer } from '../global/reducers';
 
 export const setupComponentForTesting = (
   reactContent: JSX.Element,
   storeContents = {}
 ) => {
+  const middleware = applyMiddleware(thunk);
+
   const store = createStore(
     createRootReducer(createMemoryHistory()),
-    storeContents
+    storeContents,
+    middleware
   );
   return renderer.create(
     <IntlProvider textComponent={React.Fragment} locale="en">
