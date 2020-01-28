@@ -6,6 +6,7 @@ import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import { store } from './global/store';
 import * as serviceWorker from './serviceWorker';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/app.scss';
 import { App } from './ui/components';
 

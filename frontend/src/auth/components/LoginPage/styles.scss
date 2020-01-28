@@ -1,0 +1,16 @@
+@import '~styles/theme';
+
+.login {
+  width: 100%;
+  padding: 32px 32px;
+
+  .forgot-password {
+    text-align: left;
+    text-decoration: underline;
+    font-family: $chivo-font;
+    font-size: 18px;
+    letter-spacing: 0.54px;
+    color: #1e4c59;
+    margin-top: 25px;
+  }
+}
