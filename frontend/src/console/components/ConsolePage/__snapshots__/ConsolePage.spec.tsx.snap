@@ -1,0 +1,507 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Console Page Correctly renders loading page 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      <i
+        className="fas fa-sync-alt fa-spin"
+      />
+    </h1>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <div
+        className="status-pill"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
+      >
+        <span
+          className="dot"
+        />
+        <span
+          className="text"
+        >
+          Status: Up to date
+        </span>
+      </div>
+      <button
+        className="float-right loading btn btn-primary btn-lg"
+        disabled={true}
+        type="button"
+      >
+        Deploy (10 updates)
+      </button>
+    </div>
+  </div>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="row"
+        >
+          <div
+            className="col-md-4"
+          >
+            <div
+              className="customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Navigation
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="customization-form col-md-8"
+          >
+            <div
+              className="loading"
+            >
+              <i
+                className="fas fa-2x fa-sync-alt fa-spin"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Console Page Correctly renders page with data 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+        href="https://test.opencraft.hosting"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+        href="https://studio.test.opencraft.hosting"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <div
+        className="status-pill"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
+      >
+        <span
+          className="dot"
+        />
+        <span
+          className="text"
+        >
+          Status: Up to date
+        </span>
+      </div>
+      <button
+        className="float-right loading btn btn-primary btn-lg"
+        disabled={true}
+        type="button"
+      >
+        Deploy (10 updates)
+      </button>
+    </div>
+  </div>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="row"
+        >
+          <div
+            className="col-md-4"
+          >
+            <div
+              className="customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Navigation
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="customization-form col-md-8"
+          >
+            <span>
+               Test! 
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

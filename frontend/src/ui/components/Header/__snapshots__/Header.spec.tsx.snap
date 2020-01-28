@@ -1,25 +1,44 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders without crashing 1`] = `
-<header
-  className="app-header row"
+<div
+  className="container"
 >
-  <div
-    className="col-lg"
-  />
-  <div
-    className="logo-container col-lg"
+  <nav
+    className="navbar navbar-expand-md navbar-dark bg-transparent"
   >
-    <svg
-      className="site-logo"
+    <span
+      className="logo-container mx-auto navbar-brand"
     >
-      <use
-        xlinkHref="icons.svg#opencraft_logo"
+      <svg
+        className="site-logo"
+      >
+        <use
+          xlinkHref="icons.svg#opencraft_logo"
+        />
+      </svg>
+    </span>
+    <button
+      aria-controls="basic-navbar-nav"
+      aria-label="Toggle navigation"
+      className="navbar-toggler collapsed"
+      onClick={[Function]}
+      type="button"
+    >
+      <span
+        className="navbar-toggler-icon"
       />
-    </svg>
-  </div>
-  <div
-    className="col-lg"
-  />
-</header>
+    </button>
+    <div
+      aria-expanded={null}
+      className="navbar-collapse collapse"
+      id="basic-navbar-nav"
+    >
+      <div
+        className="ml-auto navbar-nav"
+        onKeyDown={[Function]}
+      />
+    </div>
+  </nav>
+</div>
 `;

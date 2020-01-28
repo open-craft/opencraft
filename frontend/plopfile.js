@@ -1,4 +1,4 @@
-const MODULES = ["auth", "ui", "registration"];
+const MODULES = ["auth", "ui", "registration", "console"];
 module.exports = function (plop) {
     // controller generator
     plop.setGenerator('component', {

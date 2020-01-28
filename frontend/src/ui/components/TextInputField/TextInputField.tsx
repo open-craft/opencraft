@@ -5,16 +5,21 @@ import './styles.scss';
 
 interface InputFieldProps {
   fieldName: string;
-  value: string;
-  onChange: any;
+  value?: string;
+  onChange?: any;
+  onBlur?: any;
   error?: string;
   messages: any;
   type?: string;
+  isValid?: boolean;
+  loading?: boolean;
 }
 
 export const TextInputField: React.SFC<InputFieldProps> = (
   props: InputFieldProps
 ) => {
+  const hasHelpMessage = `${props.fieldName}Help` in props.messages;
+
   return (
     <FormGroup>
       <FormLabel>
@@ -23,9 +28,12 @@ export const TextInputField: React.SFC<InputFieldProps> = (
       <FormControl
         name={props.fieldName}
         value={props.value}
+        disabled={props.loading}
         onChange={props.onChange}
+        onBlur={props.onBlur}
         type={props.type}
         isInvalid={!!props.error}
+        isValid={props.isValid}
       />
       {props.error && (
         <FormControl.Feedback type="invalid">
@@ -33,10 +41,12 @@ export const TextInputField: React.SFC<InputFieldProps> = (
         </FormControl.Feedback>
       )}
       <p>
-        <WrappedMessage
-          id={`${props.fieldName}Help`}
-          messages={props.messages}
-        />
+        {hasHelpMessage && (
+          <WrappedMessage
+            id={`${props.fieldName}Help`}
+            messages={props.messages}
+          />
+        )}
       </p>
     </FormGroup>
   );
