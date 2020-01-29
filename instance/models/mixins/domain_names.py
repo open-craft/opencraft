@@ -191,7 +191,7 @@ class DomainNameInstance(models.Model):
             self.internal_ecommerce_domain,
         ]
         custom_domains = self.extra_custom_domains.split("\r\n")
-        domain_names += [domain for domain in custom_domains if domain.endswith(self.internal_lms_domain)]
+        domain_names.extend(custom_domains)
         return [name for name in domain_names if name]
 
     def get_managed_domains(self):
