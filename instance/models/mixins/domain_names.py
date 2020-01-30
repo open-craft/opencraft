@@ -168,7 +168,7 @@ class DomainNameInstance(models.Model):
 
     def get_custom_domains(self):
         """
-        Returns a list of custom sub-domains configured for the instance.
+        Returns a list of custom (internal) sub-domains configured for the instance.
         """
         return [
             domain for domain in self.extra_custom_domains.split("\r\n") if domain.endswith(self.internal_lms_domain)
