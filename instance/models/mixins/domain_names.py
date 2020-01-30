@@ -166,14 +166,6 @@ class DomainNameInstance(models.Model):
         prefixes = ['studio', 'preview', 'discovery', 'ecommerce']
         return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in prefixes]
 
-    def get_custom_domains(self):
-        """
-        Returns a list of custom (internal) sub-domains configured for the instance.
-        """
-        return [
-            domain for domain in self.extra_custom_domains.split("\r\n") if domain.endswith(self.internal_lms_domain)
-        ]
-
     def get_load_balanced_domains(self):
         """
         Return an iterable of domains that should be handled by the load balancer.
@@ -189,14 +181,12 @@ class DomainNameInstance(models.Model):
             self.internal_studio_domain,
             self.internal_discovery_domain,
             self.internal_ecommerce_domain,
-        ]
-        custom_domains = self.extra_custom_domains.split("\r\n")
-        domain_names.extend(custom_domains)
+        ] + self.extra_custom_domains.splitlines()
         return [name for name in domain_names if name]
 
     def get_managed_domains(self):
         """
-        Return an iterable of domains that we  manage DNS entries for.
+        Return an iterable of domains that we manage DNS entries for.
         """
         managed_domains = [
             self.internal_lms_domain,
@@ -208,7 +198,11 @@ class DomainNameInstance(models.Model):
         if self.enable_prefix_domains_redirect:
             managed_domains += self.get_prefix_domain_names()
 
-        managed_domains += self.get_custom_domains()
+        # Filter out external custom domains here, because we can only manage
+        # DNS entries for internal domains.
+        managed_domains += [
+            domain for domain in self.extra_custom_domains.splitlines() if domain.endswith(self.internal_lms_domain)
+        ]
         return [name for name in managed_domains if name]
 
     @property
