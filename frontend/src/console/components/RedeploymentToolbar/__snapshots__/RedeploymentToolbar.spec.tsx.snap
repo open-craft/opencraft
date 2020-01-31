@@ -34,7 +34,7 @@ exports[`renders without crashing 1`] = `
       onClick={[Function]}
       type="button"
     >
-      Deploy ( updates)
+      Deploy (0 updates)
     </button>
   </div>
 </div>

@@ -6,6 +6,7 @@ import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
+import { updateFieldValue } from 'console/actions';
 import messages from './displayMessages';
 
 interface State {
@@ -14,7 +15,9 @@ interface State {
   publicContactEmail: string;
 }
 
-interface ActionProps {}
+interface ActionProps {
+  updateFieldValue: Function;
+}
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
@@ -31,6 +34,19 @@ export class InstanceSettingsComponent extends React.PureComponent<
     };
   }
 
+  public componentDidUpdate(prevProps: Props) {
+    // Fill fields after finishing loading data
+    if (
+      prevProps.activeInstance.data === null &&
+      this.props.activeInstance.data
+    ) {
+      this.setState({
+        instanceName: this.props.activeInstance.data.instanceName,
+        publicContactEmail: this.props.activeInstance.data.publicContactEmail
+      });
+    }
+  }
+
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     const { value } = e.target;
@@ -40,7 +56,18 @@ export class InstanceSettingsComponent extends React.PureComponent<
     });
   };
 
+  private updateValue = (fieldName: string, value: string) => {
+    const instance = this.props.activeInstance;
+
+    // Only make update request if field changed
+    if (instance.data && this.state[fieldName] !== instance.data[fieldName]) {
+      this.props.updateFieldValue(instance.data.id, fieldName, value);
+    }
+  };
+
   public render() {
+    const instance = this.props.activeInstance;
+
     return (
       <ConsolePage contentLoading={this.props.loading}>
         <h2>
@@ -51,8 +78,12 @@ export class InstanceSettingsComponent extends React.PureComponent<
           fieldName="instanceName"
           value={this.state.instanceName}
           onChange={this.onChange}
+          onBlur={() => {
+            this.updateValue('instanceName', this.state.instanceName);
+          }}
           messages={messages}
-          error=""
+          loading={instance.loading.includes('instanceName')}
+          error={instance.feedback.instanceName}
         />
 
         <TextInputField
@@ -60,8 +91,15 @@ export class InstanceSettingsComponent extends React.PureComponent<
           value={this.state.publicContactEmail}
           onChange={this.onChange}
           messages={messages}
+          loading={instance.loading.includes('publicContactEmail')}
+          onBlur={() => {
+            this.updateValue(
+              'publicContactEmail',
+              this.state.publicContactEmail
+            );
+          }}
           type="email"
-          error=""
+          error={instance.feedback.publicContactEmail}
         />
       </ConsolePage>
     );
@@ -74,7 +112,6 @@ export const InstanceSettings = connect<
   {},
   Props,
   RootState
->(
-  (state: RootState) => state.console,
-  {}
-)(InstanceSettingsComponent);
+>((state: RootState) => state.console, {
+  updateFieldValue
+})(InstanceSettingsComponent);

@@ -3,12 +3,12 @@ import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
 import { RedeploymentStatus } from 'global/constants';
 import { CustomStatusPill } from 'ui/components';
+import { DeploymentInfoModel } from 'console/models';
 import messages from './displayMessages';
 import './styles.scss';
 
 interface Props {
-  redeploymentStatus: string;
-  numberOfChanges: number;
+  deployment?: DeploymentInfoModel;
   cancelRedeployment: Function;
   performDeployment: Function;
 }
@@ -19,17 +19,25 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
 
-  const redeploymentDisabled =
-    !props.numberOfChanges ||
-    props.redeploymentStatus === RedeploymentStatus.DEPLOYING ||
-    props.redeploymentStatus === RedeploymentStatus.NO_STATUS ||
-    props.redeploymentStatus === RedeploymentStatus.CANCELLING_DEPLOYMENT;
+  let deploymentDisabled: boolean = true;
+  let numberOfChanges: number = 0;
+  let deploymentStatus: RedeploymentStatus = RedeploymentStatus.NO_STATUS;
+
+  if (props.deployment) {
+    deploymentStatus = props.deployment.status;
+    numberOfChanges = props.deployment.numberOfChanges;
+    deploymentDisabled =
+      !props.deployment.numberOfChanges ||
+      props.deployment.status === RedeploymentStatus.DEPLOYING ||
+      props.deployment.status === RedeploymentStatus.NO_STATUS ||
+      props.deployment.status === RedeploymentStatus.CANCELLING_DEPLOYMENT;
+  }
 
   return (
     <div className="d-flex justify-content-center align-middle redeployment-toolbar">
       <div className="redeployment-nav">
         <CustomStatusPill
-          redeploymentStatus={props.redeploymentStatus}
+          redeploymentStatus={deploymentStatus}
           cancelRedeployment={handleShowModal}
         />
 
@@ -37,15 +45,13 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
           className="float-right loading"
           variant="primary"
           size="lg"
-          onClick={() => {
-            handleShowModal();
-          }}
-          disabled={redeploymentDisabled}
+          onClick={() => {}}
+          disabled={deploymentDisabled}
         >
           <WrappedMessage
             id="deploy"
             messages={messages}
-            values={{ numberOfChanges: props.numberOfChanges }}
+            values={{ numberOfChanges }}
           />
         </Button>
       </div>

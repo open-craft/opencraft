@@ -30,24 +30,14 @@ exports[`renders without crashing 1`] = `
           className="dot"
           style={
             Object {
-              "backgroundColor": "#ff9b04",
+              "backgroundColor": "grey",
             }
           }
         />
         <div
           className="text"
         >
-          Status: deploying changes
-        </div>
-        <div
-          className="text cancel-deployment nav"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-        >
-          <i
-            className="fas fa-xs fa-times"
-          />
-          Cancel deployment
+          Status: loading
         </div>
       </span>
       <button
@@ -56,7 +46,7 @@ exports[`renders without crashing 1`] = `
         onClick={[Function]}
         type="button"
       >
-        Deploy (10 updates)
+        Deploy (0 updates)
       </button>
     </div>
   </div>

@@ -6,13 +6,14 @@ import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
-import { listUserInstances } from 'console/actions';
+import { listUserInstances, getDeploymentStatus } from 'console/actions';
 import messages from './displayMessages';
 
 import './styles.scss';
 
 interface ActionProps {
   listUserInstances: Function;
+  getDeploymentStatus: Function;
 }
 
 interface StateProps extends InstancesModel {}
@@ -23,13 +24,14 @@ interface Props extends StateProps, ActionProps {
 
 export class ConsolePageComponent extends React.PureComponent<Props> {
   public componentDidMount() {
-    if (!this.props.loading && this.props.selectedInstance === null) {
+    if (!this.props.loading && this.props.activeInstance.data === null) {
       this.props.listUserInstances();
+      this.props.getDeploymentStatus(15);
     }
   }
 
   private renderHeader() {
-    if (this.props.loading || this.props.selectedInstance === null) {
+    if (this.props.loading || this.props.activeInstance.data === null) {
       return (
         <div className="title-container">
           <h1>
@@ -38,7 +40,8 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         </div>
       );
     }
-    const instanceData = this.props.instances[this.props.selectedInstance];
+
+    const instanceData = this.props.activeInstance.data;
     const instanceLink =
       `https://${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || '';
     const studioLink =
@@ -78,8 +81,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         {this.renderHeader()}
 
         <RedeploymentToolbar
-          redeploymentStatus="DEPLOYING"
-          numberOfChanges={10}
+          deployment={this.props.activeInstance.deployment}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}
         />
@@ -110,5 +112,6 @@ export const ConsolePage = connect<
   Props,
   RootState
 >((state: RootState) => state.console, {
-  listUserInstances
+  listUserInstances,
+  getDeploymentStatus
 })(ConsolePageComponent);
