@@ -114,6 +114,7 @@ def run_integration_cleanup(dry_run=False):
     # Run DNS cleanup
     dns_cleanup = DNSCleanupInstance(
         api_key=os.environ['GANDI_API_KEY'],
+        base_domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
         dry_run=dry_run
     )
     # Run DNS cleanup erasing all integration entries except for those on
