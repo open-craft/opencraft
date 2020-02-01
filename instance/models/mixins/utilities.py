@@ -22,15 +22,22 @@ Instance app model mixins - Utilities
 
 # Imports #####################################################################
 
+import logging
 import sys
 from typing import List, Optional
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
+from django.core.mail import send_mail
+from django.dispatch import receiver
 from django.views.debug import ExceptionReporter
 
+from instance.signals import appserver_spawned
+
+logger = logging.getLogger(__name__)
 
 # Classes #####################################################################
+
 
 class EmailMixin:
     """
@@ -63,9 +70,9 @@ class EmailMixin:
 
     def provision_failed_email(self, reason, log=None):
         """
-        Send email notifications when instance provisioning is failed. Will
-        send notifications to settings.ADMINs and the instance's
-        provisioning_failure_notification_emails.
+        Send email notifications after a server's provisioning has failed.
+        This will happen once for each deployment attempt if there are many.
+        It will send notifications to settings.ADMINS.
         """
         attachments = []
         if log is not None:
@@ -77,7 +84,7 @@ class EmailMixin:
             self.EmailBody.PROVISION_FAILED.format(name=self.name, instance_name=self.instance.name, reason=reason),
             self._get_exc_info(default=None),
             attachments=attachments,
-            extra_recipients=self.instance.provisioning_failure_notification_emails,
+            extra_recipients=[],
         )
 
     def _send_email(self, subject, message, exc_info=None, attachments=None,
@@ -125,3 +132,38 @@ class EmailMixin:
                 mail.attach(attachment_name, attachment_content, attachment_mime)
 
         mail.send(fail_silently=fail_silently)
+
+
+# Functions #####################################################################
+
+@receiver(appserver_spawned)
+def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs):
+    """
+    Send an urgent alert to an e-mail when the deployment fails in a way that blocks the user.
+    This is more urgent than the usual failure e-mails, and it's meant to go for instance to PagerDuty.
+    This alert will only happen after ALL deployment attempts have been consumed, and ONLY if the deployment
+    was triggered by the user (i.e. if the admins mass-redeploy 100 instances and 3 of them fail, this isn't
+    critical and it doesn't trigger this e-mail)..
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+
+    # Only sending critical alerts for failures in registered clients' instances, not in test/sandboxes
+    if not instance.betatestapplication_set.exists():
+        return
+
+    if appserver is None and instance.provisioning_failure_notification_emails:
+        logger.warning(
+            "Sending urgent alert e-mail to %s after instance %s didn't provision",
+            instance.provisioning_failure_notification_emails,
+            instance,
+        )
+
+        send_mail(
+            'Deployment failed at instance: {}'.format(instance),
+            "The deployment of a new appserver failed and needs manual intervention. "
+            "You can find the logs in the web interface.",
+            settings.DEFAULT_FROM_EMAIL,
+            instance.provisioning_failure_notification_emails,
+            fail_silently=False,
+        )
