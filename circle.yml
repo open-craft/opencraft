@@ -241,6 +241,7 @@ jobs:
         environment:
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
           DJANGO_SETTINGS_MODULE: 'opencraft.settings'
+      - image: redis
     steps:
       - checkout
       - restore_cache:
@@ -261,6 +262,9 @@ jobs:
             mkdir -p /tmp/consul-data
             consul agent -retry-join haproxy-integration.net.opencraft.hosting -data-dir /tmp/consul-data
           background: true
+      - run:
+          name: Wait for Redis
+          command: dockerize -wait tcp://localhost:6379 -timeout 10s
       - run:
           name: Cleanup
           command: |
