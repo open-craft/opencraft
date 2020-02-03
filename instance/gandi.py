@@ -178,6 +178,8 @@ class GandiV5API:
             # as the library only throws an instance of the Exception class.
             if 'Record identifier could not be found' in str(e):
                 result = True
+            else:
+                raise
         return result
 
     def remove_dns_record(self, domain, **record):

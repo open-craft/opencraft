@@ -59,7 +59,7 @@ class DNSCleanupInstance:
 
         logger.info('Deleting the following DNS records:')
         for hash_ in hashes_to_clean:
-            record = hash_ + self.base_domain if not hash_.endswith(self.base_domain) else hash_
+            record = '{}.{}'.format(hash_, self.base_domain) if not hash_.endswith(self.base_domain) else hash_
             logger.info('  %s', record)
 
             if not self.dry_run:

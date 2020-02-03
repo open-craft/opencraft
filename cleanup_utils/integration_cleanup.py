@@ -77,6 +77,61 @@ def run_integration_cleanup(dry_run=False):
             "resources."
         )
 
+    # We do a dry-run cleanup of the AWS, OpenStack, MySQL resources to get a list of hashes
+    # to be cleaned up without actually doing the cleanup. As the DNS cleanup requires these hashes
+    # it has to be done first before cleaning up the rest. This helps avoid losing those hashes when
+    # the DNS cleanup fails during a run for some reasons.
+
+    # Do a dry-run cleanup to get the hashes.
+    aws_cleanup = AwsCleanupInstance(
+        age_limit=DEFAULT_CUTOFF_TIME,
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+        dry_run=True
+    )
+    aws_cleanup.run_cleanup()
+
+    # Do a dry-run cleanup on the OpenStack provider to get the hashes.
+    openstack_settings = {
+        'auth_url': os.environ['OPENSTACK_AUTH_URL'],
+        'username': os.environ['OPENSTACK_USER'],
+        'password': os.environ['OPENSTACK_PASSWORD'],
+        'project_name': os.environ['OPENSTACK_TENANT'],
+        'region_name': os.environ['OPENSTACK_REGION'],
+    }
+    os_cleanup = OpenStackCleanupInstance(
+        age_limit=DEFAULT_CUTOFF_TIME,
+        openstack_settings=openstack_settings,
+        dry_run=True
+    )
+    os_cleanup.run_cleanup()
+
+    # Do dry-run MySQL cleanup to get the hashes.
+    mysql_cleanup = MySqlCleanupInstance(
+        age_limit=DEFAULT_AGE_LIMIT,
+        url=os.environ['DEFAULT_INSTANCE_MYSQL_URL'],
+        domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
+        drop_dbs_and_users=os.environ.get('DROP_INTEGRATION_DBS_AND_USERS', 'False').lower() == 'true',
+        dry_run=True
+    )
+    mysql_cleanup.run_cleanup()
+
+    # Run DNS cleanup
+    dns_cleanup = DNSCleanupInstance(
+        api_key=os.environ['GANDI_API_KEY'],
+        base_domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
+        dry_run=dry_run
+    )
+    # Run DNS cleanup erasing all integration entries except for those on
+    # the deletion_blacklist
+    hashes_to_clean = (
+        aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes +
+        mysql_cleanup.cleaned_up_hashes
+    )
+    dns_cleanup.run_cleanup(
+        hashes_to_clean=hashes_to_clean
+    )
+
     # Clean up AWS
     aws_cleanup = AwsCleanupInstance(
         age_limit=DEFAULT_CUTOFF_TIME,
@@ -110,22 +165,6 @@ def run_integration_cleanup(dry_run=False):
         dry_run=dry_run
     )
     mysql_cleanup.run_cleanup()
-
-    # Run DNS cleanup
-    dns_cleanup = DNSCleanupInstance(
-        api_key=os.environ['GANDI_API_KEY'],
-        base_domain=os.environ['DEFAULT_INSTANCE_BASE_DOMAIN'],
-        dry_run=dry_run
-    )
-    # Run DNS cleanup erasing all integration entries except for those on
-    # the deletion_blacklist
-    hashes_to_clean = (
-        aws_cleanup.cleaned_up_hashes + os_cleanup.cleaned_up_hashes +
-        mysql_cleanup.cleaned_up_hashes
-    )
-    dns_cleanup.run_cleanup(
-        hashes_to_clean=hashes_to_clean
-    )
 
     # Load Balancer cleanup
     load_balancer_cleanup = LoadBalancerCleanup(
