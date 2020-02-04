@@ -439,3 +439,161 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         response = self.client.post(f"{url}?force=true")
         self.assertEqual(response.status_code, 200)
         mock_spawn_appserver.assert_called()
+
+
+@ddt.ddt
+class InstanceDeploymentAPITestCase(APITestCase):
+    """
+    Tests for the OpenEdXInstanceDeployment APIs.
+    """
+
+    def setUp(self):
+        self.user_with_instance = create_user_and_profile("instance.user", "instance.user@example.com")
+        self.instance_config = BetaTestApplication.objects.create(
+            user=self.user_with_instance,
+            subdomain="somesubdomain",
+            instance_name="User's Instance",
+            public_contact_email="instance.user.public@example.com",
+            privacy_policy_url="http://www.some/url"
+        )
+        EmailAddress.objects.create_confirmed(
+            email=self.instance_config.public_contact_email,
+            user=self.user_with_instance,
+        )
+        self.instance_config_defaults = dict(
+            project_description="",
+            privacy_policy_url="",
+            use_advanced_theme=False,
+            draft_theme_config=None,
+        )
+        self.user_without_instance = create_user_and_profile("noinstance.user", "noinstance.user@example.com")
+
+    def _setup_user_instanace(self):
+        """
+        Set up an instance for the test user.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.instance_config.instance = instance
+        self.instance_config.save()
+        return instance
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_get_deployment_status_no_active(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'status': 'PREPARING_INSTANCE', 'undeployed_changes': 0})
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_get_deployment_status_up_to_date(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        instance.name = self.instance_config.instance_name
+        instance.privacy_policy_url = self.instance_config.privacy_policy_url
+        instance.email = self.instance_config.public_contact_email
+        instance.theme_config = self.instance_config.draft_theme_config
+        instance.save()
+
+        app_server = make_test_appserver(instance, status=Status.Running)
+        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
+        app_server.save()
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'status': 'UP_TO_DATE', 'undeployed_changes': 0})
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_get_deployment_status_pending_changes(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        app_server = make_test_appserver(instance, status=Status.Running)
+        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
+        app_server.save()
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'status': 'PENDING_CHANGES', 'undeployed_changes': 3})
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_get_deployment_status_preparing_instance(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'status': 'PREPARING_INSTANCE', 'undeployed_changes': 0})
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_cancel_first_deployment_fails(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that trying to stop the first provisioning fails
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 400)
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_cancel_deployment(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that trying to stop a provisioning succeeds
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instanace()
+        app_server = make_test_appserver(instance, status=Status.Running)
+        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
+        app_server.save()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+
+        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)

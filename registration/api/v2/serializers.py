@@ -30,6 +30,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
+from registration.api.v2 import constants
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
 
@@ -189,8 +190,16 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "subdomain",
             "instance_name",
             "public_contact_email",
-            "project_description",
             "privacy_policy_url",
             "use_advanced_theme",
             "draft_theme_config",
         )
+
+class OpenEdXInstanceDeploymentSerializer(serializers.Serializer):
+    """
+    Serializer with configuration details about the user's Open edX instance.
+    """
+    status = serializers.ChoiceField(
+        choices=constants.DEPLOYMENT_STATUS_CHOICES
+    )
+    undeployed_changes = serializers.IntegerField()

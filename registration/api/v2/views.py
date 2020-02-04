@@ -34,6 +34,7 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin,
 )
+from rest_framework.generics import RetrieveDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -44,9 +45,11 @@ from opencraft.swagger import (
     VALIDATION_RESPONSE,
     viewset_swagger_helper,
 )
+from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
     OpenEdXInstanceConfigSerializer,
+    OpenEdXInstanceDeploymentSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -172,7 +175,7 @@ class OpenEdXInstanceConfigViewSet(
             )
         ],
     )
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], serializer_class={})
     def commit_changes(self, request, pk=None):
         """
         Commit configuration changes to instance and launch new AppServer.
@@ -235,3 +238,93 @@ class OpenEdXInstanceConfigViewSet(
             return BetaTestApplication.objects.filter()
         else:
             return BetaTestApplication.objects.filter(user=self.request.user)
+
+
+class OpenEdxInstanceDeploymentViewSet(RetrieveDestroyAPIView, GenericViewSet):
+    """
+    Open edX Instance Deployment API.
+
+    This API can be used to manage the configuration for Open edX instances
+    owned by clients.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Get `BetaTestApplication` instances owned by current user.
+        For a regular user it should return a single object (for now).
+        """
+        user: User = self.request.user
+        if not user.is_authenticated:
+            return BetaTestApplication.objects.none()
+        elif user.is_staff:
+            return BetaTestApplication.objects.filter()
+        else:
+            return BetaTestApplication.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'delete':
+            return {}
+        elif self.action == 'retrieve':
+            return OpenEdXInstanceDeploymentSerializer
+
+    def retrieve(self, request, pk=None):
+        application = self.get_object()
+        instance = application.instance
+        deployment_status = constants.NO_STATUS
+
+        # Get latest active appserver
+        latest_active_appserver = None
+        if not instance or not instance.get_active_appservers().exists():
+            deployment_status = constants.PREPARING_INSTANCE
+            num_changes = 0
+        else:
+            deployment_status = constants.UP_TO_DATE
+
+            # Get number of undeployed changes
+            num_changes = 0
+            if instance:
+                num_changes += 1 if application.instance_name != instance.name else 0
+                num_changes += 1 if application.privacy_policy_url != instance.privacy_policy_url else 0
+                num_changes += 1 if application.public_contact_email != instance.email else 0
+                if application.use_advanced_theme:
+                    # TODO: Improve counting differences of theming changes
+                    num_changes += 1 if application.draft_theme_config != instance.theme_config else 0
+
+            if num_changes != 0:
+                deployment_status = constants.PENDING_CHANGES
+
+            # Check if there's any ongoing provisioning
+            provisioning_appservers = instance.get_provisioning_appservers()
+            if provisioning_appservers:
+                # TODO: Differentiate between user deployments and OpenCraft deployments
+                deployment_status = constants.DEPLOYING
+
+        data = {
+            'undeployed_changes': num_changes,
+            'status': deployment_status,
+        }
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data=OpenEdXInstanceDeploymentSerializer(data).data
+        )
+
+    def destroy(self, request, pk=None):
+        application = self.get_object()
+        instance = application.instance
+
+        if not instance.get_active_appservers().exists():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'details': "Can't cancel deployment while server is being prepared."
+                }
+            )
+        # TODO: Prevent appservers provisioned by staff/redeployments to be cancelled
+
+        provisioning_appservers = instance.get_provisioning_appservers()
+        for appserver in provisioning_appservers:
+            appserver.terminate_vm()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
