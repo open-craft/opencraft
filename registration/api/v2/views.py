@@ -265,16 +265,15 @@ class OpenEdxInstanceDeploymentViewSet(RetrieveDestroyAPIView, GenericViewSet):
     def get_serializer_class(self):
         if self.action == 'delete':
             return {}
-        elif self.action == 'retrieve':
-            return OpenEdXInstanceDeploymentSerializer
 
-    def retrieve(self, request, pk=None):
+        return OpenEdXInstanceDeploymentSerializer
+
+    def retrieve(self, request, *args, **kwargs):
         application = self.get_object()
         instance = application.instance
         deployment_status = constants.NO_STATUS
 
         # Get latest active appserver
-        latest_active_appserver = None
         if not instance or not instance.get_active_appservers().exists():
             deployment_status = constants.PREPARING_INSTANCE
             num_changes = 0
@@ -310,7 +309,7 @@ class OpenEdxInstanceDeploymentViewSet(RetrieveDestroyAPIView, GenericViewSet):
             data=OpenEdXInstanceDeploymentSerializer(data).data
         )
 
-    def destroy(self, request, pk=None):
+    def destroy(self, request, *args, **kwargs):
         application = self.get_object()
         instance = application.instance
 

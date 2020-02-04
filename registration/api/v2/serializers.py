@@ -195,6 +195,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "draft_theme_config",
         )
 
+
+# pylint: disable=abstract-method
 class OpenEdXInstanceDeploymentSerializer(serializers.Serializer):
     """
     Serializer with configuration details about the user's Open edX instance.
