@@ -24,6 +24,9 @@ import {
     OpenEdXInstanceConfig,
     OpenEdXInstanceConfigFromJSON,
     OpenEdXInstanceConfigToJSON,
+    OpenEdXInstanceDeployment,
+    OpenEdXInstanceDeploymentFromJSON,
+    OpenEdXInstanceDeploymentToJSON,
     Token,
     TokenFromJSON,
     TokenToJSON,
@@ -70,9 +73,16 @@ export interface AuthVerifyCreateRequest {
     data: TokenVerify;
 }
 
+export interface InstancesDeploymentsDeleteRequest {
+    id: string;
+}
+
+export interface InstancesDeploymentsReadRequest {
+    id: string;
+}
+
 export interface InstancesOpenedxConfigCommitChangesRequest {
     id: string;
-    data: OpenEdXInstanceConfig;
     force?: boolean;
 }
 
@@ -398,16 +408,89 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Deployment API.
+     */
+    async instancesDeploymentsDeleteRaw(requestParameters: InstancesDeploymentsDeleteRequest): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesDeploymentsDelete.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/deployments/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Deployment API.
+     */
+    async instancesDeploymentsDelete(requestParameters: InstancesDeploymentsDeleteRequest): Promise<void> {
+        await this.instancesDeploymentsDeleteRaw(requestParameters);
+    }
+
+    /**
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Deployment API.
+     */
+    async instancesDeploymentsReadRaw(requestParameters: InstancesDeploymentsReadRequest): Promise<runtime.ApiResponse<OpenEdXInstanceDeployment>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesDeploymentsRead.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/deployments/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceDeploymentFromJSON(jsonValue));
+    }
+
+    /**
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Deployment API.
+     */
+    async instancesDeploymentsRead(requestParameters: InstancesDeploymentsReadRequest): Promise<OpenEdXInstanceDeployment> {
+        const response = await this.instancesDeploymentsReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
      * This API call will copy over any changes made to the instance config to the actual instance used to launch AppServers and launch a new AppServer with the applied changes.  It checks if an AppServer is already being provisioned and in that case prevents a new one from being launched unless forced.
      * Commit configuration changes to instance and launch new AppServer.
      */
     async instancesOpenedxConfigCommitChangesRaw(requestParameters: InstancesOpenedxConfigCommitChangesRequest): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigCommitChanges.');
-        }
-
-        if (requestParameters.data === null || requestParameters.data === undefined) {
-            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigCommitChanges.');
         }
 
         const queryParameters: runtime.HTTPQuery = {};
@@ -417,8 +500,6 @@ export class V2Api extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.apiKey) {
             headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
@@ -432,7 +513,6 @@ export class V2Api extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: OpenEdXInstanceConfigToJSON(requestParameters.data),
         });
 
         return new runtime.VoidApiResponse(response);
