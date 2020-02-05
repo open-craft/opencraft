@@ -277,6 +277,9 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
 
         return Response(status=status.HTTP_200_OK)
 
+    def list(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def retrieve(self, request, *args, **kwargs):
         application = self.get_object()
         instance = application.instance
@@ -294,7 +297,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
                 application.instance_name != instance.name,
                 application.privacy_policy_url != instance.privacy_policy_url,
                 application.public_contact_email != instance.email,
-                application.use_advanced_theme & application.draft_theme_config != instance.theme_config,
+                application.use_advanced_theme and application.draft_theme_config != instance.theme_config,
             ))
 
             if num_changes != 0:
