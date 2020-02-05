@@ -48,4 +48,8 @@ v1_router.register(r'pr_watch', WatchedPullRequestViewSet, base_name='pr_watch')
 v2_router = routers.DefaultRouter()
 v2_router.register(r'accounts', AccountViewSet, base_name='accounts')
 v2_router.register(r'instances/openedx_config', OpenEdXInstanceConfigViewSet, base_name='openedx-instance-config')
-v2_router.register(r'instances/openedx_deployment', OpenEdxInstanceDeploymentViewSet, base_name='openedx-instance-deployment')
+v2_router.register(
+    r'instances/openedx_deployment',
+    OpenEdxInstanceDeploymentViewSet,
+    base_name='openedx-instance-deployment'
+)

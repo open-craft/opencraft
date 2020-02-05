@@ -277,7 +277,6 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
 
         return Response(status=status.HTTP_200_OK)
 
-
     def retrieve(self, request, *args, **kwargs):
         application = self.get_object()
         instance = application.instance
