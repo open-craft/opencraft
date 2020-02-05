@@ -353,94 +353,6 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             # An anonymous user should get 403 while an authenticated user should get 404
             self.assertIn(response.status_code, (403, 404))
 
-    def test_commit_changes_fail_new_user(self):
-        """
-        Test that committing changes fails when a user is new.
-        """
-        self.client.force_login(self.user_with_instance)
-        response = self.client.post(
-            reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,))
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Must verify email", response.content.decode('utf-8'))
-
-    @patch(
-        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
-    )
-    def test_commit_changes_fail_running_appserver(self, mock_consul):
-        """
-        Test that committing changes fails when a user is new.
-        """
-        self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instance()
-        make_test_appserver(instance, status=Status.ConfiguringServer)
-        response = self.client.post(
-            reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,))
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Instance launch already in progress", response.content.decode('utf-8'))
-
-    @patch(
-        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
-    )
-    def test_commit_changes_email_validation_fail(self, mock_consul):
-        """
-        Test that committing changes fails when a user is new.
-        """
-        self._setup_user_instance()
-        EmailAddress.objects.get(
-            email=self.instance_config.public_contact_email,
-            user=self.user_with_instance,
-        ).reset_confirmation()
-        self.client.force_login(self.user_with_instance)
-        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Updated public email", response.content.decode('utf-8'))
-
-    @patch(
-        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
-    )
-    @patch('registration.models.spawn_appserver')
-    def test_commit_changes_success(self, mock_spawn_appserver, mock_consul):
-        """
-        Test that committing changes fails when a user is new.
-        """
-        self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instance()
-        self.assertEqual(instance.privacy_policy_url, '')
-        self.assertEqual(instance.email, 'contact@example.com')
-        self.assertRegex(instance.name, r'Test Instance \d+')
-        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
-        mock_spawn_appserver.assert_called()
-        instance.refresh_from_db()
-        self.assertEqual(instance.privacy_policy_url, "http://www.some/url")
-        self.assertEqual(instance.email, "instance.user.public@example.com")
-        self.assertEqual(instance.name, "User's Instance")
-
-    @patch(
-        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
-    )
-    @patch('registration.models.spawn_appserver')
-    def test_commit_changes_force_running_appserver(self, mock_spawn_appserver, mock_consul):
-        """
-        Test that committing changes fails when a user is new.
-        """
-        self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instance()
-        make_test_appserver(instance, status=Status.ConfiguringServer)
-        url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
-        response = self.client.post(f"{url}?force=true")
-        self.assertEqual(response.status_code, 200)
-        mock_spawn_appserver.assert_called()
-
-
 @ddt.ddt
 class InstanceDeploymentAPITestCase(APITestCase):
     """
@@ -597,3 +509,96 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, 204)
+
+    def test_commit_changes_fail_new_user(self):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Must verify email", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_commit_changes_fail_running_appserver(self, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Instance launch already in progress", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_commit_changes_email_validation_fail(self, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self._setup_user_instance()
+        EmailAddress.objects.get(
+            email=self.instance_config.public_contact_email,
+            user=self.user_with_instance,
+        ).reset_confirmation()
+        self.client.force_login(self.user_with_instance)
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Updated public email", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_commit_changes_success(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        self.assertEqual(instance.privacy_policy_url, '')
+        self.assertEqual(instance.email, 'contact@example.com')
+        self.assertRegex(instance.name, r'Test Instance \d+')
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_spawn_appserver.assert_called()
+        instance.refresh_from_db()
+        self.assertEqual(instance.privacy_policy_url, "http://www.some/url")
+        self.assertEqual(instance.email, "instance.user.public@example.com")
+        self.assertEqual(instance.name, "User's Instance")
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.spawn_appserver')
+    def test_commit_changes_force_running_appserver(self, mock_spawn_appserver, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        make_test_appserver(instance, status=Status.ConfiguringServer)
+        url = reverse('api:v2:openedx-instance-deployment-list')
+        response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
+        self.assertEqual(response.status_code, 200)
+        mock_spawn_appserver.assert_called()

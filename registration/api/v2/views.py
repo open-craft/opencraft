@@ -334,7 +334,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
 
         This allows the user to cancel an ongoing deployment, note that this can
         can cancel both user-triggered deployments and OpenCraft triggered
-        deployments. 
+        deployments.
         """
         application = self.get_object()
         instance = application.instance
