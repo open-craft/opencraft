@@ -36,6 +36,10 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
   public componentDidUpdate(prevProps: Props) {
     // Fill fields after finishing loading data
+    this.needToUpdateInstaceFields(prevProps);
+  }
+
+  private needToUpdateInstaceFields = (prevProps: Props) => {
     if (
       prevProps.activeInstance.data === null &&
       this.props.activeInstance.data
@@ -45,7 +49,7 @@ export class InstanceSettingsComponent extends React.PureComponent<
         publicContactEmail: this.props.activeInstance.data.publicContactEmail
       });
     }
-  }
+  };
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;

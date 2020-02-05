@@ -116,52 +116,54 @@ export const updateFieldValue = (
   instanceId: number,
   fieldName: string,
   value: string
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch, getState) => {
   dispatch({
     type: Types.UPDATE_INSTANCE_INFO,
     fieldName
   });
 
-  setTimeout(function() {
+  try {
+    await new Promise(resolve => setTimeout(resolve, 2000)); // sleep for 2 seconds
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      dispatch({
+        type: Types.UPDATE_INSTANCE_INFO_SUCCESS,
+        data: {
+          [fieldName]: value
+        }
+      });
+    }
+  } catch {
     dispatch({
-      type: Types.UPDATE_INSTANCE_INFO_SUCCESS,
+      type: Types.UPDATE_INSTANCE_INFO_FAILURE,
       data: {
         [fieldName]: value
       }
     });
-    // dispatch({
-    //   type: Types.UPDATE_INSTANCE_INFO_FAILURE,
-    //   data: {
-    //     [fieldName]: value
-    //   }
-    // });
-  }, 2000);
-
-  // After action succeeds, dispatch another action to update redeployment toolbar status
+  }
 };
 
 export const getDeploymentStatus = (
   instanceId: number
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch, getState) => {
   dispatch({
     type: Types.GET_DEPLOYMENT_STATUS
   });
 
-  setTimeout(function() {
-    dispatch({
-      type: Types.GET_DEPLOYMENT_STATUS_SUCCESS,
-      data: {
-        status: 'UP_TO_DATE',
-        numberOfChanges: 2
-      }
-    });
-    // dispatch({
-    //   type: Types.GET_DEPLOYMENT_STATUS_FAILURE,
-    //   data: {
-    //     [fieldName]: value
-    //   }
-    // });
-  }, 2000);
+  try {
+    await new Promise(resolve => setTimeout(resolve, 2000)); // sleep for 2 seconds
 
-  // After action succeeds, dispatch another action to update redeployment toolbar status
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      dispatch({
+        type: Types.GET_DEPLOYMENT_STATUS_SUCCESS,
+        data: {
+          status: 'UP_TO_DATE',
+          numberOfChanges: 2
+        }
+      });
+    }
+  } catch {
+    // TODO: When API lands
+  }
 };
