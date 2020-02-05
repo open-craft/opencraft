@@ -490,7 +490,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         instance = self._setup_user_instanace()
         make_test_appserver(instance, status=Status.ConfiguringServer)
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -517,7 +517,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
         app_server.save()
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {'status': 'UP_TO_DATE', 'undeployed_changes': 0})
@@ -537,7 +537,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
         app_server.save()
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -554,7 +554,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         """
         self.client.force_login(self.user_with_instance)
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {'status': 'PREPARING_INSTANCE', 'undeployed_changes': 0})
@@ -572,7 +572,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         instance = self._setup_user_instanace()
         make_test_appserver(instance, status=Status.ConfiguringServer)
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, 400)
@@ -593,7 +593,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         app_server.save()
         make_test_appserver(instance, status=Status.ConfiguringServer)
 
-        url = reverse('api:v2:deployments-detail', args=(self.instance_config.pk,), )
+        url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, 204)

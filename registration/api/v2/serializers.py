@@ -197,7 +197,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
 
 
 # pylint: disable=abstract-method
-class OpenEdXInstanceDeploymentSerializer(serializers.Serializer):
+class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     """
     Serializer with configuration details about the user's Open edX instance.
     """
@@ -205,3 +205,11 @@ class OpenEdXInstanceDeploymentSerializer(serializers.Serializer):
         choices=constants.DEPLOYMENT_STATUS_CHOICES
     )
     undeployed_changes = serializers.IntegerField()
+
+
+# pylint: disable=abstract-method
+class OpenEdXInstanceDeploymentCreateSerializer(serializers.Serializer):
+    """
+    Serializer with configuration details about the user's Open edX instance.
+    """
+    id = serializers.IntegerField()
