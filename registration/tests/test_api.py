@@ -249,7 +249,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.user_without_instance = create_user_and_profile("noinstance.user", "noinstance.user@example.com")
 
-    def _setup_user_instanace(self):
+    def _setup_user_instance(self):
         """
         Set up an instance for the test user.
         """
@@ -373,7 +373,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         make_test_appserver(instance, status=Status.ConfiguringServer)
         response = self.client.post(
             reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,))
@@ -389,7 +389,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         Test that committing changes fails when a user is new.
         """
-        self._setup_user_instanace()
+        self._setup_user_instance()
         EmailAddress.objects.get(
             email=self.instance_config.public_contact_email,
             user=self.user_with_instance,
@@ -410,7 +410,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         self.assertEqual(instance.privacy_policy_url, '')
         self.assertEqual(instance.email, 'contact@example.com')
         self.assertRegex(instance.name, r'Test Instance \d+')
@@ -433,7 +433,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         make_test_appserver(instance, status=Status.ConfiguringServer)
         url = reverse('api:v2:openedx-instance-config-commit-changes', args=(self.instance_config.pk,), )
         response = self.client.post(f"{url}?force=true")
@@ -468,7 +468,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         )
         self.user_without_instance = create_user_and_profile("noinstance.user", "noinstance.user@example.com")
 
-    def _setup_user_instanace(self):
+    def _setup_user_instance(self):
         """
         Set up an instance for the test user.
         """
@@ -487,7 +487,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         make_test_appserver(instance, status=Status.ConfiguringServer)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
@@ -506,7 +506,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         instance.name = self.instance_config.instance_name
         instance.privacy_policy_url = self.instance_config.privacy_policy_url
         instance.email = self.instance_config.public_contact_email
@@ -532,7 +532,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         app_server = make_test_appserver(instance, status=Status.Running)
         app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
         app_server.save()
@@ -569,7 +569,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         Test that trying to stop the first provisioning fails
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         make_test_appserver(instance, status=Status.ConfiguringServer)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
@@ -587,7 +587,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         Test that trying to stop a provisioning succeeds
         """
         self.client.force_login(self.user_with_instance)
-        instance = self._setup_user_instanace()
+        instance = self._setup_user_instance()
         app_server = make_test_appserver(instance, status=Status.Running)
         app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
         app_server.save()

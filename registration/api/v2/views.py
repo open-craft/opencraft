@@ -213,7 +213,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         if not user.is_authenticated:
             return BetaTestApplication.objects.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.filter()
+            return BetaTestApplication.objects.all()
         else:
             return BetaTestApplication.objects.filter(user=self.request.user)
 
