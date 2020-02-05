@@ -278,9 +278,18 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         return Response(status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
+        """
+        List method not allowed.
+        """
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves the deployment status for a given betatest instance.
+
+        This API will check for provisioning appservers or changes in settings
+        that need to be deployed and return a status code to the frontend.
+        """
         application = self.get_object()
         instance = application.instance
         deployment_status = constants.NO_STATUS
@@ -320,6 +329,13 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         )
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Stops all current redeployments.
+
+        This allows the user to cancel an ongoing deployment, note that this can
+        can cancel both user-triggered deployments and OpenCraft triggered
+        deployments. 
+        """
         application = self.get_object()
         instance = application.instance
 

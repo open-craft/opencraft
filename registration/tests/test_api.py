@@ -484,7 +484,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_get_deployment_status_no_active(self, mock_spawn_appserver, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that the correct status is returned when provisioning first instance.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
@@ -503,7 +503,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_get_deployment_status_up_to_date(self, mock_spawn_appserver, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that the correct status is returned when instance is up-to-date.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
@@ -529,7 +529,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_get_deployment_status_pending_changes(self, mock_spawn_appserver, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that the correct status is returned when there's changes to be deployed.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
@@ -550,7 +550,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_get_deployment_status_preparing_instance(self, mock_spawn_appserver, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that the correct status is returned when provisioning first instance.
         """
         self.client.force_login(self.user_with_instance)
 
@@ -566,7 +566,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_cancel_first_deployment_fails(self, mock_spawn_appserver, mock_consul):
         """
-        Test that trying to stop the first provisioning fails
+        Test that trying to stop the first provisioning fails.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
@@ -584,7 +584,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.spawn_appserver')
     def test_cancel_deployment(self, mock_spawn_appserver, mock_consul):
         """
-        Test that trying to stop a provisioning succeeds
+        Test that trying to stop a provisioning succeeds.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
