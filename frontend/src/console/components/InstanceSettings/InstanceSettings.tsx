@@ -36,10 +36,10 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
   public componentDidUpdate(prevProps: Props) {
     // Fill fields after finishing loading data
-    this.needToUpdateInstaceFields(prevProps);
+    this.needToUpdateInstanceFields(prevProps);
   }
 
-  private needToUpdateInstaceFields = (prevProps: Props) => {
+  private needToUpdateInstanceFields = (prevProps: Props) => {
     if (
       prevProps.activeInstance.data === null &&
       this.props.activeInstance.data
