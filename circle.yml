@@ -336,7 +336,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - giovanni/bb-2083-add-redeployment-toolbar
       # Deploy production
       - frontend-build:
           name: frontend-build-production
