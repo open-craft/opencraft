@@ -6,14 +6,21 @@ import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
-import { listUserInstances, getDeploymentStatus } from 'console/actions';
+import {
+  listUserInstances,
+  getDeploymentStatus,
+  performDeployment,
+  cancelDeployment
+} from 'console/actions';
 import messages from './displayMessages';
 
 import './styles.scss';
 
 interface ActionProps {
-  listUserInstances: Function;
+  cancelDeployment: Function;
   getDeploymentStatus: Function;
+  listUserInstances: Function;
+  performDeployment: Function;
 }
 
 interface StateProps extends InstancesModel {}
@@ -26,7 +33,23 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
   public componentDidMount() {
     if (!this.props.loading && this.props.activeInstance.data === null) {
       this.props.listUserInstances();
-      this.props.getDeploymentStatus(15);
+    }
+    setInterval(() => {
+      if (this.props.activeInstance.data) {
+        this.props.getDeploymentStatus(this.props.activeInstance.data.id);
+      }
+    }, 5000);
+  }
+
+  private performDeployment() {
+    if (this.props.activeInstance.data) {
+      this.props.performDeployment(this.props.activeInstance.data.id);
+    }
+  }
+
+  private cancelDeployment() {
+    if (this.props.activeInstance.data) {
+      this.props.cancelDeployment(this.props.activeInstance.data.id);
     }
   }
 
@@ -81,9 +104,17 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         {this.renderHeader()}
 
         <RedeploymentToolbar
-          deployment={this.props.activeInstance.deployment}
-          cancelRedeployment={() => {}}
-          performDeployment={() => {}}
+          deployment={
+            this.props.activeInstance
+              ? this.props.activeInstance.deployment
+              : undefined
+          }
+          cancelRedeployment={() => {
+            this.cancelDeployment();
+          }}
+          performDeployment={() => {
+            this.performDeployment();
+          }}
         />
 
         <div className="console-page-container">
@@ -112,6 +143,8 @@ export const ConsolePage = connect<
   Props,
   RootState
 >((state: RootState) => state.console, {
+  cancelDeployment,
+  getDeploymentStatus,
   listUserInstances,
-  getDeploymentStatus
+  performDeployment
 })(ConsolePageComponent);

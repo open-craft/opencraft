@@ -20,7 +20,10 @@ export enum Types {
   GET_DEPLOYMENT_STATUS_FAILURE = 'GET_DEPLOYMENT_STATUS_FAILURE',
   PERFORM_DEPLOYMENT = 'PERFORM_DEPLOYMENT',
   PERFORM_DEPLOYMENT_SUCCESS = 'PERFORM_DEPLOYMENT_SUCCESS',
-  PERFORM_DEPLOYMENT_FAILURE = 'PERFORM_DEPLOYMENT_FAILURE'
+  PERFORM_DEPLOYMENT_FAILURE = 'PERFORM_DEPLOYMENT_FAILURE',
+  CANCEL_DEPLOYMENT = 'CANCEL_DEPLOYMENT',
+  CANCEL_DEPLOYMENT_SUCCESS = 'CANCEL_DEPLOYMENT_SUCCESS',
+  CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE'
 }
 
 export interface UserInstanceList extends Action {
@@ -81,6 +84,20 @@ export interface PerformDeploymentFailure extends Action {
   readonly errors: any;
 }
 
+export interface CancelDeployment extends Action {
+  readonly type: Types.CANCEL_DEPLOYMENT;
+  readonly instanceId: number;
+}
+
+export interface CancelDeploymentSuccess extends Action {
+  readonly type: Types.CANCEL_DEPLOYMENT_SUCCESS;
+}
+
+export interface CancelDeploymentFailure extends Action {
+  readonly type: Types.CANCEL_DEPLOYMENT_FAILURE;
+  readonly errors: any;
+}
+
 export type ActionTypes =
   | UserInstanceList
   | UserInstanceListSuccess
@@ -93,7 +110,10 @@ export type ActionTypes =
   | GetDeploymentStatusFailure
   | PerformDeployment
   | PerformDeploymentSuccess
-  | PerformDeploymentFailure;
+  | PerformDeploymentFailure
+  | CancelDeployment
+  | CancelDeploymentSuccess
+  | CancelDeploymentFailure;
 
 export const listUserInstances = (): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
@@ -123,7 +143,11 @@ export const updateFieldValue = (
   });
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 2000)); // sleep for 2 seconds
+    await V2Api.instancesOpenedxConfigPartialUpdate({
+      id: String(instanceId),
+      data: { [fieldName]: value }
+    });
+
     const { activeInstance } = getState().console;
     if (activeInstance.data && activeInstance.data.id === instanceId) {
       dispatch({
@@ -151,19 +175,71 @@ export const getDeploymentStatus = (
   });
 
   try {
-    await new Promise(resolve => setTimeout(resolve, 2000)); // sleep for 2 seconds
+    const response = await V2Api.instancesOpenedxDeploymentRead({
+      id: String(instanceId)
+    });
 
     const { activeInstance } = getState().console;
     if (activeInstance.data && activeInstance.data.id === instanceId) {
       dispatch({
         type: Types.GET_DEPLOYMENT_STATUS_SUCCESS,
-        data: {
-          status: 'UP_TO_DATE',
-          numberOfChanges: 2
-        }
+        data: response
       });
     }
-  } catch {
-    // TODO: When API lands
+  } catch (e) {
+    dispatch({
+      type: Types.GET_DEPLOYMENT_STATUS_FAILURE,
+      errors: e
+    });
+  }
+};
+
+export const performDeployment = (
+  instanceId: number
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  dispatch({
+    type: Types.PERFORM_DEPLOYMENT
+  });
+
+  try {
+    await V2Api.instancesOpenedxDeploymentCreate({
+      data: { id: instanceId }
+    });
+
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      // Just dispatch the successful action, the automatic updates will take
+      // care of updating the rest.
+      dispatch({ type: Types.PERFORM_DEPLOYMENT_SUCCESS });
+    }
+  } catch (e) {
+    dispatch({
+      type: Types.PERFORM_DEPLOYMENT_FAILURE,
+      error: e
+    });
+  }
+};
+
+export const cancelDeployment = (
+  instanceId: number
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  dispatch({
+    type: Types.CANCEL_DEPLOYMENT
+  });
+
+  try {
+    await V2Api.instancesOpenedxDeploymentDelete({ id: String(instanceId) });
+
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      // Just dispatch the successful action, the automatic updates will take
+      // care of updating the rest.
+      dispatch({ type: Types.CANCEL_DEPLOYMENT_SUCCESS });
+    }
+  } catch (e) {
+    dispatch({
+      type: Types.CANCEL_DEPLOYMENT_FAILURE,
+      error: e
+    });
   }
 };

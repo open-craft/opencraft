@@ -31,13 +31,32 @@ const messages = {
     defaultMessage: 'Your instance is being updated with the latest settings.',
     description: 'Redeployment status tooltip text.'
   },
-  failedDeployment: {
+  preparingInstance: {
+    defaultMessage: "Status: We're preparing your instance ",
+    description: 'Redeployment status.'
+  },
+  preparingInstanceTooltip: {
+    defaultMessage:
+      'Your instance is being set-up, come back in a few hours to customize it.',
+    description: 'Redeployment status tooltip text.'
+  },
+  pendingChanges: {
+    defaultMessage: 'Status: Pending changes',
+    description: 'Redeployment status.'
+  },
+  pendingChangesTooltip: {
+    defaultMessage:
+      "Your instance is up, but the latest settings aren't deployed yet.",
+    description: 'Redeployment status tooltip text.'
+  },
+  failed: {
     defaultMessage: 'Status: Deployment error',
     description: 'Redeployment status.'
   },
-  failedDeploymentTooltip: {
+  failedTooltip: {
     defaultMessage:
-      'Your deployment failed. Our on-duty staff has been informed, and is starting to work on fixing it.',
+      'Your deployment failed. Our on-duty staff has been informed, and is ' +
+      'starting to work on fixing it.',
     description: 'Redeployment status tooltip text.'
   }
 };

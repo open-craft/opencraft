@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
-import { RedeploymentStatus } from 'global/constants';
 import { CustomStatusPill } from 'ui/components';
 import { DeploymentInfoModel } from 'console/models';
+import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -20,17 +20,21 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
   const handleShowModal = () => setShow(true);
 
   let deploymentDisabled: boolean = true;
-  let numberOfChanges: number = 0;
-  let deploymentStatus: RedeploymentStatus = RedeploymentStatus.NO_STATUS;
+  let undeployedChanges: number = 0;
+  let deploymentStatus: OpenEdXInstanceDeploymentStatusStatusEnum =
+    OpenEdXInstanceDeploymentStatusStatusEnum.NOSTATUS;
 
   if (props.deployment) {
     deploymentStatus = props.deployment.status;
-    numberOfChanges = props.deployment.numberOfChanges;
+    undeployedChanges = props.deployment.undeployedChanges;
     deploymentDisabled =
-      !props.deployment.numberOfChanges ||
-      props.deployment.status === RedeploymentStatus.DEPLOYING ||
-      props.deployment.status === RedeploymentStatus.NO_STATUS ||
-      props.deployment.status === RedeploymentStatus.CANCELLING_DEPLOYMENT;
+      !props.deployment.undeployedChanges ||
+      props.deployment.status ===
+        OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING ||
+      props.deployment.status ===
+        OpenEdXInstanceDeploymentStatusStatusEnum.NOSTATUS ||
+      props.deployment.status ===
+        OpenEdXInstanceDeploymentStatusStatusEnum.PREPARINGINSTANCE;
   }
 
   return (
@@ -51,7 +55,7 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
           <WrappedMessage
             id="deploy"
             messages={messages}
-            values={{ numberOfChanges }}
+            values={{ undeployedChanges }}
           />
         </Button>
       </div>

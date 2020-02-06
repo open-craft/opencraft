@@ -70,11 +70,44 @@ export function consoleReducer(
     case Actions.Types.GET_DEPLOYMENT_STATUS_FAILURE:
       return state;
     case Actions.Types.PERFORM_DEPLOYMENT:
-      return state;
+    case Actions.Types.CANCEL_DEPLOYMENT:
+      // Blocks performing any action until deployment is started or terminated
+      // This adds "deployment" to the list of loading variables/operations
+      return update(state, {
+        activeInstance: {
+          loading: {
+            $push: ['deployment']
+          }
+        }
+      });
     case Actions.Types.PERFORM_DEPLOYMENT_SUCCESS:
-      return state;
+    case Actions.Types.CANCEL_DEPLOYMENT_SUCCESS:
+      // Remove deployment from loading and erase deployment state
+      // The periodic update should update the redeployment bar again in a while
+      // This is to avoid inconsistent states, and can be improved if the backend
+      // returns the deployment status right after a perform/cancel operation.
+      return update(state, {
+        activeInstance: {
+          deployment: { $set: undefined },
+          loading: {
+            $set: state.activeInstance.loading.filter(
+              x => !keys.includes('deployment')
+            )
+          }
+        }
+      });
     case Actions.Types.PERFORM_DEPLOYMENT_FAILURE:
-      return state;
+    case Actions.Types.CANCEL_DEPLOYMENT_FAILURE:
+      // Remove deployment from loading unlock the user to try again
+      return update(state, {
+        activeInstance: {
+          loading: {
+            $set: state.activeInstance.loading.filter(
+              x => !keys.includes('deployment')
+            )
+          }
+        }
+      });
     default:
       return state;
   }

@@ -30,24 +30,14 @@ exports[`Console Page Correctly renders loading page 1`] = `
           className="dot"
           style={
             Object {
-              "backgroundColor": "#ff9b04",
+              "backgroundColor": "grey",
             }
           }
         />
         <div
           className="text"
         >
-          Status: deploying changes
-        </div>
-        <div
-          className="text cancel-deployment nav"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-        >
-          <i
-            className="fas fa-xs fa-times"
-          />
-          Cancel deployment
+          Status: loading
         </div>
       </span>
       <button
@@ -56,7 +46,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
         onClick={[Function]}
         type="button"
       >
-        Deploy (10 updates)
+        Deploy (0 updates)
       </button>
     </div>
   </div>
@@ -308,24 +298,14 @@ exports[`Console Page Correctly renders page with data 1`] = `
           className="dot"
           style={
             Object {
-              "backgroundColor": "#ff9b04",
+              "backgroundColor": "grey",
             }
           }
         />
         <div
           className="text"
         >
-          Status: deploying changes
-        </div>
-        <div
-          className="text cancel-deployment nav"
-          onClick={[Function]}
-          onKeyDown={[Function]}
-        >
-          <i
-            className="fas fa-xs fa-times"
-          />
-          Cancel deployment
+          Status: loading
         </div>
       </span>
       <button
@@ -334,7 +314,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
         onClick={[Function]}
         type="button"
       >
-        Deploy (10 updates)
+        Deploy (0 updates)
       </button>
     </div>
   </div>

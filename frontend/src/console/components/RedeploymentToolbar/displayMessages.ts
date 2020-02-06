@@ -1,6 +1,6 @@
 const messages = {
   deploy: {
-    defaultMessage: 'Deploy ({numberOfChanges} updates)',
+    defaultMessage: 'Deploy ({undeployedChanges} updates)',
     description: 'Deployment button text.'
   }
 };

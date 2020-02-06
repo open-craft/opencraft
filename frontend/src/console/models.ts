@@ -1,4 +1,4 @@
-import { RedeploymentStatus } from 'global/constants';
+import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
 
 export interface InstanceSettingsModel {
   [key: string]: string | number;
@@ -10,8 +10,8 @@ export interface InstanceSettingsModel {
 }
 
 export interface DeploymentInfoModel {
-  status: RedeploymentStatus;
-  numberOfChanges: number;
+  status: OpenEdXInstanceDeploymentStatusStatusEnum;
+  undeployedChanges: number;
 }
 
 // The loading key is used to store field names that are being updated through
@@ -21,7 +21,7 @@ export interface InstancesModel {
   activeInstance: {
     data: InstanceSettingsModel | null;
     feedback: Partial<InstanceSettingsModel>;
-    loading: Array<keyof InstanceSettingsModel>;
+    loading: Array<keyof InstanceSettingsModel | 'deployment'>;
     deployment: DeploymentInfoModel | undefined;
   };
   instances: Array<InstanceSettingsModel>;
