@@ -44,12 +44,6 @@ export interface OpenEdXInstanceConfig {
      */
     publicContactEmail: string;
     /**
-     * What are you going to use the instance for? What are your expectations?
-     * @type {string}
-     * @memberof OpenEdXInstanceConfig
-     */
-    projectDescription?: string;
-    /**
      * URL to the privacy policy.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
@@ -83,7 +77,6 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'subdomain': json['subdomain'],
         'instanceName': json['instance_name'],
         'publicContactEmail': json['public_contact_email'],
-        'projectDescription': !exists(json, 'project_description') ? undefined : json['project_description'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : json['draft_theme_config'],
@@ -102,7 +95,6 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
         'subdomain': value.subdomain,
         'instance_name': value.instanceName,
         'public_contact_email': value.publicContactEmail,
-        'project_description': value.projectDescription,
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
         'draft_theme_config': value.draftThemeConfig,
