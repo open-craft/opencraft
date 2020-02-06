@@ -303,4 +303,9 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         instance.save()
 
         if spawn_on_commit:
-            return spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=retry_attempts)
+            return spawn_appserver(
+                instance.ref.pk,
+                mark_active_on_success=True,
+                deactivate_old_appservers=True,
+                num_attempts=retry_attempts
+            )
