@@ -34,6 +34,7 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin,
 )
+from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -44,9 +45,12 @@ from opencraft.swagger import (
     VALIDATION_RESPONSE,
     viewset_swagger_helper,
 )
+from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
     OpenEdXInstanceConfigSerializer,
+    OpenEdXInstanceDeploymentStatusSerializer,
+    OpenEdXInstanceDeploymentCreateSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -161,53 +165,6 @@ class OpenEdXInstanceConfigViewSet(
         serializer.is_valid(raise_exception=True)
         return Response(status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed"), },
-        manual_parameters=[
-            openapi.Parameter(
-                "force",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_BOOLEAN,
-                description="Force launching a new instance even if one is already in progress.",
-            )
-        ],
-    )
-    @action(detail=True, methods=["post"])
-    def commit_changes(self, request, pk=None):
-        """
-        Commit configuration changes to instance and launch new AppServer.
-
-        This API call will copy over any changes made to the instance config to
-        the actual instance used to launch AppServers and launch a new AppServer
-        with the applied changes.
-
-        It checks if an AppServer is already being provisioned and in that
-        case prevents a new one from being launched unless forced.
-        """
-        force = request.query_params.get("force", False)
-        instance_config: BetaTestApplication = self.get_object()
-        instance = instance_config.instance
-        if instance is None:
-            # For a new user an instance will not exist until they've verified their email.
-            raise ValidationError(
-                "Must verify email before launching an instance", code="email-unverified",
-            )
-
-        if not force and instance.get_provisioning_appservers().exists():
-            raise ValidationError("Instance launch already in progress", code="in-progress")
-
-        if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
-            raise ValidationError(
-                "Updated public email needs to be confirmed.", code="email-unverified"
-            )
-
-        instance_config.commit_changes_to_instance(
-            spawn_on_commit=True,
-            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
-        )
-
-        return Response(status=status.HTTP_200_OK)
-
     def perform_create(self, serializer):
         """
         When a new instance is registered queue its public contact email for verification.
@@ -232,6 +189,167 @@ class OpenEdXInstanceConfigViewSet(
         if not user.is_authenticated:
             return BetaTestApplication.objects.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.filter()
+            return BetaTestApplication.objects.all()
         else:
             return BetaTestApplication.objects.filter(user=self.request.user)
+
+
+class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, GenericViewSet):
+    """
+    Open edX Instance Deployment API.
+
+    This API can be used to manage the configuration for Open edX instances
+    owned by clients.
+    """
+    serializer_class = OpenEdXInstanceDeploymentStatusSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Get `BetaTestApplication` instances owned by current user.
+        For a regular user it should return a single object (for now).
+        """
+        user: User = self.request.user
+        if not user.is_authenticated:
+            return BetaTestApplication.objects.none()
+        elif user.is_staff:
+            return BetaTestApplication.objects.all()
+        else:
+            return BetaTestApplication.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OpenEdXInstanceDeploymentCreateSerializer
+
+        return OpenEdXInstanceDeploymentStatusSerializer
+
+    @swagger_auto_schema(
+        responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed"), },
+        manual_parameters=[
+            openapi.Parameter(
+                "force",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Force launching a new instance even if one is already in progress.",
+            )
+        ],
+    )
+    def create(self, request, *args, **kwargs):
+        """
+        Commit configuration changes to instance and launch new AppServer.
+
+        This API call will copy over any changes made to the instance config to
+        the actual instance used to launch AppServers and launch a new AppServer
+        with the applied changes.
+
+        It checks if an AppServer is already being provisioned and in that
+        case prevents a new one from being launched unless forced.
+        """
+        force = request.query_params.get("force", False)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            instance_config = BetaTestApplication.objects.get(id=serializer.data['id'])
+        except BetaTestApplication.DoesNotExist:
+            raise ValidationError(
+                "The specified instance was not found.", code="instance-not-found",
+            )
+
+        instance = instance_config.instance
+        if instance is None:
+            # For a new user an instance will not exist until they've verified their email.
+            raise ValidationError(
+                "Must verify email before launching an instance", code="email-unverified",
+            )
+
+        if not force and instance.get_provisioning_appservers().exists():
+            raise ValidationError("Instance launch already in progress", code="in-progress")
+
+        if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
+            raise ValidationError(
+                "Updated public email needs to be confirmed.", code="email-unverified"
+            )
+
+        instance_config.commit_changes_to_instance(
+            spawn_on_commit=True,
+            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+    def list(self, request, *args, **kwargs):
+        """
+        List method not allowed.
+        """
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves the deployment status for a given betatest instance.
+
+        This API will check for provisioning appservers or changes in settings
+        that need to be deployed and return a status code to the frontend.
+        """
+        application = self.get_object()
+        instance = application.instance
+        deployment_status = constants.NO_STATUS
+
+        # Get latest active appserver
+        if not instance or not instance.get_active_appservers().exists():
+            deployment_status = constants.PREPARING_INSTANCE
+            num_changes = 0
+        else:
+            deployment_status = constants.UP_TO_DATE
+
+            # Get number of undeployed changes
+            num_changes = sum((
+                application.instance_name != instance.name,
+                application.privacy_policy_url != instance.privacy_policy_url,
+                application.public_contact_email != instance.email,
+                application.use_advanced_theme and application.draft_theme_config != instance.theme_config,
+            ))
+
+            if num_changes != 0:
+                deployment_status = constants.PENDING_CHANGES
+
+            # Check if there's any ongoing provisioning
+            provisioning_appservers = instance.get_provisioning_appservers()
+            if provisioning_appservers:
+                # TODO: Differentiate between user deployments and OpenCraft deployments
+                deployment_status = constants.DEPLOYING
+
+        data = {
+            'undeployed_changes': num_changes,
+            'status': deployment_status,
+        }
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data=OpenEdXInstanceDeploymentStatusSerializer(data).data
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Stops all current redeployments.
+
+        This allows the user to cancel an ongoing deployment, note that this can
+        can cancel both user-triggered deployments and OpenCraft triggered
+        deployments.
+        """
+        application = self.get_object()
+        instance = application.instance
+
+        if not instance.get_active_appservers().exists():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'details': "Can't cancel deployment while server is being prepared."
+                }
+            )
+        # TODO: Prevent appservers provisioned by staff/redeployments to be cancelled
+
+        provisioning_appservers = instance.get_provisioning_appservers()
+        for appserver in provisioning_appservers:
+            appserver.terminate_vm()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
