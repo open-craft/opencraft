@@ -49,6 +49,7 @@ from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
     OpenEdXInstanceConfigSerializer,
+    OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
 )
@@ -179,6 +180,10 @@ class OpenEdXInstanceConfigViewSet(
         """
         instance = serializer.save()
         verify_user_emails(instance.user, instance.public_contact_email)
+
+    @swagger_auto_schema(request_body=OpenEdXInstanceConfigUpdateSerializer)
+    def partial_update(self, request, *args, **kwargs):
+        return super(OpenEdXInstanceConfigViewSet, self).partial_update(request, *args, **kwargs)
 
     def get_queryset(self):
         """
