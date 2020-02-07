@@ -91,7 +91,7 @@ export function consoleReducer(
           deployment: { $set: undefined },
           loading: {
             $set: state.activeInstance.loading.filter(
-              x => !keys.includes('deployment')
+              x => !(x === 'deployment')
             )
           }
         }
@@ -103,7 +103,7 @@ export function consoleReducer(
         activeInstance: {
           loading: {
             $set: state.activeInstance.loading.filter(
-              x => !keys.includes('deployment')
+              x => !(x === 'deployment')
             )
           }
         }

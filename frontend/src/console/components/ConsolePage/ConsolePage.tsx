@@ -99,6 +99,13 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       return this.props.children;
     };
 
+    let deploymentLoading = true;
+    if (this.props.activeInstance && this.props.activeInstance.loading) {
+      deploymentLoading = this.props.activeInstance.loading.includes(
+        'deployment'
+      );
+    }
+
     return (
       <div className="console-page">
         {this.renderHeader()}
@@ -115,6 +122,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
           performDeployment={() => {
             this.performDeployment();
           }}
+          loading={deploymentLoading}
         />
 
         <div className="console-page-container">

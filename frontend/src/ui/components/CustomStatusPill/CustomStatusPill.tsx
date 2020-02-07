@@ -7,6 +7,7 @@ import messages from './displayMessages';
 import './styles.scss';
 
 interface Props {
+  loading: boolean;
   redeploymentStatus: string;
   cancelRedeployment: Function;
 }
@@ -56,17 +57,18 @@ export const CustomStatusPill: React.FC<Props> = (props: Props) => {
           <WrappedMessage id={deploymentStatusText} messages={messages} />
         </div>
         {props.redeploymentStatus ===
-          OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING && (
-          <Nav
-            className="text cancel-deployment"
-            onClick={() => {
-              props.cancelRedeployment();
-            }}
-          >
-            <i className="fas fa-xs fa-times" />
-            <WrappedMessage id="cancelRedeployment" messages={messages} />
-          </Nav>
-        )}
+          OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING &&
+          !props.loading && (
+            <Nav
+              className="text cancel-deployment"
+              onClick={() => {
+                props.cancelRedeployment();
+              }}
+            >
+              <i className="fas fa-xs fa-times" />
+              <WrappedMessage id="cancelRedeployment" messages={messages} />
+            </Nav>
+          )}
       </Badge>
     </OverlayTrigger>
   );

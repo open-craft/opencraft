@@ -11,6 +11,7 @@ interface Props {
   deployment?: DeploymentInfoModel;
   cancelRedeployment: Function;
   performDeployment: Function;
+  loading: boolean;
 }
 
 export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
@@ -28,6 +29,7 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
     deploymentStatus = props.deployment.status;
     undeployedChanges = props.deployment.undeployedChanges;
     deploymentDisabled =
+      !props.loading ||
       !props.deployment.undeployedChanges ||
       props.deployment.status ===
         OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING ||
@@ -41,6 +43,7 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
     <div className="d-flex justify-content-center align-middle redeployment-toolbar">
       <div className="redeployment-nav">
         <CustomStatusPill
+          loading={props.loading}
           redeploymentStatus={deploymentStatus}
           cancelRedeployment={handleShowModal}
         />
@@ -49,7 +52,9 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
           className="float-right loading"
           variant="primary"
           size="lg"
-          onClick={() => {}}
+          onClick={() => {
+            props.performDeployment();
+          }}
           disabled={deploymentDisabled}
         >
           <WrappedMessage
@@ -68,13 +73,19 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
       >
         <Modal.Header>
           <Modal.Title>
-            <p>Are you sure you want to cancel this redeployment?</p>
+            <p>
+              <WrappedMessage
+                id="cancelDeploymentConfirm"
+                messages={messages}
+              />
+            </p>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Your instance is being updated with the latest settings. If you cancel
-          this deployment, your changes wont be lost, but they will need to be
-          redeployed.
+          <WrappedMessage
+            id="cancelDeploymentConfirmText"
+            messages={messages}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -82,10 +93,17 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
             size="lg"
             onClick={handleCloseModal}
           >
-            Close
+            <WrappedMessage id="closeModalButton" messages={messages} />
           </Button>
-          <Button variant="primary" size="lg" onClick={handleCloseModal}>
-            Cancel redeployment
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              props.cancelRedeployment();
+              handleCloseModal();
+            }}
+          >
+            <WrappedMessage id="confirmCancelDeployment" messages={messages} />
           </Button>
         </Modal.Footer>
       </Modal>
