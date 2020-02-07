@@ -771,6 +771,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.first_activated, appserver_2.last_activated)
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -852,6 +853,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -862,7 +864,8 @@ class OpenEdXInstanceTestCase(TestCase):
             mock_disable_monitoring,
             mock_remove_dns_records,
             mock_consul2,
-            mock_consul):
+            mock_consul,
+            mock_appserver_dns_clean_up):
         """
         Test that the archive method works correctly if no appserver is active.
         """
@@ -1252,3 +1255,19 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         appserver2.make_active()
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
         # We haven't implemented cleaning up VM DNS records yet, so we can't test it.
+
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch_services
+    def test_clean_up_dns_records(self, mocks, mock_dns_clean_up):
+        """
+        Test that the DNS records for app servers get removed
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com')
+        instance.spawn_appserver()
+        appserver1 = instance.appserver_set.first()
+        appserver1.make_active()
+        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
+        gandi.api.remove_dns_record('vm1.vm-dns.test.com')
+        self._verify_vm_dns_records('test.com', [])
+        instance.archive()
+        self.assertEqual(mock_dns_clean_up.call_count, 1)
