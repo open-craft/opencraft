@@ -70,7 +70,7 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
     </span>
     <button
       className="float-right loading btn btn-primary btn-lg"
-      disabled={true}
+      disabled={false}
       onClick={[Function]}
       type="button"
     >
