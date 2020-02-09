@@ -20,8 +20,6 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
 
-  console.log(props)
-
   let deploymentDisabled: boolean = true;
   let undeployedChanges: number = 0;
   let deploymentStatus: OpenEdXInstanceDeploymentStatusStatusEnum =
