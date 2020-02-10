@@ -24,6 +24,9 @@ import {
     OpenEdXInstanceConfig,
     OpenEdXInstanceConfigFromJSON,
     OpenEdXInstanceConfigToJSON,
+    OpenEdXInstanceConfigUpdate,
+    OpenEdXInstanceConfigUpdateFromJSON,
+    OpenEdXInstanceConfigUpdateToJSON,
     OpenEdXInstanceDeploymentCreate,
     OpenEdXInstanceDeploymentCreateFromJSON,
     OpenEdXInstanceDeploymentCreateToJSON,
@@ -82,7 +85,7 @@ export interface InstancesOpenedxConfigCreateRequest {
 
 export interface InstancesOpenedxConfigPartialUpdateRequest {
     id: string;
-    data: OpenEdXInstanceConfig;
+    data: OpenEdXInstanceConfigUpdate;
 }
 
 export interface InstancesOpenedxConfigReadRequest {
@@ -488,10 +491,10 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Update instance owned by user
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Configuration API.
      */
-    async instancesOpenedxConfigPartialUpdateRaw(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
+    async instancesOpenedxConfigPartialUpdateRaw(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfigUpdate>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigPartialUpdate.');
         }
@@ -518,17 +521,17 @@ export class V2Api extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: OpenEdXInstanceConfigToJSON(requestParameters.data),
+            body: OpenEdXInstanceConfigUpdateToJSON(requestParameters.data),
         });
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceConfigFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceConfigUpdateFromJSON(jsonValue));
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Update instance owned by user
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Configuration API.
      */
-    async instancesOpenedxConfigPartialUpdate(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<OpenEdXInstanceConfig> {
+    async instancesOpenedxConfigPartialUpdate(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<OpenEdXInstanceConfigUpdate> {
         const response = await this.instancesOpenedxConfigPartialUpdateRaw(requestParameters);
         return await response.value();
     }
@@ -705,8 +708,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Open edX Instance Deployment API.
+     * This allows the user to cancel an ongoing deployment, note that this can can cancel both user-triggered deployments and OpenCraft triggered deployments.
+     * Stops all current redeployments.
      */
     async instancesOpenedxDeploymentDeleteRaw(requestParameters: InstancesOpenedxDeploymentDeleteRequest): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -735,16 +738,49 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Open edX Instance Deployment API.
+     * This allows the user to cancel an ongoing deployment, note that this can can cancel both user-triggered deployments and OpenCraft triggered deployments.
+     * Stops all current redeployments.
      */
     async instancesOpenedxDeploymentDelete(requestParameters: InstancesOpenedxDeploymentDeleteRequest): Promise<void> {
         await this.instancesOpenedxDeploymentDeleteRaw(requestParameters);
     }
 
     /**
-     * This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Open edX Instance Deployment API.
+     * List method not allowed.
+     */
+    async instancesOpenedxDeploymentListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceDeploymentStatus>>> {
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_deployment/`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OpenEdXInstanceDeploymentStatusFromJSON));
+    }
+
+    /**
+     * List method not allowed.
+     */
+    async instancesOpenedxDeploymentList(): Promise<Array<OpenEdXInstanceDeploymentStatus>> {
+        const response = await this.instancesOpenedxDeploymentListRaw();
+        return await response.value();
+    }
+
+    /**
+     * This API will check for provisioning appservers or changes in settings that need to be deployed and return a status code to the frontend.
+     * Retrieves the deployment status for a given betatest instance.
      */
     async instancesOpenedxDeploymentReadRaw(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<runtime.ApiResponse<OpenEdXInstanceDeploymentStatus>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -773,8 +809,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Open edX Instance Deployment API.
+     * This API will check for provisioning appservers or changes in settings that need to be deployed and return a status code to the frontend.
+     * Retrieves the deployment status for a given betatest instance.
      */
     async instancesOpenedxDeploymentRead(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<OpenEdXInstanceDeploymentStatus> {
         const response = await this.instancesOpenedxDeploymentReadRaw(requestParameters);

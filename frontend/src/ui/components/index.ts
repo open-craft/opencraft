@@ -11,3 +11,5 @@ export * from './TextInputField';
 export * from './ErrorPage';
 
 export * from './ContentPage';
+
+export * from './CustomStatusPill';
