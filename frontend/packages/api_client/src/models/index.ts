@@ -5,6 +5,7 @@ export * from './InstanceReferenceDetailed';
 export * from './InstanceReferenceMinimal';
 export * from './OpenEdXAppServer';
 export * from './OpenEdXInstanceConfig';
+export * from './OpenEdXInstanceConfigUpdate';
 export * from './OpenEdXInstanceDeploymentCreate';
 export * from './OpenEdXInstanceDeploymentStatus';
 export * from './OpenStackServer';
