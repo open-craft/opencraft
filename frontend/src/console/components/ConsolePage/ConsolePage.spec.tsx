@@ -26,7 +26,17 @@ describe("Console Page", function() {
         {
           console: {
             loading: false,
-            selectedInstance: 0,
+            activeInstance: {
+              data: {
+                id: 1,
+                instanceName: "test",
+                subdomain: "test",
+              },
+              deployment: {
+                status: "NO_STATUS",
+                undeployedChanges: 0
+              }
+            },
             instances: [{
               id: 1,
               instanceName: "test",

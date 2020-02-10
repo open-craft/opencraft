@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<span
+  className="status-pill badge badge-pill badge-primary"
+  onBlur={[Function]}
+  onFocus={[Function]}
+  onMouseOut={[Function]}
+  onMouseOver={[Function]}
+>
+  <span
+    className="dot"
+    style={
+      Object {
+        "backgroundColor": "grey",
+      }
+    }
+  />
+  <div
+    className="text"
+  >
+    Status: loading
+  </div>
+</span>
+`;

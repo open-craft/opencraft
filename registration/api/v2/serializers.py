@@ -196,6 +196,23 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         )
 
 
+class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
+    """
+    A version of OpenEdXInstanceConfigSerializer that excludes the 'id' field and makes
+    all other fields optional. Used for editing existing items.
+    """
+    EXCLUDE_FIELDS = ("id",)
+
+    def __init__(self, *args, **kwargs):
+        """ Override fields """
+        super().__init__(*args, **kwargs)
+        for field_name in self.EXCLUDE_FIELDS:
+            self.fields.pop(field_name)
+        # Mark all fields as optional:
+        for field in self.fields.values():
+            field.required = False
+
+
 # pylint: disable=abstract-method
 class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     """
