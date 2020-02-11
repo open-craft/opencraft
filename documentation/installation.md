@@ -10,7 +10,7 @@ system.
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
-configure the developer environment as needed Vagrant uses
+configure the developer environment as needed, Vagrant uses
 [Ansible](https://www.ansible.com/).
 
 You will need to install all these tools before you can set up your development
@@ -37,7 +37,7 @@ repository – most notably Ansible:
     . ~/venvs/ansible/bin/activate
     pip install -r deploy/requirements.txt
 
-Now you can run
+Now you can run:
 
     vagrant up
 
@@ -49,7 +49,7 @@ command:
 
     vagrant ssh
 
-To check if everything is set up properly you can run ``make test.unit`` inside
+To check if everything is set up properly, you can run ``make test.unit`` inside
 your new environment.
 
 Vagrant will set up a VirtualBox share mapping your local development directory
@@ -57,7 +57,7 @@ to `/vagrant` inside the virtual machine. Any changes you make locally will be
 reflected inside the virtual machine automatically.
 
 Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
-Once you have set everything up you will be able to access the development
+Once you have set everything up, you will be able to access the development
 server at http://localhost:5000/ using your web browser.
 
 ### Local installation (skip this if using Vagrant)
