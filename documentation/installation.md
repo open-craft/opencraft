@@ -13,8 +13,9 @@ virtual machines with the developer environment set up. To provision and
 configure the developer environment as needed, Vagrant uses
 [Ansible](https://www.ansible.com/).
 
-You will need to install all these tools before you can set up your development
-environment:
+First, make sure that Intel VT-x/AMD-v virtualization is enabled in your BIOS / UEFI
+firmware. Then, you will need to install all these tools before you can set up your
+development environment:
 
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
