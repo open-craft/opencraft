@@ -77,18 +77,25 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
   };
 
   render() {
+    let isDomainExternal = false;
+    let domainName = this.props.registrationData.subdomain;
+    if (this.props.registrationData.externalDomain !== '') {
+      isDomainExternal = true;
+      domainName = this.props.registrationData.externalDomain;
+    }
+
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
         currentStep={2}
       >
         <RedirectToCorrectStep
-          currentPageStep={1}
+          currentPageStep={2}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <DomainSuccessJumbotron
-          domain={this.props.registrationData.subdomain}
-          domainIsExternal={this.props.registrationData.domainIsExternal}
+          domain={domainName}
+          domainIsExternal={isDomainExternal}
         />
         <Form className="secure-domain-form">
           <h2>
