@@ -20,10 +20,14 @@ development environment:
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
-Once you have these tools installed, you will need to download the [Ansible
-playbooks](https://github.com/open-craft/ansible-playbooks) used to build the
-Vagrant instance.  If you haven't checked it out yet, you can clone it into the
-`deploy/` subdirectory using this command at the root of the repository:
+Once you have these tools installed, download the [Ocim repository]
+(https://github.com/open-craft/opencraft) if you have not already done it.
+
+    git clone https://github.com/open-craft/opencraft ocim
+    cd ocim
+
+Also download the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks)
+used to build the Vagrant instance into the `deploy/` subdirectory:
 
     git clone https://github.com/open-craft/ansible-playbooks deploy
 
