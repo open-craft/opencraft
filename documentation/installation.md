@@ -26,8 +26,10 @@ Vagrant instance.  If you haven't checked it out yet, you can clone it into the
 
     git clone https://github.com/open-craft/ansible-playbooks deploy
 
-If you already have a clone of that repo, you can also create a symlink `deploy`
-pointing to your clone.
+If you already have a clone of that repository, create a symlink `deploy`
+pointing to it instead:
+
+    ln -s <cloned_repo_path> deploy
 
 Create a new virtualenv to install the dependencies of the `ansible-playbooks`
 repository – most notably Ansible:
