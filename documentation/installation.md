@@ -60,6 +60,12 @@ command:
 
     vagrant ssh
 
+Inside the virtual machine, set HUEY_ALWAYS_EAGER to false in
+/home/vagrant/opencraft/.env. Also, create a superuser account which will
+be used to log in to Ocim:
+
+    make manage createsuperuser
+
 To check if everything is set up properly, you can run ``make test.unit`` inside
 your new environment.
 
@@ -68,8 +74,10 @@ to `/vagrant` inside the virtual machine. Any changes you make locally will be
 reflected inside the virtual machine automatically.
 
 Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
-Once you have set everything up, you will be able to access the development
-server at http://localhost:5000/ using your web browser.
+Once you have set everything up, you will be able to access the home webpage of
+the development server at http://localhost:5000/ using your web browser. Log in
+with the previously created superuser account credentials and you will then be
+redirected to the Ocim webpage which lists the Open edX instances.
 
 ### Local installation (skip this if using Vagrant)
 
