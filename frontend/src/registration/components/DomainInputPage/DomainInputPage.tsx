@@ -83,7 +83,7 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
         {
           subdomain: this.state.subdomain
         },
-        RegistrationSteps.CUSTOM_DOMAIN
+        RegistrationSteps.INSTANCE
       );
     }
   };
