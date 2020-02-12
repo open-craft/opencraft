@@ -241,7 +241,7 @@ class DomainNameInstance(models.Model):
         """
         return u'{}heartbeat?extended'.format(self.url)
 
-    def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches
+    def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches, useless-suppression
         """
         Set default values before saving the instance.
         """
