@@ -61,15 +61,17 @@ class Command(BaseCommand):
         target_fork, pr_number = pr_url.path[1:].split('/pull/')
         pr = get_pr_by_number(target_fork, pr_number)
         instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, None)
+        # Set the playbook name to None so that it is auto-generated based on the release version
         instance.configuration_playbook_name = None
+        # Set release-specific configuration parameters
         for release_name, release_config in RELEASE_BRANCH_MAP.items():
             if release_name in pr.target_branch:
                 for key, val in release_config.items():
                     setattr(instance, key, val)
         instance.save()
-        if created:
-            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
-        else:
-            self.stderr.write(self.style.ERROR(
-                f"Failed to create watched pull request for {pr_url.geturl()}"
+        if not created:
+            self.stderr.write(self.style.WARNING(
+                "The specified PR already has a sandbox instance. Updating existing instance."
             ))
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+
