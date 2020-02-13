@@ -74,4 +74,3 @@ class Command(BaseCommand):
                 "The specified PR already has a sandbox instance. Updating existing instance."
             ))
         spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
-
