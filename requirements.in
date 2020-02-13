@@ -58,7 +58,7 @@ os-client-config==1.32.0
 pep257==0.7.0
 pep8==1.7.1
 pep8-naming==0.4.1
-Pillow==6.0.0
+Pillow==6.2.0
 pip-tools==4.1.0
 prospector==1.1.4
 psycopg2==2.8.3
