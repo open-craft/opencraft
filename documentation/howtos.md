@@ -8,6 +8,9 @@ service. However, support is available to manually enable those services. To do 
   that doesn't include this, the following extra cronjob can be added to extra
   configuration:
 
+TODO: fix the below; doesn't work because discovery user not provisioned at
+that stage
+
 ```
 EDXAPP_ADDITIONAL_CRON_JOBS:
 - name: "discovery: daily course metadata refresh"
@@ -36,6 +39,7 @@ ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
 **Notes**:
 
 TODO: clarify why common_hostname set
+
 * We need to set the `COMMON_HOSTNAME` to something other than the FQDN, so
   that API requests made on the server can be properly routed through the load
   balancer-terminated SSL connection.  This is required because, by default, the
@@ -52,18 +56,50 @@ Once the spawn is complete, you'll need to take the following steps to finish se
 
 1. Create/choose a staff user to use for the OAuth2 clients.
    Ensure the staff user has a user profile associated (i.e. set a Full Name).
-1. In Django Admin > OAuth2 > Clients, there should already be clients created
-   for ecommerce and discovery.
+1. In Django Admin > OAuth2 > Clients (`/admin/oauth2/client/`), there should
+   already be clients created for ecommerce and discovery.
    If not, [create and register new clients](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#configure-edx-openid-connect-oidc)
    for each service.  You'll need the client IDs and client secrets for the next
-   steps.
-   Ensure that both clients are attached to the staff user updated above.
+   steps.  Ensure that both clients are attached to the staff user updated above.
 1. In the ecommerce env, add a Site, Partner, and Site Configuration as per the
    instructions in the [edX ecommerce docs](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#add-another-site-partner-and-site-configuration).
    Use the partner code from `ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`.
+   Eg.
+
+   ```
+   sudo -u ecommerce -Hs
+   cd
+   source ecommerce_env
+   source venvs/ecommerce/bin/activate
+   cd ecommerce
+   python manage.py create_or_update_site \
+     --site-name='My Site E-Commerce' \
+     --site-domain='ecommerce.external.lms.domain' \
+     --partner-code='partn' \ # this is limited to only a few characters
+     --partner-name='Partner Name' \
+     --lms-url-root='https://external.lms.domain' \
+     --client-id='<ecommerce_worker oauth client id>' \
+     --client-secret='<ecommerce_worker oauth client secret>' \
+     --from-email='noreply@todo.external.lms.domain' \
+     --discovery_api_url='https://discovery.external.lms.domain'
+   ```
 1. In the discovery env, configure a partner using
    [`create_or_update_partner`](https://github.com/edx/course-discovery/blob/master/course_discovery/apps/core/management/commands/create_or_update_partner.py).
    Use the same partner code as what you used for ecommerce.
+
+   ```
+   sudo -u discovery -Hs
+   cd
+   source ecommerce_env
+   source venvs/discovery/bin/activate
+   cd discovery
+   # TODO: what should --site-domain be here?
+   python manage.py create_or_update_partner \
+     --site-id=1 \
+     --site-domain='discovery.external.lms.domain' \
+     --code='partn' \
+     --name='Partner Name'
+   ```
 1. [Configure LMS to use ecommerce](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#switch-from-shoppingcart-to-e-commerce)
 
 Test your configuration:
