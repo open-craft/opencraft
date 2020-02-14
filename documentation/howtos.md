@@ -80,12 +80,14 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --lms-url-root='https://external.lms.domain' \
      --client-id='<ecommerce_worker oauth client id>' \
      --client-secret='<ecommerce_worker oauth client secret>' \
-     --from-email='noreply@todo.external.lms.domain' \
+     --from-email='noreply@todo.external.lms.domain' \ # TODO: what should this be?
      --discovery_api_url='https://discovery.external.lms.domain'
    ```
 1. In the discovery env, configure a partner using
    [`create_or_update_partner`](https://github.com/edx/course-discovery/blob/master/course_discovery/apps/core/management/commands/create_or_update_partner.py).
    Use the same partner code as what you used for ecommerce.
+
+   # TODO: does this need extra args, like api urls?
 
    ```
    sudo -u discovery -Hs
