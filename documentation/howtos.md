@@ -24,6 +24,9 @@ EDXAPP_ADDITIONAL_CRON_JOBS:
 * Set these extra variables on the instance:
 
 ```
+# prevent creating example partners; this isn't required, and will cause provision errors later
+ecommerce_create_demo_data: false
+
 SANDBOX_ENABLE_DISCOVERY: yes
 SANDBOX_ENABLE_ECOMMERCE: yes
 DISCOVERY_VERSION: 'open-release/ginkgo.1' # match version to edx version
