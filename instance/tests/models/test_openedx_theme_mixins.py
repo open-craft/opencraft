@@ -26,6 +26,7 @@ from unittest.mock import patch
 
 import ddt
 import yaml
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test.utils import override_settings
 
@@ -92,6 +93,8 @@ class OpenEdXThemeMixinTestCase(TestCase):
             parsed_vars = yaml.load(variables, Loader=yaml.SafeLoader) or {}
             expected_settings = {
                 'SIMPLETHEME_ENABLE_DEPLOY': True,
+                'EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO': settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO,
+                'EDXAPP_COMPREHENSIVE_THEME_VERSION': settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION,
                 'SIMPLETHEME_SASS_OVERRIDES': [
                     {'variable': 'link-color',
                      'value': '#003344', },
@@ -186,3 +189,54 @@ class OpenEdXThemeMixinTestCase(TestCase):
             instance.get_contrasting_font_color(bg_color),
             font_color
         )
+
+    # pylint: disable=too-many-locals
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_v1_config_chosen_when_theme_config_provided(self, mock_consul):
+        """
+        Test that when theme_config is provided, the v1 version of the theme configuration is generated.
+        """
+        instance = OpenEdXInstanceFactory(
+            name='Test v1 theme config',
+            deploy_simpletheme=True,
+            theme_config={'version': 1, 'link-color': '#123456'}
+        )
+        user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
+        self.make_test_application(instance, user)
+        appserver = make_test_appserver(instance)
+
+        # Test the results
+        self.assertTrue(instance.deploy_simpletheme)
+        # We check 2 times: one time just the theme vars, next whether they're in the final list
+        ansible_theme_vars = instance.get_theme_settings()
+        ansible_vars = appserver.configuration_settings
+        for variables in (ansible_theme_vars, ansible_vars):
+            parsed_vars = yaml.load(variables, Loader=yaml.SafeLoader) or {}
+            expected_settings = {
+                'SIMPLETHEME_ENABLE_DEPLOY': True,
+                'SIMPLETHEME_SASS_OVERRIDES': [
+                    {'variable': 'link-color',
+                     'value': '#123456', },
+                ],
+                'EDXAPP_DEFAULT_SITE_THEME': 'simple-theme',
+                'EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO': settings.SIMPLE_THEME_SKELETON_THEME_REPO,
+                'EDXAPP_COMPREHENSIVE_THEME_VERSION': settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
+            }
+            for ansible_var, value in expected_settings.items():
+                self.assertEqual(value, parsed_vars[ansible_var])
+
+            self.assertNotIn('SIMPLETHEME_EXTRA_SASS', parsed_vars)
+
+            # We check that the files are in URLs
+            # If this fails in local tests it can be because you don't have S3 upload enabled
+            # (check the .env or .env.test file for MEDIAFILES_S3_ENABLE and login info)
+            files = parsed_vars['SIMPLETHEME_STATIC_FILES_URLS']
+            self.assertEqual(len(files), 2)
+            logo, favicon = files
+            self.assertEqual(logo['dest'], 'lms/static/images/logo.png')
+            self.assertEqual(favicon['dest'], 'lms/static/images/favicon.ico')
+            self.assertIn('opencraft_logo_small.png', logo['url'])
+            self.assertIn('favicon.ico', favicon['url'])
