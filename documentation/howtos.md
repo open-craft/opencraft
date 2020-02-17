@@ -73,34 +73,35 @@ Once the spawn is complete, you'll need to take the following steps to finish se
    source venvs/ecommerce/bin/activate
    cd ecommerce
    python manage.py create_or_update_site \
-     --site-name='My Site E-Commerce' \
-     --site-domain='ecommerce.external.lms.domain' \
-     --partner-code='partn' \ # this is limited to only a few characters
-     --partner-name='Partner Name' \
-     --lms-url-root='https://external.lms.domain' \
-     --client-id='<ecommerce_worker oauth client id>' \
-     --client-secret='<ecommerce_worker oauth client secret>' \
-     --from-email='noreply@todo.external.lms.domain' \ # TODO: what should this be?
-     --discovery_api_url='https://discovery.external.lms.domain'
+     --site-name 'My Site E-Commerce' \
+     --site-domain 'ecommerce.lms.external.domain' \
+     --partner-code 'partn_id' \ # this is limited to only a few characters
+     --partner-name 'Partner Name' \
+     --lms-url-root 'https://lms.external.domain' \
+     --client-id '{ecommerce_worker oauth client id}' \
+     --client-secret '{ecommerce_worker oauth client secret}' \
+     --from-email 'noreply@todo.lms.external.domain' \ # TODO: what should this be?
+     --discovery_api_url 'https://discovery.external.lms.domain'
    ```
 1. In the discovery env, configure a partner using
    [`create_or_update_partner`](https://github.com/edx/course-discovery/blob/master/course_discovery/apps/core/management/commands/create_or_update_partner.py).
    Use the same partner code as what you used for ecommerce.
 
-   # TODO: does this need extra args, like api urls?
-
    ```
    sudo -u discovery -Hs
    cd
-   source ecommerce_env
+   source discovery_env
    source venvs/discovery/bin/activate
    cd discovery
    # TODO: what should --site-domain be here?
    python manage.py create_or_update_partner \
-     --site-id=1 \
-     --site-domain='discovery.external.lms.domain' \
-     --code='partn' \
-     --name='Partner Name'
+     --site-id 1 \
+     --site-domain 'external.lms.domain' \
+     --code 'partn_id' \
+     --name 'Montessori' \
+     --oidc-url-root 'https://external.lms.domain/oauth2' \
+     --oidc-key '{discovery oauth client id}' \
+     --oidc-secret '{discovery oauth client secret}'
    ```
 1. [Configure LMS to use ecommerce](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#switch-from-shoppingcart-to-e-commerce)
 
