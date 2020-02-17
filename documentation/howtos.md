@@ -113,7 +113,9 @@ Test your configuration:
 
 1. Verify that the discovery cronjob runs without errors:
 
-        sudo -s -c . /edx/app/discovery/discovery_env; /edx/bin/manage.discovery refresh_course_metadata
+        sudo -u discovery -Hs
+        source /edx/app/discovery/discovery_env
+        /edx/bin/manage.discovery refresh_course_metadata
 
 Useful references:
 
