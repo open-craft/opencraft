@@ -278,7 +278,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         self.is_active = active
         self.save()
         self.instance.reconfigure_load_balancer()
-        appserver_num = self.name[-1]
+        appserver_num = self.name.split()[-1]
         if active:
             self.instance.enable_monitoring()
             self.instance.set_active_vm_dns_record(appserver_num, self.server.public_ip)

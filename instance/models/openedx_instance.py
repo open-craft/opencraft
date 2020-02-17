@@ -425,7 +425,7 @@ class OpenEdXInstance(
         self.logger.info('Archiving instance started.')
         self.disable_monitoring()
         for appserver in self.get_active_appservers():
-            appserver_num = appserver.name[-1]
+            appserver_num = appserver.name.split()[-1]
             self.clean_up_appserver_dns_record(appserver_num)
         self.remove_dns_records(ignore_errors=ignore_errors)
         if self.load_balancing_server is not None:
