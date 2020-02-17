@@ -8,14 +8,14 @@ service. However, support is available to manually enable those services. To do 
   that doesn't include this, the following extra cronjob can be added to extra
   configuration:
 
-TODO: fix the below; doesn't work because discovery user not provisioned at
-that stage
-
 ```
+# must add as root cronjob, even though we want to run the task as the
+# discovery user, because these cronjobs are added before the discovery user is
+# created.
 EDXAPP_ADDITIONAL_CRON_JOBS:
 - name: "discovery: daily course metadata refresh"
-  user: "{{ discovery_user }}"
-  job: ". {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery refresh_course_metadata"
+  user: "root"
+  job: "sudo -u discovery bash -c 'source {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery refresh_course_metadata'"
   hour: "1"
   minute: "43"
   day: "*"
