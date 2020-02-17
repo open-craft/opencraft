@@ -5,33 +5,30 @@
 #    pip-compile
 #
 -e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular
-aioredis==1.3.0           # via channels-redis
-appdirs==1.4.3            # via openstacksdk
-asgiref==3.2.2            # via channels, channels-redis, daphne
-asn1crypto==0.24.0        # via cryptography
+aioredis==1.3.1           # via channels-redis
+appdirs==1.4.3            # via openstacksdk, virtualenv
+asgiref==3.2.3            # via channels, channels-redis, daphne
 astroid==2.1.0            # via pylint, pylint-celery, requirements-detector
 async-timeout==3.0.1      # via aioredis
-attrs==19.1.0             # via automat, cmd2, jsonschema, service-identity, twisted
-autobahn==19.10.1         # via daphne
-automat==0.7.0            # via twisted
-babel==2.7.0              # via osc-lib, oslo.i18n, python-cinderclient, python-novaclient, python-openstackclient
+attrs==19.3.0             # via automat, jsonschema, service-identity, twisted
+autobahn==20.2.1          # via daphne
+automat==0.8.0            # via twisted
+babel==2.8.0              # via osc-lib, oslo.i18n, python-cinderclient, python-novaclient, python-openstackclient
 backcall==0.1.0           # via ipython
-backports.functools-lru-cache==1.5  # via cheroot
 beautifulsoup4==4.7.1
 boto3==1.9.174
 boto==2.48.0
-botocore==1.12.212        # via boto3, s3transfer
-certifi==2019.6.16        # via requests
-cffi==1.12.3              # via cryptography
+botocore==1.12.253        # via boto3, s3transfer
+certifi==2019.11.28       # via requests
+cffi==1.14.0              # via cryptography
 channels==2.3.0
 channels_redis==2.4.0
 chardet==3.0.4            # via requests
-cheroot==6.5.6            # via cherrypy
+cheroot==8.3.0            # via cherrypy
 cherrypy==18.1.1
 click==7.0                # via pip-tools
-cliff==2.15.0             # via osc-lib, python-openstackclient
-cmd2==0.9.16              # via cliff
-colorama==0.4.1           # via cmd2
+cliff==2.18.0             # via osc-lib, python-openstackclient
+cmd2==0.8.9               # via cliff
 colour==0.1.5
 constantly==15.1.0        # via twisted
 contextlib2==0.5.5        # via schema
@@ -39,12 +36,13 @@ cookies==2.2.1
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.5.3
-cryptography==2.7         # via autobahn, openstacksdk, pyopenssl, service-identity
+cryptography==2.8         # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
 cssutils==1.0.2           # via pynliner
-daphne==2.3.0             # via channels
-ddt==1.2.1
-debtcollector==1.21.0     # via oslo.config, oslo.utils, python-keystoneclient
-decorator==4.4.0          # via dogpile.cache, ipython, openstacksdk, traitlets
+daphne==2.4.1             # via channels
+ddt==1.2.2
+debtcollector==2.0.0      # via oslo.config, oslo.utils, python-keystoneclient
+decorator==4.4.1          # via dogpile.cache, ipython, openstacksdk, traitlets
+distlib==0.3.0            # via virtualenv
 django-appconf==1.0.3     # via django-compressor
 django-compressor==2.3
 django-cors-headers==3.2.0
@@ -59,30 +57,32 @@ django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
-django==2.2.9
+django==2.2.10
 djangorestframework-simplejwt==4.4.0
 djangorestframework==3.9.4
 dns-lexicon==3.3.13
 docutils==0.14
 dodgy==0.1.9
-dogpile.cache==0.7.1      # via openstacksdk
+dogpile.cache==0.9.0      # via openstacksdk
 drf-yasg==1.17.0
 entrypoints==0.3
 factory-boy==2.12.0
-faker==1.0.7
+faker==4.0.0
+filelock==3.0.12          # via virtualenv
 flake8-polyfill==1.0.2
 flake8==3.5.0
 freezegun==0.3.12
 future==0.17.1
 futures==3.1.1
-gitdb2==2.0.5             # via gitpython
+gitdb2==2.0.6             # via gitpython
 gitpython==2.1.11
 gunicorn==19.9.0
-hiredis==1.0.0            # via aioredis
+hiredis==1.0.1            # via aioredis
 honcho==1.0.1
 huey==2.1.0
 hyperlink==19.0.0         # via twisted
 idna==2.8
+importlib-metadata==1.5.0  # via jsonschema, virtualenv
 incremental==17.5.0       # via twisted
 inflection==0.3.1         # via drf-yasg
 ipdb==0.12
@@ -91,57 +91,57 @@ ipython==7.5.0
 iso8601==0.1.12
 isort==4.3.20
 itypes==1.1.0             # via coreapi
-jaraco.functools==2.0     # via tempora
-jedi==0.15.1              # via ipython
-jinja2==2.10.3            # via coreschema
+jaraco.functools==3.0.0   # via cheroot, tempora
+jedi==0.16.0              # via ipython
+jinja2==2.11.1            # via coreschema
 jmespath==0.9.4           # via boto3, botocore, openstacksdk
-jsonpatch==1.24           # via openstacksdk, warlock
+jsonpatch==1.25           # via openstacksdk, warlock
 jsonpointer==2.0          # via jsonpatch
-jsonschema==3.0.2         # via warlock
+jsonschema==3.2.0         # via warlock
 keystoneauth1==3.14.0
-lazy-object-proxy==1.4.1  # via astroid
-libsass==0.19.2           # via django-libsass
+lazy-object-proxy==1.4.3  # via astroid
+libsass==0.19.4           # via django-libsass
 markupsafe==1.1.1         # via jinja2
 mccabe==0.6.1
-more-itertools==7.2.0     # via cheroot, cherrypy, jaraco.functools
-msgpack==0.6.1            # via channels-redis, oslo.serialization
-munch==2.3.2              # via openstacksdk
+more-itertools==8.2.0     # via cheroot, cherrypy, jaraco.functools
+msgpack==0.6.2            # via channels-redis, oslo.serialization
+munch==2.5.0              # via openstacksdk
 mysqlclient==1.4.2.post1
 netaddr==0.7.19           # via oslo.config, oslo.utils
 netifaces==0.10.9         # via openstacksdk, oslo.utils
 openstacksdk==0.31.1
 os-client-config==1.32.0
 os-service-types==1.7.0   # via keystoneauth1, openstacksdk
-osc-lib==1.13.0           # via python-openstackclient
-oslo.config==6.11.0       # via python-keystoneclient
-oslo.i18n==3.23.1         # via osc-lib, oslo.config, oslo.utils, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient
-oslo.serialization==2.29.1  # via python-keystoneclient, python-novaclient
-oslo.utils==3.41.0        # via osc-lib, oslo.serialization, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient
-packaging==19.2           # via drf-yasg
-parso==0.5.1              # via jedi
-pbr==5.4.2                # via cliff, debtcollector, keystoneauth1, openstacksdk, os-service-types, osc-lib, oslo.i18n, oslo.serialization, oslo.utils, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient, stevedore
+osc-lib==2.0.0            # via python-openstackclient
+oslo.config==8.0.0        # via python-keystoneclient
+oslo.i18n==3.25.1         # via osc-lib, oslo.config, oslo.utils, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient
+oslo.serialization==3.0.0  # via python-keystoneclient, python-novaclient
+oslo.utils==4.0.0         # via osc-lib, oslo.serialization, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient
+packaging==20.1           # via drf-yasg
+parso==0.6.1              # via jedi
+pbr==5.4.4                # via cliff, debtcollector, keystoneauth1, openstacksdk, os-service-types, osc-lib, oslo.i18n, oslo.serialization, oslo.utils, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient, stevedore
 pep257==0.7.0
 pep8-naming==0.4.1
 pep8==1.7.1
-pexpect==4.7.0            # via ipython
+pexpect==4.8.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pillow==6.0.0
-pip-tools==4.1.0
-portend==2.5              # via cherrypy
+pillow==7.0.0
+pip-tools==4.4.1
+portend==2.6              # via cherrypy
 prettytable==0.7.2        # via cliff, python-cinderclient, python-glanceclient, python-novaclient
-prompt-toolkit==2.0.9     # via ipython
+prompt-toolkit==2.0.10    # via ipython
 prospector==1.1.4
 psycopg2==2.8.3
 ptyprocess==0.6.0         # via pexpect
-pyasn1-modules==0.2.7     # via service-identity
-pyasn1==0.4.7             # via pyasn1-modules, service-identity
+pyasn1-modules==0.2.8     # via service-identity
+pyasn1==0.4.8             # via pyasn1-modules, service-identity
 pycodestyle==2.3.1
 pycparser==2.19           # via cffi
-pycryptodomex==3.8.2      # via pyjwkest
-pydocstyle==4.0.1         # via prospector
+pycryptodomex==3.9.6      # via pyjwkest
+pydocstyle==5.0.2         # via prospector
 pyflakes==1.6.0
-pygments==2.4.2           # via ipython
-pyhamcrest==1.9.0         # via twisted
+pygments==2.5.2           # via ipython
+pyhamcrest==2.0.0         # via twisted
 pyjwkest==1.4.0
 pyjwt==1.7.1              # via djangorestframework-simplejwt
 pylint-celery==0.3
@@ -151,13 +151,13 @@ pylint-plugin-utils==0.5
 pylint==2.2.3
 pymongo==3.8.0
 pynliner==0.8.0           # via django-inlinecss
-pyopenssl==19.0.0         # via python-glanceclient
-pyparsing==2.4.2          # via cliff, oslo.utils, packaging
+pyopenssl==19.1.0         # via python-glanceclient, requests, twisted
+pyparsing==2.4.6          # via cliff, cmd2, oslo.utils, packaging
 pyperclip==1.7.0          # via cmd2
-pyrsistent==0.15.4        # via jsonschema
-python-cinderclient==4.2.1  # via python-openstackclient
+pyrsistent==0.15.7        # via jsonschema
+python-cinderclient==5.0.0  # via python-openstackclient
 python-consul==1.1.0
-python-dateutil==2.8.0    # via botocore, faker, freezegun
+python-dateutil==2.8.1    # via botocore, faker, freezegun
 python-glanceclient==2.16.0
 python-keystoneclient==3.19.0
 python-magic==0.4.15      # via django-storage-swift
@@ -176,36 +176,36 @@ responses==0.10.6
 rfc3986==1.3.2
 rjsmin==1.1.0             # via django-compressor
 ruamel.yaml.clib==0.2.0   # via ruamel.yaml
-ruamel.yaml==0.16.5       # via drf-yasg
+ruamel.yaml==0.16.10      # via drf-yasg
 s3transfer==0.2.1         # via boto3
 schema==0.7.1
 selenium==2.53.6
-service_identity==18.1.0
+service-identity==18.1.0
 setoptconf==0.2.0         # via prospector
-simplejson==3.16.0        # via osc-lib, python-cinderclient, python-novaclient
-six==1.12.0
+simplejson==3.17.0        # via osc-lib, python-cinderclient, python-novaclient
+six==1.14.0
 smmap2==2.0.5             # via gitdb2
-snowballstemmer==1.9.0    # via pydocstyle
-soupsieve==1.9.3          # via beautifulsoup4
+snowballstemmer==2.0.0    # via pydocstyle
+soupsieve==1.9.5          # via beautifulsoup4
 sqlparse==0.3.0           # via django, django-debug-toolbar
-stevedore==1.30.1         # via cliff, keystoneauth1, osc-lib, oslo.config, python-keystoneclient
-tempora==1.14.1           # via portend
+stevedore==1.32.0         # via cliff, keystoneauth1, osc-lib, oslo.config, python-keystoneclient
+tempora==2.1.0            # via portend
 testfixtures==6.10.0
-text-unidecode==1.2       # via faker
+text-unidecode==1.3       # via faker
 tldextract==2.2.2         # via dns-lexicon
-traitlets==4.3.2          # via ipython
-twisted==19.7.0           # via daphne
-txaio==18.8.1             # via autobahn
-typed-ast==1.4.0          # via astroid
-uritemplate==3.0.0        # via coreapi, drf-yasg
+traitlets==4.3.3          # via ipython
+twisted[tls]==19.10.0     # via daphne
+txaio==20.1.1             # via autobahn
+uritemplate==3.0.1        # via coreapi, drf-yasg
 urllib3==1.25.3
-virtualenv==16.6.1
+virtualenv==20.0.3
 warlock==1.3.3            # via python-glanceclient
-wcwidth==0.1.7            # via cmd2, prompt-toolkit
+wcwidth==0.1.8            # via cmd2, prompt-toolkit
 werkzeug==0.15.4
 wrapt==1.11.2             # via astroid, debtcollector, python-glanceclient
 zc.lockfile==2.0          # via cherrypy
-zope.interface==4.6.0     # via twisted
+zipp==2.2.0               # via importlib-metadata
+zope.interface==4.7.1     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==42.0.2        # via ipdb, ipython, jsonschema, pyhamcrest, zc.lockfile, zope.interface
+# setuptools

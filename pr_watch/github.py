@@ -33,7 +33,6 @@ from django.template.defaultfilters import truncatewords
 import requests
 import yaml
 
-
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
@@ -116,6 +115,7 @@ def get_pr_by_number(pr_target_fork_name, pr_number):
     r_pr = get_pr_info_by_number(pr_target_fork_name, pr_number)
     pr_fork_name = r_pr['head']['repo']['full_name']
     pr_branch_name = r_pr['head']['ref']
+    pr_target_branch = r_pr['base']['ref']
     pr = PR(
         pr_number,
         pr_fork_name,
@@ -124,6 +124,7 @@ def get_pr_by_number(pr_target_fork_name, pr_number):
         r_pr['title'],
         r_pr['user']['login'],
         body=r_pr['body'],
+        target_branch=pr_target_branch,
     )
     return pr
 
@@ -168,7 +169,11 @@ class PR:
     """
     Representation of a GitHub Pull Request
     """
-    def __init__(self, number, source_fork_name, target_fork_name, branch_name, title, username, body=''):
+
+    def __init__(
+            self, number, source_fork_name, target_fork_name, branch_name, title, username, body='',
+            target_branch='master'
+    ):
         self.number = number
         self.fork_name = source_fork_name
         self.repo_name = target_fork_name
@@ -176,6 +181,7 @@ class PR:
         self.title = title
         self.username = username
         self.body = body
+        self.target_branch = target_branch
 
     def __repr__(self):
         """
