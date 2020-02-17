@@ -29,7 +29,7 @@ SANDBOX_ENABLE_ECOMMERCE: yes
 DISCOVERY_VERSION: 'open-release/ginkgo.1' # match version to edx version
 nginx_discovery_gunicorn_hosts:
     - "127.0.0.1"
-COMMON_HOSTNAME: "your-site-name"
+COMMON_HOSTNAME: ""
 ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
     your-partner-code: # this is arbitrary; will be used later
       paypal:
@@ -38,12 +38,12 @@ ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
 
 **Notes**:
 
-TODO: clarify why common_hostname set
-
-* We need to set the `COMMON_HOSTNAME` to something other than the FQDN, so
+* We need to set the `COMMON_HOSTNAME` to something other than the external
+  lms domain name (eg. `openlearning.example.com`), so
   that API requests made on the server can be properly routed through the load
-  balancer-terminated SSL connection.  This is required because, by default, the
-  appserver's FQDN refers to localhost, which doesn't understand SSL.
+  balancer-terminated SSL connection.  This is required because, by default, an
+  /etc/hosts entry for the `COMMON_HOSTNAME` is set pointing to localhost,
+  which will break SSL connections to the LMS from within the instance.
 * The [`ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`](https://github.com/edx/configuration/blob/d68bf51d7b8403bdad09dc764af5ebafe16d7309/playbooks/roles/ecommerce/defaults/main.yml#L103)
   should contain the payment processors and their keys.
 
