@@ -771,7 +771,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.first_activated, appserver_2.last_activated)
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -853,7 +853,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -1223,15 +1223,12 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         Helper function to verify a set of DNS records for active VMs.
         """
         dns_ips = set()
-        vm_indices = set()
         for record in gandi.api.list_records(domain):
             match = re.match(r'vm(\d+)\.', record['name'])
             if match:
                 self.assertEqual(record['type'], 'A')
                 dns_ips.add(record['value'])
-                vm_indices.add(int(match.group(1)))
         self.assertEqual(dns_ips, set(active_vm_ips))
-        self.assertEqual(vm_indices, set(range(1, len(vm_indices) + 1)))
 
     @patch_services
     @patch(
@@ -1254,20 +1251,33 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
         appserver2.make_active()
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
-        # We haven't implemented cleaning up VM DNS records yet, so we can't test it.
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch_services
-    def test_clean_up_dns_records(self, mocks, mock_dns_clean_up):
+    def test_clean_up_dns_records(self, mocks, *mock):
         """
         Test that the DNS records for app servers get removed
         """
+        # spawn and activate first appserver
         instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com')
         instance.spawn_appserver()
         appserver1 = instance.appserver_set.first()
         appserver1.make_active()
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
-        gandi.api.remove_dns_record('vm1.vm-dns.test.com')
-        self._verify_vm_dns_records('test.com', [])
+
+        # spawn and activate second appserver
+        mocks.os_server_manager.set_os_server_attributes('server2', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver2 = instance.appserver_set.first()
+        appserver2.make_active()
+        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
+
+        # deactivate first appserver
+        appserver1.make_active(active=False)
+        self._verify_vm_dns_records('test.com', [appserver2.server.public_ip])
+
+        # archive instance and verify no dns records
         instance.archive()
-        self.assertEqual(mock_dns_clean_up.call_count, 1)
+        self._verify_vm_dns_records('test.com', [])

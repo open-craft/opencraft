@@ -100,7 +100,7 @@ class ArchiveInstancesTestCase(TestCase):
         call_command('archive_instances', '--domains=A.example.com', stdout=out)
         self.assertTrue(out.getvalue().strip().endswith('Cancelled'))
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -118,7 +118,7 @@ class ArchiveInstancesTestCase(TestCase):
         self.assertRegex(out.getvalue(), r'.*Archiving A.example.com\.\.\..*')
         self.assertRegex(out.getvalue(), r'.*Archived 1 instances \(from 1 domains\).*')
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
     @ddt.data([['A.example.com'], 1],
               [['B.example.com', 'C.example.com', 'D.example.com'], 2])
@@ -152,7 +152,7 @@ class ArchiveInstancesTestCase(TestCase):
             self.assertTrue(instance.ref.is_archived)
         self.assertEqual(mock_deprovision_rabbitmq.call_count, expected_archived_count)
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
     @ddt.data(['archive_instances.txt', 3],
               ['archive_instances2.txt', 1])
@@ -185,7 +185,7 @@ class ArchiveInstancesTestCase(TestCase):
             self.assertTrue(instance.ref.is_archived)
         self.assertEqual(mock_deprovision_rabbitmq.call_count, expected_archived_count)
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appservers_dns_records')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
