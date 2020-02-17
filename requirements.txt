@@ -97,7 +97,7 @@ jinja2==2.11.1            # via coreschema
 jmespath==0.9.4           # via boto3, botocore, openstacksdk
 jsonpatch==1.25           # via openstacksdk, warlock
 jsonpointer==2.0          # via jsonpatch
-jsonschema==3.2.0         # via warlock
+jsonschema==3.2.0
 keystoneauth1==3.14.0
 lazy-object-proxy==1.4.3  # via astroid
 libsass==0.19.4           # via django-libsass
