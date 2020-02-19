@@ -38,6 +38,7 @@ from freezegun import freeze_time
 import yaml
 
 from instance import gandi
+from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
 from instance.models.load_balancer import LoadBalancingServer
@@ -771,7 +772,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.first_activated, appserver_2.last_activated)
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
+    @patch.object(GandiV5API, 'remove_dns_record')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -853,7 +855,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
-    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_record')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')

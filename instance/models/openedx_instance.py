@@ -213,22 +213,31 @@ class OpenEdXInstance(
             )
         return backend_map, backend_conf
 
-    def set_active_vm_dns_record(self, appserver_num=1, ip_addr=None):
+    def set_active_vm_dns_records(self):
         """
-        Set DNS A record for the active app server.
+        Set DNS A records for all active app servers.
         """
-        self.logger.info("Setting DNS record for activated app server...")
-        if ip_addr:
-            domain = "vm{index}.{base_domain}".format(index=appserver_num, base_domain=self.internal_lms_domain)
-            gandi.api.set_dns_record(domain, type="A", value=ip_addr)
+        self.logger.info("Setting DNS records for active app servers...")
+        for i, appserver in enumerate(self.get_active_appservers(), 1):
+            ip_addr = appserver.server.public_ip
 
-    def clean_up_appserver_dns_record(self, appserver_num):
-        """
-        Removes the DNS record for the inactive app server.
-        """
-        self.logger.info("Cleaning up DNS record for deactivated app server...")
-        domain = "vm{index}.{base_domain}".format(index=appserver_num, base_domain=self.internal_lms_domain)
+            if ip_addr:
+                domain = "vm{index}.{base_domain}".format(index=i, base_domain=self.internal_lms_domain)
+                gandi.api.set_dns_record(domain, type="A", value=ip_addr)
+
+        active_appservers = self.get_active_appservers()
+        unused_dns_index = active_appservers.count() + 1
+        domain = "vm{index}.{base_domain}".format(index=unused_dns_index, base_domain=self.internal_lms_domain)
         gandi.api.remove_dns_record(domain, type="A")
+
+    def clean_up_appserver_dns_records(self):
+        """
+        Removes the DNS records for the app servers.
+        """
+        self.logger.info("Cleaning up DNS records for app servers...")
+        for i, _ in enumerate(self.get_active_appservers(), 1):
+            domain = "vm{index}.{base_domain}".format(index=i, base_domain=self.internal_lms_domain)
+            gandi.api.remove_dns_record(domain, type="A")
 
     @property
     def appserver_set(self):
@@ -424,9 +433,9 @@ class OpenEdXInstance(
 
         self.logger.info('Archiving instance started.')
         self.disable_monitoring()
-        for appserver in self.get_active_appservers():
-            appserver_num = appserver.name.split()[-1]
-            self.clean_up_appserver_dns_record(appserver_num)
+        active_appservers = self.get_active_appservers()
+        if active_appservers.count() > 0:
+            self.clean_up_appserver_dns_records()
         self.remove_dns_records(ignore_errors=ignore_errors)
         if self.load_balancing_server is not None:
             load_balancer = self.load_balancing_server

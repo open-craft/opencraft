@@ -139,7 +139,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         self.assertEqual(len(logs.output), 3)
         self.assertIn("Triggering reconfiguration of the load balancing server", logs.output[0])
         self.assertIn("New load-balancer configuration", logs.output[1])
-        self.assertIn("Setting DNS record for activated app server", logs.output[2])
+        self.assertIn("Setting DNS records for active app servers", logs.output[2])
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=True)
     @patch_services
@@ -158,7 +158,7 @@ class LoadBalancedInstanceTestCase(TestCase):
             self.assertIn(annotation, log_line)
         self.assertEqual(len(logs.output), 2)
         self.assertIn("Direct load balancer reconfiguration disabled. Skipping", logs.output[0])
-        self.assertIn("Setting DNS record for activated app server", logs.output[1])
+        self.assertIn("Setting DNS records for active app servers", logs.output[1])
 
     @override_settings(PRELIMINARY_PAGE_SERVER_IP=None)
     def test_preliminary_page_not_configured(self, mock_consul):
