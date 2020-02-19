@@ -102,7 +102,6 @@ class BetaTestApplicationViewTestMixin:
             for verification_email in mail.outbox:
                 verify_url = re.search(r'https?://[^\s]+',
                                        verification_email.body).group(0)
-                print(verify_url)
                 self.client.get(verify_url)
                 expected_call_count += 1
             # Check to make sure we called _provision_instance when emails were verified.
