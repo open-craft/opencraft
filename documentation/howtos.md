@@ -102,6 +102,9 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --site-domain 'external.lms.domain' \
      --code 'partn_id' \
      --name 'Montessori' \
+     --courses-api-url 'https://external.lms.domain/api/courses/v1/' \
+     --ecommerce-api-url 'https://ecommerce.external.lms.domain/api/v2/' \
+     --organizations-api-url 'https://external.lms.domain/api/organizations/v0/' \
      --oidc-url-root 'https://external.lms.domain/oauth2' \
      --oidc-key '{discovery oauth client id}' \
      --oidc-secret '{discovery oauth client secret}'
