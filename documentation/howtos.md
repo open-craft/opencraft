@@ -34,7 +34,7 @@ nginx_discovery_gunicorn_hosts:
     - "127.0.0.1"
 COMMON_HOSTNAME: ""
 ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
-    your-partner-code: # this is arbitrary; will be used later
+    your-partner-code: # this is arbitrary but must be short; will be used later
       paypal:
         ...
 
