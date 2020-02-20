@@ -68,7 +68,12 @@ Once the spawn is complete, you'll need to take the following steps to finish se
    already be clients created for ecommerce and discovery.
    If not, [create and register new clients](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#configure-edx-openid-connect-oidc)
    for each service.  You'll need the client IDs and client secrets for the next
-   steps.  Ensure that both clients are attached to the staff user updated above.
+   steps.  Ensure that both clients are attached to the staff user updated
+   above. Alternatively, they may be auto created attached to their own users,
+   such as `ecommerce_worker`. If so, `ecommerce_worker` may need extra user
+   permissions added (successfully tested with `api_admin | catalog | *`,
+   `bulk_email | course mode target | *`, `commerce | commerce configuration |
+   *`, and `course_modes | * | *` combination of permissions.
 1. In the ecommerce env, add a Site, Partner, and Site Configuration as per the
    instructions in the [edX ecommerce docs](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#add-another-site-partner-and-site-configuration).
    Use the partner code from `ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`.
