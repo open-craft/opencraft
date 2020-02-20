@@ -57,6 +57,10 @@ export function registrationReducer(
           ...action.data
         }
       };
+    case RegistrationActions.Types.GO_TO_NEXT_STEP:
+      return update(state, {
+        currentRegistrationStep: { $set: action.nextStep }
+      });
     default:
       return state;
   }

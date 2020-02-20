@@ -7,7 +7,7 @@ export enum Theme {
 
 export interface DomainInfoModel {
   subdomain: string;
-  domainIsExternal: boolean;
+  externalDomain: string;
 }
 
 export interface InstanceInfoModel {
@@ -56,7 +56,7 @@ export const blankRegistration: Readonly<RegistrationModel> = {
   subscribeToUpdates: false,
   cover: null,
   subdomain: '',
-  domainIsExternal: false,
+  externalDomain: '',
   email: '',
   fullName: '',
   instanceName: '',

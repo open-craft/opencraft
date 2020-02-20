@@ -7,3 +7,5 @@ export * from './CongratulationsPage';
 export * from './RegistrationNavButtons';
 
 export * from './RedirectToCorrectStep';
+
+export * from './CustomDomainSetupPage';
