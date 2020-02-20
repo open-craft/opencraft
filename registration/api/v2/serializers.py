@@ -188,6 +188,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "subdomain",
+            "external_domain",
             "instance_name",
             "public_contact_email",
             "privacy_policy_url",

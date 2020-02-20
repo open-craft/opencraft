@@ -77,6 +77,12 @@ def _provision_instance(sender, **kwargs):
             deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)
+
+        # If using external domain, set it up
+        if application.external_domain:
+            application.instance.external_lms_domain = application.external_domain
+            application.instance.save()
+
         if settings.PROD_APPSERVER_FAIL_EMAILS:
             application.instance.provisioning_failure_notification_emails = settings.PROD_APPSERVER_FAIL_EMAILS
             application.instance.save()

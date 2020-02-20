@@ -32,6 +32,12 @@ export interface OpenEdXInstanceConfig {
      */
     subdomain: string;
     /**
+     * The URL students will visit if you are using an external domain.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    externalDomain?: string | null;
+    /**
      * The name of your institution, company or project.  Example: Hogwarts Online Learning
      * @type {string}
      * @memberof OpenEdXInstanceConfig
@@ -75,6 +81,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         
         'id': !exists(json, 'id') ? undefined : json['id'],
         'subdomain': json['subdomain'],
+        'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
         'publicContactEmail': json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
@@ -93,6 +100,7 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
     return {
         
         'subdomain': value.subdomain,
+        'external_domain': value.externalDomain,
         'instance_name': value.instanceName,
         'public_contact_email': value.publicContactEmail,
         'privacy_policy_url': value.privacyPolicyUrl,

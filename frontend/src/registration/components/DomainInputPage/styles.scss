@@ -1,14 +1,16 @@
+@import '~styles/theme';
+
 .div-fill {
   height: 100%;
 }
 
 .use-own {
   text-align: center;
+  cursor: pointer; 
   text-decoration: underline;
-  font-family: Chivo;
+  font-family: $chivo-font;
   font-size: 18px;
   letter-spacing: 0.54px;
   color: #1e4c59;
   margin-top: 40px;
-  display: none;
 }
