@@ -1,0 +1,75 @@
+@import '~styles/theme';
+
+.div-fill {
+  width: 100%;
+}
+
+.custom-domain-setup {
+  width: 100%;
+  text-align: center;
+
+  h1 {
+    font-family: $playfair-font;
+    font-size: 30px;
+    font-weight: bold;
+    letter-spacing: 1.44px;
+    color: #1e4c59 !important;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-family: $chivo-font;
+    font-size: 18px;
+    letter-spacing: 0.54px;
+    color: #0f1f24;
+  }
+
+  .instruction-box {
+    background-color: $light-blue-3;
+    margin: 20px 0;
+    padding: 20px;
+
+    .number {
+      font-family: $playfair-font;
+      font-size: 40px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+      color: #0f1f24;
+    }
+
+    .instruction {
+      text-align: left;
+      font-family: $chivo-font;
+      font-size: 18px;
+      letter-spacing: 0.54px;
+      color: #0f1f24;
+    }
+
+    .extra {
+      table {
+        width: 100%;
+        border: 1px solid black;
+
+        th {
+          border: 1px solid black;
+          background-color: #6d9cae;
+          font-family: $chivo-font;
+          font-weight: normal;
+          font-size: 18px;
+          letter-spacing: 0.54px;
+          color: white;
+          padding: 8px 0;
+        }
+
+        td {
+          border: 1px solid black;
+          font-family: $chivo-font;
+          font-size: 14px;
+          letter-spacing: 0.42px;
+          color: #0f1f24;
+          padding: 8px 0;
+        }
+      }
+    }
+  }
+}

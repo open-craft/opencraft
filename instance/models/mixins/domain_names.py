@@ -241,7 +241,7 @@ class DomainNameInstance(models.Model):
         """
         return u'{}heartbeat?extended'.format(self.url)
 
-    def save(self, **kwargs):  # pylint: disable=arguments-differ
+    def save(self, **kwargs):  # pylint: disable=arguments-differ, too-many-branches, useless-suppression
         """
         Set default values before saving the instance.
         """
@@ -255,4 +255,16 @@ class DomainNameInstance(models.Model):
             self.internal_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.internal_lms_domain
         if not self.internal_ecommerce_domain:
             self.internal_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.internal_lms_domain
+
+        # Save for external domain, but only when present
+        if self.external_lms_domain:
+            if not self.external_lms_preview_domain:
+                self.external_lms_preview_domain = settings.DEFAULT_LMS_PREVIEW_DOMAIN_PREFIX + self.external_lms_domain
+            if not self.external_studio_domain:
+                self.external_studio_domain = settings.DEFAULT_STUDIO_DOMAIN_PREFIX + self.external_lms_domain
+            if not self.external_discovery_domain:
+                self.external_discovery_domain = settings.DEFAULT_DISCOVERY_DOMAIN_PREFIX + self.external_lms_domain
+            if not self.external_ecommerce_domain:
+                self.external_ecommerce_domain = settings.DEFAULT_ECOMMERCE_DOMAIN_PREFIX + self.external_lms_domain
+
         super().save(**kwargs)
