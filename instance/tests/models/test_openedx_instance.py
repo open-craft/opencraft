@@ -1267,7 +1267,6 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         instance.spawn_appserver()
         appserver1 = instance.appserver_set.first()
         appserver1.make_active()
-        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
 
         # spawn and activate second appserver
         mocks.os_server_manager.set_os_server_attributes('server2', _loaded=True, status='ACTIVE')
@@ -1276,9 +1275,22 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         appserver2.make_active()
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
 
-        # deactivate first appserver
+        # spawn and activate third appserver
+        mocks.os_server_manager.set_os_server_attributes('server3', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver3 = instance.appserver_set.first()
+        appserver3.make_active()
+
+        # spawn and activate fourth appserver
+        mocks.os_server_manager.set_os_server_attributes('server4', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver4 = instance.appserver_set.first()
+        appserver4.make_active()
+
+        # deactivate first two appservers
         appserver1.make_active(active=False)
-        self._verify_vm_dns_records('test.com', [appserver2.server.public_ip])
+        appserver2.make_active(active=False)
+        self._verify_vm_dns_records('test.com', [appserver3.server.public_ip, appserver4.server.public_ip])
 
         # archive instance and verify no dns records
         instance.archive()
