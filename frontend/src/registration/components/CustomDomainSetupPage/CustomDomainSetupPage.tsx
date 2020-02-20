@@ -24,6 +24,29 @@ interface StateProps extends RegistrationStateModel {}
 
 interface Props extends StateProps, ActionProps {}
 
+interface StepBoxProps {
+  step: number;
+  instruction: any;
+  extra?: any;
+}
+export const StepBox: React.SFC<StepBoxProps> = (props: StepBoxProps) => (
+  <div className="instruction-box">
+    <Row>
+      <Col lg="1" className="number">
+        {props.step}
+      </Col>
+      <Col lg="11" className="instruction">
+        {props.instruction}
+      </Col>
+    </Row>
+    {props.extra && (
+      <Row>
+        <Col className="extra">{props.extra}</Col>
+      </Row>
+    )}
+  </div>
+);
+
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
     ...state.registration
@@ -38,25 +61,28 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const stepBox = (step: number, instruction: any, extra?: any) => {
-      return (
-        <div className="instruction-box">
-          <Row>
-            <Col lg="1" className="number">
-              {step}
-            </Col>
-            <Col lg="11" className="instruction">
-              {instruction}
-            </Col>
-          </Row>
-          {extra && (
-            <Row>
-              <Col className="extra">{extra}</Col>
-            </Row>
-          )}
-        </div>
-      );
-    };
+    const setDnsRecordsStepExtraContent = (
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>{this.props.registrationData.externalDomain}</td>
+          <td>CNAME</td>
+          <td>haproxy.net.opencraft.hosting</td>
+        </tr>
+        <tr>
+          <td>
+            *.
+            {this.props.registrationData.externalDomain}
+          </td>
+          <td>CNAME</td>
+          <td>haproxy.net.opencraft.hosting</td>
+        </tr>
+      </table>
+    );
 
     return (
       <div className="div-fill">
@@ -81,41 +107,23 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
               />
             </p>
 
-            {stepBox(
-              1,
-              'If you already have a domain, skip this step. ' +
-                "If you don't have a domain name yet, we recommend " +
-                'you go to Gandi.net to order one. Come back to this page after ordering it.'
-            )}
-            {stepBox(
-              2,
-              'Go to your domain’s DNS configuration settings and add the following entries:',
-              <table>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Value</th>
-                </tr>
-                <tr>
-                  <td>{this.props.registrationData.externalDomain}</td>
-                  <td>CNAME</td>
-                  <td>haproxy.net.opencraft.hosting</td>
-                </tr>
-                <tr>
-                  <td>
-                    *.
-                    {this.props.registrationData.externalDomain}
-                  </td>
-                  <td>CNAME</td>
-                  <td>haproxy.net.opencraft.hosting</td>
-                </tr>
-              </table>
-            )}
-            {stepBox(
-              3,
-              'Save the changes and activate them if required. It might take a while for ' +
-                'the domain changes to propagate (up to 6 hours).'
-            )}
+            <StepBox
+              step={1}
+              instruction={
+                <WrappedMessage messages={messages} id="buyDomainStep" />
+              }
+            />
+            <StepBox
+              step={2}
+              instruction={
+                <WrappedMessage messages={messages} id="setDnsRecordsStep" />
+              }
+              extra={setDnsRecordsStepExtraContent}
+              />
+            <StepBox
+              step={3}
+              instruction={<WrappedMessage messages={messages} id="saveStep" />}
+            />
 
             <Button
               className="pull-left loading"
