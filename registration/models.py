@@ -121,6 +121,37 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             'blacklisted': 'This domain name is not publicly available.',
         },
     )
+    external_domain = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='external domain name',
+        blank=True,
+        null=True,
+        help_text=(
+            'The URL students will visit if you are using an external domain.'
+        ),
+        validators=[
+            validators.MinLengthValidator(
+                3,
+                'The subdomain name must at least have 3 characters.',
+            ),
+            validators.MaxLengthValidator(
+                250,
+                'The subdomain name can have at most have 250 characters.',
+            ),
+            validators.RegexValidator(
+                r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$',
+                'Please choose a domain name that you already know and own, '
+                'containing lower-case letters, numbers, dots, and hyphens. '
+                'Cannot start or end with a hyphen.',
+            ),
+            validate_available_subdomain,
+        ],
+        error_messages={
+            'unique': 'This domain is already taken.',
+            'blacklisted': 'This domain name is not publicly available.',
+        },
+    )
     instance_name = models.CharField(
         max_length=255,
         help_text=('The name of your institution, company or project.'
@@ -271,11 +302,14 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
     def clean(self):
         """
-        Verify that the subdomain has not already been taken by any running instance.
+        Verify that the domains were not already been taken by any running instance.
 
         We can't do this in a regular validator, since we have to allow the subdomain of the
         instance associated with this application.
         """
+        errors = {}
+
+        # Check internal domain
         generated_domain = generate_internal_lms_domain(self.subdomain)
         if self.instance is not None and self.instance.internal_lms_domain == generated_domain:
             return
@@ -284,7 +318,21 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 message='This domain is already taken.',
                 code='unique',
             )
-            raise ValidationError({'subdomain': [subdomain_error]})
+            errors['subdomain'] = [subdomain_error]
+
+        # Check external domain, if present
+        if self.external_domain:
+            if self.instance is not None and self.instance.external_lms_domain == self.external_domain:
+                return
+            if OpenEdXInstance.objects.filter(external_lms_domain=self.external_domain).exists():
+                external_domain_error = ValidationError(
+                    message='This domain is already taken.',
+                    code='unique',
+                )
+                errors['external_domain'] = [external_domain_error]
+
+        if errors:
+            raise ValidationError(errors)
 
     # pylint: disable=inconsistent-return-statements
     def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):

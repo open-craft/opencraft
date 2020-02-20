@@ -25,7 +25,8 @@ export enum Types {
   // Account registration
   REGISTRATION_SUBMIT = 'REGISTRATION_SUBMIT',
   REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS',
-  REGISTRATION_FAILURE = 'REGISTRATION_FAILURE'
+  REGISTRATION_FAILURE = 'REGISTRATION_FAILURE',
+  GO_TO_NEXT_STEP = 'GO_TO_NEXT_STEP'
 }
 
 export interface FeedbackMessageChange extends Action {
@@ -62,6 +63,11 @@ export interface RegistrationFailure extends Action {
   readonly error: RegistrationFeedbackModel;
 }
 
+export interface GoToNextStep extends Action {
+  readonly type: Types.GO_TO_NEXT_STEP;
+  readonly nextStep: RegistrationSteps;
+}
+
 export type ActionTypes =
   | FeedbackMessageChange
   | RegistrationValidation
@@ -69,7 +75,8 @@ export type ActionTypes =
   | RegistrationValidationFailure
   | SubmitRegistration
   | RegistrationSuccess
-  | RegistrationFailure;
+  | RegistrationFailure
+  | GoToNextStep;
 
 export const clearErrorMessage = (
   field: keyof RegistrationStateModel
@@ -78,6 +85,13 @@ export const clearErrorMessage = (
     type: Types.CLEAR_ERROR_MESSAGE,
     field
   });
+};
+
+export const goToNextStep = (nextStep: RegistrationSteps) => async (
+  dispatch: any
+) => {
+  dispatch({ type: Types.GO_TO_NEXT_STEP, nextStep });
+  dispatch(push(REGISTRATION_STEPS[nextStep]));
 };
 
 export const performValidationAndStore = (
@@ -143,46 +157,45 @@ export const submitRegistration = (
   }
 
   if (Object.entries(registrationFeedback).length === 0) {
-    V2Api.accountsCreate({
-      data: userRegistrationData
-    })
-      .then(() => {
-        // Perform authentication and create new instance
-        dispatch(
+    try {
+      await V2Api.accountsCreate({ data: userRegistrationData });
+      // Perform authentication and create new instance
+      try {
+        await dispatch(
           performLogin({
             username: userRegistrationData.username,
             password: userRegistrationData.password
           })
-        ).then(() => {
+        );
+
+        try {
           // Create instance
-          V2Api.instancesOpenedxConfigCreate({
-            data: instanceData
-          })
-            .then(() => {
-              dispatch({
-                type: Types.REGISTRATION_VALIDATION_SUCCESS,
-                userData,
-                nextStep
-              });
-              if (nextStep) {
-                dispatch(push(REGISTRATION_STEPS[nextStep]));
-              }
-            })
-            .catch(e => {
-              console.log("This isn't supposed to happen!", e);
-            });
-        });
-      })
-      .catch((e: any) => {
-        e.json().then((feedback: any) => {
-          // If validation fails, return error to form through state
-          const error: any = sanitizeErrorFeedback(feedback);
+          await V2Api.instancesOpenedxConfigCreate({ data: instanceData });
+
           dispatch({
-            type: Types.REGISTRATION_VALIDATION_FAILURE,
-            error
+            type: Types.REGISTRATION_VALIDATION_SUCCESS,
+            userData,
+            nextStep
           });
+          if (nextStep) {
+            dispatch(push(REGISTRATION_STEPS[nextStep]));
+          }
+        } catch (e) {
+          console.log("This isn't supposed to happen!", e);
+        }
+      } catch (e) {
+        console.log("This isn't supposed to happen!", e);
+      }
+    } catch (e) {
+      e.json().then((feedback: any) => {
+        // If validation fails, return error to form through state
+        const error: any = sanitizeErrorFeedback(feedback);
+        dispatch({
+          type: Types.REGISTRATION_VALIDATION_FAILURE,
+          error
         });
       });
+    }
   } else {
     // Failing local validation
     dispatch({
