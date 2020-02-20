@@ -64,6 +64,8 @@ Once the spawn is complete, you'll need to take the following steps to finish se
 
 1. Create/choose a staff user to use for the OAuth2 clients.
    Ensure the staff user has a user profile associated (i.e. set a Full Name).
+   (Note that users may be auto created in provision process and this step thus
+   not required; check the next step before creating users.)
 1. In Django Admin > OAuth2 > Clients (`/admin/oauth2/client/`), there should
    already be clients created for ecommerce and discovery.
    If not, [create and register new clients](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#configure-edx-openid-connect-oidc)
@@ -96,6 +98,17 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --from-email 'noreply@todo.lms.external.domain' \ # TODO: what should this be?
      --discovery_api_url 'https://discovery.external.lms.domain/api/v1'
    ```
+
+   If using the Stripe payment processor, then it must be configured as a
+   client side payment processor - either add `--client-side-payment-processor
+   stripe` to the above command or enter it later from Django admin. See also
+   [docs](https://edx-ecommerce.readthedocs.io/en/latest/additional_features/payment_processors.html)
+   for specific payment processors.
+
+   Also note that any of the values from the `create_or_update_site` command
+   can be edited later in Django admin at `/admin/core/siteconfiguration/`; no
+   need to continue rerunning this command once the initial auth related setup
+   is working for the site configuration.
 1. In the discovery env, configure a partner using
    [`create_or_update_partner`](https://github.com/edx/course-discovery/blob/master/course_discovery/apps/core/management/commands/create_or_update_partner.py).
    Use the same partner code as what you used for ecommerce.
