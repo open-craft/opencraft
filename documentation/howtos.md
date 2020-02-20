@@ -146,6 +146,8 @@ Test your configuration:
         source /edx/app/discovery/discovery_env
         /edx/bin/manage.discovery refresh_course_metadata
 
+TODO: add more complete manual test checklist
+
 Useful references:
 
 * [E-Commerce usage docs](https://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/create_products/index.html)
