@@ -119,7 +119,7 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
                 <WrappedMessage messages={messages} id="setDnsRecordsStep" />
               }
               extra={setDnsRecordsStepExtraContent}
-              />
+            />
             <StepBox
               step={3}
               instruction={<WrappedMessage messages={messages} id="saveStep" />}
