@@ -13,10 +13,10 @@ service. However, support is available to manually enable those services. To do 
 # discovery user, because these cronjobs are added before the discovery user is
 # created.
 EDXAPP_ADDITIONAL_CRON_JOBS:
-- name: "discovery: daily course metadata refresh"
+- name: "discovery: hourly course metadata refresh"
   user: "root"
   job: "sudo -u discovery bash -c 'source {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery refresh_course_metadata'"
-  hour: "1"
+  hour: "*"
   minute: "43"
   day: "*"
 ```
@@ -29,7 +29,7 @@ ecommerce_create_demo_data: false
 
 SANDBOX_ENABLE_DISCOVERY: yes
 SANDBOX_ENABLE_ECOMMERCE: yes
-DISCOVERY_VERSION: 'open-release/ginkgo.1' # match version to edx version
+DISCOVERY_VERSION: "{{ ECOMMERCE_VERSION }}"
 nginx_discovery_gunicorn_hosts:
     - "127.0.0.1"
 COMMON_HOSTNAME: ""
@@ -37,6 +37,11 @@ ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
     your-partner-code: # this is arbitrary; will be used later
       paypal:
         ...
+
+# Have to build the full broker URLs to ensure the vhost path is included
+ECOMMERCE_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}' 
+ECOMMERCE_WORKER_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}' 
+ECOMMERCE_WORKER_ECOMMERCE_API_ROOT: '{{ ECOMMERCE_ECOMMERCE_URL_ROOT }}/api/v2/'
 ```
 
 **Notes**:
@@ -84,7 +89,7 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --client-id '{ecommerce_worker oauth client id}' \
      --client-secret '{ecommerce_worker oauth client secret}' \
      --from-email 'noreply@todo.lms.external.domain' \ # TODO: what should this be?
-     --discovery_api_url 'https://discovery.external.lms.domain'
+     --discovery_api_url 'https://discovery.external.lms.domain/api/v1'
    ```
 1. In the discovery env, configure a partner using
    [`create_or_update_partner`](https://github.com/edx/course-discovery/blob/master/course_discovery/apps/core/management/commands/create_or_update_partner.py).
@@ -96,12 +101,11 @@ Once the spawn is complete, you'll need to take the following steps to finish se
    source discovery_env
    source venvs/discovery/bin/activate
    cd discovery
-   # TODO: what should --site-domain be here?
    python manage.py create_or_update_partner \
      --site-id 1 \
-     --site-domain 'external.lms.domain' \
+     --site-domain 'discovery.external.lms.domain' \
      --code 'partn_id' \
-     --name 'Montessori' \
+     --name 'Client Name' \
      --courses-api-url 'https://external.lms.domain/api/courses/v1/' \
      --ecommerce-api-url 'https://ecommerce.external.lms.domain/api/v2/' \
      --organizations-api-url 'https://external.lms.domain/api/organizations/v0/' \
@@ -126,6 +130,7 @@ Test your configuration:
 
 Useful references:
 
+* [E-Commerce usage docs](https://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/create_products/index.html)
 * [Adding E-Commerce to the Open edX Platform](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html)
 * [edX Discovery Service](http://edx-discovery.readthedocs.io/)
 * [Setup Discovery Sandbox](https://openedx.atlassian.net/wiki/spaces/EDUCATOR/pages/162488548/Setup+Discovery+Sandbox)
