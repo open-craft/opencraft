@@ -95,14 +95,12 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --lms-url-root 'https://lms.external.domain' \
      --client-id '{ecommerce_worker oauth client id}' \
      --client-secret '{ecommerce_worker oauth client secret}' \
-     --from-email 'noreply@todo.lms.external.domain' \ # TODO: what should this be?
-     --discovery_api_url 'https://discovery.external.lms.domain/api/v1'
+     --from-email 'user@example.com' \ # set to same as EDXAPP_DEFAULT_FROM_EMAIL on instance
+     --discovery_api_url 'https://discovery.external.lms.domain/api/v1' \
+     --client-side-payment-processor stripe \ # if using Stripe
    ```
 
-   If using the Stripe payment processor, then it must be configured as a
-   client side payment processor - either add `--client-side-payment-processor
-   stripe` to the above command or enter it later from Django admin. See also
-   [docs](https://edx-ecommerce.readthedocs.io/en/latest/additional_features/payment_processors.html)
+   See [payment processor docs](https://edx-ecommerce.readthedocs.io/en/latest/additional_features/payment_processors.html)
    for specific payment processors.
 
    Also note that any of the values from the `create_or_update_site` command
