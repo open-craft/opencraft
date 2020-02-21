@@ -39,8 +39,8 @@ ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
         ...
 
 # Have to build the full broker URLs to ensure the vhost path is included
-ECOMMERCE_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}' 
-ECOMMERCE_WORKER_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}' 
+ECOMMERCE_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}'
+ECOMMERCE_WORKER_BROKER_URL: '{{ EDXAPP_CELERY_BROKER_TRANSPORT }}://{{ EDXAPP_CELERY_USER }}:{{ EDXAPP_CELERY_PASSWORD }}@{{ EDXAPP_CELERY_BROKER_HOSTNAME }}{{ EDXAPP_CELERY_BROKER_VHOST }}'
 ECOMMERCE_WORKER_ECOMMERCE_API_ROOT: '{{ ECOMMERCE_ECOMMERCE_URL_ROOT }}/api/v2/'
 ```
 
@@ -62,20 +62,28 @@ ECOMMERCE_WORKER_ECOMMERCE_API_ROOT: '{{ ECOMMERCE_ECOMMERCE_URL_ROOT }}/api/v2/
 Once the spawn is complete, you'll need to take the following steps to finish setup
 (these are one-time actions that are stored in the database):
 
-1. Create/choose a staff user to use for the OAuth2 clients.
-   Ensure the staff user has a user profile associated (i.e. set a Full Name).
-   (Note that users may be auto created in provision process and this step thus
-   not required; check the next step before creating users.)
-1. In Django Admin > OAuth2 > Clients (`/admin/oauth2/client/`), there should
-   already be clients created for ecommerce and discovery.
-   If not, [create and register new clients](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#configure-edx-openid-connect-oidc)
-   for each service.  You'll need the client IDs and client secrets for the next
-   steps.  Ensure that both clients are attached to the staff user updated
-   above. Alternatively, they may be auto created attached to their own users,
-   such as `ecommerce_worker`. If so, `ecommerce_worker` may need extra user
-   permissions added (successfully tested with `api_admin | catalog | *`,
-   `bulk_email | course mode target | *`, `commerce | commerce configuration |
-   *`, and `course_modes | * | *` combination of permissions.
+
+1.  In Django Admin > Authentication > Users (`/admin/auth/user/`), there should already be service users created, i.e. `ecommerce_worker` and `discovery_worker`.
+
+    If not, create them with staff privileges, no password, and set the Full
+    Name so that a user profile is associated with the users.
+
+    Add these extra permissions to the `ecommerce_worker`:
+
+    ```
+    api_admin | catalog | *
+    bulk_email | course mode target | *
+    commerce | commerce configuration | *
+    course_modes | * | *
+    ```
+1. In Django Admin > OAuth2 > Clients (`/admin/oauth2/client/`), there should already be clients created for ecommerce and discovery.
+
+   If not, [create and register new
+   clients](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#configure-edx-openid-connect-oidc)
+   for each service.  Attach each client to the worker user discussed in the
+   previous step.
+
+   You'll need the client IDs and client secrets for the next steps.
 1. In the ecommerce env, add a Site, Partner, and Site Configuration as per the
    instructions in the [edX ecommerce docs](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#add-another-site-partner-and-site-configuration).
    Use the partner code from `ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`.
