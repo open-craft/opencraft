@@ -34,7 +34,7 @@ nginx_discovery_gunicorn_hosts:
     - "127.0.0.1"
 COMMON_HOSTNAME: ""
 ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
-    your-partner-code: # this is arbitrary but must be short; will be used later
+    partn_id: # this is arbitrary, limited to 8 characters; will be used later
       paypal:
         ...
 
@@ -90,7 +90,7 @@ Once the spawn is complete, you'll need to take the following steps to finish se
    python manage.py create_or_update_site \
      --site-name 'My Site E-Commerce' \
      --site-domain 'ecommerce.lms.external.domain' \
-     --partner-code 'partn_id' \ # this is limited to only a few characters
+     --partner-code 'partn_id' \ # this is limited to only 8 characters
      --partner-name 'Partner Name' \
      --lms-url-root 'https://lms.external.domain' \
      --client-id '{ecommerce_worker oauth client id}' \
