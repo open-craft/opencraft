@@ -144,7 +144,12 @@ Test your configuration:
         source /edx/app/discovery/discovery_env
         /edx/bin/manage.discovery refresh_course_metadata
 
-TODO: add more complete manual test checklist
+1. Publish a new course to test ecommerce.
+1. Add a new [Course seat](https://edx-ecommerce.readthedocs.io/en/latest/create_products/create_course_seats.html) for this course, with a nominal charge (e.g. $1).
+1. Optionally add a [Coupon](https://edx-ecommerce.readthedocs.io/en/latest/create_products/create_coupons.html) for the course, if the client will use coupons.
+1. Enroll a new user into the test course, and verify that the coupon works, payments are processed, and the enrollment succeeds.
+   Ideally, the payment processor will be initially configured as a sandbox service for testing, and so you can use test credit card numbers as provided by the payment processor.
+1. Delete the course once all is verified.
 
 Useful references:
 
