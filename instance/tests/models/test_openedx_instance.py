@@ -1225,12 +1225,15 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         Helper function to verify a set of DNS records for active VMs.
         """
         dns_ips = set()
+        vm_indices = set()
         for record in gandi.api.list_records(domain):
             match = re.match(r'vm(\d+)\.', record['name'])
             if match:
                 self.assertEqual(record['type'], 'A')
                 dns_ips.add(record['value'])
+                vm_indices.add(int(match.group(1)))
         self.assertEqual(dns_ips, set(active_vm_ips))
+        self.assertEqual(vm_indices, set(range(1, len(vm_indices) + 1)))
 
     @patch_services
     @patch(
