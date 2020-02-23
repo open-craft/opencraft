@@ -220,7 +220,8 @@ class OpenEdXInstance(
         """
         self.logger.info("Setting DNS records for active app servers...")
         with cache.lock('appserver_dns_record_update_{}'.format(self.ref.instance_id)):
-            for i, appserver in enumerate(self.get_active_appservers(), 1):
+            active_appservers = self.get_active_appservers()
+            for i, appserver in enumerate(active_appservers, 1):
                 ip_addr = appserver.server.public_ip
 
                 if ip_addr:
@@ -228,7 +229,6 @@ class OpenEdXInstance(
                     gandi.api.set_dns_record(domain, type="A", value=ip_addr)
 
             if deactivate_appserver:
-                active_appservers = self.get_active_appservers()
                 unused_dns_index = active_appservers.count() + 1
                 domain = "vm{index}.{base_domain}".format(index=unused_dns_index, base_domain=self.internal_lms_domain)
                 gandi.api.remove_dns_record(domain, type="A")
