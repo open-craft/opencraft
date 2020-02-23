@@ -138,6 +138,37 @@ Once the spawn is complete, you'll need to take the following steps to finish se
      --oidc-secret '{discovery oauth client secret}'
    ```
 1. [Configure LMS to use ecommerce](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#switch-from-shoppingcart-to-e-commerce)
+1. To change the default currency used in the ecommerce system from USD ($) to, for example, British pounds (£), add this extra configuration:
+
+   ```
+   # Use a configuration branch which contains this fix:
+   # https://github.com/open-craft/configuration/pull/119/files
+   EDXAPP_PAID_COURSE_REGISTRATION_CURRENCY: ['gbp', '£']
+   ECOMMERCE_OSCAR_DEFAULT_CURRENCY: 'GBP'
+   ECOMMERCE_REPOS:
+     - PROTOCOL: '{{ COMMON_GIT_PROTOCOL }}'
+       DOMAIN: '{{ COMMON_GIT_MIRROR }}'
+       PATH: 'open-craft'
+       REPO: 'ecommerce.git'
+       # Use a branch which contains this fix:
+       # https://github.com/open-craft/ecommerce/pull/13/files
+       VERSION: 'jill/set-default-currency'  # FIXME: change to opencraft-release/ironwood.2
+       DESTINATION: "{{ ecommerce_code_dir }}"
+       SSH_KEY: '{{ ECOMMERCE_GIT_IDENTITY }}'
+
+   # Append to any existing EDXAPP_LMS_ENV_EXTRA:
+   EDXAPP_LMS_ENV_EXTRA:
+     COURSE_MODE_DEFAULTS:
+       bulk_sku: !!null
+       currency: gbp
+       description: !!null
+       expiration_datetime: !!null
+       min_price: 0
+       name: Honor
+       sku: !!null
+       slug: honor
+       suggested_prices: ''
+   ```
 
 Test your configuration:
 
