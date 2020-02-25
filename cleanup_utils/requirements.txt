@@ -1,6 +1,6 @@
 boto3==1.9.171
 dns-lexicon==3.3.13
-Django==2.2.9
+Django==2.2.10
 django-environ==0.4.5
 mysqlclient==1.4.2.post1
 python-consul==1.1.0

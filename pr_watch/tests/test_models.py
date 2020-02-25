@@ -24,18 +24,19 @@ Tests for the WatchedPullRequest model and manager
 
 import textwrap
 from unittest.mock import call, patch
-import yaml
 
+import ddt
 from django.test import TestCase, override_settings
-
-from userprofile.factories import make_user_and_organization
+import yaml
 
 from pr_watch.models import WatchedPullRequest
 from pr_watch.tests.factories import PRFactory, WatchedForkFactory
+from userprofile.factories import make_user_and_organization
 
 
 # Tests #######################################################################
 
+@ddt.ddt
 class WatchedPullRequestTestCase(TestCase):
     """
     Test cases for WatchedPullRequest model and manager
@@ -145,13 +146,22 @@ class WatchedPullRequestTestCase(TestCase):
         'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    def test_create_from_pr(self, mock_consul):
+    @ddt.data(True, False)
+    def test_create_from_pr(self, use_watched_fork, mock_consul):
         """
         Create an instance from a pull request
         """
         pr = PRFactory()
         _, organization = make_user_and_organization()
-        watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
+        if use_watched_fork:
+            watched_fork = WatchedForkFactory(fork=pr.fork_name, organization=organization)
+            domain_prefix = ''
+            name_prefix = ''
+        else:
+            watched_fork = None
+            domain_prefix = 'ext'
+            name_prefix = 'EXT'
+
         instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertTrue(created)
 
@@ -161,11 +171,11 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(watched_pr.fork_name, pr.fork_name)
         self.assertEqual(watched_pr.branch_name, pr.branch_name)
 
-        internal_lms_domain = 'pr{}.sandbox.basedomain.com'.format(pr.number)
+        internal_lms_domain = '{}pr{}.sandbox.basedomain.com'.format(domain_prefix, pr.number)
         self.assertEqual(instance.internal_lms_domain, internal_lms_domain)
         self.assertEqual(instance.internal_lms_preview_domain, 'lms-preview.{}'.format(internal_lms_domain))
         self.assertEqual(instance.internal_studio_domain, 'studio-{}'.format(internal_lms_domain))
-        self.assertRegex(instance.name, r'^PR')
+        self.assertRegex(instance.name, r'^{}PR'.format(name_prefix))
         self.assertEqual(instance.edx_platform_commit, '9' * 40)
         same_instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertEqual(instance, same_instance)

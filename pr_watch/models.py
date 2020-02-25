@@ -115,7 +115,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
     Additional methods for WatchedPullRequest querysets
     Also used as the standard manager for the WatchedPullRequest model
     """
-    def get_or_create_from_pr(self, pr, watched_fork):
+    def get_or_create_from_pr(self, pr, watched_fork=None):
         """
         Get or create an instance for the given pull request
         """
@@ -178,7 +178,7 @@ class WatchedPullRequest(models.Model):
     # TODO: Remove parameters from 'update_instance_from_pr'; make it fetch PR details from the
     # api (including the head commit sha hash, which does not require a separate API call as
     # is currently used.)
-    watched_fork = models.ForeignKey(WatchedFork, blank=False, null=False, on_delete=models.CASCADE)
+    watched_fork = models.ForeignKey(WatchedFork, blank=True, null=True, on_delete=models.CASCADE)
     branch_name = models.CharField(max_length=255, default='master')
     ref_type = models.CharField(max_length=50, default='heads')
     github_organization_name = models.CharField(max_length=200, db_index=True)
@@ -302,39 +302,57 @@ class WatchedPullRequest(models.Model):
         assert self.branch_name == pr.branch_name
         # Create an instance if necessary:
         instance = self.instance or OpenEdXInstance()
-        instance.internal_lms_domain = generate_internal_lms_domain('pr{number}.sandbox'.format(number=pr.number))
+        is_external_pr = self.watched_fork is None
+        instance.internal_lms_domain = generate_internal_lms_domain(
+            '{prefix}pr{number}.sandbox'.format(
+                prefix='ext' if is_external_pr else '',
+                number=pr.number,
+            )
+        )
         instance.edx_platform_repository_url = self.repository_url
         instance.edx_platform_commit = self.get_branch_tip()
         instance.name = (
-            'PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {i.reference_name} ({commit_short_id})'
-            .format(pr=pr, i=self, commit_short_id=instance.edx_platform_commit[:7])
+            '{prefix}PR#{pr.number}: {pr.truncated_title} ({pr.username}) - {i.reference_name} ({commit_short_id})'
+            .format(
+                pr=pr,
+                i=self,
+                commit_short_id=instance.edx_platform_commit[:7],
+                prefix='EXT' if is_external_pr else '',
+            )
         )
-        instance.configuration_extra_settings = yaml_merge(
-            self.watched_fork.configuration_extra_settings,
-            pr.extra_settings
-        )
+        if is_external_pr:
+            instance.configuration_extra_settings = pr.extra_settings
+        else:
+            instance.configuration_extra_settings = yaml_merge(
+                self.watched_fork.configuration_extra_settings,
+                pr.extra_settings
+            )
         if not instance.ref.creator or not instance.ref.owner:
-            user = UserProfile.objects.get(github_username=pr.username)
-            instance.ref.creator = user
-            instance.ref.owner = user.organization
+            try:
+                user = UserProfile.objects.get(github_username=pr.username)
+                instance.ref.creator = user
+                instance.ref.owner = user.organization
+            except UserProfile.DoesNotExist:
+                # PR is not associated with an Ocim user
+                pass
         # Configuration repo and version and edx release follow this precedence:
         # 1) PR settings. 2) WatchedFork settings. 3) instance model defaults
         instance.configuration_source_repo_url = pr.get_extra_setting(
             'edx_ansible_source_repo',
             default=(
-                self.watched_fork.configuration_source_repo_url or
+                (self.watched_fork and self.watched_fork.configuration_source_repo_url) or
                 instance.configuration_source_repo_url
             )
         )
         instance.configuration_version = pr.get_extra_setting(
             'configuration_version', default=(
-                self.watched_fork.configuration_version or
+                (self.watched_fork and self.watched_fork.configuration_version) or
                 instance.configuration_version
             )
         )
         instance.openedx_release = pr.get_extra_setting(
             'openedx_release', default=(
-                self.watched_fork.openedx_release or
+                (self.watched_fork and self.watched_fork.openedx_release) or
                 instance.openedx_release
             )
         )
