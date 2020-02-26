@@ -208,7 +208,7 @@ def swift_service(
     """
 
     return SwiftService(options=dict(
-        auth_version='2',
+        auth_version='3',
         os_username=user,
         os_password=password,
         os_tenant_name=tenant,
