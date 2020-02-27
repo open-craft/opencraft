@@ -100,6 +100,31 @@ class OpenEdXMonitoringMixin:
             )
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
+        already_monitored_ssl_urls = set()
+
+        for monitor in self.new_relic_ssl_monitors.all():
+            url = newrelic.get_synthetics_monitor(monitor.pk)['uri']
+            if url in urls_to_monitor:
+                already_monitored_ssl_urls.add(url)
+                if not monitor.new_relic_ssl_alert_conditions.exists():
+                    alert_condition_id = newrelic.add_alert_condition(
+                        alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+                    )
+                    monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
+            else:
+                self.logger.info('Deleting New Relic Synthetics SSL monitor for old public URL %s', url)
+                monitor.delete()
+
+        for url in urls_to_monitor - already_monitored_ssl_urls:
+            self.logger.info('Creating New Relic Synthetics SSL monitor for new public URL %s', url)
+            new_ssl_monitor_id = newrelic.create_synthetics_ssl_monitor(url)
+            newrelic.update_synthetics_ssl_monitor(new_ssl_monitor_id, url)
+            monitor = self.new_relic_ssl_monitors.create(pk=new_ssl_monitor_id)
+            alert_condition_id = newrelic.add_alert_condition(
+                alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+            )
+            monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
+
     def _set_email_alerts(self, alert_policy):
         """
         Set up email alerts.
@@ -198,6 +223,26 @@ class NewRelicAvailabilityMonitor(models.Model):
         super().delete(*args, **kwargs)
 
 
+class NewRelicSSLMonitor(models.Model):
+    """
+    A New Relic Synthetics ssl monitor for an instance.
+    """
+    id = models.CharField(max_length=256, primary_key=True)
+    instance = models.ForeignKey(
+        'OpenEdXInstance', related_name='new_relic_ssl_monitors', on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.pk
+
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+        """
+        Disable this ssl monitor on delete.
+        """
+        newrelic.delete_synthetics_monitor(self.pk)
+        super().delete(*args, **kwargs)
+
+
 class NewRelicAlertPolicy(models.Model):
     """
     A New Relic alert policy for an instance.
@@ -253,6 +298,22 @@ class NewRelicAlertCondition(models.Model):
     )
     alert_policy = models.ForeignKey(
         'NewRelicAlertPolicy', related_name='new_relic_alert_conditions', on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return str(self.pk)
+
+
+class NewRelicSSLAlertCondition(models.Model):
+    """
+    A New Relic SSL alert condition for an instance under the alert policy
+    """
+    id = models.IntegerField(primary_key=True)
+    monitor = models.ForeignKey(
+        'NewRelicSSLMonitor', related_name='new_relic_ssl_alert_conditions', on_delete=models.CASCADE
+    )
+    alert_policy = models.ForeignKey(
+        'NewRelicAlertPolicy', related_name='new_relic_ssl_alert_conditions', on_delete=models.CASCADE
     )
 
     def __str__(self):

@@ -93,7 +93,53 @@ class NewRelicTestCase(TestCase):
             'frequency': 5,
             'locations': ['AWS_US_EAST_1'],
             'status': 'ENABLED',
+            'options': {'verifySSL': True},
         })
+
+    @responses.activate
+    def test_create_synthetics_ssl_monitor(self):
+        """
+        Check that the create_synthetics_ssl_monitor function creates an ssl monitor
+        and returns its id.
+        """
+        monitor_id = '683a16bd-fe4b-4a54-9925-8d90371ffa45'
+        monitor_url = '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL,
+                                                monitor_id)
+        responses.add(responses.POST,
+                      '{0}/monitors'.format(newrelic.SYNTHETICS_API_URL),
+                      adding_headers={'Location': monitor_url}, status=201)
+        url = 'http://newrelic-test.stage.opencraft.hosting/'
+        self.assertEqual(newrelic.create_synthetics_ssl_monitor(url), monitor_id)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertEqual(request_json, {
+            'name': url,
+            'type': 'SCRIPT_API',
+            'frequency': 1440,
+            'locations': ['AWS_US_EAST_1'],
+            'status': 'ENABLED',
+        })
+
+    @responses.activate
+    def test_update_synthetics_ssl_monitor(self):
+        """
+        Check that update_synthetics_ssl_monitor updates the script of the monitor
+        """
+        monitor_id = '683a16bd-fe4b-4a54-9925-8d90371ffa45'
+        monitor_url = '{0}/monitors/{1}/script'.format(newrelic.SYNTHETICS_API_URL,
+                                                       monitor_id)
+        responses.add(responses.PUT,
+                      '{0}/monitors/{1}/script'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
+                      adding_headers={'Location': monitor_url}, status=201)
+        url = 'https://newrelic-test.stage.opencraft.hosting/'
+        newrelic.update_synthetics_ssl_monitor(monitor_id, url)
+        self.assertEqual(len(responses.calls), 1)
+        request_json = json.loads(responses.calls[0].request.body.decode())
+        request_headers = responses.calls[0].request.headers
+        self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        self.assertIn('scriptText', request_json)
 
     @responses.activate
     def test_get_synthetics_notification_emails(self):
