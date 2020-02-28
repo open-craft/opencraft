@@ -52,10 +52,13 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
+    ThemeSchemaSerializerGenerator,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
+from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
+
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +187,54 @@ class OpenEdXInstanceConfigViewSet(
     @swagger_auto_schema(request_body=OpenEdXInstanceConfigUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
         return super(OpenEdXInstanceConfigViewSet, self).partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=ThemeSchemaSerializerGenerator,
+        responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializerGenerator, },
+    )
+    @action(detail=True, methods=["patch"])
+    def theme_config(self, request, pk=None):
+        """
+        Partial update for theme configuration
+
+        This is a custom handler to partially update theme fields.
+        """
+        application = self.get_object()
+
+        # Sanitize inputs
+        serializer = ThemeSchemaSerializerGenerator(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        # Merges the current aplication theme draft with the values modified by
+        # the user and performs validation.
+        # If the key is empty (""), the user reverted the field to the default
+        # value, and the key needs to be erased.
+        merged_theme = {
+            key: value for key, value in {
+                **application.draft_theme_config, **serializer.validated_data
+            }.items() if value != ""
+        }
+        # To make sure the required values are always available, merge dict with
+        # default values dictionary.
+        # This API only changes values for the v1 schema, so it's hardcoded here
+        safe_merged_theme = {
+            'version': 1,
+            **DEFAULT_THEME,
+            **merged_theme
+        }
+
+        # TODO: Needs additional validation/filling up if button customization
+        # is enabled to prevent the validation schema from failing
+
+        # Perform validation, handle error if failed, and return updated
+        # theme_config if succeds.
+        theme_schema_validate(safe_merged_theme)
+
+        application.draft_theme_config = safe_merged_theme
+        application.save()
+
+        return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
 
     def get_queryset(self):
         """

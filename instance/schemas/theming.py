@@ -166,6 +166,27 @@ theme_schema = {
     "oneOf": [nullable_schema, theme_schema_v0, theme_schema_v1]
 }
 
+DEFAULT_THEME = {
+    "version": 1,
+    "main-color": "#126F9A",
+    "link-color": "#126F9A",
+    "header-bg": "#FFFFFF",
+    "footer-bg": "#FFFFFF",
+    # Primary button theming
+    "btn-primary-bg": "#126F9A",
+    "btn-primary-color": "#FFFFFF",
+    "btn-primary-border-color": "#126F9A",
+    "btn-primary-hover-bg": "#FFFFFF",
+    "btn-primary-hover-color": "#126F9A",
+    "btn-primary-hover-border-color": "#126F9A",
+    # Secondary button theming
+    "btn-secondary-bg": "#FFFFFF",
+    "btn-secondary-color": "#126F9A",
+    "btn-secondary-border-color": "#126F9A",
+    "btn-secondary-hover-bg": "#126F9A",
+    "btn-secondary-hover-color": "#FFFFFF",
+    "btn-secondary-hover-border-color": "#FFFFFF",
+}
 
 def theme_schema_validate(value, schema=None):
     """
