@@ -42,30 +42,6 @@ export interface ThemeSchemaSerializerGenerator {
      * @type {string}
      * @memberof ThemeSchemaSerializerGenerator
      */
-    headerBgColor?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
-     */
-    footerBgColor?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
-     */
-    mainColor?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
-     */
-    linkColor?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
-     */
     headerBg?: string;
     /**
      * 
@@ -374,10 +350,6 @@ export function ThemeSchemaSerializerGeneratorFromJSONTyped(json: any, ignoreDis
     return {
         
         'version': json['version'],
-        'mainColor': !exists(json, 'main_color') ? undefined : json['main_color'],
-        'linkColor': !exists(json, 'link_color') ? undefined : json['link_color'],
-        'headerBgColor': !exists(json, 'header_bg_color') ? undefined : json['header_bg_color'],
-        'footerBgColor': !exists(json, 'footer_bg_color') ? undefined : json['footer_bg_color'],
         'mainColor': !exists(json, 'main-color') ? undefined : json['main-color'],
         'linkColor': !exists(json, 'link-color') ? undefined : json['link-color'],
         'headerBg': !exists(json, 'header-bg') ? undefined : json['header-bg'],
@@ -443,10 +415,6 @@ export function ThemeSchemaSerializerGeneratorToJSON(value?: ThemeSchemaSerializ
     return {
         
         'version': value.version,
-        'main_color': value.mainColor,
-        'link_color': value.linkColor,
-        'header_bg_color': value.headerBgColor,
-        'footer_bg_color': value.footerBgColor,
         'main-color': value.mainColor,
         'link-color': value.linkColor,
         'header-bg': value.headerBg,

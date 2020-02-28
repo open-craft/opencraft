@@ -180,8 +180,10 @@ class ThemeSchemaSerializerGenerator(serializers.Serializer):
         """
         super().__init__(*args, **kwargs)
 
+        # Just using the new v1 schema for now, adding the v0 schema breaks
+        # code generation because one variable is named main_color and other is
+        # main-color and both get converted to mainColor in TS
         theme_schema_combined = {
-            **theme_schema_v0['properties'],
             **theme_schema_v1['properties']
         }
         for key, value in theme_schema_combined.items():
