@@ -228,12 +228,14 @@ class BetaTestApplicationViewTestMixin:
         self.assertEqual(BetaTestApplication.objects.count(), original_count)
         self.assertEqual(len(mail.outbox), 0)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_valid_application(self):
         """
         Test a valid beta test application.
         """
         self._assert_registration_succeeds(self.form_data)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @data('hogwarts', 'hog-warts', 'hog1warts')
     def test_valid_subdomain(self, good_subdomain):
         """
@@ -408,7 +410,7 @@ class BetaTestApplicationViewTestMixin:
             ],
         })
 
-    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None, INSTANCE_STORAGE_TYPE='s3')
     def test_existing_user(self):
         """
         Logged in user already exists but has not registered.
@@ -449,6 +451,7 @@ class BetaTestApplicationViewTestMixin:
 
     @override_settings(
         DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/test-no-privacy',
+        INSTANCE_STORAGE_TYPE='s3'
     )
     def test_no_privacy_url_specified(self):
         """
@@ -552,6 +555,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
             ]
         self._assert_registration_fails(self.form_data, expected_errors=expected_errors)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_modify_immutable_fields(self):
         """
         Check that non-modifiable fields cannot be modified once a user has
@@ -567,7 +571,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
-    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None)
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL=None, INSTANCE_STORAGE_TYPE='s3')
     def test_modify_user(self):
         """
         Check that the username and email fields cannot be modified if the user
@@ -589,7 +593,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
-    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com')
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com', INSTANCE_STORAGE_TYPE='s3')
     def test_modifying_design_fields_sends_email(self):
         """
         Check that after an user changes certain fields, we'll get a notification
@@ -630,6 +634,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
             self._register(modified)
             self.assertEqual(len(mail.outbox), original_emails + 1)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_preserve_empty_privacy_url(self):
         """
         Existing applications with an empty Privacy Policy URL must be
@@ -651,6 +656,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         self.assertEqual(application.header_bg_color, '#fefefe')
         self.assertFalse(application.privacy_policy_url)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @data(
         'http://example.com/valid-privacy',
         'http://example.com:5000/valid-privacy',
@@ -698,6 +704,7 @@ class LoginTestCase(UserMixin, TestCase):
     """
     url = reverse('registration:login')
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_login(self):
         """
         Test that users can login.
