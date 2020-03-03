@@ -174,6 +174,10 @@ class OpenEdXInstanceConfigViewSet(
         When a new instance is registered queue its public contact email for verification.
         """
         instance = serializer.save()
+        # Deploy default theme for users that just registered
+        instance.draft_theme_config = DEFAULT_THEME
+        instance.save()
+        # Send verification emails
         verify_user_emails(instance.user, instance.public_contact_email)
 
     def perform_update(self, serializer):
