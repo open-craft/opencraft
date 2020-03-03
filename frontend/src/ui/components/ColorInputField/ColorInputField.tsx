@@ -2,13 +2,13 @@ import * as React from 'react';
 import { FormControl, FormGroup, FormLabel } from 'react-bootstrap';
 import { BlockPicker } from 'react-color';
 import { WrappedMessage } from 'utils/intl';
+import { messages as internalMessages } from './displayMessages';
 import './styles.scss';
 
 interface ColorInputFieldProps {
   fieldName: string;
-  value?: string;
+  initialValue?: string;
   onChange?: any;
-  onBlur?: any;
   error?: string;
   messages: any;
   isValid?: boolean;
@@ -20,21 +20,21 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
 ) => {
   const hasHelpMessage = `${props.fieldName}Help` in props.messages;
   const [colorPicker, setColorPicker] = React.useState(false);
-  const [selectedColor, setColor] = React.useState(props.value);
+  const [selectedColor, setColor] = React.useState(props.initialValue);
 
   const showColorPicker = () => {
     setColorPicker(true);
   };
 
   const resetColor = () => {
-    setColor(props.value);
-    props.onBlur();
+    setColor(props.initialValue);
+    props.onChange(props.fieldName, selectedColor);
   };
 
   const hideColorPickerAndSubmit = () => {
     setColorPicker(false);
 
-    if (selectedColor !== props.value) {
+    if (selectedColor !== props.initialValue) {
       // Only trigger action if value changed
       props.onChange(props.fieldName, selectedColor);
     }
@@ -63,7 +63,7 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
       )}
       <p>
         <button onClick={resetColor}>
-          <WrappedMessage id="reset" messages={props.messages} />
+          <WrappedMessage id="reset" messages={internalMessages} />
         </button>
       </p>
 

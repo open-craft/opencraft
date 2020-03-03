@@ -201,7 +201,7 @@ export const updateThemeFieldValue = (
   });
 
   try {
-    let response = await V2Api.instancesOpenedxConfigThemeConfig({
+    const response = await V2Api.instancesOpenedxConfigThemeConfig({
       id: String(instanceId),
       data: {
         [fieldName]: value

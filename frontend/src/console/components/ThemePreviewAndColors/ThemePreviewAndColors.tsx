@@ -58,29 +58,17 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
     const instance = this.props.activeInstance;
 
     if (instance.data) {
-      this.props.updateThemeFieldValue(
-        instance.data.id,
-        fieldName,
-        newColor
-      );
-    }
-  };
-
-  private updateValue = (fieldName: string, value: string) => {
-    const instance = this.props.activeInstance;
-
-    // Only make update request if field changed
-    if (instance.data) {
-      this.props.updateThemeFieldValue(
-        instance.data.id,
-        fieldName,
-        value
-      );
+      this.props.updateThemeFieldValue(instance.data.id, fieldName, newColor);
     }
   };
 
   public render() {
     const instance = this.props.activeInstance;
+    let themeData;
+
+    if (instance.data && instance.data.draftThemeConfig) {
+      themeData = instance.data.draftThemeConfig;
+    }
 
     return (
       <ConsolePage contentLoading={this.props.loading}>
@@ -88,33 +76,29 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
           <WrappedMessage messages={messages} id="themePreviewAndColors" />
         </h2>
 
-        <Container>
-          <Row>
-            <Col>
-              <ColorInputField
-                fieldName="mainColor"
-                value={this.state.mainColor}
-                onChange={this.onChangeColor}
-                onBlur={() => {
-                  this.updateValue('mainColor', this.state.mainColor);
-                }}
-                messages={messages}
-                loading={instance.loading.includes('instanceName')}
-              />
-              <ColorInputField
-                fieldName="accentColor"
-                value={this.state.accentColor}
-                onChange={this.onChangeColor}
-                onBlur={() => {
-                  this.updateValue('accentColor', this.state.accentColor);
-                }}
-                messages={messages}
-                loading={instance.loading.includes('accentColor')}
-              />
-            </Col>
-            <Col xs={8}>Placeholder from theme preview component</Col>
-          </Row>
-        </Container>
+        {themeData && themeData.version === 1 && (
+          <Container>
+            <Row>
+              <Col>
+                <ColorInputField
+                  fieldName="mainColor"
+                  initialValue={themeData.mainColor}
+                  onChange={this.onChangeColor}
+                  messages={messages}
+                  loading={instance.loading.includes('instanceName')}
+                />
+                <ColorInputField
+                  fieldName="accentColor"
+                  initialValue={this.state.accentColor}
+                  onChange={this.onChangeColor}
+                  messages={messages}
+                  loading={instance.loading.includes('accentColor')}
+                />
+              </Col>
+              <Col xs={8}>Theme preview component</Col>
+            </Row>
+          </Container>
+        )}
       </ConsolePage>
     );
   }
