@@ -1,0 +1,682 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ColorInputField Component Correctly renders color input field. 1`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": undefined,
+        }
+      }
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+</div>
+`;
+
+exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 1`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": "#FFFFFF",
+        }
+      }
+      value="#FFFFFF"
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+</div>
+`;
+
+exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 2`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": "#FFFFFF",
+        }
+      }
+      value="#FFFFFF"
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+  <div
+    className="input-color-picker"
+    onBlur={[Function]}
+    onKeyDown={[Function]}
+  >
+    <div
+      className="block-picker "
+      style={
+        Object {
+          "MozBorderRadius": "6px",
+          "MozBoxShadow": "0 1px rgba(0,0,0,.1)",
+          "OBorderRadius": "6px",
+          "OBoxShadow": "0 1px rgba(0,0,0,.1)",
+          "WebkitBorderRadius": "6px",
+          "WebkitBoxShadow": "0 1px rgba(0,0,0,.1)",
+          "background": "#fff",
+          "borderRadius": "6px",
+          "boxShadow": "0 1px rgba(0,0,0,.1)",
+          "msBorderRadius": "6px",
+          "msBoxShadow": "0 1px rgba(0,0,0,.1)",
+          "position": "relative",
+          "width": 170,
+        }
+      }
+    >
+      <div
+        style={
+          Object {
+            "borderColor": "transparent transparent #ffffff transparent",
+            "borderStyle": "solid",
+            "borderWidth": "0 10px 10px 10px",
+            "height": "0px",
+            "left": "50%",
+            "marginLeft": "-10px",
+            "position": "absolute",
+            "top": "-10px",
+            "width": "0px",
+          }
+        }
+      />
+      <div
+        style={
+          Object {
+            "MozBorderRadius": "6px 6px 0 0",
+            "OBorderRadius": "6px 6px 0 0",
+            "WebkitBorderRadius": "6px 6px 0 0",
+            "WebkitJustifyContent": "center",
+            "alignItems": "center",
+            "background": "#ffffff",
+            "borderRadius": "6px 6px 0 0",
+            "display": "flex",
+            "height": "110px",
+            "justifyContent": "center",
+            "msBorderRadius": "6px 6px 0 0",
+            "position": "relative",
+          }
+        }
+      >
+        <div
+          style={
+            Object {
+              "color": "#000",
+              "fontSize": "18px",
+              "position": "relative",
+            }
+          }
+        >
+          #ffffff
+        </div>
+      </div>
+      <div
+        style={
+          Object {
+            "padding": "10px",
+          }
+        }
+      >
+        <div
+          style={
+            Object {
+              "marginRight": "-10px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#D9E3F0",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#D9E3F0"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#F47373",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#F47373"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#697689",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#697689"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#37D67A",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#37D67A"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#2CCCE4",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#2CCCE4"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#555555",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#555555"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#dce775",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#dce775"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#ff8a65",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#ff8a65"
+            />
+          </span>
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "4px",
+                  "OBorderRadius": "4px",
+                  "WebkitBorderRadius": "4px",
+                  "background": "#ba68c8",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "float": "left",
+                  "height": "22px",
+                  "marginBottom": "10px",
+                  "marginRight": "10px",
+                  "msBorderRadius": "4px",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "22px",
+                }
+              }
+              tabIndex={0}
+              title="#ba68c8"
+            />
+          </span>
+          <div
+            style={
+              Object {
+                "clear": "both",
+              }
+            }
+          />
+        </div>
+        <div
+          style={
+            Object {
+              "position": "relative",
+            }
+          }
+        >
+          <input
+            onBlur={[Function]}
+            onChange={[Function]}
+            onKeyDown={[Function]}
+            spellCheck="false"
+            style={
+              Object {
+                "MozBorderRadius": "4px",
+                "MozBoxShadow": "inset 0 0 0 1px #ddd",
+                "OBorderRadius": "4px",
+                "OBoxShadow": "inset 0 0 0 1px #ddd",
+                "WebkitBorderRadius": "4px",
+                "WebkitBoxShadow": "inset 0 0 0 1px #ddd",
+                "border": "0px",
+                "borderRadius": "4px",
+                "boxShadow": "inset 0 0 0 1px #ddd",
+                "boxSizing": "border-box",
+                "color": "#666",
+                "fontSize": "12px",
+                "height": "22px",
+                "msBorderRadius": "4px",
+                "msBoxShadow": "inset 0 0 0 1px #ddd",
+                "outline": "none",
+                "padding": "0 7px",
+                "width": "100%",
+              }
+            }
+            value="#FFFFFF"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 3`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": "#FFFFFF",
+        }
+      }
+      value="#FFFFFF"
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+</div>
+`;
+
+exports[`ColorInputField Component Render loading. 1`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      disabled={true}
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": "#FFFFFF",
+        }
+      }
+      value="#FFFFFF"
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+</div>
+`;
+
+exports[`ColorInputField Component Render with default value. 1`] = `
+<div
+  className="form-group"
+>
+  <label
+    className="form-label"
+  >
+    Test
+  </label>
+  <div
+    className="row"
+  >
+    <input
+      className="input-field-color form-control"
+      name="test"
+      onFocus={[Function]}
+      readOnly={true}
+      style={
+        Object {
+          "color": "#FFFFFF",
+        }
+      }
+      value="#FFFFFF"
+    />
+    <div
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <i
+        className="fas fa-info-circle"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      className="reset-value"
+      onClick={[Function]}
+      type="button"
+    >
+      reset
+    </button>
+  </p>
+</div>
+`;

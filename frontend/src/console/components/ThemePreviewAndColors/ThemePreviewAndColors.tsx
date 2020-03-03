@@ -77,7 +77,7 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
         </h2>
 
         {themeData && themeData.version === 1 && (
-          <Container>
+          <Container className="theme-colors-and-prevew-container">
             <Row>
               <Col>
                 <ColorInputField
