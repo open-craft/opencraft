@@ -85,6 +85,8 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
         <div
           className="input-color-picker"
           onBlur={hideColorPickerAndSubmit}
+          role="button"
+          tabIndex={0}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               hideColorPickerAndSubmit();
