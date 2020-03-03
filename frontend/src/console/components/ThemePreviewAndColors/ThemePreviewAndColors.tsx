@@ -10,12 +10,7 @@ import { WrappedMessage } from 'utils/intl';
 import { updateThemeFieldValue } from 'console/actions';
 import messages from './displayMessages';
 
-interface State {
-  [key: string]: string;
-  mainColor: string;
-  accentColor: string;
-}
-
+interface State {}
 interface ActionProps {
   updateThemeFieldValue: Function;
 }
@@ -26,34 +21,6 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
   Props,
   State
 > {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      mainColor: '',
-      accentColor: ''
-    };
-  }
-
-  public componentDidUpdate(prevProps: Props) {
-    // Fill fields after finishing loading data
-    this.needToUpdateInstanceFields(prevProps);
-  }
-
-  private needToUpdateInstanceFields = (prevProps: Props) => {
-    const instance = this.props.activeInstance.data;
-    if (
-      prevProps.activeInstance.data === null &&
-      instance &&
-      instance.draftThemeConfig
-    ) {
-      this.setState({
-        mainColor: instance.draftThemeConfig.mainColor!,
-        accentColor: instance.draftThemeConfig.accentColor!
-      });
-    }
-  };
-
   private onChangeColor = (fieldName: string, newColor: string) => {
     const instance = this.props.activeInstance;
 
@@ -88,11 +55,11 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
                   loading={instance.loading.includes('instanceName')}
                 />
                 <ColorInputField
-                  fieldName="accentColor"
-                  initialValue={this.state.accentColor}
+                  fieldName="linkColor"
+                  initialValue={themeData.linkColor}
                   onChange={this.onChangeColor}
                   messages={messages}
-                  loading={instance.loading.includes('accentColor')}
+                  loading={instance.loading.includes('linkColor')}
                 />
               </Col>
               <Col xs={8}>Theme preview component</Col>
