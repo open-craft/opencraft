@@ -33,7 +33,7 @@ from rest_framework.validators import UniqueValidator
 from registration.api.v2 import constants
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
-from instance.schemas.theming import theme_schema_v0, theme_schema_v1, ref
+from instance.schemas.theming import theme_schema_v1, ref
 
 logger = logging.getLogger(__name__)
 
