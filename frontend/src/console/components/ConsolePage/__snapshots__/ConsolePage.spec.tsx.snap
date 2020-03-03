@@ -63,7 +63,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
           className="row"
         >
           <div
-            className="col-md-4"
+            className="col-md-3"
           >
             <div
               className="customization-menu accordion"
@@ -235,7 +235,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
             </div>
           </div>
           <div
-            className="customization-form col-md-8"
+            className="customization-form col-md-9"
           >
             <div
               className="loading"
@@ -329,7 +329,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
           className="row"
         >
           <div
-            className="col-md-4"
+            className="col-md-3"
           >
             <div
               className="customization-menu accordion"
@@ -501,7 +501,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
             </div>
           </div>
           <div
-            className="customization-form col-md-8"
+            className="customization-form col-md-9"
           >
             <span>
                Test! 

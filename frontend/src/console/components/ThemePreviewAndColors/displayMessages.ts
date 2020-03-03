@@ -12,12 +12,12 @@ const messages = {
       'The majority of the colors on your site will be this color.',
     description: ''
   },
-  accentColor: {
-    defaultMessage: 'Accent Color',
+  linkColor: {
+    defaultMessage: 'Link Color',
     description: ''
   },
-  accentColorHelp: {
-    defaultMessage: 'The highlights or active elements will be this color.',
+  linkColorHelp: {
+    defaultMessage: 'The highlights and links will be this color.',
     description: ''
   }
 };
