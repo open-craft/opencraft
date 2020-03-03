@@ -28,6 +28,7 @@ export const ROUTES = {
   },
   Console: {
     HOME: '/console',
+    THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general'
   },
   Registration: {
