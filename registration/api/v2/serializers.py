@@ -189,7 +189,7 @@ class ThemeSchemaSerializerGenerator(serializers.Serializer):
         for key, value in theme_schema_combined.items():
             field_type = None
             if key == 'version':
-                field_type = serializers.IntegerField()
+                field_type = serializers.IntegerField(required=False)
             elif value == ref('flag'):
                 field_type = serializers.BooleanField(required=False)
             else:

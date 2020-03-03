@@ -24,7 +24,7 @@ export interface ThemeSchemaSerializerGenerator {
      * @type {number}
      * @memberof ThemeSchemaSerializerGenerator
      */
-    version: number;
+    version?: number;
     /**
      * 
      * @type {string}
@@ -349,7 +349,7 @@ export function ThemeSchemaSerializerGeneratorFromJSONTyped(json: any, ignoreDis
     }
     return {
         
-        'version': json['version'],
+        'version': !exists(json, 'version') ? undefined : json['version'],
         'mainColor': !exists(json, 'main-color') ? undefined : json['main-color'],
         'linkColor': !exists(json, 'link-color') ? undefined : json['link-color'],
         'headerBg': !exists(json, 'header-bg') ? undefined : json['header-bg'],
