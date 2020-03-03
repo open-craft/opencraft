@@ -169,6 +169,10 @@ export const submitRegistration = (
         );
 
         try {
+          // Don't send external domain if not using one
+          if (instanceData.externalDomain === '') {
+            delete instanceData.externalDomain
+          }
           // Create instance
           await V2Api.instancesOpenedxConfigCreate({ data: instanceData });
 
