@@ -193,7 +193,4 @@ def theme_schema_validate(value, schema=None):
     Re-raise the schema errors as validation errors so they can be handled
     better by Django.
     """
-    try:
-        validate(instance=value, schema=schema if schema is not None else theme_schema)
-    except JSONSchemaValidationError as e:
-        raise ValidationError(message=str(e))
+    validate(instance=value, schema=schema if schema is not None else theme_schema)

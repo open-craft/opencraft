@@ -25,6 +25,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -233,7 +234,17 @@ class OpenEdXInstanceConfigViewSet(
 
         # Perform validation, handle error if failed, and return updated
         # theme_config if succeds.
-        theme_schema_validate(safe_merged_theme)
+        try:
+            theme_schema_validate(safe_merged_theme)
+        except JSONSchemaValidationError as e:
+            # TODO: improve schema error feedback. Needs to be done along with
+            # multiple fronend changes to allow individual fields feedback.
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "errors": "Schema validation failed."
+                }
+            )
 
         application.draft_theme_config = safe_merged_theme
         application.save()
