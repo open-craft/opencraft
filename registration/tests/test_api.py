@@ -33,6 +33,7 @@ from instance.tests.base import create_user_and_profile
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.models import BetaTestApplication
+from instance.schemas.theming import DEFAULT_THEME
 
 
 @ddt.ddt
@@ -351,6 +352,84 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         else:
             # An anonymous user should get 403 while an authenticated user should get 404
             self.assertIn(response.status_code, (403, 404))
+
+    def test_theme_config_api_no_theme_set(self):
+        """
+        Test updating theming values
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data={
+                "version": 1
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @ddt.data(
+        {"main-color": "#ffaaff"},
+        {"main-color": "#ffaaff", "link-color": "#aabbaa"},
+        {"main-color": "#ffaaff", "link-color": "#aabbaa", "footer-color": "#123542"},
+    )
+    def test_theme_config_api_change_theme(self, theme_data):
+        """
+        Test updating theming values
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Set up simple theme
+        self.instance_config.draft_theme_config = DEFAULT_THEME
+        self.instance_config.save()
+
+        # Request changes
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data=theme_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Check if changes were saved
+        self.instance_config.refresh_from_db()
+        for key, value in theme_data.items():
+            self.assertEqual(self.instance_config.draft_theme_config[key], value)
+
+    def test_theme_config_api_erase_value(self):
+        """
+        Test updating theming values
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Set up simple theme
+        self.instance_config.draft_theme_config = {**DEFAULT_THEME}  # Copy dict instead of assgning it
+        self.instance_config.draft_theme_config['main-nav-color'] = "#fafafa"
+        self.instance_config.save()
+
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data={
+                "main-color": "",
+                "main-nav-color": ""
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Check if changes were saved
+        self.instance_config.refresh_from_db()
+        # Empty fields sent through the API should have either the default
+        # simple theme value for required values or an undefined key
+        self.assertEqual(
+            DEFAULT_THEME["main-color"],
+            self.instance_config.draft_theme_config["main-color"]
+        )
+        self.assertNotIn("btn-sign-in-bg", self.instance_config.draft_theme_config.keys())
+
 
 @ddt.ddt
 class InstanceDeploymentAPITestCase(APITestCase):

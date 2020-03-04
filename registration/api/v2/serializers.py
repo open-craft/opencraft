@@ -195,7 +195,8 @@ class ThemeSchemaSerializerGenerator(serializers.Serializer):
             else:
                 field_type = serializers.CharField(
                     max_length=7,
-                    required=False
+                    required=False,
+                    allow_blank=True,
                     # TODO: Add a color validator here
                 )
             self.fields[key] = field_type

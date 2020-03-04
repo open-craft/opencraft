@@ -205,6 +205,13 @@ class OpenEdXInstanceConfigViewSet(
         This is a custom handler to partially update theme fields.
         """
         application = self.get_object()
+        if not application.draft_theme_config:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "non_field_errors": "V1 theme isn't set up yet."
+                }
+            )
 
         # Sanitize inputs
         serializer = ThemeSchemaSerializerGenerator(data=request.data)
@@ -220,6 +227,7 @@ class OpenEdXInstanceConfigViewSet(
                 **application.draft_theme_config, **serializer.validated_data
             }.items() if value != ""
         }
+
         # To make sure the required values are always available, merge dict with
         # default values dictionary.
         # This API only changes values for the v1 schema, so it's hardcoded here
@@ -242,7 +250,7 @@ class OpenEdXInstanceConfigViewSet(
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={
-                    "errors": "Schema validation failed."
+                    "non_field_errors": "Schema validation failed."
                 }
             )
 
