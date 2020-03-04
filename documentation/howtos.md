@@ -19,6 +19,16 @@ EDXAPP_ADDITIONAL_CRON_JOBS:
   hour: "*"
   minute: "43"
   day: "*"
+# update_index is required but isn't currently part of the provisioning
+# process. So in the interests of saving time, this is run every 10 minutes
+# through cron (it's not an expensive operation). TODO: remove this once
+# update_index is part of provisioning.
+- name: "discovery: update_index"
+  user: "root"
+  job: "sudo -u discovery bash -c 'source {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery update_index --disable-change-limit'"
+  hour: "*"
+  minute: "*/10"
+  day: "*"
 ```
 
 * Set these extra variables on the instance:
