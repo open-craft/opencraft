@@ -144,6 +144,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
     className="input-color-picker"
     onBlur={[Function]}
     onKeyDown={[Function]}
+    role="button"
+    tabIndex={0}
   >
     <div
       className="block-picker "
