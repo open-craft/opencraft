@@ -71,4 +71,38 @@ describe("Theme preview and colors page", function() {
       ).toJSON();
       expect(tree).toMatchSnapshot();
   });
+
+  it('Render theme settings page with theme set up, fields disabled after pushing changes.', () => {
+      const tree = setupComponentForTesting(
+        <ThemePreviewAndColors />,
+        {
+          console: {
+            loading: false,
+            activeInstance: {
+              data: {
+                id: 1,
+                instanceName: "test",
+                subdomain: "test",
+                draftThemeConfig: {
+                  version: 1,
+                  mainColor: "#444444",
+                  linkColor: "#FFAAFF"
+                }
+              },
+              loading: ['draftThemeConfig'],
+              deployment: {
+                status: "NO_STATUS",
+                undeployedChanges: 0
+              }
+            },
+            instances: [{
+              id: 1,
+              instanceName: "test",
+              subdomain: "test",
+            }]
+          }
+        }
+      ).toJSON();
+      expect(tree).toMatchSnapshot();
+  });
 });
