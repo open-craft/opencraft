@@ -207,7 +207,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    draft_theme_config = ThemeSchemaSerializerGenerator(required=False)
+    draft_theme_config = ThemeSchemaSerializerGenerator(read_only=True)
 
     def validate_user(self, value):
         """
