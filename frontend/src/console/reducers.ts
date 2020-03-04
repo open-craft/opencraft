@@ -59,24 +59,26 @@ export function consoleReducer(
           }
         }
       });
-      case Actions.Types.UPDATE_INSTANCE_THEME:
-        return update(state, {
-          activeInstance: {
-            loading: {
-              $push: ['draftThemeConfig']
-            }
+    case Actions.Types.UPDATE_INSTANCE_THEME:
+      return update(state, {
+        activeInstance: {
+          loading: {
+            $push: ['draftThemeConfig']
           }
-        });
+        }
+      });
     case Actions.Types.UPDATE_INSTANCE_THEME_SUCCESS:
       return update(state, {
         activeInstance: {
           data: {
             draftThemeConfig: {
               $merge: action.data
-            },
+            }
           },
           loading: {
-            $set: state.activeInstance.loading.filter(x => (x !== 'draftThemeConfig'))
+            $set: state.activeInstance.loading.filter(
+              x => x !== 'draftThemeConfig'
+            )
           }
         }
       });
@@ -84,7 +86,9 @@ export function consoleReducer(
       return update(state, {
         activeInstance: {
           loading: {
-            $set: state.activeInstance.loading.filter(x => (x !== 'draftThemeConfig'))
+            $set: state.activeInstance.loading.filter(
+              x => x !== 'draftThemeConfig'
+            )
           }
         }
       });
