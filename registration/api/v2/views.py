@@ -244,7 +244,7 @@ class OpenEdXInstanceConfigViewSet(
         # theme_config if succeds.
         try:
             theme_schema_validate(safe_merged_theme)
-        except JSONSchemaValidationError as e:
+        except JSONSchemaValidationError:
             # TODO: improve schema error feedback. Needs to be done along with
             # multiple fronend changes to allow individual fields feedback.
             return Response(

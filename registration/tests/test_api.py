@@ -29,11 +29,11 @@ from rest_framework.test import APITestCase
 from simple_email_confirmation.models import EmailAddress
 
 from instance.models.appserver import Status
+from instance.schemas.theming import DEFAULT_THEME
 from instance.tests.base import create_user_and_profile
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.models import BetaTestApplication
-from instance.schemas.theming import DEFAULT_THEME
 
 
 @ddt.ddt

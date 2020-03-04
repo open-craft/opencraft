@@ -19,10 +19,7 @@
 """
 Theming relates schemas for validating theme configurations.
 """
-from django.core.exceptions import ValidationError
 from jsonschema import validate
-from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
-
 
 color_regex = '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 
