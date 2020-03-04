@@ -39,7 +39,7 @@ cookies==2.2.1
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
 coverage==4.5.3
-cryptography==2.7         # via autobahn, openstacksdk, pyopenssl, service-identity
+cryptography==2.7         # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
 cssutils==1.0.2           # via pynliner
 daphne==2.3.0             # via channels
 ddt==1.2.1
@@ -83,6 +83,7 @@ honcho==1.0.1
 huey==2.1.0
 hyperlink==19.0.0         # via twisted
 idna==2.8
+importlib-metadata==1.5.0  # via jsonschema
 incremental==17.5.0       # via twisted
 inflection==0.3.1         # via drf-yasg
 ipdb==0.12
@@ -97,7 +98,7 @@ jinja2==2.10.3            # via coreschema
 jmespath==0.9.4           # via boto3, botocore, openstacksdk
 jsonpatch==1.24           # via openstacksdk, warlock
 jsonpointer==2.0          # via jsonpatch
-jsonschema==3.0.2         # via warlock
+jsonschema==3.2.0
 keystoneauth1==3.14.0
 lazy-object-proxy==1.4.1  # via astroid
 libsass==0.19.2           # via django-libsass
@@ -151,7 +152,7 @@ pylint-plugin-utils==0.5
 pylint==2.2.3
 pymongo==3.8.0
 pynliner==0.8.0           # via django-inlinecss
-pyopenssl==19.0.0         # via python-glanceclient
+pyopenssl==19.0.0         # via python-glanceclient, requests
 pyparsing==2.4.2          # via cliff, oslo.utils, packaging
 pyperclip==1.7.0          # via cmd2
 pyrsistent==0.15.4        # via jsonschema
@@ -205,7 +206,8 @@ wcwidth==0.1.7            # via cmd2, prompt-toolkit
 werkzeug==0.15.4
 wrapt==1.11.2             # via astroid, debtcollector, python-glanceclient
 zc.lockfile==2.0          # via cherrypy
+zipp==3.1.0               # via importlib-metadata
 zope.interface==4.6.0     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==42.0.2        # via ipdb, ipython, jsonschema, pyhamcrest, zc.lockfile, zope.interface
+# setuptools==45.2.0        # via ipdb, ipython, jsonschema, pyhamcrest, tldextract, zc.lockfile, zope.interface
