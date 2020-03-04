@@ -52,14 +52,14 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
                   initialValue={themeData.mainColor}
                   onChange={this.onChangeColor}
                   messages={messages}
-                  loading={instance.loading.includes('instanceName')}
+                  loading={instance.loading.includes('draftThemeConfig')}
                 />
                 <ColorInputField
                   fieldName="linkColor"
                   initialValue={themeData.linkColor}
                   onChange={this.onChangeColor}
                   messages={messages}
-                  loading={instance.loading.includes('linkColor')}
+                  loading={instance.loading.includes('draftThemeConfig')}
                 />
               </Col>
               <Col xs={8}>Theme preview component</Col>
