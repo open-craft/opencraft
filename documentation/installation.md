@@ -20,6 +20,10 @@ development environment:
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
+Install the plugin vagrant-vbguest:
+
+    vagrant plugin install vagrant-vbguest
+
 Once you have these tools installed, download the [Ocim repository]
 (https://github.com/open-craft/opencraft) if you have not already done it.
 
