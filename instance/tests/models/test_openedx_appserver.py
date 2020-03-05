@@ -22,6 +22,7 @@ OpenEdXAppServer model - Tests
 
 # Imports #####################################################################
 
+import os
 from unittest.mock import patch, Mock, PropertyMock
 
 import novaclient
@@ -69,6 +70,33 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver.openedx_release = "open-release/zelkova"
         with self.assertRaises(RuntimeError):
             appserver.save(update_fields=["openedx_release"])
+
+    def test_get_playbooks(self, mock_consul):
+        """
+        Verify correct list of playbooks is provided for spawning an appserver.
+        """
+        instance = OpenEdXInstanceFactory()
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+        appserver = make_test_appserver(instance)
+        # By default there should be four playbooks:
+        # - OpenEdX provisioning playbook,
+        # - LMS users playbook,
+        # - enable bulk emails playbook,
+        # - and the OCIM service ansible playbook.
+        playbooks = appserver.get_playbooks()
+        self.assertEqual(len(playbooks), 4)
+        self.assertEqual(playbooks[0], appserver.default_playbook())
+        self.assertEqual(playbooks[1], appserver.lms_user_creation_playbook())
+        self.assertEqual(playbooks[2], appserver.enable_bulk_emails_playbook())
+        self.assertEqual(playbooks[3].source_repo, settings.ANSIBLE_APPSERVER_REPO)
+        self.assertEqual(playbooks[3].playbook_path, settings.ANSIBLE_APPSERVER_PLAYBOOK)
+        # Once the instance has been successfully provisioned, the "enable bulk emails" playbooks is no longer run.
+        instance.successfully_provisioned = True
+        instance.save()
+        playbooks = appserver.get_playbooks()
+        self.assertEqual(len(playbooks), 3)
+        self.assertTrue(appserver.enable_bulk_emails_playbook() not in playbooks)
 
     @patch_services
     def test_provision(self, mocks, mock_consul):
@@ -625,10 +653,10 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         appserver = instance.appserver_set.get(pk=appserver_id)
         expected_playbook = Playbook(
-            source_repo=None,
-            playbook_path='playbooks/manage_services/manage_services.yml',
-            requirements_path='playbooks/manage_services/requirements.txt',
             version=None,
+            source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/manage_services'),
+            playbook_path='manage_services.yml',
+            requirements_path='requirements.txt',
             variables='services: all\nsupervisord_action: start\n'
         )
 
@@ -637,7 +665,7 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(mocks.mock_run_appserver_playbooks.call_count, 1)
         mocks.mock_run_appserver_playbooks.assert_called_once_with(
             playbook=expected_playbook,
-            working_dir='/root/dir/'
+            working_dir=expected_playbook.source_repo,
         )
 
     @patch_services

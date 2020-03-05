@@ -228,9 +228,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
     INVENTORY_GROUP = 'openedx-app'
+
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
-    MANAGE_SERVICES_PLAYBOOK_DIR = 'playbooks/manage_services/'
-    MANAGE_SERVICES_PLAYBOOK_NAME = 'manage_services.yml'
+
     # Additional model fields/properties that contain yaml vars to add the the configuration vars:
     CONFIGURATION_EXTRA_FIELDS = [
         'configuration_database_settings',
@@ -327,21 +327,25 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             },
             default_flow_style=False
         )
-        playbook_path = os.path.join(
-            self.MANAGE_SERVICES_PLAYBOOK_DIR,
-            self.MANAGE_SERVICES_PLAYBOOK_NAME
-        )
-        requirements_path = os.path.join(
-            self.MANAGE_SERVICES_PLAYBOOK_DIR,
-            'requirements.txt'
-        )
 
         return Playbook(
-            source_repo=None,
             version=None,
-            requirements_path=requirements_path,
-            playbook_path=playbook_path,
+            source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/manage_services'),
+            requirements_path='requirements.txt',
+            playbook_path='manage_services.yml',
             variables=playbook_settings,
+        )
+
+    def enable_bulk_emails_playbook(self):
+        """
+        Return a Playbook instance for enabling the Bulk Email feature.
+        """
+        return Playbook(
+            version=None,
+            source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/enable_bulk_emails'),
+            requirements_path='requirements.txt',
+            playbook_path='enable_bulk_emails.yml',
+            variables='{}',
         )
 
     def get_playbooks(self):
@@ -351,6 +355,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         playbooks = [self.default_playbook()]
         if self.lms_users.count():
             playbooks.append(self.lms_user_creation_playbook())
+        if not self.instance.successfully_provisioned:
+            playbooks.append(self.enable_bulk_emails_playbook())
         return playbooks + super().get_playbooks()
 
     def create_configuration_settings(self):
@@ -595,7 +601,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         playbook = self.manage_services_playbook(action=action)
         _, returncode = self._run_playbook(
-            working_dir=settings.SITE_ROOT,
+            working_dir=playbook.source_repo,
             playbook=playbook
         )
 

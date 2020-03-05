@@ -1,0 +1,10 @@
+---
+# A simple one-off playbook that allows starting and stopping instance services.
+# This is used by Ocim to stop celery workers from inactive appservers to pick
+# up tasks.
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: Create BulkEmailFlag object with enabled field set to true.
+      shell: "echo 'from bulk_email.models import BulkEmailFlag; BulkEmailFlag.objects.create(enabled=True, require_course_email_auth=False)' | /edx/bin/edxapp-shell-lms"
