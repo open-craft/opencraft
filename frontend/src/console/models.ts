@@ -1,16 +1,16 @@
 import {
   OpenEdXInstanceDeploymentStatusStatusEnum,
-  ThemeSchemaSerializerGenerator
+  ThemeSchema
 } from 'ocim-client';
 
 export interface InstanceSettingsModel {
-  [key: string]: string | number | undefined | ThemeSchemaSerializerGenerator;
+  [key: string]: any | undefined;
   id: number;
   subdomain: string;
   instanceName: string;
   publicContactEmail: string;
   privacyPolicyUrl: string;
-  draftThemeConfig: undefined | ThemeSchemaSerializerGenerator;
+  draftThemeConfig: undefined | ThemeSchema;
 }
 
 export interface DeploymentInfoModel {

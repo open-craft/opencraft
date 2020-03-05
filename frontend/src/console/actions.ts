@@ -2,7 +2,7 @@ import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { V2Api } from 'global/api';
 import { InstanceSettingsModel, DeploymentInfoModel } from 'console/models';
-import { ThemeSchemaSerializerGenerator } from 'ocim-client';
+import { ThemeSchema } from 'ocim-client';
 
 export enum Types {
   // Support action to update root state and clean error messages when users change fields
@@ -62,17 +62,17 @@ export interface UpdateInstanceInfoFailure extends Action {
 
 export interface UpdateThemeConfig extends Action {
   readonly type: Types.UPDATE_INSTANCE_THEME;
-  readonly fieldName: keyof ThemeSchemaSerializerGenerator;
+  readonly fieldName: keyof ThemeSchema;
 }
 
 export interface UpdateThemeConfigSuccess extends Action {
   readonly type: Types.UPDATE_INSTANCE_THEME_SUCCESS;
-  readonly data: Partial<ThemeSchemaSerializerGenerator>;
+  readonly data: Partial<ThemeSchema>;
 }
 
 export interface UpdateThemeConfigFailure extends Action {
   readonly type: Types.UPDATE_INSTANCE_THEME_FAILURE;
-  readonly data: Partial<ThemeSchemaSerializerGenerator>;
+  readonly data: Partial<ThemeSchema>;
 }
 
 export interface GetDeploymentStatus extends Action {

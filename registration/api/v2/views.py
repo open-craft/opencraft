@@ -53,7 +53,7 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
-    ThemeSchemaSerializerGenerator,
+    ThemeSchemaSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -194,8 +194,8 @@ class OpenEdXInstanceConfigViewSet(
         return super(OpenEdXInstanceConfigViewSet, self).partial_update(request, *args, **kwargs)
 
     @swagger_auto_schema(
-        request_body=ThemeSchemaSerializerGenerator,
-        responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializerGenerator, },
+        request_body=ThemeSchemaSerializer,
+        responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializer, },
     )
     @action(detail=True, methods=["patch"])
     def theme_config(self, request, pk=None):
@@ -214,7 +214,7 @@ class OpenEdXInstanceConfigViewSet(
             )
 
         # Sanitize inputs
-        serializer = ThemeSchemaSerializerGenerator(data=request.data)
+        serializer = ThemeSchemaSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
@@ -230,9 +230,7 @@ class OpenEdXInstanceConfigViewSet(
 
         # To make sure the required values are always available, merge dict with
         # default values dictionary.
-        # This API only changes values for the v1 schema, so it's hardcoded here
         safe_merged_theme = {
-            'version': 1,
             **DEFAULT_THEME,
             **merged_theme
         }
@@ -241,7 +239,7 @@ class OpenEdXInstanceConfigViewSet(
         # is enabled to prevent the validation schema from failing
 
         # Perform validation, handle error if failed, and return updated
-        # theme_config if succeds.
+        # theme_config if succeeds.
         try:
             theme_schema_validate(safe_merged_theme)
         except JSONSchemaValidationError:

@@ -166,7 +166,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 # pylint: disable=abstract-method
-class ThemeSchemaSerializerGenerator(serializers.Serializer):
+class ThemeSchemaSerializer(serializers.Serializer):
     """
     Custom automatically generated serializer from the theme schemas.
 
@@ -180,9 +180,8 @@ class ThemeSchemaSerializerGenerator(serializers.Serializer):
         """
         super().__init__(*args, **kwargs)
 
-        # Just using the new v1 schema for now, adding the v0 schema breaks
-        # code generation because one variable is named main_color and other is
-        # main-color and both get converted to mainColor in TS
+        # We're just going to use the v1 theme schema here since v0 is
+        # getting deprecated soon
         theme_schema_combined = {
             **theme_schema_v1['properties']
         }
@@ -208,7 +207,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    draft_theme_config = ThemeSchemaSerializerGenerator(read_only=True)
+    draft_theme_config = ThemeSchemaSerializer(read_only=True)
 
     def validate_user(self, value):
         """

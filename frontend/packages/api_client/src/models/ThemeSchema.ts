@@ -16,334 +16,334 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ThemeSchemaSerializerGenerator
+ * @interface ThemeSchema
  */
-export interface ThemeSchemaSerializerGenerator {
+export interface ThemeSchema {
     /**
      * 
      * @type {number}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     version?: number;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     mainColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     linkColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     headerBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     footerBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     footerColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     footerLinkColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryHoverBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryHoverColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnPrimaryHoverBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryHoverBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryHoverColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSecondaryHoverBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     accentColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     homePageHeroTitleColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     homePageHeroSubtitleColor?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     customizeSignInBtn?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInHoverBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInHoverColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnSignInHoverBorderColor?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     customizeRegisterBtn?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterHoverBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterHoverColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnRegisterHoverBorderColor?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     customizeLogistrationActionBtn?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationHoverBg?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationHoverColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     btnLogistrationHoverBorderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     loginRegisterHeaderColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     mainNavColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     mainNavLinkColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     mainNavItemBorderBottomColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     mainNavItemHoverBorderBottomColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     userDropdownColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     wrapperPreviewMenuColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     courseNavMenuBorderBottomColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     accountSettingsNavBorderBottomColor?: string;
     /**
      * 
      * @type {string}
-     * @memberof ThemeSchemaSerializerGenerator
+     * @memberof ThemeSchema
      */
     accountSettingsNavHoverBorderBottomColor?: string;
 }
 
-export function ThemeSchemaSerializerGeneratorFromJSON(json: any): ThemeSchemaSerializerGenerator {
-    return ThemeSchemaSerializerGeneratorFromJSONTyped(json, false);
+export function ThemeSchemaFromJSON(json: any): ThemeSchema {
+    return ThemeSchemaFromJSONTyped(json, false);
 }
 
-export function ThemeSchemaSerializerGeneratorFromJSONTyped(json: any, ignoreDiscriminator: boolean): ThemeSchemaSerializerGenerator {
+export function ThemeSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean): ThemeSchema {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -405,7 +405,7 @@ export function ThemeSchemaSerializerGeneratorFromJSONTyped(json: any, ignoreDis
     };
 }
 
-export function ThemeSchemaSerializerGeneratorToJSON(value?: ThemeSchemaSerializerGenerator | null): any {
+export function ThemeSchemaToJSON(value?: ThemeSchema | null): any {
     if (value === undefined) {
         return undefined;
     }

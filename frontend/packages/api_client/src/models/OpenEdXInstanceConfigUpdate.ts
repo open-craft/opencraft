@@ -14,10 +14,10 @@
 
 import { exists, mapValues } from '../runtime';
 import {
-    ThemeSchemaSerializerGenerator,
-    ThemeSchemaSerializerGeneratorFromJSON,
-    ThemeSchemaSerializerGeneratorFromJSONTyped,
-    ThemeSchemaSerializerGeneratorToJSON,
+    ThemeSchema,
+    ThemeSchemaFromJSON,
+    ThemeSchemaFromJSONTyped,
+    ThemeSchemaToJSON,
 } from './';
 
 /**
@@ -64,10 +64,10 @@ export interface OpenEdXInstanceConfigUpdate {
     useAdvancedTheme?: boolean;
     /**
      * 
-     * @type {ThemeSchemaSerializerGenerator}
+     * @type {ThemeSchema}
      * @memberof OpenEdXInstanceConfigUpdate
      */
-    draftThemeConfig?: ThemeSchemaSerializerGenerator;
+    draftThemeConfig?: ThemeSchema;
 }
 
 export function OpenEdXInstanceConfigUpdateFromJSON(json: any): OpenEdXInstanceConfigUpdate {
@@ -86,7 +86,7 @@ export function OpenEdXInstanceConfigUpdateFromJSONTyped(json: any, ignoreDiscri
         'publicContactEmail': !exists(json, 'public_contact_email') ? undefined : json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
-        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaSerializerGeneratorFromJSON(json['draft_theme_config']),
+        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
     };
 }
 
@@ -105,7 +105,7 @@ export function OpenEdXInstanceConfigUpdateToJSON(value?: OpenEdXInstanceConfigU
         'public_contact_email': value.publicContactEmail,
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
-        'draft_theme_config': ThemeSchemaSerializerGeneratorToJSON(value.draftThemeConfig),
+        'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
     };
 }
 

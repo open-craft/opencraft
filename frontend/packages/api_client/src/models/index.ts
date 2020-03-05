@@ -10,7 +10,7 @@ export * from './OpenEdXInstanceDeploymentCreate';
 export * from './OpenEdXInstanceDeploymentStatus';
 export * from './OpenStackServer';
 export * from './SpawnAppServer';
-export * from './ThemeSchemaSerializerGenerator';
+export * from './ThemeSchema';
 export * from './Token';
 export * from './TokenError';
 export * from './TokenObtainPair';
