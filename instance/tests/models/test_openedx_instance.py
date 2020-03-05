@@ -38,6 +38,7 @@ from freezegun import freeze_time
 import yaml
 
 from instance import gandi
+from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.instance import InstanceReference
 from instance.models.load_balancer import LoadBalancingServer
@@ -771,6 +772,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.first_activated, appserver_2.last_activated)
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch.object(GandiV5API, 'remove_dns_record')
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -852,6 +855,7 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
 
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -862,7 +866,8 @@ class OpenEdXInstanceTestCase(TestCase):
             mock_disable_monitoring,
             mock_remove_dns_records,
             mock_consul2,
-            mock_consul):
+            mock_consul,
+            mock_appserver_dns_clean_up):
         """
         Test that the archive method works correctly if no appserver is active.
         """
@@ -1251,4 +1256,45 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip])
         appserver2.make_active()
         self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
-        # We haven't implemented cleaning up VM DNS records yet, so we can't test it.
+
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    @patch_services
+    def test_clean_up_dns_records(self, mocks, *mock):
+        """
+        Test that the DNS records for app servers get removed
+        """
+        # spawn and activate first appserver
+        instance = OpenEdXInstanceFactory(internal_lms_domain='vm-dns.test.com')
+        instance.spawn_appserver()
+        appserver1 = instance.appserver_set.first()
+        appserver1.make_active()
+
+        # spawn and activate second appserver
+        mocks.os_server_manager.set_os_server_attributes('server2', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver2 = instance.appserver_set.first()
+        appserver2.make_active()
+        self._verify_vm_dns_records('test.com', [appserver1.server.public_ip, appserver2.server.public_ip])
+
+        # spawn and activate third appserver
+        mocks.os_server_manager.set_os_server_attributes('server3', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver3 = instance.appserver_set.first()
+        appserver3.make_active()
+
+        # spawn and activate fourth appserver
+        mocks.os_server_manager.set_os_server_attributes('server4', _loaded=True, status='ACTIVE')
+        instance.spawn_appserver()
+        appserver4 = instance.appserver_set.first()
+        appserver4.make_active()
+
+        # deactivate first two appservers
+        appserver1.make_active(active=False)
+        appserver2.make_active(active=False)
+        self._verify_vm_dns_records('test.com', [appserver3.server.public_ip, appserver4.server.public_ip])
+
+        # archive instance and verify no dns records
+        instance.archive()
+        self._verify_vm_dns_records('test.com', [])
