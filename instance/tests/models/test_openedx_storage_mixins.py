@@ -245,7 +245,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.assertEqual(instance.swift_openstack_user, settings.SWIFT_OPENSTACK_USER)
         self.assertEqual(instance.swift_openstack_password, settings.SWIFT_OPENSTACK_PASSWORD)
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
-        self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL_V3)
+        self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
 
         def make_call(container_name):

@@ -101,7 +101,7 @@ class SwiftContainerInstanceMixin(models.Model):
     )
     swift_openstack_auth_url = models.URLField(
         blank=True,
-        default=default_setting('SWIFT_OPENSTACK_AUTH_URL_V3'),
+        default=default_setting('SWIFT_OPENSTACK_AUTH_URL'),
     )
     swift_openstack_region = models.CharField(
         max_length=16,

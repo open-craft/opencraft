@@ -201,7 +201,7 @@ def swift_service(
         user=settings.SWIFT_OPENSTACK_USER,
         password=settings.SWIFT_OPENSTACK_PASSWORD,
         tenant=settings.SWIFT_OPENSTACK_TENANT,
-        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL_V3,
+        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL,
         region=settings.SWIFT_OPENSTACK_REGION):
     """
     Creates a swift service.
