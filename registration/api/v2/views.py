@@ -203,6 +203,14 @@ class OpenEdXInstanceConfigViewSet(
         Partial update for theme configuration
 
         This is a custom handler to partially update theme fields.
+        TODO: Improve behavior consistency when returning. Instead of setting
+        the default value when a required variable is sent empty, error out.
+        And to allow reverting back to a default value, add support for a
+        `default` keyword to enable the frontend to revert values to the default
+        theme colors. Examples:
+        PATCH: {"main-color": ""} should error out.
+        PATCH" {"main-color": "default"} should revert to the default theme
+        base color.
         """
         application = self.get_object()
         if not application.draft_theme_config:

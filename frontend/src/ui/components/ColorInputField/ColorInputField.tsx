@@ -28,13 +28,20 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
   const [colorPicker, setColorPicker] = React.useState(false);
   const [selectedColor, setColor] = React.useState(props.initialValue);
 
+  // Ensure the correct color is shown if props are updated
+  React.useEffect(() => {
+    setColor(props.initialValue);
+  }, [props.initialValue]);
+
   const showColorPicker = () => {
     setColorPicker(true);
   };
 
   const resetColor = () => {
-    setColor(props.initialValue);
-    props.onChange(props.fieldName, selectedColor);
+    // This will reset the field value to the default theme value
+    // TODO: this will need to be updated when the Theme configuration endpoint
+    // get updated to improve consistency
+    props.onChange(props.fieldName, '');
   };
 
   const hideColorPickerAndSubmit = () => {
