@@ -5,7 +5,7 @@ var request = require('request');
 What is the URL that you want to check? 
 ************************************************** 
 */ 
-var urlToMonitor = 'https://example.com'; 
+var urlToMonitor = 'https://example.com';  //This URL will be replaced programmatically
 console.log('Preparing to monitor '+urlToMonitor);  
 
 /* 

@@ -101,29 +101,32 @@ class OpenEdXMonitoringMixin:
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
         already_monitored_ssl_urls = set()
+        use_only_url_containing_string = 'test-ssl-monitor'
 
         for monitor in self.new_relic_ssl_monitors.all():
             url = newrelic.get_synthetics_monitor(monitor.pk)['uri']
-            if url in urls_to_monitor:
-                already_monitored_ssl_urls.add(url)
-                if not monitor.new_relic_ssl_alert_conditions.exists():
-                    alert_condition_id = newrelic.add_alert_condition(
-                        alert_policy.id, monitor.id, urls_to_monitor_dict[url]
-                    )
-                    monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
-            else:
-                self.logger.info('Deleting New Relic Synthetics SSL monitor for old public URL %s', url)
-                monitor.delete()
+            if use_only_url_containing_string in url:
+                if url in urls_to_monitor:
+                    already_monitored_ssl_urls.add(url)
+                    if not monitor.new_relic_ssl_alert_conditions.exists():
+                        alert_condition_id = newrelic.add_alert_condition(
+                            alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+                        )
+                        monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
+                else:
+                    self.logger.info('Deleting New Relic Synthetics SSL monitor for old public URL %s', url)
+                    monitor.delete()
 
         for url in urls_to_monitor - already_monitored_ssl_urls:
-            self.logger.info('Creating New Relic Synthetics SSL monitor for new public URL %s', url)
-            new_ssl_monitor_id = newrelic.create_synthetics_ssl_monitor(url)
-            newrelic.update_synthetics_ssl_monitor(new_ssl_monitor_id, url)
-            monitor = self.new_relic_ssl_monitors.create(pk=new_ssl_monitor_id)
-            alert_condition_id = newrelic.add_alert_condition(
-                alert_policy.id, monitor.id, urls_to_monitor_dict[url]
-            )
-            monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
+            if use_only_url_containing_string in url:
+                self.logger.info('Creating New Relic Synthetics SSL monitor for new public URL %s', url)
+                new_ssl_monitor_id = newrelic.create_synthetics_ssl_monitor(url)
+                newrelic.update_synthetics_ssl_monitor(new_ssl_monitor_id, url)
+                monitor = self.new_relic_ssl_monitors.create(pk=new_ssl_monitor_id)
+                alert_condition_id = newrelic.add_alert_condition(
+                    alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+                )
+                monitor.new_relic_ssl_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
     def _set_email_alerts(self, alert_policy):
         """
