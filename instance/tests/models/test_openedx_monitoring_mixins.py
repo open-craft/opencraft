@@ -83,9 +83,12 @@ class OpenEdXMonitoringTestCase(TestCase):
         """
         monitor_ids = [str(uuid4()) for i in range(4)]
         mock_newrelic.get_synthetics_monitor.return_value = []
+        # ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        # mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
         mock_newrelic.get_synthetics_notification_emails.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
         mock_newrelic.add_alert_policy.return_value = 1
+        # mock_newrelic.add_alert_condition.side_effect = list(range(8))
         mock_newrelic.add_alert_condition.side_effect = list(range(4))
         mock_newrelic.add_email_notification_channel.side_effect = list(range(len(expected_monitor_emails)))
         instance = OpenEdXInstanceFactory()
@@ -115,6 +118,7 @@ class OpenEdXMonitoringTestCase(TestCase):
         for add_call in mock_newrelic.add_email_notification_channel.call_args_list:
             list_of_emails_added.append(add_call[0][0])
 
+        # self.assertEqual(set(monitor_ids + ssl_monitor_ids), created_monitor_ids)
         self.assertEqual(set(monitor_ids), created_monitor_ids)
         self.assertEqual(set(list_of_emails_added), set(expected_monitor_emails))
         mock_newrelic.add_notification_channels_to_policy.assert_called_with(
@@ -137,9 +141,11 @@ class OpenEdXMonitoringTestCase(TestCase):
         self.assertEqual(existing_monitors.count(), len(instance._urls_to_monitor))
         self.assertEqual(NewRelicAlertPolicy.objects.filter(instance=instance).count(), 0)
         mock_newrelic.get_synthetics_monitor.side_effect = [{'uri': url} for url in instance._urls_to_monitor]
+        ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
         mock_newrelic.get_synthetics_notification_emails.return_value = ['admin@opencraft.com']
         mock_newrelic.add_alert_policy.return_value = 1
-        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_alert_condition.side_effect = list(range(8))
         mock_newrelic.add_email_notification_channel.return_value = 1
         instance.enable_monitoring()
         self.assertEqual(set(NewRelicAvailabilityMonitor.objects.filter(instance=instance)), set(existing_monitors))
@@ -227,7 +233,9 @@ class OpenEdXMonitoringTestCase(TestCase):
         mock_newrelic.get_synthetics_monitor.side_effect = mock_get_synthetics_monitor
         new_ids = [str(uuid4()) for i in range(3)]
         mock_newrelic.create_synthetics_monitor.side_effect = new_ids
-        other_ids = list(range(4))
+        ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
+        other_ids = list(range(8))
         mock_newrelic.add_alert_policy.return_value = 1
         mock_newrelic.add_alert_condition.side_effect = other_ids
         mock_newrelic.add_email_notification_channel.side_effect = other_ids
@@ -270,11 +278,13 @@ class OpenEdXMonitoringTestCase(TestCase):
             """ Mock for get_synthetics_monitor() """
             return existing_monitors[monitor_id]
 
+        ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
         mock_newrelic.get_synthetics_monitor.side_effect = mock_get_synthetics_monitor
         mock_newrelic.get_synthetics_notification_emails.return_value = ['admin@opencraft.com']
         mock_newrelic.add_alert_policy.return_value = 1
         mock_newrelic.add_alert_policy.return_value = 1
-        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_alert_condition.side_effect = list(range(8))
         mock_newrelic.add_email_notification_channel.return_value = 1
         instance.new_relic_alert_policy = NewRelicAlertPolicy.objects.create(id=1, instance=instance)
         instance.new_relic_alert_policy.email_notification_channels.add(
@@ -301,8 +311,10 @@ class OpenEdXMonitoringTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         mock_newrelic.get_synthetics_notification_emails.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
         mock_newrelic.add_alert_policy.return_value = 1
-        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_alert_condition.side_effect = list(range(8))
         mock_newrelic.add_email_notification_channel.return_value = 1
 
         instance.enable_monitoring()
@@ -324,8 +336,10 @@ class OpenEdXMonitoringTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         mock_newrelic.get_synthetics_notification_emails.return_value = []
         mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        ssl_monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.create_synthetics_ssl_monitor.side_effect = ssl_monitor_ids
         mock_newrelic.add_alert_policy.return_value = 1
-        mock_newrelic.add_alert_condition.side_effect = list(range(4))
+        mock_newrelic.add_alert_condition.side_effect = list(range(8))
         mock_newrelic.add_email_notification_channel.return_value = 1
         instance.new_relic_alert_policy = NewRelicAlertPolicy.objects.create(id=1, instance=instance)
         instance.new_relic_alert_policy.email_notification_channels.add(
