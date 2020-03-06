@@ -80,7 +80,7 @@ def get_openstack_connection(region_name):
         region_name=region_name,
         auth_type='password',
         auth=dict(
-            auth_url=settings.OPENSTACK_AUTH_URL,
+            auth_url=settings.OPENSTACK_AUTH_URL_V3,
             username=settings.OPENSTACK_USER,
             project_name=settings.OPENSTACK_TENANT,
             password=settings.OPENSTACK_PASSWORD,
@@ -140,7 +140,7 @@ def get_nova_client(region_name, api_version=2):
         username=settings.OPENSTACK_USER,
         password=settings.OPENSTACK_PASSWORD,
         project_name=settings.OPENSTACK_TENANT,
-        auth_url=settings.OPENSTACK_AUTH_URL,
+        auth_url=settings.OPENSTACK_AUTH_URL_V3,
         region_name=region_name,
     )
 
@@ -201,7 +201,7 @@ def swift_service(
         user=settings.SWIFT_OPENSTACK_USER,
         password=settings.SWIFT_OPENSTACK_PASSWORD,
         tenant=settings.SWIFT_OPENSTACK_TENANT,
-        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL,
+        auth_url=settings.SWIFT_OPENSTACK_AUTH_URL_V3,
         region=settings.SWIFT_OPENSTACK_REGION):
     """
     Creates a swift service.

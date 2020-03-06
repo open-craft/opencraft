@@ -93,7 +93,7 @@ def run_integration_cleanup(dry_run=False):
 
     # Do a dry-run cleanup on the OpenStack provider to get the hashes.
     openstack_settings = {
-        'auth_url': os.environ['OPENSTACK_AUTH_URL'],
+        'auth_url': os.environ['OPENSTACK_AUTH_URL_V3'],
         'username': os.environ['OPENSTACK_USER'],
         'password': os.environ['OPENSTACK_PASSWORD'],
         'project_name': os.environ['OPENSTACK_TENANT'],
@@ -143,7 +143,7 @@ def run_integration_cleanup(dry_run=False):
 
     # Clean up OpenStack provider
     openstack_settings = {
-        'auth_url': os.environ['OPENSTACK_AUTH_URL'],
+        'auth_url': os.environ['OPENSTACK_AUTH_URL_V3'],
         'username': os.environ['OPENSTACK_USER'],
         'password': os.environ['OPENSTACK_PASSWORD'],
         'project_name': os.environ['OPENSTACK_TENANT'],

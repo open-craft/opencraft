@@ -63,7 +63,7 @@ def patch_url(url, method=responses.GET, status=requests.codes.ok):
         from django.conf import settings
         from instance.tests.utils import patch_url
 
-        @patch_url(settings.OPENSTACK_AUTH_URL, method=responses.POST)
+        @patch_url(settings.OPENSTACK_AUTH_URL_V3, method=responses.POST)
         def test_that_calls_nova(...):
             ...
     """

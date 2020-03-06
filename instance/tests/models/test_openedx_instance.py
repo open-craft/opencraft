@@ -86,7 +86,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.swift_openstack_user, settings.SWIFT_OPENSTACK_USER)
         self.assertEqual(instance.swift_openstack_password, settings.SWIFT_OPENSTACK_PASSWORD)
         self.assertEqual(instance.swift_openstack_tenant, settings.SWIFT_OPENSTACK_TENANT)
-        self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL)
+        self.assertEqual(instance.swift_openstack_auth_url, settings.SWIFT_OPENSTACK_AUTH_URL_V3)
         self.assertEqual(instance.swift_openstack_region, settings.SWIFT_OPENSTACK_REGION)
         self.assertNotEqual(instance.secret_key_b64encoded, '')
         self.assertEqual(instance.openstack_region, settings.OPENSTACK_REGION)

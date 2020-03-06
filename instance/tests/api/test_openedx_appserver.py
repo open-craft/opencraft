@@ -130,7 +130,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data, {'detail': message})
 
-    @patch_url(settings.OPENSTACK_AUTH_URL)
+    @patch_url(settings.OPENSTACK_AUTH_URL_V3)
     @ddt.data('user3', 'user4')
     def test_get_details(self, username, mock_consul):
         """
@@ -595,7 +595,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
     Test cases for OpenEdXAppServer API calls related to logs
     """
 
-    @patch_url(settings.OPENSTACK_AUTH_URL)
+    @patch_url(settings.OPENSTACK_AUTH_URL_V3)
     def test_get_log_entries(self, mock_consul):
         """
         GET - Log entries
@@ -668,7 +668,7 @@ class OpenEdXAppServerAPILogsTestCase(APITestCase):
             text = expected_entry['text'].format(**kwargs)
             self.assertEqual(text, log_entry['text'])
 
-    @patch_url(settings.OPENSTACK_AUTH_URL)
+    @patch_url(settings.OPENSTACK_AUTH_URL_V3)
     def test_get_log_error_entries(self, mock_consul):
         """
         GET - Log error entries
