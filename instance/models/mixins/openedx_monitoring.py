@@ -65,7 +65,7 @@ class OpenEdXMonitoringMixin:
         self._update_url_monitors(alert_policy)
         self._set_email_alerts(alert_policy)
 
-    def _update_url_monitors(self, alert_policy):
+    def _update_url_monitors(self, alert_policy): # noqa: MC0001
         """
         Create a monitor for each URL to monitor, and delete the other monitors.
         In the end, each monitor will have an associated alert condition.

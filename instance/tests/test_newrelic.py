@@ -93,7 +93,7 @@ class NewRelicTestCase(TestCase):
             'frequency': 5,
             'locations': ['AWS_US_EAST_1'],
             'status': 'ENABLED',
-            'options': {'verifySSL': True},
+            # 'options': {'verifySSL': True},
         })
 
     @responses.activate
