@@ -336,7 +336,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - giovanni/bb-2131-theming-models-apis
       # Deploy production
       - frontend-build:
