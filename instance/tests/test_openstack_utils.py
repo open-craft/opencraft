@@ -24,14 +24,12 @@ OpenStack Utilities - Tests
 
 from collections import namedtuple
 from unittest import mock
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import Mock, call, MagicMock
 
 import ddt
-from django.conf import settings
 from openstack.network.v2.security_group import SecurityGroup
 from openstack.network.v2.security_group_rule import SecurityGroupRule
 from swiftclient.service import SwiftError
-import keystoneauth1
 
 from instance import openstack_utils
 from instance.tests.base import TestCase
