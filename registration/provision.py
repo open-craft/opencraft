@@ -74,9 +74,14 @@ def _provision_instance(sender, **kwargs):
             name=application.instance_name,
             email=application.public_contact_email,
             privacy_policy_url=application.privacy_policy_url,
-            deploy_simpletheme=True,
         )
         application.instance.lms_users.add(user)
+
+        # Check if simple theme is set up and add it to instance
+        if application.draft_theme_config:
+            application.instance.theme_config = application.draft_theme_config
+            application.instance.deploy_simpletheme = True
+            application.instance.save()
 
         # If using external domain, set it up
         if application.external_domain:
