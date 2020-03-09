@@ -63,7 +63,7 @@ exports[`renders without crashing 1`] = `
           className="row"
         >
           <div
-            className="col-md-4"
+            className="col-md-3"
           >
             <div
               className="customization-menu accordion"
@@ -94,11 +94,9 @@ exports[`renders without crashing 1`] = `
                       onKeyDown={[Function]}
                     >
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Preview & colors
                       </a>
@@ -237,7 +235,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="customization-form col-md-8"
+            className="customization-form col-md-9"
           >
             <div
               className="loading"

@@ -29,14 +29,7 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
+              <NavLink exact to={ROUTES.Console.THEME_PREVIEW_AND_COLORS}>
                 <WrappedMessage messages={messages} id="linkPreviewColors" />
               </NavLink>
               <NavLink

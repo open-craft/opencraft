@@ -33,6 +33,9 @@ import {
     OpenEdXInstanceDeploymentStatus,
     OpenEdXInstanceDeploymentStatusFromJSON,
     OpenEdXInstanceDeploymentStatusToJSON,
+    ThemeSchema,
+    ThemeSchemaFromJSON,
+    ThemeSchemaToJSON,
     Token,
     TokenFromJSON,
     TokenToJSON,
@@ -90,6 +93,11 @@ export interface InstancesOpenedxConfigPartialUpdateRequest {
 
 export interface InstancesOpenedxConfigReadRequest {
     id: string;
+}
+
+export interface InstancesOpenedxConfigThemeConfigRequest {
+    id: string;
+    data: ThemeSchema;
 }
 
 export interface InstancesOpenedxConfigUpdateRequest {
@@ -572,6 +580,52 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigRead(requestParameters: InstancesOpenedxConfigReadRequest): Promise<OpenEdXInstanceConfig> {
         const response = await this.instancesOpenedxConfigReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * This is a custom handler to partially update theme fields.
+     * Partial update for theme configuration
+     */
+    async instancesOpenedxConfigThemeConfigRaw(requestParameters: InstancesOpenedxConfigThemeConfigRequest): Promise<runtime.ApiResponse<ThemeSchema>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigThemeConfig.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigThemeConfig.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/theme_config/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ThemeSchemaToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ThemeSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * This is a custom handler to partially update theme fields.
+     * Partial update for theme configuration
+     */
+    async instancesOpenedxConfigThemeConfig(requestParameters: InstancesOpenedxConfigThemeConfigRequest): Promise<ThemeSchema> {
+        const response = await this.instancesOpenedxConfigThemeConfigRaw(requestParameters);
         return await response.value();
     }
 

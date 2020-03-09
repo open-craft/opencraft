@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+    ThemeSchema,
+    ThemeSchemaFromJSON,
+    ThemeSchemaFromJSONTyped,
+    ThemeSchemaToJSON,
+} from './';
+
 /**
  * 
  * @export
@@ -62,11 +69,11 @@ export interface OpenEdXInstanceConfig {
      */
     useAdvancedTheme?: boolean;
     /**
-     * The theme configuration data currently being edited by the user. When finalised it willbe copied over to the final theme config which will then be deployed to the next appserverthat is launched.
-     * @type {object}
+     * 
+     * @type {ThemeSchema}
      * @memberof OpenEdXInstanceConfig
      */
-    draftThemeConfig?: object | null;
+    draftThemeConfig?: ThemeSchema;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -86,7 +93,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'publicContactEmail': json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
-        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : json['draft_theme_config'],
+        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
     };
 }
 
@@ -105,7 +112,7 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
         'public_contact_email': value.publicContactEmail,
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
-        'draft_theme_config': value.draftThemeConfig,
+        'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
     };
 }
 
