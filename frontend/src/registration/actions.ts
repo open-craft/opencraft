@@ -169,8 +169,13 @@ export const submitRegistration = (
         );
 
         try {
+          const sanitizedData = { ...instanceData };
+          // Don't send external domain if not using one
+          if (sanitizedData.externalDomain === '') {
+            delete sanitizedData.externalDomain;
+          }
           // Create instance
-          await V2Api.instancesOpenedxConfigCreate({ data: instanceData });
+          await V2Api.instancesOpenedxConfigCreate({ data: sanitizedData });
 
           dispatch({
             type: Types.REGISTRATION_VALIDATION_SUCCESS,

@@ -25,6 +25,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -52,10 +53,13 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
+    ThemeSchemaSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
+from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
+
 
 logger = logging.getLogger(__name__)
 
@@ -171,6 +175,10 @@ class OpenEdXInstanceConfigViewSet(
         When a new instance is registered queue its public contact email for verification.
         """
         instance = serializer.save()
+        # Deploy default theme for users that just registered
+        instance.draft_theme_config = DEFAULT_THEME
+        instance.save()
+        # Send verification emails
         verify_user_emails(instance.user, instance.public_contact_email)
 
     def perform_update(self, serializer):
@@ -184,6 +192,78 @@ class OpenEdXInstanceConfigViewSet(
     @swagger_auto_schema(request_body=OpenEdXInstanceConfigUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
         return super(OpenEdXInstanceConfigViewSet, self).partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=ThemeSchemaSerializer,
+        responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializer, },
+    )
+    @action(detail=True, methods=["patch"])
+    def theme_config(self, request, pk=None):
+        """
+        Partial update for theme configuration
+
+        This is a custom handler to partially update theme fields.
+        TODO: Improve behavior consistency when returning. Instead of setting
+        the default value when a required variable is sent empty, error out.
+        And to allow reverting back to a default value, add support for a
+        `default` keyword to enable the frontend to revert values to the default
+        theme colors. Examples:
+        PATCH: {"main-color": ""} should error out.
+        PATCH" {"main-color": "default"} should revert to the default theme
+        base color.
+        """
+        application = self.get_object()
+        if not application.draft_theme_config:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "non_field_errors": "V1 theme isn't set up yet."
+                }
+            )
+
+        # Sanitize inputs
+        serializer = ThemeSchemaSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        # Merges the current aplication theme draft with the values modified by
+        # the user and performs validation.
+        # If the key is empty (""), the user reverted the field to the default
+        # value, and the key needs to be erased.
+        merged_theme = {
+            key: value for key, value in {
+                **application.draft_theme_config, **serializer.validated_data
+            }.items() if value != ""
+        }
+
+        # To make sure the required values are always available, merge dict with
+        # default values dictionary.
+        safe_merged_theme = {
+            **DEFAULT_THEME,
+            **merged_theme
+        }
+
+        # TODO: Needs additional validation/filling up if button customization
+        # is enabled to prevent the validation schema from failing
+
+        # Perform validation, handle error if failed, and return updated
+        # theme_config if succeeds.
+        try:
+            theme_schema_validate(safe_merged_theme)
+        except JSONSchemaValidationError:
+            # TODO: improve schema error feedback. Needs to be done along with
+            # multiple fronend changes to allow individual fields feedback.
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "non_field_errors": "Schema validation failed."
+                }
+            )
+
+        application.draft_theme_config = safe_merged_theme
+        application.save()
+
+        return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
 
     def get_queryset(self):
         """

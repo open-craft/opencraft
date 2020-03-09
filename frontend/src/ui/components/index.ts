@@ -13,3 +13,5 @@ export * from './ErrorPage';
 export * from './ContentPage';
 
 export * from './CustomStatusPill';
+
+export * from './ColorInputField';
