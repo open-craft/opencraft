@@ -39,6 +39,7 @@ import MySQLdb as mysql
 import pymongo
 
 from instance.models.appserver import AppServer, Status as AppServerStatus
+from instance.models.mixins.ansible import Playbook
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.tests.decorators import patch_git_checkout
@@ -432,21 +433,28 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
-    @patch_git_checkout
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.get_playbooks")
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_ansible_failignore(self, heartbeat_active, git_checkout, git_working_dir):
+    def test_ansible_failignore(self, heartbeat_active, get_playbooks):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
-        git_working_dir.return_value = os.path.join(os.path.dirname(__file__), "ansible")
         heartbeat_active.return_value = True
+        get_playbooks.return_value = [
+            Playbook(
+                source_repo=os.path.join(os.path.dirname(__file__), 'ansible'),
+                requirements_path='requirements.txt',
+                playbook_path='playbooks/failignore.yml',
+                version=None,
+                variables='{}',
+            )
+        ]
         instance = OpenEdXInstanceFactory(
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
         )
-        with self.settings(ANSIBLE_APPSERVER_PLAYBOOK='playbooks/failignore.yml'):
-            spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
+        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
         self.assert_server_ready(instance)
 
     @retry
