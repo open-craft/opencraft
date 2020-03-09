@@ -129,10 +129,10 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
           <Row className="console-page-content">
             <Container fluid>
               <Row>
-                <Col md="4">
+                <Col md="3">
                   <CustomizationSideMenu />
                 </Col>
-                <Col md="8" className="customization-form">
+                <Col md="9" className="customization-form">
                   {content()}
                 </Col>
               </Row>
