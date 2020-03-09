@@ -1,12 +1,16 @@
-import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
+import {
+  OpenEdXInstanceDeploymentStatusStatusEnum,
+  ThemeSchema
+} from 'ocim-client';
 
 export interface InstanceSettingsModel {
-  [key: string]: string | number;
+  [key: string]: any | undefined;
   id: number;
   subdomain: string;
   instanceName: string;
   publicContactEmail: string;
   privacyPolicyUrl: string;
+  draftThemeConfig: undefined | ThemeSchema;
 }
 
 export interface DeploymentInfoModel {

@@ -19,10 +19,7 @@
 """
 Theming relates schemas for validating theme configurations.
 """
-from django.core.exceptions import ValidationError
 from jsonschema import validate
-from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
-
 
 color_regex = '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 
@@ -166,13 +163,31 @@ theme_schema = {
     "oneOf": [nullable_schema, theme_schema_v0, theme_schema_v1]
 }
 
+DEFAULT_THEME = {
+    "version": 1,
+    "main-color": "#126F9A",
+    "link-color": "#126F9A",
+    "header-bg": "#FFFFFF",
+    "footer-bg": "#FFFFFF",
+    # Primary button theming
+    "btn-primary-bg": "#126F9A",
+    "btn-primary-color": "#FFFFFF",
+    "btn-primary-border-color": "#126F9A",
+    "btn-primary-hover-bg": "#FFFFFF",
+    "btn-primary-hover-color": "#126F9A",
+    "btn-primary-hover-border-color": "#126F9A",
+    # Secondary button theming
+    "btn-secondary-bg": "#FFFFFF",
+    "btn-secondary-color": "#126F9A",
+    "btn-secondary-border-color": "#126F9A",
+    "btn-secondary-hover-bg": "#126F9A",
+    "btn-secondary-hover-color": "#FFFFFF",
+    "btn-secondary-hover-border-color": "#FFFFFF",
+}
 
 def theme_schema_validate(value, schema=None):
     """
     Re-raise the schema errors as validation errors so they can be handled
     better by Django.
     """
-    try:
-        validate(instance=value, schema=schema if schema is not None else theme_schema)
-    except JSONSchemaValidationError as e:
-        raise ValidationError(message=str(e))
+    validate(instance=value, schema=schema if schema is not None else theme_schema)

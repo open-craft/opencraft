@@ -1,0 +1,18 @@
+
+.input-color-picker {
+  position: absolute;
+  z-index: 2;
+}
+
+.reset-value {
+  font-size: 14px;
+  letter-spacing: 0.14px;
+  color: #1a6ebb;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+
+  &:hover, &:focus {
+    text-decoration: underline;
+  }
+}

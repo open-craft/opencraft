@@ -33,6 +33,7 @@ from rest_framework.validators import UniqueValidator
 from registration.api.v2 import constants
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
+from instance.schemas.theming import theme_schema_v1, ref
 
 logger = logging.getLogger(__name__)
 
@@ -164,12 +165,49 @@ class AccountSerializer(serializers.ModelSerializer):
         }
 
 
+# pylint: disable=abstract-method
+class ThemeSchemaSerializer(serializers.Serializer):
+    """
+    Custom automatically generated serializer from the theme schemas.
+
+    This is needed to make the Swagger code generator correctly generate the
+    schema model in the frontend without requiring to duplicate the schema
+    there.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Start with empty serializer and add fields from both theme schemas
+        """
+        super().__init__(*args, **kwargs)
+
+        # We're just going to use the v1 theme schema here since v0 is
+        # getting deprecated soon
+        theme_schema_combined = {
+            **theme_schema_v1['properties']
+        }
+        for key, value in theme_schema_combined.items():
+            field_type = None
+            if key == 'version':
+                field_type = serializers.IntegerField(required=False)
+            elif value == ref('flag'):
+                field_type = serializers.BooleanField(required=False)
+            else:
+                field_type = serializers.CharField(
+                    max_length=7,
+                    required=False,
+                    allow_blank=True,
+                    # TODO: Add a color validator here
+                )
+            self.fields[key] = field_type
+
+
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
     """
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    draft_theme_config = ThemeSchemaSerializer(read_only=True)
 
     def validate_user(self, value):
         """

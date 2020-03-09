@@ -23,7 +23,6 @@ import copy
 import random
 
 import ddt
-from django.core.exceptions import ValidationError
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError as JSONValidationError
 
@@ -223,7 +222,7 @@ class ThemeConfigValidationTestCase(TestCase):
         """
         Test that validation fails when passing invalid data types for the value.
         """
-        with self.assertRaisesRegex(ValidationError, "is not of type"):
+        with self.assertRaisesRegex(JSONValidationError, "is not of type"):
             theme_schema_validate(value)
 
     def test_null_accepted(self):
