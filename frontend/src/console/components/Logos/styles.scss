@@ -1,0 +1,15 @@
+@import "~styles/theme";
+
+.custom-logo-pages {
+  h2 {
+    margin-bottom: 0px !important;
+  }
+
+  p {
+    height: 17px;
+    font-family: $chivo-font;
+    font-size: 14px;
+    letter-spacing: 0.14px;
+    color: $secondary-4;
+  }
+}

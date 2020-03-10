@@ -1,7 +1,11 @@
 import * as React from 'react';
 
 import { Switch, Route, Redirect } from 'react-router';
-import { InstanceSettings, ThemePreviewAndColors } from 'console/components';
+import {
+  InstanceSettings,
+  ThemePreviewAndColors,
+  Logos
+} from 'console/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
@@ -20,6 +24,7 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_PREVIEW_AND_COLORS}
         component={ThemePreviewAndColors}
       />
+      <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
     </Switch>
   );
 };
