@@ -157,8 +157,8 @@ theme_schema_v1 = {
 
 theme_schema = {
     "definitions": {
-        "color": {"ref": "#/oneOf/1/color"},
-        "flag": {"ref": "#/oneOf/1/flag"},
+        "color": color_schema,
+        "flag": flag_schema,
     },
     "oneOf": [nullable_schema, theme_schema_v0, theme_schema_v1]
 }
