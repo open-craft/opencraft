@@ -593,7 +593,7 @@ class BetaTestApplicationViewTestCase(BetaTestApplicationViewTestMixin,
         application = BetaTestApplication.objects.get()
         self._assert_application_matches_form_data(application)
 
-    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com', INSTANCE_STORAGE_TYPE='s3')
+    @override_settings(VARIABLES_NOTIFICATION_EMAIL='notifications@opencraft.com')
     def test_modifying_design_fields_sends_email(self):
         """
         Check that after an user changes certain fields, we'll get a notification
