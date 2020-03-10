@@ -243,3 +243,30 @@ class ThemeConfigValidationTestCase(TestCase):
             'header_bg_color': '#222',
             'footer_bg_color': '#333'
         })
+
+    def test_invalid_v0_schema_data_causes_validation_failure(self):
+        """
+        Test that the schema validation for the v0 schema works even in the combined schema.
+        """
+        with self.assertRaises(JSONValidationError):
+            theme_schema_validate({
+                'version': 0,
+                'main_color': 'red',
+                'link_color': '#fff',
+                'header_bg_color': '#fff',
+                'footer_bg_color': '#fff'
+            })
+
+    @ddt.data(
+        {'main-color': 'red'},
+        {'main-color': 1},
+        {'customize-login-btn': 'true'},
+        {'customize-login-btn': 1}
+    )
+    def test_invalid_v1_schema_data_causes_validation_failure(self, value):
+        """
+        Test that the schema validation for the v1 schema works even in the combined schema.
+        """
+        value['version'] = 1
+        with self.assertRaises(JSONValidationError):
+            theme_schema_validate(value)
