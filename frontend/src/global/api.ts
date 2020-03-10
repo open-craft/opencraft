@@ -2,7 +2,6 @@ import { OCIM_API_BASE } from 'global/constants';
 import { V2Api as _V2Api, Configuration } from 'ocim-client';
 import { performLogout } from 'auth/actions';
 
-
 const config = new Configuration({
   basePath: `${OCIM_API_BASE}/api`,
   apiKey: (name: string, scopes?: string[]) => {
@@ -13,7 +12,7 @@ const config = new Configuration({
   },
   middleware: [
     {
-      post: async (context) => {
+      post: async context => {
         if (context.response.status === 403) {
           // Failed requests return 403 and mean that the access token is
           // expired, so we trigger a page refresh.
@@ -24,8 +23,8 @@ const config = new Configuration({
           performLogout();
         }
         return context.response;
-      },
-    },
+      }
+    }
   ]
 });
 

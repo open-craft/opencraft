@@ -89,7 +89,7 @@ export const performLogin = (
             error
           });
         });
-      } catch (e) {
+      } catch (jsonParseError) {
         dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
       }
     });
