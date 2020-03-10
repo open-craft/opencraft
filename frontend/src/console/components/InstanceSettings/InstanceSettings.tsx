@@ -1,6 +1,9 @@
 import * as React from 'react';
 import './styles.scss';
-import { ConsolePage } from 'console/components';
+import {
+  ConsolePage,
+  ConsolePageCustomizationContainer
+} from 'console/components';
 import { TextInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
@@ -74,37 +77,39 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
     return (
       <ConsolePage contentLoading={this.props.loading}>
-        <h2>
-          <WrappedMessage messages={messages} id="instanceSettings" />
-        </h2>
+        <ConsolePageCustomizationContainer>
+          <h2>
+            <WrappedMessage messages={messages} id="instanceSettings" />
+          </h2>
 
-        <TextInputField
-          fieldName="instanceName"
-          value={this.state.instanceName}
-          onChange={this.onChange}
-          onBlur={() => {
-            this.updateValue('instanceName', this.state.instanceName);
-          }}
-          messages={messages}
-          loading={instance.loading.includes('instanceName')}
-          error={instance.feedback.instanceName}
-        />
+          <TextInputField
+            fieldName="instanceName"
+            value={this.state.instanceName}
+            onChange={this.onChange}
+            onBlur={() => {
+              this.updateValue('instanceName', this.state.instanceName);
+            }}
+            messages={messages}
+            loading={instance.loading.includes('instanceName')}
+            error={instance.feedback.instanceName}
+          />
 
-        <TextInputField
-          fieldName="publicContactEmail"
-          value={this.state.publicContactEmail}
-          onChange={this.onChange}
-          messages={messages}
-          loading={instance.loading.includes('publicContactEmail')}
-          onBlur={() => {
-            this.updateValue(
-              'publicContactEmail',
-              this.state.publicContactEmail
-            );
-          }}
-          type="email"
-          error={instance.feedback.publicContactEmail}
-        />
+          <TextInputField
+            fieldName="publicContactEmail"
+            value={this.state.publicContactEmail}
+            onChange={this.onChange}
+            messages={messages}
+            loading={instance.loading.includes('publicContactEmail')}
+            onBlur={() => {
+              this.updateValue(
+                'publicContactEmail',
+                this.state.publicContactEmail
+              );
+            }}
+            type="email"
+            error={instance.feedback.publicContactEmail}
+          />
+        </ConsolePageCustomizationContainer>
       </ConsolePage>
     );
   }
