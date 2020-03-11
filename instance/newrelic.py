@@ -21,9 +21,7 @@ New Relic API - Helper functions
 """
 
 # Imports #####################################################################
-import base64
 import logging
-import os
 
 import requests
 from django.conf import settings
@@ -85,51 +83,10 @@ def create_synthetics_monitor(uri, name=None, monitor_type='SIMPLE',
         'frequency': frequency,
         'locations': locations,
         'status': 'ENABLED',
-        # 'options': {'verifySSL': True},
+        'options': {'verifySSL': True},
     })
     r.raise_for_status()
     return r.headers['location'].rsplit('/', 1)[-1]
-
-
-def create_synthetics_ssl_monitor(name=None, monitor_type='SCRIPT_API',
-                                  frequency=1440, locations=('AWS_US_EAST_1',)):
-    """
-    Create a SSL monitor.
-    """
-    url = '{0}/monitors'.format(SYNTHETICS_API_URL)
-    logger.info('POST %s', url)
-    r = requests.post(url, headers=_request_headers(), json={
-        'name': name,
-        'type': monitor_type,
-        'frequency': frequency,
-        'locations': locations,
-        'status': 'ENABLED',
-    })
-    r.raise_for_status()
-    return r.headers['location'].rsplit('/', 1)[-1]
-
-
-def update_synthetics_ssl_monitor(monitor_id, url_to_check):
-    """
-    Update the ssl monitor script
-    """
-    url = '{0}/monitors/{1}/script'.format(SYNTHETICS_API_URL, monitor_id)
-    logger.info('PUT %s', url)
-    headers = _request_headers()
-    headers['Content-Type'] = 'application/json'
-    current_directory = os.path.dirname(os.path.realpath(__file__))
-    script_file = os.path.join(current_directory, 'scripts', 'check_ssl_expiration.js')
-    with open(script_file, 'r') as f:
-        new_script = f.read()
-        new_script = new_script.replace('https://example.com', url_to_check)
-    script_bytes = new_script.encode("utf-8")
-    encoded_script = base64.b64encode(script_bytes)
-    encoded_script_string = str(encoded_script, "utf-8")
-    script_payload = {
-        'scriptText': encoded_script_string
-    }
-    r = requests.put(url, headers=headers, json=script_payload)
-    r.raise_for_status()
 
 
 def get_synthetics_notification_emails(monitor_id):
