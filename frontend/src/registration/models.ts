@@ -33,7 +33,7 @@ export interface ThemeInfoModel {
 
 export const DefaultTheme: Readonly<ThemeInfoModel> = {
   mainColour: 'blue',
-  accentColour: 'green',
+  accentColour: 'green'
 };
 
 export interface RegistrationModel
