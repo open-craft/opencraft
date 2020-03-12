@@ -68,6 +68,18 @@ export interface OpenEdXInstanceConfigUpdate {
      * @memberof OpenEdXInstanceConfigUpdate
      */
     draftThemeConfig?: ThemeSchema;
+    /**
+     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft\'s logo will be used.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly logo?: string;
+    /**
+     * This is used as the browser tab icon for your instance\'s pages. If unset, OpenCraft\'s icon will be used.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly favicon?: string;
 }
 
 export function OpenEdXInstanceConfigUpdateFromJSON(json: any): OpenEdXInstanceConfigUpdate {
@@ -87,6 +99,8 @@ export function OpenEdXInstanceConfigUpdateFromJSONTyped(json: any, ignoreDiscri
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
+        'logo': !exists(json, 'logo') ? undefined : json['logo'],
+        'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
     };
 }
 

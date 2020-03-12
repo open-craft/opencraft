@@ -86,6 +86,10 @@ export interface InstancesOpenedxConfigCreateRequest {
     data: OpenEdXInstanceConfig;
 }
 
+export interface InstancesOpenedxConfigImageRequest {
+    id: string;
+}
+
 export interface InstancesOpenedxConfigPartialUpdateRequest {
     id: string;
     data: OpenEdXInstanceConfigUpdate;
@@ -460,6 +464,45 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigCreate(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<OpenEdXInstanceConfig> {
         const response = await this.instancesOpenedxConfigCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
+     * Endpoint for saving favicon or logo images
+     */
+    async instancesOpenedxConfigImageRaw(requestParameters: InstancesOpenedxConfigImageRequest): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigImage.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/image/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
+     * Endpoint for saving favicon or logo images
+     */
+    async instancesOpenedxConfigImage(requestParameters: InstancesOpenedxConfigImageRequest): Promise<object> {
+        const response = await this.instancesOpenedxConfigImageRaw(requestParameters);
         return await response.value();
     }
 
