@@ -23,6 +23,7 @@ Instance app model mixins - Ansible
 # Imports #####################################################################
 
 from collections import namedtuple
+from contextlib import contextmanager
 import os
 import yaml
 
@@ -35,13 +36,29 @@ from instance.repo import open_repository
 
 # Classes #####################################################################
 
+# Represents an ansible playbook. It can be located in a remote git repository or
+# a folder on the local disk.
 Playbook = namedtuple('Playbook', [
     'source_repo',  # Path or URL to a git repository containing the playbook to run
     'playbook_path',  # Relative path to the playbook within source_repo
     'requirements_path',  # Relative path to a python requirements file to install before running the playbook
-    'version',  # The git tag/commit hash/branch to use
+    'version',  # The git tag/commit hash/branch to use. May be None if playbook is not in a git repo.
     'variables',  # A YAML string containing extra variables to pass to ansible when running this playbook
 ])
+
+
+@contextmanager
+def _checkout_playbook(playbook):
+    """
+    If playbook's `version` attribute is present, checks out the playbook from git
+    and yields the working directory.
+    Otherwise assumes the playbook is local and simply yields the value of the `source_repo` attribute.
+    """
+    if playbook.version is None:
+        yield playbook.source_repo
+    else:
+        with open_repository(playbook.source_repo, ref=playbook.version) as configuration_repo:
+            yield configuration_repo.working_dir
 
 
 class AnsibleAppServerMixin(models.Model):
@@ -121,9 +138,9 @@ class AnsibleAppServerMixin(models.Model):
         """
         log = []
         for playbook in self.get_playbooks():
-            with open_repository(playbook.source_repo, ref=playbook.version) as configuration_repo:
+            with _checkout_playbook(playbook) as working_dir:
                 self.logger.info('Running playbook "%s" from "%s"', playbook.playbook_path, playbook.source_repo)
-                playbook_log, returncode = self._run_playbook(configuration_repo.working_dir, playbook)
+                playbook_log, returncode = self._run_playbook(working_dir, playbook)
                 log += playbook_log
                 if returncode != 0:
                     self.logger.error('Playbook failed for AppServer %s', self)
