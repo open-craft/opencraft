@@ -30,7 +30,7 @@ interface Props extends StateProps, ActionProps {
 }
 
 export class ConsolePageComponent extends React.PureComponent<Props> {
-  refreshInterval: any | undefined;
+  refreshInterval?: NodeJS.Timer;
 
   public componentDidMount() {
     if (!this.props.loading && this.props.activeInstance.data === null) {
