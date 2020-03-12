@@ -6,6 +6,7 @@ import {
 } from 'console/components';
 import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
+import { CollapseEditArea } from 'ui/components';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
@@ -46,7 +47,9 @@ export class LogosComponent extends React.PureComponent<Props, State> {
                 <img src="" alt="Logo" />
               </Col>
             </Row>
+            <CollapseEditArea initialExpanded>dfasdfasdf</CollapseEditArea>
           </ConsolePageCustomizationContainer>
+
           <ConsolePageCustomizationContainer>
             <Row>
               <Col md={9}>
@@ -61,6 +64,7 @@ export class LogosComponent extends React.PureComponent<Props, State> {
                 <img src="" alt="Logo" />
               </Col>
             </Row>
+            <CollapseEditArea initialExpanded>dfasdfasdf</CollapseEditArea>
           </ConsolePageCustomizationContainer>
         </ConsolePage>
       </div>

@@ -5,7 +5,7 @@ const messages = {
   },
   logoDescription: {
     defaultMessage:
-      "Your branding to be displayed throughout your instance. " +
+      'Your branding to be displayed throughout your instance. ' +
       "If unset, OpenCraft's logo will be used.",
     description: ''
   },
@@ -15,7 +15,7 @@ const messages = {
   },
   faviconDescription: {
     defaultMessage:
-      "This is the icon that will be displayed in the browser tab. " +
+      'This is the icon that will be displayed in the browser tab. ' +
       "If unset, OpenCraft's logo will be used.",
     description: ''
   }

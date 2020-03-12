@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders without crashing 1`] = `
-<div>
+<div
+  className="custom-logo-pages"
+>
   <div
     className="console-page"
   >
@@ -234,14 +236,18 @@ exports[`renders without crashing 1`] = `
               </div>
             </div>
             <div
-              className="customization-form col-md-9"
+              className="col-md-9"
             >
               <div
-                className="loading"
+                className="customization-form"
               >
-                <i
-                  className="fas fa-2x fa-sync-alt fa-spin"
-                />
+                <div
+                  className="loading"
+                >
+                  <i
+                    className="fas fa-2x fa-sync-alt fa-spin"
+                  />
+                </div>
               </div>
             </div>
           </div>
