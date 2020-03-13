@@ -49,7 +49,9 @@ def get_raw_fixture(fixture_filename):
     Returns the raw contents of a fixture, by filename
     """
     fixture_filepath = get_fixture_filepath(fixture_filename)
-    with open(fixture_filepath) as f:
+    # explicitly set UTF-8 encoding to avoid default ASCII encoding when running in Python 3.6-
+    # if environment uses legacy C locale. This can be removed when test env is updated to Python 3.7
+    with open(fixture_filepath, encoding='utf-8') as f:
         return f.read()
 
 

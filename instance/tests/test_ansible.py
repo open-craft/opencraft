@@ -197,7 +197,7 @@ class AnsibleTestCase(TestCase):
         """
         file_path = ansible.string_to_file_path("TEST ąęłźżó")
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 self.assertEqual("TEST ąęłźżó", f.read())
         finally:
             os.remove(file_path)
