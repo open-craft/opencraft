@@ -86,6 +86,8 @@ def get_openstack_connection(region_name):
             password=settings.OPENSTACK_PASSWORD,
             user_domain_id="default",
             user_domain_name="Default",
+            project_domain_id="default",
+            project_domain_name="Default",
         ))
     conn = connection.from_config(cloud_config=cloud_region)
     conn.session.user_agent = "opencraft-im"
