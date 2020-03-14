@@ -146,6 +146,10 @@ def get_nova_client(region_name, api_version=2):
         project_name=settings.OPENSTACK_TENANT,
         auth_url=settings.OPENSTACK_AUTH_URL_V3,
         region_name=region_name,
+        user_domain_id="default",
+        user_domain_name="Default",
+        project_domain_id="default",
+        project_domain_name="Default",
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
