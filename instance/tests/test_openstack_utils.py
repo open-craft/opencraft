@@ -292,8 +292,6 @@ class OpenStackTestCase(TestCase):
         server = server_class(addresses=addresses)
         self.assertEqual(openstack_utils.get_server_public_address(server, ip_version=version), expected_address)
 
-    # FIXME fix this test case, it failed in CI. We may need to mock different internal methods
-    # See failure at: https://app.circleci.com/jobs/github/open-craft/opencraft/12719
     @patch('requests.packages.urllib3.util.retry.Retry.sleep')
     @patch('http.client.HTTPConnection.getresponse')
     @patch('http.client.HTTPConnection.request')
