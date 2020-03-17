@@ -1,0 +1,44 @@
+@import '~styles/theme';
+
+.image-upload-field {
+    padding-top: 20px;
+
+    h4 {
+        font-family: $chivo-font;
+        font-size: 18px;
+        letter-spacing: 0.54px;
+    }
+    p {
+        font-family: $chivo-font;
+        font-size: 14px;
+        letter-spacing: 0.14px;
+        color: #333333;
+    }
+}
+
+.file-upload-modal {
+    text-align: center;
+    
+    .modal-header {
+        border-bottom: none;
+        font-family: $playfair-font;
+        font-size: 24px;
+        color: #0f1f24;
+        margin-bottom: -15px
+    }
+    
+    .modal-body {
+        background-color: #d3e1e7;
+        margin: 20px;
+        font-family: $chivo-font;
+        font-size: 16px;
+        color: #0f1f24;
+    }
+    
+    .modal-footer {
+        border: none;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+}
+
