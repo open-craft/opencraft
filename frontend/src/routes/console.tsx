@@ -3,8 +3,8 @@ import * as React from 'react';
 import { Switch, Route, Redirect } from 'react-router';
 import {
   InstanceSettings,
-  ThemePreviewAndColors,
-  Logos
+  Logos,
+  ThemePreviewAndColors
 } from 'console/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
