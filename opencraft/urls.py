@@ -26,6 +26,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
+from django.conf.urls.static import static
 
 import opencraft.views as views
 
@@ -51,3 +52,4 @@ if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
     urlpatterns = [
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
