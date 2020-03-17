@@ -9,6 +9,10 @@ const messages = {
       "If unset, OpenCraft's logo will be used.",
     description: ''
   },
+  uploadLogo: {
+    defaultMessage: 'Upload Logo',
+    description: ''
+  },
   favicon: {
     defaultMessage: 'Favicon',
     description: ''
@@ -17,6 +21,10 @@ const messages = {
     defaultMessage:
       'This is the icon that will be displayed in the browser tab. ' +
       "If unset, OpenCraft's logo will be used.",
+    description: ''
+  },
+  uploadFavicon: {
+    defaultMessage: 'Upload Favicon',
     description: ''
   }
 };

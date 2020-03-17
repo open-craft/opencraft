@@ -1,8 +1,11 @@
 import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
+import { push } from 'connected-react-router';
 import { V2Api } from 'global/api';
 import { InstanceSettingsModel, DeploymentInfoModel } from 'console/models';
 import { ThemeSchema } from 'ocim-client';
+import { ROUTES } from 'global/constants';
+import { sanitizeErrorFeedback } from 'utils/string_utils';
 
 export enum Types {
   // Support action to update root state and clean error messages when users change fields
@@ -15,6 +18,9 @@ export enum Types {
   UPDATE_INSTANCE_INFO = 'UPDATE_INSTANCE_INFO',
   UPDATE_INSTANCE_INFO_SUCCESS = 'UPDATE_INSTANCE_INFO_SUCCESS',
   UPDATE_INSTANCE_INFO_FAILURE = 'UPDATE_INSTANCE_INFO_FAILURE',
+  UPDATE_INSTANCE_IMAGES = 'UPDATE_INSTANCE_IMAGES',
+  UPDATE_INSTANCE_IMAGES_SUCCESS = 'UPDATE_INSTANCE_IMAGES_SUCCESS',
+  UPDATE_INSTANCE_IMAGES_FAILURE = 'UPDATE_INSTANCE_IMAGES_FAILURE',
   // Theming specific actions
   UPDATE_INSTANCE_THEME = 'UPDATE_INSTANCE_THEME',
   UPDATE_INSTANCE_THEME_SUCCESS = 'UPDATE_INSTANCE_THEME_SUCCESS',
@@ -29,6 +35,11 @@ export enum Types {
   CANCEL_DEPLOYMENT = 'CANCEL_DEPLOYMENT',
   CANCEL_DEPLOYMENT_SUCCESS = 'CANCEL_DEPLOYMENT_SUCCESS',
   CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE'
+}
+
+export interface ClearFeedbackMessage extends Action {
+  readonly type: Types.CLEAR_ERROR_MESSAGE;
+  readonly field: keyof InstanceSettingsModel;
 }
 
 export interface UserInstanceList extends Action {
@@ -57,6 +68,21 @@ export interface UpdateInstanceInfoSuccess extends Action {
 
 export interface UpdateInstanceInfoFailure extends Action {
   readonly type: Types.UPDATE_INSTANCE_INFO_FAILURE;
+  readonly data: Partial<InstanceSettingsModel>;
+}
+
+export interface UpdateInstanceImages extends Action {
+  readonly type: Types.UPDATE_INSTANCE_IMAGES;
+  readonly fieldName: keyof InstanceSettingsModel;
+}
+
+export interface UpdateInstanceImagesSuccess extends Action {
+  readonly type: Types.UPDATE_INSTANCE_IMAGES_SUCCESS;
+  readonly data: Partial<InstanceSettingsModel>;
+}
+
+export interface UpdateInstanceImagesFailure extends Action {
+  readonly type: Types.UPDATE_INSTANCE_IMAGES_FAILURE;
   readonly data: Partial<InstanceSettingsModel>;
 }
 
@@ -119,12 +145,16 @@ export interface CancelDeploymentFailure extends Action {
 }
 
 export type ActionTypes =
+  | ClearFeedbackMessage
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
   | UpdateInstanceInfo
   | UpdateInstanceInfoSuccess
   | UpdateInstanceInfoFailure
+  | UpdateInstanceImages
+  | UpdateInstanceImagesSuccess
+  | UpdateInstanceImagesFailure
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
@@ -137,6 +167,15 @@ export type ActionTypes =
   | CancelDeployment
   | CancelDeploymentSuccess
   | CancelDeploymentFailure;
+
+export const clearErrorMessage = (field: keyof InstanceSettingsModel) => async (
+  dispatch: any
+) => {
+  dispatch({
+    type: Types.CLEAR_ERROR_MESSAGE,
+    field
+  });
+};
 
 export const listUserInstances = (): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
@@ -153,6 +192,49 @@ export const listUserInstances = (): OcimThunkAction<void> => async dispatch => 
         type: Types.USER_INSTANCE_LIST_FAILURE
       });
     });
+};
+
+export const updateImages = (
+  instanceId: number,
+  imageFieldName: string,
+  file: string
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  // Dispatch variable lock to avoid sending a second image
+  // while the first one is still being transmitted
+  dispatch({
+    type: Types.UPDATE_INSTANCE_INFO,
+    imageFieldName
+  });
+
+  try {
+    const response: {
+      [key: string]: any;
+    } = await V2Api.instancesOpenedxConfigImage({
+      id: String(instanceId),
+      [imageFieldName]: file
+    });
+
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      dispatch({
+        type: Types.UPDATE_INSTANCE_INFO_SUCCESS,
+        data: {
+          [imageFieldName]: response[imageFieldName]
+        }
+      });
+    }
+  } catch (e) {
+    try {
+      const error = await e.json();
+
+      dispatch({
+        type: Types.UPDATE_INSTANCE_INFO_FAILURE,
+        data: sanitizeErrorFeedback(error)
+      });
+    } catch {
+      dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
+    }
+  }
 };
 
 export const updateFieldValue = (

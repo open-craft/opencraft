@@ -56,6 +56,7 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
     ThemeSchemaSerializer,
+    LogoFaviconUploadSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -266,10 +267,12 @@ class OpenEdXInstanceConfigViewSet(
 
         return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
 
-    @swagger_auto_schema(
-        request_body=GenericObjectSerializer,
+    @action(
+        detail=True, 
+        methods=['post'], 
+        parser_classes=(MultiPartParser, ),
+        serializer_class=LogoFaviconUploadSerializer
     )
-    @action(detail=True, methods=['post'], parser_classes=(MultiPartParser, ))
     def image(self, request, pk: str):
         """
         Endpoint for saving favicon or logo images
@@ -290,16 +293,17 @@ class OpenEdXInstanceConfigViewSet(
                     application.save()
 
             except Exception as e:
-                Response(
+                return Response(
                     status=status.HTTP_400_BAD_REQUEST,
-                    data={
-                        "errors": e
-                    }
+                    data=dict(e)
                 )
 
         return Response(
             status=status.HTTP_200_OK,
-            data=OpenEdXInstanceConfigSerializer(application).data
+            data=LogoFaviconUploadSerializer(
+                application, 
+                context={'request': request}
+            ).data
         )
 
     def get_queryset(self):

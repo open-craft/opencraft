@@ -12,4 +12,10 @@
     letter-spacing: 0.14px;
     color: $secondary-4;
   }
+
+  .image-container {
+    display: flex;
+    justify-content: center;
+    vertical-align: middle;
+  }
 }

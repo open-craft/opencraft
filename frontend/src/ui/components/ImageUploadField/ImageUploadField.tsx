@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Alert, Button, Modal } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import messages from './displayMessages';
 import './styles.scss';
@@ -7,6 +7,7 @@ import './styles.scss';
 interface ImageUploadFieldProps {
   customUploadMessage: any;
   updateImage: Function;
+  clearError: Function;
   recommendedSize?: string;
   error?: string;
   loading?: boolean;
@@ -19,7 +20,10 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
   const [image, setImage] = React.useState();
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    props.clearError();
+    setShow(true);
+  };
 
   const setImageIfValid = (files: any) => {
     // TODO: Add extension and file validation here
@@ -36,9 +40,20 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
           {props.recommendedSize}
         </p>
       )}
-      <Button variant="outline-primary" size="lg" onClick={handleShow}>
+      <Button
+        variant="outline-primary"
+        size="lg"
+        onClick={handleShow}
+        disabled={props.loading}
+      >
         <WrappedMessage messages={messages} id="change" />
       </Button>
+
+      {props.error && (
+        <Alert className="error-box" variant="danger">
+          {props.error}
+        </Alert>
+      )}
 
       <Modal
         show={show}

@@ -21,6 +21,9 @@ import {
     GenericAPIError,
     GenericAPIErrorFromJSON,
     GenericAPIErrorToJSON,
+    LogoFaviconUpload,
+    LogoFaviconUploadFromJSON,
+    LogoFaviconUploadToJSON,
     OpenEdXInstanceConfig,
     OpenEdXInstanceConfigFromJSON,
     OpenEdXInstanceConfigToJSON,
@@ -88,6 +91,8 @@ export interface InstancesOpenedxConfigCreateRequest {
 
 export interface InstancesOpenedxConfigImageRequest {
     id: string;
+    logo?: Blob;
+    favicon?: Blob;
 }
 
 export interface InstancesOpenedxConfigPartialUpdateRequest {
@@ -471,7 +476,7 @@ export class V2Api extends runtime.BaseAPI {
      * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
      * Endpoint for saving favicon or logo images
      */
-    async instancesOpenedxConfigImageRaw(requestParameters: InstancesOpenedxConfigImageRequest): Promise<runtime.ApiResponse<object>> {
+    async instancesOpenedxConfigImageRaw(requestParameters: InstancesOpenedxConfigImageRequest): Promise<runtime.ApiResponse<LogoFaviconUpload>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigImage.');
         }
@@ -487,21 +492,48 @@ export class V2Api extends runtime.BaseAPI {
         if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
             headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
         }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.logo !== undefined) {
+            formParams.append('logo', requestParameters.logo as any);
+        }
+
+        if (requestParameters.favicon !== undefined) {
+            formParams.append('favicon', requestParameters.favicon as any);
+        }
+
         const response = await this.request({
             path: `/v2/instances/openedx_config/{id}/image/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: formParams,
         });
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => LogoFaviconUploadFromJSON(jsonValue));
     }
 
     /**
      * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
      * Endpoint for saving favicon or logo images
      */
-    async instancesOpenedxConfigImage(requestParameters: InstancesOpenedxConfigImageRequest): Promise<object> {
+    async instancesOpenedxConfigImage(requestParameters: InstancesOpenedxConfigImageRequest): Promise<LogoFaviconUpload> {
         const response = await this.instancesOpenedxConfigImageRaw(requestParameters);
         return await response.value();
     }

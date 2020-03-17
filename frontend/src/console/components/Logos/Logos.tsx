@@ -6,29 +6,34 @@ import {
 } from 'console/components';
 import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
-import { CollapseEditArea } from 'ui/components';
+import { CollapseEditArea, ImageUploadField } from 'ui/components';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
-import { updateThemeFieldValue } from 'console/actions';
+import { clearErrorMessage, updateImages } from 'console/actions';
 import messages from './displayMessages';
 
 interface State {}
 interface ActionProps {
-  updateThemeFieldValue: Function;
+  clearErrorMessage: Function;
+  updateImages: Function;
 }
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
 export class LogosComponent extends React.PureComponent<Props, State> {
+  updateImage = (imageName: string, image: File) => {
+    if (this.props.activeInstance && this.props.activeInstance.data) {
+      this.props.updateImages(
+        this.props.activeInstance.data.id,
+        imageName,
+        image
+      );
+    }
+  };
+
   public render() {
     const instance = this.props.activeInstance;
-    let themeData;
-    console.log(themeData);
-
-    if (instance.data && instance.data.draftThemeConfig) {
-      themeData = instance.data.draftThemeConfig;
-    }
 
     return (
       <div className="custom-logo-pages">
@@ -43,11 +48,29 @@ export class LogosComponent extends React.PureComponent<Props, State> {
                   <WrappedMessage messages={messages} id="logoDescription" />
                 </p>
               </Col>
-              <Col md={3}>
-                <img src="" alt="Logo" />
+              <Col md={3} className="image-container">
+                <div>
+                  {instance.data && instance.data.logo && (
+                    <img src={instance.data.logo} alt="Logo" />
+                  )}
+                </div>
               </Col>
             </Row>
-            <CollapseEditArea initialExpanded>dfasdfasdf</CollapseEditArea>
+            <CollapseEditArea initialExpanded>
+              <ImageUploadField
+                customUploadMessage={
+                  <WrappedMessage messages={messages} id="uploadLogo" />
+                }
+                updateImage={(image: File) => {
+                  this.updateImage('logo', image);
+                }}
+                recommendedSize="48x48 px"
+                error={instance.feedback.logo}
+                clearError={() => {
+                  this.props.clearErrorMessage('logo');
+                }}
+              />
+            </CollapseEditArea>
           </ConsolePageCustomizationContainer>
 
           <ConsolePageCustomizationContainer>
@@ -60,11 +83,28 @@ export class LogosComponent extends React.PureComponent<Props, State> {
                   <WrappedMessage messages={messages} id="faviconDescription" />
                 </p>
               </Col>
-              <Col md={3}>
-                <img src="" alt="Logo" />
+              <Col md={3} className="image-container">
+                <div>
+                  {instance.data && instance.data.favicon && (
+                    <img src={instance.data.favicon} alt="favicon" />
+                  )}
+                </div>
               </Col>
             </Row>
-            <CollapseEditArea initialExpanded>dfasdfasdf</CollapseEditArea>
+            <CollapseEditArea>
+              <ImageUploadField
+                customUploadMessage={
+                  <WrappedMessage messages={messages} id="uploadFavicon" />
+                }
+                updateImage={(image: File) => {
+                  this.updateImage('favicon', image);
+                }}
+                error={instance.feedback.favicon}
+                clearError={() => {
+                  this.props.clearErrorMessage('favicon');
+                }}
+              />
+            </CollapseEditArea>
           </ConsolePageCustomizationContainer>
         </ConsolePage>
       </div>
@@ -75,6 +115,7 @@ export class LogosComponent extends React.PureComponent<Props, State> {
 export const Logos = connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.console,
   {
-    updateThemeFieldValue
+    clearErrorMessage,
+    updateImages
   }
 )(LogosComponent);
