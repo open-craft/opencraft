@@ -68,13 +68,15 @@ class GenericObjectSerializer(DataSerializer):
             "additionalProperties": True,
         }
 
-class LogoFaviconUploadSerializer(serializers.Serializer):
+
+class LogoFaviconUploadSerializer(DataSerializer):
     """
     Serializer for any response that returns a JSON dict, without specifying
-    the fields of that dict in detail.  
+    the fields of that dict in detail.
     """
     logo = serializers.FileField(required=False, use_url=True)
     favicon = serializers.FileField(required=False, use_url=True)
+
 
 class AccountSerializer(serializers.ModelSerializer):
     """

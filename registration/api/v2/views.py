@@ -50,13 +50,12 @@ from opencraft.swagger import (
 from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
-    GenericObjectSerializer,
+    LogoFaviconUploadSerializer,
     OpenEdXInstanceConfigSerializer,
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
     ThemeSchemaSerializer,
-    LogoFaviconUploadSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -268,8 +267,8 @@ class OpenEdXInstanceConfigViewSet(
         return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
 
     @action(
-        detail=True, 
-        methods=['post'], 
+        detail=True,
+        methods=['post'],
         parser_classes=(MultiPartParser, ),
         serializer_class=LogoFaviconUploadSerializer
     )
@@ -292,7 +291,7 @@ class OpenEdXInstanceConfigViewSet(
                     application.logo = request.data['logo']
                     application.save()
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 return Response(
                     status=status.HTTP_400_BAD_REQUEST,
                     data=dict(e)
@@ -301,7 +300,7 @@ class OpenEdXInstanceConfigViewSet(
         return Response(
             status=status.HTTP_200_OK,
             data=LogoFaviconUploadSerializer(
-                application, 
+                application,
                 context={'request': request}
             ).data
         )
