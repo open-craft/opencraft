@@ -41,8 +41,8 @@ export class LoginPage extends React.PureComponent<Props, State> {
   }
 
   private onKeyPress = (event: any) => {
-    if (event.key === "Enter") {
-      this.logIn()
+    if (event.key === 'Enter') {
+      this.logIn();
     }
   };
 
@@ -70,7 +70,9 @@ export class LoginPage extends React.PureComponent<Props, State> {
       <ContentPage title="Log in to customize your instance">
         <Form
           className="login"
-          onKeyPress={(event: any) => {this.onKeyPress(event)}}
+          onKeyPress={(event: any) => {
+            this.onKeyPress(event);
+          }}
         >
           <TextInputField
             fieldName="username"
