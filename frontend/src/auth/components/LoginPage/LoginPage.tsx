@@ -35,10 +35,16 @@ export class LoginPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      username: state.username,
+      username: '',
       password: ''
     };
   }
+
+  private onKeyPress = (event: any) => {
+    if (event.key === "Enter") {
+      this.logIn()
+    }
+  };
 
   private logIn = () => {
     this.props.performLogin(
@@ -62,7 +68,10 @@ export class LoginPage extends React.PureComponent<Props, State> {
   public render() {
     return (
       <ContentPage title="Log in to customize your instance">
-        <Form className="login">
+        <Form
+          className="login"
+          onKeyPress={(event: any) => {this.onKeyPress(event)}}
+        >
           <TextInputField
             fieldName="username"
             value={this.state.username}
