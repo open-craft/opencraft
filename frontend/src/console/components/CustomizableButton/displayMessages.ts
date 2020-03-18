@@ -1,8 +1,8 @@
 const messages = {
-    exampleMessage: {
-        defaultMessage: 'Example',
-        description: '',
-    },
+  exampleMessage: {
+    defaultMessage: 'Example',
+    description: ''
+  }
 };
 
 export default messages;

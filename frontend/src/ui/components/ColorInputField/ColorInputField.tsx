@@ -15,6 +15,7 @@ import './styles.scss';
 
 interface ColorInputFieldProps {
   fieldName: string;
+  genericFieldName?: string;
   initialValue?: string;
   onChange?: any;
   error?: string;
@@ -28,6 +29,9 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
 ) => {
   const [colorPicker, setColorPicker] = React.useState(false);
   const [selectedColor, setColor] = React.useState(props.initialValue);
+
+  // Get name that can be used with generic displayMessages.
+  const genericFieldName = props.genericFieldName || props.fieldName;
 
   // Ensure the correct color is shown if props are updated
   React.useEffect(() => {
@@ -63,7 +67,7 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
   return (
     <FormGroup>
       <FormLabel>
-        <WrappedMessage id={props.fieldName} messages={props.messages} />
+        <WrappedMessage id={genericFieldName} messages={props.messages} />
       </FormLabel>
       <Row>
         <FormControl

@@ -1,35 +1,47 @@
 const messages = {
   themePrimaryButton: {
     defaultMessage: 'Primary button',
-    description: '',
+    description: ''
   },
   themePrimaryButtonHelp: {
-    defaultMessage: 'These buttons encourage the users to continue on a journey, e.g. "Next", "Start".',
-    description: '',
+    defaultMessage:
+      'These buttons encourage the users to continue on a journey, e.g. "Next", "Start".',
+    description: ''
   },
-  btnPrimaryBg: {
-    defaultMessage: "Button color",
-    description: '',
+  themeSecondaryButton: {
+    defaultMessage: 'Secondary button',
+    description: ''
   },
-  btnPrimaryColor: {
-    defaultMessage: "Button text color",
-    description: '',
+  themeSecondaryButtonHelp: {
+    defaultMessage:
+      'These buttons are taking the user on an alternative journey, e.g. "Back", "Cancel", "Edit".',
+    description: ''
   },
-  btnPrimaryBorderColor: {
-    defaultMessage: "Button border color",
-    description: '',
+  themeRegisterButton: {
+    defaultMessage: 'Register button',
+    description: ''
   },
-  btnPrimaryHoverBg: {
-    defaultMessage: "Button color on hover",
-    description: '',
+  themeRegisterButtonHelp: {
+    defaultMessage:
+      'This button will be on the main navigation page and on the reregistration page.',
+    description: ''
   },
-  btnPrimaryHoverColor: {
-    defaultMessage: "Button text color on hover",
-    description: '',
+  themeSignInButton: {
+    defaultMessage: 'Login button',
+    description: ''
   },
-  btnPrimaryHoverBorderColor: {
-    defaultMessage: "Button border color on hover",
-    description: '',
+  themeSignInButtonHelp: {
+    defaultMessage:
+      'This button will be on the main navigation page an on the login page.',
+    description: ''
+  },
+  themeLogistrationButton: {
+    defaultMessage: 'Logistration button',
+    description: ''
+  },
+  themeLogistrationButtonHelp: {
+    defaultMessage: 'This button will be on the logistration page.',
+    description: ''
   }
 };
 

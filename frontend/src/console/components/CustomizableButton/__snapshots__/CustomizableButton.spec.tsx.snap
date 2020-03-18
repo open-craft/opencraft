@@ -2,15 +2,18 @@
 
 exports[`renders without crashing 1`] = `
 <button
-  className="btn btn-primary"
-  disabled={false}
+  className="customizable-button"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
   style={
     Object {
-      "background": "green",
-      "borderBlockColor": "yellow",
-      "color": "red",
+      "background": undefined,
+      "borderColor": undefined,
+      "color": undefined,
     }
   }
   type="button"
-/>
+>
+  Example
+</button>
 `;

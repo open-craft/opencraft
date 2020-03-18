@@ -1,32 +1,33 @@
 import * as React from 'react';
 import messages from './displayMessages';
 import './styles.scss';
-import {Button} from "react-bootstrap";
-import {WrappedMessage} from "../../../utils/intl";
+import { WrappedMessage } from '../../../utils/intl';
 
 interface CustomizableButtonProps {
   children?: React.ReactNode;
   initialBackgroundColor?: string;
   initialTextColor?: string;
-  initialBorderBlockColor?: string;
+  initialBorderColor?: string;
   initialHoverBackgroundColor?: string;
   initialHoverTextColor?: string;
-  initialHoverBorderBlockColor?: string;
+  initialHoverBorderColor?: string;
   background?: string;
-  borderBlockColor?: string;
+  borderColor?: string;
 }
 
-export const CustomizableButton: React.FC<CustomizableButtonProps> = (props: CustomizableButtonProps) => {
+export const CustomizableButton: React.FC<CustomizableButtonProps> = (
+  props: CustomizableButtonProps
+) => {
   const [hover, setHover] = React.useState(false);
   const [style, setStyle] = React.useState({
     background: props.initialBackgroundColor,
     color: props.initialTextColor,
-    borderBlockColor: props.initialBorderBlockColor
+    borderColor: props.initialBorderColor
   });
   const [hoverStyle, setHoverStyle] = React.useState({
     background: props.initialHoverBackgroundColor,
     color: props.initialHoverTextColor,
-    borderBlockColor: props.initialHoverBorderBlockColor
+    borderColor: props.initialHoverBorderColor
   });
 
   function toggleHover() {
@@ -37,21 +38,37 @@ export const CustomizableButton: React.FC<CustomizableButtonProps> = (props: Cus
     setStyle({
       background: props.initialBackgroundColor,
       color: props.initialTextColor,
-      borderBlockColor: props.initialBorderBlockColor
+      borderColor: props.initialBorderColor
     });
-  }, [props.initialTextColor, props.initialBackgroundColor, props.initialBorderBlockColor]);
+  }, [
+    props.initialTextColor,
+    props.initialBackgroundColor,
+    props.initialBorderColor
+  ]);
 
   React.useEffect(() => {
     setHoverStyle({
       background: props.initialHoverBackgroundColor,
       color: props.initialHoverTextColor,
-      borderBlockColor: props.initialHoverBorderBlockColor
+      borderColor: props.initialHoverBorderColor
     });
-  }, [props.initialHoverTextColor, props.initialHoverBackgroundColor, props.initialHoverBorderBlockColor]);
+  }, [
+    props.initialHoverTextColor,
+    props.initialHoverBackgroundColor,
+    props.initialHoverBorderColor
+  ]);
 
   return (
-    <Button onMouseEnter={toggleHover} onMouseLeave={toggleHover} style={hover ? hoverStyle : style}>
-      {props.children || <WrappedMessage messages={messages} id={`exampleMessage`}/>}
-    </Button>
+    <button
+      type="button"
+      className="customizable-button"
+      onMouseEnter={toggleHover}
+      onMouseLeave={toggleHover}
+      style={hover ? hoverStyle : style}
+    >
+      {props.children || (
+        <WrappedMessage messages={messages} id="exampleMessage" />
+      )}
+    </button>
   );
 };
