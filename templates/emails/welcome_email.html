@@ -25,10 +25,10 @@
         </tr>
         <tr class="text">
             <td>
-                Login as a student to see what your instance would look like.
+                Log into the learning management system.
             </td>
             <td>
-                Login as an educator and start creating courses.
+                Log into the Studio course authoring platform.
             </td>
             <td>
                 Customize your instance to align with your institutions's look and feel.
@@ -46,9 +46,15 @@
                 </a>
             </td>
             <td>
-                <a href="{{ customise_link }}">
-                    Customize
-                </a>
+                {% if customise_link %}
+                    <a href="{{ customise_link }}">
+                        Customize
+                    </a>
+                {% else %}
+                    <a>
+                        Coming soon
+                    </a>
+                {% endif %}
             </td>
         </tr>
     </table>

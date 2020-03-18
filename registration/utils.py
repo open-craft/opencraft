@@ -50,8 +50,7 @@ def send_welcome_email(application: BetaTestApplication) -> None:
         user_name=user.profile.full_name,
         lms_link=application.instance.get_domain('lms'),
         studio_link=application.instance.get_domain('studio'),
-        # TODO: add in once implemented
-        customise_link='',
+        customise_link=settings.USER_CONSOLE_FRONTEND_URL,
     )
     html_email_helper(
         template_base_name='emails/welcome_email',
