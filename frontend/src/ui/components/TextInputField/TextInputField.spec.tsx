@@ -5,11 +5,11 @@ import { TextInputField } from './TextInputField';
 const messages = {
   test: {
     defaultMessage: 'A translatable string.',
-    description: 'A description of the translatable string.'
+    description: ''
   },
   testHelp: {
     defaultMessage: 'A translatable string.',
-    description: 'A description of the translatable string.'
+    description: ''
   }
 };
 
