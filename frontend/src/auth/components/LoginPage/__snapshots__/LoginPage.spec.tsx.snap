@@ -19,6 +19,7 @@ exports[`Login Page disables login button when loading login 1`] = `
     >
       <form
         className="login"
+        onKeyPress={[Function]}
       >
         <div
           className="form-group"
@@ -33,6 +34,7 @@ exports[`Login Page disables login button when loading login 1`] = `
             name="username"
             onChange={[Function]}
             type="username"
+            value=""
           />
           <p />
         </div>
@@ -98,6 +100,7 @@ exports[`Login Page renders error messages 1`] = `
     >
       <form
         className="login"
+        onKeyPress={[Function]}
       >
         <div
           className="form-group"
@@ -112,6 +115,7 @@ exports[`Login Page renders error messages 1`] = `
             name="username"
             onChange={[Function]}
             type="username"
+            value=""
           />
           <p />
         </div>
@@ -180,6 +184,7 @@ exports[`Login Page renders without crashing 1`] = `
     >
       <form
         className="login"
+        onKeyPress={[Function]}
       >
         <div
           className="form-group"
@@ -194,6 +199,7 @@ exports[`Login Page renders without crashing 1`] = `
             name="username"
             onChange={[Function]}
             type="username"
+            value=""
           />
           <p />
         </div>
