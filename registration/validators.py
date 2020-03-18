@@ -33,7 +33,7 @@ class UppercaseValidator:
                 code='password_no_upper',
             )
 
-    def get_help_text(self):
+    def get_help_text(self):  # pylint: disable=missing-docstring
         return "Your password must contain at least 1 uppercase letter, A-Z."
 
 
@@ -48,7 +48,7 @@ class LowercaseValidator:
                 code='password_no_lower',
             )
 
-    def get_help_text(self):
+    def get_help_text(self):  # pylint: disable=missing-docstring
         return "Your password must contain at least 1 lowercase letter, a-z."
 
 
@@ -63,5 +63,5 @@ class SymbolValidator:
                 code='password_no_lower',
             )
 
-    def get_help_text(self):
+    def get_help_text(self):  # pylint: disable=missing-docstring
         return "Your password must contain at least 1 special character."
