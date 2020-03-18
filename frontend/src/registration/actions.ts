@@ -186,10 +186,10 @@ export const submitRegistration = (
             dispatch(push(REGISTRATION_STEPS[nextStep]));
           }
         } catch (e) {
-          console.log("This isn't supposed to happen!", e);
+          dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
         }
       } catch (e) {
-        console.log("This isn't supposed to happen!", e);
+        dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
       }
     } catch (e) {
       e.json().then((feedback: any) => {
