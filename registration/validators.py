@@ -23,7 +23,10 @@ from django.core.exceptions import ValidationError
 
 
 class UppercaseValidator:
-    def validate(self, password, user=None):
+    """
+    Uppercase password validator
+    """
+    def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall('[A-Z]', password):
             raise ValidationError(
                 "The password must contain at least 1 uppercase letter, A-Z.",
@@ -35,7 +38,10 @@ class UppercaseValidator:
 
 
 class LowercaseValidator:
-    def validate(self, password, user=None):
+    """
+    Lowercase password validator
+    """
+    def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall('[a-z]', password):
             raise ValidationError(
                 "The password must contain at least 1 lowercase letter, a-z.",
@@ -47,7 +53,10 @@ class LowercaseValidator:
 
 
 class SymbolValidator:
-    def validate(self, password, user=None):
+    """
+    Symbol password validator
+    """
+    def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall('[,.<>/?:;"-+=%$&@#]', password):
             raise ValidationError(
                 "The password must contain at least 1 special character.",
