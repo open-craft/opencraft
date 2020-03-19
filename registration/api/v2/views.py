@@ -55,11 +55,13 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
     OpenEdXInstanceDeploymentCreateSerializer,
+    StaticContentOverridesSerializer,
     ThemeSchemaSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
+from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
 
 
@@ -303,6 +305,45 @@ class OpenEdXInstanceConfigViewSet(
                 context={'request': request}
             ).data
         )
+
+    @swagger_auto_schema(
+        request_body=StaticContentOverridesSerializer,
+        responses={**VALIDATION_RESPONSE, 200: StaticContentOverridesSerializer},
+    )
+    @action(detail=True, methods=["patch"])
+    def static_content_overrides(self, request, pk=None):
+        """
+        Partial update for static content overrides configuration
+        """
+        application = self.get_object()
+        serializer = StaticContentOverridesSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        if application.draft_static_content_overrides:
+            merged_values = {
+                key: value for key, value in {
+                    **application.draft_static_content_overrides, **serializer.validated_data
+                }.items()
+            }
+        else:
+            merged_values = serializer.validated_data
+            if 'version' not in merged_values:
+                merged_values['version'] = 0
+
+        try:
+            static_content_overrides_schema_validate(merged_values)
+        except JSONSchemaValidationError:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'non_field_errors': "Schema validation failed."
+                }
+            )
+        application.draft_static_content_overrides = merged_values
+        application.save()
+
+        return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
 
     def get_queryset(self):
         """

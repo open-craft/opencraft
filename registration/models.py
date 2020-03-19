@@ -34,6 +34,7 @@ from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.theming import theme_schema_validate
+from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.tasks import spawn_appserver
 
 
@@ -270,6 +271,17 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'that is launched.'),
     )
 
+    draft_static_content_overrides = JSONField(
+        verbose_name='Draft static content overrides JSON',
+        validators=[static_content_overrides_schema_validate],
+        null=True,
+        blank=True,
+        default=None,
+        help_text=("The static content overrides data currently being edited by the user. When finalised, it will "
+                   'be copied over to the final static content overrides which will then be deployed to the '
+                   'next appserver that is launched')
+    )
+
     def __str__(self):
         return self.domain
 
@@ -345,6 +357,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             return
 
         instance.theme_config = self.draft_theme_config
+        instance.static_content_overrides = self.draft_static_content_overrides
         instance.name = self.instance_name
         instance.privacy_policy_url = self.privacy_policy_url
         instance.email = self.public_contact_email

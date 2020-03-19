@@ -496,6 +496,56 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_static_content_overrides_config_when_no_existing_config(self):
+        """
+        Test updating the static content overrides configuration when there is no existing configuration.
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        response = self.client.patch(
+            reverse(
+                f"api:v2:openedx-instance-config-static-content-overrides",
+                args=(self.instance_config.pk, )
+            ),
+            data={'static_template_about_content': 'Hello world!'},
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        expected_values = {'version': 0, 'static_template_about_content': 'Hello world!'}
+        self.assertEqual(self.instance_config.draft_static_content_overrides, expected_values)
+
+    @ddt.data(
+        {'static_template_about_header': 'About Page'},
+        {'static_template_about_content': 'Hello world!'},
+        {'static_template_about_header': 'About Us', 'static_template_about_content': 'Hello World!'}
+    )
+    def test_patch_static_content_overrides_config(self, static_content_overrides_data):
+        """
+        Test updating the static content overrides configuration.
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        self.instance_config.draft_static_content_overrides = {
+            'version': 0, 'static_template_contact_content': 'Email: contact@example.com'
+        }
+        self.instance_config.save()
+
+        response = self.client.patch(
+            reverse(
+                f"api:v2:openedx-instance-config-static-content-overrides",
+                args=(self.instance_config.pk, )
+            ),
+            data=static_content_overrides_data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.instance_config.refresh_from_db()
+        for key, value in static_content_overrides_data.items():
+            self.assertEqual(self.instance_config.draft_static_content_overrides[key], value)
 
 
 @ddt.ddt

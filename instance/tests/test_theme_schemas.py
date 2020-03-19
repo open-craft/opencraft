@@ -26,8 +26,8 @@ import ddt
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError as JSONValidationError
 
-from instance.tests.base import TestCase
 from instance.schemas.theming import ref, theme_schema_v0, theme_schema_v1, theme_schema_validate
+from instance.tests.base import TestCase
 
 
 @ddt.ddt
@@ -210,6 +210,12 @@ class ThemeV1SchemaTestCase(TestCase):
         del self.schema['required']
         with self.assertRaisesRegex(JSONValidationError, 'Additional properties are not allowed'):
             self.validate({'foo': 'bar'})
+
+    def test_valid_value(self):
+        """
+        Test that a valid value passes validation.
+        """
+        self.validate({'version': 1, 'main-color': '#888'})
 
 
 @ddt.ddt
