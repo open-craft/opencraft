@@ -968,3 +968,31 @@ class EmailMixinInstanceTestCase(TestCase):
         mock_requests_options.side_effect = requests.exceptions.ConnectionError()
         appserver = make_test_appserver()
         self.assertFalse(appserver.heartbeat_active())
+
+
+class SiteConfigurationSettingsTestCase(TestCase):
+    """
+    Tests for configuration_site_configuration_setings.
+    """
+    def test_configuration_site_configuration_settings(self):
+        """
+        Test that the 'configuration_site_configuration_settings' field has the correct value set when
+        there are static content overrides.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.static_content_overrides = {
+            'version': 0,
+            'static_template_about_content': 'Hello world!'
+        }
+        instance.save()
+        appserver = make_test_appserver(instance)
+        expected_values = {
+            'EDXAPP_SITE_CONFIGURATION': [
+                {
+                    'values': {
+                        'static_template_about_content': 'Hello world!'
+                    }
+                }
+            ]
+        }
+        self.assertEqual(yaml.safe_load(appserver.configuration_site_configuration_settings), expected_values)
