@@ -1,0 +1,9 @@
+.customizable-link {
+  display: inline-flex;
+  height: 70px;
+  align-items: center;
+
+  &:hover {
+    text-decoration: none;
+  }
+}

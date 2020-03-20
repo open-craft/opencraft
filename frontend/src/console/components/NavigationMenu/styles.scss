@@ -1,0 +1,11 @@
+.row.navigation-menu {
+  height: 70px;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #c4c4c4;
+  border-bottom: 1px solid #1a6ebb;
+
+  .row.navigation-submenu {
+    border: none;
+  }
+}
