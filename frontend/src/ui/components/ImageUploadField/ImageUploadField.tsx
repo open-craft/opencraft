@@ -70,6 +70,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
           <input
             type="file"
             name="file"
+            accept="image/*"
             onChange={e => {
               setImageIfValid(e.target.files);
             }}
