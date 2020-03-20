@@ -19,7 +19,7 @@ export const CollapseEditArea: React.FC<CollapseEditAreaProps> = (
       <div className="edit-collapse">
         <Nav.Link onClick={() => setOpen(!open)}>
           <WrappedMessage messages={messages} id="edit" />
-          {!open ? (
+          {open ? (
             <i className="fas xs fa-chevron-up" />
           ) : (
             <i className="fas xs fa-chevron-down" />
