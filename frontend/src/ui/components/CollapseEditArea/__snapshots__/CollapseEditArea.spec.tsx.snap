@@ -16,7 +16,7 @@ exports[`CollapseEditArea Component Correctly renders collapsible area expanded.
     >
       Edit
       <i
-        className="fas xs fa-chevron-down"
+        className="fas xs fa-chevron-up"
       />
     </a>
     <span
@@ -48,7 +48,7 @@ exports[`CollapseEditArea Component Correctly renders collapsible area. 1`] = `
     >
       Edit
       <i
-        className="fas xs fa-chevron-up"
+        className="fas xs fa-chevron-down"
       />
     </a>
     <span
