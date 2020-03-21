@@ -36,11 +36,11 @@ const messages = {
     description: ''
   },
   themeLogistrationButton: {
-    defaultMessage: 'Logistration button',
+    defaultMessage: 'Login and Registration page buttons',
     description: ''
   },
   themeLogistrationButtonHelp: {
-    defaultMessage: 'This button will be on the logistration page.',
+    defaultMessage: 'These buttons will be on the login and registration page.',
     description: ''
   }
 };
