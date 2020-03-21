@@ -117,11 +117,9 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         Buttons
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/navigation"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Navigation
                       </a>
@@ -385,11 +383,9 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         Buttons
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/navigation"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Navigation
                       </a>

@@ -53,11 +53,9 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
             Buttons
           </a>
           <a
-            aria-current="page"
-            className="disabled active"
-            href="/"
+            aria-current={null}
+            href="/console/theming/navigation"
             onClick={[Function]}
-            style={Object {}}
           >
             Navigation
           </a>

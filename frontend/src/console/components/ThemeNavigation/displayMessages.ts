@@ -1,7 +1,23 @@
 const messages = {
-  messageID: {
-    defaultMessage: 'A translatable string.',
-    description: 'A description of the translatable string.'
+  mainNavColor: {
+    defaultMessage: 'Main nav bar color',
+    description: ''
+  },
+  mainNavLinkColor: {
+    defaultMessage: 'Main nav link color',
+    description: ''
+  },
+  mainNavItemBorderBottomColor: {
+    defaultMessage: 'Main nav item border color',
+    description: ''
+  },
+  mainNavItemHoverBorderBottomColor: {
+    defaultMessage: 'Main nav item border color on hover',
+    description: ''
+  },
+  userDropdownColor: {
+    defaultMessage: 'User dropdown color',
+    description: ''
   }
 };
 
