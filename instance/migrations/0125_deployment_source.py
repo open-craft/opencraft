@@ -8,15 +8,10 @@ import instance.models.openedx_appserver
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0121_update_monitoring_emails_fields'),
+        ('instance', '0124_auto_20200311_1409'),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='openedxappserver',
-            name='extra_fail_emails',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=200), blank=True, default=list, help_text='Optional: A list of extra emails to alert if AppServer fails to provision. Set dynamically by spawn_appserver.', size=None),
-        ),
         migrations.AddField(
             model_name='openedxappserver',
             name='source',

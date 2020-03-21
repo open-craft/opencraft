@@ -244,15 +244,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         default=Source.UNKNOWN.value,
         help_text="A tag to denote where this appserver was spawned from",
     )
-    extra_fail_emails = ArrayField(
-        models.CharField(max_length=200),
-        default=list,
-        blank=True,
-        help_text=(
-            "Optional: A list of extra emails to alert if AppServer fails to provision. "
-            "Set dynamically by spawn_appserver."
-        )
-    )
 
     INVENTORY_GROUP = 'openedx-app'
 

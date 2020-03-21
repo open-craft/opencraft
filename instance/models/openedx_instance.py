@@ -298,7 +298,7 @@ class OpenEdXInstance(
         self.logger.info('Provisioning RabbitMQ vhost...')
         self.provision_rabbitmq()
 
-        return self._create_owned_appserver(source=source, fail_emails=fail_emails)
+        return self._create_owned_appserver(source=source)
 
     @log_exception
     def spawn_appserver(self,
@@ -357,7 +357,7 @@ class OpenEdXInstance(
 
         return app_server.pk
 
-    def _create_owned_appserver(self, source=Source.UNKNOWN, fail_emails=None):
+    def _create_owned_appserver(self, source=Source.UNKNOWN):
         """
         Core internal code that actually creates the child appserver.
 
@@ -382,8 +382,6 @@ class OpenEdXInstance(
                 **instance_config
             )
             app_server.source = source
-            if fail_emails:
-                app_server.extra_fail_emails = fail_emails
             app_server.add_lms_users(self.lms_users.all())
         return app_server
 
