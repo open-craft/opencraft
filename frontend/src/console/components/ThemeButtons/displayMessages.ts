@@ -23,7 +23,7 @@ const messages = {
   },
   themeRegisterButtonHelp: {
     defaultMessage:
-      'This button will be on the main navigation page and on the reregistration page.',
+      'This button will be on the main navigation page and on the registration page.',
     description: ''
   },
   themeSignInButton: {

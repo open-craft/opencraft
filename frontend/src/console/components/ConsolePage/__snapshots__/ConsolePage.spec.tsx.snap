@@ -101,9 +101,11 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         Preview & colors
                       </a>
                       <a
-                        aria-current={null}
-                        href="/console/theming/logos"
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
                         onClick={[Function]}
+                        style={Object {}}
                       >
                         Logos
                       </a>
@@ -365,9 +367,11 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         Preview & colors
                       </a>
                       <a
-                        aria-current={null}
-                        href="/console/theming/logos"
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
                         onClick={[Function]}
+                        style={Object {}}
                       >
                         Logos
                       </a>

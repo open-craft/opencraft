@@ -86,14 +86,24 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
               <i className="fas fa-info-circle" />
             </div>
           </OverlayTrigger>
-        ) : null}
+        ) : (
+          <button
+            className="reset-value padded"
+            type="button"
+            onClick={resetColor}
+          >
+            <WrappedMessage id="reset" messages={internalMessages} />
+          </button>
+        )}
       </Row>
 
-      <p>
-        <button className="reset-value" type="button" onClick={resetColor}>
-          <WrappedMessage id="reset" messages={internalMessages} />
-        </button>
-      </p>
+      {tooltip ? (
+        <p>
+          <button className="reset-value" type="button" onClick={resetColor}>
+            <WrappedMessage id="reset" messages={internalMessages} />
+          </button>
+        </p>
+      ) : null}
 
       {colorPicker ? (
         <div

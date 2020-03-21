@@ -101,9 +101,11 @@ exports[`renders without crashing 1`] = `
                         Preview & colors
                       </a>
                       <a
-                        aria-current={null}
-                        href="/console/theming/logos"
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
                         onClick={[Function]}
+                        style={Object {}}
                       >
                         Logos
                       </a>

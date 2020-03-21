@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders without crashing 1`] = `
-<div>
+<div
+  className="button-customization-page"
+>
   <div
     className="row"
   >
@@ -12,18 +14,18 @@ exports[`renders without crashing 1`] = `
         className="button-name"
       >
         Primary button
+        <span
+          className="info-icon"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        >
+          <i
+            className="fas fa-info-circle"
+          />
+        </span>
       </p>
-      <div
-        className="info-icon"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <i
-          className="fas fa-info-circle"
-        />
-      </div>
     </div>
     <div
       className="col-md-3"
@@ -60,7 +62,7 @@ exports[`renders without crashing 1`] = `
       >
         Edit
         <i
-          className="fas xs fa-chevron-up"
+          className="fas xs fa-chevron-down"
         />
       </a>
       <span
@@ -113,16 +115,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
             <div
@@ -151,16 +151,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
             <div
@@ -189,16 +187,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -242,16 +238,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
             <div
@@ -280,16 +274,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
             <div
@@ -318,16 +310,14 @@ exports[`renders without crashing 1`] = `
                       }
                     }
                   />
-                </div>
-                <p>
                   <button
-                    className="reset-value"
+                    className="reset-value padded"
                     onClick={[Function]}
                     type="button"
                   >
-                    reset
+                    Reset
                   </button>
-                </p>
+                </div>
               </div>
             </div>
           </div>

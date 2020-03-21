@@ -47,7 +47,7 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
   };
 
   return (
-    <div>
+    <div className="button-customization-page">
       <Row>
         <Col md={9}>
           <p className="button-name">
@@ -55,12 +55,12 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
               messages={props.externalMessages}
               id={buttonFullName}
             />
+            <OverlayTrigger placement="right" overlay={tooltip}>
+              <span className="info-icon">
+                <i className="fas fa-info-circle" />
+              </span>
+            </OverlayTrigger>
           </p>
-          <OverlayTrigger placement="right" overlay={tooltip}>
-            <div className="info-icon">
-              <i className="fas fa-info-circle" />
-            </div>
-          </OverlayTrigger>
         </Col>
         <Col md={3}>
           <CustomizableButton
