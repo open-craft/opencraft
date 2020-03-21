@@ -69,7 +69,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
 
   return (
     <Row
-      className="navigation-menu"
+      className="main-navigation-menu navigation-menu"
       style={{ background: themeData.mainNavColor }}
     >
       <Col md={1}>

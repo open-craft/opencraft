@@ -1,29 +1,33 @@
 import * as React from 'react';
 import './styles.scss';
-import {ConsolePage, ConsolePageCustomizationContainer, NavigationMenu} from 'console/components';
-import {InstancesModel} from 'console/models';
-import {connect} from 'react-redux';
-import {RootState} from 'global/state';
-import {updateThemeFieldValue} from 'console/actions';
-import {Col, Row} from 'react-bootstrap';
-import {ColorInputField} from '../../../ui/components/ColorInputField';
+import {
+  ConsolePage,
+  ConsolePageCustomizationContainer,
+  NavigationMenu
+} from 'console/components';
+import { InstancesModel } from 'console/models';
+import { connect } from 'react-redux';
+import { RootState } from 'global/state';
+import { updateThemeFieldValue } from 'console/actions';
+import { Col, Row } from 'react-bootstrap';
+import { ColorInputField } from '../../../ui/components/ColorInputField';
 import messages from './displayMessages';
+import { WrappedMessage } from '../../../utils/intl';
 
-interface State {
-}
+interface State {}
 
 interface ActionProps {
   updateThemeFieldValue: Function;
 }
 
-interface StateProps extends InstancesModel {
-}
+interface StateProps extends InstancesModel {}
 
-interface Props extends StateProps, ActionProps {
-}
+interface Props extends StateProps, ActionProps {}
 
-export class ThemeNavigationComponent extends React.PureComponent<Props,
-  State> {
+export class ThemeNavigationComponent extends React.PureComponent<
+  Props,
+  State
+> {
   private onChangeColor = (fieldName: string, newColor: string) => {
     const instance = this.props.activeInstance;
 
@@ -43,11 +47,14 @@ export class ThemeNavigationComponent extends React.PureComponent<Props,
     return (
       <ConsolePage contentLoading={this.props.loading}>
         <ConsolePageCustomizationContainer>
+          <h2>
+            <WrappedMessage messages={messages} id="themeNavigation" />
+          </h2>
+
           {themeData && themeData.version === 1 && (
             <div className="theme-navigation-container">
-              <NavigationMenu themeData={themeData}/>
-              <br/>
-              <NavigationMenu themeData={themeData} loggedIn/>
+              <NavigationMenu themeData={themeData} />
+              <NavigationMenu themeData={themeData} loggedIn />
               <Row>
                 <Col>
                   <ColorInputField
@@ -101,10 +108,9 @@ export class ThemeNavigationComponent extends React.PureComponent<Props,
                     hideTooltip
                   />
                 </Col>
-                <Col md={3}/>
+                <Col md={3} />
               </Row>
             </div>
-
           )}
         </ConsolePageCustomizationContainer>
       </ConsolePage>
@@ -112,10 +118,12 @@ export class ThemeNavigationComponent extends React.PureComponent<Props,
   }
 }
 
-export const ThemeNavigation = connect<StateProps,
+export const ThemeNavigation = connect<
+  StateProps,
   ActionProps,
   {},
   Props,
-  RootState>((state: RootState) => state.console, {
+  RootState
+>((state: RootState) => state.console, {
   updateThemeFieldValue
 })(ThemeNavigationComponent);

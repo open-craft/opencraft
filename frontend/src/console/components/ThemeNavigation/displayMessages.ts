@@ -1,4 +1,8 @@
 const messages = {
+  themeNavigation: {
+    defaultMessage: 'Main navigation menu',
+    description: ''
+  },
   mainNavColor: {
     defaultMessage: 'Main nav bar color',
     description: ''

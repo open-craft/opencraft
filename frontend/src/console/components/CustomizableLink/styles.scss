@@ -1,7 +1,9 @@
 .customizable-link {
+  background: transparent;
   display: inline-flex;
   height: 70px;
   align-items: center;
+  border: none;
 
   &:hover {
     text-decoration: none;

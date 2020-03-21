@@ -48,14 +48,14 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
   }, [props.linkColor, props.borderBottomHoverColor]);
 
   return (
-    <a
+    <button
+      type="button"
       className="customizable-link"
-      href="#"
       style={hover ? hoverStyle : style}
       onMouseEnter={toggleHover}
       onMouseLeave={toggleHover}
     >
       {props.children}
-    </a>
+    </button>
   );
 };
