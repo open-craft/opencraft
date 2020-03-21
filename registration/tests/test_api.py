@@ -48,7 +48,7 @@ class AccountAPITestCase(APITestCase):
         self.user.profile.save()
         self.user_data = {
             "username": "another.user",
-            "password": "thisisapassword",
+            "password": "Thisisapassword123()",
             "email": "another.user@some.domain",
         }
         self.profile_data = {
@@ -82,6 +82,7 @@ class AccountAPITestCase(APITestCase):
             data=data,
             format="json",
         )
+        import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 201)
         new_user_query = User.objects.filter(username=self.user_data.get('username'))
         self.assertTrue(new_user_query.exists())
@@ -103,6 +104,8 @@ class AccountAPITestCase(APITestCase):
         ({"password": None}),
         ({"password": "invalid"}),
         ({"password": "password123"}),
+        ({"password": "INVALID"}),
+        ({"password": "MissingSp3ci4lChars"}),
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(days=2)}),
         ({"accept_paid_support": False}),
@@ -215,11 +218,11 @@ class AccountAPITestCase(APITestCase):
         """
         self.client.force_login(self.user)
         url = reverse("api:v2:accounts-detail", kwargs={'username': self.user.username})
-        response = self.client.patch(url, data={"password": "newvalidpassword"}, format="json")
+        response = self.client.patch(url, data={"password": "NewV4l1dPw()"}, format="json")
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
         # Should be able to log in with the new credentials
-        self.assertTrue(self.client.login(username='test.user', password='newvalidpassword'))
+        self.assertTrue(self.client.login(username='test.user', password='NewV4l1dPw()'))
 
 
 @ddt.ddt
