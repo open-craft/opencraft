@@ -82,7 +82,6 @@ class AccountAPITestCase(APITestCase):
             data=data,
             format="json",
         )
-        import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 201)
         new_user_query = User.objects.filter(username=self.user_data.get('username'))
         self.assertTrue(new_user_query.exists())
