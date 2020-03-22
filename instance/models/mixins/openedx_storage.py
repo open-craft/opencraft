@@ -131,7 +131,7 @@ class OpenEdXStorageMixin(StorageContainer, SwiftContainerInstanceMixin, S3Bucke
 
             "EDXAPP_DEFAULT_FILE_STORAGE": "swift.storage.SwiftStorage",
             "EDXAPP_FILE_UPLOAD_STORAGE_BUCKET_NAME": self.swift_container_name,
-            "EDXAPP_SWIFT_AUTH_VERSION": '2',
+            "EDXAPP_SWIFT_AUTH_VERSION": '3',
             "EDXAPP_SWIFT_USERNAME": self.swift_openstack_user,
             "EDXAPP_SWIFT_KEY": self.swift_openstack_password,
             "EDXAPP_SWIFT_TENANT_NAME": self.swift_openstack_tenant,

@@ -484,7 +484,7 @@ class ServicePassesAuthTestCase(TestCase):
 
         service.assert_called_once_with(
             options={
-                'auth_version': '2',
+                'auth_version': '3',
                 'os_username': 'user',
                 'os_password': 'password',
                 'os_tenant_name':  'tenant',
