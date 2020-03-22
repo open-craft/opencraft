@@ -110,7 +110,7 @@ class Command(BaseCommand):  # pragma: no cover
             key=instance.swift_openstack_password,
             authurl=instance.swift_openstack_auth_url,
             tenant_name=instance.swift_openstack_tenant,
-            auth_version='2',
+            auth_version='3',
             os_options={'region_name': instance.swift_openstack_region}
         )
 
@@ -136,7 +136,7 @@ class Command(BaseCommand):  # pragma: no cover
         """
         rclone_config = (
             "rclone config create ocim-swift swift "
-            "user '%s' key '%s' auth '%s' tenant '%s' auth_version '2' region '%s'" % (
+            "user '%s' key '%s' auth '%s' tenant '%s' auth_version '3' region '%s'" % (
                 instance.swift_openstack_user,
                 instance.swift_openstack_password,
                 instance.swift_openstack_auth_url,
