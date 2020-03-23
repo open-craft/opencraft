@@ -32,6 +32,13 @@ export class InstanceSettingsComponent extends React.PureComponent<
       instanceName: '',
       publicContactEmail: ''
     };
+
+    if (this.props.activeInstance.data) {
+      this.state = {
+        instanceName: this.props.activeInstance.data.instanceName,
+        publicContactEmail: this.props.activeInstance.data.publicContactEmail
+      };
+    }
   }
 
   public componentDidUpdate(prevProps: Props) {
@@ -41,12 +48,19 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
   private needToUpdateInstanceFields = (prevProps: Props) => {
     if (
-      prevProps.activeInstance.data === null &&
-      this.props.activeInstance.data
+      prevProps.activeInstance.loading.includes('instanceName') &&
+      !this.props.activeInstance.loading.includes('instanceName')
     ) {
       this.setState({
-        instanceName: this.props.activeInstance.data.instanceName,
-        publicContactEmail: this.props.activeInstance.data.publicContactEmail
+        instanceName: this.props.activeInstance!.data!.instanceName
+      });
+    }
+    if (
+      prevProps.activeInstance.loading.includes('publicContactEmail') &&
+      !this.props.activeInstance.loading.includes('publicContactEmail')
+    ) {
+      this.setState({
+        publicContactEmail: this.props.activeInstance!.data!.publicContactEmail
       });
     }
   };
