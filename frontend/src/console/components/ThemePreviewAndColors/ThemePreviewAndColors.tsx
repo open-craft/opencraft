@@ -1,6 +1,9 @@
 import * as React from 'react';
 import './styles.scss';
-import { ConsolePage } from 'console/components';
+import {
+  ConsolePage,
+  ConsolePageCustomizationContainer
+} from 'console/components';
 import { ColorInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
 import { Container, Col, Row } from 'react-bootstrap';
@@ -39,33 +42,35 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
 
     return (
       <ConsolePage contentLoading={this.props.loading}>
-        <h2>
-          <WrappedMessage messages={messages} id="themePreviewAndColors" />
-        </h2>
+        <ConsolePageCustomizationContainer>
+          <h2>
+            <WrappedMessage messages={messages} id="themePreviewAndColors" />
+          </h2>
 
-        {themeData && themeData.version === 1 && (
-          <Container className="theme-colors-and-prevew-container">
-            <Row>
-              <Col>
-                <ColorInputField
-                  fieldName="mainColor"
-                  initialValue={themeData.mainColor}
-                  onChange={this.onChangeColor}
-                  messages={messages}
-                  loading={instance.loading.includes('draftThemeConfig')}
-                />
-                <ColorInputField
-                  fieldName="linkColor"
-                  initialValue={themeData.linkColor}
-                  onChange={this.onChangeColor}
-                  messages={messages}
-                  loading={instance.loading.includes('draftThemeConfig')}
-                />
-              </Col>
-              <Col xs={8}>Theme preview component</Col>
-            </Row>
-          </Container>
-        )}
+          {themeData && themeData.version === 1 && (
+            <Container className="theme-colors-and-prevew-container">
+              <Row>
+                <Col>
+                  <ColorInputField
+                    fieldName="mainColor"
+                    initialValue={themeData.mainColor}
+                    onChange={this.onChangeColor}
+                    messages={messages}
+                    loading={instance.loading.includes('draftThemeConfig')}
+                  />
+                  <ColorInputField
+                    fieldName="linkColor"
+                    initialValue={themeData.linkColor}
+                    onChange={this.onChangeColor}
+                    messages={messages}
+                    loading={instance.loading.includes('draftThemeConfig')}
+                  />
+                </Col>
+                <Col xs={8}>Theme preview component</Col>
+              </Row>
+            </Container>
+          )}
+        </ConsolePageCustomizationContainer>
       </ConsolePage>
     );
   }

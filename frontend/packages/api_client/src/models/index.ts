@@ -3,6 +3,7 @@ export * from './GenericAPIError';
 export * from './GenericAPIErrorErrors';
 export * from './InstanceReferenceDetailed';
 export * from './InstanceReferenceMinimal';
+export * from './LogoFaviconUpload';
 export * from './OpenEdXAppServer';
 export * from './OpenEdXInstanceConfig';
 export * from './OpenEdXInstanceConfigUpdate';

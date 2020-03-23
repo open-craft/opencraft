@@ -1,0 +1,65 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CollapseEditArea Component Correctly renders collapsible area expanded. 1`] = `
+<div
+  className="collapsible-edit-area"
+>
+  <div
+    className="edit-collapse"
+  >
+    <a
+      className="nav-link"
+      href="#"
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      role="button"
+    >
+      Edit
+      <i
+        className="fas xs fa-chevron-up"
+      />
+    </a>
+    <span
+      className="fill-line"
+    />
+  </div>
+  <div
+    aria-expanded={null}
+    className="content collapse show"
+  >
+    Test
+  </div>
+</div>
+`;
+
+exports[`CollapseEditArea Component Correctly renders collapsible area. 1`] = `
+<div
+  className="collapsible-edit-area"
+>
+  <div
+    className="edit-collapse"
+  >
+    <a
+      className="nav-link"
+      href="#"
+      onClick={[Function]}
+      onKeyDown={[Function]}
+      role="button"
+    >
+      Edit
+      <i
+        className="fas xs fa-chevron-down"
+      />
+    </a>
+    <span
+      className="fill-line"
+    />
+  </div>
+  <div
+    aria-expanded={null}
+    className="content collapse"
+  >
+    Test
+  </div>
+</div>
+`;

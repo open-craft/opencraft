@@ -36,6 +36,7 @@ from rest_framework.mixins import (
     UpdateModelMixin,
 )
 from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -49,6 +50,7 @@ from opencraft.swagger import (
 from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
+    LogoFaviconUploadSerializer,
     OpenEdXInstanceConfigSerializer,
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
@@ -140,7 +142,6 @@ class OpenEdXInstanceConfigViewSet(
     This API can be used to manage the configuration for Open edX instances
     owned by clients.
     """
-
     serializer_class = OpenEdXInstanceConfigSerializer
 
     def get_permissions(self):
@@ -264,6 +265,44 @@ class OpenEdXInstanceConfigViewSet(
         application.save()
 
         return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
+
+    @action(
+        detail=True,
+        methods=['post'],
+        parser_classes=(MultiPartParser, ),
+        serializer_class=LogoFaviconUploadSerializer
+    )
+    def image(self, request, pk: str):
+        """
+        Endpoint for saving favicon or logo images
+
+        Send a POST to action image/ with the file in the `logo` or `favicon`
+        field to add or update it.
+        """
+        application = self.get_object()
+
+        try:
+            if 'favicon' in request.data:
+                application.favicon = request.data['favicon']
+                application.save()
+
+            if 'logo' in request.data:
+                application.logo = request.data['logo']
+                application.save()
+
+        except Exception as e:  # pylint: disable=broad-except
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=dict(e)
+            )
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data=LogoFaviconUploadSerializer(
+                application,
+                context={'request': request}
+            ).data
+        )
 
     def get_queryset(self):
         """

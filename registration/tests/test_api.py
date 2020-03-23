@@ -23,17 +23,20 @@ from unittest.mock import patch
 
 import ddt
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITestCase
-from simple_email_confirmation.models import EmailAddress
 
+from simple_email_confirmation.models import EmailAddress
 from instance.models.appserver import Status
 from instance.schemas.theming import DEFAULT_THEME
 from instance.tests.base import create_user_and_profile
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.models import BetaTestApplication
+
+from .utils import create_image
 
 
 @ddt.ddt
@@ -429,6 +432,70 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             self.instance_config.draft_theme_config["main-color"]
         )
         self.assertNotIn("btn-sign-in-bg", self.instance_config.draft_theme_config.keys())
+
+    def test_change_logo(self):
+        """
+        Test uploading logo
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Load test logo image
+        logo = create_image('logo.png')
+        logo_file = SimpleUploadedFile('logo.png', logo.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'logo': logo_file},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_change_logo_wrong_size(self):
+        """
+        Test uploading logo with wrong size
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Load test logo image
+        logo = create_image('logo.png', size=(100, 100))
+        logo_file = SimpleUploadedFile('logo.png', logo.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'logo': logo_file},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                'logo': ['The logo image must be 48px tall to fit into the header.']
+            }
+        )
+
+    def test_change_favicon(self):
+        """
+        Test uploading favicon
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Load test logo image
+        logo = create_image('logo.ico', size=(10, 10))
+        logo_file = SimpleUploadedFile('logo.ico', logo.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'favicon': logo_file},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 
 @ddt.ddt
