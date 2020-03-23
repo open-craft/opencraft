@@ -11,6 +11,8 @@ export interface InstanceSettingsModel {
   publicContactEmail: string;
   privacyPolicyUrl: string;
   draftThemeConfig: undefined | ThemeSchema;
+  logo?: string;
+  favicon?: string;
 }
 
 export interface DeploymentInfoModel {

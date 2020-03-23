@@ -10,6 +10,12 @@ export function consoleReducer(
   let activeInstanceId: number;
 
   switch (action.type) {
+    case Actions.Types.CLEAR_ERROR_MESSAGE:
+      return update(state, {
+        activeInstance: {
+          feedback: { $unset: [action.field] }
+        }
+      });
     case Actions.Types.USER_INSTANCE_LIST:
       return update(state, { loading: { $set: true } });
     case Actions.Types.USER_INSTANCE_LIST_SUCCESS:

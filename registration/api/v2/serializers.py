@@ -38,6 +38,46 @@ from instance.schemas.theming import theme_schema_v1, ref
 logger = logging.getLogger(__name__)
 
 
+class DataSerializer(serializers.Serializer):
+    """
+    Serializer for data that does not need to be persisted directly.
+    Inherit from it to avoid needing to disable abstract-method warnings.
+    """
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass
+
+
+class GenericObjectSerializer(DataSerializer):
+    """
+    Serializer for any response that returns a JSON dict, without specifying
+    the fields of that dict in detail.
+    """
+    def to_representation(self, instance):
+        return instance
+
+    def to_internal_value(self, data):
+        return data
+
+    class Meta:
+        swagger_schema_fields = {
+            "type": "object",
+            "additionalProperties": True,
+        }
+
+
+class LogoFaviconUploadSerializer(DataSerializer):
+    """
+    Serializer for any response that returns a JSON dict, without specifying
+    the fields of that dict in detail.
+    """
+    logo = serializers.ImageField(required=False, use_url=True)
+    favicon = serializers.ImageField(required=False, use_url=True)
+
+
 class AccountSerializer(serializers.ModelSerializer):
     """
     Serializer for User account information.
@@ -205,7 +245,6 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
     """
-
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     draft_theme_config = ThemeSchemaSerializer(read_only=True)
 
@@ -232,7 +271,13 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "privacy_policy_url",
             "use_advanced_theme",
             "draft_theme_config",
+            "logo",
+            "favicon"
         )
+        read_only_fields = [
+            "logo",
+            "favicon",
+        ]
 
 
 class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
