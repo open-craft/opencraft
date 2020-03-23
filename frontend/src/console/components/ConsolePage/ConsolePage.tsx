@@ -29,6 +29,14 @@ interface Props extends StateProps, ActionProps {
   contentLoading: boolean;
 }
 
+interface CustomizationContainerProps {
+  children: React.ReactNode;
+}
+
+export const ConsolePageCustomizationContainer: React.FC<CustomizationContainerProps> = (
+  props: CustomizationContainerProps
+) => <div className="customization-form">{props.children}</div>;
+
 export class ConsolePageComponent extends React.PureComponent<Props> {
   refreshInterval?: NodeJS.Timer;
 
@@ -100,9 +108,11 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     const content = () => {
       if (this.props.contentLoading) {
         return (
-          <div className="loading">
-            <i className="fas fa-2x fa-sync-alt fa-spin" />
-          </div>
+          <ConsolePageCustomizationContainer>
+            <div className="loading">
+              <i className="fas fa-2x fa-sync-alt fa-spin" />
+            </div>
+          </ConsolePageCustomizationContainer>
         );
       }
       return this.props.children;
@@ -141,9 +151,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
                 <Col md="3">
                   <CustomizationSideMenu />
                 </Col>
-                <Col md="9" className="customization-form">
-                  {content()}
-                </Col>
+                <Col md="9">{content()}</Col>
               </Row>
             </Container>
           </Row>

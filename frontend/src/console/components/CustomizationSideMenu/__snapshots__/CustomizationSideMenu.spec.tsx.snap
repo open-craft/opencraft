@@ -37,11 +37,9 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
             Preview & colors
           </a>
           <a
-            aria-current="page"
-            className="disabled active"
-            href="/"
+            aria-current={null}
+            href="/console/theming/logos"
             onClick={[Function]}
-            style={Object {}}
           >
             Logos
           </a>
