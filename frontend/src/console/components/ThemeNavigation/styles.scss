@@ -3,6 +3,8 @@
 .theme-navigation-container {
   .row {
     padding: 0;
+    flex-flow: row nowrap;
+    align-items: center;
 
     .col {
       padding: 0 15px 0 0;

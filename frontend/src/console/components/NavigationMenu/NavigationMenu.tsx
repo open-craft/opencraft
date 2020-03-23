@@ -3,6 +3,7 @@ import * as React from 'react';
 import './styles.scss';
 import { Col, Row } from 'react-bootstrap';
 import { ThemeSchema } from 'ocim-client';
+import avatar from 'assets/avatar-default.png';
 import { CustomizableButton } from '../CustomizableButton';
 import { CustomizableLink } from '../CustomizableLink';
 
@@ -19,20 +20,14 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
 
   const userMenu = props.loggedIn ? (
     <Row className="navigation-menu navigation-submenu">
-      <Col md={2}>
+      <Col>
         <CustomizableLink linkColor={themeData.mainNavLinkColor}>
           Help
         </CustomizableLink>
-      </Col>
-      <Col md={3}>
-        <img src="" alt="Avatar" />
-      </Col>
-      <Col md={3}>
+        <img src={avatar} alt="Avatar" />
         <CustomizableLink linkColor={themeData.mainNavLinkColor}>
           JoeSoap
         </CustomizableLink>
-      </Col>
-      <Col md={1}>
         <CustomizableLink linkColor={themeData.userDropdownColor}>
           <i className="fas fa-caret-down" />
         </CustomizableLink>
@@ -51,8 +46,6 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
         >
           Register
         </CustomizableButton>
-      </Col>
-      <Col>
         <CustomizableButton
           initialTextColor={themeData.btnSignInColor}
           initialBackgroundColor={themeData.btnSignInBg}
@@ -75,7 +68,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
       <Col md={1}>
         <img src="" alt="Logo" />
       </Col>
-      <Col md={2}>
+      <Col md={1}>
         <CustomizableLink
           linkColor={themeData.mainNavLinkColor}
           borderBottomColor={
@@ -94,9 +87,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
           Discover New
         </CustomizableLink>
       </Col>
-      <Col md={5} style={{ marginLeft: '60px' }}>
-        {userMenu}
-      </Col>
+      <Col md={7}>{userMenu}</Col>
     </Row>
   );
 };

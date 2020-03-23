@@ -1,5 +1,5 @@
 .row.navigation-menu {
-  height: 70px;
+  height: auto;
   align-items: center;
   text-align: center;
   border: 1px solid #c4c4c4;
@@ -7,6 +7,25 @@
 
   .row.navigation-submenu {
     border: none;
+
+    .col {
+      display: inline-flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      .customizable-button {
+        margin-left: 10px;
+      }
+
+      img {
+        border: 1px solid #e7e7e7;
+        margin-right: 10px;
+        margin-left: 20px;
+        border-radius: 5px;
+        vertical-align: middle;
+        height: 50px;
+      }
+    }
   }
 }
 

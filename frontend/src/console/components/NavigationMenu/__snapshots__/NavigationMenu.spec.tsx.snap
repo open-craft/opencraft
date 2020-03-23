@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="main-navigation-menu navigation-menu row"
+  style={
+    Object {
+      "background": undefined,
+    }
+  }
+>
+  <div
+    className="col-md-1"
+  >
+    <img
+      alt="Logo"
+      src=""
+    />
+  </div>
+  <div
+    className="col-md-1"
+  >
+    <button
+      className="customizable-link"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottom": "",
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      Courses
+    </button>
+  </div>
+  <div
+    className="col-md-3"
+  >
+    <button
+      className="customizable-link"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottom": "",
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      Discover New
+    </button>
+  </div>
+  <div
+    className="col-md-7"
+  >
+    <div
+      className="navigation-menu navigation-submenu row"
+    >
+      <div
+        className="col"
+      >
+        <button
+          className="customizable-button"
+          onMouseEnter={[Function]}
+          onMouseLeave={[Function]}
+          style={
+            Object {
+              "background": undefined,
+              "borderColor": undefined,
+              "color": undefined,
+            }
+          }
+          type="button"
+        >
+          Register
+        </button>
+        <button
+          className="customizable-button"
+          onMouseEnter={[Function]}
+          onMouseLeave={[Function]}
+          style={
+            Object {
+              "background": undefined,
+              "borderColor": undefined,
+              "color": undefined,
+            }
+          }
+          type="button"
+        >
+          Sign in
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
