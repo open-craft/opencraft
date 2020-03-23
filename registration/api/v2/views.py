@@ -281,21 +281,20 @@ class OpenEdXInstanceConfigViewSet(
         """
         application = self.get_object()
 
-        if request.method == 'POST':
-            try:
-                if 'favicon' in request.data:
-                    application.favicon = request.data['favicon']
-                    application.save()
+        try:
+            if 'favicon' in request.data:
+                application.favicon = request.data['favicon']
+                application.save()
 
-                if 'logo' in request.data:
-                    application.logo = request.data['logo']
-                    application.save()
+            if 'logo' in request.data:
+                application.logo = request.data['logo']
+                application.save()
 
-            except Exception as e:  # pylint: disable=broad-except
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST,
-                    data=dict(e)
-                )
+        except Exception as e:  # pylint: disable=broad-except
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data=dict(e)
+            )
 
         return Response(
             status=status.HTTP_200_OK,
