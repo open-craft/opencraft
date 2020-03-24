@@ -120,11 +120,9 @@ exports[`renders without crashing 1`] = `
                           Buttons
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/theming/navigation"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           Navigation
                         </a>
