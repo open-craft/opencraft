@@ -562,7 +562,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -608,7 +608,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -931,7 +931,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -977,7 +977,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
