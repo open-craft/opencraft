@@ -3,6 +3,14 @@ const messages = {
     defaultMessage: 'Main navigation menu',
     description: ''
   },
+  navigationLinks: {
+    defaultMessage: 'Navigation links',
+    description: ''
+  },
+  headerTopBorder: {
+    defaultMessage: 'Header top border',
+    description: ''
+  },
   mainNavColor: {
     defaultMessage: 'Main nav bar color',
     description: ''

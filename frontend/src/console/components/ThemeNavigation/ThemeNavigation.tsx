@@ -56,7 +56,12 @@ export class ThemeNavigationComponent extends React.PureComponent<
               <NavigationMenu themeData={themeData} />
               <NavigationMenu themeData={themeData} loggedIn />
               <Row>
-                <Col>
+                <p className="style-name">
+                  <WrappedMessage messages={messages} id="navigationLinks" />
+                </p>
+              </Row>
+              <Row>
+                <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavColor"
                     initialValue={themeData.mainNavColor}
@@ -66,7 +71,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip
                   />
                 </Col>
-                <Col>
+                <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavLinkColor"
                     initialValue={themeData.mainNavLinkColor}
@@ -76,7 +81,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip
                   />
                 </Col>
-                <Col>
+                <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemBorderBottomColor"
                     initialValue={themeData.mainNavItemBorderBottomColor}
@@ -88,7 +93,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 </Col>
               </Row>
               <Row>
-                <Col>
+                <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemHoverBorderBottomColor"
                     initialValue={themeData.mainNavItemHoverBorderBottomColor}
@@ -98,7 +103,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip
                   />
                 </Col>
-                <Col>
+                <Col md={4}>
                   <ColorInputField
                     fieldName="userDropdownColor"
                     initialValue={themeData.userDropdownColor}
@@ -108,7 +113,6 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip
                   />
                 </Col>
-                <Col md={3} />
               </Row>
             </div>
           )}
