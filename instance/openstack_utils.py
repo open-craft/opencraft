@@ -84,6 +84,10 @@ def get_openstack_connection(region_name):
             username=settings.OPENSTACK_USER,
             project_name=settings.OPENSTACK_TENANT,
             password=settings.OPENSTACK_PASSWORD,
+            user_domain_id="default",
+            user_domain_name="Default",
+            project_domain_id="default",
+            project_domain_name="Default",
         ))
     conn = connection.from_config(cloud_config=cloud_region)
     conn.session.user_agent = "opencraft-im"
@@ -142,6 +146,10 @@ def get_nova_client(region_name, api_version=2):
         project_name=settings.OPENSTACK_TENANT,
         auth_url=settings.OPENSTACK_AUTH_URL,
         region_name=region_name,
+        user_domain_id="default",
+        user_domain_name="Default",
+        project_domain_id="default",
+        project_domain_name="Default",
     )
 
     # API queries via the nova client occasionally get connection errors from the OpenStack provider.
@@ -208,7 +216,7 @@ def swift_service(
     """
 
     return SwiftService(options=dict(
-        auth_version='2',
+        auth_version='3',
         os_username=user,
         os_password=password,
         os_tenant_name=tenant,

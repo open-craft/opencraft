@@ -55,7 +55,11 @@ class OpenStackCleanupInstance:
                 username=openstack_settings['username'],
                 password=openstack_settings['password'],
                 project_name=openstack_settings['project_name'],
-                region_name=openstack_settings['region_name']
+                region_name=openstack_settings['region_name'],
+                user_domain_id="default",
+                user_domain_name="Default",
+                project_domain_id="default",
+                project_domain_name="Default",
             )
         except Exception as e:  # pylint: disable=broad-except
             logger.error("ERROR: %s", e)

@@ -80,6 +80,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'registration.validators.UppercaseValidator',
+    },
+    {
+        'NAME': 'registration.validators.LowercaseValidator',
+    },
+    {
+        'NAME': 'registration.validators.SymbolValidator',
+    },
 ]
 
 # Database ####################################################################
@@ -830,7 +839,10 @@ SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', def
 
 # User Console - React SPA
 # This is used to handle redirects from validation links back to the SPA
-USER_CONSOLE_FRONTEND_URL = env('USER_CONSOLE_FRONTEND_URL', default='https://app.console.opencraft.com')
+USER_CONSOLE_FRONTEND_URL = env(
+    'USER_CONSOLE_FRONTEND_URL',
+    default='http://localhost:3000/console'
+)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [

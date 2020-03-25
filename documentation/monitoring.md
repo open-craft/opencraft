@@ -41,7 +41,7 @@ Ocim automatically creates an email notification channel for each email address 
 
 ## Troubleshooting
 
-In the case that the monitoring is failing or ends up incorreclty configured, you can use the following checklist to help you debug the issue:
+In the case that the monitoring is failing or ends up incorrectly configured, you can use the following checklist to help you debug the issue:
 
 1. Check if the monitored endpoints are working as expected and available from the internet.
 2. Check if Ocim has valid credentials on `.env` configuration file.
