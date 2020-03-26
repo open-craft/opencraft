@@ -174,5 +174,6 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             output['load_balancing_server'] = None
 
         output['configuration_theme_settings'] = instance.get_theme_settings()
+        output['configuration_site_configuration_settings'] = instance.get_site_configuration_settings()
 
         return output

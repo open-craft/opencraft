@@ -37,9 +37,11 @@ from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.domain_names import DomainNameInstance
 from instance.models.mixins.load_balanced import LoadBalancedInstance
+from instance.models.mixins.openedx_static_content_overrides import OpenEdXStaticContentOverridesMixin
 from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuildsMixin
+from instance.models.mixins.openedx_site_configuration import OpenEdXSiteConfigurationMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
@@ -56,11 +58,13 @@ class OpenEdXInstance(
         DomainNameInstance,
         LoadBalancedInstance,
         OpenEdXAppConfiguration,
+        OpenEdXStaticContentOverridesMixin,
         OpenEdXDatabaseMixin,
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
         OpenEdXThemeMixin,
         OpenEdXPeriodicBuildsMixin,
+        OpenEdXSiteConfigurationMixin,
         SecretKeyInstanceMixin,
         Instance
 ):
@@ -376,6 +380,7 @@ class OpenEdXInstance(
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
                 configuration_theme_settings=self.get_theme_settings(),
+                configuration_site_configuration_settings=self.get_site_configuration_settings(),
                 configuration_secret_keys=self.get_secret_key_settings(),
                 **instance_config
             )

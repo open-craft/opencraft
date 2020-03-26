@@ -220,6 +220,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     configuration_database_settings = models.TextField(blank=True, help_text="YAML vars for database configuration")
     configuration_storage_settings = models.TextField(blank=True, help_text="YAML vars for storage configuration")
     configuration_theme_settings = models.TextField(blank=True, help_text="YAML vars for theme configuration")
+    configuration_site_configuration_settings = models.TextField(  # pylint:disable=invalid-name
+        blank=True, null=True, help_text="YAML vars for setting SiteConfiguration variables"
+    )
     configuration_secret_keys = models.TextField(blank=True, help_text="YAML vars for secret keys")
     configuration_settings = models.TextField(blank=False, help_text=(
         'A record of the combined (final) ansible variables passed to the configuration '
@@ -236,6 +239,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_database_settings',
         'configuration_storage_settings',
         'configuration_theme_settings',
+        'configuration_site_configuration_settings',
         'configuration_secret_keys',
         # The extra settings should stay at the end of this list to allow manual overrides of all settings.
         'configuration_extra_settings',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2019 OpenCraft <xavier@opencraft.com>
+# Copyright (C) 2015-2020 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,25 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Theming relates schemas for validating theme configurations.
+Theming related schemas for validating theme configurations.
 """
 from jsonschema import validate
 
+from .utils import nullable_schema, ref
+
 color_regex = '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
-
-
-def ref(definition_name):
-    """
-    Returns the reference to a definition in the same schema.
-    """
-    return {
-        "$ref": "#/definitions/{}".format(definition_name)
-    }
-
-
-nullable_schema = {
-    "type": "null",
-}
 
 color_schema = {
     "type": "string",
@@ -187,7 +175,6 @@ DEFAULT_THEME = {
 
 def theme_schema_validate(value, schema=None):
     """
-    Re-raise the schema errors as validation errors so they can be handled
-    better by Django.
+    Validate the given value against the given schema or the theme_schema.
     """
     validate(instance=value, schema=schema if schema is not None else theme_schema)
