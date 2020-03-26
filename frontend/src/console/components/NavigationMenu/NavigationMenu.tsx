@@ -4,11 +4,13 @@ import './styles.scss';
 import { Col, Row } from 'react-bootstrap';
 import { ThemeSchema } from 'ocim-client';
 import avatar from 'assets/avatar-default.png';
-import { CustomizableButton } from '../CustomizableButton';
+// import { CustomizableButton } from '../CustomizableButton';  # TODO: uncomment in BB-2219.
 import { CustomizableLink } from '../CustomizableLink';
+import {InstanceSettingsModel} from "../../models";
 
 interface NavigationMenuProps {
   children?: React.ReactNode;
+  instanceData: InstanceSettingsModel | null;
   themeData: ThemeSchema;
   loggedIn?: boolean;
 }
@@ -36,26 +38,29 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   ) : (
     <Row className="navigation-menu navigation-submenu">
       <Col>
-        <CustomizableButton
-          initialTextColor={themeData.btnRegisterColor}
-          initialBackgroundColor={themeData.btnRegisterBg}
-          initialBorderColor={themeData.btnRegisterBorderColor}
-          initialHoverTextColor={themeData.btnRegisterHoverColor}
-          initialHoverBackgroundColor={themeData.btnRegisterHoverBg}
-          initialHoverBorderColor={themeData.btnRegisterHoverBorderColor}
-        >
-          Register
-        </CustomizableButton>
-        <CustomizableButton
-          initialTextColor={themeData.btnSignInColor}
-          initialBackgroundColor={themeData.btnSignInBg}
-          initialBorderColor={themeData.btnSignInBorderColor}
-          initialHoverTextColor={themeData.btnSignInHoverColor}
-          initialHoverBackgroundColor={themeData.btnSignInHoverBg}
-          initialHoverBorderColor={themeData.btnSignInHoverBorderColor}
-        >
-          Sign in
-        </CustomizableButton>
+        <CustomizableLink>Register</CustomizableLink>
+        <CustomizableLink>Sign in</CustomizableLink>
+        {/*TODO: Dummy buttons. While merging BB-2219 remove these from above and uncomment the ones below.*/}
+        {/*<CustomizableButton*/}
+        {/*  initialTextColor={themeData.btnRegisterColor}*/}
+        {/*  initialBackgroundColor={themeData.btnRegisterBg}*/}
+        {/*  initialBorderColor={themeData.btnRegisterBorderColor}*/}
+        {/*  initialHoverTextColor={themeData.btnRegisterHoverColor}*/}
+        {/*  initialHoverBackgroundColor={themeData.btnRegisterHoverBg}*/}
+        {/*  initialHoverBorderColor={themeData.btnRegisterHoverBorderColor}*/}
+        {/*>*/}
+        {/*  Register*/}
+        {/*</CustomizableButton>*/}
+        {/*<CustomizableButton*/}
+        {/*  initialTextColor={themeData.btnSignInColor}*/}
+        {/*  initialBackgroundColor={themeData.btnSignInBg}*/}
+        {/*  initialBorderColor={themeData.btnSignInBorderColor}*/}
+        {/*  initialHoverTextColor={themeData.btnSignInHoverColor}*/}
+        {/*  initialHoverBackgroundColor={themeData.btnSignInHoverBg}*/}
+        {/*  initialHoverBorderColor={themeData.btnSignInHoverBorderColor}*/}
+        {/*>*/}
+        {/*  Sign in*/}
+        {/*</CustomizableButton>*/}
       </Col>
     </Row>
   );
@@ -66,7 +71,9 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
       style={{ background: themeData.mainNavColor }}
     >
       <Col md={1}>
-        <img src="" alt="Logo" />
+        {props.instanceData && props.instanceData.logo && (
+          <img src={props.instanceData.logo} alt="Logo" />
+        )}
       </Col>
       <Col md={1}>
         <CustomizableLink

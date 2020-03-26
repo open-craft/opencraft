@@ -53,8 +53,8 @@ export class ThemeNavigationComponent extends React.PureComponent<
 
           {themeData && themeData.version === 1 && (
             <div className="theme-navigation-container">
-              <NavigationMenu themeData={themeData} />
-              <NavigationMenu themeData={themeData} loggedIn />
+              <NavigationMenu instanceData={instance.data} themeData={themeData} />
+              <NavigationMenu instanceData={instance.data} themeData={themeData} loggedIn />
               <Row>
                 <p className="style-name">
                   <WrappedMessage messages={messages} id="navigationLinks" />

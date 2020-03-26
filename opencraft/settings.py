@@ -192,6 +192,8 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = root('build/static')
 STATIC_URL = '/static/'
+MEDIA_ROOT = root('media')
+MEDIA_URL = '/media/'
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
