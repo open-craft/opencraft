@@ -76,13 +76,13 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
           readOnly
         />
 
-        {tooltip ?
+        {tooltip ? (
           <OverlayTrigger placement="right" overlay={tooltip}>
             <div className="info-icon">
-              <i className="fas fa-info-circle"/>
+              <i className="fas fa-info-circle" />
             </div>
-          </OverlayTrigger> : null
-        }
+          </OverlayTrigger>
+        ) : null}
       </Row>
 
       <p>
