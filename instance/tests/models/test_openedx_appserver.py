@@ -982,7 +982,8 @@ class SiteConfigurationSettingsTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.static_content_overrides = {
             'version': 0,
-            'static_template_about_content': 'Hello world!'
+            'static_template_about_content': 'Hello world!',
+            'homepage_overlay_html': 'Welcome to the LMS!',
         }
         instance.save()
         appserver = make_test_appserver(instance)
@@ -990,7 +991,8 @@ class SiteConfigurationSettingsTestCase(TestCase):
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
-                        'static_template_about_content': 'Hello world!'
+                        'static_template_about_content': 'Hello world!',
+                        'homepage_overlay_html': 'Welcome to the LMS!',
                     }
                 }
             ]

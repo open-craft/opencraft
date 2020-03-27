@@ -52,7 +52,8 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
         instance.static_content_overrides = {
             'version': 0,
             'static_template_about_content': 'Hello world!',
-            'static_template_contact_content': 'Email: nobody@example.com'
+            'static_template_contact_content': 'Email: nobody@example.com',
+            'homepage_overlay_html': 'Welcome to the LMS!',
         }
         instance.save()
         expected_variables = {
@@ -60,7 +61,8 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'static_template_about_content': 'Hello world!',
-                        'static_template_contact_content': 'Email: nobody@example.com'
+                        'static_template_contact_content': 'Email: nobody@example.com',
+                        'homepage_overlay_html': 'Welcome to the LMS!',
                     }
                 }
             ]
@@ -75,14 +77,16 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.static_content_overrides = {
             'version': 0,
-            'static_template_about_content': 'வணக்கம்!'
+            'static_template_about_content': 'வணக்கம்!',
+            'homepage_overlay_html': 'வணக்கம்',
         }
         instance.save()
         expected_variables = {
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
-                        'static_template_about_content': 'வணக்கம்!'
+                        'static_template_about_content': 'வணக்கம்!',
+                        'homepage_overlay_html': 'வணக்கம்',
                     }
                 }
             ]
@@ -97,14 +101,16 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         instance.static_content_overrides = {
             'version': 0,
-            'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>'
+            'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>',
+            'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
         }
         instance.save()
         expected_variables = {
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
-                        'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>'
+                        'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>',
+                        'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
                     }
                 }
             ]

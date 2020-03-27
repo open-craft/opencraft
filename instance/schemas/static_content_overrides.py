@@ -43,6 +43,7 @@ static_content_overrides_v0_schema = {
         "static_template_honor_content": ref("string"),
         "static_template_privacy_header": ref("string"),
         "static_templates_privacy_content": ref("string"),
+        "homepage_overlay_html": ref("string"),
     },
     "required": ["version", ],
     "additionalProperties": False

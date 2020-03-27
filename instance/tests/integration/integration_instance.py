@@ -324,6 +324,9 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         self.assertTrue('EDXAPP_SITE_CONFIGURATION:' in appserver.configuration_settings)
         self.assertTrue('static_template_about_content' in appserver.configuration_settings)
+        homepage_html = get_url_contents(instance.url)
+        self.assertIn(instance.static_content_overrides['homepage_overlay_html'], homepage_html)
+
         page_url = '{}/{}'.format(instance.url, page)
         server_html = get_url_contents(page_url)
         self.assertIn(instance.static_content_overrides['static_template_{}_content'.format(page)], server_html)
@@ -337,7 +340,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
-            static_content_overrides={'version': 0, 'static_template_about_content': 'Hello world!'},
+            static_content_overrides={
+                'version': 0,
+                'static_template_about_content': 'Hello world!',
+                'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
+            },
         )
         instance = OpenEdXInstance.objects.get()
 

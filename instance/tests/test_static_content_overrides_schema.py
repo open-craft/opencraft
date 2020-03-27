@@ -86,7 +86,13 @@ class StaticContentOverridesV0SchemaTestCase(TestCase):
         """
         Test that a valid value passed validation.
         """
-        self.validate({'version': 0, 'static_template_about_content': 'Hello world!'})
+        self.validate(
+            {
+                'version': 0,
+                'static_template_about_content': 'Hello world!',
+                'homepage_overlay_html': 'Welcome to the LMS!',
+            }
+        )
 
 
 @ddt.ddt
@@ -112,7 +118,13 @@ class StaticContentOverridesValidationTestCase(TestCase):
         """
         Test that the data validating against the v0 schema is accepted.
         """
-        static_content_overrides_schema_validate({'version': 0, 'static_template_about_content': 'Hello world!'})
+        static_content_overrides_schema_validate(
+            {
+                'version': 0,
+                'static_template_about_content': 'Hello world!',
+                'homepage_overlay_html': 'Welcome to the LMS!'
+            }
+        )
 
     def test_invalid_v0_schema_data(self):
         """
