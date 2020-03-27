@@ -78,10 +78,9 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
       <Col md={1}>
         <CustomizableLink
           linkColor={themeData.mainNavLinkColor}
-          borderBottomColor={
-            props.loggedIn ? themeData.mainNavItemBorderBottomColor : ''
-          }
+          borderBottomColor={themeData.mainNavItemBorderBottomColor}
           borderBottomHoverColor={themeData.mainNavItemHoverBorderBottomColor}
+          active={props.loggedIn}
         >
           Courses
         </CustomizableLink>
@@ -89,6 +88,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
       <Col md={3}>
         <CustomizableLink
           linkColor={themeData.mainNavLinkColor}
+          borderBottomColor={themeData.mainNavItemBorderBottomColor}
           borderBottomHoverColor={themeData.mainNavItemHoverBorderBottomColor}
         >
           Discover New

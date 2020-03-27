@@ -7,6 +7,7 @@ interface CustomizableLinkProps {
   linkColor?: string;
   borderBottomColor?: string;
   borderBottomHoverColor?: string;
+  active?: boolean
 }
 
 export const CustomizableLink: React.FC<CustomizableLinkProps> = (
@@ -15,15 +16,11 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
   const [hover, setHover] = React.useState(false);
   const [style, setStyle] = React.useState({
     color: props.linkColor,
-    borderBottom: props.borderBottomColor
-      ? `4px solid ${props.borderBottomColor}`
-      : ''
+    borderBottomColor: props.active ? props.borderBottomColor : undefined
   });
   const [hoverStyle, setHoverStyle] = React.useState({
     color: props.linkColor,
-    borderBottom: props.borderBottomHoverColor
-      ? `4px solid ${props.borderBottomHoverColor}`
-      : ''
+    borderBottomColor: props.borderBottomHoverColor ? props.borderBottomHoverColor : undefined
   });
 
   function toggleHover() {
@@ -33,24 +30,20 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
   React.useEffect(() => {
     setStyle({
       color: props.linkColor,
-      borderBottom: props.borderBottomColor
-        ? `4px solid ${props.borderBottomColor}`
-        : ''
+      borderBottomColor: props.active ? props.borderBottomColor : undefined
     });
   }, [props.linkColor, props.borderBottomColor]);
   React.useEffect(() => {
     setHoverStyle({
       color: props.linkColor,
-      borderBottom: props.borderBottomHoverColor
-        ? `4px solid ${props.borderBottomHoverColor}`
-        : ''
+      borderBottomColor: props.borderBottomHoverColor ? props.borderBottomHoverColor : undefined
     });
   }, [props.linkColor, props.borderBottomHoverColor]);
 
   return (
     <button
-      type="button"
-      className="customizable-link"
+      type='button'
+      className={`customizable-link ${props.active ? 'active': ''}`}
       style={hover ? hoverStyle : style}
       onMouseEnter={toggleHover}
       onMouseLeave={toggleHover}

@@ -1,12 +1,19 @@
 .customizable-link {
   background: transparent;
   display: inline-flex;
-  height: 70px;
+  height: 66px;
   align-items: center;
   border: none;
   font-size: 16px;
+  border-bottom: 4px solid transparent;
+  margin-top: 4px;
 
   &:hover {
     text-decoration: none;
+    border-bottom-color: #0075b4;
   }
+}
+
+.customizable-link.active {
+    border-bottom-color: #0075b4;
 }
