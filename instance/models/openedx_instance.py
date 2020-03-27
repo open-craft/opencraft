@@ -448,6 +448,7 @@ class OpenEdXInstance(
             self.reconfigure_load_balancer(load_balancer)
         for appserver in self.appserver_set.iterator():
             appserver.terminate_vm()
+        self.deprovision_rabbitmq()
         self.purge_consul_metadata()
         super().archive()
         self.logger.info('Archiving instance finished.')
@@ -549,7 +550,7 @@ class OpenEdXInstance(
         :return: A pair (version, changed) with the current version number and
                  a bool to indicate whether the information was updated.
         """
-        if not settings.CONSUL_ENABLED:
+        if not settings.CONSUL_ENABLED or self.ref.is_archived:
             return 0, False
 
         new_configurations = self._generate_consul_metadata()

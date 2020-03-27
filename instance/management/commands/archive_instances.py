@@ -102,7 +102,6 @@ class Command(BaseCommand):
         """
         try:
             instance.archive()
-            instance.deprovision_rabbitmq()
             return True
         except Exception:  # noqa
             tb = traceback.format_exc()
