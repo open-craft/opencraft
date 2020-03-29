@@ -171,6 +171,12 @@ test: clean test.quality test.unit test.migrations_missing test.js test.browser 
 test.one: clean
 	$(HONCHO_MANAGE_TESTS) test $(RUN_ARGS)
 
+docs:
+	mkdocs build -f mkdocs.yml
+
+docs-serve:
+	mkdocs serve -f mkdocs.yml -a localhost:5001
+
 # Files #######################################################################
 
 static_external:
