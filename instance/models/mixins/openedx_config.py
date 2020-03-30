@@ -87,6 +87,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "CMS_HOSTNAME": '~{}'.format(self.instance.studio_domain_nginx_regex),
 
             "EDXAPP_LOGIN_REDIRECT_WHITELIST": [self.instance.studio_domain, ],
+            "EDXAPP_SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
 
             # Run a command to delete expired sessions once a day. The time is random and different in each server
             # to avoid the case when all servers connect to the database at exactly the same time.
@@ -221,10 +222,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
                 "ENABLE_ACCOUNT_DELETION": True,
-                # Disable the unified login from Studio
-                # Since Ironwood, the Studio login changed from a separate login
-                # to using LMS as a SSO provider. This flag disables that behaviour.
-                "DISABLE_STUDIO_SSO_OVER_LMS": True,
+                # Enable the unified login from Studio
+                # Supported in Ironwood, option to disable removed in Juniper.
+                "DISABLE_STUDIO_SSO_OVER_LMS": False,
                 # Enable prerequisite subsections feature
                 "ENABLE_PREREQUISITE_COURSES": True,
                 "MILESTONES_APP": True,
