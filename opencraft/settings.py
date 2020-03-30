@@ -844,6 +844,10 @@ USER_CONSOLE_FRONTEND_URL = env('USER_CONSOLE_FRONTEND_URL', default='https://ap
 CORS_ORIGIN_REGEX_WHITELIST = [
     r"(http|https)://(.*).opencraft.com",
 ]
-# Enable cross domain requests to make testing easier on devstack
 if DEBUG:
+    # Enable cross domain requests to make testing easier on devstack
     CORS_ORIGIN_ALLOW_ALL = True
+
+    # Set up the media files configuration for the devstack.
+    MEDIA_ROOT = root('media')
+    MEDIA_URL = '/media/'
