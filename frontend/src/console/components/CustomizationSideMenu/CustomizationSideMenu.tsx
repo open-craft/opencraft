@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Accordion, Card, Nav } from 'react-bootstrap';
-import { ROUTES } from 'global/constants';
+import { ROUTES, AVAILABLE_CUSTOM_PAGES } from 'global/constants';
 import './styles.scss';
 import { useLocation, NavLink } from 'react-router-dom';
 import messages from './displayMessages';
@@ -12,11 +12,29 @@ export const CustomizationSideMenu: React.FC = () => {
   const currentLocation = useLocation().pathname;
 
   let activeKey = 0;
-  if (currentLocation.includes('custom_pages')) {
+  if (currentLocation.includes('custom-pages')) {
     activeKey = 1;
   } else if (currentLocation.includes('settings')) {
     activeKey = 2;
   }
+
+  function capitalizeFirstLetter(str: string) {
+    return str[0].toUpperCase() + str.slice(1);
+  }
+
+  const customPageLink = (pageName: string) => {
+    const pageRoute = ROUTES.Console.CUSTOM_PAGES.replace(
+      ':pageName',
+      pageName
+    );
+    const intlString = `customPage${capitalizeFirstLetter(pageName)}`;
+
+    return (
+      <NavLink exact to={pageRoute}>
+        <WrappedMessage messages={messages} id={intlString} />
+      </NavLink>
+    );
+  };
 
   return (
     <Accordion defaultActiveKey={`${activeKey}`} className="customization-menu">
@@ -60,36 +78,9 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
-                <WrappedMessage messages={messages} id="linkAbout" />
-              </NavLink>
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
-                <WrappedMessage messages={messages} id="linkTOS" />
-              </NavLink>
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
-                <WrappedMessage messages={messages} id="linkContact" />
-              </NavLink>
+              {AVAILABLE_CUSTOM_PAGES.map(pageName => {
+                return customPageLink(pageName);
+              })}
             </Nav>
           </Card.Body>
         </Accordion.Collapse>

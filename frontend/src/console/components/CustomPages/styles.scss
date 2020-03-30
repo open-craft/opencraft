@@ -1,0 +1,55 @@
+@import '~styles/theme';
+
+.custom-page-editor {
+    h2 {
+        margin-bottom: 5px !important;
+    }
+
+    .page-switch-column {
+        display: flex;
+        justify-content: flex-end;
+
+        .page-switch-form {
+            display: flex;
+            vertical-align: middle;
+
+            label {
+                padding-right: 10px;
+                font-family: $chivo-font;
+                font-size: 14px;
+                color: $secondary-2;
+                // color: #0f1f24;
+            }
+        }
+    }
+
+    a {
+        font-family: $chivo-font;
+        font-size: 14px;
+        letter-spacing: 0.14px;
+        color: #666666;
+    }
+
+    .editor-container {
+        padding-top: 10px;
+
+        .page-editor {
+            min-height: 400px;
+            font-family: $chivo-font;
+
+            h1 {
+                color: black;
+                font-family: $chivo-font;
+            }
+        }
+    }
+
+    .page-controls {
+        display: flex;
+        justify-content: flex-end;
+
+        .save-custom-page {
+            margin-top: 20px;
+        }
+    }
+}

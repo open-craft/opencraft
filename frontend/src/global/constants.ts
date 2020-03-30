@@ -28,6 +28,7 @@ export const ROUTES = {
   },
   Console: {
     HOME: '/console',
+    CUSTOM_PAGES: '/console/custom-pages/:pageName',
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',
     THEME_BUTTONS: '/console/theming/buttons',
@@ -55,4 +56,13 @@ export const REGISTRATION_STEPS = [
   ROUTES.Registration.INSTANCE,
   ROUTES.Registration.ACCOUNT,
   ROUTES.Registration.CONGRATS
+];
+
+export const AVAILABLE_CUSTOM_PAGES = [
+  'about',
+  'contact',
+  'donate',
+  'tos',
+  'honor',
+  'privacy'
 ];

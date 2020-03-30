@@ -8,7 +8,8 @@ import {
   ThemeButtons,
   ThemeNavigation,
   ThemeFooter,
-  ThemePreviewAndColors
+  ThemePreviewAndColors,
+  CustomPages
 } from 'console/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
@@ -42,6 +43,10 @@ export const ConsoleRoutes = () => {
         component={ThemeFooter}
       />
       <PrivateRoute path={ROUTES.Console.HERO} component={Hero} />
+      <PrivateRoute
+        path={ROUTES.Console.CUSTOM_PAGES}
+        component={CustomPages}
+      />
     </Switch>
   );
 };

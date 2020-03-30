@@ -179,31 +179,46 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                       onKeyDown={[Function]}
                     >
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/about"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         About
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
                         onClick={[Function]}
-                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
                       >
                         Terms of Service
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
                         onClick={[Function]}
-                        style={Object {}}
                       >
-                        Contact
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
                       </a>
                     </div>
                   </div>
@@ -453,31 +468,46 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       onKeyDown={[Function]}
                     >
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/about"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         About
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
                         onClick={[Function]}
-                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
                       >
                         Terms of Service
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
                         onClick={[Function]}
-                        style={Object {}}
                       >
-                        Contact
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
                       </a>
                     </div>
                   </div>
@@ -836,31 +866,46 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       onKeyDown={[Function]}
                     >
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/about"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         About
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
                         onClick={[Function]}
-                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
                       >
                         Terms of Service
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
                         onClick={[Function]}
-                        style={Object {}}
                       >
-                        Contact
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
                       </a>
                     </div>
                   </div>
@@ -1205,31 +1250,46 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                       onKeyDown={[Function]}
                     >
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/about"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         About
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
                         onClick={[Function]}
-                        style={Object {}}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
                       >
                         Terms of Service
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
                         onClick={[Function]}
-                        style={Object {}}
                       >
-                        Contact
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
                       </a>
                     </div>
                   </div>
