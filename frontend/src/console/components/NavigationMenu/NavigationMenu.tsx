@@ -23,14 +23,14 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   const userMenu = props.loggedIn ? (
     <Row className="navigation-menu navigation-submenu">
       <Col>
-        <CustomizableLink linkColor={themeData.mainNavLinkColor}>
+        <CustomizableLink linkColor={themeData.mainNavLinkColor} noHover>
           Help
         </CustomizableLink>
         <img src={avatar} alt="Avatar" />
-        <CustomizableLink linkColor={themeData.mainNavLinkColor}>
+        <CustomizableLink linkColor={themeData.mainNavLinkColor} noHover>
           JoeSoap
         </CustomizableLink>
-        <CustomizableLink linkColor={themeData.userDropdownColor}>
+        <CustomizableLink linkColor={themeData.userDropdownColor} noHover>
           <i className="fas fa-caret-down" />
         </CustomizableLink>
       </Col>
@@ -38,8 +38,8 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   ) : (
     <Row className="navigation-menu navigation-submenu">
       <Col>
-        <CustomizableLink>Register</CustomizableLink>
-        <CustomizableLink>Sign in</CustomizableLink>
+        <CustomizableLink noHover>Register</CustomizableLink>
+        <CustomizableLink noHover>Sign in</CustomizableLink>
         {/* TODO: Dummy buttons. While merging BB-2219 remove these from above and uncomment the ones below. */}
         {/* <CustomizableButton */}
         {/*  initialTextColor={themeData.btnRegisterColor} */}

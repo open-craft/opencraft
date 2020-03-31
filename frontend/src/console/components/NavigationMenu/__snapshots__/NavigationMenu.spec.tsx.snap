@@ -21,7 +21,7 @@ exports[`renders without crashing 1`] = `
       onMouseLeave={[Function]}
       style={
         Object {
-          "borderBottom": "",
+          "borderBottomColor": undefined,
           "color": undefined,
         }
       }
@@ -39,7 +39,7 @@ exports[`renders without crashing 1`] = `
       onMouseLeave={[Function]}
       style={
         Object {
-          "borderBottom": "",
+          "borderBottomColor": undefined,
           "color": undefined,
         }
       }
@@ -58,12 +58,12 @@ exports[`renders without crashing 1`] = `
         className="col"
       >
         <button
-          className="customizable-link"
+          className="customizable-link noHover"
           onMouseEnter={[Function]}
           onMouseLeave={[Function]}
           style={
             Object {
-              "borderBottom": "",
+              "borderBottomColor": undefined,
               "color": undefined,
             }
           }
@@ -72,12 +72,12 @@ exports[`renders without crashing 1`] = `
           Register
         </button>
         <button
-          className="customizable-link"
+          className="customizable-link noHover"
           onMouseEnter={[Function]}
           onMouseLeave={[Function]}
           style={
             Object {
-              "borderBottom": "",
+              "borderBottomColor": undefined,
               "color": undefined,
             }
           }

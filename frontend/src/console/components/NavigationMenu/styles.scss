@@ -23,7 +23,6 @@
         margin-left: 20px;
         border-radius: 5px;
         vertical-align: middle;
-        height: 50px;
       }
     }
   }
@@ -32,4 +31,9 @@
 .main-navigation-menu {
   margin-bottom: 30px;
   background: #ffffff;
+
+  img {
+    max-width: 48px;
+    max-height: 48px;
+  }
 }
