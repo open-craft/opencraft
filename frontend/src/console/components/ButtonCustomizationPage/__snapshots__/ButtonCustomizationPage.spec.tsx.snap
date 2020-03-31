@@ -8,7 +8,7 @@ exports[`renders without crashing 1`] = `
     className="row"
   >
     <div
-      className="col-md-9"
+      className="col-md-10"
     >
       <p
         className="button-name"
@@ -28,7 +28,7 @@ exports[`renders without crashing 1`] = `
       </p>
     </div>
     <div
-      className="col-md-3"
+      className="col-md-2"
     >
       <button
         className="customizable-button"

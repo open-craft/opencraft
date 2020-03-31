@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './styles.scss';
 import { CustomizableButton } from 'console/components';
-import { CollapseEditArea, ColorInputField } from 'ui/components';
+import { CollapseEditArea, ColorInputField, ToggleSwitch } from 'ui/components';
 import { InstanceSettingsModel } from 'console/models';
 import { Col, Container, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
@@ -15,6 +15,7 @@ interface ButtonCustomizationPageProps {
   loading: Array<keyof InstanceSettingsModel | 'deployment'>;
   themeData: ThemeSchema;
   initialExpanded?: boolean;
+  deploymentToggle?: boolean;
 }
 
 export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
@@ -46,10 +47,33 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
     ]
   };
 
+  const allStylesDefined = Object.values(styles)
+    .map(category =>
+      category.every(style => themeData[style as keyof typeof themeData])
+    )
+    .every(category => category);
+  const switchTooltip = (
+    <Tooltip id="button-tooltip">
+      <WrappedMessage messages={messages} id="switchTooltipMessage" />
+    </Tooltip>
+  );
+  const switchToggle = (
+    <ToggleSwitch
+      fieldName={`customize${props.buttonName}Btn`}
+      initialValue={
+        themeData[
+          `customize${props.buttonName}Btn` as keyof typeof themeData
+        ] as boolean
+      }
+      onChange={props.onChangeColor}
+      disabled={!allStylesDefined}
+    />
+  );
+
   return (
     <div className="button-customization-page">
       <Row>
-        <Col md={9}>
+        <Col md={10}>
           <p className="button-name">
             <WrappedMessage
               messages={props.externalMessages}
@@ -60,9 +84,17 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
                 <i className="fas fa-info-circle" />
               </span>
             </OverlayTrigger>
+            {props.deploymentToggle &&
+              (!allStylesDefined ? (
+                <OverlayTrigger placement="right" overlay={switchTooltip}>
+                  <span className="info-icon">{switchToggle}</span>
+                </OverlayTrigger>
+              ) : (
+                switchToggle
+              ))}
           </p>
         </Col>
-        <Col md={3}>
+        <Col md={2}>
           <CustomizableButton
             initialTextColor={
               themeData[

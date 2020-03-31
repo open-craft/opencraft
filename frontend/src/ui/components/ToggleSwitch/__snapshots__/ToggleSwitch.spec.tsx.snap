@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<label
+  className="switch"
+>
+  <input
+    onChange={[Function]}
+    type="checkbox"
+  />
+  <span
+    className="slider round"
+  />
+</label>
+`;

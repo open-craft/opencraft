@@ -30,6 +30,11 @@ const messages = {
   btnHoverBorderColor: {
     defaultMessage: 'Button border color on hover',
     description: ''
+  },
+  switchTooltipMessage: {
+    defaultMessage:
+      'You need to set all options before activating the button style override.',
+    description: ''
   }
 };
 

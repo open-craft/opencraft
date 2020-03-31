@@ -68,6 +68,7 @@ export class ThemeButtonsComponent extends React.PureComponent<Props, State> {
                 onChangeColor={this.onChangeColor}
                 loading={instance.loading}
                 themeData={themeData}
+                deploymentToggle
               />
             </ConsolePageCustomizationContainer>
             <ConsolePageCustomizationContainer>
@@ -77,6 +78,7 @@ export class ThemeButtonsComponent extends React.PureComponent<Props, State> {
                 onChangeColor={this.onChangeColor}
                 loading={instance.loading}
                 themeData={themeData}
+                deploymentToggle
               />
             </ConsolePageCustomizationContainer>
             <ConsolePageCustomizationContainer>
@@ -86,6 +88,7 @@ export class ThemeButtonsComponent extends React.PureComponent<Props, State> {
                 onChangeColor={this.onChangeColor}
                 loading={instance.loading}
                 themeData={themeData}
+                deploymentToggle
               />
             </ConsolePageCustomizationContainer>
           </div>
