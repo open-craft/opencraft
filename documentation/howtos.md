@@ -1,6 +1,8 @@
 ## Configuring Ecommerce and Course Discovery
 
-By default, instances are not provisioned with either ecommerce or the Course Discovery service. However, support is available to manually enable those services.
+By default, instances are not provisioned with either Ecommerce or the Course Discovery service. However, support is available to manually enable those services.
+
+Running Course Discovery requires a separate, persistent VM to be deployed to host ElasticSearch, for performance and deployment reasons.
 
 ### Ocim instance extra configuration
 
@@ -15,14 +17,6 @@ EDXAPP_ADDITIONAL_CRON_JOBS:
   job: "sudo -u discovery bash -c 'source {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery refresh_course_metadata'"
   hour: "*"
   minute: "43"
-  day: "*"
-# update_index is required but isn't currently part of the provisioning process. So in the interests of saving time, this is run every 10 minutes through cron (it's not an expensive operation).
-# TODO: remove this once update_index is part of provisioning.
-- name: "discovery: update_index"
-  user: "root"
-  job: "sudo -u discovery bash -c 'source {{ discovery_home }}/discovery_env; {{ COMMON_BIN_DIR }}/manage.discovery update_index --disable-change-limit'"
-  hour: "*"
-  minute: "*/10"
   day: "*"
 ```
 
@@ -97,7 +91,9 @@ Once the appserver is running, you'll need to take the following steps to finish
 
 * In Django Admin > Authentication > Users (`/admin/auth/user/`), there should already be service users created, i.e. `ecommerce_worker` and `discovery_worker`.
 
-    If not, create them with staff privileges, no password, and set the Full Name so that a user profile is associated with the users.
+    If not, create them with staff privileges, no password.
+
+    Set a Full Name on `ecommerce_worker` and `discovery_worker`, so that a user profile is associated with the users.
 
     Add these extra permissions to the `ecommerce_worker`:
 
@@ -164,6 +160,15 @@ python manage.py create_or_update_partner \
   --oidc-url-root 'https://external.lms.domain/oauth2' \
   --oidc-key '{discovery oauth client id}' \
   --oidc-secret '{discovery oauth client secret}'
+```
+
+* To initialize a new Elasticsearch instance, run:
+
+```bash
+sudo -u discovery -Hs
+source ~/discovery_env
+/edx/bin/manage.discovery update_index --disable-change-limit
+/edx/bin/manage.discovery refresh_course_metadata  # this task should be cron'd, see above.
 ```
 
 * [Configure LMS to use ecommerce](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html#switch-from-shoppingcart-to-e-commerce)
