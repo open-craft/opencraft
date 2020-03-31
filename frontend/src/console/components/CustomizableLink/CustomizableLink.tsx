@@ -37,7 +37,7 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
       color: props.linkColor,
       borderBottomColor: props.active ? props.borderBottomColor : undefined
     });
-  }, [props.linkColor, props.borderBottomColor]);
+  }, [props.linkColor, props.borderBottomColor, props.active]);
   React.useEffect(() => {
     setHoverStyle({
       color: props.linkColor,
