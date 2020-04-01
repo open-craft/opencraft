@@ -87,7 +87,8 @@ EDXAPP_LMS_ENV_EXTRA:
 
 Spawn a new appserver to use the updated settings to deploy the ecommerce and discovery services.
 
-Once the appserver is running, you'll need to take the following steps to finish setup (these are one-time actions that are stored in the database):
+Once the appserver is running, you'll need to run the following commands on the new appserver to finish setup. These are
+one-time actions that are stored in the database.
 
 * In Django Admin > Authentication > Users (`/admin/auth/user/`), there should already be service users created, i.e. `ecommerce_worker` and `discovery_worker`.
 
@@ -162,7 +163,7 @@ python manage.py create_or_update_partner \
   --oidc-secret '{discovery oauth client secret}'
 ```
 
-* To initialize a new Elasticsearch instance, run:
+* To initialize a new Elasticsearch index, run these commands on the appserver:
 
 ```bash
 sudo -u discovery -Hs
