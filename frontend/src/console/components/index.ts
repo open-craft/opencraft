@@ -21,3 +21,7 @@ export * from './ThemeNavigation';
 export * from './NavigationMenu';
 
 export * from './CustomizableLink';
+
+export * from './ThemeFooter';
+
+export * from './CustomFooter';

@@ -6,6 +6,7 @@ import {
   Logos,
   ThemeButtons,
   ThemeNavigation,
+  ThemeFooter,
   ThemePreviewAndColors
 } from 'console/components';
 import { PrivateRoute } from 'auth/components';
@@ -26,7 +27,6 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_PREVIEW_AND_COLORS}
         component={ThemePreviewAndColors}
       />
-      <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
       <PrivateRoute
         path={ROUTES.Console.THEME_BUTTONS}
         component={ThemeButtons}
@@ -35,6 +35,11 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_NAVIGATION}
         component={ThemeNavigation}
       />
+      <PrivateRoute
+        path={ROUTES.Console.THEME_FOOTER}
+        component={ThemeFooter}
+      />
+      <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
     </Switch>
   );
 };

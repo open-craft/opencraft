@@ -1,0 +1,59 @@
+.custom-footer {
+  background: #ffffff;
+  margin-bottom: 30px;
+  border: 1px solid #c4c4c4;
+  margin-left: 0;
+  font-size: 14px;
+
+  .row {
+    margin-left: -10px;
+    margin-right: 0;
+    height: auto;
+    align-items: center;
+
+    .customizable-link {
+      font-size: 14px;
+      height: auto;
+
+      &:hover {
+        color: #0075b4;
+      }
+    }
+
+    a {
+      color: #333333;
+
+      &:hover {
+        color: #0075b4;
+      }
+    }
+
+    .openedx-logo {
+      display: inline-flex;
+      justify-content: flex-end;
+
+      img {
+        width: 140px;
+      }
+    }
+
+    img.logo {
+      margin-bottom: 10px;
+      max-width: 48px;
+      max-height: 48px;
+    }
+
+    .copyright {
+      font-size: 0.6875em;
+      color: #767676;
+    }
+  }
+
+  .row.legal {
+    align-items: start;;
+
+    .customizable-link {
+      font-size: 0.6875em;
+    }
+  }
+}
