@@ -44,6 +44,9 @@ urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
     # Enable debug toolbar URLs
     import debug_toolbar
@@ -52,4 +55,3 @@ if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
     urlpatterns = [
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

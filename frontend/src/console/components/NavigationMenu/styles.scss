@@ -1,0 +1,39 @@
+.row.navigation-menu {
+  height: auto;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #c4c4c4;
+  border-bottom: 1px solid #1a6ebb;
+
+  .row.navigation-submenu {
+    border: none;
+
+    .col {
+      display: inline-flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      .customizable-button {
+        margin-left: 10px;
+      }
+
+      img {
+        border: 1px solid #e7e7e7;
+        margin-right: 10px;
+        margin-left: 20px;
+        border-radius: 5px;
+        vertical-align: middle;
+      }
+    }
+  }
+}
+
+.main-navigation-menu {
+  margin-bottom: 30px;
+  background: #ffffff;
+
+  img {
+    max-width: 48px;
+    max-height: 48px;
+  }
+}

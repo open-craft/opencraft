@@ -20,6 +20,7 @@ interface ColorInputFieldProps {
   error?: string;
   messages: any;
   loading?: boolean;
+  hideTooltip?: boolean;
 }
 
 export const ColorInputField: React.SFC<ColorInputFieldProps> = (
@@ -53,11 +54,11 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
     }
   };
 
-  const tooltip = (
+  const tooltip = !props.hideTooltip ? (
     <Tooltip id="redeployment-status">
       <WrappedMessage messages={props.messages} id={`${props.fieldName}Help`} />
     </Tooltip>
-  );
+  ) : null;
 
   return (
     <FormGroup>
@@ -75,11 +76,13 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
           readOnly
         />
 
-        <OverlayTrigger placement="right" overlay={tooltip}>
-          <div className="info-icon">
-            <i className="fas fa-info-circle" />
-          </div>
-        </OverlayTrigger>
+        {tooltip ? (
+          <OverlayTrigger placement="right" overlay={tooltip}>
+            <div className="info-icon">
+              <i className="fas fa-info-circle" />
+            </div>
+          </OverlayTrigger>
+        ) : null}
       </Row>
 
       <p>
