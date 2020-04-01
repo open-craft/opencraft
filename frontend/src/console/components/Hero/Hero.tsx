@@ -24,7 +24,11 @@ import {
 } from 'console/actions';
 import messages from './displayMessages';
 
-interface State {}
+interface State {
+  [key: string]: string;
+  title: string;
+  subtitle: string;
+}
 
 interface ActionProps {
   clearErrorMessage: Function;
@@ -36,22 +40,70 @@ interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
 export class HeroComponent extends React.PureComponent<Props, State> {
-  updateHeroTitle = (event: any) => {
-    if (this.props.activeInstance && this.props.activeInstance.data) {
-      this.props.updateHeroText(
-        this.props.activeInstance.data.id,
-        event.target.value,
-        null
-      );
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      title: '',
+      subtitle: ''
+    };
+
+    if (this.props.activeInstance.data) {
+      const {
+        homepageOverlayHtml
+      } = this.props.activeInstance.data.draftStaticContentOverrides;
+      const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
+      const matched = heroTextRegex.exec(homepageOverlayHtml);
+      if (matched) {
+        this.state = {
+          title: matched[1],
+          subtitle: matched[2]
+        };
+      }
+    }
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    // Fill fields after finishing loading data
+    this.needToUpdateStaticContentOverridesFields(prevProps);
+  }
+
+  private needToUpdateStaticContentOverridesFields = (prevProps: Props) => {
+    if (
+      prevProps.activeInstance.loading.includes(
+        'draftStaticContentOverrides'
+      ) &&
+      !this.props.activeInstance.loading.includes('draftStaticContentOverrides')
+    ) {
+      const {
+        homepageOverlayHtml
+      } = this.props.activeInstance!.data!.draftStaticContentOverrides;
+      const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
+      const matched = heroTextRegex.exec(homepageOverlayHtml);
+      if (matched) {
+        this.setState({
+          title: matched[1],
+          subtitle: matched[2]
+        });
+      }
     }
   };
 
-  updateHeroSubtitle = (event: any) => {
+  private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.name;
+    const { value } = e.target;
+
+    this.setState({
+      [field]: value
+    });
+  };
+
+  private updateHeroText = () => {
     if (this.props.activeInstance && this.props.activeInstance.data) {
       this.props.updateHeroText(
         this.props.activeInstance.data.id,
-        null,
-        event.target.value
+        this.state.title,
+        this.state.subtitle
       );
     }
   };
@@ -80,13 +132,6 @@ export class HeroComponent extends React.PureComponent<Props, State> {
 
     if (instance.data && instance.data.draftThemeConfig) {
       themeData = instance.data.draftThemeConfig;
-    }
-    const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-    let matched = null;
-    if (instance.data) {
-      matched = heroTextRegex.exec(
-        instance.data.draftStaticContentOverrides.homepageOverlayHtml
-      );
     }
     return (
       <div className="hero-pages">
@@ -120,20 +165,18 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                   <TextInputField
                     fieldName="title"
                     messages={messages}
-                    value={matched ? matched[1] : ''}
-                    onBlur={this.updateHeroTitle}
-                    onChange={() => {}}
+                    value={this.state.title}
+                    onBlur={this.updateHeroText}
+                    onChange={this.onChange}
                   />
                 </Col>
                 <Col md={6}>
                   <TextInputField
-                    fieldName="subTitle"
+                    fieldName="subtitle"
                     messages={messages}
-                    value={matched ? matched[2] : ''}
-                    onBlur={this.updateHeroSubtitle}
-                    onChange={(event: any) => {
-                      console.log('Title update', event.target.value);
-                    }}
+                    value={this.state.subtitle}
+                    onBlur={this.updateHeroText}
+                    onChange={this.onChange}
                   />
                 </Col>
               </Row>

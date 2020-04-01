@@ -98,6 +98,39 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES:
+      return update(state, {
+        activeInstance: {
+          loading: {
+            $push: ['draftStaticContentOverrides']
+          }
+        }
+      });
+    case Actions.Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS:
+      return update(state, {
+        activeInstance: {
+          data: {
+            draftStaticContentOverrides: {
+              $merge: action.data
+            }
+          },
+          loading: {
+            $set: state.activeInstance.loading.filter(
+              x => x !== 'draftStaticContentOverrides'
+            )
+          }
+        }
+      });
+    case Actions.Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE:
+      return update(state, {
+        activeInstance: {
+          loading: {
+            $set: state.activeInstance.loading.filter(
+              x => x !== 'draftStaticContentOverrides'
+            )
+          }
+        }
+      });
     case Actions.Types.GET_DEPLOYMENT_STATUS:
       return state;
     case Actions.Types.GET_DEPLOYMENT_STATUS_SUCCESS:

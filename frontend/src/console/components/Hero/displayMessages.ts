@@ -19,7 +19,7 @@ const messages = {
     defaultMessage: 'Heading',
     description: ''
   },
-  subTitle: {
+  subtitle: {
     defaultMessage: 'Subheading',
     description: ''
   },

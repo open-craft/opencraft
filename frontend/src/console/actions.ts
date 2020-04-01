@@ -3,7 +3,7 @@ import { Action } from 'redux';
 import { push } from 'connected-react-router';
 import { V2Api } from 'global/api';
 import { InstanceSettingsModel, DeploymentInfoModel } from 'console/models';
-import { ThemeSchema } from 'ocim-client';
+import { ThemeSchema, StaticContentOverrides } from 'ocim-client';
 import { ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 
@@ -105,6 +105,21 @@ export interface UpdateThemeConfigFailure extends Action {
   readonly data: Partial<ThemeSchema>;
 }
 
+export interface UpdateInstanceStaticContentOverrides extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
+export interface UpdateInstanceStaticContentOverridesSuccess extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
+export interface UpdateInstanceStaticContentOverridesFailure extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
 export interface GetDeploymentStatus extends Action {
   readonly type: Types.GET_DEPLOYMENT_STATUS;
   readonly instanceId: number;
@@ -159,6 +174,9 @@ export type ActionTypes =
   | UpdateInstanceImages
   | UpdateInstanceImagesSuccess
   | UpdateInstanceImagesFailure
+  | UpdateInstanceStaticContentOverrides
+  | UpdateInstanceStaticContentOverridesSuccess
+  | UpdateInstanceStaticContentOverridesFailure
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
@@ -354,22 +372,7 @@ export const updateHeroText = (
     type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES,
     fieldName: 'homepage_overlay_html'
   });
-  const { activeInstance } = getState().console;
-  const homePageOverlayHtml = activeInstance.data!.draftStaticContentOverrides
-    .homepageOverlayHtml;
-  const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-  const matched = heroTextRegex.exec(homePageOverlayHtml);
-  let updatedTitle = title;
-  let updatedSubtitle = subtitle;
-
-  if (title === null) {
-    updatedTitle = matched ? matched[1] : '';
-  }
-
-  if (subtitle === null) {
-    updatedSubtitle = matched ? matched[2] : '';
-  }
-  const heroText = `<h1>${updatedTitle}</h1><p>${updatedSubtitle}</p>`;
+  const heroText = `<h1>${title}</h1><p>${subtitle}</p>`;
   updateStaticContentOverridesFieldValue(
     instanceId,
     'homepage_overlay_html',
