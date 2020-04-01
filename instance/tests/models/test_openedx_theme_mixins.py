@@ -132,6 +132,42 @@ class OpenEdXThemeMixinTestCase(TestCase):
             self.assertIn('opencraft_logo_small.png', logo['url'])
             self.assertIn('favicon.ico', favicon['url'])
 
+    @override_settings(INSTANCE_STORAGE_TYPE='s3')
+    def test_hero_cover_image_set(self):
+        """
+        Test that when the hero cover image is set, the corresponding ansible variables are generated.
+        """
+        OpenEdXInstanceFactory(
+            name='Test hero cover image',
+            deploy_simpletheme=True,
+            theme_config={'version': 1, 'link-color': '#123456'}
+        )
+        instance = OpenEdXInstance.objects.get()
+        user = get_user_model().objects.create_user('betatestuser', 'betatest@example.com')
+        application = self.make_test_application(instance, user)
+        application.hero_cover_image = 'hero_cover.png'
+        application.save()
+        appserver = make_test_appserver(instance)
+        ansible_theme_vars = instance.get_theme_settings()
+        ansible_vars = appserver.configuration_settings
+        for variables in (ansible_theme_vars, ansible_vars):
+            parsed_vars = yaml.load(variables, Loader=yaml.SafeLoader) or {}
+            self.assertIn('SIMPLETHEME_STATIC_FILES_URLS', parsed_vars)
+            self.assertTrue(
+                any(
+                    item['url'] == application.hero_cover_image.url and
+                    item['dest'] == 'lms/static/images/hero_cover.png'
+                    for item in parsed_vars['SIMPLETHEME_STATIC_FILES_URLS']
+                )
+            )
+            self.assertIn('SIMPLETHEME_SASS_OVERRIDES', parsed_vars)
+            self.assertTrue(
+                any(
+                    item['variable'] == 'homepage-bg-image' and item['value'] == 'url("../images/hero_cover.png")'
+                    for item in parsed_vars['SIMPLETHEME_SASS_OVERRIDES']
+                )
+            )
+
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)

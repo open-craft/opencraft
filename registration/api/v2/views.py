@@ -292,6 +292,10 @@ class OpenEdXInstanceConfigViewSet(
                 application.logo = request.data['logo']
                 application.save()
 
+            if 'hero_cover_image' in request.data:
+                application.hero_cover_image = request.data['logo']
+                application.save()
+
         except Exception as e:  # pylint: disable=broad-except
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,

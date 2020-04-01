@@ -60,7 +60,8 @@ class OpenEdXThemeMixin(models.Model):
         Returns a dict with the keys corresponding to the ansible variables supported by the 'simple-theme' role and
         the values corresponding to the supported values for those variables.
         """
-        return [
+
+        static_files_settings = [
             {
                 "url": application.logo.url,
                 "dest": "lms/static/images/logo.png",
@@ -70,6 +71,13 @@ class OpenEdXThemeMixin(models.Model):
                 "dest": "lms/static/images/favicon.ico",
             },
         ]
+
+        if application.hero_cover_image:
+            static_files_settings.append({
+                "url": application.hero_cover_image.url,
+                "dest": "lms/static/images/hero_cover.png"
+            })
+        return static_files_settings
 
     def get_common_settings(self, application):
         """
@@ -135,7 +143,7 @@ class OpenEdXThemeMixin(models.Model):
             )
         }
 
-    def get_v1_theme_settings(self):
+    def get_v1_theme_settings(self, application):
         """
         Returns a dict with the ansible SASS variables used by the 'simple-theme' role to deploy the v1 theme. Passed
         to configuration_theme_settings.
@@ -148,6 +156,12 @@ class OpenEdXThemeMixin(models.Model):
             sass_overrides.append({
                 'variable': key,
                 'value': value
+            })
+
+        if application.hero_cover_image:
+            sass_overrides.append({
+                'variable': 'homepage-bg-image',
+                'value': 'url("../images/hero_cover.png")'
             })
 
         # TODO: map the values in main_variables keys to the appropriate SASS variables
@@ -180,7 +194,7 @@ class OpenEdXThemeMixin(models.Model):
         theme_settings = self.get_common_settings(application)
 
         if self.theme_config:
-            sass_customizations = self.get_v1_theme_settings()
+            sass_customizations = self.get_v1_theme_settings(application)
         else:
             sass_customizations = self.get_v0_theme_settings(application)
 
