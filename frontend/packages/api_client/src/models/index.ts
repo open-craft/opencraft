@@ -11,6 +11,7 @@ export * from './OpenEdXInstanceDeploymentCreate';
 export * from './OpenEdXInstanceDeploymentStatus';
 export * from './OpenStackServer';
 export * from './SpawnAppServer';
+export * from './StaticContentOverrides';
 export * from './ThemeSchema';
 export * from './Token';
 export * from './TokenError';

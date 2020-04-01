@@ -30,6 +30,7 @@ export const ROUTES = {
     HOME: '/console',
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',
+    HERO: '/console/theming/hero',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general'
   },
   Registration: {

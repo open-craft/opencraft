@@ -9,3 +9,5 @@ export * from './CustomizationSideMenu';
 export * from './ThemePreviewAndColors';
 
 export * from './Logos';
+
+export * from './Hero';

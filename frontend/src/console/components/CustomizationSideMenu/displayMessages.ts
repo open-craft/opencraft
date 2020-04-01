@@ -11,6 +11,11 @@ const messages = {
     defaultMessage: 'Logos',
     description: 'Menu name.'
   },
+  linkHero: {
+    defaultMessage: 'Hero',
+    description:
+      'The name of the hero customization menu in the sidebar accordion'
+  },
   linkButtons: {
     defaultMessage: 'Buttons',
     description: 'Menu name.'

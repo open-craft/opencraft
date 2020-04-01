@@ -14,6 +14,10 @@
 
 import { exists, mapValues } from '../runtime';
 import {
+    StaticContentOverrides,
+    StaticContentOverridesFromJSON,
+    StaticContentOverridesFromJSONTyped,
+    StaticContentOverridesToJSON,
     ThemeSchema,
     ThemeSchemaFromJSON,
     ThemeSchemaFromJSONTyped,
@@ -86,6 +90,12 @@ export interface OpenEdXInstanceConfig {
      * @memberof OpenEdXInstanceConfig
      */
     readonly favicon?: string;
+    /**
+     * 
+     * @type {StaticContentOverrides}
+     * @memberof OpenEdXInstanceConfig
+     */
+    draftStaticContentOverrides?: StaticContentOverrides;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -108,6 +118,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
         'logo': !exists(json, 'logo') ? undefined : json['logo'],
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
+        'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
     };
 }
 
@@ -127,6 +138,7 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
         'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
+        'draft_static_content_overrides': StaticContentOverridesToJSON(value.draftStaticContentOverrides),
     };
 }
 

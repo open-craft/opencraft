@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { Switch, Route, Redirect } from 'react-router';
 import {
+  Hero,
   InstanceSettings,
   Logos,
   ThemePreviewAndColors
@@ -25,6 +26,7 @@ export const ConsoleRoutes = () => {
         component={ThemePreviewAndColors}
       />
       <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
+      <PrivateRoute path={ROUTES.Console.HERO} component={Hero} />
     </Switch>
   );
 };

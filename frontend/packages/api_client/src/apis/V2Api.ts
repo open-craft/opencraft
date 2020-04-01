@@ -36,6 +36,9 @@ import {
     OpenEdXInstanceDeploymentStatus,
     OpenEdXInstanceDeploymentStatusFromJSON,
     OpenEdXInstanceDeploymentStatusToJSON,
+    StaticContentOverrides,
+    StaticContentOverridesFromJSON,
+    StaticContentOverridesToJSON,
     ThemeSchema,
     ThemeSchemaFromJSON,
     ThemeSchemaToJSON,
@@ -102,6 +105,11 @@ export interface InstancesOpenedxConfigPartialUpdateRequest {
 
 export interface InstancesOpenedxConfigReadRequest {
     id: string;
+}
+
+export interface InstancesOpenedxConfigStaticContentOverridesRequest {
+    id: string;
+    data: StaticContentOverrides;
 }
 
 export interface InstancesOpenedxConfigThemeConfigRequest {
@@ -655,6 +663,50 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigRead(requestParameters: InstancesOpenedxConfigReadRequest): Promise<OpenEdXInstanceConfig> {
         const response = await this.instancesOpenedxConfigReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Partial update for static content overrides configuration
+     */
+    async instancesOpenedxConfigStaticContentOverridesRaw(requestParameters: InstancesOpenedxConfigStaticContentOverridesRequest): Promise<runtime.ApiResponse<StaticContentOverrides>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigStaticContentOverrides.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigStaticContentOverrides.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/static_content_overrides/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: StaticContentOverridesToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StaticContentOverridesFromJSON(jsonValue));
+    }
+
+    /**
+     * Partial update for static content overrides configuration
+     */
+    async instancesOpenedxConfigStaticContentOverrides(requestParameters: InstancesOpenedxConfigStaticContentOverridesRequest): Promise<StaticContentOverrides> {
+        const response = await this.instancesOpenedxConfigStaticContentOverridesRaw(requestParameters);
         return await response.value();
     }
 

@@ -25,6 +25,10 @@ export enum Types {
   UPDATE_INSTANCE_THEME = 'UPDATE_INSTANCE_THEME',
   UPDATE_INSTANCE_THEME_SUCCESS = 'UPDATE_INSTANCE_THEME_SUCCESS',
   UPDATE_INSTANCE_THEME_FAILURE = 'UPDATE_INSTANCE_THEME_FAILURE',
+  // Static content overrides actions
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES',
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS',
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE',
   // Redeployment related actions
   GET_DEPLOYMENT_STATUS = 'GET_DEPLOYMENT_STATUS',
   GET_DEPLOYMENT_STATUS_SUCCESS = 'GET_DEPLOYMENT_STATUS_SUCCESS',
@@ -305,6 +309,72 @@ export const updateThemeFieldValue = (
       }
     });
   }
+};
+
+export const updateStaticContentOverridesFieldValue = (
+  instanceId: number,
+  fieldName: string,
+  value: string
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  dispatch({
+    type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES,
+    fieldName
+  });
+  try {
+    const response = await V2Api.instancesOpenedxConfigStaticContentOverrides({
+      id: String(instanceId),
+      data: {
+        [fieldName]: value
+      }
+    });
+
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      dispatch({
+        type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS,
+        data: response
+      });
+    }
+  } catch {
+    dispatch({
+      type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE,
+      data: {
+        [fieldName]: value
+      }
+    });
+  }
+};
+
+export const updateHeroText = (
+  instanceId: number,
+  title: string,
+  subtitle: string
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  dispatch({
+    type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES,
+    fieldName: 'homepage_overlay_html'
+  });
+  const { activeInstance } = getState().console;
+  const homePageOverlayHtml = activeInstance.data!.draftStaticContentOverrides
+    .homepageOverlayHtml;
+  const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
+  const matched = heroTextRegex.exec(homePageOverlayHtml);
+  let updatedTitle = title;
+  let updatedSubtitle = subtitle;
+
+  if (title === null) {
+    updatedTitle = matched ? matched[1] : '';
+  }
+
+  if (subtitle === null) {
+    updatedSubtitle = matched ? matched[2] : '';
+  }
+  const heroText = `<h1>${updatedTitle}</h1><p>${updatedSubtitle}</p>`;
+  updateStaticContentOverridesFieldValue(
+    instanceId,
+    'homepage_overlay_html',
+    heroText
+  );
 };
 
 export const getDeploymentStatus = (
