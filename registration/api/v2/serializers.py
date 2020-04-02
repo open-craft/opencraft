@@ -71,13 +71,13 @@ class GenericObjectSerializer(DataSerializer):
         }
 
 
-class LogoFaviconUploadSerializer(DataSerializer):
+class ApplicationImageUploadSerializer(DataSerializer):
     """
-    Serializer for any response that returns a JSON dict, without specifying
-    the fields of that dict in detail.
+    Serializer for images to be uploaded for an application.
     """
     logo = serializers.ImageField(required=False, use_url=True)
     favicon = serializers.ImageField(required=False, use_url=True)
+    hero_cover_image = serializers.ImageField(required=False, use_url=True)
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -301,6 +301,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "draft_theme_config",
             "logo",
             "favicon",
+            "hero_cover_image",
             "draft_static_content_overrides"
         )
         read_only_fields = [

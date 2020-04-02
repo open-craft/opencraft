@@ -245,6 +245,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         blank=False,
         default='opencraft_favicon.ico',
     )
+    hero_cover_image = models.ImageField(
+        help_text="This is used as the cover image for the hero section in the instance LMS home page.",
+        null=True,  # to ease migrations
+        blank=True,
+        default=None
+    )
     status = models.CharField(
         max_length=255,
         choices=STATUS_CHOICES,

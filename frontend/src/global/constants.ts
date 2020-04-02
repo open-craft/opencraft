@@ -31,6 +31,7 @@ export const ROUTES = {
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',
     THEME_BUTTONS: '/console/theming/buttons',
+    HERO: '/console/theming/hero',
     THEME_NAVIGATION: '/console/theming/navigation',
     THEME_FOOTER: '/console/theming/footer',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general'

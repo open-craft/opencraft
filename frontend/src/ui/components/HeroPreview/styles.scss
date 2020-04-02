@@ -1,0 +1,24 @@
+.hero-preview {
+  background-color: #9c9c9c;
+  display:block;
+
+  .outer-wrapper {
+    padding: 60px 20px;
+  }
+
+  .title {
+    background: #fff;
+    padding: 40px 30px;
+  }
+
+  h1 {
+    text-align: left;
+    color: black;
+    font: normal 1.6em/0.7em "Open Sans","Helvetica Neue", Helvetica,Arial,sans-serif;
+  }
+
+  p {
+    font: italic 1em/1.2em Georgia,Cambria,"Times New Roman",Times,serif;
+    color: #646464;
+  }
+}

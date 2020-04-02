@@ -1,0 +1,57 @@
+@import "~styles/theme";
+
+.hero-page {
+  h2 {
+    margin-bottom: 0 !important;
+  }
+
+  p {
+    height: 17px;
+    font-family: $chivo-font;
+    font-size: 14px;
+    letter-spacing: 0.14px;
+    color: $secondary-4;
+  }
+
+  .image-container {
+    display: flex;
+    justify-content: center;
+    vertical-align: middle;
+  }
+  .content {
+    padding: 20px;
+  }
+  .hero-customizations {
+    padding-top: 20px;
+  }
+  .info-icon {
+    display: inline-block;
+  }
+  .form-group {
+    line-height: 1;
+    font-size: 15px;
+
+    .form-control {
+      width: 75%;
+    }
+
+    .row {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  .info-icon {
+    padding: 5px 10px;
+    color: $primary-1;
+  }
+
+  .image-upload-field {
+    padding-top: 0;
+    h4 {
+      font-size: 14px;
+    }
+    p {
+      font-size: 12px;
+    }
+  }
+}

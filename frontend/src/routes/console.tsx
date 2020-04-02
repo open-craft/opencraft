@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { Switch, Route, Redirect } from 'react-router';
 import {
+  Hero,
   InstanceSettings,
   Logos,
   ThemeButtons,
@@ -31,6 +32,8 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_BUTTONS}
         component={ThemeButtons}
       />
+      <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
+      <PrivateRoute path={ROUTES.Console.HERO} component={Hero} />
       <PrivateRoute
         path={ROUTES.Console.THEME_NAVIGATION}
         component={ThemeNavigation}

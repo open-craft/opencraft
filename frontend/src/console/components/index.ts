@@ -25,3 +25,5 @@ export * from './CustomizableLink';
 export * from './ThemeFooter';
 
 export * from './FooterPreview';
+
+export * from './Hero';
