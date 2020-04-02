@@ -216,9 +216,6 @@ exports[`renders without crashing 1`] = `
         Take free online courses at edX.org
       </button>
     </div>
-    <div
-      className="col"
-    />
   </div>
 </div>
 `;
