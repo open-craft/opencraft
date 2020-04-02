@@ -6,10 +6,20 @@
   font-size: 14px;
 
   .row {
-    margin-left: -10px;
+    margin-left: 0;
     margin-right: 0;
     height: auto;
     align-items: center;
+
+    .footer-top-links {
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    .col {
+      padding-right: 0;
+      padding-left: 0;
+    }
 
     .customizable-link {
       font-size: 14px;
@@ -37,15 +47,20 @@
       }
     }
 
-    img.logo {
-      margin-bottom: 10px;
-      max-width: 48px;
-      max-height: 48px;
+    .logo {
+      padding-left: 8px;
+
+      img {
+        margin-bottom: 10px;
+        max-width: 48px;
+        max-height: 48px;
+      }
     }
 
     .copyright {
       font-size: 0.6875em;
       color: #767676;
+      margin-left: 8px;
     }
   }
 
@@ -54,7 +69,7 @@
     align-items: start;
 
     .col:first-of-type {
-      padding-left: 10px;
+      padding-left: 0;
     }
 
     .col {

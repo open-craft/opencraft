@@ -22,7 +22,7 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
   return (
     <div className="custom-footer" style={{ background: themeData.footerBg }}>
       <Row>
-        <Col md={5}>
+        <Col className="footer-top-links" md={5}>
           <Row>
             <Col>
               <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
@@ -52,9 +52,9 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
         </Col>
       </Row>
       <Row>
-        <Col md={1}>
+        <Col className="logo" md={1}>
           {props.instanceData && props.instanceData.logo && (
-            <img className="logo" src={props.instanceData.logo} alt="Logo" />
+            <img src={props.instanceData.logo} alt="Logo" />
           )}
         </Col>
       </Row>
