@@ -8,14 +8,14 @@ import { InstanceSettingsModel } from '../../models';
 import { WrappedMessage } from '../../../utils/intl';
 import { CustomizableLink } from '../CustomizableLink';
 
-interface CustomFooterProps {
+interface FooterPreviewProps {
   instanceData: InstanceSettingsModel | null;
   themeData: ThemeSchema;
   loggedIn?: boolean;
 }
 
-export const CustomFooter: React.FC<CustomFooterProps> = (
-  props: CustomFooterProps
+export const FooterPreview: React.FC<FooterPreviewProps> = (
+  props: FooterPreviewProps
 ) => {
   const { themeData } = props;
 

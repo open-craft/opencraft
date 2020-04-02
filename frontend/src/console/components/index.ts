@@ -24,4 +24,4 @@ export * from './CustomizableLink';
 
 export * from './ThemeFooter';
 
-export * from './CustomFooter';
+export * from './FooterPreview';

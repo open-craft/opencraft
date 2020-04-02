@@ -1,8 +1,8 @@
 import React from 'react';
 import { setupComponentForTesting } from "utils/testing";
-import { CustomFooter } from './CustomFooter';
+import { FooterPreview } from './FooterPreview';
 
 it('renders without crashing', () => {
-    const tree = setupComponentForTesting(<CustomFooter themeData={{}}/>).toJSON();
+    const tree = setupComponentForTesting(<FooterPreview instanceData={null} themeData={{}}/>).toJSON();
     expect(tree).toMatchSnapshot();
 });

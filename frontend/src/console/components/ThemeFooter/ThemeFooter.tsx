@@ -3,7 +3,7 @@ import './styles.scss';
 import {
   ConsolePage,
   ConsolePageCustomizationContainer,
-  CustomFooter
+  FooterPreview
 } from 'console/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
@@ -50,7 +50,7 @@ export class ThemeFooterComponent extends React.PureComponent<Props, State> {
 
           {themeData && themeData.version === 1 && (
             <div className="theme-footer-container">
-              <CustomFooter
+              <FooterPreview
                 instanceData={instance.data}
                 themeData={themeData}
               />
