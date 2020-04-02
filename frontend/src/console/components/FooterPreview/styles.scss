@@ -11,19 +11,24 @@
     height: auto;
     align-items: center;
 
-    .footer-top-links {
-      padding-right: 0;
-      padding-left: 0;
+    .row.footer-top-links {
+      padding-left: 4px;
+
+      .col {
+        flex-grow: 0;
+      }
     }
 
     .col {
-      padding-right: 0;
-      padding-left: 0;
+      padding-right: 2px;
+      padding-left: 2px;
     }
 
     .customizable-link {
       font-size: 1em;
       height: auto;
+      padding-right: 6px;
+      padding-left: 6px;
 
       span {
         border-bottom: 1px dotted transparent;
@@ -78,7 +83,7 @@
     align-items: start;
 
     .col:first-of-type {
-      padding-left: 0;
+      padding-left: 6px;
     }
 
     .col {
