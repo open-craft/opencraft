@@ -38,26 +38,26 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   ) : (
     <Row className="navigation-menu navigation-submenu">
       <Col>
-         <CustomizableButton
+        <CustomizableButton
           initialTextColor={themeData.btnRegisterColor}
           initialBackgroundColor={themeData.btnRegisterBg}
           initialBorderColor={themeData.btnRegisterBorderColor}
           initialHoverTextColor={themeData.btnRegisterHoverColor}
           initialHoverBackgroundColor={themeData.btnRegisterHoverBg}
           initialHoverBorderColor={themeData.btnRegisterHoverBorderColor}
-         >
+        >
           Register
-         </CustomizableButton>
-         <CustomizableButton
+        </CustomizableButton>
+        <CustomizableButton
           initialTextColor={themeData.btnSignInColor}
           initialBackgroundColor={themeData.btnSignInBg}
           initialBorderColor={themeData.btnSignInBorderColor}
           initialHoverTextColor={themeData.btnSignInHoverColor}
           initialHoverBackgroundColor={themeData.btnSignInHoverBg}
           initialHoverBorderColor={themeData.btnSignInHoverBorderColor}
-         >
+        >
           Sign in
-         </CustomizableButton>
+        </CustomizableButton>
       </Col>
     </Row>
   );
