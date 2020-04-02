@@ -30,7 +30,7 @@ export const CustomizationSideMenu: React.FC = () => {
     const intlString = `customPage${capitalizeFirstLetter(pageName)}`;
 
     return (
-      <NavLink exact to={pageRoute}>
+      <NavLink exact to={pageRoute} key={`static_page_${pageName}`}>
         <WrappedMessage messages={messages} id={intlString} />
       </NavLink>
     );
