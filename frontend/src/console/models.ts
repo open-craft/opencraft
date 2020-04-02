@@ -1,5 +1,5 @@
 import {
-  OpenEdXInstanceDeploymentStatusStatusEnum,
+  OpenEdXInstanceDeploymentStatusStatusEnum, StaticContentOverrides,
   ThemeSchema
 } from 'ocim-client';
 
@@ -11,6 +11,7 @@ export interface InstanceSettingsModel {
   publicContactEmail: string;
   privacyPolicyUrl: string;
   draftThemeConfig: undefined | ThemeSchema;
+  draftStaticContentOverrides: StaticContentOverrides;
   logo?: string;
   favicon?: string;
 }

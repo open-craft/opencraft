@@ -55,7 +55,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         homepageOverlayHtml
       } = this.props.activeInstance.data.draftStaticContentOverrides;
       const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-      const matched = heroTextRegex.exec(homepageOverlayHtml);
+      const matched = heroTextRegex.exec(homepageOverlayHtml as string);
       if (matched) {
         this.state = {
           title: matched[1],
@@ -65,31 +65,24 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     }
   }
 
-  public componentDidUpdate(prevProps: Props) {
-    // Fill fields after finishing loading data
-    this.needToUpdateStaticContentOverridesFields(prevProps);
-  }
-
-  private needToUpdateStaticContentOverridesFields = (prevProps: Props) => {
-    if (
-      prevProps.activeInstance.loading.includes(
-        'draftStaticContentOverrides'
-      ) &&
-      !this.props.activeInstance.loading.includes('draftStaticContentOverrides')
-    ) {
+  static getDerivedStateFromProps(props: Props, state: State) {
+    let derivedState;
+    if (props.activeInstance.data) {
       const {
         homepageOverlayHtml
-      } = this.props.activeInstance!.data!.draftStaticContentOverrides;
+      } = props.activeInstance.data!.draftStaticContentOverrides;
       const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-      const matched = heroTextRegex.exec(homepageOverlayHtml);
+      const matched = heroTextRegex.exec(homepageOverlayHtml as string);
       if (matched) {
-        this.setState({
+        derivedState = {
           title: matched[1],
           subtitle: matched[2]
-        });
+        };
+        return derivedState;
       }
     }
-  };
+    return null;
+  }
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;

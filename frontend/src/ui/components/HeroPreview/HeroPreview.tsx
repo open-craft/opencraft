@@ -17,7 +17,7 @@ export const HeroPreview: React.FC<HeroPreviewProps> = (
   };
   const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
   const matched = heroTextRegex.exec(
-    props.instanceData!.draftStaticContentOverrides.homepageOverlayHtml
+    props.instanceData!.draftStaticContentOverrides.homepageOverlayHtml as string
   );
   return (
     <div className="hero-preview">
