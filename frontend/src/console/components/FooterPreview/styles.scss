@@ -22,11 +22,19 @@
     }
 
     .customizable-link {
-      font-size: 14px;
+      font-size: 1em;
       height: auto;
+
+      span {
+        border-bottom: 1px dotted transparent;
+      }
 
       &:hover {
         color: #0075b4;
+
+        span {
+          border-bottom: 1px dotted #0075b4;
+        }
       }
     }
 
@@ -41,6 +49,7 @@
     .openedx-logo {
       display: inline-flex;
       justify-content: flex-end;
+      padding-top: 15px;
 
       img {
         width: 140px;

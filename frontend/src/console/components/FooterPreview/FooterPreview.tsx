@@ -26,22 +26,22 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
           <Row>
             <Col>
               <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                About
+                <span>About</span>
               </CustomizableLink>
             </Col>
             <Col>
               <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                Blog
+                <span>Blog</span>
               </CustomizableLink>
             </Col>
             <Col>
               <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                Contact
+                <span>Contact</span>
               </CustomizableLink>
             </Col>
             <Col>
               <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                Donate
+                <span>Donate</span>
               </CustomizableLink>
             </Col>
           </Row>
@@ -67,25 +67,25 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
       <Row className="legal">
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            Privacy Policy
+            <span>Privacy Policy</span>
           </CustomizableLink>
         </Col>
         <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            Terms of Service
+            <span>Terms of Service</span>
           </CustomizableLink>
         </Col>
         <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            Honor Code
+            <span>Honor Code</span>
           </CustomizableLink>
         </Col>
         <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            Take free online courses at edX.org
+            <span>Take free online courses at edX.org</span>
           </CustomizableLink>
         </Col>
       </Row>
