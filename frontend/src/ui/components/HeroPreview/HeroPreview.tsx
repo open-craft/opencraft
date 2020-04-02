@@ -1,24 +1,34 @@
 import * as React from 'react';
 import './styles.scss';
-import { InstanceSettingsModel } from 'console/models';
 
 interface HeroPreviewProps {
-  instanceData: InstanceSettingsModel;
+  homePageHeroTitleColor: undefined | string;
+  homePageHeroSubtitleColor: undefined | string;
+  homepageOverlayHtml: undefined | string;
 }
 
 export const HeroPreview: React.FC<HeroPreviewProps> = (
   props: HeroPreviewProps
 ) => {
-  const titleStyles = {
-    color: props.instanceData.draftThemeConfig!.homePageHeroTitleColor
-  };
-  const subtitleStyles = {
-    color: props.instanceData.draftThemeConfig!.homePageHeroSubtitleColor
-  };
+  let titleStyles = {};
+  let subtitleStyles = {};
+
+  if (props.homePageHeroTitleColor) {
+    titleStyles = {
+      color: props.homePageHeroTitleColor
+    };
+  }
+
+  if (props.homePageHeroSubtitleColor) {
+    subtitleStyles = {
+      color: props.homePageHeroSubtitleColor
+    };
+  }
   const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-  const matched = heroTextRegex.exec(
-    props.instanceData!.draftStaticContentOverrides.homepageOverlayHtml as string
-  );
+  let matched;
+  if (props.homepageOverlayHtml) {
+    matched = heroTextRegex.exec(props.homepageOverlayHtml as string);
+  }
   return (
     <div className="hero-preview">
       <div className="outer-wrapper">

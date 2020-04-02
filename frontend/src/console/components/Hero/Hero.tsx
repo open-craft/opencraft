@@ -23,6 +23,7 @@ import {
   updateStaticContentOverridesFieldValue,
   updateThemeFieldValue
 } from 'console/actions';
+import { StaticContentOverrides } from 'ocim-client';
 import messages from './displayMessages';
 
 interface State {
@@ -49,11 +50,9 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       title: '',
       subtitle: ''
     };
-
-    if (this.props.activeInstance.data) {
-      const {
-        homepageOverlayHtml
-      } = this.props.activeInstance.data.draftStaticContentOverrides;
+    if (this.doesHomepageOverlayHtmlExist(this.props)) {
+      const homepageOverlayHtml = props.activeInstance.data!
+        .draftStaticContentOverrides!.homepageOverlayHtml!;
       const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
       const matched = heroTextRegex.exec(homepageOverlayHtml as string);
       if (matched) {
@@ -65,24 +64,13 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     }
   }
 
-  static getDerivedStateFromProps(props: Props, state: State) {
-    let derivedState;
-    if (props.activeInstance.data) {
-      const {
-        homepageOverlayHtml
-      } = props.activeInstance.data!.draftStaticContentOverrides;
-      const heroTextRegex = /<h1>(.*)<\/h1><p>(.*)<\/p>/;
-      const matched = heroTextRegex.exec(homepageOverlayHtml as string);
-      if (matched) {
-        derivedState = {
-          title: matched[1],
-          subtitle: matched[2]
-        };
-        return derivedState;
-      }
-    }
-    return null;
-  }
+  private doesHomepageOverlayHtmlExist = (props: Props) => {
+    return (
+      props.activeInstance.data &&
+      props.activeInstance.data!.draftStaticContentOverrides &&
+      props.activeInstance.data!.draftStaticContentOverrides.homepageOverlayHtml
+    );
+  };
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
@@ -125,10 +113,15 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   public render() {
     const instance = this.props.activeInstance;
     let themeData;
+    let draftStaticContentOverrides: StaticContentOverrides;
 
     if (instance.data && instance.data.draftThemeConfig) {
       themeData = instance.data.draftThemeConfig;
     }
+    if (instance.data && instance.data.draftStaticContentOverrides) {
+      draftStaticContentOverrides = instance.data.draftStaticContentOverrides;
+    }
+
     return (
       <div className="hero-pages">
         <ConsolePage contentLoading={this.props.loading}>
@@ -143,11 +136,23 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                 </p>
               </Col>
             </Row>
-            <Row>
-              <Col md={12}>
-                {instance.data && <HeroPreview instanceData={instance.data} />}
-              </Col>
-            </Row>
+            {themeData && themeData.version === 1 && (
+              <Row>
+                <Col md={12}>
+                  {instance.data && (
+                    <HeroPreview
+                      homePageHeroTitleColor={themeData.homePageHeroTitleColor}
+                      homePageHeroSubtitleColor={
+                        themeData.homePageHeroSubtitleColor
+                      }
+                      homepageOverlayHtml={
+                        draftStaticContentOverrides!.homepageOverlayHtml
+                      }
+                    />
+                  )}
+                </Col>
+              </Row>
+            )}
             <CollapseEditArea initialExpanded>
               <Row>
                 <Col md={12}>
