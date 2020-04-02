@@ -3,6 +3,10 @@ const messages = {
     defaultMessage: 'Show this page',
     description: ''
   },
+  leavePageMessage: {
+    defaultMessage: 'You have unsaved changes, are you sure you want to leave?',
+    description: ''
+  },
   about: {
     defaultMessage: 'About Page',
     description: ''
