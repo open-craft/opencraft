@@ -8,24 +8,20 @@ exports[`renders without crashing 1`] = `
     className="row"
   >
     <div
-      className="col-md-10"
+      className="button-name col-md-10"
     >
-      <p
-        className="button-name"
+      Primary button
+      <span
+        className="info-icon"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
       >
-        Primary button
-        <span
-          className="info-icon"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <i
-            className="fas fa-info-circle"
-          />
-        </span>
-      </p>
+        <i
+          className="fas fa-info-circle"
+        />
+      </span>
     </div>
     <div
       className="col-md-2"
@@ -111,9 +107,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -147,9 +144,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -183,9 +181,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -234,9 +233,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -270,9 +270,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -306,9 +307,10 @@ exports[`renders without crashing 1`] = `
                     readOnly={true}
                     style={
                       Object {
-                        "color": undefined,
+                        "color": "",
                       }
                     }
+                    value=""
                   />
                   <button
                     className="reset-value padded"

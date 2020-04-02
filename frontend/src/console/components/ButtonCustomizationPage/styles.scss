@@ -10,6 +10,22 @@
     line-height: normal;
     letter-spacing: 0.72px;
     color: #0f1f24;
+    display: inline-flex;
+    align-items: center;
+
+    .custom-switch {
+      margin-left: 10px;
+      display: inline-flex;
+    }
+
+    span.info-icon {
+      margin-left: 10px;
+      display: inline-flex;
+
+      .custom-switch {
+        margin-left: 0;
+      }
+    }
   }
 
   .style-name {
@@ -24,13 +40,5 @@
     letter-spacing: 0.6px;
     color: #000000;
     margin-top: 20px;
-  }
-
-  span.info-icon {
-    margin-left: 10px;
-  }
-
-  .switch {
-    margin-left: 10px;
   }
 }

@@ -41,11 +41,6 @@
       "react/jsx-filename-extension": ["error", {"extensions": [".ts", ".tsx"]}],
       "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
       "max-len": ["error", {"comments": 100, "code": 130}],
-      "import/no-unresolved": ["error",{"ignore": [".scss"]}],
-      "jsx-a11y/label-has-associated-control": [2, {
-        "labelAttributes": ["label"],
-        "controlComponents": ["input"],
-        "depth": 2
-      }]
+      "import/no-unresolved": ["error",{"ignore": [".scss"]}]
     }
 }

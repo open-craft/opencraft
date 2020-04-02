@@ -19,5 +19,3 @@ export * from './ColorInputField';
 export * from './CollapseEditArea';
 
 export * from './ImageUploadField';
-
-export * from './ToggleSwitch';

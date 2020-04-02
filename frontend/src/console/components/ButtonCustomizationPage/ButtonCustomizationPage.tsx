@@ -1,9 +1,16 @@
 import * as React from 'react';
 import './styles.scss';
 import { CustomizableButton } from 'console/components';
-import { CollapseEditArea, ColorInputField, ToggleSwitch } from 'ui/components';
+import { CollapseEditArea, ColorInputField } from 'ui/components';
 import { InstanceSettingsModel } from 'console/models';
-import { Col, Container, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
+import {
+  Col,
+  Container,
+  Form,
+  OverlayTrigger,
+  Row,
+  Tooltip
+} from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { ThemeSchema } from 'ocim-client';
 import messages from './displayMessages';
@@ -47,25 +54,31 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
     ]
   };
 
+  const customizationProp = `customize${props.buttonName}Btn`;
   const allStylesDefined = Object.values(styles)
     .map(category =>
       category.every(style => themeData[style as keyof typeof themeData])
     )
     .every(category => category);
+  const customizationEnabled =
+    (themeData[customizationProp as keyof typeof themeData] as
+      | boolean
+      | undefined) || false;
+
   const switchTooltip = (
     <Tooltip id="button-tooltip">
       <WrappedMessage messages={messages} id="switchTooltipMessage" />
     </Tooltip>
   );
   const switchToggle = (
-    <ToggleSwitch
-      fieldName={`customize${props.buttonName}Btn`}
-      initialValue={
-        themeData[
-          `customize${props.buttonName}Btn` as keyof typeof themeData
-        ] as boolean
-      }
-      onChange={props.onChangeColor}
+    <Form.Check
+      id={`toggle-${props.buttonName}`}
+      type="switch"
+      label=""
+      checked={customizationEnabled}
+      onChange={() => {
+        props.onChangeColor(customizationProp, !customizationEnabled);
+      }}
       disabled={!allStylesDefined}
     />
   );
@@ -73,26 +86,24 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
   return (
     <div className="button-customization-page">
       <Row>
-        <Col md={10}>
-          <p className="button-name">
-            <WrappedMessage
-              messages={props.externalMessages}
-              id={buttonFullName}
-            />
-            <OverlayTrigger placement="right" overlay={tooltip}>
-              <span className="info-icon">
-                <i className="fas fa-info-circle" />
-              </span>
-            </OverlayTrigger>
-            {props.deploymentToggle &&
-              (!allStylesDefined ? (
-                <OverlayTrigger placement="right" overlay={switchTooltip}>
-                  <span className="info-icon">{switchToggle}</span>
-                </OverlayTrigger>
-              ) : (
-                switchToggle
-              ))}
-          </p>
+        <Col className="button-name" md={10}>
+          <WrappedMessage
+            messages={props.externalMessages}
+            id={buttonFullName}
+          />
+          <OverlayTrigger placement="right" overlay={tooltip}>
+            <span className="info-icon">
+              <i className="fas fa-info-circle" />
+            </span>
+          </OverlayTrigger>
+          {props.deploymentToggle &&
+            (!allStylesDefined ? (
+              <OverlayTrigger placement="right" overlay={switchTooltip}>
+                <span className="info-icon">{switchToggle}</span>
+              </OverlayTrigger>
+            ) : (
+              switchToggle
+            ))}
         </Col>
         <Col md={2}>
           <CustomizableButton
@@ -147,7 +158,9 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
                       fieldName={field}
                       genericFieldName={field.replace(props.buttonName, '')}
                       initialValue={
-                        themeData[field as keyof typeof themeData] as string
+                        (themeData[
+                          field as keyof typeof themeData
+                        ] as string) || ''
                       }
                       onChange={props.onChangeColor}
                       messages={messages}
