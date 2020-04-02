@@ -2,6 +2,8 @@
 
 .theme-footer-container {
   .row {
+    margin-left: 0;
+    margin-right: 0;
     padding: 0;
     flex-flow: row nowrap;
     align-items: end;
@@ -16,7 +18,6 @@
       .row {
         display: flex;
         align-items: center;
-        padding: 0 15px;
 
         .input-field-color.form-control[readonly] {
           width: 75%;
