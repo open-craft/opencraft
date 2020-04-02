@@ -4,7 +4,7 @@ import './styles.scss';
 import { Col, Row } from 'react-bootstrap';
 import { ThemeSchema } from 'ocim-client';
 import avatar from 'assets/avatar-default.png';
-// import { CustomizableButton } from '../CustomizableButton';  # TODO: uncomment in BB-2219.
+import { CustomizableButton } from '../CustomizableButton';
 import { CustomizableLink } from '../CustomizableLink';
 import { InstanceSettingsModel } from '../../models';
 
@@ -38,29 +38,26 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   ) : (
     <Row className="navigation-menu navigation-submenu">
       <Col>
-        <CustomizableLink noHover>Register</CustomizableLink>
-        <CustomizableLink noHover>Sign in</CustomizableLink>
-        {/* TODO: Dummy buttons. While merging BB-2219 remove these from above and uncomment the ones below. */}
-        {/* <CustomizableButton */}
-        {/*  initialTextColor={themeData.btnRegisterColor} */}
-        {/*  initialBackgroundColor={themeData.btnRegisterBg} */}
-        {/*  initialBorderColor={themeData.btnRegisterBorderColor} */}
-        {/*  initialHoverTextColor={themeData.btnRegisterHoverColor} */}
-        {/*  initialHoverBackgroundColor={themeData.btnRegisterHoverBg} */}
-        {/*  initialHoverBorderColor={themeData.btnRegisterHoverBorderColor} */}
-        {/* > */}
-        {/*  Register */}
-        {/* </CustomizableButton> */}
-        {/* <CustomizableButton */}
-        {/*  initialTextColor={themeData.btnSignInColor} */}
-        {/*  initialBackgroundColor={themeData.btnSignInBg} */}
-        {/*  initialBorderColor={themeData.btnSignInBorderColor} */}
-        {/*  initialHoverTextColor={themeData.btnSignInHoverColor} */}
-        {/*  initialHoverBackgroundColor={themeData.btnSignInHoverBg} */}
-        {/*  initialHoverBorderColor={themeData.btnSignInHoverBorderColor} */}
-        {/* > */}
-        {/*  Sign in */}
-        {/* </CustomizableButton> */}
+         <CustomizableButton
+          initialTextColor={themeData.btnRegisterColor}
+          initialBackgroundColor={themeData.btnRegisterBg}
+          initialBorderColor={themeData.btnRegisterBorderColor}
+          initialHoverTextColor={themeData.btnRegisterHoverColor}
+          initialHoverBackgroundColor={themeData.btnRegisterHoverBg}
+          initialHoverBorderColor={themeData.btnRegisterHoverBorderColor}
+         >
+          Register
+         </CustomizableButton>
+         <CustomizableButton
+          initialTextColor={themeData.btnSignInColor}
+          initialBackgroundColor={themeData.btnSignInBg}
+          initialBorderColor={themeData.btnSignInBorderColor}
+          initialHoverTextColor={themeData.btnSignInHoverColor}
+          initialHoverBackgroundColor={themeData.btnSignInHoverBg}
+          initialHoverBorderColor={themeData.btnSignInHoverBorderColor}
+         >
+          Sign in
+         </CustomizableButton>
       </Col>
     </Row>
   );
