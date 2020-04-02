@@ -50,9 +50,21 @@
   }
 
   .row.legal {
-    align-items: start;;
+    flex-wrap: wrap;
+    align-items: start;
+
+    .col:first-of-type {
+      padding-left: 10px;
+    }
+
+    .col {
+      flex-grow: 0;
+      padding-right: 0;
+      padding-left: 0;
+    }
 
     .customizable-link {
+      width: max-content;
       font-size: 0.6875em;
     }
   }

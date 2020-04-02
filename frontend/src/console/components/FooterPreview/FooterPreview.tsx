@@ -70,22 +70,24 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
             Privacy Policy
           </CustomizableLink>
         </Col>
+        <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
             Terms of Service
           </CustomizableLink>
         </Col>
+        <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
             Honor Code
           </CustomizableLink>
         </Col>
+        <Col className="separator">-</Col>
         <Col>
           <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
             Take free online courses at edX.org
           </CustomizableLink>
         </Col>
-        <Col />
       </Row>
     </div>
   );

@@ -148,6 +148,11 @@ exports[`renders without crashing 1`] = `
       </button>
     </div>
     <div
+      className="separator col"
+    >
+      -
+    </div>
+    <div
       className="col"
     >
       <button
@@ -166,6 +171,11 @@ exports[`renders without crashing 1`] = `
       </button>
     </div>
     <div
+      className="separator col"
+    >
+      -
+    </div>
+    <div
       className="col"
     >
       <button
@@ -182,6 +192,11 @@ exports[`renders without crashing 1`] = `
       >
         Honor Code
       </button>
+    </div>
+    <div
+      className="separator col"
+    >
+      -
     </div>
     <div
       className="col"
