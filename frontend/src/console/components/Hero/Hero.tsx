@@ -20,6 +20,7 @@ import {
   clearErrorMessage,
   updateHeroText,
   updateImages,
+  updateStaticContentOverridesFieldValue,
   updateThemeFieldValue
 } from 'console/actions';
 import messages from './displayMessages';
@@ -35,6 +36,7 @@ interface ActionProps {
   updateHeroText: Function;
   updateThemeFieldValue: Function;
   updateImages: Function;
+  updateStaticContentOverridesFieldValue: Function;
 }
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
@@ -100,10 +102,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
 
   private updateHeroText = () => {
     if (this.props.activeInstance && this.props.activeInstance.data) {
-      this.props.updateHeroText(
+      const homepageOverlayHtml = `<h1>${this.state.title}</h1><p>${this.state.subtitle}</p>`;
+      this.props.updateStaticContentOverridesFieldValue(
         this.props.activeInstance.data.id,
-        this.state.title,
-        this.state.subtitle
+        'homepageOverlayHtml',
+        homepageOverlayHtml
       );
     }
   };
@@ -193,12 +196,13 @@ export class HeroComponent extends React.PureComponent<Props, State> {
               <Row className="hero-customizations">
                 <Col md={4}>
                   <ImageUploadField
+                    // prettier-ignore
                     customUploadMessage={(
                       <WrappedMessage
                         messages={messages}
                         id="uploadHeroCoverImage"
                       />
-                    )}
+                      )}
                     recommendedSize="1200x250px"
                     updateImage={(image: File) => {
                       this.updateImage('heroCoverImage', image);
@@ -245,6 +249,7 @@ export const Hero = connect<StateProps, ActionProps, {}, Props, RootState>(
     clearErrorMessage,
     updateHeroText,
     updateThemeFieldValue,
-    updateImages
+    updateImages,
+    updateStaticContentOverridesFieldValue
   }
 )(HeroComponent);

@@ -58,6 +58,28 @@ static_content_overrides_schema = {
     ]
 }
 
+DEFAULT_HERO_TITLE_TEXT = 'Welcome to {}'
+DEFAULT_HERO_SUBTITLE_TEXT = 'It works! Powered by Open edX®'
+
+DEFAULT_STATIC_CONTENT_OVERRIDES = {
+    "version": 0,
+    "homepage_overlay_html": "<h1>{}</h1><p>{}</p>".format(DEFAULT_HERO_TITLE_TEXT, DEFAULT_HERO_SUBTITLE_TEXT)
+}
+
+def fill_default_hero_title_or_subtitle_text_if_missing(text):
+    """
+    Fill in the default hero title and subtitle text in the 'homepage_overlay_html' value if either or both are missing.
+    """
+    if not text:
+        text = DEFAULT_STATIC_CONTENT_OVERRIDES['homepage_overlay_html']
+    else:
+        if '<h1></h1>' in text:
+            text = text.replace("<h1></h1>", "<h1>{}</h1>".format(DEFAULT_HERO_TITLE_TEXT))
+        if '<p></p>' in text:
+            text = text.replace('<p></p>', '<p>{}</p>'.format(DEFAULT_HERO_SUBTITLE_TEXT))
+    return text
+
+
 
 def static_content_overrides_schema_validate(value, schema=None):
     """

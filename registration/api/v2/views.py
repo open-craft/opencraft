@@ -61,7 +61,11 @@ from registration.api.v2.serializers import (
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
-from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
+from instance.schemas.static_content_overrides import (
+    DEFAULT_STATIC_CONTENT_OVERRIDES,
+    fill_default_hero_title_or_subtitle_text_if_missing,
+    static_content_overrides_schema_validate,
+)
 from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
 
 
@@ -180,6 +184,9 @@ class OpenEdXInstanceConfigViewSet(
         instance = serializer.save()
         # Deploy default theme for users that just registered
         instance.draft_theme_config = DEFAULT_THEME
+        default_static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
+        default_static_content_overrides['homepage_overlay_html'].format(instance.instance_name)
+        instance.draft_static_content_overrides = instance.instance_name
         instance.save()
         # Send verification emails
         verify_user_emails(instance.user, instance.public_contact_email)
@@ -324,16 +331,18 @@ class OpenEdXInstanceConfigViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        if application.draft_static_content_overrides:
-            merged_values = {
-                key: value for key, value in {
-                    **application.draft_static_content_overrides, **serializer.validated_data
-                }.items()
-            }
-        else:
-            merged_values = serializer.validated_data
-            if 'version' not in merged_values:
-                merged_values['version'] = 0
+        merged_values = {
+            key: value for key, value in {
+                **application.draft_static_content_overrides, **serializer.validated_data
+            }.items()}
+
+        merged_values['homepage_overlay_html'] = fill_default_hero_title_or_subtitle_text_if_missing(
+            merged_values['homepage_overlay_html']
+        ).format(application.instance_name)
+        if not merged_values['homepage_overlay_html']:
+            merged_values['homepage_overlay_html'] = DEFAULT_STATIC_CONTENT_OVERRIDES['homepage_overlay_html'].format(
+                application.instance_name
+            )
 
         try:
             static_content_overrides_schema_validate(merged_values)
