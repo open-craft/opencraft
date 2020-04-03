@@ -41,7 +41,7 @@ exports[`ColorInputField Component Correctly renders color input field. 1`] = `
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
 </div>
@@ -89,7 +89,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
 </div>
@@ -137,7 +137,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
   <div
@@ -580,7 +580,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
 </div>
@@ -629,7 +629,7 @@ exports[`ColorInputField Component Render loading. 1`] = `
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
 </div>
@@ -677,7 +677,7 @@ exports[`ColorInputField Component Render with default value. 1`] = `
       onClick={[Function]}
       type="button"
     >
-      reset
+      Reset
     </button>
   </p>
 </div>

@@ -71,7 +71,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavColor"
-                    initialValue={themeData.mainNavColor}
+                    initialValue={themeData.mainNavColor || ''}
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
@@ -81,7 +81,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavLinkColor"
-                    initialValue={themeData.mainNavLinkColor}
+                    initialValue={themeData.mainNavLinkColor || ''}
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
@@ -91,7 +91,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemBorderBottomColor"
-                    initialValue={themeData.mainNavItemBorderBottomColor}
+                    initialValue={themeData.mainNavItemBorderBottomColor || ''}
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
@@ -103,7 +103,9 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemHoverBorderBottomColor"
-                    initialValue={themeData.mainNavItemHoverBorderBottomColor}
+                    initialValue={
+                      themeData.mainNavItemHoverBorderBottomColor || ''
+                    }
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
@@ -113,7 +115,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 <Col md={4}>
                   <ColorInputField
                     fieldName="userDropdownColor"
-                    initialValue={themeData.userDropdownColor}
+                    initialValue={themeData.userDropdownColor || ''}
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}

@@ -122,11 +122,9 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                         Logos
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/buttons"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Buttons
                       </a>
@@ -384,11 +382,9 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         Logos
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/buttons"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Buttons
                       </a>
@@ -566,7 +562,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -612,7 +608,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -755,11 +751,9 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         Logos
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/buttons"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Buttons
                       </a>
@@ -937,7 +931,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -983,7 +977,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           onClick={[Function]}
                           type="button"
                         >
-                          reset
+                          Reset
                         </button>
                       </p>
                     </div>
@@ -1112,11 +1106,9 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                         Logos
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/buttons"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Buttons
                       </a>

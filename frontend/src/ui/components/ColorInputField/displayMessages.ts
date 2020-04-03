@@ -1,6 +1,6 @@
 export const messages = {
   reset: {
-    defaultMessage: 'reset',
+    defaultMessage: 'Reset',
     description: ''
   }
 };
