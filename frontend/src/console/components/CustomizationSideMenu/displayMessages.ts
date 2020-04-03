@@ -19,6 +19,10 @@ const messages = {
     defaultMessage: 'Navigation',
     description: 'Menu name.'
   },
+  linkFooter: {
+    defaultMessage: 'Footer',
+    description: 'Menu name.'
+  },
   accordionCustomPages: {
     defaultMessage: 'Custom Pages',
     description: 'The name of the custom page menu in the sidebar accordion.'

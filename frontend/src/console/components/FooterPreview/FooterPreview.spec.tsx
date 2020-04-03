@@ -1,8 +1,8 @@
 import React from 'react';
 import { setupComponentForTesting } from "utils/testing";
-import { NavigationMenu } from './NavigationMenu';
+import { FooterPreview } from './FooterPreview';
 
 it('renders without crashing', () => {
-    const tree = setupComponentForTesting(<NavigationMenu instanceData={null} themeData={{}} />).toJSON();
+    const tree = setupComponentForTesting(<FooterPreview instanceData={null} themeData={{}}/>).toJSON();
     expect(tree).toMatchSnapshot();
 });

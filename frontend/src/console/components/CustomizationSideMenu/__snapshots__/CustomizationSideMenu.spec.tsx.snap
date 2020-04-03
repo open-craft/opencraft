@@ -57,6 +57,13 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           >
             Navigation
           </a>
+          <a
+            aria-current={null}
+            href="/console/theming/footer"
+            onClick={[Function]}
+          >
+            Footer
+          </a>
         </div>
       </div>
     </div>

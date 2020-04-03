@@ -41,6 +41,9 @@ export const CustomizationSideMenu: React.FC = () => {
               <NavLink exact to={ROUTES.Console.THEME_NAVIGATION}>
                 <WrappedMessage messages={messages} id="linkNavigation" />
               </NavLink>
+              <NavLink exact to={ROUTES.Console.THEME_FOOTER}>
+                <WrappedMessage messages={messages} id="linkFooter" />
+              </NavLink>
             </Nav>
           </Card.Body>
         </Accordion.Collapse>
