@@ -435,6 +435,65 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.assertNotIn("btn-sign-in-bg", self.instance_config.draft_theme_config.keys())
 
+    def test_theme_config_api_update_flag(self):
+        """
+        Test updating theming flags.
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        # Set up simple theme.
+        self.instance_config.draft_theme_config = {**DEFAULT_THEME}  # Copy dict instead of assigning it.
+        self.instance_config.draft_theme_config.update({
+            "btn-sign-in-bg": "#fafafa",
+            "btn-sign-in-color": "#fafafa",
+            "btn-sign-in-border-color": "#fafafa",
+            "btn-sign-in-hover-bg": "#fafafa",
+            "btn-sign-in-hover-color": "#fafafa",
+        })
+        self.instance_config.save()
+
+        # Check that it's not possible to enable button customization with "hover border color" missing.
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data={
+                "customize-sign-in-btn": True,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"non_field_errors": "Schema validation failed."})
+
+        # Add missing property and enable customization.
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data={
+                "btn-sign-in-hover-border-color": "#fafafa",
+                "customize-sign-in-btn": True,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Check if changes were saved.
+        self.instance_config.refresh_from_db()
+        self.assertTrue(self.instance_config.draft_theme_config["customize-sign-in-btn"])
+
+        # Disable customization.
+        response = self.client.patch(
+            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            data={
+                "customize-sign-in-btn": False,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Check if changes were saved.
+        self.instance_config.refresh_from_db()
+        # Disabled customization (flag) should not exist in the theme.
+        self.assertIsNone(self.instance_config.draft_theme_config.get("customize-sign-in-btn"))
+
     def test_change_logo(self):
         """
         Test uploading logo

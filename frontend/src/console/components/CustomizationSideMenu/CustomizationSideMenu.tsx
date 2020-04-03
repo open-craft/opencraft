@@ -35,14 +35,7 @@ export const CustomizationSideMenu: React.FC = () => {
               <NavLink exact to={ROUTES.Console.LOGOS}>
                 <WrappedMessage messages={messages} id="linkLogos" />
               </NavLink>
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
+              <NavLink exact to={ROUTES.Console.THEME_BUTTONS}>
                 <WrappedMessage messages={messages} id="linkButtons" />
               </NavLink>
               <NavLink exact to={ROUTES.Console.THEME_NAVIGATION}>

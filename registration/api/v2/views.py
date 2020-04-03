@@ -236,7 +236,7 @@ class OpenEdXInstanceConfigViewSet(
         merged_theme = {
             key: value for key, value in {
                 **application.draft_theme_config, **serializer.validated_data
-            }.items() if value != ""
+            }.items() if value
         }
 
         # To make sure the required values are always available, merge dict with

@@ -4,6 +4,7 @@ import { Switch, Route, Redirect } from 'react-router';
 import {
   InstanceSettings,
   Logos,
+  ThemeButtons,
   ThemeNavigation,
   ThemePreviewAndColors
 } from 'console/components';
@@ -26,6 +27,10 @@ export const ConsoleRoutes = () => {
         component={ThemePreviewAndColors}
       />
       <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
+      <PrivateRoute
+        path={ROUTES.Console.THEME_BUTTONS}
+        component={ThemeButtons}
+      />
       <PrivateRoute
         path={ROUTES.Console.THEME_NAVIGATION}
         component={ThemeNavigation}
