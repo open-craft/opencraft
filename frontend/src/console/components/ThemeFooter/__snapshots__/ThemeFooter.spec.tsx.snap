@@ -108,11 +108,9 @@ exports[`renders without crashing 1`] = `
                         Logos
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/theming/buttons"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Buttons
                       </a>
