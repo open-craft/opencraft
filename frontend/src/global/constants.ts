@@ -32,6 +32,7 @@ export const ROUTES = {
     LOGOS: '/console/theming/logos',
     THEME_BUTTONS: '/console/theming/buttons',
     THEME_NAVIGATION: '/console/theming/navigation',
+    THEME_FOOTER: '/console/theming/footer',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general'
   },
   Registration: {

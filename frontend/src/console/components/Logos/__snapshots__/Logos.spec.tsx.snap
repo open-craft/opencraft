@@ -124,6 +124,13 @@ exports[`renders without crashing 1`] = `
                         >
                           Navigation
                         </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/footer"
+                          onClick={[Function]}
+                        >
+                          Footer
+                        </a>
                       </div>
                     </div>
                   </div>
