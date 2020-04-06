@@ -20,6 +20,7 @@
 Registration api views for API v2
 """
 import logging
+from string import Template
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -63,7 +64,7 @@ from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
 from instance.schemas.static_content_overrides import (
     DEFAULT_STATIC_CONTENT_OVERRIDES,
-    fill_default_hero_title_or_subtitle_text_if_missing,
+    fill_default_hero_text,
     static_content_overrides_schema_validate,
 )
 from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
@@ -184,11 +185,14 @@ class OpenEdXInstanceConfigViewSet(
         instance = serializer.save()
         # Deploy default theme for users that just registered
         instance.draft_theme_config = DEFAULT_THEME
-        static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
-        static_content_overrides['homepage_overlay_html'] = static_content_overrides['homepage_overlay_html'].format(
-            instance.instance_name
-        )
-        instance.draft_static_content_overrides = static_content_overrides
+        if not instance.draft_static_content_overrides:
+            static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
+            static_content_overrides['homepage_overlay_html'] = Template(
+                static_content_overrides['homepage_overlay_html']
+            ).safe_substitute(
+                instance_name=instance.instance_name
+            )
+            instance.draft_static_content_overrides = static_content_overrides
         instance.save()
         # Send verification emails
         verify_user_emails(instance.user, instance.public_contact_email)
@@ -345,9 +349,11 @@ class OpenEdXInstanceConfigViewSet(
         else:
             current_value = merged_values['homepage_overlay_html']
 
-        merged_values['homepage_overlay_html'] = fill_default_hero_title_or_subtitle_text_if_missing(
-            current_value
-        ).format(application.instance_name)
+        merged_values['homepage_overlay_html'] = Template(
+            fill_default_hero_text(
+                current_value
+            )
+        ).safe_substitute(instance_name=application.instance_name)
 
         try:
             static_content_overrides_schema_validate(merged_values)

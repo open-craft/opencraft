@@ -133,13 +133,6 @@ exports[`Hero customization page renders the hero customization page when instan
                         </a>
                         <a
                           aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                        <a
-                          aria-current={null}
                           href="/console/theming/navigation"
                           onClick={[Function]}
                         >
@@ -151,6 +144,13 @@ exports[`Hero customization page renders the hero customization page when instan
                           onClick={[Function]}
                         >
                           Footer
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/hero"
+                          onClick={[Function]}
+                        >
+                          Hero
                         </a>
                       </div>
                     </div>
@@ -309,7 +309,7 @@ exports[`Hero customization page renders the hero customization page when instan
                       className="row"
                     >
                       <div
-                        className="col-md-12"
+                        className="col"
                       >
                         <h2>
                           Hero text
@@ -374,6 +374,10 @@ exports[`Hero customization page renders the hero customization page when instan
                           <h4>
                             Upload cover image
                           </h4>
+                          <p>
+                            Recommended size: 
+                            1200x250px
+                          </p>
                           <button
                             className="btn btn-outline-primary btn-lg"
                             disabled={false}
@@ -537,13 +541,6 @@ exports[`Hero customization page renders the hero customization page when instan
                         </a>
                         <a
                           aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                        <a
-                          aria-current={null}
                           href="/console/theming/navigation"
                           onClick={[Function]}
                         >
@@ -555,6 +552,13 @@ exports[`Hero customization page renders the hero customization page when instan
                           onClick={[Function]}
                         >
                           Footer
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/hero"
+                          onClick={[Function]}
+                        >
+                          Hero
                         </a>
                       </div>
                     </div>
@@ -713,7 +717,7 @@ exports[`Hero customization page renders the hero customization page when instan
                       className="row"
                     >
                       <div
-                        className="col-md-12"
+                        className="col"
                       >
                         <h2>
                           Hero text
@@ -778,6 +782,10 @@ exports[`Hero customization page renders the hero customization page when instan
                           <h4>
                             Upload cover image
                           </h4>
+                          <p>
+                            Recommended size: 
+                            1200x250px
+                          </p>
                           <button
                             className="btn btn-outline-primary btn-lg"
                             disabled={false}
@@ -934,13 +942,6 @@ exports[`Hero customization page renders the hero customization page when the in
                         </a>
                         <a
                           aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                        <a
-                          aria-current={null}
                           href="/console/theming/navigation"
                           onClick={[Function]}
                         >
@@ -952,6 +953,13 @@ exports[`Hero customization page renders the hero customization page when the in
                           onClick={[Function]}
                         >
                           Footer
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/hero"
+                          onClick={[Function]}
+                        >
+                          Hero
                         </a>
                       </div>
                     </div>
@@ -1110,7 +1118,7 @@ exports[`Hero customization page renders the hero customization page when the in
                       className="row"
                     >
                       <div
-                        className="col-md-12"
+                        className="col"
                       >
                         <h2>
                           Hero text
@@ -1175,6 +1183,10 @@ exports[`Hero customization page renders the hero customization page when the in
                           <h4>
                             Upload cover image
                           </h4>
+                          <p>
+                            Recommended size: 
+                            1200x250px
+                          </p>
                           <button
                             className="btn btn-outline-primary btn-lg"
                             disabled={false}
@@ -1331,13 +1343,6 @@ exports[`Hero customization page renders the hero customization page when the in
                         </a>
                         <a
                           aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                        <a
-                          aria-current={null}
                           href="/console/theming/navigation"
                           onClick={[Function]}
                         >
@@ -1349,6 +1354,13 @@ exports[`Hero customization page renders the hero customization page when the in
                           onClick={[Function]}
                         >
                           Footer
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/hero"
+                          onClick={[Function]}
+                        >
+                          Hero
                         </a>
                       </div>
                     </div>
@@ -1507,7 +1519,7 @@ exports[`Hero customization page renders the hero customization page when the in
                       className="row"
                     >
                       <div
-                        className="col-md-12"
+                        className="col"
                       >
                         <h2>
                           Hero text
@@ -1572,6 +1584,10 @@ exports[`Hero customization page renders the hero customization page when the in
                           <h4>
                             Upload cover image
                           </h4>
+                          <p>
+                            Recommended size: 
+                            1200x250px
+                          </p>
                           <button
                             className="btn btn-outline-primary btn-lg"
                             disabled={false}
@@ -1721,13 +1737,6 @@ exports[`Hero customization page renders without crashing 1`] = `
                         </a>
                         <a
                           aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                        <a
-                          aria-current={null}
                           href="/console/theming/navigation"
                           onClick={[Function]}
                         >
@@ -1739,6 +1748,13 @@ exports[`Hero customization page renders without crashing 1`] = `
                           onClick={[Function]}
                         >
                           Footer
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/theming/hero"
+                          onClick={[Function]}
+                        >
+                          Hero
                         </a>
                       </div>
                     </div>

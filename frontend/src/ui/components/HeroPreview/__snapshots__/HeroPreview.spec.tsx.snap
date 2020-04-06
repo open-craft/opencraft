@@ -77,7 +77,6 @@ exports[`Hero preview component renders without crashing when instance has no ho
     style={
       Object {
         "backgroundImage": "url(\\"https://example.com/image.png\\")",
-        "backgroundSize": "731px 258px",
       }
     }
   >
@@ -120,7 +119,6 @@ exports[`Hero preview component renders without crashing when instance has no th
     style={
       Object {
         "backgroundImage": "url(\\"https://example.com/image.png\\")",
-        "backgroundSize": "731px 258px",
       }
     }
   >
@@ -155,7 +153,6 @@ exports[`Hero preview component renders without crashing when the instance only 
     style={
       Object {
         "backgroundImage": "url(\\"https://example.com/image.png\\")",
-        "backgroundSize": "731px 258px",
       }
     }
   >

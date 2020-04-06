@@ -32,8 +32,7 @@ export const HeroPreview: React.FC<HeroPreviewProps> = (
   }
   if (props.heroCoverImage) {
     containerStyles = {
-      backgroundImage: `url("${props.heroCoverImage}")`,
-      backgroundSize: '731px 258px'
+      backgroundImage: `url("${props.heroCoverImage}")`
     };
   }
   return (

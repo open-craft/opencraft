@@ -130,13 +130,6 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -148,6 +141,13 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>
@@ -404,13 +404,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -422,6 +415,13 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>
@@ -787,13 +787,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -805,6 +798,13 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>
@@ -1156,13 +1156,6 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -1174,6 +1167,13 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>

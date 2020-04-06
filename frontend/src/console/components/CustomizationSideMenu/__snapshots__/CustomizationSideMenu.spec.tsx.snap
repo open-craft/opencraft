@@ -52,13 +52,6 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           </a>
           <a
             aria-current={null}
-            href="/console/theming/hero"
-            onClick={[Function]}
-          >
-            Hero
-          </a>
-          <a
-            aria-current={null}
             href="/console/theming/navigation"
             onClick={[Function]}
           >
@@ -70,6 +63,13 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
             onClick={[Function]}
           >
             Footer
+          </a>
+          <a
+            aria-current={null}
+            href="/console/theming/hero"
+            onClick={[Function]}
+          >
+            Hero
           </a>
         </div>
       </div>

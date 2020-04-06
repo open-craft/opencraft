@@ -116,13 +116,6 @@ exports[`Console Page Correctly renders loading page 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -134,6 +127,13 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>
@@ -394,13 +394,6 @@ exports[`Console Page Correctly renders page with data 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/hero"
-                        onClick={[Function]}
-                      >
-                        Hero
-                      </a>
-                      <a
-                        aria-current={null}
                         href="/console/theming/navigation"
                         onClick={[Function]}
                       >
@@ -412,6 +405,13 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>

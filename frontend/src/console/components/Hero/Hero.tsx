@@ -51,21 +51,36 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       title: '',
       subtitle: ''
     };
-
-    if (this.homePageOverlayHtmlExists()) {
-      const {
-        homepageOverlayHtml
-      } = props.activeInstance.data!.draftStaticContentOverrides!;
-      const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
-      const matched = heroHtmlRegex.exec(homepageOverlayHtml as string);
-      if (matched) {
-        this.state = {
-          title: matched[1],
-          subtitle: matched[2]
-        };
-      }
-    }
   }
+
+  public componentDidMount() {
+    this.checkAndUpdateState();
+  }
+
+  public componentDidUpdate() {
+    this.checkAndUpdateState();
+  }
+
+  private checkAndUpdateState = () => {
+    if (
+      this.homePageOverlayHtmlExists() &&
+      // FIXME: The below condition causes issues when the user tries to empty either text box.
+      //  Investigat and come up with a way to fix this.
+      (this.state.title === '' || this.state.subtitle === '')
+    ) {
+      const { draftStaticContentOverrides } = this.props.activeInstance.data!;
+      const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
+      const matched = heroHtmlRegex.exec(
+        draftStaticContentOverrides!.homepageOverlayHtml as string
+      );
+      const updatedTitle = matched ? matched[1] : '';
+      const updatedSubttitle = matched ? matched[2] : '';
+      this.setState({
+        title: updatedTitle,
+        subtitle: updatedSubttitle
+      });
+    }
+  };
 
   private activeInstanceDataExists = () => {
     return this.props.activeInstance && this.props.activeInstance.data;
@@ -104,7 +119,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   };
 
   private updateHeroText = () => {
-    if (this.activeInstanceDataExists()) {
+    if (this.activeInstanceDataExists() && this.state.title.trim().length > 0) {
       const homepageOverlayHtml = `<h1>${this.state.title}</h1><p>${this.state.subtitle}</p>`;
       this.props.updateStaticContentOverridesFieldValue(
         this.props.activeInstance.data!.id,
@@ -172,7 +187,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
             </Row>
             {themeData && themeData.version === 1 && (
               <Row>
-                <Col md={12}>
+                <Col>
                   {this.themeConfigExists() &&
                     this.staticContentOverridesExists() && (
                       <HeroPreview
@@ -193,7 +208,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
             )}
             <CollapseEditArea initialExpanded>
               <Row>
-                <Col md={12}>
+                <Col>
                   <h2>
                     <WrappedMessage id="heroText" messages={messages} />
                   </h2>
@@ -204,7 +219,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                   <TextInputField
                     fieldName="title"
                     messages={messages}
-                    value={this.state.title}
+                    value={this.state.title || ''}
                     onBlur={this.updateHeroText}
                     onChange={this.onChange}
                   />
@@ -213,7 +228,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                   <TextInputField
                     fieldName="subtitle"
                     messages={messages}
-                    value={this.state.subtitle}
+                    value={this.state.subtitle || ''}
                     onBlur={this.updateHeroText}
                     onChange={this.onChange}
                   />
@@ -232,6 +247,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                     clearError={() => {
                       this.props.clearErrorMessage('heroCover');
                     }}
+                    recommendedSize="1200x250px"
                   />
                   {this.activeInstanceDataExists() &&
                     instance.data!.heroCoverImage && (
@@ -251,19 +267,21 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                     <Col md={4} key="heroTitleColor">
                       <ColorInputField
                         fieldName="homePageHeroTitleColor"
-                        initialValue={themeData.homePageHeroTitleColor}
+                        initialValue={themeData.homePageHeroTitleColor || ''}
                         onChange={this.onChangeColor}
                         messages={messages}
                         loading={instance.loading.includes('draftThemeConfig')}
+                        hideTooltip
                       />
                     </Col>,
                     <Col md={4} key="heroSubtitleColor">
                       <ColorInputField
                         fieldName="homePageHeroSubtitleColor"
-                        initialValue={themeData.homePageHeroSubtitleColor}
+                        initialValue={themeData.homePageHeroSubtitleColor || ''}
                         onChange={this.onChangeColor}
                         messages={messages}
                         loading={instance.loading.includes('draftThemeConfig')}
+                        hideTooltip
                       />
                     </Col>
                   ]}

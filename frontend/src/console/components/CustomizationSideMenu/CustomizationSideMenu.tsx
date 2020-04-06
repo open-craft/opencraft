@@ -38,14 +38,14 @@ export const CustomizationSideMenu: React.FC = () => {
               <NavLink exact to={ROUTES.Console.THEME_BUTTONS}>
                 <WrappedMessage messages={messages} id="linkButtons" />
               </NavLink>
-              <NavLink exact to={ROUTES.Console.HERO}>
-                <WrappedMessage messages={messages} id="linkHero" />
-              </NavLink>
               <NavLink exact to={ROUTES.Console.THEME_NAVIGATION}>
                 <WrappedMessage messages={messages} id="linkNavigation" />
               </NavLink>
               <NavLink exact to={ROUTES.Console.THEME_FOOTER}>
                 <WrappedMessage messages={messages} id="linkFooter" />
+              </NavLink>
+              <NavLink exact to={ROUTES.Console.HERO}>
+                <WrappedMessage messages={messages} id="linkHero" />
               </NavLink>
             </Nav>
           </Card.Body>
