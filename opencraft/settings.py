@@ -366,11 +366,6 @@ DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 # This rate is per user per day in euros
 BILLING_RATE = env('BILLING_RATE', default=3)
 
-# DNS (Gandi) #################################################################
-
-# See https://www.gandi.net/admin/api_key
-GANDI_API_KEY = env('GANDI_API_KEY')
-
 # GitHub - Forks & organizations ##############################################
 
 # The worker queue will watch for PRs from members of a given organization
