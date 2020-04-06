@@ -850,11 +850,14 @@ if DEBUG:
 
 # MailChimp ###################################################################
 
+# Is MailChimp integration enabled?
+MAILCHIMP_ENABLED = env.bool('MAILCHIMP_ENABLED', default=False)
+
 # See https://us7.admin.mailchimp.com/account/api/
-MAILCHIMP_API_KEY = env('MAILCHIMP_API_KEY')
+MAILCHIMP_API_KEY = env('MAILCHIMP_API_KEY', default='')
 
 # MailChimp list id for opted-in trial users
-MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS')
+MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', default='')
 
 # Batched updates are maximum 500 members at a time, as per
 # https://github.com/VingtCinq/python-mailchimp/blob/ad09dee/mailchimp3/entities/lists.py#L146

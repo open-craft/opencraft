@@ -47,6 +47,9 @@ def add_trial_users_to_mailchimp_list():
 
     This task runs once per day.
     """
+    if not settings.MAILCHIMP_ENABLED:
+        return
+
     emails_local = set(
         UserProfile.objects.filter(
             subscribe_to_updates=True,

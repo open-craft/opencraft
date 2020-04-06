@@ -25,6 +25,7 @@ Worker tasks - Tests
 from unittest.mock import patch
 
 from django.conf import settings
+from django.test.utils import override_settings
 
 from instance.tests.base import create_user_and_profile, TestCase
 from userprofile import tasks
@@ -38,13 +39,17 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
     MailChimp list.
     """
 
+    @override_settings(
+        MAILCHIMP_API_KEY='deadc0dedeadc0dedeadc0dedeadc0de-us7',
+        MAILCHIMP_LIST_ID_FOR_TRIAL_USERS='badc0de',
+    )
     @patch('requests.auth.HTTPBasicAuth', return_value=None)
     @patch('mailchimp3.entities.listmembers.ListMembers.all')
     @patch('mailchimp3.entities.lists.Lists.update_members')
     def _check(
             self, mock_mailchimp_update_members, mock_mailchimp_list_members,
             mock_mailchimp_auth, emails_local, emails_mailchimp,
-            expected_batched_updates, batch_size=10
+            expected_batched_updates, mailchimp_enabled=True, batch_size=10
     ):
         """
         Mocks the MailChimp API and then runs a specific test scenario.
@@ -61,7 +66,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
             'members': [{'email_address': email} for email in emails_mailchimp],
         }
 
-        with self.settings(MAILCHIMP_BATCH_SIZE=batch_size):
+        with self.settings(MAILCHIMP_BATCH_SIZE=batch_size, MAILCHIMP_ENABLED=mailchimp_enabled):
             tasks.add_trial_users_to_mailchimp_list.call_local()
 
         self.assertEqual(mock_mailchimp_update_members.call_count, len(expected_batched_updates))
@@ -179,6 +184,28 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
                     ('mailchimp2@unsubscribed.com', 'unsubscribed'),
                 ],
             ],
+        )
+
+    def test_disabled(self):
+        """
+        When MailChimp has been disabled, test if no updates are performed.
+        """
+        self._check( # pylint: disable=no-value-for-parameter
+            emails_local=[
+                'local2@unsubscribed.com',
+                'both2@unsubscribed.com',
+                'both1@subscribed.com',
+                'local1@subscribed.com',
+            ],
+            emails_mailchimp=[
+                'mailchimp1@subscribed.com',
+                'both1@subscribed.com',
+                'mailchimp2@unsubscribed.com',
+                'both2@unsubscribed.com',
+            ],
+            expected_batched_updates=[
+            ],
+            mailchimp_enabled=False,
         )
 
     def test_batched_updates(self):

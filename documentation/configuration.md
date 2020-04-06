@@ -350,8 +350,9 @@ set the following configuration variables:
 
 ### MailChimp settings
 
-* `MAILCHIMP_API_KEY`: Your MailChimp API key (required), see https://us7.admin.mailchimp.com/account/api/
-* `MAILCHIMP_LIST_ID_FOR_TRIAL_USERS`: MailChimp list id for opted-in trial users (required).
+* `MAILCHIMP_ENABLED`: Is MailChimp integration enabled (default: False)?
+* `MAILCHIMP_API_KEY`: Your MailChimp API key, see https://us7.admin.mailchimp.com/account/api/
+* `MAILCHIMP_LIST_ID_FOR_TRIAL_USERS`: MailChimp list id for opted-in trial users
 * `MAILCHIMP_BATCH_SIZE`: The size of MailChimp batched updates (default: 500)
 
 Databases
