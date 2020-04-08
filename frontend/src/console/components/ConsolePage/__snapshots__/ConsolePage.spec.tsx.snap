@@ -128,6 +128,13 @@ exports[`Console Page Correctly renders loading page 1`] = `
                       >
                         Footer
                       </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -398,6 +405,13 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>

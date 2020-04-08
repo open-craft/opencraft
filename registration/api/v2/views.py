@@ -20,6 +20,7 @@
 Registration api views for API v2
 """
 import logging
+from string import Template
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -50,7 +51,7 @@ from opencraft.swagger import (
 from registration.api.v2 import constants
 from registration.api.v2.serializers import (
     AccountSerializer,
-    LogoFaviconUploadSerializer,
+    ApplicationImageUploadSerializer,
     OpenEdXInstanceConfigSerializer,
     OpenEdXInstanceConfigUpdateSerializer,
     OpenEdXInstanceDeploymentStatusSerializer,
@@ -61,7 +62,11 @@ from registration.api.v2.serializers import (
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
-from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
+from instance.schemas.static_content_overrides import (
+    DEFAULT_STATIC_CONTENT_OVERRIDES,
+    fill_default_hero_text,
+    static_content_overrides_schema_validate,
+)
 from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
 
 
@@ -180,6 +185,14 @@ class OpenEdXInstanceConfigViewSet(
         instance = serializer.save()
         # Deploy default theme for users that just registered
         instance.draft_theme_config = DEFAULT_THEME
+        if not instance.draft_static_content_overrides:
+            static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
+            static_content_overrides['homepage_overlay_html'] = Template(
+                static_content_overrides['homepage_overlay_html']
+            ).safe_substitute(
+                instance_name=instance.instance_name
+            )
+            instance.draft_static_content_overrides = static_content_overrides
         instance.save()
         # Send verification emails
         verify_user_emails(instance.user, instance.public_contact_email)
@@ -272,7 +285,7 @@ class OpenEdXInstanceConfigViewSet(
         detail=True,
         methods=['post'],
         parser_classes=(MultiPartParser, ),
-        serializer_class=LogoFaviconUploadSerializer
+        serializer_class=ApplicationImageUploadSerializer
     )
     def image(self, request, pk: str):
         """
@@ -282,7 +295,6 @@ class OpenEdXInstanceConfigViewSet(
         field to add or update it.
         """
         application = self.get_object()
-
         try:
             if 'favicon' in request.data:
                 application.favicon = request.data['favicon']
@@ -290,6 +302,10 @@ class OpenEdXInstanceConfigViewSet(
 
             if 'logo' in request.data:
                 application.logo = request.data['logo']
+                application.save()
+
+            if 'hero_cover_image' in request.data:
+                application.hero_cover_image = request.data['hero_cover_image']
                 application.save()
 
         except Exception as e:  # pylint: disable=broad-except
@@ -300,7 +316,7 @@ class OpenEdXInstanceConfigViewSet(
 
         return Response(
             status=status.HTTP_200_OK,
-            data=LogoFaviconUploadSerializer(
+            data=ApplicationImageUploadSerializer(
                 application,
                 context={'request': request}
             ).data
@@ -320,16 +336,24 @@ class OpenEdXInstanceConfigViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        if application.draft_static_content_overrides:
-            merged_values = {
-                key: value for key, value in {
-                    **application.draft_static_content_overrides, **serializer.validated_data
-                }.items()
-            }
+        if not application.draft_static_content_overrides:
+            application.draft_static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES
+
+        merged_values = {
+            key: value for key, value in {
+                **application.draft_static_content_overrides, **serializer.validated_data
+            }.items()}
+
+        if 'homepage_overlay_html' not in merged_values:
+            current_value = ''
         else:
-            merged_values = serializer.validated_data
-            if 'version' not in merged_values:
-                merged_values['version'] = 0
+            current_value = merged_values['homepage_overlay_html']
+
+        merged_values['homepage_overlay_html'] = Template(
+            fill_default_hero_text(
+                current_value
+            )
+        ).safe_substitute(instance_name=application.instance_name)
 
         try:
             static_content_overrides_schema_validate(merged_values)

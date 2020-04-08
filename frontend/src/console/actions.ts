@@ -3,7 +3,7 @@ import { Action } from 'redux';
 import { push } from 'connected-react-router';
 import { V2Api } from 'global/api';
 import { InstanceSettingsModel, DeploymentInfoModel } from 'console/models';
-import { ThemeSchema } from 'ocim-client';
+import { ThemeSchema, StaticContentOverrides } from 'ocim-client';
 import { ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 
@@ -25,6 +25,11 @@ export enum Types {
   UPDATE_INSTANCE_THEME = 'UPDATE_INSTANCE_THEME',
   UPDATE_INSTANCE_THEME_SUCCESS = 'UPDATE_INSTANCE_THEME_SUCCESS',
   UPDATE_INSTANCE_THEME_FAILURE = 'UPDATE_INSTANCE_THEME_FAILURE',
+  // Static content overrides actions
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES',
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS',
+  UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE',
+
   // Redeployment related actions
   GET_DEPLOYMENT_STATUS = 'GET_DEPLOYMENT_STATUS',
   GET_DEPLOYMENT_STATUS_SUCCESS = 'GET_DEPLOYMENT_STATUS_SUCCESS',
@@ -101,6 +106,21 @@ export interface UpdateThemeConfigFailure extends Action {
   readonly data: Partial<ThemeSchema>;
 }
 
+export interface UpdateInstanceStaticContentOverrides extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
+export interface UpdateInstanceStaticContentOverridesSuccess extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
+export interface UpdateInstanceStaticContentOverridesFailure extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE;
+  readonly data: Partial<StaticContentOverrides>;
+}
+
 export interface GetDeploymentStatus extends Action {
   readonly type: Types.GET_DEPLOYMENT_STATUS;
   readonly instanceId: number;
@@ -155,6 +175,9 @@ export type ActionTypes =
   | UpdateInstanceImages
   | UpdateInstanceImagesSuccess
   | UpdateInstanceImagesFailure
+  | UpdateInstanceStaticContentOverrides
+  | UpdateInstanceStaticContentOverridesSuccess
+  | UpdateInstanceStaticContentOverridesFailure
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
@@ -197,7 +220,7 @@ export const listUserInstances = (): OcimThunkAction<void> => async dispatch => 
 export const updateImages = (
   instanceId: number,
   imageFieldName: string,
-  file: string
+  file: null | string
 ): OcimThunkAction<void> => async (dispatch, getState) => {
   // Dispatch variable lock to avoid sending a second image
   // while the first one is still being transmitted
@@ -300,6 +323,40 @@ export const updateThemeFieldValue = (
   } catch {
     dispatch({
       type: Types.UPDATE_INSTANCE_THEME_FAILURE,
+      data: {
+        [fieldName]: value
+      }
+    });
+  }
+};
+
+export const updateStaticContentOverridesFieldValue = (
+  instanceId: number,
+  fieldName: string,
+  value: string
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  dispatch({
+    type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES,
+    fieldName
+  });
+  try {
+    const response = await V2Api.instancesOpenedxConfigStaticContentOverrides({
+      id: String(instanceId),
+      data: {
+        [fieldName]: value
+      }
+    });
+
+    const { activeInstance } = getState().console;
+    if (activeInstance.data && activeInstance.data.id === instanceId) {
+      dispatch({
+        type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS,
+        data: response
+      });
+    }
+  } catch {
+    dispatch({
+      type: Types.UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE,
       data: {
         [fieldName]: value
       }

@@ -513,6 +513,60 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_set_hero_cover_image(self):
+        """
+        Test uploading a hero cover image
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        self.assertFalse(self.instance_config.hero_cover_image)
+
+        # Load test cover image
+        cover_image = create_image('cover.png')
+        cover_image_file = SimpleUploadedFile('cover.png', cover_image.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'hero_cover_image': cover_image_file},
+            format='multipart',
+        )
+        self.assertTrue(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertTrue(self.instance_config.hero_cover_image)
+
+    def test_delete_hero_cover_image(self):
+        """
+        Test deleting the already set hero cover image
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        self.assertFalse(self.instance_config.hero_cover_image)
+
+        # Load test cover image
+        cover_image = create_image('cover.png')
+        cover_image_file = SimpleUploadedFile('cover2.png', cover_image.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'hero_cover_image': cover_image_file},
+            format='multipart',
+        )
+        self.assertTrue(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertTrue(self.instance_config.hero_cover_image)
+
+        # Deletion request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'hero_cover_image': ''},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertFalse(self.instance_config.hero_cover_image)
+
     def test_change_logo_wrong_size(self):
         """
         Test uploading logo with wrong size
@@ -574,7 +628,13 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.instance_config.refresh_from_db()
-        expected_values = {'version': 0, 'static_template_about_content': 'Hello world!'}
+        expected_values = {
+            'version': 0,
+            'static_template_about_content': 'Hello world!',
+            'homepage_overlay_html': '<h1>Welcome to {}</h1><p>It works! Powered by Open edX®</p>'.format(
+                self.instance_config.instance_name
+            )
+        }
         self.assertEqual(self.instance_config.draft_static_content_overrides, expected_values)
 
     @ddt.data(

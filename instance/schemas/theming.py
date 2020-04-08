@@ -171,6 +171,9 @@ DEFAULT_THEME = {
     "btn-secondary-hover-bg": "#126F9A",
     "btn-secondary-hover-color": "#FFFFFF",
     "btn-secondary-hover-border-color": "#FFFFFF",
+    # Hero text colors. Required for the hero customization section in the console.
+    "home-page-hero-title-color": "#313131",
+    "home-page-hero-subtitle-color": "#646464",
 }
 
 def theme_schema_validate(value, schema=None):

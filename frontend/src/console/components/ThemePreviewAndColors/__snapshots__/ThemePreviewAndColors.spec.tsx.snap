@@ -142,6 +142,13 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                       >
                         Footer
                       </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -408,6 +415,13 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>
@@ -785,6 +799,13 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       >
                         Footer
                       </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1146,6 +1167,13 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                         onClick={[Function]}
                       >
                         Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
                       </a>
                     </div>
                   </div>

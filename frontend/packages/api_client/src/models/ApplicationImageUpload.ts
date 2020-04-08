@@ -16,34 +16,34 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface LogoFaviconUpload
+ * @interface ApplicationImageUpload
  */
-export interface LogoFaviconUpload {
+export interface ApplicationImageUpload {
     /**
      * 
      * @type {string}
-     * @memberof LogoFaviconUpload
+     * @memberof ApplicationImageUpload
      */
     readonly logo?: string;
     /**
      * 
      * @type {string}
-     * @memberof LogoFaviconUpload
+     * @memberof ApplicationImageUpload
      */
     readonly favicon?: string;
     /**
      * 
      * @type {string}
-     * @memberof LogoFaviconUpload
+     * @memberof ApplicationImageUpload
      */
     readonly heroCoverImage?: string;
 }
 
-export function LogoFaviconUploadFromJSON(json: any): LogoFaviconUpload {
-    return LogoFaviconUploadFromJSONTyped(json, false);
+export function ApplicationImageUploadFromJSON(json: any): ApplicationImageUpload {
+    return ApplicationImageUploadFromJSONTyped(json, false);
 }
 
-export function LogoFaviconUploadFromJSONTyped(json: any, ignoreDiscriminator: boolean): LogoFaviconUpload {
+export function ApplicationImageUploadFromJSONTyped(json: any, ignoreDiscriminator: boolean): ApplicationImageUpload {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -55,7 +55,7 @@ export function LogoFaviconUploadFromJSONTyped(json: any, ignoreDiscriminator: b
     };
 }
 
-export function LogoFaviconUploadToJSON(value?: LogoFaviconUpload | null): any {
+export function ApplicationImageUploadToJSON(value?: ApplicationImageUpload | null): any {
     if (value === undefined) {
         return undefined;
     }
