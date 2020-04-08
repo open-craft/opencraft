@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Tasks #######################################################################
 
-@db_periodic_task(crontab(day='*/1', hour='2', minute='0'))
+@db_periodic_task(crontab(day='*', hour='2', minute='0'))
 def add_trial_users_to_mailchimp_list():
     """
     Adds opted-in trial users to the MailChimp list.
