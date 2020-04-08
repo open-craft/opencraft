@@ -25,7 +25,6 @@ Worker tasks - Tests
 from unittest.mock import patch
 
 from django.conf import settings
-from django.test.utils import override_settings
 
 from instance.tests.base import create_user_and_profile, TestCase
 from userprofile import tasks
@@ -39,10 +38,6 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
     MailChimp list.
     """
 
-    @override_settings(
-        MAILCHIMP_API_KEY='deadc0dedeadc0dedeadc0dedeadc0de-us7',
-        MAILCHIMP_LIST_ID_FOR_TRIAL_USERS='badc0de',
-    )
     @patch('requests.auth.HTTPBasicAuth', return_value=None)
     @patch('mailchimp3.entities.listmembers.ListMembers.all')
     @patch('mailchimp3.entities.lists.Lists.update_members')
