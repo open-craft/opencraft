@@ -96,7 +96,7 @@ export interface StaticContentOverrides {
      * @type {string}
      * @memberof StaticContentOverrides
      */
-    staticTemplatesPrivacyContent?: string;
+    staticTemplatePrivacyContent?: string;
     /**
      * 
      * @type {string}
@@ -127,7 +127,7 @@ export function StaticContentOverridesFromJSONTyped(json: any, ignoreDiscriminat
         'staticTemplateHonorHeader': !exists(json, 'static_template_honor_header') ? undefined : json['static_template_honor_header'],
         'staticTemplateHonorContent': !exists(json, 'static_template_honor_content') ? undefined : json['static_template_honor_content'],
         'staticTemplatePrivacyHeader': !exists(json, 'static_template_privacy_header') ? undefined : json['static_template_privacy_header'],
-        'staticTemplatesPrivacyContent': !exists(json, 'static_templates_privacy_content') ? undefined : json['static_templates_privacy_content'],
+        'staticTemplatePrivacyContent': !exists(json, 'static_template_privacy_content') ? undefined : json['static_template_privacy_content'],
         'homepageOverlayHtml': !exists(json, 'homepage_overlay_html') ? undefined : json['homepage_overlay_html'],
     };
 }
@@ -153,7 +153,7 @@ export function StaticContentOverridesToJSON(value?: StaticContentOverrides | nu
         'static_template_honor_header': value.staticTemplateHonorHeader,
         'static_template_honor_content': value.staticTemplateHonorContent,
         'static_template_privacy_header': value.staticTemplatePrivacyHeader,
-        'static_templates_privacy_content': value.staticTemplatesPrivacyContent,
+        'static_template_privacy_content': value.staticTemplatePrivacyContent,
         'homepage_overlay_html': value.homepageOverlayHtml,
     };
 }
