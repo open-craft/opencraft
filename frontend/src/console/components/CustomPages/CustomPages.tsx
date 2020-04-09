@@ -8,20 +8,20 @@ import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
-import { updateFieldValue } from 'console/actions';
-import RichTextEditor from 'react-rte';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { updateStaticContentOverridesFieldValue } from 'console/actions';
+import { capitalizeFirstLetter } from 'utils/string_utils';
+import { StaticContentOverrides } from 'ocim-client';
+import { Row, Col, Form } from 'react-bootstrap';
 import { Prompt } from 'react-router';
+import { Editor } from '@tinymce/tinymce-react';
 import messages from './displayMessages';
 
 interface State {
   [key: string]: any;
   pageContent: any;
-  contentChanged: boolean;
 }
-
 interface ActionProps {
-  updateFieldValue: Function;
+  updateStaticContentOverridesFieldValue: Function;
 }
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {
@@ -38,8 +38,7 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      pageContent: RichTextEditor.createEmptyValue(),
-      contentChanged: false
+      pageContent: this.getPageContentFromState()
     };
   }
 
@@ -50,37 +49,74 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     // If the page changed, clear edit field and render the correct
     // override content.
     if (previousPageName !== currentPageName) {
-      const content = RichTextEditor.createEmptyValue();
-
-      // TODO: Add contitional once state has static fields in place to load
-      // data from page
-
       // Since we know for sure this won't generate a infinite loop, we can
       // ignore the setState check inside componentDidUpdate for the next line
       // eslint-disable-next-line
       this.setState({
-        pageContent: content,
-        contentChanged: false
+        pageContent: this.getPageContentFromState()
+      });
+    }
+
+    // If page is receiving new instance data check and update internal state
+    // This prevents the internal state to be "" (empty) if data isn't available
+    // when the component is created but is available later.
+    if (
+      prevProps.activeInstance.data == null &&
+      this.props.activeInstance.data
+    ) {
+      // eslint-disable-next-line
+      this.setState({
+        pageContent: this.getPageContentFromState()
       });
     }
   };
 
-  onChangeContent = (newContent: any) => {
-    let hasContentChanged = false;
+  getApiPageName = () => {
+    const pageName = capitalizeFirstLetter(this.props.match.params.pageName);
+    return `staticTemplate${pageName}Content` as keyof StaticContentOverrides;
+  };
 
-    console.log(newContent);
-    if (this.state.pageContent !== "") {
-      hasContentChanged = true;
+  getPageContentFromState = () => {
+    let content = '';
+    const instance = this.props.activeInstance;
+
+    if (
+      instance &&
+      instance.data &&
+      instance.data.draftStaticContentOverrides
+    ) {
+      const statePageContent =
+        instance.data.draftStaticContentOverrides[this.getApiPageName()];
+      if (typeof statePageContent === 'string') {
+        content = statePageContent;
+      }
     }
 
+    return content;
+  };
+
+  hasContentChanged = () => {
+    return this.state.pageContent !== this.getPageContentFromState();
+  };
+
+  onChangeContent = (newContent: any) => {
     this.setState({
-      pageContent: newContent,
-      contentChanged: hasContentChanged
+      pageContent: newContent
     });
   };
 
+  saveChanges = () => {
+    if (this.hasContentChanged()) {
+      this.props.updateStaticContentOverridesFieldValue(
+        this.props.activeInstance.data!.id,
+        this.getApiPageName(),
+        this.state.pageContent
+      );
+    }
+  };
+
   public render() {
-    // const instance = this.props.activeInstance;
+    const instance = this.props.activeInstance;
     const { pageName } = this.props.match.params;
 
     // TODO: The hide/show switch is just a placeholder component
@@ -121,29 +157,32 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
             </a> */}
 
             <Prompt
-              when={this.state.contentChanged}
+              when={this.hasContentChanged()}
               message={messages.leavePageMessage.defaultMessage}
             />
 
             <div className="editor-container">
-              <RichTextEditor
-                value={this.state.pageContent}
-                onChange={this.onChangeContent}
-                className="page-editor"
-                autoFocus
+              <Editor
+                value={this.getPageContentFromState()}
+                init={{
+                  height: 500,
+                  menubar: false,
+                  plugins: [
+                    'advlist autolink lists link image charmap print preview anchor',
+                    'searchreplace visualblocks code fullscreen',
+                    'insertdatetime media table paste code help wordcount'
+                  ],
+                  toolbar:
+                    'bold italic backcolor | formatselect | ' +
+                    'alignleft aligncenter alignright alignjustify | ' +
+                    'bullist numlist | image | removeformat | undo redo'
+                }}
+                onEditorChange={this.onChangeContent}
+                onBlur={this.saveChanges}
+                disabled={instance.loading.includes(
+                  'draftStaticContentOverrides'
+                )}
               />
-            </div>
-
-            <div className="page-controls">
-              <Button
-                className="save-custom-page"
-                variant="primary"
-                size="lg"
-                disabled={this.props.loading || !this.state.contentChanged}
-                onClick={() => {}}
-              >
-                <WrappedMessage messages={messages} id="save" />
-              </Button>
             </div>
           </div>
         </ConsolePageCustomizationContainer>
@@ -159,5 +198,5 @@ export const CustomPages = connect<
   Props,
   RootState
 >((state: RootState) => state.console, {
-  updateFieldValue
+  updateStaticContentOverridesFieldValue
 })(CustomPagesComponent);
