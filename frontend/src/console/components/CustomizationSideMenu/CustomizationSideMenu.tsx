@@ -4,6 +4,7 @@ import { Accordion, Card, Nav } from 'react-bootstrap';
 import { ROUTES, AVAILABLE_CUSTOM_PAGES } from 'global/constants';
 import './styles.scss';
 import { useLocation, NavLink } from 'react-router-dom';
+import { capitalizeFirstLetter } from 'utils/string_utils';
 import messages from './displayMessages';
 
 export const CustomizationSideMenu: React.FC = () => {
@@ -16,10 +17,6 @@ export const CustomizationSideMenu: React.FC = () => {
     activeKey = 1;
   } else if (currentLocation.includes('settings')) {
     activeKey = 2;
-  }
-
-  function capitalizeFirstLetter(str: string) {
-    return str[0].toUpperCase() + str.slice(1);
   }
 
   const customPageLink = (pageName: string) => {
