@@ -336,7 +336,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - giovanni/deploy-to-stage
       # Deploy production
       - frontend-build:
           name: frontend-build-production
