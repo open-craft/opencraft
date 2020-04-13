@@ -31,6 +31,18 @@ import {
  */
 export interface OpenEdXInstanceConfigUpdate {
     /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly lmsUrl?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly studioUrl?: string;
+    /**
      * The URL students will visit. In the future, you will also have the possibility to use your own domain name.  Example: hogwarts.opencraft.hosting
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
@@ -108,6 +120,8 @@ export function OpenEdXInstanceConfigUpdateFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
+        'lmsUrl': !exists(json, 'lms_url') ? undefined : json['lms_url'],
+        'studioUrl': !exists(json, 'studio_url') ? undefined : json['studio_url'],
         'subdomain': !exists(json, 'subdomain') ? undefined : json['subdomain'],
         'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': !exists(json, 'instance_name') ? undefined : json['instance_name'],

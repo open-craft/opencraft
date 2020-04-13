@@ -270,11 +270,35 @@ class StaticContentOverridesSerializer(serializers.Serializer):
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
+
+    Make sure to prefetch the instance data when using this serializer to
+    avoid a high query count in LIST operations.
     """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    draft_theme_config = ThemeSchemaSerializer(read_only=True)
 
+    # Theme and static overrides serializers
+    draft_theme_config = ThemeSchemaSerializer(read_only=True)
     draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
+
+    # LMS and Studio URLs (if the instance is provisisoned)
+    lms_url = serializers.SerializerMethodField()
+    studio_url = serializers.SerializerMethodField()
+
+    def get_lms_url(self, obj):
+        """
+        Returns instance LMS url if available
+        """
+        if obj.instance:
+            return obj.instance.url
+        return ""
+
+    def get_studio_url(self, obj):
+        """
+        Returns instance Studio url if available
+        """
+        if obj.instance:
+            return obj.instance.studio_url
+        return ""
 
     def validate_user(self, value):
         """
@@ -292,6 +316,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "user",
+            "lms_url",
+            "studio_url",
             "subdomain",
             "external_domain",
             "instance_name",
@@ -307,6 +333,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "logo",
             "favicon",
+            "lms_url",
+            "studio_url",
         ]
 
 
