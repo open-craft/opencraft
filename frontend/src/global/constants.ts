@@ -74,10 +74,10 @@ export const AVAILABLE_CUSTOM_PAGES = [
 ];
 
 export const LMS_CUSTOM_PAGE_LINK_MAP: StringIndexedArray = {
-  about: "about",
-  contact: "suport/contact_us",
-  donate: "donate",
-  tos: "tos",
-  honor: "honor",
-  privacy: "privacy"
-}
+  about: 'about',
+  contact: 'suport/contact_us',
+  donate: 'donate',
+  tos: 'tos',
+  honor: 'honor',
+  privacy: 'privacy'
+};
