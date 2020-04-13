@@ -516,6 +516,7 @@ class OpenEdXInstance(
 
         :return: A dict of the configurations.
         """
+        dns_records_updated = self.dns_records_updated.timestamp() if self.dns_records_updated else None
         active_servers = self.get_active_appservers()
         basic_auth = self.http_auth_info_base64()
         enable_health_checks = active_servers.count() > 1
@@ -525,6 +526,7 @@ class OpenEdXInstance(
             'domain': self.domain,
             'name': self.name,
             'domains': self.get_load_balanced_domains(),
+            'dns_records_updated': dns_records_updated,
             'health_checks_enabled': enable_health_checks,
             'basic_auth': basic_auth,
             'active_app_servers': active_servers_data,

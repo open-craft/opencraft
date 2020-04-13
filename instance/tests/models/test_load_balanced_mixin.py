@@ -22,11 +22,14 @@ Load-balanced instance mixin - tests
 
 # Imports #####################################################################
 
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import ddt
 from django.conf import settings
 from django.test import override_settings
+
+from freezegun import freeze_time
 
 from instance import gandi
 from instance.models.load_balancer import LoadBalancingServer
@@ -114,6 +117,26 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance.remove_dns_records()
         dns_records = gandi.api.list_records('opencraft.co.uk')
         self.assertEqual(dns_records, [])
+
+    @patch_gandi
+    def test_dns_records_updated_timestamp(self, mock_consul):
+        """
+        Test that the dns_records_updated field gets set to the current date/time every time
+        the set_dns_records() method is invoked and set to None when removing DNS records.
+        """
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.co.uk')
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        instance.save()
+        self.assertEqual(instance.dns_records_updated, None)
+        reference_date = datetime.now(timezone.utc)
+        with freeze_time(reference_date):
+            instance.set_dns_records()
+        self.assertEqual(instance.dns_records_updated, reference_date)
+        with freeze_time(reference_date + timedelta(hours=2)):
+            instance.set_dns_records()
+        self.assertEqual(instance.dns_records_updated, reference_date + timedelta(hours=2))
+        instance.remove_dns_records()
+        self.assertEqual(instance.dns_records_updated, None)
 
     def test_domains(self, mock_consul):
         """
