@@ -31,6 +31,8 @@ describe("Console Page", function() {
                 id: 1,
                 instanceName: "test",
                 subdomain: "test",
+                lmsUrl: "test-url",
+                studioUrl: "test-url"
               },
               deployment: {
                 status: "NO_STATUS",

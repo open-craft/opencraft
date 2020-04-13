@@ -4,6 +4,10 @@ import {
   ConsolePage,
   ConsolePageCustomizationContainer
 } from 'console/components';
+import {
+  LMS_CUSTOM_PAGE_LINK_MAP,
+  TINYMCE_API_KEY
+} from 'global/constants';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -105,6 +109,22 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     });
   };
 
+  getLMSLinkForPage = () => {
+    const instance = this.props.activeInstance;
+    const pageName = this.props.match.params.pageName;
+
+    if (instance && instance.data && instance.data.lmsUrl){
+      let link = `${instance.data.lmsUrl}${LMS_CUSTOM_PAGE_LINK_MAP[pageName]}`
+      return (
+        <a className="pageLink" href={link}>
+          {link}
+        </a>
+      )
+    }
+
+    return (<></>);
+  }
+
   saveChanges = () => {
     if (this.hasContentChanged()) {
       this.props.updateStaticContentOverridesFieldValue(
@@ -151,10 +171,8 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
               </Col>
             </Row>
 
-            {/* Uncomment when the backend properly passes back LMS URL */}
-            {/* <a className="pageLink" href="http://google.com">
-              http://google.com
-            </a> */}
+            {/* Construct LMS link and render on page */}
+            {this.getLMSLinkForPage()}
 
             <Prompt
               when={this.hasContentChanged()}
@@ -182,6 +200,7 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
                 disabled={instance.loading.includes(
                   'draftStaticContentOverrides'
                 )}
+                apiKey={TINYMCE_API_KEY}
               />
             </div>
           </div>

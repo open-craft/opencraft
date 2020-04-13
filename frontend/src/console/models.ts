@@ -7,6 +7,8 @@ import {
 export interface InstanceSettingsModel {
   [key: string]: any | undefined;
   id: number;
+  lmsUrl?: string;
+  studioUrl?: string;
   subdomain: string;
   instanceName: string;
   publicContactEmail: string;

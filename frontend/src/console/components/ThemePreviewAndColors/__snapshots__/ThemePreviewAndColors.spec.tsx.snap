@@ -10,7 +10,6 @@ exports[`Theme preview and colors page Render theme settings page when instance 
     <h1>
       <a
         className="header-link"
-        href="https://test.opencraft.hosting"
       >
         test
         <i
@@ -21,7 +20,6 @@ exports[`Theme preview and colors page Render theme settings page when instance 
     <h2>
       <a
         className="header-link"
-        href="https://studio.test.opencraft.hosting"
       >
         Edit courses (Studio)
       </a>
@@ -299,7 +297,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     <h1>
       <a
         className="header-link"
-        href="https://test.opencraft.hosting"
       >
         test
         <i
@@ -310,7 +307,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     <h2>
       <a
         className="header-link"
-        href="https://studio.test.opencraft.hosting"
       >
         Edit courses (Studio)
       </a>
@@ -697,7 +693,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     <h1>
       <a
         className="header-link"
-        href="https://test.opencraft.hosting"
       >
         test
         <i
@@ -708,7 +703,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     <h2>
       <a
         className="header-link"
-        href="https://studio.test.opencraft.hosting"
       >
         Edit courses (Studio)
       </a>

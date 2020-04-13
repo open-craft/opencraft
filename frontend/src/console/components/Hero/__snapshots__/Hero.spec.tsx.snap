@@ -13,7 +13,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -24,7 +23,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -436,7 +434,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -447,7 +444,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -852,7 +848,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -863,7 +858,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -1268,7 +1262,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -1279,7 +1272,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
