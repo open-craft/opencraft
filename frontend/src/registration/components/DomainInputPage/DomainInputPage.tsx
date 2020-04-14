@@ -70,14 +70,8 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
 
   private submitDomain = () => {
     if (this.state.domainIsExternal) {
-      let subdomain = this.state.externalDomain.replace('.', '');
-      // Append random digits to internal domain to avoid conflicts
-      subdomain = `${subdomain}-${Math.random()
-        .toString(36)
-        .substr(2, 4)}`;
       this.props.performValidationAndStore(
         {
-          subdomain,
           externalDomain: this.state.externalDomain
         },
         RegistrationSteps.CUSTOM_DOMAIN

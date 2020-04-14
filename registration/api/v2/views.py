@@ -20,10 +20,13 @@
 Registration api views for API v2
 """
 import logging
+import random
+import string
 from string import Template
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
@@ -177,6 +180,27 @@ class OpenEdXInstanceConfigViewSet(
         serializer = self.get_serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         return Response(status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Checks if user is creating account with external domain and fill subdomain slug.
+
+        This check if `external_domain` is filled, if so, generate a valid subdomain slug
+        and fill in the field before passing it to the serializer.
+        """
+        external_domain = request.data.get('external_domain')
+        if external_domain:
+            # Create a valid slug with this format: `<domain-slug>-<random-hash>`
+            # Hash is added to avoid name clashes when generating slug
+            random_hash = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
+            subdomain = f"{slugify(external_domain)[:30]}-{random_hash}"
+            # Set request data
+            self.request.data.update({
+                "subdomain": subdomain
+            })
+
+        # Perform create as usual
+        return super(OpenEdXInstanceConfigViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         """
