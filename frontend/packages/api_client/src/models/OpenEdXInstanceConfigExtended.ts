@@ -27,108 +27,106 @@ import {
 /**
  * 
  * @export
- * @interface OpenEdXInstanceConfig
+ * @interface OpenEdXInstanceConfigExtended
  */
-export interface OpenEdXInstanceConfig {
+export interface OpenEdXInstanceConfigExtended {
     /**
      * 
      * @type {number}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     readonly id?: number;
     /**
-     * 
-     * @type {string}
-     * @memberof OpenEdXInstanceConfig
-     */
-    readonly lmsUrl?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof OpenEdXInstanceConfig
-     */
-    readonly studioUrl?: string;
-    /**
      * The URL students will visit. In the future, you will also have the possibility to use your own domain name.  Example: hogwarts.opencraft.hosting
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     subdomain: string;
     /**
      * The URL students will visit if you are using an external domain.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     externalDomain?: string | null;
     /**
      * The name of your institution, company or project.  Example: Hogwarts Online Learning
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     instanceName: string;
     /**
      * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.  This needs to be a valid email.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     publicContactEmail: string;
     /**
      * URL to the privacy policy.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     privacyPolicyUrl?: string;
     /**
      * The advanced theme allows users to pick a lot more details than the regular theme.Setting this flag will enable the more complex theme editor.
      * @type {boolean}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     useAdvancedTheme?: boolean;
     /**
      * 
      * @type {ThemeSchema}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     draftThemeConfig?: ThemeSchema;
     /**
      * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft\'s logo will be used.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
-    readonly logo?: string;
+    readonly logo?: string | null;
     /**
      * This is used as the browser tab icon for your instance\'s pages. If unset, OpenCraft\'s icon will be used.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
-    readonly favicon?: string;
+    readonly favicon?: string | null;
     /**
      * This is used as the cover image for the hero section in the instance LMS home page.
      * @type {string}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     readonly heroCoverImage?: string | null;
     /**
      * 
      * @type {StaticContentOverrides}
-     * @memberof OpenEdXInstanceConfig
+     * @memberof OpenEdXInstanceConfigExtended
      */
     draftStaticContentOverrides?: StaticContentOverrides;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigExtended
+     */
+    readonly lmsUrl?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigExtended
+     */
+    readonly studioUrl?: string;
 }
 
-export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
-    return OpenEdXInstanceConfigFromJSONTyped(json, false);
+export function OpenEdXInstanceConfigExtendedFromJSON(json: any): OpenEdXInstanceConfigExtended {
+    return OpenEdXInstanceConfigExtendedFromJSONTyped(json, false);
 }
 
-export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminator: boolean): OpenEdXInstanceConfig {
+export function OpenEdXInstanceConfigExtendedFromJSONTyped(json: any, ignoreDiscriminator: boolean): OpenEdXInstanceConfigExtended {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'id': !exists(json, 'id') ? undefined : json['id'],
-        'lmsUrl': !exists(json, 'lms_url') ? undefined : json['lms_url'],
-        'studioUrl': !exists(json, 'studio_url') ? undefined : json['studio_url'],
         'subdomain': json['subdomain'],
         'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
@@ -140,10 +138,12 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
+        'lmsUrl': !exists(json, 'lms_url') ? undefined : json['lms_url'],
+        'studioUrl': !exists(json, 'studio_url') ? undefined : json['studio_url'],
     };
 }
 
-export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null): any {
+export function OpenEdXInstanceConfigExtendedToJSON(value?: OpenEdXInstanceConfigExtended | null): any {
     if (value === undefined) {
         return undefined;
     }

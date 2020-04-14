@@ -55,6 +55,30 @@ const messages = {
   linkDomain: {
     defaultMessage: 'Domain',
     description: 'The name of the custom page menu in the sidebar accordion.'
+  },
+  customPageAbout: {
+    defaultMessage: 'About',
+    description: ''
+  },
+  customPageContact: {
+    defaultMessage: 'Contact',
+    description: ''
+  },
+  customPageDonate: {
+    defaultMessage: 'Donate',
+    description: ''
+  },
+  customPageTos: {
+    defaultMessage: 'Terms of Service',
+    description: ''
+  },
+  customPageHonor: {
+    defaultMessage: 'Honor Code',
+    description: ''
+  },
+  customPagePrivacy: {
+    defaultMessage: 'Privacy Policy',
+    description: ''
   }
 };
 

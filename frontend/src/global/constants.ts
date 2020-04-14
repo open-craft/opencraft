@@ -1,6 +1,8 @@
 export const OCIM_API_BASE =
   process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000';
 
+export const TINYMCE_API_KEY = process.env.REACT_APP_TINYMCE_API_KEY || '';
+
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
 export const ENTERPRISE_COMPARISON_LINK =
   process.env.REACT_APP_ENTERPRISE_COMPARISON_LINK || '/#';
@@ -10,6 +12,10 @@ export const PRIVACY_POLICY_LINK =
 
 export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
+
+export interface StringIndexedArray {
+  [key: string]: any;
+}
 
 export enum RegistrationSteps {
   FIRST_STEP = 0,
@@ -28,6 +34,7 @@ export const ROUTES = {
   },
   Console: {
     HOME: '/console',
+    CUSTOM_PAGES: '/console/custom-pages/:pageName',
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',
     THEME_BUTTONS: '/console/theming/buttons',
@@ -56,3 +63,21 @@ export const REGISTRATION_STEPS = [
   ROUTES.Registration.ACCOUNT,
   ROUTES.Registration.CONGRATS
 ];
+
+export const AVAILABLE_CUSTOM_PAGES = [
+  'about',
+  'contact',
+  'donate',
+  'tos',
+  'honor',
+  'privacy'
+];
+
+export const LMS_CUSTOM_PAGE_LINK_MAP: StringIndexedArray = {
+  about: 'about',
+  contact: 'support/contact_us',
+  donate: 'donate',
+  tos: 'tos',
+  honor: 'honor',
+  privacy: 'privacy'
+};

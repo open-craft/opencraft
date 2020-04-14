@@ -378,9 +378,11 @@ class OpenEdXInstanceConfigViewSet(
         if not user.is_authenticated:
             return BetaTestApplication.objects.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.all()
+            return BetaTestApplication.objects.all().select_related("instance")
         else:
-            return BetaTestApplication.objects.filter(user=self.request.user)
+            return BetaTestApplication.objects.filter(
+                user=self.request.user
+            ).select_related("instance")
 
 
 class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, GenericViewSet):

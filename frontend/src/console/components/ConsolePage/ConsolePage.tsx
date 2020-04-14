@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { INTERNAL_DOMAIN_NAME } from 'global/constants';
 import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
@@ -82,10 +81,8 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     }
 
     const instanceData = this.props.activeInstance.data;
-    const instanceLink =
-      `https://${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || '';
-    const studioLink =
-      `https://studio.${instanceData.subdomain}${INTERNAL_DOMAIN_NAME}` || '';
+    const instanceLink = instanceData.lmsUrl;
+    const studioLink = instanceData.studioUrl;
 
     return (
       <div className="title-container">

@@ -13,7 +13,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -24,7 +23,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -182,31 +180,46 @@ exports[`Hero customization page renders the hero customization page when instan
                         onKeyDown={[Function]}
                       >
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/about"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           About
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/contact"
                           onClick={[Function]}
-                          style={Object {}}
+                        >
+                          Contact
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/donate"
+                          onClick={[Function]}
+                        >
+                          Donate
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/tos"
+                          onClick={[Function]}
                         >
                           Terms of Service
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/honor"
                           onClick={[Function]}
-                          style={Object {}}
                         >
-                          Contact
+                          Honor Code
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/privacy"
+                          onClick={[Function]}
+                        >
+                          Privacy Policy
                         </a>
                       </div>
                     </div>
@@ -421,7 +434,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -432,7 +444,6 @@ exports[`Hero customization page renders the hero customization page when instan
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -590,31 +601,46 @@ exports[`Hero customization page renders the hero customization page when instan
                         onKeyDown={[Function]}
                       >
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/about"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           About
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/contact"
                           onClick={[Function]}
-                          style={Object {}}
+                        >
+                          Contact
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/donate"
+                          onClick={[Function]}
+                        >
+                          Donate
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/tos"
+                          onClick={[Function]}
                         >
                           Terms of Service
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/honor"
                           onClick={[Function]}
-                          style={Object {}}
                         >
-                          Contact
+                          Honor Code
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/privacy"
+                          onClick={[Function]}
+                        >
+                          Privacy Policy
                         </a>
                       </div>
                     </div>
@@ -822,7 +848,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -833,7 +858,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -991,31 +1015,46 @@ exports[`Hero customization page renders the hero customization page when the in
                         onKeyDown={[Function]}
                       >
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/about"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           About
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/contact"
                           onClick={[Function]}
-                          style={Object {}}
+                        >
+                          Contact
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/donate"
+                          onClick={[Function]}
+                        >
+                          Donate
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/tos"
+                          onClick={[Function]}
                         >
                           Terms of Service
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/honor"
                           onClick={[Function]}
-                          style={Object {}}
                         >
-                          Contact
+                          Honor Code
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/privacy"
+                          onClick={[Function]}
+                        >
+                          Privacy Policy
                         </a>
                       </div>
                     </div>
@@ -1223,7 +1262,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h1>
         <a
           className="header-link"
-          href="https://test.opencraft.hosting"
         >
           test
           <i
@@ -1234,7 +1272,6 @@ exports[`Hero customization page renders the hero customization page when the in
       <h2>
         <a
           className="header-link"
-          href="https://studio.test.opencraft.hosting"
         >
           Edit courses (Studio)
         </a>
@@ -1392,31 +1429,46 @@ exports[`Hero customization page renders the hero customization page when the in
                         onKeyDown={[Function]}
                       >
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/about"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           About
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/contact"
                           onClick={[Function]}
-                          style={Object {}}
+                        >
+                          Contact
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/donate"
+                          onClick={[Function]}
+                        >
+                          Donate
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/tos"
+                          onClick={[Function]}
                         >
                           Terms of Service
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/honor"
                           onClick={[Function]}
-                          style={Object {}}
                         >
-                          Contact
+                          Honor Code
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/privacy"
+                          onClick={[Function]}
+                        >
+                          Privacy Policy
                         </a>
                       </div>
                     </div>
@@ -1786,31 +1838,46 @@ exports[`Hero customization page renders without crashing 1`] = `
                         onKeyDown={[Function]}
                       >
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/about"
                           onClick={[Function]}
-                          style={Object {}}
                         >
                           About
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/contact"
                           onClick={[Function]}
-                          style={Object {}}
+                        >
+                          Contact
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/donate"
+                          onClick={[Function]}
+                        >
+                          Donate
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/tos"
+                          onClick={[Function]}
                         >
                           Terms of Service
                         </a>
                         <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
+                          aria-current={null}
+                          href="/console/custom-pages/honor"
                           onClick={[Function]}
-                          style={Object {}}
                         >
-                          Contact
+                          Honor Code
+                        </a>
+                        <a
+                          aria-current={null}
+                          href="/console/custom-pages/privacy"
+                          onClick={[Function]}
+                        >
+                          Privacy Policy
                         </a>
                       </div>
                     </div>

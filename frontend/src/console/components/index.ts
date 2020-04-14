@@ -27,3 +27,5 @@ export * from './ThemeFooter';
 export * from './FooterPreview';
 
 export * from './Hero';
+
+export * from './CustomPages';

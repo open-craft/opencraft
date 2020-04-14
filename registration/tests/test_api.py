@@ -668,6 +668,37 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         for key, value in static_content_overrides_data.items():
             self.assertEqual(self.instance_config.draft_static_content_overrides[key], value)
 
+    def test_check_config_urls(self):
+        """
+        Test if the LMS and Studio url variables behave correctly
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        response = self.client.get(reverse(f"api:v2:openedx-instance-config-list"))
+
+        # Retrieve instance data and check that instance urls are present and not empty
+        instance_data = dict(response.data[0])
+
+        self.assertIn('lms_url', instance_data.keys())
+        self.assertIn('studio_url', instance_data.keys())
+        self.assertIsNot(instance_data.get('lms_url'), "")
+        self.assertIsNot(instance_data.get('studio_url'), "")
+
+        # Detach instance from application and check that urls are empty
+        self.instance_config.instance = None
+        self.instance_config.save()
+
+        response = self.client.get(reverse(f"api:v2:openedx-instance-config-list"))
+
+        # Retrieve instance data and check that instance urls are present and empty
+        instance_data = dict(response.data[0])
+
+        self.assertIn('lms_url', instance_data.keys())
+        self.assertIn('studio_url', instance_data.keys())
+        self.assertEqual(instance_data.get('lms_url'), "")
+        self.assertEqual(instance_data.get('studio_url'), "")
+
 
 @ddt.ddt
 class InstanceDeploymentAPITestCase(APITestCase):
