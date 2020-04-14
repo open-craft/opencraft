@@ -70,8 +70,8 @@ export class ThemeNavigationComponent extends React.PureComponent<
               <Row>
                 <Col md={4}>
                   <ColorInputField
-                    fieldName="mainNavColor"
-                    initialValue={themeData.mainNavColor || ''}
+                    fieldName="headerBg"
+                    initialValue={themeData.headerBg || ''}
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
