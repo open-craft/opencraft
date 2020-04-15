@@ -4,7 +4,7 @@ import {
   ConsolePage,
   ConsolePageCustomizationContainer
 } from 'console/components';
-import { LMS_CUSTOM_PAGE_LINK_MAP, TINYMCE_API_KEY } from 'global/constants';
+import { LMS_CUSTOM_PAGE_LINK_MAP } from 'global/constants';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -16,6 +16,9 @@ import { Row, Col, Form } from 'react-bootstrap';
 import { Prompt } from 'react-router';
 import { Editor } from '@tinymce/tinymce-react';
 import messages from './displayMessages';
+import 'tinymce/tinymce';
+
+(window as any).tinymce.baseURL = '/assets/tinymce';
 
 interface State {
   [key: string]: any;
@@ -197,7 +200,6 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
                 disabled={instance.loading.includes(
                   'draftStaticContentOverrides'
                 )}
-                apiKey={TINYMCE_API_KEY}
               />
             </div>
           </div>

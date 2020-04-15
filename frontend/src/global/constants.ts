@@ -1,8 +1,6 @@
 export const OCIM_API_BASE =
   process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000';
 
-export const TINYMCE_API_KEY = process.env.REACT_APP_TINYMCE_API_KEY || '';
-
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
 export const ENTERPRISE_COMPARISON_LINK =
   process.env.REACT_APP_ENTERPRISE_COMPARISON_LINK || '/#';
