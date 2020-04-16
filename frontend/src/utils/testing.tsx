@@ -1,4 +1,3 @@
-import './matchMedia.mock.ts';
 import { createMemoryHistory } from 'history';
 import * as React from 'react';
 import { IntlProvider } from 'react-intl';
