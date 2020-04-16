@@ -133,6 +133,7 @@ portend==2.6              # via cherrypy
 prettytable==0.7.2        # via cliff, python-cinderclient, python-glanceclient, python-novaclient
 prompt-toolkit==2.0.10    # via ipython
 prospector==1.1.4         # via -r requirements.in
+psycopg2==2.8.3           # via -r requirements.in
 ptyprocess==0.6.0         # via pexpect
 pyasn1-modules==0.2.8     # via service-identity
 pyasn1==0.4.8             # via pyasn1-modules, service-identity
