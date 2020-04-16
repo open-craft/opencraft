@@ -164,7 +164,7 @@
       "^.+\\.module\\.(css|sass|scss)$"
     ],
     "modulePaths": [
-      "/home/giovanni-opencraft/devstacks/ocim/frontend/src"
+      "<rootDir>/src"
     ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
