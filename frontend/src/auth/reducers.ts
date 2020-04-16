@@ -30,6 +30,39 @@ export function loginStateReducer(
       });
     case LoginActions.Types.LOGOUT:
       return notLoggedInStatus;
+    case LoginActions.Types.PASSWORD_FORGOTTEN_SUCCESS:
+      return update(state, {
+        succeeded: { $set: true },
+        error: { $set: null }
+      });
+    case LoginActions.Types.PASSWORD_FORGOTTEN_FAILURE:
+      return update(state, {
+        succeeded: { $set: false },
+        error: { $set: action.error }
+      });
+    case LoginActions.Types.PASSWORD_RESET_TOKEN_VALIDATION_SUCCESS:
+      return update(state, {
+        succeeded: { $set: true },
+        error: { $set: null }
+      });
+    case LoginActions.Types.PASSWORD_RESET_TOKEN_VALIDATION_FAILURE:
+      return update(state, {
+        succeeded: { $set: false },
+        error: { $set: action.error }
+      });
+    case LoginActions.Types.PASSWORD_RESET_SUCCESS:
+      return update(state, {
+        succeeded: { $set: true },
+        error: { $set: null }
+      });
+    case LoginActions.Types.PASSWORD_RESET_FAILURE:
+      return update(state, {
+        error: { $set: action.error }
+      });
+    case LoginActions.Types.CLEAR_ERROR_MESSAGE:
+      return update(state, {
+        error: { $set: null }
+      });
     default:
       return state;
   }

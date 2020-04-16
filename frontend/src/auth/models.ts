@@ -15,6 +15,8 @@ export interface LoginStateModel extends LoginFormModel {
   refresh: string;
   /** State of login request */
   loading: boolean;
+  /** State of a page-specific action */
+  succeeded: boolean;
 }
 
 export const notLoggedInStatus: LoginStateModel = {
@@ -23,7 +25,8 @@ export const notLoggedInStatus: LoginStateModel = {
   password: '',
   access: '',
   refresh: '',
-  loading: false
+  loading: false,
+  succeeded: false
 };
 
 export const getInitialState = () => {

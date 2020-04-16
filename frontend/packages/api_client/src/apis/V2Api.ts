@@ -21,9 +21,18 @@ import {
     ApplicationImageUpload,
     ApplicationImageUploadFromJSON,
     ApplicationImageUploadToJSON,
+    Email,
+    EmailFromJSON,
+    EmailToJSON,
     GenericAPIError,
     GenericAPIErrorFromJSON,
     GenericAPIErrorToJSON,
+    JwtToken,
+    JwtTokenFromJSON,
+    JwtTokenToJSON,
+    JwtTokenError,
+    JwtTokenErrorFromJSON,
+    JwtTokenErrorToJSON,
     OpenEdXInstanceConfig,
     OpenEdXInstanceConfigFromJSON,
     OpenEdXInstanceConfigToJSON,
@@ -36,6 +45,9 @@ import {
     OpenEdXInstanceDeploymentStatus,
     OpenEdXInstanceDeploymentStatusFromJSON,
     OpenEdXInstanceDeploymentStatusToJSON,
+    PasswordToken,
+    PasswordTokenFromJSON,
+    PasswordTokenToJSON,
     StaticContentOverrides,
     StaticContentOverridesFromJSON,
     StaticContentOverridesToJSON,
@@ -45,9 +57,6 @@ import {
     Token,
     TokenFromJSON,
     TokenToJSON,
-    TokenError,
-    TokenErrorFromJSON,
-    TokenErrorToJSON,
     TokenObtainPair,
     TokenObtainPairFromJSON,
     TokenObtainPairToJSON,
@@ -138,6 +147,18 @@ export interface InstancesOpenedxDeploymentDeleteRequest {
 
 export interface InstancesOpenedxDeploymentReadRequest {
     id: string;
+}
+
+export interface PasswordResetConfirmCreateRequest {
+    data: PasswordToken;
+}
+
+export interface PasswordResetCreateRequest {
+    data: Email;
+}
+
+export interface PasswordResetValidateTokenCreateRequest {
+    data: Token;
 }
 
 /**
@@ -318,7 +339,7 @@ export class V2Api extends runtime.BaseAPI {
      * This overrides the method just to add the Swagger schema overrides
      * Refresh a JWT auth token from refresh token.
      */
-    async authRefreshCreateRaw(requestParameters: AuthRefreshCreateRequest): Promise<runtime.ApiResponse<Token>> {
+    async authRefreshCreateRaw(requestParameters: AuthRefreshCreateRequest): Promise<runtime.ApiResponse<JwtToken>> {
         if (requestParameters.data === null || requestParameters.data === undefined) {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authRefreshCreate.');
         }
@@ -344,14 +365,14 @@ export class V2Api extends runtime.BaseAPI {
             body: TokenRefreshToJSON(requestParameters.data),
         });
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => JwtTokenFromJSON(jsonValue));
     }
 
     /**
      * This overrides the method just to add the Swagger schema overrides
      * Refresh a JWT auth token from refresh token.
      */
-    async authRefreshCreate(requestParameters: AuthRefreshCreateRequest): Promise<Token> {
+    async authRefreshCreate(requestParameters: AuthRefreshCreateRequest): Promise<JwtToken> {
         const response = await this.authRefreshCreateRaw(requestParameters);
         return await response.value();
     }
@@ -360,7 +381,7 @@ export class V2Api extends runtime.BaseAPI {
      * This overrides the method just to add the Swagger schema overrides
      * Generate a JWT auth token from user credentials.
      */
-    async authTokenCreateRaw(requestParameters: AuthTokenCreateRequest): Promise<runtime.ApiResponse<Token>> {
+    async authTokenCreateRaw(requestParameters: AuthTokenCreateRequest): Promise<runtime.ApiResponse<JwtToken>> {
         if (requestParameters.data === null || requestParameters.data === undefined) {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authTokenCreate.');
         }
@@ -386,14 +407,14 @@ export class V2Api extends runtime.BaseAPI {
             body: TokenObtainPairToJSON(requestParameters.data),
         });
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => JwtTokenFromJSON(jsonValue));
     }
 
     /**
      * This overrides the method just to add the Swagger schema overrides
      * Generate a JWT auth token from user credentials.
      */
-    async authTokenCreate(requestParameters: AuthTokenCreateRequest): Promise<Token> {
+    async authTokenCreate(requestParameters: AuthTokenCreateRequest): Promise<JwtToken> {
         const response = await this.authTokenCreateRaw(requestParameters);
         return await response.value();
     }
@@ -1002,6 +1023,128 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxDeploymentRead(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<OpenEdXInstanceDeploymentStatus> {
         const response = await this.instancesOpenedxDeploymentReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * An Api View which provides a method to reset a password based on a unique token
+     */
+    async passwordResetConfirmCreateRaw(requestParameters: PasswordResetConfirmCreateRequest): Promise<runtime.ApiResponse<PasswordToken>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetConfirmCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/password_reset/confirm/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasswordTokenToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PasswordTokenFromJSON(jsonValue));
+    }
+
+    /**
+     * An Api View which provides a method to reset a password based on a unique token
+     */
+    async passwordResetConfirmCreate(requestParameters: PasswordResetConfirmCreateRequest): Promise<PasswordToken> {
+        const response = await this.passwordResetConfirmCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Sends a signal reset_password_token_created when a reset token was created
+     * An Api View which provides a method to request a password reset token based on an e-mail address
+     */
+    async passwordResetCreateRaw(requestParameters: PasswordResetCreateRequest): Promise<runtime.ApiResponse<Email>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/password_reset/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: EmailToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailFromJSON(jsonValue));
+    }
+
+    /**
+     * Sends a signal reset_password_token_created when a reset token was created
+     * An Api View which provides a method to request a password reset token based on an e-mail address
+     */
+    async passwordResetCreate(requestParameters: PasswordResetCreateRequest): Promise<Email> {
+        const response = await this.passwordResetCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * An Api View which provides a method to verify that a token is valid
+     */
+    async passwordResetValidateTokenCreateRaw(requestParameters: PasswordResetValidateTokenCreateRequest): Promise<runtime.ApiResponse<Token>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetValidateTokenCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/password_reset/validate_token/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+    }
+
+    /**
+     * An Api View which provides a method to verify that a token is valid
+     */
+    async passwordResetValidateTokenCreate(requestParameters: PasswordResetValidateTokenCreateRequest): Promise<Token> {
+        const response = await this.passwordResetValidateTokenCreateRaw(requestParameters);
         return await response.value();
     }
 

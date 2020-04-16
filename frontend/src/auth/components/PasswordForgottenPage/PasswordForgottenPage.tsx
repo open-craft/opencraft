@@ -1,23 +1,22 @@
 import * as React from 'react';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
-import { ROUTES } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { Alert, Button, Spinner, Form } from 'react-bootstrap';
 import { ContentPage, TextInputField } from 'ui/components';
-import { performLogin } from 'auth/actions';
+import { performPasswordForgotten } from 'auth/actions';
 import { Link } from 'react-router-dom';
 import messages from './displayMessages';
 import './styles.scss';
+import { ROUTES } from '../../../global/constants';
 
 interface ActionProps {
-  performLogin: Function;
+  performPasswordForgotten: Function;
 }
 
 interface State {
-  [key: string]: string | boolean;
-  username: string;
-  password: string;
+  [key: string]: string;
+  email: string;
 }
 
 interface Props extends ActionProps {
@@ -29,33 +28,27 @@ interface Props extends ActionProps {
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.loginState,
   {
-    performLogin
+    performPasswordForgotten
   }
 )
-export class LoginPage extends React.PureComponent<Props, State> {
+export class PasswordForgottenPage extends React.PureComponent<Props, State> {
   constructor(props: Props, state: State) {
     super(props);
 
     this.state = {
-      username: '',
-      password: ''
+      email: ''
     };
   }
 
   private onKeyPress = (event: any) => {
     if (event.key === 'Enter') {
-      this.logIn();
+      event.preventDefault();
+      this.submit();
     }
   };
 
-  private logIn = () => {
-    this.props.performLogin(
-      {
-        username: this.state.username,
-        password: this.state.password
-      },
-      ROUTES.Console.HOME
-    );
+  private submit = () => {
+    this.props.performPasswordForgotten({ email: this.state.email });
   };
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,32 +62,25 @@ export class LoginPage extends React.PureComponent<Props, State> {
 
   public render() {
     return (
-      <ContentPage title="Log in to customize your instance">
+      <ContentPage title="Forgot password">
         <Form
-          className="login"
+          className="login" // FIXME: make SCSS more generic to properly reuse this style.
           onKeyPress={(event: any) => {
             this.onKeyPress(event);
           }}
         >
           {this.props.succeeded && (
             <Alert variant="success">
-              <WrappedMessage messages={messages} id="passwordReset" />
+              <WrappedMessage messages={messages} id="success" />
             </Alert>
           )}
 
           <TextInputField
-            fieldName="username"
-            value={this.state.username}
+            fieldName="email"
+            value={this.state.email}
             onChange={this.onChange}
             messages={messages}
-            type="username"
-          />
-          <TextInputField
-            fieldName="password"
-            value={this.state.password}
-            onChange={this.onChange}
-            messages={messages}
-            type="password"
+            type="email"
           />
 
           {this.props.error && (
@@ -107,18 +93,20 @@ export class LoginPage extends React.PureComponent<Props, State> {
             size="lg"
             disabled={this.props.loading}
             onClick={() => {
-              this.logIn();
+              this.submit();
             }}
           >
             {this.props.loading && (
               <Spinner animation="border" size="sm" className="spinner" />
             )}
-            <WrappedMessage messages={messages} id="login" />
+            <WrappedMessage messages={messages} id="resetPassword" />
           </Button>
 
           <p className="forgot-password">
-            <Link to={ROUTES.Auth.PASSWORD_FORGOTTEN}>
-              <WrappedMessage messages={messages} id="forgotPassword" />
+            {' '}
+            {/* FIXME: make SCSS more generic to properly reuse this style. */}
+            <Link to={ROUTES.Auth.LOGIN}>
+              <WrappedMessage messages={messages} id="signIn" />
             </Link>
           </p>
         </Form>
