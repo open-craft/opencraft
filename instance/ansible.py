@@ -85,7 +85,9 @@ def string_to_file_path(string, root_dir=None):
     """
     Store a string in a temporary file
     """
-    f = NamedTemporaryFile('w', delete=False, dir=root_dir)
+    # explicitly set UTF-8 encoding to avoid default ASCII encoding when running in Python 3.6-
+    # if environment uses legacy C locale. This can be removed when test env is updated to Python 3.7
+    f = NamedTemporaryFile('w', delete=False, dir=root_dir, encoding='utf-8')
     f.write(string)
     f.close()
     return f.name

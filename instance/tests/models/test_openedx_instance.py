@@ -775,6 +775,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch.object(GandiV5API, 'remove_dns_record')
     @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.deprovision_rabbitmq')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
@@ -786,6 +787,7 @@ class OpenEdXInstanceTestCase(TestCase):
             mock_reconfigure,
             mock_disable_monitoring,
             mock_remove_dns_records,
+            mock_deprovision_rabbitmq,
             *mock
     ):
         """
@@ -820,6 +822,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mock_reconfigure.call_count, 1)
         self.assertEqual(mock_disable_monitoring.call_count, 0)
         self.assertEqual(mock_remove_dns_records.call_count, 0)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 0)
 
         # Instance should not be marked as archived
         self.assertFalse(instance.ref.is_archived)
@@ -833,6 +836,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mock_reconfigure.call_count, 2)
         self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 1)
 
         # Check status of running app servers
         self._assert_status([
@@ -857,6 +861,7 @@ class OpenEdXInstanceTestCase(TestCase):
     @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
     @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.deprovision_rabbitmq')
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
@@ -865,6 +870,7 @@ class OpenEdXInstanceTestCase(TestCase):
             mock_reconfigure,
             mock_disable_monitoring,
             mock_remove_dns_records,
+            mock_deprovision_rabbitmq,
             mock_consul2,
             mock_consul,
             mock_appserver_dns_clean_up):
@@ -879,6 +885,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mock_reconfigure.call_count, 1)
         self.assertEqual(mock_disable_monitoring.call_count, 1)
         self.assertEqual(mock_remove_dns_records.call_count, 1)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 1)
         self._assert_status([
             (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)
         ])
@@ -1164,6 +1171,19 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         # Test configurations not changed
         version, updated = instance.update_consul_metadata()
         self.assertEqual(version, 3)
+        self.assertEqual(updated, False)
+
+        # There should be no update with consul disabled
+        with override_settings(CONSUL_ENABLED=False):
+            version, updated = instance.update_consul_metadata()
+            self.assertEqual(version, 0)
+            self.assertEqual(updated, False)
+
+        # There should be no update if instance is archived.
+        instance.ref.is_archived = True
+        instance.ref.save()
+        version, updated = instance.update_consul_metadata()
+        self.assertEqual(version, 0)
         self.assertEqual(updated, False)
 
         instance.purge_consul_metadata()

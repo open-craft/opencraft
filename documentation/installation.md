@@ -10,24 +10,35 @@ system.
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
-configure the developer environment as needed Vagrant uses
+configure the developer environment as needed, Vagrant uses
 [Ansible](https://www.ansible.com/).
 
-You will need to install all these tools before you can set up your development
-environment:
+First, make sure that Intel VT-x/AMD-v virtualization is enabled in your BIOS / UEFI
+firmware. Then, you will need to install all these tools before you can set up your
+development environment:
 
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
-Once you have these tools installed, you will need to download the [Ansible
-playbooks](https://github.com/open-craft/ansible-playbooks) used to build the
-Vagrant instance.  If you haven't checked it out yet, you can clone it into the
-`deploy/` subdirectory using this command at the root of the repository:
+Install the plugin vagrant-vbguest:
+
+    vagrant plugin install vagrant-vbguest
+
+Once you have these tools installed, download the [Ocim repository]
+(https://github.com/open-craft/opencraft) if you have not already done it.
+
+    git clone https://github.com/open-craft/opencraft ocim
+    cd ocim
+
+Also download the [Ansible playbooks](https://github.com/open-craft/ansible-playbooks)
+used to build the Vagrant instance into the `deploy/` subdirectory:
 
     git clone https://github.com/open-craft/ansible-playbooks deploy
 
-If you already have a clone of that repo, you can also create a symlink `deploy`
-pointing to your clone.
+If you already have a clone of that repository, create a symlink `deploy`
+pointing to it instead:
+
+    ln -s <cloned_repo_path> deploy
 
 Create a new virtualenv to install the dependencies of the `ansible-playbooks`
 repository – most notably Ansible:
@@ -37,7 +48,7 @@ repository – most notably Ansible:
     . ~/venvs/ansible/bin/activate
     pip install -r deploy/requirements.txt
 
-Now you can run
+Now you can run:
 
     vagrant up
 
@@ -49,7 +60,13 @@ command:
 
     vagrant ssh
 
-To check if everything is set up properly you can run ``make test.unit`` inside
+Inside the virtual machine, set HUEY_ALWAYS_EAGER to false in
+/home/vagrant/opencraft/.env. Also, create a superuser account which will
+be used to log in to Ocim:
+
+    make manage createsuperuser
+
+To check if everything is set up properly, you can run ``make test.unit`` inside
 your new environment.
 
 Vagrant will set up a VirtualBox share mapping your local development directory
@@ -57,8 +74,10 @@ to `/vagrant` inside the virtual machine. Any changes you make locally will be
 reflected inside the virtual machine automatically.
 
 Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
-Once you have set everything up you will be able to access the development
-server at http://localhost:5000/ using your web browser.
+Once you have set everything up, you will be able to access the home webpage of
+the development server at http://localhost:5000/ using your web browser. Log in
+with the previously created superuser account credentials and you will then be
+redirected to the Ocim webpage which lists the Open edX instances.
 
 ### Local installation (skip this if using Vagrant)
 
