@@ -2,7 +2,8 @@ import * as React from 'react';
 import './styles.scss';
 import {
   ConsolePage,
-  ConsolePageCustomizationContainer
+  ConsolePageCustomizationContainer,
+  PreviewComponent
 } from 'console/components';
 import { ColorInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
@@ -50,7 +51,7 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
           {themeData && themeData.version === 1 && (
             <Container className="theme-colors-and-prevew-container">
               <Row>
-                <Col>
+                <Col className="side-buttons">
                   <ColorInputField
                     fieldName="mainColor"
                     initialValue={themeData.mainColor}
@@ -66,7 +67,12 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
                     loading={instance.loading.includes('draftThemeConfig')}
                   />
                 </Col>
-                <Col xs={8}>Theme preview component</Col>
+                <Col xs={9}>
+                  <PreviewComponent
+                    instanceData={instance.data!}
+                    themeData={themeData}
+                  />
+                </Col>
               </Row>
             </Container>
           )}

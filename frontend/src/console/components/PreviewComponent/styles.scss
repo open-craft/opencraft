@@ -1,0 +1,110 @@
+.theme-preview {
+  border: 2px solid black;
+  background: white;
+
+  .theme-preview-navigation {
+    .row {
+      margin: 0;
+      padding-left: 10px;
+
+      .col-md-3 {
+        padding-right: 0;
+        padding-left: 0;
+      }
+    }
+
+    .customizable-link {
+      height: 30px;
+      font-size: 10px;
+    }
+
+    .customizable-button {
+      width: 60px;
+      height: 18px;
+      font-size: 9px;
+    }
+  }
+
+  .theme-home {
+    .theme-hero-container {
+      margin-top: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+
+      .outer-wrapper {
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+
+      .title {
+        height: 50px;
+        width: 50%;
+        padding: 10px;
+        margin: 0 auto;
+
+        h1 {
+          font-size: 0.7em;
+        }
+
+        p {
+          font-size: 0.4em;
+        }
+      }
+    }
+
+    .theme-courses-container {
+      .col {
+        padding: 10px 10px 10px 25px;
+        font-size: 10px;
+
+        img {
+          max-width: 80px;
+        }
+      }
+    }
+  }
+
+  .theme-footer {
+    .custom-footer {
+      margin-bottom: 0;
+
+      .footer-top-links {
+        padding-left: 2px;
+      }
+
+      .col-md-4 {
+        padding-left: 0;
+      }
+
+      .customizable-link {
+        font-size: 8px;
+      }
+
+      .copyright {
+        font-size: 6px;
+      }
+
+      .logo {
+        img {
+          max-width: 30px;
+        }
+      }
+
+      .openedx-logo {
+        img {
+          max-width: 50px;
+        }
+      }
+
+      .row.legal {
+        .col:first-of-type {
+          padding-left: 4px;
+        }
+
+        .customizable-link {
+          font-size: 6px;
+        }
+      }
+    }
+  }
+}

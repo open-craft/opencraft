@@ -67,7 +67,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
       className="main-navigation-menu navigation-menu"
       style={{ background: themeData.headerBg }}
     >
-      <Col md={1}>
+      <Col md={1} className="logo">
         {props.instanceData && props.instanceData.logo && (
           <img src={props.instanceData.logo} alt="Logo" />
         )}
