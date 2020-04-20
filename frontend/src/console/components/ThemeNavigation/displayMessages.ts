@@ -11,20 +11,20 @@ const messages = {
     defaultMessage: 'Header top border',
     description: ''
   },
-  mainNavColor: {
-    defaultMessage: 'Main nav bar color',
+  headerBg: {
+    defaultMessage: 'Header color',
     description: ''
   },
   mainNavLinkColor: {
-    defaultMessage: 'Main nav link color',
+    defaultMessage: 'Header link color',
     description: ''
   },
   mainNavItemBorderBottomColor: {
-    defaultMessage: 'Main nav item border color',
+    defaultMessage: 'Header link border color',
     description: ''
   },
   mainNavItemHoverBorderBottomColor: {
-    defaultMessage: 'Main nav item border color on hover',
+    defaultMessage: 'Header link border color on hover',
     description: ''
   },
   userDropdownColor: {

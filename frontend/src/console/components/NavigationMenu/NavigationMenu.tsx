@@ -65,7 +65,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
   return (
     <Row
       className="main-navigation-menu navigation-menu"
-      style={{ background: themeData.mainNavColor }}
+      style={{ background: themeData.headerBg }}
     >
       <Col md={1}>
         {props.instanceData && props.instanceData.logo && (
