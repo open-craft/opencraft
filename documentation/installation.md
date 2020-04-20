@@ -92,9 +92,9 @@ can be used to create a virtualenv environment.
 Install [pyenv](https://github.com/pyenv/pyenv) by following the [pyenv documentation](https://github.com/pyenv/pyenv#installation).
 Also install [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv#installation) by following its [documentation](https://github.com/pyenv/pyenv-virtualenv#installation).
 
-Install a supported version of Python and create a virtualenv environment. We will be using Python 3.6.9 as an example.
+Install a supported version of Python and create a virtualenv environment. We will be using Python 3.6.10 as an example.
 
-    pyenv install 3.6.9
+    pyenv install 3.6.10
 
 Install the system package dependencies:
 
@@ -109,7 +109,7 @@ default port, connecting as the root user without a password.
 
 Create a virtualenv, activate it, and install the python requirements:
 
-    pyenv virtualenv 3.6.9 opencraft
+    pyenv virtualenv 3.6.10 opencraft
     pyenv activate opencraft
     pip install -r requirements.txt
 
