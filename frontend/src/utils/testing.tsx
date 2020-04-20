@@ -19,6 +19,7 @@ export const setupComponentForTesting = (
     storeContents,
     middleware
   );
+
   return renderer.create(
     <IntlProvider textComponent={React.Fragment} locale="en">
       <Provider store={store}>
