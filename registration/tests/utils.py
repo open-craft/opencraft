@@ -26,6 +26,8 @@ import time
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.urls import reverse
+from django.utils.six import BytesIO
+from PIL import Image
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -33,6 +35,19 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+
+
+# Utility Functions ###########################################################
+
+
+def create_image(filename, size=(48, 48), image_mode='RGB', image_format='png'):
+    """
+    Generate a test image, returning the filename that it was saved as.
+    """
+    data = BytesIO()
+    Image.new(image_mode, size).save(data, image_format)
+    data.seek(0)
+    return data
 
 
 # Classes #####################################################################

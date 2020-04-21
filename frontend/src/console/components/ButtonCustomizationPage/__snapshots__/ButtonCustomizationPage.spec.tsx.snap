@@ -1,0 +1,331 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="button-customization-page"
+>
+  <div
+    className="row"
+  >
+    <div
+      className="button-name col-md-10"
+    >
+      Primary button
+      <span
+        className="info-icon"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
+      >
+        <i
+          className="fas fa-info-circle"
+        />
+      </span>
+    </div>
+    <div
+      className="col-md-2"
+    >
+      <button
+        className="customizable-button"
+        onMouseEnter={[Function]}
+        onMouseLeave={[Function]}
+        style={
+          Object {
+            "background": undefined,
+            "borderColor": undefined,
+            "color": undefined,
+          }
+        }
+        type="button"
+      >
+        Example
+      </button>
+    </div>
+  </div>
+  <div
+    className="collapsible-edit-area"
+  >
+    <div
+      className="edit-collapse"
+    >
+      <a
+        className="nav-link"
+        href="#"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+        role="button"
+      >
+        Edit
+        <i
+          className="fas xs fa-chevron-down"
+        />
+      </a>
+      <span
+        className="fill-line"
+      />
+    </div>
+    <div
+      aria-expanded={null}
+      className="content collapse"
+    >
+      <div
+        className="theme-button-customization-container container"
+      >
+        <div>
+          <div
+            className="row"
+          >
+            <p
+              className="style-name"
+            >
+              Active styles
+            </p>
+          </div>
+          <div
+            className="row"
+          >
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button color
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryBg"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button text color
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryColor"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button border color
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryBorderColor"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div
+            className="row"
+          >
+            <p
+              className="style-name"
+            >
+              Hover state styles
+            </p>
+          </div>
+          <div
+            className="row"
+          >
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button color on hover
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverBg"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button text color on hover
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverColor"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              className="col"
+            >
+              <div
+                className="form-group"
+              >
+                <label
+                  className="form-label"
+                >
+                  Button border color on hover
+                </label>
+                <div
+                  className="row"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverBorderColor"
+                    onFocus={[Function]}
+                    readOnly={true}
+                    style={
+                      Object {
+                        "color": "",
+                      }
+                    }
+                    value=""
+                  />
+                  <button
+                    className="reset-value padded"
+                    onClick={[Function]}
+                    type="button"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

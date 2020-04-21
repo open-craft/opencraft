@@ -1,0 +1,46 @@
+@import "~styles/theme";
+
+.content-page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  .title-container {
+    margin: 75px;
+
+    @media only screen and (max-width: 600px)
+    {
+      margin: 30px;
+    }
+  }
+
+  h1, h2 {
+    text-align: center;
+    color: #fff;
+  }
+
+  h1 {
+    font-family: $playfair-font;
+    font-weight: bold;
+    font-size: 40px;
+  }
+
+  h2 {
+    font-family: $chivo-font;
+    font-size: 20px;
+  }
+
+  .content-page-container {
+    background-color: #fff;
+    padding: 3rem 1rem;
+    margin: 0 -15px;
+    flex: 1;
+
+    .content-page-content {
+      margin: 0 auto;
+      max-width: 700px;
+      justify-content: center;
+    }
+  }
+}

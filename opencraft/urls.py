@@ -26,6 +26,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
+from django.conf.urls.static import static
 
 import opencraft.views as views
 
@@ -42,6 +43,9 @@ urlpatterns = [
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
     # Enable debug toolbar URLs

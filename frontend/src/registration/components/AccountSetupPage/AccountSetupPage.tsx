@@ -101,6 +101,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         subscribeToUpdates: this.state.subscribeToUpdates
       },
       {
+        externalDomain: this.props.registrationData.externalDomain,
         subdomain: this.props.registrationData.subdomain,
         instanceName: this.props.registrationData.instanceName,
         publicContactEmail: this.props.registrationData.publicContactEmail
@@ -128,7 +129,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         currentStep={3}
       >
         <RedirectToCorrectStep
-          currentPageStep={2}
+          currentPageStep={3}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <Form className="account-form">

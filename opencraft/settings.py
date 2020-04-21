@@ -201,6 +201,9 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = root('build/static')
 STATIC_URL = '/static/'
+if DEBUG:
+    MEDIA_ROOT = root('media')
+    MEDIA_URL = '/media/'
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
@@ -541,6 +544,14 @@ SIMPLE_THEME_SKELETON_THEME_REPO = env(
     default='https://github.com/open-craft/edx-simple-theme/'
 )
 SIMPLE_THEME_SKELETON_THEME_VERSION = env('SIMPLE_THEME_SKELETON_THEME_VERSION', default='master')
+
+SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO = env(
+    'SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO', default=SIMPLE_THEME_SKELETON_THEME_REPO
+)
+
+SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION = env(
+    'SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION', default=SIMPLE_THEME_SKELETON_THEME_VERSION
+)
 
 # DNS (Gandi) #################################################################
 

@@ -18,12 +18,30 @@ import {
     Account,
     AccountFromJSON,
     AccountToJSON,
+    ApplicationImageUpload,
+    ApplicationImageUploadFromJSON,
+    ApplicationImageUploadToJSON,
     GenericAPIError,
     GenericAPIErrorFromJSON,
     GenericAPIErrorToJSON,
     OpenEdXInstanceConfig,
     OpenEdXInstanceConfigFromJSON,
     OpenEdXInstanceConfigToJSON,
+    OpenEdXInstanceConfigUpdate,
+    OpenEdXInstanceConfigUpdateFromJSON,
+    OpenEdXInstanceConfigUpdateToJSON,
+    OpenEdXInstanceDeploymentCreate,
+    OpenEdXInstanceDeploymentCreateFromJSON,
+    OpenEdXInstanceDeploymentCreateToJSON,
+    OpenEdXInstanceDeploymentStatus,
+    OpenEdXInstanceDeploymentStatusFromJSON,
+    OpenEdXInstanceDeploymentStatusToJSON,
+    StaticContentOverrides,
+    StaticContentOverridesFromJSON,
+    StaticContentOverridesToJSON,
+    ThemeSchema,
+    ThemeSchemaFromJSON,
+    ThemeSchemaToJSON,
     Token,
     TokenFromJSON,
     TokenToJSON,
@@ -33,6 +51,12 @@ import {
     TokenObtainPair,
     TokenObtainPairFromJSON,
     TokenObtainPairToJSON,
+    TokenRefresh,
+    TokenRefreshFromJSON,
+    TokenRefreshToJSON,
+    TokenVerify,
+    TokenVerifyFromJSON,
+    TokenVerifyToJSON,
     ValidationError,
     ValidationErrorFromJSON,
     ValidationErrorToJSON,
@@ -52,27 +76,46 @@ export interface AccountsUpdateRequest {
     data: Account;
 }
 
+export interface AuthRefreshCreateRequest {
+    data: TokenRefresh;
+}
+
 export interface AuthTokenCreateRequest {
     data: TokenObtainPair;
 }
 
-export interface InstancesOpenedxConfigCommitChangesRequest {
-    id: string;
-    data: OpenEdXInstanceConfig;
-    force?: boolean;
+export interface AuthVerifyCreateRequest {
+    data: TokenVerify;
 }
 
 export interface InstancesOpenedxConfigCreateRequest {
     data: OpenEdXInstanceConfig;
 }
 
+export interface InstancesOpenedxConfigImageRequest {
+    id: string;
+    logo?: Blob;
+    favicon?: Blob;
+    heroCoverImage?: Blob;
+}
+
 export interface InstancesOpenedxConfigPartialUpdateRequest {
     id: string;
-    data: OpenEdXInstanceConfig;
+    data: OpenEdXInstanceConfigUpdate;
 }
 
 export interface InstancesOpenedxConfigReadRequest {
     id: string;
+}
+
+export interface InstancesOpenedxConfigStaticContentOverridesRequest {
+    id: string;
+    data: StaticContentOverrides;
+}
+
+export interface InstancesOpenedxConfigThemeConfigRequest {
+    id: string;
+    data: ThemeSchema;
 }
 
 export interface InstancesOpenedxConfigUpdateRequest {
@@ -82,6 +125,19 @@ export interface InstancesOpenedxConfigUpdateRequest {
 
 export interface InstancesOpenedxConfigValidateRequest {
     data: OpenEdXInstanceConfig;
+}
+
+export interface InstancesOpenedxDeploymentCreateRequest {
+    data: OpenEdXInstanceDeploymentCreate;
+    force?: boolean;
+}
+
+export interface InstancesOpenedxDeploymentDeleteRequest {
+    id: string;
+}
+
+export interface InstancesOpenedxDeploymentReadRequest {
+    id: string;
 }
 
 /**
@@ -259,6 +315,50 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Refresh a JWT auth token from refresh token.
+     */
+    async authRefreshCreateRaw(requestParameters: AuthRefreshCreateRequest): Promise<runtime.ApiResponse<Token>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authRefreshCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/auth/refresh/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TokenRefreshToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Refresh a JWT auth token from refresh token.
+     */
+    async authRefreshCreate(requestParameters: AuthRefreshCreateRequest): Promise<Token> {
+        const response = await this.authRefreshCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Generate a JWT auth token from user credentials.
      */
     async authTokenCreateRaw(requestParameters: AuthTokenCreateRequest): Promise<runtime.ApiResponse<Token>> {
         if (requestParameters.data === null || requestParameters.data === undefined) {
@@ -290,6 +390,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This overrides the method just to add the Swagger schema overrides
+     * Generate a JWT auth token from user credentials.
      */
     async authTokenCreate(requestParameters: AuthTokenCreateRequest): Promise<Token> {
         const response = await this.authTokenCreateRaw(requestParameters);
@@ -297,23 +399,15 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * This API call will copy over any changes made to the instance config to the actual instance used to launch AppServers and launch a new AppServer with the applied changes.  It checks if an AppServer is already being provisioned and in that case prevents a new one from being launched unless forced.
-     * Commit configuration changes to instance and launch new AppServer.
+     * This overrides the method just to add the Swagger schema overrides
+     * Check if a JWT auth token is valid.
      */
-    async instancesOpenedxConfigCommitChangesRaw(requestParameters: InstancesOpenedxConfigCommitChangesRequest): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigCommitChanges.');
-        }
-
+    async authVerifyCreateRaw(requestParameters: AuthVerifyCreateRequest): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.data === null || requestParameters.data === undefined) {
-            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigCommitChanges.');
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authVerifyCreate.');
         }
 
         const queryParameters: runtime.HTTPQuery = {};
-
-        if (requestParameters.force !== undefined) {
-            queryParameters['force'] = requestParameters.force;
-        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -327,22 +421,22 @@ export class V2Api extends runtime.BaseAPI {
             headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
         }
         const response = await this.request({
-            path: `/v2/instances/openedx_config/{id}/commit_changes/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/v2/auth/verify/`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: OpenEdXInstanceConfigToJSON(requestParameters.data),
+            body: TokenVerifyToJSON(requestParameters.data),
         });
 
         return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * This API call will copy over any changes made to the instance config to the actual instance used to launch AppServers and launch a new AppServer with the applied changes.  It checks if an AppServer is already being provisioned and in that case prevents a new one from being launched unless forced.
-     * Commit configuration changes to instance and launch new AppServer.
+     * This overrides the method just to add the Swagger schema overrides
+     * Check if a JWT auth token is valid.
      */
-    async instancesOpenedxConfigCommitChanges(requestParameters: InstancesOpenedxConfigCommitChangesRequest): Promise<void> {
-        await this.instancesOpenedxConfigCommitChangesRaw(requestParameters);
+    async authVerifyCreate(requestParameters: AuthVerifyCreateRequest): Promise<void> {
+        await this.authVerifyCreateRaw(requestParameters);
     }
 
     /**
@@ -388,6 +482,78 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
+     * Endpoint for saving favicon or logo images
+     */
+    async instancesOpenedxConfigImageRaw(requestParameters: InstancesOpenedxConfigImageRequest): Promise<runtime.ApiResponse<ApplicationImageUpload>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigImage.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.logo !== undefined) {
+            formParams.append('logo', requestParameters.logo as any);
+        }
+
+        if (requestParameters.favicon !== undefined) {
+            formParams.append('favicon', requestParameters.favicon as any);
+        }
+
+        if (requestParameters.heroCoverImage !== undefined) {
+            formParams.append('hero_cover_image', requestParameters.heroCoverImage as any);
+        }
+
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/image/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApplicationImageUploadFromJSON(jsonValue));
+    }
+
+    /**
+     * Send a POST to action image/ with the file in the `logo` or `favicon` field to add or update it.
+     * Endpoint for saving favicon or logo images
+     */
+    async instancesOpenedxConfigImage(requestParameters: InstancesOpenedxConfigImageRequest): Promise<ApplicationImageUpload> {
+        const response = await this.instancesOpenedxConfigImageRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
      * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
      * Get all instances owned by user
      */
@@ -423,10 +589,10 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Update instance owned by user
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Configuration API.
      */
-    async instancesOpenedxConfigPartialUpdateRaw(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
+    async instancesOpenedxConfigPartialUpdateRaw(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfigUpdate>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigPartialUpdate.');
         }
@@ -453,17 +619,17 @@ export class V2Api extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: OpenEdXInstanceConfigToJSON(requestParameters.data),
+            body: OpenEdXInstanceConfigUpdateToJSON(requestParameters.data),
         });
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceConfigFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceConfigUpdateFromJSON(jsonValue));
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
-     * Update instance owned by user
+     * This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Open edX Instance Configuration API.
      */
-    async instancesOpenedxConfigPartialUpdate(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<OpenEdXInstanceConfig> {
+    async instancesOpenedxConfigPartialUpdate(requestParameters: InstancesOpenedxConfigPartialUpdateRequest): Promise<OpenEdXInstanceConfigUpdate> {
         const response = await this.instancesOpenedxConfigPartialUpdateRaw(requestParameters);
         return await response.value();
     }
@@ -504,6 +670,96 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigRead(requestParameters: InstancesOpenedxConfigReadRequest): Promise<OpenEdXInstanceConfig> {
         const response = await this.instancesOpenedxConfigReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Partial update for static content overrides configuration
+     */
+    async instancesOpenedxConfigStaticContentOverridesRaw(requestParameters: InstancesOpenedxConfigStaticContentOverridesRequest): Promise<runtime.ApiResponse<StaticContentOverrides>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigStaticContentOverrides.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigStaticContentOverrides.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/static_content_overrides/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: StaticContentOverridesToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StaticContentOverridesFromJSON(jsonValue));
+    }
+
+    /**
+     * Partial update for static content overrides configuration
+     */
+    async instancesOpenedxConfigStaticContentOverrides(requestParameters: InstancesOpenedxConfigStaticContentOverridesRequest): Promise<StaticContentOverrides> {
+        const response = await this.instancesOpenedxConfigStaticContentOverridesRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * This is a custom handler to partially update theme fields.
+     * Partial update for theme configuration
+     */
+    async instancesOpenedxConfigThemeConfigRaw(requestParameters: InstancesOpenedxConfigThemeConfigRequest): Promise<runtime.ApiResponse<ThemeSchema>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigThemeConfig.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigThemeConfig.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/theme_config/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ThemeSchemaToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ThemeSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * This is a custom handler to partially update theme fields.
+     * Partial update for theme configuration
+     */
+    async instancesOpenedxConfigThemeConfig(requestParameters: InstancesOpenedxConfigThemeConfigRequest): Promise<ThemeSchema> {
+        const response = await this.instancesOpenedxConfigThemeConfigRaw(requestParameters);
         return await response.value();
     }
 
@@ -592,6 +848,161 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigValidate(requestParameters: InstancesOpenedxConfigValidateRequest): Promise<void> {
         await this.instancesOpenedxConfigValidateRaw(requestParameters);
+    }
+
+    /**
+     * This API call will copy over any changes made to the instance config to the actual instance used to launch AppServers and launch a new AppServer with the applied changes.  It checks if an AppServer is already being provisioned and in that case prevents a new one from being launched unless forced.
+     * Commit configuration changes to instance and launch new AppServer.
+     */
+    async instancesOpenedxDeploymentCreateRaw(requestParameters: InstancesOpenedxDeploymentCreateRequest): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxDeploymentCreate.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        if (requestParameters.force !== undefined) {
+            queryParameters['force'] = requestParameters.force;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_deployment/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: OpenEdXInstanceDeploymentCreateToJSON(requestParameters.data),
+        });
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This API call will copy over any changes made to the instance config to the actual instance used to launch AppServers and launch a new AppServer with the applied changes.  It checks if an AppServer is already being provisioned and in that case prevents a new one from being launched unless forced.
+     * Commit configuration changes to instance and launch new AppServer.
+     */
+    async instancesOpenedxDeploymentCreate(requestParameters: InstancesOpenedxDeploymentCreateRequest): Promise<void> {
+        await this.instancesOpenedxDeploymentCreateRaw(requestParameters);
+    }
+
+    /**
+     * This allows the user to cancel an ongoing deployment, note that this can can cancel both user-triggered deployments and OpenCraft triggered deployments.
+     * Stops all current redeployments.
+     */
+    async instancesOpenedxDeploymentDeleteRaw(requestParameters: InstancesOpenedxDeploymentDeleteRequest): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxDeploymentDelete.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_deployment/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This allows the user to cancel an ongoing deployment, note that this can can cancel both user-triggered deployments and OpenCraft triggered deployments.
+     * Stops all current redeployments.
+     */
+    async instancesOpenedxDeploymentDelete(requestParameters: InstancesOpenedxDeploymentDeleteRequest): Promise<void> {
+        await this.instancesOpenedxDeploymentDeleteRaw(requestParameters);
+    }
+
+    /**
+     * List method not allowed.
+     */
+    async instancesOpenedxDeploymentListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceDeploymentStatus>>> {
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_deployment/`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OpenEdXInstanceDeploymentStatusFromJSON));
+    }
+
+    /**
+     * List method not allowed.
+     */
+    async instancesOpenedxDeploymentList(): Promise<Array<OpenEdXInstanceDeploymentStatus>> {
+        const response = await this.instancesOpenedxDeploymentListRaw();
+        return await response.value();
+    }
+
+    /**
+     * This API will check for provisioning appservers or changes in settings that need to be deployed and return a status code to the frontend.
+     * Retrieves the deployment status for a given betatest instance.
+     */
+    async instancesOpenedxDeploymentReadRaw(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<runtime.ApiResponse<OpenEdXInstanceDeploymentStatus>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxDeploymentRead.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_deployment/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OpenEdXInstanceDeploymentStatusFromJSON(jsonValue));
+    }
+
+    /**
+     * This API will check for provisioning appservers or changes in settings that need to be deployed and return a status code to the frontend.
+     * Retrieves the deployment status for a given betatest instance.
+     */
+    async instancesOpenedxDeploymentRead(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<OpenEdXInstanceDeploymentStatus> {
+        const response = await this.instancesOpenedxDeploymentReadRaw(requestParameters);
+        return await response.value();
     }
 
 }

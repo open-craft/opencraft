@@ -1,0 +1,211 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when deployment info isn't there 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: loading
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={true}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (0 updates)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance has pending changes 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "#1abb64",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: Pending changes
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={false}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (3 updates)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being deployed 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "#ff9b04",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: deploying changes
+      </div>
+      <div
+        className="text cancel-deployment nav"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+      >
+        <i
+          className="fas fa-xs fa-times"
+        />
+        Cancel deployment
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={true}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (0 updates)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being prepared 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "#ff9b04",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: We're preparing your instance 
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={true}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (0 updates)
+    </button>
+  </div>
+</div>
+`;
+
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is up-to-date 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "#1abb64",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: Up to date
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={true}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (0 updates)
+    </button>
+  </div>
+</div>
+`;

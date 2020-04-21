@@ -1,0 +1,38 @@
+@import '~styles/theme';
+
+.theme-navigation-container {
+  .row {
+    margin-right: 0;
+    margin-left: 0;
+    padding: 0;
+    flex-flow: row nowrap;
+    align-items: end;
+
+    .col-md-4 {
+      padding: 0 15px 0 0;
+
+      .form-label {
+        font-size: 13px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+
+        .input-field-color.form-control[readonly] {
+          width: 75%;
+          background-color: white;
+        }
+
+        .input-field-color.form-control[disabled] {
+          background-color: #e9ecef !important;
+        }
+
+        .info-icon {
+          padding: 5px 10px;
+          color: $primary-1;
+        }
+      }
+    }
+  }
+}
