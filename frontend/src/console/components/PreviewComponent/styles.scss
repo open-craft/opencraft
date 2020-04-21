@@ -1,5 +1,5 @@
 .theme-preview {
-  border: 2px solid black;
+  border: 1px solid black;
   background: white;
 
   .theme-preview-navigation {
@@ -53,13 +53,10 @@
     }
 
     .theme-courses-container {
-      .col {
-        padding: 10px 10px 10px 25px;
-        font-size: 10px;
+      padding-left: 30px;
 
-        img {
-          max-width: 80px;
-        }
+      .theme-courses-item {
+        padding: 10px 10px 10px 10px;
       }
     }
   }

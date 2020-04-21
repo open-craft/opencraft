@@ -1,61 +1,52 @@
 import * as React from 'react';
-import dummyCourse from 'assets/dummy_course.png';
 import './styles.scss';
-import { ThemeSchema } from 'ocim-client';
 import { Col, Row } from 'react-bootstrap';
 import { NavigationMenu } from '../NavigationMenu';
 import { InstanceSettingsModel } from '../../models';
 import { HeroPreview } from '../../../ui/components/HeroPreview';
 import { FooterPreview } from '../FooterPreview';
+import { CoursesListingItem } from '../CoursesListingItem';
 
 interface PreviewComponentProps {
   children?: React.ReactNode;
   instanceData: InstanceSettingsModel;
-  themeData: ThemeSchema;
 }
 
 export const PreviewComponent: React.FC<PreviewComponentProps> = (
   props: PreviewComponentProps
 ) => {
-  const { themeData } = props;
+  const { instanceData } = props;
+  const themeData = instanceData.draftThemeConfig!;
 
   return (
     <div className="theme-preview">
       <Row className="theme-preview-navigation">
         <Col className="theme-preview-navigation">
-          <NavigationMenu
-            instanceData={props.instanceData}
-            themeData={themeData}
-          />
+          <NavigationMenu instanceData={instanceData} themeData={themeData} />
         </Col>
       </Row>
       <div className="theme-home">
         <Row className="theme-hero-container">
           <Col>
             <HeroPreview
-              heroCoverImage={props.instanceData.heroCoverImage || ''}
+              heroCoverImage={instanceData.heroCoverImage || ''}
               homePageHeroTitleColor={themeData.homePageHeroTitleColor}
               homePageHeroSubtitleColor={themeData!.homePageHeroSubtitleColor}
               homepageOverlayHtml={
-                props.instanceData.draftStaticContentOverrides!
-                  .homepageOverlayHtml
+                instanceData.draftStaticContentOverrides!.homepageOverlayHtml
               }
             />
           </Col>
         </Row>
         <Row className="theme-courses-container">
-          <Col>
-            {/* TOOD: Replace with actual component. */}
-            <img src={dummyCourse} alt="dummy course" />
+          <Col md={3} className="theme-courses-item">
+            <CoursesListingItem themeData={themeData} />
           </Col>
         </Row>
       </div>
       <Row className="theme-footer">
         <Col>
-          <FooterPreview
-            instanceData={props.instanceData}
-            themeData={themeData}
-          />
+          <FooterPreview instanceData={instanceData} themeData={themeData} />
         </Col>
       </Row>
     </div>
