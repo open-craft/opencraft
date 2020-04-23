@@ -5,12 +5,12 @@ import { WrappedMessage } from '../../../utils/intl';
 
 interface CustomizableButtonProps {
   children?: React.ReactNode;
-  initialBackgroundColor?: string;
-  initialTextColor?: string;
-  initialBorderColor?: string;
-  initialHoverBackgroundColor?: string;
-  initialHoverTextColor?: string;
-  initialHoverBorderColor?: string;
+  initialBackgroundColor: string | undefined;
+  initialTextColor: string | undefined;
+  initialBorderColor: string | undefined;
+  initialHoverBackgroundColor: string | undefined;
+  initialHoverTextColor: string | undefined;
+  initialHoverBorderColor: string | undefined;
   background?: string;
   borderColor?: string;
 }

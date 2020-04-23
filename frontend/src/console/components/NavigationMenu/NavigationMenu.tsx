@@ -39,22 +39,70 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
     <Row className="navigation-menu navigation-submenu">
       <Col>
         <CustomizableButton
-          initialTextColor={themeData.btnRegisterColor}
-          initialBackgroundColor={themeData.btnRegisterBg}
-          initialBorderColor={themeData.btnRegisterBorderColor}
-          initialHoverTextColor={themeData.btnRegisterHoverColor}
-          initialHoverBackgroundColor={themeData.btnRegisterHoverBg}
-          initialHoverBorderColor={themeData.btnRegisterHoverBorderColor}
+          initialTextColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterColor
+              : themeData.btnSecondaryColor
+          }
+          initialBackgroundColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterBg
+              : themeData.btnSecondaryBg
+          }
+          initialBorderColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterBorderColor
+              : themeData.btnSecondaryBorderColor
+          }
+          initialHoverTextColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterHoverColor
+              : themeData.btnSecondaryHoverColor
+          }
+          initialHoverBackgroundColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterHoverBg
+              : themeData.btnSecondaryHoverBg
+          }
+          initialHoverBorderColor={
+            themeData.customizeRegisterBtn
+              ? themeData.btnRegisterHoverBorderColor
+              : themeData.btnSecondaryHoverBorderColor
+          }
         >
           Register
         </CustomizableButton>
         <CustomizableButton
-          initialTextColor={themeData.btnSignInColor}
-          initialBackgroundColor={themeData.btnSignInBg}
-          initialBorderColor={themeData.btnSignInBorderColor}
-          initialHoverTextColor={themeData.btnSignInHoverColor}
-          initialHoverBackgroundColor={themeData.btnSignInHoverBg}
-          initialHoverBorderColor={themeData.btnSignInHoverBorderColor}
+          initialTextColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInColor
+              : themeData.btnPrimaryColor
+          }
+          initialBackgroundColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInBg
+              : themeData.btnPrimaryBg
+          }
+          initialBorderColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInBorderColor
+              : themeData.btnPrimaryBorderColor
+          }
+          initialHoverTextColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInHoverColor
+              : themeData.btnPrimaryHoverColor
+          }
+          initialHoverBackgroundColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInHoverBg
+              : themeData.btnPrimaryHoverBg
+          }
+          initialHoverBorderColor={
+            themeData.customizeSignInBtn
+              ? themeData.btnSignInHoverBorderColor
+              : themeData.btnPrimaryHoverBorderColor
+          }
         >
           Sign in
         </CustomizableButton>
