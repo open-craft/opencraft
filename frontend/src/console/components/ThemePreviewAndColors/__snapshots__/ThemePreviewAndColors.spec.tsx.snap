@@ -575,7 +575,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     className="side-buttons col"
                   >
                     <div
-                      className="form-group"
+                      className="color-input form-group"
                     >
                       <label
                         className="form-label"
@@ -589,14 +589,18 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="input-field-color form-control"
                           disabled={true}
                           name="mainColor"
-                          onFocus={[Function]}
+                          onClick={[Function]}
+                          onKeyPress={[Function]}
                           readOnly={true}
+                          value="#444444"
+                        />
+                        <div
+                          className="input-field-preview"
                           style={
                             Object {
-                              "color": "#444444",
+                              "backgroundColor": "#444444",
                             }
                           }
-                          value="#444444"
                         />
                         <div
                           className="info-icon"
@@ -621,7 +625,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       </p>
                     </div>
                     <div
-                      className="form-group"
+                      className="color-input form-group"
                     >
                       <label
                         className="form-label"
@@ -635,14 +639,18 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="input-field-color form-control"
                           disabled={true}
                           name="linkColor"
-                          onFocus={[Function]}
+                          onClick={[Function]}
+                          onKeyPress={[Function]}
                           readOnly={true}
+                          value="#FFAAFF"
+                        />
+                        <div
+                          className="input-field-preview"
                           style={
                             Object {
-                              "color": "#FFAAFF",
+                              "backgroundColor": "#FFAAFF",
                             }
                           }
-                          value="#FFAAFF"
                         />
                         <div
                           className="info-icon"
@@ -1428,7 +1436,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     className="side-buttons col"
                   >
                     <div
-                      className="form-group"
+                      className="color-input form-group"
                     >
                       <label
                         className="form-label"
@@ -1442,14 +1450,18 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="input-field-color form-control"
                           disabled={false}
                           name="mainColor"
-                          onFocus={[Function]}
+                          onClick={[Function]}
+                          onKeyPress={[Function]}
                           readOnly={true}
+                          value="#444444"
+                        />
+                        <div
+                          className="input-field-preview"
                           style={
                             Object {
-                              "color": "#444444",
+                              "backgroundColor": "#444444",
                             }
                           }
-                          value="#444444"
                         />
                         <div
                           className="info-icon"
@@ -1474,7 +1486,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                       </p>
                     </div>
                     <div
-                      className="form-group"
+                      className="color-input form-group"
                     >
                       <label
                         className="form-label"
@@ -1488,14 +1500,18 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="input-field-color form-control"
                           disabled={false}
                           name="linkColor"
-                          onFocus={[Function]}
+                          onClick={[Function]}
+                          onKeyPress={[Function]}
                           readOnly={true}
+                          value="#FFAAFF"
+                        />
+                        <div
+                          className="input-field-preview"
                           style={
                             Object {
-                              "color": "#FFAAFF",
+                              "backgroundColor": "#FFAAFF",
                             }
                           }
-                          value="#FFAAFF"
                         />
                         <div
                           className="info-icon"

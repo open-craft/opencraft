@@ -89,7 +89,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -103,14 +103,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryBg"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -126,7 +130,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -140,14 +144,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryColor"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -163,7 +171,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -177,14 +185,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryBorderColor"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -215,7 +227,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -229,14 +241,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryHoverBg"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -252,7 +268,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -266,14 +282,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryHoverColor"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
@@ -289,7 +309,7 @@ exports[`renders without crashing 1`] = `
               className="col"
             >
               <div
-                className="form-group"
+                className="color-input form-group"
               >
                 <label
                   className="form-label"
@@ -303,14 +323,18 @@ exports[`renders without crashing 1`] = `
                     className="input-field-color form-control"
                     disabled={true}
                     name="btnPrimaryHoverBorderColor"
-                    onFocus={[Function]}
+                    onClick={[Function]}
+                    onKeyPress={[Function]}
                     readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
                     style={
                       Object {
-                        "color": "",
+                        "backgroundColor": "",
                       }
                     }
-                    value=""
                   />
                   <button
                     className="reset-value padded"
