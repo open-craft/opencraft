@@ -31,9 +31,10 @@ export const PreviewComponent: React.FC<PreviewComponentProps> = (
             <HeroPreview
               heroCoverImage={instanceData.heroCoverImage || ''}
               homePageHeroTitleColor={themeData.homePageHeroTitleColor}
-              homePageHeroSubtitleColor={themeData!.homePageHeroSubtitleColor}
+              homePageHeroSubtitleColor={themeData.homePageHeroSubtitleColor}
               homepageOverlayHtml={
-                instanceData.draftStaticContentOverrides!.homepageOverlayHtml
+                instanceData!.draftStaticContentOverrides &&
+                instanceData.draftStaticContentOverrides.homepageOverlayHtml
               }
             />
           </Col>
