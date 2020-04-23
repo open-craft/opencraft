@@ -82,6 +82,8 @@ honcho==1.0.1             # via -r requirements.in
 huey==2.1.0               # via -r requirements.in
 hyperlink==19.0.0         # via twisted
 idna==2.8                 # via -r requirements.in, requests, tldextract, twisted
+importlib-metadata==1.6.0  # via importlib-resources, jsonschema, virtualenv
+importlib-resources==1.4.0  # via virtualenv
 incremental==17.5.0       # via twisted
 inflection==0.3.1         # via drf-yasg
 ipdb==0.12                # via -r requirements.in
@@ -96,7 +98,7 @@ jinja2==2.11.1            # via coreschema
 jmespath==0.9.5           # via boto3, botocore, openstacksdk
 jsonpatch==1.25           # via openstacksdk, warlock
 jsonpointer==2.0          # via jsonpatch
-jsonschema==3.2.0         # via warlock
+jsonschema==3.2.0         # via -r requirements.in, warlock
 keystoneauth1==3.14.0     # via -r requirements.in, openstacksdk, osc-lib, python-cinderclient, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient
 lazy-object-proxy==1.4.3  # via astroid
 libsass==0.19.4           # via django-libsass
@@ -130,7 +132,7 @@ portend==2.6              # via cherrypy
 prettytable==0.7.2        # via cliff, python-cinderclient, python-glanceclient, python-novaclient
 prompt-toolkit==2.0.10    # via ipython
 prospector==1.1.4         # via -r requirements.in
-psycopg2==2.8.3           # via -r requirements.in
+psycopg2-binary==2.8.3    # via -r requirements.in
 ptyprocess==0.6.0         # via pexpect
 pyasn1-modules==0.2.8     # via service-identity
 pyasn1==0.4.8             # via pyasn1-modules, service-identity
@@ -182,7 +184,7 @@ selenium==2.53.6          # via -r requirements.in
 service-identity==18.1.0  # via -r requirements.in, twisted
 setoptconf==0.2.0         # via prospector
 simplejson==3.17.0        # via osc-lib, python-cinderclient, python-novaclient
-six==1.14.0               # via -r requirements.in, astroid, cheroot, cliff, cmd2, cryptography, debtcollector, django-extensions, django-storage-swift, drf-yasg, freezegun, jsonschema, keystoneauth1, libsass, munch, openstacksdk, osc-lib, oslo.config, oslo.i18n, oslo.serialization, oslo.utils, packaging, pip-tools, prompt-toolkit, pyjwkest, pyopenssl, python-cinderclient, python-consul, python-dateutil, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient, python-swiftclient, requests-file, responses, stevedore, traitlets, virtualenv, warlock
+six==1.14.0               # via -r requirements.in, astroid, cheroot, cliff, cmd2, cryptography, debtcollector, django-extensions, django-storage-swift, drf-yasg, freezegun, jsonschema, keystoneauth1, libsass, munch, openstacksdk, osc-lib, oslo.config, oslo.i18n, oslo.serialization, oslo.utils, packaging, pip-tools, prompt-toolkit, pyjwkest, pyopenssl, pyrsistent, python-cinderclient, python-consul, python-dateutil, python-glanceclient, python-keystoneclient, python-novaclient, python-openstackclient, python-swiftclient, requests-file, responses, stevedore, traitlets, virtualenv, warlock
 smmap2==3.0.1             # via gitdb2
 smmap==3.0.1              # via smmap2
 snowballstemmer==2.0.0    # via pydocstyle
@@ -196,6 +198,7 @@ tldextract==2.2.2         # via dns-lexicon
 traitlets==4.3.3          # via ipython
 twisted[tls]==20.3.0      # via daphne
 txaio==20.4.1             # via autobahn
+typed-ast==1.4.1          # via astroid
 uritemplate==3.0.1        # via coreapi, drf-yasg
 urllib3==1.25.3           # via -r requirements.in, botocore, requests
 virtualenv==20.0.15       # via -r requirements.in
@@ -204,6 +207,7 @@ wcwidth==0.1.9            # via cmd2, prompt-toolkit
 werkzeug==0.15.4          # via -r requirements.in
 wrapt==1.12.1             # via astroid, debtcollector, python-glanceclient
 zc.lockfile==2.0          # via cherrypy
+zipp==3.1.0               # via importlib-metadata, importlib-resources
 zope.interface==5.0.2     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
