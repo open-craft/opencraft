@@ -14,12 +14,28 @@
   }
 
   .content {
-    padding: 20px;
+    padding-top: 20px;
+
+    .section-title {
+      width: 92px;
+      height: 24px;
+      font-family: Chivo;
+      font-size: 20px;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: normal;
+      letter-spacing: 0.6px;
+      color: #000000;
+    }
+
+    .title-customization-fields .form-control {
+      width: 100% !important;
+    }
+
   }
 
   .hero-customizations {
-    padding-top: 20px;
-
     .image-upload-field {
       padding-top: 0;
 
