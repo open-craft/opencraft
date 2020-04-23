@@ -20,7 +20,8 @@ export enum Types {
   PASSWORD_RESET_TOKEN_VALIDATION_FAILURE = 'PASSWORD_RESET_TOKEN_VALIDATION_FAILURE',
   PASSWORD_RESET_SUCCESS = 'PASSWORD_RESET_SUCCESS',
   PASSWORD_RESET_FAILURE = 'PASSWORD_RESET_FAILURE',
-  CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE'
+  CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
+  CLEAR_SUCCESS_MESSAGE = 'CLEAR_SUCCESS_MESSAGE'
 }
 
 export interface SubmitLogin extends Action {
@@ -85,6 +86,11 @@ export interface ClearErrorMessage extends Action {
   readonly error: null;
 }
 
+export interface ClearSuccessMessage extends Action {
+  readonly type: Types.CLEAR_SUCCESS_MESSAGE;
+  readonly succeeded: boolean;
+}
+
 export type ActionTypes =
   | SubmitLogin
   | LoginSuccess
@@ -98,10 +104,15 @@ export type ActionTypes =
   | PasswordResetTokenValidationFailure
   | PasswordResetSuccess
   | PasswordResetFailure
-  | ClearErrorMessage;
+  | ClearErrorMessage
+  | ClearSuccessMessage;
 
 export const clearErrorMessage = () => async (dispatch: any) => {
   dispatch({ type: Types.CLEAR_ERROR_MESSAGE });
+};
+
+export const clearSuccessMessage = () => async (dispatch: any) => {
+  dispatch({ type: Types.CLEAR_SUCCESS_MESSAGE });
 };
 
 export const performLogin = (
@@ -135,6 +146,7 @@ export const performLogin = (
           if (!feedback.detail) {
             error = 'Both the username and password fields are required.';
           }
+          dispatch({ type: Types.CLEAR_SUCCESS_MESSAGE });
           dispatch({
             type: Types.LOGIN_FAILURE,
             error

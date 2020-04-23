@@ -4,13 +4,19 @@ import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { Alert, Button, Spinner, Form } from 'react-bootstrap';
 import { ContentPage, TextInputField } from 'ui/components';
-import { performPasswordForgotten } from 'auth/actions';
+import {
+  clearErrorMessage,
+  clearSuccessMessage,
+  performPasswordForgotten
+} from 'auth/actions';
 import { Link } from 'react-router-dom';
 import messages from './displayMessages';
 import './styles.scss';
 import { ROUTES } from '../../../global/constants';
 
 interface ActionProps {
+  clearErrorMessage: Function;
+  clearSuccessMessage: Function;
   performPasswordForgotten: Function;
 }
 
@@ -28,16 +34,28 @@ interface Props extends ActionProps {
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.loginState,
   {
+    clearErrorMessage,
+    clearSuccessMessage,
     performPasswordForgotten
   }
 )
 export class PasswordForgottenPage extends React.PureComponent<Props, State> {
-  constructor(props: Props, state: State) {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
       email: ''
     };
+  }
+
+  componentDidMount(): void {
+    this.props.clearErrorMessage();
+    this.props.clearSuccessMessage();
+  }
+
+  componentWillUnmount(): void {
+    this.props.clearErrorMessage();
+    this.props.clearSuccessMessage();
   }
 
   private onKeyPress = (event: any) => {
@@ -69,12 +87,6 @@ export class PasswordForgottenPage extends React.PureComponent<Props, State> {
             this.onKeyPress(event);
           }}
         >
-          {this.props.succeeded && (
-            <Alert variant="success">
-              <WrappedMessage messages={messages} id="success" />
-            </Alert>
-          )}
-
           <TextInputField
             fieldName="email"
             value={this.state.email}
@@ -82,6 +94,12 @@ export class PasswordForgottenPage extends React.PureComponent<Props, State> {
             messages={messages}
             type="email"
           />
+
+          {this.props.succeeded && (
+            <Alert variant="success">
+              <WrappedMessage messages={messages} id="success" />
+            </Alert>
+          )}
 
           {this.props.error && (
             <Alert variant="danger">{this.props.error}</Alert>

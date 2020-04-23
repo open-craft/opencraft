@@ -63,6 +63,10 @@ export function loginStateReducer(
       return update(state, {
         error: { $set: null }
       });
+    case LoginActions.Types.CLEAR_SUCCESS_MESSAGE:
+      return update(state, {
+        succeeded: { $set: false }
+      });
     default:
       return state;
   }

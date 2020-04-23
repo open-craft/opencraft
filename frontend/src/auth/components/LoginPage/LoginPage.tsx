@@ -76,12 +76,6 @@ export class LoginPage extends React.PureComponent<Props, State> {
             this.onKeyPress(event);
           }}
         >
-          {this.props.succeeded && (
-            <Alert variant="success">
-              <WrappedMessage messages={messages} id="passwordReset" />
-            </Alert>
-          )}
-
           <TextInputField
             fieldName="username"
             value={this.state.username}
@@ -96,6 +90,12 @@ export class LoginPage extends React.PureComponent<Props, State> {
             messages={messages}
             type="password"
           />
+
+          {this.props.succeeded && (
+            <Alert variant="success">
+              <WrappedMessage messages={messages} id="passwordReset" />
+            </Alert>
+          )}
 
           {this.props.error && (
             <Alert variant="danger">{this.props.error}</Alert>
