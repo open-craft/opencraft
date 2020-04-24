@@ -16,32 +16,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface Token
+ * @interface PasswordToken
  */
-export interface Token {
+export interface PasswordToken {
     /**
      * 
      * @type {string}
-     * @memberof Token
+     * @memberof PasswordToken
+     */
+    password: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PasswordToken
      */
     token: string;
 }
 
-export function TokenFromJSON(json: any): Token {
-    return TokenFromJSONTyped(json, false);
+export function PasswordTokenFromJSON(json: any): PasswordToken {
+    return PasswordTokenFromJSONTyped(json, false);
 }
 
-export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Token {
+export function PasswordTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): PasswordToken {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
+        'password': json['password'],
         'token': json['token'],
     };
 }
 
-export function TokenToJSON(value?: Token | null): any {
+export function PasswordTokenToJSON(value?: PasswordToken | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -50,6 +57,7 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
         
+        'password': value.password,
         'token': value.token,
     };
 }

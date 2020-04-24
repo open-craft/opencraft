@@ -55,6 +55,8 @@ urlpatterns = [
     # token and allow a session that lasts more than a few minutes
     url(r'^v2/auth/refresh/', JwtTokenRefresh.as_view(), name='token_refresh'),
     url(r'^v2/auth/verify/', JwtTokenVerify.as_view(), name='token_verify'),
+    # Reset password
+    url(r'^v2/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     # Documentation
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=10), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=10), name='schema-swagger-ui'),

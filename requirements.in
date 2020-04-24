@@ -22,6 +22,7 @@ django-extensions==2.1.9
 django-grappelli==2.12.3
 django-inlinecss==0.3.0
 django-libsass==0.7
+django-rest-passwordreset==1.1.0
 django-redis==4.10.0
 django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19

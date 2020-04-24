@@ -16,32 +16,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface Token
+ * @interface JwtToken
  */
-export interface Token {
+export interface JwtToken {
     /**
      * 
      * @type {string}
-     * @memberof Token
+     * @memberof JwtToken
      */
-    token: string;
+    refresh: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof JwtToken
+     */
+    access: string;
 }
 
-export function TokenFromJSON(json: any): Token {
-    return TokenFromJSONTyped(json, false);
+export function JwtTokenFromJSON(json: any): JwtToken {
+    return JwtTokenFromJSONTyped(json, false);
 }
 
-export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Token {
+export function JwtTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): JwtToken {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'token': json['token'],
+        'refresh': json['refresh'],
+        'access': json['access'],
     };
 }
 
-export function TokenToJSON(value?: Token | null): any {
+export function JwtTokenToJSON(value?: JwtToken | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -50,7 +57,8 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
         
-        'token': value.token,
+        'refresh': value.refresh,
+        'access': value.access,
     };
 }
 

@@ -53,6 +53,7 @@ django-grappelli==2.12.3  # via -r requirements.in
 django-inlinecss==0.3.0   # via -r requirements.in
 django-libsass==0.7       # via -r requirements.in
 django-redis==4.10.0      # via -r requirements.in
+django-rest-passwordreset==1.1.0  # via -r requirements.in
 django-simple-email-confirmation==0.60  # via -r requirements.in
 django-storage-swift==1.2.19  # via -r requirements.in
 django-storages==1.7.1    # via -r requirements.in

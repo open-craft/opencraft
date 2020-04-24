@@ -70,7 +70,8 @@ exports[`Login Page disables login button when loading login 1`] = `
           className="forgot-password"
         >
           <a
-            href="/#"
+            href="/password-forgotten"
+            onClick={[Function]}
           >
             I forgot my password
           </a>
@@ -154,7 +155,8 @@ exports[`Login Page renders error messages 1`] = `
           className="forgot-password"
         >
           <a
-            href="/#"
+            href="/password-forgotten"
+            onClick={[Function]}
           >
             I forgot my password
           </a>
@@ -232,7 +234,8 @@ exports[`Login Page renders without crashing 1`] = `
           className="forgot-password"
         >
           <a
-            href="/#"
+            href="/password-forgotten"
+            onClick={[Function]}
           >
             I forgot my password
           </a>
