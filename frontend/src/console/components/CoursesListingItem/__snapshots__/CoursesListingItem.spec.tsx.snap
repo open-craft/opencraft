@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="courses-listing-item row"
+  style={
+    Object {
+      "borderBottomColor": undefined,
+    }
+  }
+>
+  <div
+    className="course-image col"
+  >
+    <img
+      alt="course"
+      src="course_image.jpg"
+    />
+  </div>
+  <div
+    className="organization col"
+    style={
+      Object {
+        "color": undefined,
+      }
+    }
+  >
+    edX
+  </div>
+  <div
+    className="course-number col"
+    style={
+      Object {
+        "color": undefined,
+      }
+    }
+  >
+    DemoX
+  </div>
+  <div
+    className="course-name col"
+  >
+    <button
+      className="customizable-link noHover"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottomColor": undefined,
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      <span>
+        Demonstration Course
+      </span>
+    </button>
+  </div>
+  <div
+    className="course-start col"
+    style={
+      Object {
+        "color": undefined,
+      }
+    }
+  >
+    Starts: 
+    Feb 5, 2013
+  </div>
+</div>
+`;
