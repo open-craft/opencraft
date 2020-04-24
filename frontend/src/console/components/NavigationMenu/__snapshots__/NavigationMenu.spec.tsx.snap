@@ -10,7 +10,7 @@ exports[`renders without crashing 1`] = `
   }
 >
   <div
-    className="col-md-1"
+    className="logo col-md-1"
   />
   <div
     className="col-md-1"
