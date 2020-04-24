@@ -104,7 +104,6 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
           value={fieldValue()}
           disabled={props.loading}
           onClick={toggleColorPicker}
-          onKeyPress={toggleColorPicker}
           readOnly
         />
 

@@ -58,9 +58,10 @@ export const TextInputField: React.SFC<InputFieldProps> = (
             className="reset-default"
             type="button"
             onClick={() => {
-              if (props.reset !== undefined) {
-                props.reset();
-              }
+              // Using `!` because we know this will never be called
+              // if props.reset is undefined (this component won't be
+              // rendered).
+              props.reset!();
             }}
           >
             Reset
