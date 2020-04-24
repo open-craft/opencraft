@@ -16,7 +16,6 @@ exports[`ColorInputField Component Correctly renders color input field. 1`] = `
       className="input-field-color form-control"
       name="test"
       onClick={[Function]}
-      onKeyPress={[Function]}
       readOnly={true}
       value="Not set"
     />
@@ -68,7 +67,6 @@ exports[`ColorInputField Component Render component, check if color picker shows
       className="input-field-color form-control"
       name="test"
       onClick={[Function]}
-      onKeyPress={[Function]}
       readOnly={true}
       value="#FFFFFF"
     />
@@ -120,7 +118,6 @@ exports[`ColorInputField Component Render component, check if color picker shows
       className="input-field-color form-control"
       name="test"
       onClick={[Function]}
-      onKeyPress={[Function]}
       readOnly={true}
       value="#FFFFFF"
     />
@@ -1573,7 +1570,6 @@ exports[`ColorInputField Component Render loading. 1`] = `
       disabled={true}
       name="test"
       onClick={[Function]}
-      onKeyPress={[Function]}
       readOnly={true}
       value="#FFFFFF"
     />
@@ -1625,7 +1621,6 @@ exports[`ColorInputField Component Render with default value. 1`] = `
       className="input-field-color form-control"
       name="test"
       onClick={[Function]}
-      onKeyPress={[Function]}
       readOnly={true}
       value="#FFFFFF"
     />

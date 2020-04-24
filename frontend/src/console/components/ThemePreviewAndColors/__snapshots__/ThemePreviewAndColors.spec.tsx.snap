@@ -590,7 +590,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           disabled={true}
                           name="mainColor"
                           onClick={[Function]}
-                          onKeyPress={[Function]}
                           readOnly={true}
                           value="#444444"
                         />
@@ -640,7 +639,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           disabled={true}
                           name="linkColor"
                           onClick={[Function]}
-                          onKeyPress={[Function]}
                           readOnly={true}
                           value="#FFAAFF"
                         />
@@ -1451,7 +1449,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           disabled={false}
                           name="mainColor"
                           onClick={[Function]}
-                          onKeyPress={[Function]}
                           readOnly={true}
                           value="#444444"
                         />
@@ -1501,7 +1498,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           disabled={false}
                           name="linkColor"
                           onClick={[Function]}
-                          onKeyPress={[Function]}
                           readOnly={true}
                           value="#FFAAFF"
                         />

@@ -104,7 +104,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryBg"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
@@ -145,7 +144,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryColor"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
@@ -186,7 +184,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryBorderColor"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
@@ -242,7 +239,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryHoverBg"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
@@ -283,7 +279,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryHoverColor"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
@@ -324,7 +319,6 @@ exports[`renders without crashing 1`] = `
                     disabled={true}
                     name="btnPrimaryHoverBorderColor"
                     onClick={[Function]}
-                    onKeyPress={[Function]}
                     readOnly={true}
                     value=""
                   />
