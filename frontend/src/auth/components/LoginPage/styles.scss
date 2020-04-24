@@ -18,7 +18,9 @@
 // FIXME: These are placed in the LoginPage styles, because putting them in `_theme.scss` causes recursive imports.
 // Customized alerts
 %alert {
-  color: white;
+  color: #ffffff;
+  font-family: $chivo-font;
+  font-size: 14px;
   display: flex;
   align-items: center;
 
@@ -33,7 +35,7 @@
 
 .alert-success {
   @extend %alert;
-  $alert-color: green;
+  $alert-color: #00a556;
   background-color: $alert-color;
 
   &::before {
@@ -44,7 +46,7 @@
 
 .alert-danger {
   @extend %alert;
-  $alert-color: red;
+  $alert-color: #dd0000;
   background-color: $alert-color;
 
   &::before {
