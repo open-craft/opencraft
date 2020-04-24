@@ -31,7 +31,7 @@ from rest_framework_simplejwt.views import (
 )
 
 
-class TokenSerializer(serializers.Serializer):
+class JwtTokenSerializer(serializers.Serializer):
     """
     Token Serializer - for swagger
 
@@ -47,7 +47,7 @@ class TokenSerializer(serializers.Serializer):
     access = serializers.CharField()
 
 
-class TokenErrorSerializer(serializers.Serializer):
+class JwtTokenErrorSerializer(serializers.Serializer):
     """
     Token Error Serializer - for swagger
 
@@ -68,7 +68,7 @@ class JWTAuthToken(TokenObtainPairView):
 
     This overrides the method just to add the Swagger schema overrides
     """
-    @swagger_auto_schema(responses={201: TokenSerializer, 401: TokenErrorSerializer})
+    @swagger_auto_schema(responses={201: JwtTokenSerializer, 401: JwtTokenErrorSerializer})
     def post(self, *args, **kwargs):
         return super(JWTAuthToken, self).post(*args, **kwargs)
 
@@ -79,7 +79,7 @@ class JwtTokenRefresh(TokenRefreshView):
 
     This overrides the method just to add the Swagger schema overrides
     """
-    @swagger_auto_schema(responses={201: TokenSerializer, 401: TokenErrorSerializer})
+    @swagger_auto_schema(responses={201: JwtTokenSerializer, 401: JwtTokenErrorSerializer})
     def post(self, *args, **kwargs):
         return super(JwtTokenRefresh, self).post(*args, **kwargs)
 
@@ -90,6 +90,6 @@ class JwtTokenVerify(TokenVerifyView):
 
     This overrides the method just to add the Swagger schema overrides
     """
-    @swagger_auto_schema(responses={201: None, 401: TokenErrorSerializer})
+    @swagger_auto_schema(responses={201: None, 401: JwtTokenErrorSerializer})
     def post(self, *args, **kwargs):
         return super(JwtTokenVerify, self).post(*args, **kwargs)

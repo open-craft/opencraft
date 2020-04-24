@@ -16,32 +16,32 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface Token
+ * @interface Email
  */
-export interface Token {
+export interface Email {
     /**
      * 
      * @type {string}
-     * @memberof Token
+     * @memberof Email
      */
-    token: string;
+    email: string;
 }
 
-export function TokenFromJSON(json: any): Token {
-    return TokenFromJSONTyped(json, false);
+export function EmailFromJSON(json: any): Email {
+    return EmailFromJSONTyped(json, false);
 }
 
-export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Token {
+export function EmailFromJSONTyped(json: any, ignoreDiscriminator: boolean): Email {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'token': json['token'],
+        'email': json['email'],
     };
 }
 
-export function TokenToJSON(value?: Token | null): any {
+export function EmailToJSON(value?: Email | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -50,7 +50,7 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
         
-        'token': value.token,
+        'email': value.email,
     };
 }
 

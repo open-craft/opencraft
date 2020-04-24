@@ -16,32 +16,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface Token
+ * @interface JwtTokenError
  */
-export interface Token {
+export interface JwtTokenError {
     /**
      * 
      * @type {string}
-     * @memberof Token
+     * @memberof JwtTokenError
      */
-    token: string;
+    detail?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof JwtTokenError
+     */
+    code?: string;
 }
 
-export function TokenFromJSON(json: any): Token {
-    return TokenFromJSONTyped(json, false);
+export function JwtTokenErrorFromJSON(json: any): JwtTokenError {
+    return JwtTokenErrorFromJSONTyped(json, false);
 }
 
-export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Token {
+export function JwtTokenErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean): JwtTokenError {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'token': json['token'],
+        'detail': !exists(json, 'detail') ? undefined : json['detail'],
+        'code': !exists(json, 'code') ? undefined : json['code'],
     };
 }
 
-export function TokenToJSON(value?: Token | null): any {
+export function JwtTokenErrorToJSON(value?: JwtTokenError | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -50,7 +57,8 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
         
-        'token': value.token,
+        'detail': value.detail,
+        'code': value.code,
     };
 }
 
