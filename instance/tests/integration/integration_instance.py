@@ -318,6 +318,19 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             expected_domain_names
         )
 
+    def assert_static_content_overrides_work(self, instance, appserver, page):
+        """
+        Ensure that the static content overrides work.
+        """
+        self.assertTrue('EDXAPP_SITE_CONFIGURATION:' in appserver.configuration_settings)
+        self.assertTrue('static_template_about_content' in appserver.configuration_settings)
+        homepage_html = get_url_contents(instance.url)
+        self.assertIn(instance.static_content_overrides['homepage_overlay_html'], homepage_html)
+
+        page_url = '{}/{}'.format(instance.url, page)
+        server_html = get_url_contents(page_url)
+        self.assertIn(instance.static_content_overrides['static_template_{}_content'.format(page)], server_html)
+
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_spawn_appserver(self):
@@ -327,6 +340,11 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
+            static_content_overrides={
+                'version': 0,
+                'static_template_about_content': 'Hello world!',
+                'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
+            },
         )
         instance = OpenEdXInstance.objects.get()
 
@@ -376,6 +394,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             self.assert_secret_keys(instance, appserver)
             self.assert_lms_users_provisioned(user, appserver)
             self.assert_theme_provisioned(instance, appserver, application)
+            self.assert_static_content_overrides_work(instance, appserver, page='about')
         self.assert_load_balanced_domains(instance)
 
         # Test external databases

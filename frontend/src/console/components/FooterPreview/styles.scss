@@ -1,0 +1,101 @@
+.custom-footer {
+  background: #ffffff;
+  margin-bottom: 30px;
+  border: 1px solid #c4c4c4;
+  margin-left: 0;
+  font-size: 14px;
+
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+    height: auto;
+    align-items: center;
+
+    .row.footer-top-links {
+      padding-left: 4px;
+      flex-wrap: nowrap;
+
+      .col {
+        flex-grow: 0;
+      }
+    }
+
+    .col {
+      padding-right: 2px;
+      padding-left: 2px;
+    }
+
+    .customizable-link {
+      font-size: 1em;
+      height: auto;
+      padding-right: 6px;
+      padding-left: 6px;
+
+      span {
+        border-bottom: 1px dotted transparent;
+      }
+
+      &:hover {
+        color: #0075b4;
+
+        span {
+          border-bottom: 1px dotted #0075b4;
+        }
+      }
+    }
+
+    a {
+      color: #333333;
+
+      &:hover {
+        color: #0075b4;
+      }
+    }
+
+    .openedx-logo {
+      display: inline-flex;
+      justify-content: flex-end;
+      padding-top: 15px;
+
+      img {
+        width: 140px;
+      }
+    }
+
+    .logo {
+      padding-left: 8px;
+
+      img {
+        margin-bottom: 10px;
+        max-width: 48px;
+        max-height: 48px;
+      }
+    }
+
+    .copyright {
+      font-size: 0.6875em;
+      color: #767676;
+      margin-left: 8px;
+    }
+  }
+
+  .row.legal {
+    flex-wrap: wrap;
+    align-items: start;
+
+    .col:first-of-type {
+      padding-left: 6px;
+    }
+
+    .col {
+      flex-grow: 0;
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    .customizable-link {
+      width: max-content;
+      font-size: 0.6875em;
+    }
+  }
+}

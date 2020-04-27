@@ -24,13 +24,7 @@ export interface Token {
      * @type {string}
      * @memberof Token
      */
-    refresh: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Token
-     */
-    access: string;
+    token: string;
 }
 
 export function TokenFromJSON(json: any): Token {
@@ -43,8 +37,7 @@ export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tok
     }
     return {
         
-        'refresh': json['refresh'],
-        'access': json['access'],
+        'token': json['token'],
     };
 }
 
@@ -57,8 +50,7 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
         
-        'refresh': value.refresh,
-        'access': value.access,
+        'token': value.token,
     };
 }
 

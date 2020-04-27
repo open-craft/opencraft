@@ -1,0 +1,265 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Login Page disables login button when loading login 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Log in to customize your instance
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <form
+        className="login"
+        onKeyPress={[Function]}
+      >
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
+        </div>
+        <button
+          className="pull-left loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          <div
+            className="spinner spinner-border spinner-border-sm"
+          />
+          Login
+        </button>
+        <p
+          className="forgot-password"
+        >
+          <a
+            href="/password-forgotten"
+            onClick={[Function]}
+          >
+            I forgot my password
+          </a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Login Page renders error messages 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Log in to customize your instance
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <form
+        className="login"
+        onKeyPress={[Function]}
+      >
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          className="fade alert alert-danger show"
+          role="alert"
+        >
+          Login error!
+        </div>
+        <button
+          className="pull-left loading btn btn-primary btn-lg"
+          disabled={false}
+          onClick={[Function]}
+          type="button"
+        >
+          Login
+        </button>
+        <p
+          className="forgot-password"
+        >
+          <a
+            href="/password-forgotten"
+            onClick={[Function]}
+          >
+            I forgot my password
+          </a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Login Page renders without crashing 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Log in to customize your instance
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <form
+        className="login"
+        onKeyPress={[Function]}
+      >
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          className="text-input-container"
+        >
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
+        </div>
+        <button
+          className="pull-left loading btn btn-primary btn-lg"
+          disabled={false}
+          onClick={[Function]}
+          type="button"
+        >
+          Login
+        </button>
+        <p
+          className="forgot-password"
+        >
+          <a
+            href="/password-forgotten"
+            onClick={[Function]}
+          >
+            I forgot my password
+          </a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+`;

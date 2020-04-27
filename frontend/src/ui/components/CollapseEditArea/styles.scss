@@ -1,0 +1,28 @@
+
+
+.collapsible-edit-area {
+  margin-top: 30px;
+
+  .edit-collapse {
+    display: flex;
+    align-items: center;
+
+    a {
+      display: flex;
+      align-items: center;
+      padding: 0;
+
+      i {
+        padding: 0 10px;
+      }
+    }
+
+    .fill-line {
+      vertical-align: middle;
+      width: 100%;
+      height: 1px;
+      margin: 10px 0;
+      background-color: #1e4c59;
+    }
+  }
+}

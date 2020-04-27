@@ -91,6 +91,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Password reset token expiry time (in hours).
+DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 24
+# Send `200` on password reset even if the user doesn't exist.
+DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = True
+
 # Database ####################################################################
 
 # Set via the environment variable `DATABASE_URL`
@@ -126,6 +131,7 @@ INSTALLED_APPS = (
     'compressor',
     'djng',
     'rest_framework',
+    'django_rest_passwordreset',
     'huey.contrib.djhuey',
     'simple_email_confirmation',
     'channels',
@@ -201,6 +207,9 @@ STATICFILES_DIRS = (
 
 STATIC_ROOT = root('build/static')
 STATIC_URL = '/static/'
+if DEBUG:
+    MEDIA_ROOT = root('media')
+    MEDIA_URL = '/media/'
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
@@ -537,6 +546,14 @@ SIMPLE_THEME_SKELETON_THEME_REPO = env(
 )
 SIMPLE_THEME_SKELETON_THEME_VERSION = env('SIMPLE_THEME_SKELETON_THEME_VERSION', default='master')
 
+SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO = env(
+    'SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO', default=SIMPLE_THEME_SKELETON_THEME_REPO
+)
+
+SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION = env(
+    'SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION', default=SIMPLE_THEME_SKELETON_THEME_VERSION
+)
+
 # DNS (Gandi) #################################################################
 
 # See https://doc.livedns.gandi.net/
@@ -730,6 +747,10 @@ ACCOUNT_INFO_EMAIL_SUBJECT = env(
     'ACCOUNT_INFO_EMAIL_SUBJECT',
     default='Information about your new Open edX instance'
 )
+RESET_PASSWORD_EMAIL_SUBJECT = env(
+    'RESET_PASSWORD_EMAIL_SUBJECT',
+    default='Reset your password to OpenCraft Instance Manager'
+)
 
 # Monitoring ##################################################################
 
@@ -836,7 +857,7 @@ SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', def
 # This is used to handle redirects from validation links back to the SPA
 USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
-    default='http://localhost:3000/console'
+    default='http://localhost:3000'
 )
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers

@@ -34,6 +34,7 @@ from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.theming import theme_schema_validate
+from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.tasks import spawn_appserver
 
 
@@ -112,6 +113,37 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 r'^[a-z0-9]([a-z0-9\-]+[a-z0-9])?$',
                 'Please choose a name of at least 3 characters, using '
                 'lower-case letters, numbers, and hyphens. '
+                'Cannot start or end with a hyphen.',
+            ),
+            validate_available_subdomain,
+        ],
+        error_messages={
+            'unique': 'This domain is already taken.',
+            'blacklisted': 'This domain name is not publicly available.',
+        },
+    )
+    external_domain = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name='external domain name',
+        blank=True,
+        null=True,
+        help_text=(
+            'The URL students will visit if you are using an external domain.'
+        ),
+        validators=[
+            validators.MinLengthValidator(
+                3,
+                'The subdomain name must at least have 3 characters.',
+            ),
+            validators.MaxLengthValidator(
+                250,
+                'The subdomain name can have at most have 250 characters.',
+            ),
+            validators.RegexValidator(
+                r'^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$',
+                'Please choose a domain name that you already know and own, '
+                'containing lower-case letters, numbers, dots, and hyphens. '
                 'Cannot start or end with a hyphen.',
             ),
             validate_available_subdomain,
@@ -213,6 +245,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         blank=False,
         default='opencraft_favicon.ico',
     )
+    hero_cover_image = models.ImageField(
+        help_text="This is used as the cover image for the hero section in the instance LMS home page.",
+        null=True,  # to ease migrations
+        blank=True,
+        default=None
+    )
     status = models.CharField(
         max_length=255,
         choices=STATUS_CHOICES,
@@ -237,6 +275,17 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         help_text=('The theme configuration data currently being edited by the user. When finalised it will'
                    'be copied over to the final theme config which will then be deployed to the next appserver'
                    'that is launched.'),
+    )
+
+    draft_static_content_overrides = JSONField(
+        verbose_name='Draft static content overrides JSON',
+        validators=[static_content_overrides_schema_validate],
+        null=True,
+        blank=True,
+        default=None,
+        help_text=("The static content overrides data currently being edited by the user. When finalised, it will "
+                   'be copied over to the final static content overrides which will then be deployed to the '
+                   'next appserver that is launched')
     )
 
     def __str__(self):
@@ -271,11 +320,14 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
     def clean(self):
         """
-        Verify that the subdomain has not already been taken by any running instance.
+        Verify that the domains were not already been taken by any running instance.
 
         We can't do this in a regular validator, since we have to allow the subdomain of the
         instance associated with this application.
         """
+        errors = {}
+
+        # Check internal domain
         generated_domain = generate_internal_lms_domain(self.subdomain)
         if self.instance is not None and self.instance.internal_lms_domain == generated_domain:
             return
@@ -284,7 +336,21 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 message='This domain is already taken.',
                 code='unique',
             )
-            raise ValidationError({'subdomain': [subdomain_error]})
+            errors['subdomain'] = [subdomain_error]
+
+        # Check external domain, if present
+        if self.external_domain:
+            if self.instance is not None and self.instance.external_lms_domain == self.external_domain:
+                return
+            if OpenEdXInstance.objects.filter(external_lms_domain=self.external_domain).exists():
+                external_domain_error = ValidationError(
+                    message='This domain is already taken.',
+                    code='unique',
+                )
+                errors['external_domain'] = [external_domain_error]
+
+        if errors:
+            raise ValidationError(errors)
 
     # pylint: disable=inconsistent-return-statements
     def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):
@@ -297,10 +363,16 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             return
 
         instance.theme_config = self.draft_theme_config
+        instance.static_content_overrides = self.draft_static_content_overrides
         instance.name = self.instance_name
         instance.privacy_policy_url = self.privacy_policy_url
         instance.email = self.public_contact_email
         instance.save()
 
         if spawn_on_commit:
-            return spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=retry_attempts)
+            return spawn_appserver(
+                instance.ref.pk,
+                mark_active_on_success=True,
+                deactivate_old_appservers=True,
+                num_attempts=retry_attempts
+            )

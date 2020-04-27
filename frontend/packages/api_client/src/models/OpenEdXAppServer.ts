@@ -139,6 +139,12 @@ export interface OpenEdXAppServer {
      */
     configurationThemeSettings?: string;
     /**
+     * YAML vars for setting SiteConfiguration variables
+     * @type {string}
+     * @memberof OpenEdXAppServer
+     */
+    configurationSiteConfigurationSettings?: string | null;
+    /**
      * YAML variables for commonly needed services.
      * @type {string}
      * @memberof OpenEdXAppServer
@@ -192,6 +198,7 @@ export function OpenEdXAppServerFromJSONTyped(json: any, ignoreDiscriminator: bo
         'configurationDatabaseSettings': !exists(json, 'configuration_database_settings') ? undefined : json['configuration_database_settings'],
         'configurationStorageSettings': !exists(json, 'configuration_storage_settings') ? undefined : json['configuration_storage_settings'],
         'configurationThemeSettings': !exists(json, 'configuration_theme_settings') ? undefined : json['configuration_theme_settings'],
+        'configurationSiteConfigurationSettings': !exists(json, 'configuration_site_configuration_settings') ? undefined : json['configuration_site_configuration_settings'],
         'commonConfigurationSettings': !exists(json, 'common_configuration_settings') ? undefined : json['common_configuration_settings'],
         'configurationSettings': json['configuration_settings'],
         'instance': InstanceReferenceMinimalFromJSON(json['instance']),
@@ -226,6 +233,7 @@ export function OpenEdXAppServerToJSON(value?: OpenEdXAppServer | null): any {
         'configuration_database_settings': value.configurationDatabaseSettings,
         'configuration_storage_settings': value.configurationStorageSettings,
         'configuration_theme_settings': value.configurationThemeSettings,
+        'configuration_site_configuration_settings': value.configurationSiteConfigurationSettings,
         'common_configuration_settings': value.commonConfigurationSettings,
         'configuration_settings': value.configurationSettings,
         'instance': InstanceReferenceMinimalToJSON(value.instance),

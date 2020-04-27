@@ -13,6 +13,17 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+    StaticContentOverrides,
+    StaticContentOverridesFromJSON,
+    StaticContentOverridesFromJSONTyped,
+    StaticContentOverridesToJSON,
+    ThemeSchema,
+    ThemeSchemaFromJSON,
+    ThemeSchemaFromJSONTyped,
+    ThemeSchemaToJSON,
+} from './';
+
 /**
  * 
  * @export
@@ -26,11 +37,29 @@ export interface OpenEdXInstanceConfig {
      */
     readonly id?: number;
     /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly lmsUrl?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly studioUrl?: string;
+    /**
      * The URL students will visit. In the future, you will also have the possibility to use your own domain name.  Example: hogwarts.opencraft.hosting
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
     subdomain: string;
+    /**
+     * The URL students will visit if you are using an external domain.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    externalDomain?: string | null;
     /**
      * The name of your institution, company or project.  Example: Hogwarts Online Learning
      * @type {string}
@@ -44,12 +73,6 @@ export interface OpenEdXInstanceConfig {
      */
     publicContactEmail: string;
     /**
-     * What are you going to use the instance for? What are your expectations?
-     * @type {string}
-     * @memberof OpenEdXInstanceConfig
-     */
-    projectDescription?: string;
-    /**
      * URL to the privacy policy.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
@@ -62,11 +85,35 @@ export interface OpenEdXInstanceConfig {
      */
     useAdvancedTheme?: boolean;
     /**
-     * The theme configuration data currently being edited by the user. When finalised it willbe copied over to the final theme config which will then be deployed to the next appserverthat is launched.
-     * @type {object}
+     * 
+     * @type {ThemeSchema}
      * @memberof OpenEdXInstanceConfig
      */
-    draftThemeConfig?: object | null;
+    draftThemeConfig?: ThemeSchema;
+    /**
+     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft\'s logo will be used.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly logo?: string;
+    /**
+     * This is used as the browser tab icon for your instance\'s pages. If unset, OpenCraft\'s icon will be used.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly favicon?: string;
+    /**
+     * This is used as the cover image for the hero section in the instance LMS home page.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly heroCoverImage?: string | null;
+    /**
+     * 
+     * @type {StaticContentOverrides}
+     * @memberof OpenEdXInstanceConfig
+     */
+    draftStaticContentOverrides?: StaticContentOverrides;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -80,13 +127,19 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'id': !exists(json, 'id') ? undefined : json['id'],
+        'lmsUrl': !exists(json, 'lms_url') ? undefined : json['lms_url'],
+        'studioUrl': !exists(json, 'studio_url') ? undefined : json['studio_url'],
         'subdomain': json['subdomain'],
+        'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
         'publicContactEmail': json['public_contact_email'],
-        'projectDescription': !exists(json, 'project_description') ? undefined : json['project_description'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
-        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : json['draft_theme_config'],
+        'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
+        'logo': !exists(json, 'logo') ? undefined : json['logo'],
+        'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
+        'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
+        'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
     };
 }
 
@@ -100,12 +153,13 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
     return {
         
         'subdomain': value.subdomain,
+        'external_domain': value.externalDomain,
         'instance_name': value.instanceName,
         'public_contact_email': value.publicContactEmail,
-        'project_description': value.projectDescription,
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
-        'draft_theme_config': value.draftThemeConfig,
+        'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
+        'draft_static_content_overrides': StaticContentOverridesToJSON(value.draftStaticContentOverrides),
     };
 }
 
