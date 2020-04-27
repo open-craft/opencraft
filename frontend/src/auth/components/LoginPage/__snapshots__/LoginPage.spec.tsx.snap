@@ -22,38 +22,44 @@ exports[`Login Page disables login button when loading login 1`] = `
         onKeyPress={[Function]}
       >
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Username
-          </label>
-          <input
-            className="form-control"
-            name="username"
-            onChange={[Function]}
-            type="username"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Password
-          </label>
-          <input
-            className="form-control"
-            name="password"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
         </div>
         <button
           className="pull-left loading btn btn-primary btn-lg"
@@ -104,38 +110,44 @@ exports[`Login Page renders error messages 1`] = `
         onKeyPress={[Function]}
       >
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Username
-          </label>
-          <input
-            className="form-control"
-            name="username"
-            onChange={[Function]}
-            type="username"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Password
-          </label>
-          <input
-            className="form-control"
-            name="password"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
         </div>
         <div
           className="fade alert alert-danger show"
@@ -189,38 +201,44 @@ exports[`Login Page renders without crashing 1`] = `
         onKeyPress={[Function]}
       >
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Username
-          </label>
-          <input
-            className="form-control"
-            name="username"
-            onChange={[Function]}
-            type="username"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Username
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              type="username"
+              value=""
+            />
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Password
-          </label>
-          <input
-            className="form-control"
-            name="password"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p />
+            <label
+              className="form-label"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </div>
         </div>
         <button
           className="pull-left loading btn btn-primary btn-lg"

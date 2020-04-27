@@ -1,4 +1,5 @@
 import * as React from 'react';
+// import { useOutsideCallback } from 'global/customHooks';
 import {
   FormControl,
   FormGroup,
@@ -8,7 +9,7 @@ import {
   OverlayTrigger
 } from 'react-bootstrap';
 
-import { BlockPicker } from 'react-color';
+import { SketchPicker } from 'react-color';
 import { WrappedMessage } from 'utils/intl';
 import { messages as internalMessages } from './displayMessages';
 import './styles.scss';
@@ -27,19 +28,15 @@ interface ColorInputFieldProps {
 export const ColorInputField: React.SFC<ColorInputFieldProps> = (
   props: ColorInputFieldProps
 ) => {
+  const pickerContainer = React.useRef<HTMLDivElement>(null);
   const [colorPicker, setColorPicker] = React.useState(false);
   const [selectedColor, setColor] = React.useState(props.initialValue);
 
   // Get name that can be used with generic displayMessages.
   const genericFieldName = props.genericFieldName || props.fieldName;
 
-  // Ensure the correct color is shown if props are updated
-  React.useEffect(() => {
-    setColor(props.initialValue);
-  }, [props.initialValue]);
-
-  const showColorPicker = () => {
-    setColorPicker(true);
+  const toggleColorPicker = () => {
+    setColorPicker(!colorPicker);
   };
 
   const resetColor = () => {
@@ -58,14 +55,45 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
     }
   };
 
+  /**
+   * Bind function to document to detect when
+   * user clicks outside color picker.
+   */
+  const handleClick = (event: any) => {
+    if (
+      pickerContainer.current &&
+      !pickerContainer.current.contains(event.target)
+    ) {
+      hideColorPickerAndSubmit();
+    }
+  };
+  /**
+   * Using effect dependent on color to update bound functions
+   * when the color is changed, otherwise it would always pick
+   * props.initialColor and never made the request.
+   */
+  React.useEffect(() => {
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [selectedColor]);
+
   const tooltip = !props.hideTooltip ? (
     <Tooltip id="redeployment-status">
       <WrappedMessage messages={props.messages} id={`${props.fieldName}Help`} />
     </Tooltip>
   ) : null;
 
+  const fieldValue = () => {
+    if (props.initialValue !== undefined) {
+      return props.initialValue;
+    }
+    return 'Not set';
+  };
+
   return (
-    <FormGroup>
+    <FormGroup className="color-input">
       <FormLabel>
         <WrappedMessage id={genericFieldName} messages={props.messages} />
       </FormLabel>
@@ -73,11 +101,17 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
         <FormControl
           className="input-field-color"
           name={props.fieldName}
-          value={selectedColor}
+          value={fieldValue()}
           disabled={props.loading}
-          onFocus={showColorPicker}
-          style={{ color: selectedColor }}
+          onClick={toggleColorPicker}
           readOnly
+        />
+
+        <div
+          className="input-field-preview"
+          style={{
+            backgroundColor: props.initialValue
+          }}
         />
 
         {tooltip ? (
@@ -106,18 +140,8 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
       ) : null}
 
       {colorPicker ? (
-        <div
-          className="input-color-picker"
-          onBlur={hideColorPickerAndSubmit}
-          role="button"
-          tabIndex={0}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              hideColorPickerAndSubmit();
-            }
-          }}
-        >
-          <BlockPicker
+        <div ref={pickerContainer} className="input-color-picker">
+          <SketchPicker
             color={selectedColor}
             onChangeComplete={color => {
               setColor(color.hex);

@@ -11,6 +11,10 @@ const messages = {
     defaultMessage: 'Hero text',
     description: ''
   },
+  heroStyling: {
+    defaultMessage: 'Hero styling',
+    description: ''
+  },
   uploadHeroCoverImage: {
     defaultMessage: 'Upload cover image',
     description: ''
