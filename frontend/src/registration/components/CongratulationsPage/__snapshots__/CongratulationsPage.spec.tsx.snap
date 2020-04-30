@@ -116,6 +116,19 @@ exports[`renders without crashing 1`] = `
         <p>
           We have sent you an email to verify your email address. Please follow the link that we emailed you to complete your application process.
         </p>
+        <a
+          aria-current={null}
+          href="/console"
+          onClick={[Function]}
+        >
+          <button
+            className="btn btn-primary"
+            disabled={false}
+            type="button"
+          >
+            Go To Console
+          </button>
+        </a>
       </div>
     </div>
   </div>
