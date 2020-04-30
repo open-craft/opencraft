@@ -24,6 +24,7 @@ import random
 import string
 from string import Template
 
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.text import slugify
@@ -206,20 +207,22 @@ class OpenEdXInstanceConfigViewSet(
         """
         When a new instance is registered queue its public contact email for verification.
         """
-        instance = serializer.save()
-        # Deploy default theme for users that just registered
-        instance.draft_theme_config = DEFAULT_THEME
-        if not instance.draft_static_content_overrides:
-            static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
-            static_content_overrides['homepage_overlay_html'] = Template(
-                static_content_overrides['homepage_overlay_html']
-            ).safe_substitute(
-                instance_name=instance.instance_name
-            )
-            instance.draft_static_content_overrides = static_content_overrides
-        instance.save()
-        # Send verification emails
-        verify_user_emails(instance.user, instance.public_contact_email)
+        # theme update protected by atomic operation
+        with transaction.atomic():
+            instance = serializer.save()
+            # Deploy default theme for users that just registered
+            instance.draft_theme_config = DEFAULT_THEME
+            if not instance.draft_static_content_overrides:
+                static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
+                static_content_overrides['homepage_overlay_html'] = Template(
+                    static_content_overrides['homepage_overlay_html']
+                ).safe_substitute(
+                    instance_name=instance.instance_name
+                )
+                instance.draft_static_content_overrides = static_content_overrides
+            instance.save()
+            # Send verification emails
+            verify_user_emails(instance.user, instance.public_contact_email)
 
     def perform_update(self, serializer):
         """
@@ -320,17 +323,19 @@ class OpenEdXInstanceConfigViewSet(
         """
         application = self.get_object()
         try:
-            if 'favicon' in request.data:
-                application.favicon = request.data['favicon']
-                application.save()
+            # static updates protected by atomic operations
+            with transaction.atomic():
+                if 'favicon' in request.data:
+                    application.favicon = request.data['favicon']
+                    application.save()
 
-            if 'logo' in request.data:
-                application.logo = request.data['logo']
-                application.save()
+                if 'logo' in request.data:
+                    application.logo = request.data['logo']
+                    application.save()
 
-            if 'hero_cover_image' in request.data:
-                application.hero_cover_image = request.data['hero_cover_image']
-                application.save()
+                if 'hero_cover_image' in request.data:
+                    application.hero_cover_image = request.data['hero_cover_image']
+                    application.save()
 
         except Exception as e:  # pylint: disable=broad-except
             return Response(
