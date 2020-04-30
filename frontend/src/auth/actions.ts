@@ -7,7 +7,7 @@ import { V2Api } from 'global/api';
 import { Token } from 'ocim-client';
 // import { toCamelCase } from 'utils/string_utils';
 import { LoginFormModel, LoginStateModel } from './models';
-import * as ConsoleTypes from "../console/actions";
+import * as ConsoleTypes from '../console/actions';
 
 export enum Types {
   LOGIN_SUBMIT = 'LOGIN_SUBMIT',

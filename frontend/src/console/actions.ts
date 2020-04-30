@@ -209,7 +209,7 @@ export const clearErrorMessage = (field: keyof InstanceSettingsModel) => async (
 
 export const userRefreshData = (): OcimThunkAction<void> => async dispatch => {
   dispatch({
-    type: Types.USER_REFRESH_DATA,
+    type: Types.USER_REFRESH_DATA
   });
 };
 

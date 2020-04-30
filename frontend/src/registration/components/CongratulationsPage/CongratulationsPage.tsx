@@ -1,6 +1,8 @@
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { RegistrationSteps, ROUTES } from 'global/constants';
 import { RedirectToCorrectStep } from 'registration/components';
@@ -8,8 +10,6 @@ import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
-import { NavLink } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
 
 interface ActionProps {
   submitRegistration: Function;
@@ -19,7 +19,7 @@ interface Props extends ActionProps {
   currentRegistrationStep: RegistrationSteps;
 }
 
-interface State { }
+interface State {}
 
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
@@ -48,7 +48,9 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
             <WrappedMessage messages={messages} id="congratsMessage2" />
           </p>
           <NavLink exact to={ROUTES.Console.HOME}>
-            <Button><WrappedMessage messages={messages} id="consoleButton" /></Button>
+            <Button>
+              <WrappedMessage messages={messages} id="consoleButton" />
+            </Button>
           </NavLink>
         </div>
       </RegistrationPage>
