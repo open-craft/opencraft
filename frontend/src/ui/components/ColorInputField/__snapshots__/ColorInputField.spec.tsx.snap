@@ -2,7 +2,7 @@
 
 exports[`ColorInputField Component Correctly renders color input field. 1`] = `
 <div
-  className="form-group"
+  className="color-input form-group"
 >
   <label
     className="form-label"
@@ -15,11 +15,15 @@ exports[`ColorInputField Component Correctly renders color input field. 1`] = `
     <input
       className="input-field-color form-control"
       name="test"
-      onFocus={[Function]}
+      onClick={[Function]}
       readOnly={true}
+      value="Not set"
+    />
+    <div
+      className="input-field-preview"
       style={
         Object {
-          "color": undefined,
+          "backgroundColor": undefined,
         }
       }
     />
@@ -47,9 +51,9 @@ exports[`ColorInputField Component Correctly renders color input field. 1`] = `
 </div>
 `;
 
-exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 1`] = `
+exports[`ColorInputField Component Render component, check if color picker shows after clicking on field. 1`] = `
 <div
-  className="form-group"
+  className="color-input form-group"
 >
   <label
     className="form-label"
@@ -62,14 +66,17 @@ exports[`ColorInputField Component Render component, check if color picker shows
     <input
       className="input-field-color form-control"
       name="test"
-      onFocus={[Function]}
+      onClick={[Function]}
       readOnly={true}
+      value="#FFFFFF"
+    />
+    <div
+      className="input-field-preview"
       style={
         Object {
-          "color": "#FFFFFF",
+          "backgroundColor": "#FFFFFF",
         }
       }
-      value="#FFFFFF"
     />
     <div
       className="info-icon"
@@ -95,9 +102,9 @@ exports[`ColorInputField Component Render component, check if color picker shows
 </div>
 `;
 
-exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 2`] = `
+exports[`ColorInputField Component Render component, check if color picker shows after clicking on field. 2`] = `
 <div
-  className="form-group"
+  className="color-input form-group"
 >
   <label
     className="form-label"
@@ -110,14 +117,17 @@ exports[`ColorInputField Component Render component, check if color picker shows
     <input
       className="input-field-color form-control"
       name="test"
-      onFocus={[Function]}
+      onClick={[Function]}
       readOnly={true}
+      value="#FFFFFF"
+    />
+    <div
+      className="input-field-preview"
       style={
         Object {
-          "color": "#FFFFFF",
+          "backgroundColor": "#FFFFFF",
         }
       }
-      value="#FFFFFF"
     />
     <div
       className="info-icon"
@@ -142,60 +152,782 @@ exports[`ColorInputField Component Render component, check if color picker shows
   </p>
   <div
     className="input-color-picker"
-    onBlur={[Function]}
-    onKeyDown={[Function]}
-    role="button"
-    tabIndex={0}
   >
     <div
-      className="block-picker "
+      className="sketch-picker "
       style={
         Object {
-          "MozBorderRadius": "6px",
-          "MozBoxShadow": "0 1px rgba(0,0,0,.1)",
-          "OBorderRadius": "6px",
-          "OBoxShadow": "0 1px rgba(0,0,0,.1)",
-          "WebkitBorderRadius": "6px",
-          "WebkitBoxShadow": "0 1px rgba(0,0,0,.1)",
+          "MozBorderRadius": "4px",
+          "MozBoxShadow": "0 0 0 1px rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.15)",
+          "OBorderRadius": "4px",
+          "OBoxShadow": "0 0 0 1px rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.15)",
+          "WebkitBorderRadius": "4px",
+          "WebkitBoxShadow": "0 0 0 1px rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.15)",
           "background": "#fff",
-          "borderRadius": "6px",
-          "boxShadow": "0 1px rgba(0,0,0,.1)",
-          "msBorderRadius": "6px",
-          "msBoxShadow": "0 1px rgba(0,0,0,.1)",
-          "position": "relative",
-          "width": 170,
+          "borderRadius": "4px",
+          "boxShadow": "0 0 0 1px rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.15)",
+          "boxSizing": "initial",
+          "msBorderRadius": "4px",
+          "msBoxShadow": "0 0 0 1px rgba(0,0,0,.15), 0 8px 16px rgba(0,0,0,.15)",
+          "padding": "10px 10px 0",
+          "width": 200,
         }
       }
     >
       <div
         style={
           Object {
-            "borderColor": "transparent transparent #ffffff transparent",
-            "borderStyle": "solid",
-            "borderWidth": "0 10px 10px 10px",
-            "height": "0px",
-            "left": "50%",
-            "marginLeft": "-10px",
-            "position": "absolute",
-            "top": "-10px",
-            "width": "0px",
+            "overflow": "hidden",
+            "paddingBottom": "75%",
+            "position": "relative",
+            "width": "100%",
           }
         }
-      />
+      >
+        <div
+          onMouseDown={[Function]}
+          onTouchMove={[Function]}
+          onTouchStart={[Function]}
+          style={
+            Object {
+              "MozBorderRadius": undefined,
+              "OBorderRadius": undefined,
+              "WebkitBorderRadius": undefined,
+              "background": "hsl(0,100%, 50%)",
+              "borderRadius": undefined,
+              "bottom": "0px",
+              "left": "0px",
+              "msBorderRadius": undefined,
+              "position": "absolute",
+              "right": "0px",
+              "top": "0px",
+            }
+          }
+        >
+          <style>
+            
+          .saturation-white {
+            background: -webkit-linear-gradient(to right, #fff, rgba(255,255,255,0));
+            background: linear-gradient(to right, #fff, rgba(255,255,255,0));
+          }
+          .saturation-black {
+            background: -webkit-linear-gradient(to top, #000, rgba(0,0,0,0));
+            background: linear-gradient(to top, #000, rgba(0,0,0,0));
+          }
+        
+          </style>
+          <div
+            className="saturation-white"
+            style={
+              Object {
+                "MozBorderRadius": undefined,
+                "OBorderRadius": undefined,
+                "WebkitBorderRadius": undefined,
+                "borderRadius": undefined,
+                "bottom": "0px",
+                "left": "0px",
+                "msBorderRadius": undefined,
+                "position": "absolute",
+                "right": "0px",
+                "top": "0px",
+              }
+            }
+          >
+            <div
+              className="saturation-black"
+              style={
+                Object {
+                  "MozBorderRadius": undefined,
+                  "MozBoxShadow": undefined,
+                  "OBorderRadius": undefined,
+                  "OBoxShadow": undefined,
+                  "WebkitBorderRadius": undefined,
+                  "WebkitBoxShadow": undefined,
+                  "borderRadius": undefined,
+                  "bottom": "0px",
+                  "boxShadow": undefined,
+                  "left": "0px",
+                  "msBorderRadius": undefined,
+                  "msBoxShadow": undefined,
+                  "position": "absolute",
+                  "right": "0px",
+                  "top": "0px",
+                }
+              }
+            />
+            <div
+              style={
+                Object {
+                  "cursor": "default",
+                  "left": "0%",
+                  "position": "absolute",
+                  "top": "0%",
+                }
+              }
+            >
+              <div
+                style={
+                  Object {
+                    "MozBorderRadius": "50%",
+                    "MozBoxShadow": "0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3),
+            0 0 1px 2px rgba(0,0,0,.4)",
+                    "MozTransform": "translate(-2px, -2px)",
+                    "OBorderRadius": "50%",
+                    "OBoxShadow": "0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3),
+            0 0 1px 2px rgba(0,0,0,.4)",
+                    "OTransform": "translate(-2px, -2px)",
+                    "WebkitBorderRadius": "50%",
+                    "WebkitBoxShadow": "0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3),
+            0 0 1px 2px rgba(0,0,0,.4)",
+                    "WebkitTransform": "translate(-2px, -2px)",
+                    "borderRadius": "50%",
+                    "boxShadow": "0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3),
+            0 0 1px 2px rgba(0,0,0,.4)",
+                    "cursor": "hand",
+                    "height": "4px",
+                    "msBorderRadius": "50%",
+                    "msBoxShadow": "0 0 0 1.5px #fff, inset 0 0 1px 1px rgba(0,0,0,.3),
+            0 0 1px 2px rgba(0,0,0,.4)",
+                    "msTransform": "translate(-2px, -2px)",
+                    "transform": "translate(-2px, -2px)",
+                    "width": "4px",
+                  }
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </div>
       <div
+        className="flexbox-fix"
         style={
           Object {
-            "MozBorderRadius": "6px 6px 0 0",
-            "OBorderRadius": "6px 6px 0 0",
-            "WebkitBorderRadius": "6px 6px 0 0",
-            "WebkitJustifyContent": "center",
-            "alignItems": "center",
-            "background": "#ffffff",
-            "borderRadius": "6px 6px 0 0",
             "display": "flex",
-            "height": "110px",
-            "justifyContent": "center",
-            "msBorderRadius": "6px 6px 0 0",
+          }
+        }
+      >
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "1",
+              "WebkitBoxFlex": "1",
+              "WebkitFlex": "1",
+              "flex": "1",
+              "msFlex": "1",
+              "padding": "4px 0",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "height": "10px",
+                "overflow": "hidden",
+                "position": "relative",
+              }
+            }
+          >
+            <div
+              style={
+                Object {
+                  "MozBorderRadius": undefined,
+                  "MozBoxShadow": undefined,
+                  "OBorderRadius": undefined,
+                  "OBoxShadow": undefined,
+                  "WebkitBorderRadius": undefined,
+                  "WebkitBoxShadow": undefined,
+                  "borderRadius": undefined,
+                  "bottom": "0px",
+                  "boxShadow": undefined,
+                  "left": "0px",
+                  "msBorderRadius": undefined,
+                  "msBoxShadow": undefined,
+                  "position": "absolute",
+                  "right": "0px",
+                  "top": "0px",
+                }
+              }
+            >
+              <div
+                className="hue-horizontal"
+                onMouseDown={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                style={
+                  Object {
+                    "MozBorderRadius": undefined,
+                    "OBorderRadius": undefined,
+                    "WebkitBorderRadius": undefined,
+                    "borderRadius": undefined,
+                    "height": "100%",
+                    "msBorderRadius": undefined,
+                    "padding": "0 2px",
+                    "position": "relative",
+                  }
+                }
+              >
+                <style>
+                  
+            .hue-horizontal {
+              background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0
+                33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+              background: -webkit-linear-gradient(to right, #f00 0%, #ff0
+                17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+            }
+
+            .hue-vertical {
+              background: linear-gradient(to top, #f00 0%, #ff0 17%, #0f0 33%,
+                #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+              background: -webkit-linear-gradient(to top, #f00 0%, #ff0 17%,
+                #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+            }
+          
+                </style>
+                <div
+                  style={
+                    Object {
+                      "left": "0%",
+                      "position": "absolute",
+                    }
+                  }
+                >
+                  <div
+                    style={
+                      Object {
+                        "MozBorderRadius": "1px",
+                        "MozBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "MozTransform": "translateX(-2px)",
+                        "OBorderRadius": "1px",
+                        "OBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "OTransform": "translateX(-2px)",
+                        "WebkitBorderRadius": "1px",
+                        "WebkitBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "WebkitTransform": "translateX(-2px)",
+                        "background": "#fff",
+                        "borderRadius": "1px",
+                        "boxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "height": "8px",
+                        "marginTop": "1px",
+                        "msBorderRadius": "1px",
+                        "msBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "msTransform": "translateX(-2px)",
+                        "transform": "translateX(-2px)",
+                        "width": "4px",
+                      }
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            style={
+              Object {
+                "height": "10px",
+                "marginTop": "4px",
+                "overflow": "hidden",
+                "position": "relative",
+              }
+            }
+          >
+            <div
+              style={
+                Object {
+                  "MozBorderRadius": undefined,
+                  "OBorderRadius": undefined,
+                  "WebkitBorderRadius": undefined,
+                  "borderRadius": undefined,
+                  "bottom": "0px",
+                  "left": "0px",
+                  "msBorderRadius": undefined,
+                  "position": "absolute",
+                  "right": "0px",
+                  "top": "0px",
+                }
+              }
+            >
+              <div
+                style={
+                  Object {
+                    "MozBorderRadius": undefined,
+                    "OBorderRadius": undefined,
+                    "WebkitBorderRadius": undefined,
+                    "borderRadius": undefined,
+                    "bottom": "0px",
+                    "left": "0px",
+                    "msBorderRadius": undefined,
+                    "overflow": "hidden",
+                    "position": "absolute",
+                    "right": "0px",
+                    "top": "0px",
+                  }
+                }
+              >
+                <div
+                  style={
+                    Object {
+                      "MozBorderRadius": undefined,
+                      "MozBoxShadow": undefined,
+                      "OBorderRadius": undefined,
+                      "OBoxShadow": undefined,
+                      "WebkitBorderRadius": undefined,
+                      "WebkitBoxShadow": undefined,
+                      "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAAK0lEQVQ4jWNkYGAQYcAP3uCTZCKgmSAYNWAwGMBIhBq86WTgvTBqABUMAABXlAEzkiIyLgAAAABJRU5ErkJggg==) center left",
+                      "borderRadius": undefined,
+                      "bottom": "0px",
+                      "boxShadow": undefined,
+                      "left": "0px",
+                      "msBorderRadius": undefined,
+                      "msBoxShadow": undefined,
+                      "position": "absolute",
+                      "right": "0px",
+                      "top": "0px",
+                    }
+                  }
+                />
+              </div>
+              <div
+                style={
+                  Object {
+                    "MozBorderRadius": undefined,
+                    "MozBoxShadow": undefined,
+                    "OBorderRadius": undefined,
+                    "OBoxShadow": undefined,
+                    "WebkitBorderRadius": undefined,
+                    "WebkitBoxShadow": undefined,
+                    "background": "linear-gradient(to right, rgba(255,255,255, 0) 0%,
+           rgba(255,255,255, 1) 100%)",
+                    "borderRadius": undefined,
+                    "bottom": "0px",
+                    "boxShadow": undefined,
+                    "left": "0px",
+                    "msBorderRadius": undefined,
+                    "msBoxShadow": undefined,
+                    "position": "absolute",
+                    "right": "0px",
+                    "top": "0px",
+                  }
+                }
+              />
+              <div
+                onMouseDown={[Function]}
+                onTouchMove={[Function]}
+                onTouchStart={[Function]}
+                style={
+                  Object {
+                    "height": "100%",
+                    "margin": "0 3px",
+                    "position": "relative",
+                  }
+                }
+              >
+                <div
+                  style={
+                    Object {
+                      "left": "100%",
+                      "position": "absolute",
+                    }
+                  }
+                >
+                  <div
+                    style={
+                      Object {
+                        "MozBorderRadius": "1px",
+                        "MozBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "MozTransform": "translateX(-2px)",
+                        "OBorderRadius": "1px",
+                        "OBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "OTransform": "translateX(-2px)",
+                        "WebkitBorderRadius": "1px",
+                        "WebkitBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "WebkitTransform": "translateX(-2px)",
+                        "background": "#fff",
+                        "borderRadius": "1px",
+                        "boxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "height": "8px",
+                        "marginTop": "1px",
+                        "msBorderRadius": "1px",
+                        "msBoxShadow": "0 0 2px rgba(0, 0, 0, .6)",
+                        "msTransform": "translateX(-2px)",
+                        "transform": "translateX(-2px)",
+                        "width": "4px",
+                      }
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={
+            Object {
+              "MozBorderRadius": "3px",
+              "OBorderRadius": "3px",
+              "WebkitBorderRadius": "3px",
+              "borderRadius": "3px",
+              "height": "24px",
+              "marginLeft": "4px",
+              "marginTop": "4px",
+              "msBorderRadius": "3px",
+              "position": "relative",
+              "width": "24px",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "MozBorderRadius": undefined,
+                "MozBoxShadow": undefined,
+                "OBorderRadius": undefined,
+                "OBoxShadow": undefined,
+                "WebkitBorderRadius": undefined,
+                "WebkitBoxShadow": undefined,
+                "background": "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAAK0lEQVQ4jWNkYGAQYcAP3uCTZCKgmSAYNWAwGMBIhBq86WTgvTBqABUMAABXlAEzkiIyLgAAAABJRU5ErkJggg==) center left",
+                "borderRadius": undefined,
+                "bottom": "0px",
+                "boxShadow": undefined,
+                "left": "0px",
+                "msBorderRadius": undefined,
+                "msBoxShadow": undefined,
+                "position": "absolute",
+                "right": "0px",
+                "top": "0px",
+              }
+            }
+          />
+          <div
+            style={
+              Object {
+                "MozBorderRadius": "2px",
+                "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15), inset 0 0 4px rgba(0,0,0,.25)",
+                "OBorderRadius": "2px",
+                "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15), inset 0 0 4px rgba(0,0,0,.25)",
+                "WebkitBorderRadius": "2px",
+                "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15), inset 0 0 4px rgba(0,0,0,.25)",
+                "background": "rgba(255,255,255,1)",
+                "borderRadius": "2px",
+                "bottom": "0px",
+                "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15), inset 0 0 4px rgba(0,0,0,.25)",
+                "left": "0px",
+                "msBorderRadius": "2px",
+                "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15), inset 0 0 4px rgba(0,0,0,.25)",
+                "position": "absolute",
+                "right": "0px",
+                "top": "0px",
+              }
+            }
+          />
+        </div>
+      </div>
+      <div
+        className="flexbox-fix"
+        style={
+          Object {
+            "display": "flex",
+            "paddingTop": "4px",
+          }
+        }
+      >
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "2",
+              "WebkitBoxFlex": "2",
+              "WebkitFlex": "2",
+              "flex": "2",
+              "msFlex": "2",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "position": "relative",
+              }
+            }
+          >
+            <input
+              onBlur={[Function]}
+              onChange={[Function]}
+              onKeyDown={[Function]}
+              spellCheck="false"
+              style={
+                Object {
+                  "MozBoxShadow": "inset 0 0 0 1px #ccc",
+                  "OBoxShadow": "inset 0 0 0 1px #ccc",
+                  "WebkitBoxShadow": "inset 0 0 0 1px #ccc",
+                  "border": "none",
+                  "boxShadow": "inset 0 0 0 1px #ccc",
+                  "fontSize": "11px",
+                  "msBoxShadow": "inset 0 0 0 1px #ccc",
+                  "padding": "4px 10% 3px",
+                  "width": "80%",
+                }
+              }
+              value="FFFFFF"
+            />
+            <span
+              onMouseDown={[Function]}
+              style={
+                Object {
+                  "color": "#222",
+                  "display": "block",
+                  "fontSize": "11px",
+                  "paddingBottom": "4px",
+                  "paddingTop": "3px",
+                  "textAlign": "center",
+                  "textTransform": "capitalize",
+                }
+              }
+            >
+              hex
+            </span>
+          </div>
+        </div>
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "1",
+              "WebkitBoxFlex": "1",
+              "WebkitFlex": "1",
+              "flex": "1",
+              "msFlex": "1",
+              "paddingLeft": "6px",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "position": "relative",
+              }
+            }
+          >
+            <input
+              onBlur={[Function]}
+              onChange={[Function]}
+              onKeyDown={[Function]}
+              spellCheck="false"
+              style={
+                Object {
+                  "MozBoxShadow": "inset 0 0 0 1px #ccc",
+                  "OBoxShadow": "inset 0 0 0 1px #ccc",
+                  "WebkitBoxShadow": "inset 0 0 0 1px #ccc",
+                  "border": "none",
+                  "boxShadow": "inset 0 0 0 1px #ccc",
+                  "fontSize": "11px",
+                  "msBoxShadow": "inset 0 0 0 1px #ccc",
+                  "padding": "4px 10% 3px",
+                  "width": "80%",
+                }
+              }
+              value="255"
+            />
+            <span
+              onMouseDown={[Function]}
+              style={
+                Object {
+                  "color": "#222",
+                  "cursor": "ew-resize",
+                  "display": "block",
+                  "fontSize": "11px",
+                  "paddingBottom": "4px",
+                  "paddingTop": "3px",
+                  "textAlign": "center",
+                  "textTransform": "capitalize",
+                }
+              }
+            >
+              r
+            </span>
+          </div>
+        </div>
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "1",
+              "WebkitBoxFlex": "1",
+              "WebkitFlex": "1",
+              "flex": "1",
+              "msFlex": "1",
+              "paddingLeft": "6px",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "position": "relative",
+              }
+            }
+          >
+            <input
+              onBlur={[Function]}
+              onChange={[Function]}
+              onKeyDown={[Function]}
+              spellCheck="false"
+              style={
+                Object {
+                  "MozBoxShadow": "inset 0 0 0 1px #ccc",
+                  "OBoxShadow": "inset 0 0 0 1px #ccc",
+                  "WebkitBoxShadow": "inset 0 0 0 1px #ccc",
+                  "border": "none",
+                  "boxShadow": "inset 0 0 0 1px #ccc",
+                  "fontSize": "11px",
+                  "msBoxShadow": "inset 0 0 0 1px #ccc",
+                  "padding": "4px 10% 3px",
+                  "width": "80%",
+                }
+              }
+              value="255"
+            />
+            <span
+              onMouseDown={[Function]}
+              style={
+                Object {
+                  "color": "#222",
+                  "cursor": "ew-resize",
+                  "display": "block",
+                  "fontSize": "11px",
+                  "paddingBottom": "4px",
+                  "paddingTop": "3px",
+                  "textAlign": "center",
+                  "textTransform": "capitalize",
+                }
+              }
+            >
+              g
+            </span>
+          </div>
+        </div>
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "1",
+              "WebkitBoxFlex": "1",
+              "WebkitFlex": "1",
+              "flex": "1",
+              "msFlex": "1",
+              "paddingLeft": "6px",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "position": "relative",
+              }
+            }
+          >
+            <input
+              onBlur={[Function]}
+              onChange={[Function]}
+              onKeyDown={[Function]}
+              spellCheck="false"
+              style={
+                Object {
+                  "MozBoxShadow": "inset 0 0 0 1px #ccc",
+                  "OBoxShadow": "inset 0 0 0 1px #ccc",
+                  "WebkitBoxShadow": "inset 0 0 0 1px #ccc",
+                  "border": "none",
+                  "boxShadow": "inset 0 0 0 1px #ccc",
+                  "fontSize": "11px",
+                  "msBoxShadow": "inset 0 0 0 1px #ccc",
+                  "padding": "4px 10% 3px",
+                  "width": "80%",
+                }
+              }
+              value="255"
+            />
+            <span
+              onMouseDown={[Function]}
+              style={
+                Object {
+                  "color": "#222",
+                  "cursor": "ew-resize",
+                  "display": "block",
+                  "fontSize": "11px",
+                  "paddingBottom": "4px",
+                  "paddingTop": "3px",
+                  "textAlign": "center",
+                  "textTransform": "capitalize",
+                }
+              }
+            >
+              b
+            </span>
+          </div>
+        </div>
+        <div
+          style={
+            Object {
+              "MozBoxFlex": "1",
+              "WebkitBoxFlex": "1",
+              "WebkitFlex": "1",
+              "flex": "1",
+              "msFlex": "1",
+              "paddingLeft": "6px",
+            }
+          }
+        >
+          <div
+            style={
+              Object {
+                "position": "relative",
+              }
+            }
+          >
+            <input
+              onBlur={[Function]}
+              onChange={[Function]}
+              onKeyDown={[Function]}
+              spellCheck="false"
+              style={
+                Object {
+                  "MozBoxShadow": "inset 0 0 0 1px #ccc",
+                  "OBoxShadow": "inset 0 0 0 1px #ccc",
+                  "WebkitBoxShadow": "inset 0 0 0 1px #ccc",
+                  "border": "none",
+                  "boxShadow": "inset 0 0 0 1px #ccc",
+                  "fontSize": "11px",
+                  "msBoxShadow": "inset 0 0 0 1px #ccc",
+                  "padding": "4px 10% 3px",
+                  "width": "80%",
+                }
+              }
+              value="100"
+            />
+            <span
+              onMouseDown={[Function]}
+              style={
+                Object {
+                  "color": "#222",
+                  "cursor": "ew-resize",
+                  "display": "block",
+                  "fontSize": "11px",
+                  "paddingBottom": "4px",
+                  "paddingTop": "3px",
+                  "textAlign": "center",
+                  "textTransform": "capitalize",
+                }
+              }
+            >
+              a
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        className="flexbox-fix"
+        style={
+          Object {
+            "borderTop": "1px solid #eee",
+            "display": "flex",
+            "flexWrap": "wrap",
+            "margin": "0 -10px",
+            "padding": "10px 0 0 10px",
             "position": "relative",
           }
         }
@@ -203,26 +935,9 @@ exports[`ColorInputField Component Render component, check if color picker shows
         <div
           style={
             Object {
-              "color": "#000",
-              "fontSize": "18px",
-              "position": "relative",
-            }
-          }
-        >
-          #ffffff
-        </div>
-      </div>
-      <div
-        style={
-          Object {
-            "padding": "10px",
-          }
-        }
-      >
-        <div
-          style={
-            Object {
-              "marginRight": "-10px",
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
             }
           }
         >
@@ -235,360 +950,612 @@ exports[`ColorInputField Component Render component, check if color picker shows
               onKeyDown={[Function]}
               style={
                 Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#D9E3F0",
-                  "borderRadius": "4px",
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#D0021B",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
                   "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
                   "outline": "none",
                   "position": "relative",
-                  "width": "22px",
+                  "width": "100%",
                 }
               }
               tabIndex={0}
-              title="#D9E3F0"
+              title="#D0021B"
             />
           </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#F47373",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#F47373"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#697689",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#697689"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#37D67A",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#37D67A"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#2CCCE4",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#2CCCE4"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#555555",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#555555"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#dce775",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#dce775"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#ff8a65",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#ff8a65"
-            />
-          </span>
-          <span
-            onBlur={[Function]}
-            onFocus={[Function]}
-          >
-            <div
-              onClick={[Function]}
-              onKeyDown={[Function]}
-              style={
-                Object {
-                  "MozBorderRadius": "4px",
-                  "OBorderRadius": "4px",
-                  "WebkitBorderRadius": "4px",
-                  "background": "#ba68c8",
-                  "borderRadius": "4px",
-                  "cursor": "pointer",
-                  "float": "left",
-                  "height": "22px",
-                  "marginBottom": "10px",
-                  "marginRight": "10px",
-                  "msBorderRadius": "4px",
-                  "outline": "none",
-                  "position": "relative",
-                  "width": "22px",
-                }
-              }
-              tabIndex={0}
-              title="#ba68c8"
-            />
-          </span>
-          <div
-            style={
-              Object {
-                "clear": "both",
-              }
-            }
-          />
         </div>
         <div
           style={
             Object {
-              "position": "relative",
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
             }
           }
         >
-          <input
+          <span
             onBlur={[Function]}
-            onChange={[Function]}
-            onKeyDown={[Function]}
-            spellCheck="false"
-            style={
-              Object {
-                "MozBorderRadius": "4px",
-                "MozBoxShadow": "inset 0 0 0 1px #ddd",
-                "OBorderRadius": "4px",
-                "OBoxShadow": "inset 0 0 0 1px #ddd",
-                "WebkitBorderRadius": "4px",
-                "WebkitBoxShadow": "inset 0 0 0 1px #ddd",
-                "border": "0px",
-                "borderRadius": "4px",
-                "boxShadow": "inset 0 0 0 1px #ddd",
-                "boxSizing": "border-box",
-                "color": "#666",
-                "fontSize": "12px",
-                "height": "22px",
-                "msBorderRadius": "4px",
-                "msBoxShadow": "inset 0 0 0 1px #ddd",
-                "outline": "none",
-                "padding": "0 7px",
-                "width": "100%",
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#F5A623",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
               }
+              tabIndex={0}
+              title="#F5A623"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
             }
-            value="#FFFFFF"
-          />
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#F8E71C",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#F8E71C"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#8B572A",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#8B572A"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#7ED321",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#7ED321"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#417505",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#417505"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#BD10E0",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#BD10E0"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#9013FE",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#9013FE"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#4A90E2",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#4A90E2"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#50E3C2",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#50E3C2"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#B8E986",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#B8E986"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#000000",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#000000"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#4A4A4A",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#4A4A4A"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#9B9B9B",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#9B9B9B"
+            />
+          </span>
+        </div>
+        <div
+          style={
+            Object {
+              "height": "16px",
+              "margin": "0 10px 10px 0",
+              "width": "16px",
+            }
+          }
+        >
+          <span
+            onBlur={[Function]}
+            onFocus={[Function]}
+          >
+            <div
+              onClick={[Function]}
+              onKeyDown={[Function]}
+              style={
+                Object {
+                  "MozBorderRadius": "3px",
+                  "MozBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "OBorderRadius": "3px",
+                  "OBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "WebkitBorderRadius": "3px",
+                  "WebkitBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "background": "#FFFFFF",
+                  "borderRadius": "3px",
+                  "boxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "cursor": "pointer",
+                  "height": "100%",
+                  "msBorderRadius": "3px",
+                  "msBoxShadow": "inset 0 0 0 1px rgba(0,0,0,.15)",
+                  "outline": "none",
+                  "position": "relative",
+                  "width": "100%",
+                }
+              }
+              tabIndex={0}
+              title="#FFFFFF"
+            />
+          </span>
         </div>
       </div>
     </div>
   </div>
-</div>
-`;
-
-exports[`ColorInputField Component Render component, check if color picker shows after clicking on field and vanishes after clicking outside. 3`] = `
-<div
-  className="form-group"
->
-  <label
-    className="form-label"
-  >
-    Test
-  </label>
-  <div
-    className="row"
-  >
-    <input
-      className="input-field-color form-control"
-      name="test"
-      onFocus={[Function]}
-      readOnly={true}
-      style={
-        Object {
-          "color": "#FFFFFF",
-        }
-      }
-      value="#FFFFFF"
-    />
-    <div
-      className="info-icon"
-      onBlur={[Function]}
-      onFocus={[Function]}
-      onMouseOut={[Function]}
-      onMouseOver={[Function]}
-    >
-      <i
-        className="fas fa-info-circle"
-      />
-    </div>
-  </div>
-  <p>
-    <button
-      className="reset-value"
-      onClick={[Function]}
-      type="button"
-    >
-      Reset
-    </button>
-  </p>
 </div>
 `;
 
 exports[`ColorInputField Component Render loading. 1`] = `
 <div
-  className="form-group"
+  className="color-input form-group"
 >
   <label
     className="form-label"
@@ -602,14 +1569,17 @@ exports[`ColorInputField Component Render loading. 1`] = `
       className="input-field-color form-control"
       disabled={true}
       name="test"
-      onFocus={[Function]}
+      onClick={[Function]}
       readOnly={true}
+      value="#FFFFFF"
+    />
+    <div
+      className="input-field-preview"
       style={
         Object {
-          "color": "#FFFFFF",
+          "backgroundColor": "#FFFFFF",
         }
       }
-      value="#FFFFFF"
     />
     <div
       className="info-icon"
@@ -637,7 +1607,7 @@ exports[`ColorInputField Component Render loading. 1`] = `
 
 exports[`ColorInputField Component Render with default value. 1`] = `
 <div
-  className="form-group"
+  className="color-input form-group"
 >
   <label
     className="form-label"
@@ -650,14 +1620,17 @@ exports[`ColorInputField Component Render with default value. 1`] = `
     <input
       className="input-field-color form-control"
       name="test"
-      onFocus={[Function]}
+      onClick={[Function]}
       readOnly={true}
+      value="#FFFFFF"
+    />
+    <div
+      className="input-field-preview"
       style={
         Object {
-          "color": "#FFFFFF",
+          "backgroundColor": "#FFFFFF",
         }
       }
-      value="#FFFFFF"
     />
     <div
       className="info-icon"

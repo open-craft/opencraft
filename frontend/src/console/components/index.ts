@@ -29,3 +29,7 @@ export * from './FooterPreview';
 export * from './Hero';
 
 export * from './CustomPages';
+
+export * from './PreviewComponent';
+
+export * from './CoursesListingItem';

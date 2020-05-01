@@ -14,6 +14,11 @@ const messages = {
   login: {
     defaultMessage: 'Login',
     description: 'Text that goes into login button.'
+  },
+  passwordReset: {
+    defaultMessage: 'Your password has been reset.',
+    description:
+      'Text that appears as alert after users reset their password and are redirected to the login page.'
   }
 };
 

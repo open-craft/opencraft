@@ -22,6 +22,8 @@ Instance app model mixins - load balancing
 
 # Imports #####################################################################
 
+from datetime import datetime, timezone
+
 from django.conf import settings
 from django.db import models
 
@@ -36,6 +38,7 @@ class LoadBalancedInstance(models.Model):
     Mixin for load-balanced instances.
     """
     load_balancing_server = models.ForeignKey(LoadBalancingServer, null=True, blank=True, on_delete=models.PROTECT)
+    dns_records_updated = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
         abstract = True
@@ -59,6 +62,8 @@ class LoadBalancedInstance(models.Model):
         load_balancer_domain = self.load_balancing_server.domain.rstrip(".") + "."
         for domain in self.get_managed_domains():
             gandi.api.set_dns_record(domain, type="CNAME", value=load_balancer_domain)
+        self.dns_records_updated = datetime.now(timezone.utc)
+        self.save()
 
     def remove_dns_records(self, ignore_errors=False):
         """
@@ -71,6 +76,8 @@ class LoadBalancedInstance(models.Model):
             except ValueError:
                 if not ignore_errors:
                     raise
+        self.dns_records_updated = None
+        self.save()
 
     def reconfigure_load_balancer(self, load_balancing_server=None):
         """

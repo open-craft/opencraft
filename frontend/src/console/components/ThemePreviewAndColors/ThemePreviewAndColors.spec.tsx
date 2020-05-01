@@ -20,7 +20,10 @@ describe("Theme preview and colors page", function() {
                 id: 1,
                 instanceName: "test",
                 subdomain: "test",
-                draftThemeConfig: {}
+                draftThemeConfig: {},
+                draftStaticContentOverrides: {
+                  homepageOverlayHtml: "",
+                }
               },
               deployment: {
                 status: "NO_STATUS",
@@ -53,6 +56,9 @@ describe("Theme preview and colors page", function() {
                   version: 1,
                   mainColor: "#444444",
                   linkColor: "#FFAAFF"
+                },
+                draftStaticContentOverrides: {
+                  homepageOverlayHtml: "Test overlay",
                 }
               },
               loading: [],
@@ -87,6 +93,9 @@ describe("Theme preview and colors page", function() {
                   version: 1,
                   mainColor: "#444444",
                   linkColor: "#FFAAFF"
+                },
+                draftStaticContentOverrides: {
+                  homepageOverlayHtml: "Test overlay",
                 }
               },
               loading: ['draftThemeConfig'],
