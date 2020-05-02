@@ -35,7 +35,7 @@ from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.theming import theme_schema_validate
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
-from instance.tasks import spawn_appserver
+from instance.tasks import create_new_deployment
 
 
 # Models ######################################################################
@@ -353,7 +353,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             raise ValidationError(errors)
 
     # pylint: disable=inconsistent-return-statements
-    def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2):
+    def commit_changes_to_instance(self, spawn_on_commit=False, retry_attempts=2, creator=None, trigger=None):
         """
         Copies over configuration changes stored in this model to the related instance,
         and optionally spawn a new instance.
@@ -370,9 +370,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         instance.save()
 
         if spawn_on_commit:
-            return spawn_appserver(
+            return create_new_deployment(
                 instance.ref.pk,
                 mark_active_on_success=True,
-                deactivate_old_appservers=True,
-                num_attempts=retry_attempts
+                num_attempts=retry_attempts,
+                creator=creator,
+                trigger=trigger,
             )

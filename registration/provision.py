@@ -30,7 +30,8 @@ from django.dispatch import receiver
 from simple_email_confirmation.signals import email_confirmed
 
 from instance.factories import production_instance_factory
-from instance.tasks import spawn_appserver
+from instance.models.deployment import DeploymentType
+from instance.tasks import create_new_deployment
 from registration.models import BetaTestApplication
 from registration.utils import send_account_info_email
 
@@ -95,4 +96,10 @@ def _provision_instance(sender, **kwargs):
         # At this point we know the user has confirmed their email and set up an instance.
         # So we can go ahead and send the account info email.
         transaction.on_commit(lambda: send_account_info_email(application))
-    spawn_appserver(application.instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+    create_new_deployment(
+        application.instance.ref.pk,
+        mark_active_on_success=True,
+        num_attempts=2,
+        creator=user,
+        trigger=DeploymentType.registration,
+    )

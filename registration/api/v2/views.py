@@ -33,19 +33,26 @@ from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
 )
-from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
+from instance.models.deployment import DeploymentType
+from instance.schemas.static_content_overrides import (
+    DEFAULT_STATIC_CONTENT_OVERRIDES,
+    fill_default_hero_text,
+    static_content_overrides_schema_validate,
+)
+from instance.schemas.theming import DEFAULT_THEME, theme_schema_validate
 from opencraft.swagger import (
     VALIDATION_AND_AUTH_RESPONSES,
     VALIDATION_RESPONSE,
@@ -53,25 +60,13 @@ from opencraft.swagger import (
 )
 from registration.api.v2 import constants
 from registration.api.v2.serializers import (
-    AccountSerializer,
-    ApplicationImageUploadSerializer,
-    OpenEdXInstanceConfigSerializer,
-    OpenEdXInstanceConfigUpdateSerializer,
-    OpenEdXInstanceDeploymentStatusSerializer,
-    OpenEdXInstanceDeploymentCreateSerializer,
-    StaticContentOverridesSerializer,
-    ThemeSchemaSerializer,
+    AccountSerializer, ApplicationImageUploadSerializer, OpenEdXInstanceConfigSerializer,
+    OpenEdXInstanceConfigUpdateSerializer, OpenEdXInstanceDeploymentCreateSerializer,
+    OpenEdXInstanceDeploymentStatusSerializer, StaticContentOverridesSerializer, ThemeSchemaSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile
-from instance.schemas.static_content_overrides import (
-    DEFAULT_STATIC_CONTENT_OVERRIDES,
-    fill_default_hero_text,
-    static_content_overrides_schema_validate,
-)
-from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
-
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +303,7 @@ class OpenEdXInstanceConfigViewSet(
     @action(
         detail=True,
         methods=['post'],
-        parser_classes=(MultiPartParser, ),
+        parser_classes=(MultiPartParser,),
         serializer_class=ApplicationImageUploadSerializer
     )
     def image(self, request, pk: str):
@@ -461,6 +456,12 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         case prevents a new one from being launched unless forced.
         """
         force = request.query_params.get("force", False)
+        if self.request.user.is_superuser:
+            default_trigger = DeploymentType.admin.name
+        else:
+            default_trigger = DeploymentType.user.name
+        # Allow overriding trigger in case deployment is created by API in some other way.
+        trigger = request.query_params.get("trigger", default_trigger)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -488,6 +489,8 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         instance_config.commit_changes_to_instance(
             spawn_on_commit=True,
             retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
+            creator=self.request.user,
+            trigger=trigger,
         )
 
         return Response(status=status.HTTP_200_OK)

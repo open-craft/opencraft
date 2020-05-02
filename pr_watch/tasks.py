@@ -27,16 +27,11 @@ import logging
 from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task
 
-from userprofile.models import UserProfile
-
-from pr_watch.github import (
-    get_pr_list_from_usernames,
-    RateLimitExceeded
-)
+from instance.models.deployment import DeploymentType
+from instance.tasks import create_new_deployment
+from pr_watch.github import (RateLimitExceeded, get_pr_list_from_usernames)
 from pr_watch.models import WatchedFork, WatchedPullRequest
-
-from instance.tasks import spawn_appserver
-
+from userprofile.models import UserProfile
 
 # Logging #####################################################################
 
@@ -67,6 +62,11 @@ def watch_pr():
                 instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
                 if created:
                     logger.info('New PR found, creating sandbox: %s', pr)
-                    spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+                    create_new_deployment(
+                        instance.ref.pk,
+                        mark_active_on_success=True,
+                        num_attempts=2,
+                        trigger=DeploymentType.pr,
+                    )
     except RateLimitExceeded as err:
         logger.warning('Could not complete PR scan due to an error: %s', str(err))

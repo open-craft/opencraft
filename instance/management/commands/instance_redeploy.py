@@ -28,11 +28,13 @@ import logging
 from django.core.management.base import BaseCommand
 
 from instance.ansible import load_yaml
+from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.tasks import spawn_appserver
+from instance.tasks import create_new_deployment
 
 LOG = logging.getLogger(__name__)
+
 
 # Classes #####################################################################
 
@@ -325,13 +327,13 @@ class Command(BaseCommand):
                 # be deactivated.
                 LOG.info("SPAWNING: %s [%s]", instance, instance.id)
                 instance.tags.add(self.ongoing_tag)
-                spawn_appserver(
+                create_new_deployment(
                     instance.ref.pk,
                     success_tag=self.success_tag,
                     failure_tag=self.failure_tag,
                     num_attempts=num_attempts,
                     mark_active_on_success=activate_on_success,
-                    deactivate_old_appservers=activate_on_success,
+                    trigger=DeploymentType.batch,
                 )
 
             # 3. Give a status update.
