@@ -32,11 +32,11 @@ from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from instance.logging import ModelLoggerAdapter
+from .deployment import Deployment
 from .instance import InstanceReference
 from .log_entry import LogEntry
 from .server import OpenStackServer
 from .utils import ModelResourceStateDescriptor, ResourceState, ValidateModelMixin
-
 
 # Logging #####################################################################
 
@@ -168,6 +168,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     # Used for billing to determine the server running period
     terminated = models.DateTimeField(null=True, blank=True)
     _is_active = models.BooleanField(default=False, db_column="is_active")
+    deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ('-created', )

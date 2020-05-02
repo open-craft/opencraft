@@ -23,7 +23,7 @@ Open edX AppServer API
 # Imports #####################################################################
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import viewsets, status, serializers
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
@@ -37,11 +37,10 @@ from instance.serializers.openedx_appserver import (
     OpenEdXAppServerSerializer,
     SpawnAppServerSerializer,
 )
-from instance.tasks import make_appserver_active, spawn_appserver
-
+from instance.tasks import create_new_deployment, make_appserver_active
 from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
-
 # Views - API #################################################################
+from ..models.deployment import DeploymentType
 
 
 class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
@@ -68,6 +67,12 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         Must pass a parameter called 'instance_id' which is the ID of the InstanceReference of
         the OpenEdXInstance that this AppServer is for.
         """
+        if self.request.user.is_superuser:
+            default_trigger = DeploymentType.admin.name
+        else:
+            default_trigger = DeploymentType.user.name
+        # Allow overriding trigger in case deployment is created by API in some other way.
+        trigger = request.query_params.get("trigger", default_trigger)
         serializer = SpawnAppServerSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -89,7 +94,11 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         if not isinstance(instance, OpenEdXInstance):
             raise serializers.ValidationError('Invalid InstanceReference ID: Not an OpenEdXInstance.')
 
-        spawn_appserver(instance_id)
+        create_new_deployment(
+            instance_id,
+            creator=self.request.user,
+            trigger=trigger,
+        )
         return Response({'status': 'Instance provisioning started'})
 
     @detail_route(methods=['get'])
