@@ -2,27 +2,31 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="form-group"
+  className="text-input-container"
 >
-  <label
-    className="form-label"
-  >
-    A translatable string.
-  </label>
-  <input
-    className="form-control is-invalid"
-    name="test"
-    onChange={[Function]}
-    type="password"
-    value="test"
-  />
   <div
-    className="invalid-feedback"
+    className="form-group"
   >
-    test
+    <label
+      className="form-label"
+    >
+      A translatable string.
+    </label>
+    <input
+      className="form-control is-invalid"
+      name="test"
+      onChange={[Function]}
+      type="password"
+      value="test"
+    />
+    <div
+      className="invalid-feedback"
+    >
+      test
+    </div>
+    <p>
+      A translatable string.
+    </p>
   </div>
-  <p>
-    A translatable string.
-  </p>
 </div>
 `;

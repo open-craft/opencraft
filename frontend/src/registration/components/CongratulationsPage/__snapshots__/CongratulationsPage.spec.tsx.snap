@@ -121,13 +121,17 @@ exports[`renders without crashing 1`] = `
           href="/console"
           onClick={[Function]}
         >
-          <button
-            className="btn btn-primary"
-            disabled={false}
-            type="button"
+          <div
+            className="text-center"
           >
-            Go To Console
-          </button>
+            <button
+              className="btn btn-primary btn-lg"
+              disabled={false}
+              type="button"
+            >
+              Go To Console
+            </button>
+          </div>
         </a>
       </div>
     </div>

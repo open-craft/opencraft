@@ -1,9 +1,13 @@
 .row.navigation-menu {
-  height: auto;
   align-items: center;
   text-align: center;
   border: 1px solid #c4c4c4;
   border-bottom: 1px solid #1a6ebb;
+  padding-left: 10px;
+
+  .col-md-1 {
+    padding: 0;
+  }
 
   .row.navigation-submenu {
     border: none;
@@ -33,7 +37,6 @@
   background: #ffffff;
 
   img {
-    max-width: 48px;
-    max-height: 48px;
+    max-width: 100%;
   }
 }

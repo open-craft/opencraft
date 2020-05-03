@@ -28,3 +28,4 @@ class RegistrationAppConfig(AppConfig):
     def ready(self):
         # Connect signal handler for automatic provisioning & approval
         from . import approval, provision  # pylint: disable=unused-import
+        from registration.signals import password_reset_token_created  # pylint: disable=unused-import
