@@ -100,7 +100,7 @@ export const performLogout = () => async (dispatch: any) => {
   window.localStorage.removeItem('token_access');
   window.localStorage.removeItem('token_refresh');
   dispatch({ type: Types.LOGOUT });
-  dispatch(ConsoleTypes.userRefreshData());
+  dispatch(ConsoleTypes.clearConsoleData());
   dispatch(push(ROUTES.Auth.LOGIN));
 };
 

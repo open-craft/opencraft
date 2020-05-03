@@ -207,22 +207,21 @@ class OpenEdXInstanceConfigViewSet(
         """
         When a new instance is registered queue its public contact email for verification.
         """
-        # theme update protected by atomic operation
-        with transaction.atomic():
-            instance = serializer.save()
-            # Deploy default theme for users that just registered
-            instance.draft_theme_config = DEFAULT_THEME
-            if not instance.draft_static_content_overrides:
-                static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
-                static_content_overrides['homepage_overlay_html'] = Template(
-                    static_content_overrides['homepage_overlay_html']
-                ).safe_substitute(
-                    instance_name=instance.instance_name
-                )
-                instance.draft_static_content_overrides = static_content_overrides
-            instance.save()
-            # Send verification emails
-            verify_user_emails(instance.user, instance.public_contact_email)
+
+        instance = serializer.save()
+        # Deploy default theme for users that just registered
+        instance.draft_theme_config = DEFAULT_THEME
+        if not instance.draft_static_content_overrides:
+            static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES.copy()
+            static_content_overrides['homepage_overlay_html'] = Template(
+                static_content_overrides['homepage_overlay_html']
+            ).safe_substitute(
+                instance_name=instance.instance_name
+            )
+            instance.draft_static_content_overrides = static_content_overrides
+        instance.save()
+        # Send verification emails
+        verify_user_emails(instance.user, instance.public_contact_email)
 
     def perform_update(self, serializer):
         """
@@ -241,6 +240,7 @@ class OpenEdXInstanceConfigViewSet(
         responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializer, },
     )
     @action(detail=True, methods=["patch"])
+    @transaction.atomic
     def theme_config(self, request, pk=None):
         """
         Partial update for theme configuration
@@ -269,7 +269,7 @@ class OpenEdXInstanceConfigViewSet(
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        # Merges the current aplication theme draft with the values modified by
+        # Merges the current application theme draft with the values modified by
         # the user and performs validation.
         # If the key is empty (""), the user reverted the field to the default
         # value, and the key needs to be erased.
@@ -295,7 +295,7 @@ class OpenEdXInstanceConfigViewSet(
             theme_schema_validate(safe_merged_theme)
         except JSONSchemaValidationError:
             # TODO: improve schema error feedback. Needs to be done along with
-            # multiple fronend changes to allow individual fields feedback.
+            # multiple frontend changes to allow individual fields feedback.
             return Response(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={
@@ -323,19 +323,17 @@ class OpenEdXInstanceConfigViewSet(
         """
         application = self.get_object()
         try:
-            # static updates protected by atomic operations
-            with transaction.atomic():
-                if 'favicon' in request.data:
-                    application.favicon = request.data['favicon']
-                    application.save()
+            if 'favicon' in request.data:
+                application.favicon = request.data['favicon']
+                application.save()
 
-                if 'logo' in request.data:
-                    application.logo = request.data['logo']
-                    application.save()
+            if 'logo' in request.data:
+                application.logo = request.data['logo']
+                application.save()
 
-                if 'hero_cover_image' in request.data:
-                    application.hero_cover_image = request.data['hero_cover_image']
-                    application.save()
+            if 'hero_cover_image' in request.data:
+                application.hero_cover_image = request.data['hero_cover_image']
+                application.save()
 
         except Exception as e:  # pylint: disable=broad-except
             return Response(
@@ -356,6 +354,7 @@ class OpenEdXInstanceConfigViewSet(
         responses={**VALIDATION_RESPONSE, 200: StaticContentOverridesSerializer},
     )
     @action(detail=True, methods=["patch"])
+    @transaction.atomic
     def static_content_overrides(self, request, pk=None):
         """
         Partial update for static content overrides configuration

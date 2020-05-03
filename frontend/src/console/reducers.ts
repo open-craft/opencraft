@@ -10,18 +10,8 @@ export function consoleReducer(
   let activeInstanceId: number;
 
   switch (action.type) {
-    case Actions.Types.USER_REFRESH_DATA:
-      return update(state, {
-        loading: { $set: false },
-        instances: { $set: [] },
-        activeInstance: {
-          $merge: {
-            data: null,
-            feedback: {},
-            loading: []
-          }
-        }
-      });
+    case Actions.Types.CLEAR_CONSOLE_DATA:
+      return initialConsoleState;
     case Actions.Types.CLEAR_ERROR_MESSAGE:
       return update(state, {
         activeInstance: {

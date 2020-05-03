@@ -48,9 +48,11 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
             <WrappedMessage messages={messages} id="congratsMessage2" />
           </p>
           <NavLink exact to={ROUTES.Console.HOME}>
-            <Button>
-              <WrappedMessage messages={messages} id="consoleButton" />
-            </Button>
+            <div className="text-center">
+              <Button size="lg">
+                <WrappedMessage messages={messages} id="consoleButton" />
+              </Button>
+            </div>
           </NavLink>
         </div>
       </RegistrationPage>
