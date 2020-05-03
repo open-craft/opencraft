@@ -16,6 +16,7 @@ interface State {
   [key: string]: string;
   instanceName: string;
   publicContactEmail: string;
+  emptyFields: string;
 }
 
 interface ActionProps {
@@ -33,13 +34,15 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
     this.state = {
       instanceName: '',
-      publicContactEmail: ''
+      publicContactEmail: '',
+      emptyFields: '1'
     };
 
     if (this.props.activeInstance.data) {
       this.state = {
         instanceName: this.props.activeInstance.data.instanceName,
-        publicContactEmail: this.props.activeInstance.data.publicContactEmail
+        publicContactEmail: this.props.activeInstance.data.publicContactEmail,
+        emptyFields: '0'
       };
     }
   }
@@ -64,6 +67,24 @@ export class InstanceSettingsComponent extends React.PureComponent<
     ) {
       this.setState({
         publicContactEmail: this.props.activeInstance!.data!.publicContactEmail
+      });
+    }
+    // if current state is empty and pre-filling
+    if (
+      (this.state.instanceName === '' ||
+        this.state.publicContactEmail === '') &&
+      prevProps.activeInstance.data &&
+      this.props.activeInstance.data &&
+      this.state.emptyFields === '1'
+    ) {
+      this.setState({
+        instanceName:
+          prevProps.activeInstance.data.instanceName ||
+          this.props.activeInstance!.data!.instanceName,
+        publicContactEmail:
+          prevProps.activeInstance.data.publicContactEmail ||
+          this.props.activeInstance!.data!.publicContactEmail,
+        emptyFields: '0'
       });
     }
   };

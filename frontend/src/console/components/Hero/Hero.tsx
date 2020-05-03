@@ -30,6 +30,7 @@ interface State {
 
   title: string;
   subtitle: string;
+  emptyFields: string;
 }
 
 interface ActionProps {
@@ -49,7 +50,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
 
     this.state = {
       title: '',
-      subtitle: ''
+      subtitle: '',
+      emptyFields: '1'
     };
   }
 
@@ -64,9 +66,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   private checkAndUpdateState = () => {
     if (
       this.homePageOverlayHtmlExists() &&
-      // FIXME: The below condition causes issues when the user tries to empty either text box.
-      //  Investigat and come up with a way to fix this.
-      (this.state.title === '' || this.state.subtitle === '')
+      (this.state.title === '' || this.state.subtitle === '') &&
+      this.state.emptyFields === '1'
     ) {
       const { draftStaticContentOverrides } = this.props.activeInstance.data!;
       const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
@@ -74,10 +75,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         draftStaticContentOverrides!.homepageOverlayHtml as string
       );
       const updatedTitle = matched ? matched[1] : '';
-      const updatedSubttitle = matched ? matched[2] : '';
+      const updatedSubtitle = matched ? matched[2] : '';
       this.setState({
         title: updatedTitle,
-        subtitle: updatedSubttitle
+        subtitle: updatedSubtitle,
+        emptyFields: '0'
       });
     }
   };
