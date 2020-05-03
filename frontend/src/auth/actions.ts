@@ -118,7 +118,7 @@ export const clearSuccessMessage = () => async (dispatch: any) => {
 export const performLogin = (
   data: LoginFormModel,
   redirectTo?: string
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch) => {
   await V2Api.authTokenCreate({ data })
     .then((response: JwtToken) => {
       // Perform authentication and create new instance
@@ -167,7 +167,7 @@ export const performLogout = () => async (dispatch: any) => {
 
 export const refreshAccessToken = (
   refreshToken: string
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch) => {
   await V2Api.authRefreshCreate({ data: { refresh: refreshToken } })
     .then((response: JwtToken) => {
       // Perform authentication and create new instance
@@ -187,7 +187,7 @@ export const refreshAccessToken = (
 
 export const performPasswordForgotten = (
   data: Email
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch) => {
   await V2Api.passwordResetCreate({ data })
     .then(() => {
       dispatch({ type: Types.PASSWORD_FORGOTTEN_SUCCESS });
@@ -210,7 +210,7 @@ export const performPasswordForgotten = (
 
 export const performPasswordResetTokenValidation = (
   data: Token
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch) => {
   await V2Api.passwordResetValidateTokenCreate({ data })
     .then(() => {
       dispatch({ type: Types.PASSWORD_RESET_TOKEN_VALIDATION_SUCCESS });
@@ -223,7 +223,7 @@ export const performPasswordResetTokenValidation = (
 
 export const performPasswordReset = (
   data: PasswordToken
-): OcimThunkAction<void> => async dispatch => {
+): OcimThunkAction<void> => async (dispatch) => {
   await V2Api.passwordResetConfirmCreate({ data })
     .then(() => {
       dispatch({ type: Types.PASSWORD_RESET_SUCCESS });

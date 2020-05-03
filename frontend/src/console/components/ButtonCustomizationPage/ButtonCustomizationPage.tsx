@@ -56,10 +56,10 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
 
   const customizationProp = `customize${props.buttonName}Btn`;
   const allStylesDefined = Object.values(styles)
-    .map(category =>
-      category.every(style => themeData[style as keyof typeof themeData])
+    .map((category) =>
+      category.every((style) => themeData[style as keyof typeof themeData])
     )
-    .every(category => category);
+    .every((category) => category);
   const customizationEnabled =
     (themeData[customizationProp as keyof typeof themeData] as
       | boolean
@@ -151,7 +151,7 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
                 </p>
               </Row>
               <Row>
-                {fields.map(field => (
+                {fields.map((field) => (
                   <Col key={field}>
                     <ColorInputField
                       key={field}

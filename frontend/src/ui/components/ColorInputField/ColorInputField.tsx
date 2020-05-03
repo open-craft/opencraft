@@ -143,7 +143,7 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
         <div ref={pickerContainer} className="input-color-picker">
           <SketchPicker
             color={selectedColor}
-            onChangeComplete={color => {
+            onChangeComplete={(color) => {
               setColor(color.hex);
             }}
           />

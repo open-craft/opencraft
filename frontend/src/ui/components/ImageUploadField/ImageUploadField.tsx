@@ -91,7 +91,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
             type="file"
             name="file"
             accept="image/*"
-            onChange={e => {
+            onChange={(e) => {
               setImageIfValid(e.target.files);
             }}
           />
