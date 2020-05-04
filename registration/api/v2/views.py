@@ -255,7 +255,7 @@ class OpenEdXInstanceConfigViewSet(
         base color.
         """
         application = BetaTestApplication.objects.select_for_update().get(id=pk)
-        with transaction.atomic:
+        with transaction.atomic():
             if not application.draft_theme_config:
                 return Response(
                     status=status.HTTP_400_BAD_REQUEST,
@@ -354,13 +354,12 @@ class OpenEdXInstanceConfigViewSet(
         responses={**VALIDATION_RESPONSE, 200: StaticContentOverridesSerializer},
     )
     @action(detail=True, methods=["patch"])
-    @transaction.atomic
     def static_content_overrides(self, request, pk=None):
         """
         Partial update for static content overrides configuration
         """
         application = BetaTestApplication.objects.select_for_update().get(id=pk)
-        with transaction.atomic:
+        with transaction.atomic():
             serializer = StaticContentOverridesSerializer(data=request.data)
             if not serializer.is_valid():
                 return Response(serializer.errors, status=400)
