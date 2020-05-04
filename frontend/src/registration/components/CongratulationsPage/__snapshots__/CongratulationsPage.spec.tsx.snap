@@ -116,13 +116,13 @@ exports[`renders without crashing 1`] = `
         <p>
           We have sent you an email to verify your email address. Please follow the link that we emailed you to complete your application process.
         </p>
-        <a
-          aria-current={null}
-          href="/console"
-          onClick={[Function]}
+        <div
+          className="text-center"
         >
-          <div
-            className="text-center"
+          <a
+            aria-current={null}
+            href="/console"
+            onClick={[Function]}
           >
             <button
               className="btn btn-primary btn-lg"
@@ -131,8 +131,8 @@ exports[`renders without crashing 1`] = `
             >
               Go To Console
             </button>
-          </div>
-        </a>
+          </a>
+        </div>
       </div>
     </div>
   </div>

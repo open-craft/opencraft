@@ -165,14 +165,14 @@ export interface CancelDeploymentFailure extends Action {
   readonly errors: any;
 }
 
-export interface UserRefreshData extends Action {
+export interface ClearConsoleData extends Action {
   readonly type: Types.CLEAR_CONSOLE_DATA;
   readonly data: Array<InstanceSettingsModel>;
 }
 
 export type ActionTypes =
   | ClearFeedbackMessage
-  | UserRefreshData
+  | ClearConsoleData
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
