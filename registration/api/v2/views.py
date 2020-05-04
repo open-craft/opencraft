@@ -240,7 +240,6 @@ class OpenEdXInstanceConfigViewSet(
         responses={**VALIDATION_RESPONSE, 200: ThemeSchemaSerializer, },
     )
     @action(detail=True, methods=["patch"])
-    @transaction.atomic
     def theme_config(self, request, pk=None):
         """
         Partial update for theme configuration
@@ -255,58 +254,59 @@ class OpenEdXInstanceConfigViewSet(
         PATCH" {"main-color": "default"} should revert to the default theme
         base color.
         """
-        application = self.get_object()
-        if not application.draft_theme_config:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    "non_field_errors": "V1 theme isn't set up yet."
-                }
-            )
+        application = BetaTestApplication.objects.select_for_update().get(id=pk)
+        with transaction.atomic:
+            if not application.draft_theme_config:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={
+                        "non_field_errors": "V1 theme isn't set up yet."
+                    }
+                )
 
-        # Sanitize inputs
-        serializer = ThemeSchemaSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
+            # Sanitize inputs
+            serializer = ThemeSchemaSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=400)
 
-        # Merges the current application theme draft with the values modified by
-        # the user and performs validation.
-        # If the key is empty (""), the user reverted the field to the default
-        # value, and the key needs to be erased.
-        merged_theme = {
-            key: value for key, value in {
-                **application.draft_theme_config, **serializer.validated_data
-            }.items() if value
-        }
+            # Merges the current application theme draft with the values modified by
+            # the user and performs validation.
+            # If the key is empty (""), the user reverted the field to the default
+            # value, and the key needs to be erased.
+            merged_theme = {
+                key: value for key, value in {
+                    **application.draft_theme_config, **serializer.validated_data
+                }.items() if value
+            }
 
-        # To make sure the required values are always available, merge dict with
-        # default values dictionary.
-        safe_merged_theme = {
-            **DEFAULT_THEME,
-            **merged_theme
-        }
+            # To make sure the required values are always available, merge dict with
+            # default values dictionary.
+            safe_merged_theme = {
+                **DEFAULT_THEME,
+                **merged_theme
+            }
 
-        # TODO: Needs additional validation/filling up if button customization
-        # is enabled to prevent the validation schema from failing
+            # TODO: Needs additional validation/filling up if button customization
+            # is enabled to prevent the validation schema from failing
 
-        # Perform validation, handle error if failed, and return updated
-        # theme_config if succeeds.
-        try:
-            theme_schema_validate(safe_merged_theme)
-        except JSONSchemaValidationError:
-            # TODO: improve schema error feedback. Needs to be done along with
-            # multiple frontend changes to allow individual fields feedback.
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    "non_field_errors": "Schema validation failed."
-                }
-            )
+            # Perform validation, handle error if failed, and return updated
+            # theme_config if succeeds.
+            try:
+                theme_schema_validate(safe_merged_theme)
+            except JSONSchemaValidationError:
+                # TODO: improve schema error feedback. Needs to be done along with
+                # multiple frontend changes to allow individual fields feedback.
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={
+                        "non_field_errors": "Schema validation failed."
+                    }
+                )
 
-        application.draft_theme_config = safe_merged_theme
-        application.save()
+            application.draft_theme_config = safe_merged_theme
+            application.save()
 
-        return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
+            return Response(status=status.HTTP_200_OK, data=application.draft_theme_config)
 
     @action(
         detail=True,
@@ -359,43 +359,44 @@ class OpenEdXInstanceConfigViewSet(
         """
         Partial update for static content overrides configuration
         """
-        application = self.get_object()
-        serializer = StaticContentOverridesSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=400)
+        application = BetaTestApplication.objects.select_for_update().get(id=pk)
+        with transaction.atomic:
+            serializer = StaticContentOverridesSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=400)
 
-        if not application.draft_static_content_overrides:
-            application.draft_static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES
+            if not application.draft_static_content_overrides:
+                application.draft_static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES
 
-        merged_values = {
-            key: value for key, value in {
-                **application.draft_static_content_overrides, **serializer.validated_data
-            }.items()}
+            merged_values = {
+                key: value for key, value in {
+                    **application.draft_static_content_overrides, **serializer.validated_data
+                }.items()}
 
-        if 'homepage_overlay_html' not in merged_values:
-            current_value = ''
-        else:
-            current_value = merged_values['homepage_overlay_html']
+            if 'homepage_overlay_html' not in merged_values:
+                current_value = ''
+            else:
+                current_value = merged_values['homepage_overlay_html']
 
-        merged_values['homepage_overlay_html'] = Template(
-            fill_default_hero_text(
-                current_value
-            )
-        ).safe_substitute(instance_name=application.instance_name)
+            merged_values['homepage_overlay_html'] = Template(
+                fill_default_hero_text(
+                    current_value
+                )
+            ).safe_substitute(instance_name=application.instance_name)
 
-        try:
-            static_content_overrides_schema_validate(merged_values)
-        except JSONSchemaValidationError:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    'non_field_errors': "Schema validation failed."
-                }
-            )
-        application.draft_static_content_overrides = merged_values
-        application.save()
+            try:
+                static_content_overrides_schema_validate(merged_values)
+            except JSONSchemaValidationError:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={
+                        'non_field_errors': "Schema validation failed."
+                    }
+                )
+            application.draft_static_content_overrides = merged_values
+            application.save()
 
-        return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
+            return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
 
     def get_queryset(self):
         """
