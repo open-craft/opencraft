@@ -2,7 +2,12 @@ import * as React from 'react';
 
 import { Redirect, Route, Switch } from 'react-router';
 import { ErrorPage } from 'ui/components';
-import { LoginPage, LogoutPage } from 'auth/components';
+import {
+  LoginPage,
+  LogoutPage,
+  PasswordForgottenPage,
+  PasswordResetPage
+} from 'auth/components';
 import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
 import { ROUTES } from '../global/constants';
@@ -13,6 +18,11 @@ export const MainRoutes = () => (
     <Route path="/error" component={ErrorPage} />
     <Route path="/login" component={LoginPage} />
     <Route path="/logout" component={LogoutPage} />
+    <Route
+      path={ROUTES.Auth.PASSWORD_FORGOTTEN}
+      component={PasswordForgottenPage}
+    />
+    <Route path={ROUTES.Auth.PASSWORD_RESET} component={PasswordResetPage} />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
   </Switch>

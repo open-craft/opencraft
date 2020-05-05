@@ -6,6 +6,7 @@ import { WrappedMessage } from 'utils/intl';
 import { Alert, Button, Spinner, Form } from 'react-bootstrap';
 import { ContentPage, TextInputField } from 'ui/components';
 import { performLogin } from 'auth/actions';
+import { Link } from 'react-router-dom';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -21,6 +22,7 @@ interface State {
 
 interface Props extends ActionProps {
   loading: boolean;
+  succeeded: boolean;
   error: string;
 }
 
@@ -89,6 +91,12 @@ export class LoginPage extends React.PureComponent<Props, State> {
             type="password"
           />
 
+          {this.props.succeeded && (
+            <Alert variant="success">
+              <WrappedMessage messages={messages} id="passwordReset" />
+            </Alert>
+          )}
+
           {this.props.error && (
             <Alert variant="danger">{this.props.error}</Alert>
           )}
@@ -109,9 +117,9 @@ export class LoginPage extends React.PureComponent<Props, State> {
           </Button>
 
           <p className="forgot-password">
-            <a href="/#">
+            <Link to={ROUTES.Auth.PASSWORD_FORGOTTEN}>
               <WrappedMessage messages={messages} id="forgotPassword" />
-            </a>
+            </Link>
           </p>
         </Form>
       </ContentPage>

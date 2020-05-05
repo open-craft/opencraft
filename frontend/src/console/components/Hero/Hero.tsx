@@ -38,9 +38,42 @@ interface ActionProps {
   updateStaticContentOverridesFieldValue: Function;
 }
 
-interface StateProps extends InstancesModel {}
+interface StateProps extends InstancesModel { }
 
-interface Props extends StateProps, ActionProps {}
+interface Props extends StateProps, ActionProps { }
+
+/**
+ * Extracts title and subtitle from values coming from the backend
+ * using regex and returns object.
+ *
+ * It requires passing props to allow use in componentDidUpdate with prevProps.
+ * Return empty values if props don't exist yet.
+ */
+const getHeroContents = (props: Props) => {
+  const instanceData = props.activeInstance.data;
+  let title = '';
+  let subtitle = '';
+
+  if (
+    instanceData &&
+    instanceData.draftStaticContentOverrides &&
+    instanceData.draftStaticContentOverrides.homepageOverlayHtml
+  ) {
+    const { draftStaticContentOverrides } = props.activeInstance.data!;
+    const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
+    const matched = heroHtmlRegex.exec(
+      draftStaticContentOverrides!.homepageOverlayHtml as string
+    );
+    // Update variables if matched
+    title = matched ? matched[1] : '';
+    subtitle = matched ? matched[2] : '';
+  }
+
+  return {
+    title,
+    subtitle
+  };
+};
 
 export class HeroComponent extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -61,30 +94,17 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     this.checkAndUpdateState();
   }
 
-  private getUpdatedTitleAndUpdatedSubtitle = () => {
-    const { draftStaticContentOverrides } = this.props.activeInstance.data!;
-    const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
-    const matched = heroHtmlRegex.exec(
-      draftStaticContentOverrides!.homepageOverlayHtml as string
-    );
-    const updatedTitle = matched ? matched[1] : '';
-    const updatedSubtitle = matched ? matched[2] : '';
-    return { updatedTitle, updatedSubtitle };
-  };
-
   private checkAndUpdateState = () => {
     if (
       this.homePageOverlayHtmlExists() &&
       (this.state.title === '' || this.state.subtitle === '') &&
       this.state.renderBool === true
     ) {
-      const {
-        updatedTitle,
-        updatedSubtitle
-      } = this.getUpdatedTitleAndUpdatedSubtitle();
+      const { title, subtitle } = getHeroContents(this.props);
+
       this.setState({
-        title: updatedTitle,
-        subtitle: updatedSubtitle,
+        title: title,
+        subtitle: subtitle,
         renderBool: false
       });
     }
@@ -148,6 +168,28 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     }
   };
 
+  resetHeroValue = (valueName: string) => {
+    const data = {
+      ...getHeroContents(this.props),
+      [valueName]: ''
+    };
+
+    if (this.activeInstanceDataExists()) {
+      const homepageOverlayHtml = `<h1>${data.title}</h1><p>${data.subtitle}</p>`;
+      this.props.updateStaticContentOverridesFieldValue(
+        this.props.activeInstance.data!.id,
+        'homepageOverlayHtml',
+        homepageOverlayHtml
+      );
+      const { title, subtitle } = getHeroContents(this.props);
+      this.setState({
+        title: title,
+        subtitle: subtitle,
+        renderBool: false
+      });
+    }
+  };
+
   private onChangeColor = (fieldName: string, newColor: string) => {
     if (this.activeInstanceDataExists()) {
       this.props.updateThemeFieldValue(
@@ -183,6 +225,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     let themeData: undefined | ThemeSchema;
     let staticContentOverrides: undefined | StaticContentOverrides;
 
+    // Fixing state lifecycle management issues
+    const dataFromProps = getHeroContents(this.props);
+    const heroTitleKey = `title_${dataFromProps.title}`;
+    const heroSubtitleKey = `subtitle_${dataFromProps.subtitle}`;
+
     if (this.themeConfigExists()) {
       themeData = instance.data!.draftThemeConfig;
     }
@@ -205,85 +252,73 @@ export class HeroComponent extends React.PureComponent<Props, State> {
               </Col>
             </Row>
             {themeData && themeData.version === 1 && (
-              <Row>
-                <Col>
-                  {this.themeConfigExists() &&
-                    this.staticContentOverridesExists() && (
-                      <HeroPreview
-                        heroCoverImage={instance.data!.heroCoverImage || ''}
-                        homePageHeroTitleColor={
-                          themeData.homePageHeroTitleColor
-                        }
-                        homePageHeroSubtitleColor={
-                          themeData!.homePageHeroSubtitleColor
-                        }
-                        homepageOverlayHtml={
-                          staticContentOverrides!.homepageOverlayHtml
-                        }
-                      />
-                    )}
-                </Col>
-              </Row>
-            )}
-            <CollapseEditArea initialExpanded>
-              <Row>
-                <Col>
-                  <h2>
-                    <WrappedMessage id="heroText" messages={messages} />
-                  </h2>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <TextInputField
-                    fieldName="title"
-                    messages={messages}
-                    value={this.state.title || ''}
-                    onBlur={this.updateHeroText}
-                    onChange={this.onChange}
-                  />
-                </Col>
-                <Col md={6}>
-                  <TextInputField
-                    fieldName="subtitle"
-                    messages={messages}
-                    value={this.state.subtitle || ''}
-                    onBlur={this.updateHeroText}
-                    onChange={this.onChange}
-                  />
-                </Col>
-              </Row>
-              <Row className="hero-customizations">
-                <Col md={4}>
-                  <ImageUploadField
-                    // prettier-ignore
-                    customUploadMessage={(
-                      <WrappedMessage id="uploadHeroCoverImage" messages={messages} />
-                    )}
-                    updateImage={(image: File) => {
-                      this.updateImage('heroCoverImage', image);
-                    }}
-                    clearError={() => {
-                      this.props.clearErrorMessage('heroCover');
-                    }}
-                    recommendedSize="1200x250px"
-                  />
-                  {this.activeInstanceDataExists() &&
-                    instance.data!.heroCoverImage && (
-                      <button
-                        className="reset-value"
-                        type="button"
-                        onClick={() => {
-                          this.removeImage('heroCoverImage');
+              <div>
+                <Row>
+                  <Col>
+                    {this.themeConfigExists() &&
+                      this.staticContentOverridesExists() && (
+                        <HeroPreview
+                          heroCoverImage={instance.data!.heroCoverImage || ''}
+                          homePageHeroTitleColor={
+                            themeData.homePageHeroTitleColor
+                          }
+                          homePageHeroSubtitleColor={
+                            themeData!.homePageHeroSubtitleColor
+                          }
+                          homepageOverlayHtml={
+                            staticContentOverrides!.homepageOverlayHtml
+                          }
+                        />
+                      )}
+                  </Col>
+                </Row>
+                <CollapseEditArea initialExpanded>
+                  <Row>
+                    <Col>
+                      <span className="section-title">
+                        <WrappedMessage id="heroText" messages={messages} />
+                      </span>
+                    </Col>
+                  </Row>
+                  <Row className="title-customization-fields">
+                    <Col md={6}>
+                      <TextInputField
+                        fieldName="title"
+                        messages={messages}
+                        value={this.state.title}
+                        onBlur={this.updateHeroText}
+                        onChange={this.onChange}
+                        reset={() => {
+                          this.resetHeroValue('title');
                         }}
-                      >
-                        Remove
-                      </button>
-                    )}
-                </Col>
-                {themeData &&
-                  themeData.version === 1 && [
-                    <Col md={4} key="heroTitleColor">
+                        key={heroTitleKey}
+                      />
+                    </Col>
+                    <Col md={6}>
+                      <TextInputField
+                        fieldName="subtitle"
+                        messages={messages}
+                        value={this.state.subtitle}
+                        onBlur={this.updateHeroText}
+                        onChange={this.onChange}
+                        reset={() => {
+                          this.resetHeroValue('subtitle');
+                        }}
+                        key={heroSubtitleKey}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col>
+                      <span className="section-title">
+                        <WrappedMessage id="heroStyling" messages={messages} />
+                      </span>
+                    </Col>
+                  </Row>
+
+                  <Row className="hero-customizations">
+                    <Col key="heroTitleColor">
                       <ColorInputField
                         fieldName="homePageHeroTitleColor"
                         initialValue={themeData.homePageHeroTitleColor || ''}
@@ -292,8 +327,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                         loading={instance.loading.includes('draftThemeConfig')}
                         hideTooltip
                       />
-                    </Col>,
-                    <Col md={4} key="heroSubtitleColor">
+                    </Col>
+                    <Col key="heroSubtitleColor">
                       <ColorInputField
                         fieldName="homePageHeroSubtitleColor"
                         initialValue={themeData.homePageHeroSubtitleColor || ''}
@@ -303,9 +338,35 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                         hideTooltip
                       />
                     </Col>
-                  ]}
-              </Row>
-            </CollapseEditArea>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <ImageUploadField
+                        // prettier-ignore
+                        customUploadMessage={(
+                          <WrappedMessage id="uploadHeroCoverImage" messages={messages} />
+                        )}
+                        updateImage={(image: File) => {
+                          this.updateImage('heroCoverImage', image);
+                        }}
+                        clearError={() => {
+                          this.props.clearErrorMessage('heroCover');
+                        }}
+                        recommendedSize="1200x250px"
+                        reset={() => {
+                          if (
+                            this.activeInstanceDataExists() &&
+                            instance.data!.heroCoverImage
+                          ) {
+                            this.removeImage('heroCoverImage');
+                          }
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                </CollapseEditArea>
+              </div>
+            )}
           </ConsolePageCustomizationContainer>
         </ConsolePage>
       </div>

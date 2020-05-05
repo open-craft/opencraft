@@ -11,6 +11,7 @@ interface ImageUploadFieldProps {
   recommendedSize?: string;
   error?: string;
   loading?: boolean;
+  reset?: Function;
 }
 
 export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
@@ -50,9 +51,28 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
       </Button>
 
       {props.error && (
-        <Alert className="error-box" variant="danger">
-          {props.error}
-        </Alert>
+        <p>
+          <Alert className="error-box" variant="danger">
+            {props.error}
+          </Alert>
+        </p>
+      )}
+
+      {props.reset !== undefined && (
+        <p>
+          <button
+            className="reset-image"
+            type="button"
+            onClick={() => {
+              // Using `!` because we know this will never be called
+              // if props.reset is undefined (this component won't be
+              // rendered).
+              props.reset!();
+            }}
+          >
+            Remove
+          </button>
+        </p>
       )}
 
       <Modal

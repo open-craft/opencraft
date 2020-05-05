@@ -17,6 +17,7 @@
     "mongo_user": "",
     "mongo_pass": "",
     "mongo_provisioned": false,
+    "dns_records_updated": "2016-05-19T03:33:30.133Z",
     "swift_openstack_user": "",
     "swift_openstack_password": "",
     "swift_openstack_tenant": "",

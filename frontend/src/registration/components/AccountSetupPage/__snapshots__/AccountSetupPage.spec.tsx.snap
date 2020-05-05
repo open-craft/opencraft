@@ -111,97 +111,117 @@ exports[`renders without crashing 1`] = `
           Create your account
         </h2>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Your full name*
-          </label>
-          <input
-            className="form-control"
-            name="fullName"
-            onChange={[Function]}
-            value=""
-          />
-          <p>
-            Name and surname.
-          </p>
+            <label
+              className="form-label"
+            >
+              Your full name*
+            </label>
+            <input
+              className="form-control"
+              name="fullName"
+              onChange={[Function]}
+              value=""
+            />
+            <p>
+              Name and surname.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Username*
-          </label>
-          <input
-            className="form-control"
-            name="username"
-            onChange={[Function]}
-            value=""
-          />
-          <p>
-            This would also be the username of the administrator account on the Open edX instance.
-          </p>
+            <label
+              className="form-label"
+            >
+              Username*
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              value=""
+            />
+            <p>
+              This would also be the username of the administrator account on the Open edX instance.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Email address*
-          </label>
-          <input
-            className="form-control"
-            name="email"
-            onChange={[Function]}
-            type="email"
-            value=""
-          />
-          <p>
-            This is also your account name, and where we will send important notices.
-          </p>
+            <label
+              className="form-label"
+            >
+              Email address*
+            </label>
+            <input
+              className="form-control"
+              name="email"
+              onChange={[Function]}
+              type="email"
+              value=""
+            />
+            <p>
+              This is also your account name, and where we will send important notices.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Password*
-          </label>
-          <input
-            className="form-control"
-            name="password"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p>
-            Password must have 8 characters, 1 number, 1 capital letter and 1 special character.
-          </p>
+            <label
+              className="form-label"
+            >
+              Password*
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+            <p>
+              Password must have 8 characters, 1 number, 1 capital letter and 1 special character.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Confirm password*
-          </label>
-          <input
-            className="form-control"
-            name="passwordConfirm"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p>
-            Confirm the password in the field above.
-          </p>
+            <label
+              className="form-label"
+            >
+              Confirm password*
+            </label>
+            <input
+              className="form-control"
+              name="passwordConfirm"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+            <p>
+              Confirm the password in the field above.
+            </p>
+          </div>
         </div>
         <div
           className="custom-control custom-checkbox"

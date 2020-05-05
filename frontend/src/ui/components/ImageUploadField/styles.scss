@@ -7,21 +7,35 @@
         font-family: $chivo-font;
         font-size: 18px;
         letter-spacing: 0.54px;
+        margin-bottom: 3px;
     }
     p {
         font-family: $chivo-font;
         font-size: 14px;
         letter-spacing: 0.14px;
         color: #333333;
+        margin-bottom: 5px;
     }
     .error-box {
         margin-top: 20px;
-    } 
+    }
+    .reset-image {
+        font-size: 14px;
+        letter-spacing: 0.14px;
+        color: #1a6ebb;
+        border: 0;
+        padding: 0;
+        background-color: transparent;
+
+        &:hover, &:focus {
+            text-decoration: underline;
+        }
+    }
 }
 
 .file-upload-modal {
     text-align: center;
-    
+
     .modal-header {
         border-bottom: none;
         font-family: $playfair-font;
@@ -29,7 +43,7 @@
         color: #0f1f24;
         margin-bottom: -15px
     }
-    
+
     .modal-body {
         background-color: #d3e1e7;
         margin: 20px;
@@ -37,11 +51,10 @@
         font-size: 16px;
         color: #0f1f24;
     }
-    
+
     .modal-footer {
         border: none;
         justify-content: center;
         margin-bottom: 15px;
     }
 }
-

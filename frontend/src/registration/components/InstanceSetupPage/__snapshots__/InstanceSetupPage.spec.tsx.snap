@@ -135,41 +135,49 @@ exports[`renders without crashing 1`] = `
           Secure your domain
         </h2>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Instance name
-          </label>
-          <input
-            className="form-control"
-            name="instanceName"
-            onChange={[Function]}
-            value=""
-          />
-          <p>
-            The name of your institution, company or project.
-          </p>
+            <label
+              className="form-label"
+            >
+              Instance name
+            </label>
+            <input
+              className="form-control"
+              name="instanceName"
+              onChange={[Function]}
+              value=""
+            />
+            <p>
+              The name of your institution, company or project.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Public contact email
-          </label>
-          <input
-            className="form-control"
-            name="publicContactEmail"
-            onChange={[Function]}
-            type="email"
-            value=""
-          />
-          <p>
-            The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
-          </p>
+            <label
+              className="form-label"
+            >
+              Public contact email
+            </label>
+            <input
+              className="form-control"
+              name="publicContactEmail"
+              onChange={[Function]}
+              type="email"
+              value=""
+            />
+            <p>
+              The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
+            </p>
+          </div>
         </div>
       </form>
       <div

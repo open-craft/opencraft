@@ -57,7 +57,7 @@ describe("ColorInputField Component", function() {
       expect(tree).toMatchSnapshot();
   });
 
-  it('Render component, check if color picker shows after clicking on field and vanishes after clicking outside.', () => {
+  it('Render component, check if color picker shows after clicking on field.', () => {
       let component = setupComponentForTesting(
         <ColorInputField
           fieldName="test"
@@ -71,14 +71,7 @@ describe("ColorInputField Component", function() {
 
       // Click on field button and check if color picker was opened
       act(() => {
-        component.root.findByType("input").props.onFocus({preventDefault: () => {}});
-      })
-      tree = component.toJSON();
-      expect(tree).toMatchSnapshot();
-
-      // Click on field button and check if color picker was opened
-      act(() => {
-        component.root.findByProps({className: "input-color-picker"}).props.onBlur();
+        component.root.findByType("input").props.onClick({preventDefault: () => {}});
       })
       tree = component.toJSON();
       expect(tree).toMatchSnapshot();

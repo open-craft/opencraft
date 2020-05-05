@@ -113,6 +113,7 @@
         <tr><td>MySQL provisioned</td><td>{{ instance.mysql_provisioned }}</td></tr>
         <tr><td>Mongo provisioned</td><td>{{ instance.mongo_provisioned }}</td></tr>
         <tr><td>RabbitMQ provisioned</td><td>{{ instance.rabbitmq_provisioned }}</td></tr>
+        <tr><td>DNS records set at</td><td>{{ instance.dns_records_updated | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
       </tbody>
     </table>
   </tab>
