@@ -26,11 +26,9 @@ import messages from './displayMessages';
 import './styles.scss';
 
 interface State {
-  [key: string]: string;
-
   title: string;
   subtitle: string;
-  emptyFields: string;
+  renderBool: boolean;
 }
 
 interface ActionProps {
@@ -51,7 +49,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     this.state = {
       title: '',
       subtitle: '',
-      emptyFields: '1'
+      renderBool: true
     };
   }
 
@@ -63,23 +61,31 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     this.checkAndUpdateState();
   }
 
+  private getUpdatedTitleAndUpdatedSubtitle = () => {
+    const { draftStaticContentOverrides } = this.props.activeInstance.data!;
+    const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
+    const matched = heroHtmlRegex.exec(
+      draftStaticContentOverrides!.homepageOverlayHtml as string
+    );
+    const updatedTitle = matched ? matched[1] : '';
+    const updatedSubtitle = matched ? matched[2] : '';
+    return { updatedTitle, updatedSubtitle };
+  };
+
   private checkAndUpdateState = () => {
     if (
       this.homePageOverlayHtmlExists() &&
       (this.state.title === '' || this.state.subtitle === '') &&
-      this.state.emptyFields === '1'
+      this.state.renderBool === true
     ) {
-      const { draftStaticContentOverrides } = this.props.activeInstance.data!;
-      const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
-      const matched = heroHtmlRegex.exec(
-        draftStaticContentOverrides!.homepageOverlayHtml as string
-      );
-      const updatedTitle = matched ? matched[1] : '';
-      const updatedSubtitle = matched ? matched[2] : '';
+      const {
+        updatedTitle,
+        updatedSubtitle
+      } = this.getUpdatedTitleAndUpdatedSubtitle();
       this.setState({
         title: updatedTitle,
         subtitle: updatedSubtitle,
-        emptyFields: '0'
+        renderBool: false
       });
     }
   };
@@ -115,9 +121,15 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     const field = e.target.name;
     const { value } = e.target;
 
-    this.setState({
-      [field]: value
-    });
+    if (field === 'title') {
+      this.setState({
+        title: value
+      });
+    } else if (field === 'subtitle') {
+      this.setState({
+        subtitle: value
+      });
+    }
   };
 
   private updateHeroText = () => {
@@ -128,6 +140,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         'homepageOverlayHtml',
         homepageOverlayHtml
       );
+    }
+    if (this.state.title === '' || this.state.subtitle === '') {
+      this.setState({
+        renderBool: true
+      });
     }
   };
 
@@ -242,7 +259,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                     // prettier-ignore
                     customUploadMessage={(
                       <WrappedMessage id="uploadHeroCoverImage" messages={messages} />
-                  )}
+                    )}
                     updateImage={(image: File) => {
                       this.updateImage('heroCoverImage', image);
                     }}
