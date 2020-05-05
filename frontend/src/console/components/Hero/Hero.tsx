@@ -38,9 +38,9 @@ interface ActionProps {
   updateStaticContentOverridesFieldValue: Function;
 }
 
-interface StateProps extends InstancesModel { }
+interface StateProps extends InstancesModel {}
 
-interface Props extends StateProps, ActionProps { }
+interface Props extends StateProps, ActionProps {}
 
 /**
  * Extracts title and subtitle from values coming from the backend
@@ -90,9 +90,29 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     this.checkAndUpdateState();
   }
 
-  public componentDidUpdate() {
+  public componentDidUpdate(prevProps: Props) {
     this.checkAndUpdateState();
+    if (
+      this.activeInstanceDataExists() &&
+      this.staticContentOverridesExists() &&
+      prevProps.activeInstance.data &&
+      this.props.activeInstance.data &&
+      prevProps.activeInstance.data.draftStaticContentOverrides !==
+        this.props.activeInstance.data.draftStaticContentOverrides
+    ) {
+      this.checkNewAndUpdateState();
+    }
   }
+
+  private checkNewAndUpdateState = () => {
+    if (this.homePageOverlayHtmlExists()) {
+      const dataFromProps = getHeroContents(this.props);
+      this.setState({
+        title: dataFromProps.title,
+        subtitle: dataFromProps.subtitle
+      });
+    }
+  };
 
   private checkAndUpdateState = () => {
     if (
@@ -100,11 +120,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       (this.state.title === '' || this.state.subtitle === '') &&
       this.state.renderBool === true
     ) {
-      const { title, subtitle } = getHeroContents(this.props);
+      const dataFromProps = getHeroContents(this.props);
 
       this.setState({
-        title: title,
-        subtitle: subtitle,
+        title: dataFromProps.title,
+        subtitle: dataFromProps.subtitle,
         renderBool: false
       });
     }
@@ -181,12 +201,6 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         'homepageOverlayHtml',
         homepageOverlayHtml
       );
-      const { title, subtitle } = getHeroContents(this.props);
-      this.setState({
-        title: title,
-        subtitle: subtitle,
-        renderBool: false
-      });
     }
   };
 
