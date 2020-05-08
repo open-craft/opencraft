@@ -254,8 +254,8 @@ class OpenEdXInstanceConfigViewSet(
         PATCH" {"main-color": "default"} should revert to the default theme
         base color.
         """
-        application = BetaTestApplication.objects.select_for_update().get(id=pk)
         with transaction.atomic():
+            application = BetaTestApplication.objects.select_for_update().get(id=pk)
             if not application.draft_theme_config:
                 return Response(
                     status=status.HTTP_400_BAD_REQUEST,
@@ -358,8 +358,8 @@ class OpenEdXInstanceConfigViewSet(
         """
         Partial update for static content overrides configuration
         """
-        application = BetaTestApplication.objects.select_for_update().get(id=pk)
         with transaction.atomic():
+            application = BetaTestApplication.objects.select_for_update().get(id=pk)
             serializer = StaticContentOverridesSerializer(data=request.data)
             if not serializer.is_valid():
                 return Response(serializer.errors, status=400)
