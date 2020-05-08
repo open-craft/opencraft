@@ -13,10 +13,10 @@ import { updateFieldValue } from 'console/actions';
 import messages from './displayMessages';
 
 interface State {
-  [key: string]: string;
   instanceName: string;
   publicContactEmail: string;
-  emptyFields: string;
+  // extra state to manage the empty title and subtitle and rendering 
+  renderBool: boolean;
 }
 
 interface ActionProps {
@@ -35,21 +35,40 @@ export class InstanceSettingsComponent extends React.PureComponent<
     this.state = {
       instanceName: '',
       publicContactEmail: '',
-      emptyFields: '1'
+      renderBool: true
     };
 
     if (this.props.activeInstance.data) {
       this.state = {
         instanceName: this.props.activeInstance.data.instanceName,
         publicContactEmail: this.props.activeInstance.data.publicContactEmail,
-        emptyFields: '0'
+        renderBool: false
       };
     }
   }
 
   public componentDidUpdate(prevProps: Props) {
     // Fill fields after finishing loading data
+    if (this.props.activeInstance.data) {
+      this.updateInitialState(this.props)
+    }
     this.needToUpdateInstanceFields(prevProps);
+  }
+
+  // Set an initial state or restore empty values
+  private updateInitialState = (props: Props) => {
+    if (
+      (this.state.instanceName.trim() === '' ||
+        this.state.publicContactEmail.trim() === '') &&
+      props.activeInstance.data &&
+      this.state.renderBool
+    ) {
+      this.setState({
+        instanceName: props.activeInstance.data!.instanceName,
+        publicContactEmail: props.activeInstance.data!.publicContactEmail,
+        renderBool: false
+      });
+    }
   }
 
   private needToUpdateInstanceFields = (prevProps: Props) => {
@@ -69,41 +88,34 @@ export class InstanceSettingsComponent extends React.PureComponent<
         publicContactEmail: this.props.activeInstance!.data!.publicContactEmail
       });
     }
-    // if current state is empty and pre-filling
-    if (
-      (this.state.instanceName === '' ||
-        this.state.publicContactEmail === '') &&
-      prevProps.activeInstance.data &&
-      this.props.activeInstance.data &&
-      this.state.emptyFields === '1'
-    ) {
-      this.setState({
-        instanceName:
-          prevProps.activeInstance.data.instanceName ||
-          this.props.activeInstance!.data!.instanceName,
-        publicContactEmail:
-          prevProps.activeInstance.data.publicContactEmail ||
-          this.props.activeInstance!.data!.publicContactEmail,
-        emptyFields: '0'
-      });
-    }
   };
 
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     const { value } = e.target;
 
-    this.setState({
-      [field]: value
-    });
+    if (field === 'instanceName') {
+      this.setState({
+        instanceName: value
+      });
+    }
+    if (field === 'publicContactEmail') {
+      this.setState({
+        publicContactEmail: value
+      });
+    }
   };
 
   private updateValue = (fieldName: string, value: string) => {
     const instance = this.props.activeInstance;
 
-    // Only make update request if field changed
-    if (instance.data && this.state[fieldName] !== instance.data[fieldName]) {
-      this.props.updateFieldValue(instance.data.id, fieldName, value);
+    // Only make update request if instance name changed
+    if (instance.data && this.state.instanceName !== instance.data.instanceName) {
+      this.props.updateFieldValue(instance.data.id, 'instanceName', value)
+    }
+    // Only make update request if public contact email changed
+    if (instance.data && this.state.publicContactEmail !== instance.data.publicContactEmail) {
+      this.props.updateFieldValue(instance.data.id, 'publicContactEmail', value)
     }
   };
 
