@@ -28,7 +28,7 @@ import './styles.scss';
 interface State {
   title: string;
   subtitle: string;
-  // extra state to manage the empty title and subtitle and rendering 
+  // extra state to manage the empty title and subtitle and rendering
   renderBool: boolean;
 }
 
@@ -94,12 +94,12 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   public componentDidUpdate(prevProps: Props) {
     this.checkAndUpdateState();
     if (
-      this.staticContentOverridesExists(this.props) &&
+      this.staticContentOverridesExists() &&
       this.staticContentOverridesExists(prevProps) &&
       prevProps.activeInstance.data &&
       this.props.activeInstance.data &&
       prevProps.activeInstance.data.draftStaticContentOverrides !==
-      this.props.activeInstance.data.draftStaticContentOverrides
+        this.props.activeInstance.data.draftStaticContentOverrides
     ) {
       this.checkNewAndUpdateState();
     }
@@ -131,29 +131,29 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     }
   };
 
-  private activeInstanceDataExists = (props: Props) => {
+  private activeInstanceDataExists = (props: Props = this.props) => {
     return props.activeInstance && props.activeInstance.data;
   };
 
-  private themeConfigExists = () => {
+  private themeConfigExists = (props: Props = this.props) => {
     return (
-      this.activeInstanceDataExists(this.props) &&
-      this.props.activeInstance.data!.draftThemeConfig
+      this.activeInstanceDataExists(props) &&
+      props.activeInstance.data!.draftThemeConfig
     );
   };
 
-  private staticContentOverridesExists = (props: Props) => {
+  private staticContentOverridesExists = (props: Props = this.props) => {
     return (
       this.activeInstanceDataExists(props) &&
       props.activeInstance.data!.draftStaticContentOverrides
     );
   };
 
-  private homePageOverlayHtmlExists = () => {
+  private homePageOverlayHtmlExists = (props: Props = this.props) => {
     return (
-      this.activeInstanceDataExists(this.props) &&
-      this.staticContentOverridesExists(this.props) &&
-      this.props.activeInstance.data!.draftStaticContentOverrides!
+      this.activeInstanceDataExists(props) &&
+      this.staticContentOverridesExists(props) &&
+      props.activeInstance.data!.draftStaticContentOverrides!
         .homepageOverlayHtml
     );
   };
@@ -174,7 +174,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   };
 
   private updateHeroText = () => {
-    if (this.activeInstanceDataExists(this.props) && this.state.title.trim().length > 0) {
+    if (this.activeInstanceDataExists() && this.state.title.trim().length > 0) {
       const homepageOverlayHtml = `<h1>${this.state.title}</h1><p>${this.state.subtitle}</p>`;
       this.props.updateStaticContentOverridesFieldValue(
         this.props.activeInstance.data!.id,
@@ -182,7 +182,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         homepageOverlayHtml
       );
     }
-    if (this.state.title === '' || this.state.subtitle === '') {
+    if (this.state.title.trim() === '' || this.state.subtitle.trim() === '') {
       this.setState({
         renderBool: true
       });
@@ -195,7 +195,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       [valueName]: ''
     };
 
-    if (this.activeInstanceDataExists(this.props)) {
+    if (this.activeInstanceDataExists()) {
       const homepageOverlayHtml = `<h1>${data.title}</h1><p>${data.subtitle}</p>`;
       this.props.updateStaticContentOverridesFieldValue(
         this.props.activeInstance.data!.id,
@@ -206,7 +206,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   };
 
   private onChangeColor = (fieldName: string, newColor: string) => {
-    if (this.activeInstanceDataExists(this.props)) {
+    if (this.activeInstanceDataExists()) {
       this.props.updateThemeFieldValue(
         this.props.activeInstance.data!.id,
         fieldName,
@@ -216,7 +216,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   };
 
   private updateImage = (imageName: string, image: File) => {
-    if (this.activeInstanceDataExists(this.props)) {
+    if (this.activeInstanceDataExists()) {
       this.props.updateImages(
         this.props.activeInstance.data!.id,
         imageName,
@@ -226,7 +226,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
   };
 
   private removeImage = (imageName: string) => {
-    if (this.activeInstanceDataExists(this.props)) {
+    if (this.activeInstanceDataExists()) {
       this.props.updateImages(
         this.props.activeInstance.data!.id,
         imageName,
@@ -249,7 +249,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       themeData = instance.data!.draftThemeConfig;
     }
 
-    if (this.staticContentOverridesExists(this.props)) {
+    if (this.staticContentOverridesExists()) {
       staticContentOverrides = instance.data!.draftStaticContentOverrides;
     }
     return (
@@ -370,7 +370,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                         recommendedSize="1200x250px"
                         reset={() => {
                           if (
-                            this.activeInstanceDataExists(this.props) &&
+                            this.activeInstanceDataExists() &&
                             instance.data!.heroCoverImage
                           ) {
                             this.removeImage('heroCoverImage');

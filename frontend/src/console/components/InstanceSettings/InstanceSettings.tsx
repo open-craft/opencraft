@@ -15,7 +15,7 @@ import messages from './displayMessages';
 interface State {
   instanceName: string;
   publicContactEmail: string;
-  // extra state to manage the empty title and subtitle and rendering 
+  // extra state to manage the empty title and subtitle and rendering
   renderBool: boolean;
 }
 
@@ -50,7 +50,7 @@ export class InstanceSettingsComponent extends React.PureComponent<
   public componentDidUpdate(prevProps: Props) {
     // Fill fields after finishing loading data
     if (this.props.activeInstance.data) {
-      this.updateInitialState(this.props)
+      this.updateInitialState(this.props);
     }
     this.needToUpdateInstanceFields(prevProps);
   }
@@ -69,7 +69,7 @@ export class InstanceSettingsComponent extends React.PureComponent<
         renderBool: false
       });
     }
-  }
+  };
 
   private needToUpdateInstanceFields = (prevProps: Props) => {
     if (
@@ -110,12 +110,22 @@ export class InstanceSettingsComponent extends React.PureComponent<
     const instance = this.props.activeInstance;
 
     // Only make update request if instance name changed
-    if (instance.data && this.state.instanceName !== instance.data.instanceName) {
-      this.props.updateFieldValue(instance.data.id, 'instanceName', value)
+    if (
+      instance.data &&
+      this.state.instanceName !== instance.data.instanceName
+    ) {
+      this.props.updateFieldValue(instance.data.id, 'instanceName', value);
     }
     // Only make update request if public contact email changed
-    if (instance.data && this.state.publicContactEmail !== instance.data.publicContactEmail) {
-      this.props.updateFieldValue(instance.data.id, 'publicContactEmail', value)
+    if (
+      instance.data &&
+      this.state.publicContactEmail !== instance.data.publicContactEmail
+    ) {
+      this.props.updateFieldValue(
+        instance.data.id,
+        'publicContactEmail',
+        value
+      );
     }
   };
 
