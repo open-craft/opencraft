@@ -72,6 +72,14 @@ class AppServerState(ResourceState):
     # - Status.Terminated
     is_healthy_state = True
 
+    # An instance is in the configuration state if it is being configured but is not yet running.
+    # This information can be used to check if an instance is currently being provisioned.
+    # Configuration states include:
+    # - Status.New
+    # - Status.WaitingForServer
+    # - Status.ConfiguringServer
+    is_configuration_state = False
+
 
 class Status(ResourceState.Enum):
     """
@@ -81,18 +89,21 @@ class Status(ResourceState.Enum):
     class New(AppServerState):
         """ Newly created """
         state_id = 'new'
+        is_configuration_state = True
 
     class WaitingForServer(AppServerState):
         """ VM not yet accessible """
         state_id = 'waiting'
         name = 'Waiting for VM'
         is_steady_state = False
+        is_configuration_state = True
 
     class ConfiguringServer(AppServerState):
         """ Running Ansible playbooks on VM """
         state_id = 'configuring'
         name = 'Configuring VM'
         is_steady_state = False
+        is_configuration_state = True
 
     class Running(AppServerState):
         """ App server is up and running """

@@ -64,7 +64,7 @@ class ApprovalTestCase(TestCase):
                 public_contact_email=user.email,
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
-        with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver, \
+        with mock.patch('registration.provision.create_new_deployment') as mock_spawn_appserver, \
             mock.patch(
                     'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
                     return_value=(1, True)
@@ -102,7 +102,7 @@ class ApprovalTestCase(TestCase):
                 draft_theme_config=DEFAULT_THEME
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
-        with mock.patch('registration.provision.spawn_appserver') as mock_spawn_appserver, \
+        with mock.patch('registration.provision.create_new_deployment') as mock_spawn_appserver, \
             mock.patch(
                     'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
                     return_value=(1, True)

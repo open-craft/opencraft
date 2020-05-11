@@ -333,7 +333,7 @@ class Command(BaseCommand):
                     failure_tag=self.failure_tag,
                     num_attempts=num_attempts,
                     mark_active_on_success=activate_on_success,
-                    trigger=DeploymentType.batch,
+                    deployment_type=DeploymentType.batch,
                 )
 
             # 3. Give a status update.

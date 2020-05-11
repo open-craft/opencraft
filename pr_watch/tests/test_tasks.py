@@ -46,7 +46,7 @@ class TasksTestCase(TestCase):
     Test cases for PR Watcher worker tasks
     """
     @patch('pr_watch.github.get_commit_id_from_ref')
-    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_pr_new(self, mock_get_pr_list_from_usernames,
@@ -109,7 +109,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_spawn_appserver.call_count, 1)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
-    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_pr_rate_limit_exceeded(
@@ -146,7 +146,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_spawn_appserver.call_count, 0)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
-    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_several_forks(self, mock_get_pr_list_from_usernames,
@@ -279,7 +279,7 @@ class TasksTestCase(TestCase):
         self.assertEqual(mock_spawn_appserver.call_count, 2)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
-    @patch('pr_watch.tasks.spawn_appserver')
+    @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_disabled_watchedfork(self, mock_get_pr_list_from_usernames,

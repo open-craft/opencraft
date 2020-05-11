@@ -73,5 +73,5 @@ def launch_periodic_builds():
                     instance.ref.pk,
                     num_attempts=instance.periodic_builds_retries + 1,
                     mark_active_on_success=True,
-                    trigger=DeploymentType.periodic,
+                    deployment_type=DeploymentType.periodic,
                 )

@@ -100,6 +100,6 @@ def _provision_instance(sender, **kwargs):
         application.instance.ref.pk,
         mark_active_on_success=True,
         num_attempts=2,
-        creator=user,
-        trigger=DeploymentType.registration,
+        creator=user.id,
+        deployment_type=DeploymentType.registration,
     )
