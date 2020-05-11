@@ -28,12 +28,16 @@ import logging
 import selectors
 import socket
 import time
+from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
-import requests
-import channels.layers
 from asgiref.sync import async_to_sync
+import channels.layers
+from dictdiffer import diff
+import requests
 
+if TYPE_CHECKING:
+    from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
 
 # Logging #####################################################################
 
@@ -54,6 +58,7 @@ def to_json(obj):
     """
     Convert an object to a JSON string
     """
+
     def dumper(obj2):
         """
         Serializer that avoids throwing exceptions on objects it can't serialize
@@ -156,3 +161,20 @@ def publish_data(data):
     """
     channel_layer = channels.layers.get_channel_layer()
     async_to_sync(channel_layer.group_send)('ws', {'type': 'notification', 'message': data})
+
+
+def build_instance_config_diff(instance_config: 'BetaTestApplication'):
+    """
+    Builds an configuration diff for the provided instance configuration.
+    """
+    instance = instance_config.instance
+    original_config = {}
+    new_config = {}
+    for attr in ('instance_name', 'privacy_policy_url', 'public_contact_email'):
+        original_config[attr] = getattr(instance, attr, None)
+        new_config[attr] = getattr(instance_config, attr, None)
+
+    if instance_config.use_advanced_theme and instance_config.draft_theme_config != instance.theme_config:
+        original_config['theme_config'] = instance.theme_config
+        new_config['theme_config'] = instance_config.draft_theme_config
+    return list(diff(original_config, new_config))

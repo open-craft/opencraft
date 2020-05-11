@@ -190,6 +190,11 @@ class OpenEdXAppConfiguration(models.Model):
     )
 
     @property
+    def public_contact_email(self):
+        """ Helper to provide similar API to get email as BetaTestApplication """
+        return self.email
+
+    @property
     def base_playbook_name(self):
         """
         Get the correct base playbook name for the openedx_release

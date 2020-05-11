@@ -69,12 +69,13 @@ class Deployment(TimeStampedModel):
     instance = models.ForeignKey(InstanceReference, on_delete=models.CASCADE)
     # The creator of this deployment
     creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
-    # The reason for triggering this deployment
+    # The type of deployment this is user, admin, batch etc
     type = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=DeploymentType.choices(),
         default=DeploymentType.unknown,
     )
 
     class Meta:
         ordering = ('-created',)
+        get_latest_by = 'created'

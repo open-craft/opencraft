@@ -11,6 +11,7 @@ colour==0.1.5
 cookies==2.2.1
 coverage==4.5.3
 ddt
+dictdiffer<0.9
 Django<2.3,>=2.2
 # using the latest django-angular (2.2 or later) requires a heavy rewrite of the registration form, so we use the old 1.0.0 version patched to work under Django 2
 -e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular

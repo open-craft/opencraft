@@ -169,8 +169,8 @@ class InstanceRedeployTestCase(TestCase):
 
         return instances
 
-    @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_success(self, mock_spawn_appserver, mock_consul):
+    @patch('instance.management.commands.instance_redeploy.create_new_deployment')
+    def test_redeployment_success(self, mock_create_new_deployment, mock_consul):
         """
         Test the instance redeployment when everything goes well
 
@@ -179,22 +179,23 @@ class InstanceRedeployTestCase(TestCase):
         tag = 'test-tag'
         instances = self.create_test_instances(tag, success=True)
 
-        def _spawn_appserver_success(
+        def _create_new_deployment_success(
                 instance_ref_id,
                 mark_active_on_success=False,
                 deactivate_old_appservers=False,
                 num_attempts=1,
                 success_tag=None,
-                failure_tag=None):
+                failure_tag=None,
+                deployment_type=None):
             """
-            Mock the instance.tasks.spawn_appserver method to
+            Mock the instance.tasks.create_new_deployment method to
             instantly mark appserver as successfully spawned.
             """
             instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
             instance.tags.remove(failure_tag)
             instance.tags.add(success_tag)
 
-        mock_spawn_appserver.side_effect = _spawn_appserver_success
+        mock_create_new_deployment.side_effect = _create_new_deployment_success
 
         # Redeploying with batch-size=2, so we'll spawn two appservers at a time.
         expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
@@ -252,8 +253,8 @@ class InstanceRedeployTestCase(TestCase):
             # Verify the logs
             captured_logs.check(*expected_logs)
 
-    @patch('instance.management.commands.instance_redeploy.spawn_appserver')
-    def test_redeployment_failure(self, mock_spawn_appserver, mock_consul):
+    @patch('instance.management.commands.instance_redeploy.create_new_deployment')
+    def test_redeployment_failure(self, mock_create_new_deployment, mock_consul):
         """
         Test the instance redeployment when instances fail.
 
@@ -262,22 +263,23 @@ class InstanceRedeployTestCase(TestCase):
         tag = 'test-tag'
         instances = self.create_test_instances(tag, success=False)
 
-        def _spawn_appserver_failed(
+        def _create_new_deployment_failed(
                 instance_ref_id,
                 mark_active_on_success=False,
                 deactivate_old_appservers=False,
                 num_attempts=1,
                 success_tag=None,
-                failure_tag=None):
+                failure_tag=None,
+                deployment_type=None):
             """
-            Mock the instance.tasks.spawn_appserver method to
+            Mock the instance.tasks.create_new_deployment method to
             instantly mark appserver as failed.
             """
             instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
             instance.tags.add(failure_tag)
             instance.tags.remove(success_tag)
 
-        mock_spawn_appserver.side_effect = _spawn_appserver_failed
+        mock_create_new_deployment.side_effect = _create_new_deployment_failed
 
         # Redeploying with batch-size=1, so we'll spawn one appservers at a time.
         expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (

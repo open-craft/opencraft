@@ -31,6 +31,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+
 # Exceptions ##################################################################
 
 
@@ -117,6 +118,7 @@ class ValidateModelMixin:
 
     https://gist.github.com/glarrain/5448253
     """
+
     def save(self, **kwargs):
         """Call :meth:`full_clean` before saving."""
         self.full_clean()
@@ -125,6 +127,7 @@ class ValidateModelMixin:
 
 class ClassProperty(property):
     """ Same as built-in 'property' global but also works when accessed as a class attribute """
+
     def __get__(self, cls, owner):
         # TODO: Requires astroid 2.0+ to pass pylint
         # https://bitbucket.org/logilab/pylint/issues/439/confused-by-descriptors
@@ -209,22 +212,43 @@ class ResourceState:
 
         Then you can use MyStates.states to get a list of the state classes.
         """
+
         @ClassProperty
         @classmethod
         def states(cls):
             """
             Get a tuple listing all the classes defined within this class
             """
+
             def generate():
                 """ Search for ResourceStates defined on this class or inherited classes """
                 for name in dir(cls):
-                    if name[:1] == '_' or name == 'states':
+                    if name[:1] == '_' or name in ['states', 'states_with']:
                         continue
                     state = getattr(cls, name)
                     if inspect.isclass(state) and issubclass(state, ResourceState):
                         yield state
+
             return tuple(generate())
 
+        @classmethod
+        def states_with(cls, ids_only=False, **attrs):
+            """
+            Get a tuple listing all the classes defined within this class have the supplied
+            attribute values.
+            """
+
+            def generate():
+                """ Search for ResourceStates defined on this class or inherited classes """
+                for name in dir(cls):
+                    if name[:1] == '_' or name in ['states', 'states_with']:
+                        continue
+                    state = getattr(cls, name)
+                    if inspect.isclass(state) and issubclass(state, ResourceState):
+                        if all(getattr(state, attr, object()) == value for attr, value in attrs.items()):
+                            yield state.state_id if ids_only else state
+
+            return tuple(generate())
 
 class ResourceStateDescriptor:
     """
@@ -235,6 +259,7 @@ class ResourceStateDescriptor:
     The 'state' property cannot be assigned to; only the current state instance is allowed to
     change the state. This makes it easy to reason about the behavior of the state.
     """
+
     def __init__(self, state_classes, default_state):
         """
         Instantiate a ResourceStateDescriptor to manage a state machine.
@@ -294,6 +319,7 @@ class ResourceStateDescriptor:
             """
             Create a MagicWrapper descriptor that will implement the only_for() behavior.
             """
+
             def require_valid_state(resource):
                 """
                 Raise a WrongStateException if resource is not in one of the required states
@@ -308,6 +334,7 @@ class ResourceStateDescriptor:
 
             class MagicWrapper:
                 """ Class which can wrap a method; the result can be used as a property or as a method. """
+
                 def __call__(self, resource):
                     """ We are wrapping a property, not a method. No fancy stuff needed. """
                     require_valid_state(resource)
@@ -315,14 +342,17 @@ class ResourceStateDescriptor:
 
                 def __get__(self, resource, _type):
                     """ Get the (wrapped) method, and add a .is_available method to it """
+
                     def wrapped_method(*args, **kwargs):
                         """ Wrapper around the method which checks the state requirements first """
                         require_valid_state(resource)
                         return method(resource, *args, **kwargs)
+
                     wrapped_method.is_available = lambda: isinstance(descriptor.__get__(resource), accepted_states)
                     return wrapped_method
 
             return MagicWrapper()
+
         return wrap
 
     def transition(self, to_state, from_states=None):
@@ -347,6 +377,7 @@ class ResourceStateDescriptor:
             if hasattr(resource, 'logger'):
                 resource.logger.info('Transition from "%s" to "%s"', current_state.name, to_state.name)
             self._set_state(resource, to_state)
+
         do_transition.from_states = from_states  # Convenient way for other code to inspect this transition
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition
         return do_transition
@@ -382,6 +413,7 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
     """
     Descriptor which implements a finite state machine, backed by a django field.
     """
+
     def __init__(self, state_classes, default_state, model_field_name):
         """
         Instantiate a ResourceStateDescriptor to manage a state machine.
@@ -514,15 +546,14 @@ class ConsulAgent:
         if get_data:
             stored = json.loads(get_data['Value'].decode('utf-8'))
             updates = {
-                k: value[k] for k in value
-                if (k in stored and
-                    value[k] != stored[k]) or
-                k not in stored
+                k: value[k]
+                for k in value
+                if (k in stored and value[k] != stored[k]) or k not in stored
             }
             payload = {
-                k: stored[k] for k in stored
-                if k not in value and
-                k != 'version'
+                k: stored[k]
+                for k in stored
+                if k not in value and k != 'version'
             }
             updated = bool(updates)
             payload['version'] = stored['version']

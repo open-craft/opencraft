@@ -66,7 +66,7 @@ def watch_pr():
                         instance.ref.pk,
                         mark_active_on_success=True,
                         num_attempts=2,
-                        trigger=DeploymentType.pr,
+                        deployment_type=DeploymentType.pr,
                     )
     except RateLimitExceeded as err:
         logger.warning('Could not complete PR scan due to an error: %s', str(err))

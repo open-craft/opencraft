@@ -31,7 +31,7 @@ from django.db import connection
 from django.db.models import F
 from django.utils import timezone
 from huey.api import crontab
-from huey.contrib.djhuey import db_task, db_periodic_task
+from huey.contrib.djhuey import db_periodic_task, db_task
 
 from instance.models.deployment import DeploymentType
 from instance.models.load_balancer import LoadBalancingServer
@@ -39,44 +39,53 @@ from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.utils import sufficient_time_passed
+from instance.utils import build_instance_config_diff, sufficient_time_passed
 from pr_watch import github
 
 # Logging #####################################################################
+from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
 
 # Tasks #######################################################################
 
+
 @db_task()
 def create_new_deployment(
         instance_ref_id: int,
-        mark_active_on_success: bool = True,
+        mark_active_on_success: bool = False,
         num_attempts: int = 1,
         success_tag: Optional[str] = None,
         failure_tag: Optional[str] = None,
         creator: Optional[int] = None,
-        trigger: Optional[DeploymentType] = None,
-) -> int:
+        deployment_type: Optional[DeploymentType] = DeploymentType.unknown,
+) -> Optional[int]:
     """
     Create a new Deployment for an existing instance.
 
-    @param instance_ref_id: ID of an InstanceReference (instance.ref.pk)
-    @param mark_active_on_success: Optionally mark the new AppServer as active when the provisioning completes.
-    @param num_attempts: Optionally retry up to 'num_attempts' times.
-    @param success_tag: Optionally tag the instance with 'success_tag' when the deployment succeeds.
-    @param failure_tag: Optionally tag the instance with 'failure_tag' when the deployment fails.
-    @param creator: Optionally associate deployment with this user.
-    @param trigger: The reason a deployment was triggered.
-    @return: The ID of the new deployment.
+    :param instance_ref_id: ID of an InstanceReference (instance.ref.pk)
+    :param mark_active_on_success: Optionally mark the new AppServer as active when the provisioning completes.
+    :param num_attempts: Optionally retry up to 'num_attempts' times.
+    :param success_tag: Optionally tag the instance with 'success_tag' when the deployment succeeds.
+    :param failure_tag: Optionally tag the instance with 'failure_tag' when the deployment fails.
+    :param creator: Optionally associate deployment with this user.
+    :param deployment_type: Optionally specify a deployment type.
+    :return: The ID of the new deployment.
     """
     logger.info('Retrieving instance: ID=%s', instance_ref_id)
     instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
+    changes = None
+    if instance.betatestapplication_set.exists():
+        changes = build_instance_config_diff(instance.betatestapplication_set.get())
+
+    creator_profile = creator and UserProfile.objects.get(user_id=creator)
+
     deployment = OpenEdXDeployment.objects.create(
-        instance=instance,
-        creator_id=creator,
-        triggered_by=trigger,
+        instance_id=instance_ref_id,
+        creator=creator_profile,
+        type=deployment_type,
+        changes=changes,
     )
     logger.info('Spawning servers for deployment %s [%s]', deployment, deployment.id)
     # Launch configured number of appservers for instance
@@ -84,7 +93,12 @@ def create_new_deployment(
         (instance_ref_id, mark_active_on_success, False, num_attempts, success_tag, failure_tag, deployment.id)
         for _ in range(instance.openedx_appserver_count)
     )
+
     appserver_ids = appserver_spawn_tasks.get(blocking=True)
+
+    if not all(appserver_ids):
+        return False
+
     # If this deployment is to be marked active on success, others should be deactivated automatically
     if mark_active_on_success:
         other_appservers = instance.appserver_set.filter(_is_active=True).exclude(pk__in=appserver_ids)
@@ -102,7 +116,7 @@ def spawn_appserver(
         num_attempts=1,
         success_tag=None,
         failure_tag=None,
-        deployment=None,
+        deployment_id=None,
 ):
     """
     Create a new AppServer for an existing instance.
@@ -127,13 +141,14 @@ def spawn_appserver(
         num_attempts=num_attempts,
         success_tag=success_tag,
         failure_tag=failure_tag,
-        deployment=deployment,
+        deployment_id=deployment_id,
     )
 
     if appserver and mark_active_on_success:
         make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
 
-    return appserver
+    # Huey doesn't seem to resolve properly if the result of a task is so return False
+    return appserver or False
 
 
 @db_task()

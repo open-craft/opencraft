@@ -68,11 +68,11 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         the OpenEdXInstance that this AppServer is for.
         """
         if self.request.user.is_superuser:
-            default_trigger = DeploymentType.admin.name
+            default_deployment_type = DeploymentType.admin.name
         else:
-            default_trigger = DeploymentType.user.name
-        # Allow overriding trigger in case deployment is created by API in some other way.
-        trigger = request.query_params.get("trigger", default_trigger)
+            default_deployment_type = DeploymentType.user.name
+        # Allow overriding deployment type in case deployment is created by API in some other way.
+        deployment_type = request.query_params.get("deployment_type", default_deployment_type)
         serializer = SpawnAppServerSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -96,8 +96,8 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
 
         create_new_deployment(
             instance_id,
-            creator=self.request.user,
-            trigger=trigger,
+            creator=self.request.user.id,
+            deployment_type=deployment_type,
         )
         return Response({'status': 'Instance provisioning started'})
 

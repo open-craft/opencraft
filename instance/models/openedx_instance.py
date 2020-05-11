@@ -114,6 +114,13 @@ class OpenEdXInstance(
             return self.ref._cached_active_appservers
         return self.appserver_set.filter(_is_active=True)
 
+    def get_latest_deployment(self):
+        """ The latest OpenEdXDeployment associated with this instance. """
+        deployment = super(OpenEdXInstance, self).get_latest_deployment()
+        if deployment:
+            return deployment.openedxdeployment
+        return None
+
     @property
     def database_name(self):
         """
@@ -270,7 +277,7 @@ class OpenEdXInstance(
         except models.ObjectDoesNotExist:
             return None
 
-    def _spawn_appserver(self):
+    def _spawn_appserver(self, deployment_id=None):
         """
             Provision a new AppServer
 
@@ -302,14 +309,15 @@ class OpenEdXInstance(
         self.logger.info('Provisioning RabbitMQ vhost...')
         self.provision_rabbitmq()
 
-        return self._create_owned_appserver()
+        return self._create_owned_appserver(deployment_id=deployment_id)
 
     @log_exception
     def spawn_appserver(self,
                         mark_active_on_success=False,
                         num_attempts=1,
                         success_tag=None,
-                        failure_tag=None):
+                        failure_tag=None,
+                        deployment_id=None):
         """
         Provision a new AppServer
 
@@ -324,7 +332,7 @@ class OpenEdXInstance(
         """
         for attempt in range(num_attempts):
             self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
-            app_server = self._spawn_appserver()
+            app_server = self._spawn_appserver(deployment_id=deployment_id)
 
             if app_server and app_server.provision():
                 break
@@ -359,7 +367,7 @@ class OpenEdXInstance(
 
         return app_server.pk
 
-    def _create_owned_appserver(self):
+    def _create_owned_appserver(self, deployment_id=None):
         """
         Core internal code that actually creates the child appserver.
 
@@ -376,6 +384,7 @@ class OpenEdXInstance(
             app_server = self.appserver_set.create(
                 # Name for the app server: this will usually generate a unique name (and won't cause any issues if not):
                 name="AppServer {}".format(self.appserver_set.count() + 1),
+                deployment_id=deployment_id,
                 # Copy the current value of each setting into the AppServer, preserving it permanently:
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
@@ -580,9 +589,5 @@ class OpenEdXInstance(
         """
         Returns a list of AppServers that are currently in the process of being launched.
         """
-        in_progress_statuses = (
-            AppServerStatus.New.state_id,
-            AppServerStatus.ConfiguringServer.state_id,
-            AppServerStatus.WaitingForServer.state_id,
-        )
+        in_progress_statuses = AppServerStatus.states_with(ids_only=True, is_configuration_state=True)
         return self.appserver_set.filter(_status__in=in_progress_statuses)
