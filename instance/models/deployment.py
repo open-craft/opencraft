@@ -32,13 +32,14 @@ from userprofile.models import UserProfile
 from .instance import InstanceReference
 
 # Logging #####################################################################
+from ..utils import DjangoChoiceEnum
 
 logger = logging.getLogger(__name__)
 
 
 # Enums #######################################################################
 
-class DeploymentType(Enum):
+class DeploymentType(DjangoChoiceEnum):
     """Enumeration of all types of deployments"""
     user = 'Deployment initiated by user'
     batch = 'Deployment created by batch redeplpoyment script'
@@ -47,14 +48,6 @@ class DeploymentType(Enum):
     periodic = 'Deployment for periodic build'
     registration = 'Deployment created during registration'
     unknown = 'Deployment created unknown or legacy reasons'
-
-    def __str__(self):
-        return self.name
-
-    @classmethod
-    def choices(cls):
-        """Render enum as tuple to use in Django choice field"""
-        return tuple((prop.name, prop.value) for prop in cls)
 
 
 # Models ######################################################################

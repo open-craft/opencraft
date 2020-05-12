@@ -250,6 +250,7 @@ class ResourceState:
 
             return tuple(generate())
 
+
 class ResourceStateDescriptor:
     """
     Descriptor which implements a finite state machine.

@@ -447,6 +447,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
                 "deployment_type",
                 openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
+                enum=DeploymentType.names(),
                 description="The type of deployment being initiated.",
             )
         ],

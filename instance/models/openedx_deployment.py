@@ -19,7 +19,6 @@
 """
 Instance app models - Open EdX Deployment models
 """
-from enum import Enum
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -27,11 +26,13 @@ from django.db import models
 from instance.models.appserver import Status
 from instance.models.deployment import Deployment
 from instance.models.openedx_instance import OpenEdXInstance
+from instance.utils import DjangoChoiceEnum
 
 
 # Enums #######################################################################
 
-class DeploymentState(Enum):
+
+class DeploymentState(DjangoChoiceEnum):
     """
     The different possible states for a deployment
     """
