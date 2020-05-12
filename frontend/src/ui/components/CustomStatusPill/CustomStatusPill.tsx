@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Tooltip, OverlayTrigger, Badge, Nav } from 'react-bootstrap';
-import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus} from 'ocim-client';
+import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
 
 import messages from './displayMessages';
 import './styles.scss';
@@ -12,7 +12,11 @@ interface Props {
   cancelRedeployment: Function;
 }
 
-export const CustomStatusPill: React.FC<Props> = ({loading, redeploymentStatus, cancelRedeployment}) => {
+export const CustomStatusPill: React.FC<Props> = ({
+  loading,
+  redeploymentStatus,
+  cancelRedeployment
+}: Props) => {
   let dotColor = 'grey';
   let deploymentStatusText = 'unavailable';
   let tooltipText = 'unavailableTooltip';
@@ -56,18 +60,17 @@ export const CustomStatusPill: React.FC<Props> = ({loading, redeploymentStatus, 
         <div className="text">
           <WrappedMessage id={deploymentStatusText} messages={messages} />
         </div>
-        {redeploymentStatus === DeploymentStatus.Provisioning &&
-          !loading && (
-            <Nav
-              className="text cancel-deployment"
-              onClick={() => {
-                cancelRedeployment();
-              }}
-            >
-              <i className="fas fa-xs fa-times" />
-              <WrappedMessage id="cancelRedeployment" messages={messages} />
-            </Nav>
-          )}
+        {redeploymentStatus === DeploymentStatus.Provisioning && !loading && (
+          <Nav
+            className="text cancel-deployment"
+            onClick={() => {
+              cancelRedeployment();
+            }}
+          >
+            <i className="fas fa-xs fa-times" />
+            <WrappedMessage id="cancelRedeployment" messages={messages} />
+          </Nav>
+        )}
       </Badge>
     </OverlayTrigger>
   );

@@ -14,7 +14,12 @@ interface Props {
   loading: boolean;
 }
 
-export const RedeploymentToolbar: React.FC<Props> = ({deployment, cancelRedeployment, performDeployment, loading}) => {
+export const RedeploymentToolbar: React.FC<Props> = ({
+  deployment,
+  cancelRedeployment,
+  performDeployment,
+  loading
+}: Props) => {
   const [show, setShow] = React.useState(false);
 
   const handleCloseModal = () => setShow(false);
@@ -27,20 +32,21 @@ export const RedeploymentToolbar: React.FC<Props> = ({deployment, cancelRedeploy
   if (deployment) {
     deploymentStatus = deployment.status;
     undeployedChanges = deployment.undeployedChanges;
-    deploymentDisabled = loading ||
-        !deployment.undeployedChanges ||
-        deploymentStatus === DeploymentStatus.Provisioning ||
-        deploymentStatus === DeploymentStatus.Preparing;
+    deploymentDisabled =
+      loading ||
+      !deployment.undeployedChanges ||
+      deploymentStatus === DeploymentStatus.Provisioning ||
+      deploymentStatus === DeploymentStatus.Preparing;
   }
 
   return (
-      <div className="d-flex justify-content-center align-middle redeployment-toolbar">
-        <div className="redeployment-nav">
-          <CustomStatusPill
-              loading={loading}
-              redeploymentStatus={deploymentStatus}
-              cancelRedeployment={handleShowModal}
-          />
+    <div className="d-flex justify-content-center align-middle redeployment-toolbar">
+      <div className="redeployment-nav">
+        <CustomStatusPill
+          loading={loading}
+          redeploymentStatus={deploymentStatus}
+          cancelRedeployment={handleShowModal}
+        />
 
         <Button
           className="float-right loading"
