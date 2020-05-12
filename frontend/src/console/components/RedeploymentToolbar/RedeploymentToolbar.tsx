@@ -3,7 +3,7 @@ import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
 import { CustomStatusPill } from 'ui/components';
 import { DeploymentInfoModel } from 'console/models';
-import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
+import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -14,7 +14,7 @@ interface Props {
   loading: boolean;
 }
 
-export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
+export const RedeploymentToolbar: React.FC<Props> = ({deployment, cancelRedeployment, performDeployment, loading}) => {
   const [show, setShow] = React.useState(false);
 
   const handleCloseModal = () => setShow(false);
@@ -22,38 +22,32 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
 
   let deploymentDisabled: boolean = true;
   let undeployedChanges: number = 0;
-  let deploymentStatus: OpenEdXInstanceDeploymentStatusStatusEnum =
-    OpenEdXInstanceDeploymentStatusStatusEnum.NOSTATUS;
+  let deploymentStatus: DeploymentStatus | null = null;
 
-  if (props.deployment) {
-    deploymentStatus = props.deployment.status;
-    undeployedChanges = props.deployment.undeployedChanges;
-    deploymentDisabled =
-      props.loading ||
-      !props.deployment.undeployedChanges ||
-      props.deployment.status ===
-        OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING ||
-      props.deployment.status ===
-        OpenEdXInstanceDeploymentStatusStatusEnum.NOSTATUS ||
-      props.deployment.status ===
-        OpenEdXInstanceDeploymentStatusStatusEnum.PREPARINGINSTANCE;
+  if (deployment) {
+    deploymentStatus = deployment.status;
+    undeployedChanges = deployment.undeployedChanges;
+    deploymentDisabled = loading ||
+        !deployment.undeployedChanges ||
+        deploymentStatus === DeploymentStatus.Provisioning ||
+        deploymentStatus === DeploymentStatus.Preparing;
   }
 
   return (
-    <div className="d-flex justify-content-center align-middle redeployment-toolbar">
-      <div className="redeployment-nav">
-        <CustomStatusPill
-          loading={props.loading}
-          redeploymentStatus={deploymentStatus}
-          cancelRedeployment={handleShowModal}
-        />
+      <div className="d-flex justify-content-center align-middle redeployment-toolbar">
+        <div className="redeployment-nav">
+          <CustomStatusPill
+              loading={loading}
+              redeploymentStatus={deploymentStatus}
+              cancelRedeployment={handleShowModal}
+          />
 
         <Button
           className="float-right loading"
           variant="primary"
           size="lg"
           onClick={() => {
-            props.performDeployment();
+            performDeployment();
           }}
           disabled={deploymentDisabled}
         >
@@ -99,7 +93,7 @@ export const RedeploymentToolbar: React.FC<Props> = (props: Props) => {
             variant="primary"
             size="lg"
             onClick={() => {
-              props.cancelRedeployment();
+              cancelRedeployment();
               handleCloseModal();
             }}
           >

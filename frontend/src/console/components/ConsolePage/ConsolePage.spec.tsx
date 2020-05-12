@@ -35,7 +35,7 @@ describe("Console Page", function() {
                 studioUrl: "test-url"
               },
               deployment: {
-                status: "NO_STATUS",
+                status: "preparing",
                 undeployedChanges: 0
               }
             },
