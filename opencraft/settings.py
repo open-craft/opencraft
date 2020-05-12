@@ -864,6 +864,8 @@ USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
     default='http://localhost:3000'
 )
+# Redirect from old registration form to new one
+REDIRECT_TO_NEW_CONSOLE = env.bool('REDIRECT_TO_NEW_CONSOLE', default=False)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [
