@@ -1,5 +1,6 @@
 import {
   OpenEdXInstanceDeploymentStatusStatusEnum,
+  OpenEdXInstanceDeploymentStatusDeploymentTypeEnum,
   StaticContentOverrides,
   ThemeSchema
 } from 'ocim-client';
@@ -22,7 +23,9 @@ export interface InstanceSettingsModel {
 
 export interface DeploymentInfoModel {
   status: OpenEdXInstanceDeploymentStatusStatusEnum;
-  undeployedChanges: number;
+  type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
+  undeployedChanges: Array<Array<object>>;
+  deployedChanges: Array<Array<object>>;
 }
 
 // The loading key is used to store field names that are being updated through
