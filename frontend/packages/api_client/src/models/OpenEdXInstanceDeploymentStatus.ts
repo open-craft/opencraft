@@ -27,10 +27,22 @@ export interface OpenEdXInstanceDeploymentStatus {
     status: OpenEdXInstanceDeploymentStatusStatusEnum;
     /**
      * 
-     * @type {number}
+     * @type {object}
      * @memberof OpenEdXInstanceDeploymentStatus
      */
-    undeployedChanges: number;
+    undeployedChanges: object;
+    /**
+     * 
+     * @type {object}
+     * @memberof OpenEdXInstanceDeploymentStatus
+     */
+    deployedChanges: object;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceDeploymentStatus
+     */
+    deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
 }
 
 export function OpenEdXInstanceDeploymentStatusFromJSON(json: any): OpenEdXInstanceDeploymentStatus {
@@ -45,6 +57,8 @@ export function OpenEdXInstanceDeploymentStatusFromJSONTyped(json: any, ignoreDi
         
         'status': json['status'],
         'undeployedChanges': json['undeployed_changes'],
+        'deployedChanges': json['deployed_changes'],
+        'deploymentType': json['deployment_type'],
     };
 }
 
@@ -59,6 +73,8 @@ export function OpenEdXInstanceDeploymentStatusToJSON(value?: OpenEdXInstanceDep
         
         'status': value.status,
         'undeployed_changes': value.undeployedChanges,
+        'deployed_changes': value.deployedChanges,
+        'deployment_type': value.deploymentType,
     };
 }
 
@@ -73,6 +89,19 @@ export enum OpenEdXInstanceDeploymentStatusStatusEnum {
     Provisioning = 'provisioning',
     Preparing = 'preparing',
     ChangesPending = 'changes_pending'
+}
+/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceDeploymentStatusDeploymentTypeEnum {
+    User = 'user',
+    Batch = 'batch',
+    Admin = 'admin',
+    Pr = 'pr',
+    Periodic = 'periodic',
+    Registration = 'registration',
+    Unknown = 'unknown'
 }
 
 
