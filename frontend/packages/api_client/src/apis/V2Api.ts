@@ -139,7 +139,7 @@ export interface InstancesOpenedxConfigValidateRequest {
 export interface InstancesOpenedxDeploymentCreateRequest {
     data: OpenEdXInstanceDeploymentCreate;
     force?: boolean;
-    deploymentType?: string;
+    deploymentType?: InstancesOpenedxDeploymentCreateDeploymentTypeEnum;
 }
 
 export interface InstancesOpenedxDeploymentDeleteRequest {
@@ -1153,4 +1153,18 @@ export class V2Api extends runtime.BaseAPI {
         return await response.value();
     }
 
+}
+
+/**
+    * @export
+    * @enum {string}
+    */
+export enum InstancesOpenedxDeploymentCreateDeploymentTypeEnum {
+    User = 'user',
+    Batch = 'batch',
+    Admin = 'admin',
+    Pr = 'pr',
+    Periodic = 'periodic',
+    Registration = 'registration',
+    Unknown = 'unknown'
 }

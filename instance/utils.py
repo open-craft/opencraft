@@ -21,7 +21,7 @@ Instance app - Util functions
 """
 
 # Imports #####################################################################
-
+from enum import Enum
 import itertools
 import json
 import logging
@@ -178,3 +178,20 @@ def build_instance_config_diff(instance_config: 'BetaTestApplication'):
         original_config['theme_config'] = instance.theme_config
         new_config['theme_config'] = instance_config.draft_theme_config
     return list(diff(original_config, new_config))
+
+
+class DjangoChoiceEnum(Enum):
+    """Enumeration that provides convenient methods for Django"""
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def choices(cls):
+        """Render enum as tuple to use in Django choice field"""
+        return tuple((prop.name, prop.value) for prop in cls)
+
+    @classmethod
+    def names(cls):
+        """Return enum as list of string names """
+        return list(prop.name for prop in cls)

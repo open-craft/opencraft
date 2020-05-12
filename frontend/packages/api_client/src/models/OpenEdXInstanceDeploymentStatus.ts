@@ -67,11 +67,12 @@ export function OpenEdXInstanceDeploymentStatusToJSON(value?: OpenEdXInstanceDep
 * @enum {string}
 */
 export enum OpenEdXInstanceDeploymentStatusStatusEnum {
-    NOSTATUS = 'NO_STATUS',
-    PREPARINGINSTANCE = 'PREPARING_INSTANCE',
-    PENDINGCHANGES = 'PENDING_CHANGES',
-    UPTODATE = 'UP_TO_DATE',
-    DEPLOYING = 'DEPLOYING'
+    Healthy = 'healthy',
+    Unhealthy = 'unhealthy',
+    Offline = 'offline',
+    Provisioning = 'provisioning',
+    Preparing = 'preparing',
+    ChangesPending = 'changes_pending'
 }
 
 
