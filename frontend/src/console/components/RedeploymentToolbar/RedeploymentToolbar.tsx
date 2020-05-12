@@ -3,7 +3,10 @@ import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
 import { CustomStatusPill } from 'ui/components';
 import { DeploymentInfoModel } from 'console/models';
-import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
+import {
+  OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus,
+  OpenEdXInstanceDeploymentStatusDeploymentTypeEnum as DeploymentType,
+} from 'ocim-client';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -27,16 +30,21 @@ export const RedeploymentToolbar: React.FC<Props> = ({
 
   let deploymentDisabled: boolean = true;
   let undeployedChanges: number = 0;
+  let deployedChanges: number = 0;
   let deploymentStatus: DeploymentStatus | null = null;
+  let deploymentType: DeploymentType | null = null;
 
   if (deployment) {
     deploymentStatus = deployment.status;
-    undeployedChanges = deployment.undeployedChanges;
+    undeployedChanges = deployment.undeployedChanges.length;
+    deployedChanges = deployment.deployedChanges.length;
+    deploymentType = deployment.type;
     deploymentDisabled =
       loading ||
       !deployment.undeployedChanges ||
       deploymentStatus === DeploymentStatus.Provisioning ||
-      deploymentStatus === DeploymentStatus.Preparing;
+      deploymentStatus === DeploymentStatus.Preparing ||
+      deploymentType !== DeploymentType.User;
   }
 
   return (
@@ -45,6 +53,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
         <CustomStatusPill
           loading={loading}
           redeploymentStatus={deploymentStatus}
+          deploymentChanges={deployedChanges}
           cancelRedeployment={handleShowModal}
         />
 
