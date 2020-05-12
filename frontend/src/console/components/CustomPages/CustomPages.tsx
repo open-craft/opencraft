@@ -1,3 +1,4 @@
+import 'utils/setup_tinymce';
 import * as React from 'react';
 import './styles.scss';
 import {
@@ -16,9 +17,6 @@ import { Row, Col, Form } from 'react-bootstrap';
 import { Prompt } from 'react-router';
 import { Editor } from '@tinymce/tinymce-react';
 import messages from './displayMessages';
-import 'tinymce/tinymce';
-
-(window as any).tinymce.baseURL = '/assets/tinymce';
 
 interface State {
   [key: string]: any;
