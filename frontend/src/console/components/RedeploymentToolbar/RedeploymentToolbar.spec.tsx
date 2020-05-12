@@ -20,7 +20,7 @@ describe("RedeploymentToolbar Component", function() {
       const tree = setupComponentForTesting(
         <RedeploymentToolbar
           deployment={{
-            status: OpenEdXInstanceDeploymentStatusStatusEnum.PREPARINGINSTANCE,
+            status: OpenEdXInstanceDeploymentStatusStatusEnum.Preparing,
             undeployedChanges: 0
           }}
           cancelRedeployment={() => {}}
@@ -34,7 +34,7 @@ describe("RedeploymentToolbar Component", function() {
       const tree = setupComponentForTesting(
         <RedeploymentToolbar
           deployment={{
-            status: OpenEdXInstanceDeploymentStatusStatusEnum.UPTODATE,
+            status: OpenEdXInstanceDeploymentStatusStatusEnum.Healthy,
             undeployedChanges: 0
           }}
           cancelRedeployment={() => {}}
@@ -48,7 +48,7 @@ describe("RedeploymentToolbar Component", function() {
       const tree = setupComponentForTesting(
         <RedeploymentToolbar
           deployment={{
-            status: OpenEdXInstanceDeploymentStatusStatusEnum.PENDINGCHANGES,
+            status: OpenEdXInstanceDeploymentStatusStatusEnum.ChangesPending,
             undeployedChanges: 3
           }}
           cancelRedeployment={() => {}}
@@ -62,7 +62,7 @@ describe("RedeploymentToolbar Component", function() {
       const tree = setupComponentForTesting(
         <RedeploymentToolbar
           deployment={{
-            status: OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING,
+            status: OpenEdXInstanceDeploymentStatusStatusEnum.Provisioning,
             undeployedChanges: 0
           }}
           cancelRedeployment={() => {}}

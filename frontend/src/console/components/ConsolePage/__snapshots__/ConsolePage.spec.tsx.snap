@@ -323,14 +323,14 @@ exports[`Console Page Correctly renders page with data 1`] = `
           className="dot"
           style={
             Object {
-              "backgroundColor": "grey",
+              "backgroundColor": "#ff9b04",
             }
           }
         />
         <div
           className="text"
         >
-          Status: loading
+          Status: We're preparing your instance 
         </div>
       </span>
       <button
