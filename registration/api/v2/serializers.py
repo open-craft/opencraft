@@ -30,6 +30,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
+from instance.models.deployment import DeploymentType
 from instance.models.openedx_deployment import DeploymentState
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
@@ -361,7 +362,9 @@ class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     Serializer with configuration details about the user's Open edX instance.
     """
     status = serializers.ChoiceField(choices=DeploymentState.choices())
-    undeployed_changes = serializers.IntegerField()
+    undeployed_changes = serializers.JSONField()
+    deployed_changes = serializers.JSONField()
+    deployment_type = serializers.ChoiceField(choices=DeploymentType.choices())
 
 
 # pylint: disable=abstract-method

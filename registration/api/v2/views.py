@@ -518,21 +518,25 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         """
         application = self.get_object()
         instance = application.instance
-        changes = build_instance_config_diff(application)
-        num_changes = len(changes)
+        undeployed_changes = build_instance_config_diff(application)
+        deployed_changes = None
+        deployment_type = None
 
         if not instance or not instance.get_latest_deployment():
             deployment_status = DeploymentState.preparing
         else:
             deployment = instance.get_latest_deployment()
             deployment_status = deployment.status()
-            if deployment_status == DeploymentState.healthy and changes:
+            if deployment_status == DeploymentState.healthy and undeployed_changes:
                 deployment_status = DeploymentState.changes_pending
+            deployment_type = deployment.type
+            deployed_changes = deployment.changes
 
         data = {
-            'undeployed_changes': num_changes,
+            'undeployed_changes': undeployed_changes,
+            'deployed_changes': deployed_changes,
             'status': deployment_status.name,
-            'changes': changes,
+            'deployment_type': deployment_type,
         }
 
         return Response(

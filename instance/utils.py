@@ -174,7 +174,7 @@ def build_instance_config_diff(instance_config: 'BetaTestApplication'):
         original_config[attr] = getattr(instance, attr, None)
         new_config[attr] = getattr(instance_config, attr, None)
 
-    if instance_config.use_advanced_theme and instance_config.draft_theme_config != instance.theme_config:
+    if instance_config.draft_theme_config != instance.theme_config:
         original_config['theme_config'] = instance.theme_config
         new_config['theme_config'] = instance_config.draft_theme_config
     return list(diff(original_config, new_config))
