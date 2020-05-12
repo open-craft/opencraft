@@ -1,5 +1,4 @@
 import * as React from 'react';
-// import { useOutsideCallback } from 'global/customHooks';
 import {
   FormControl,
   FormGroup,
@@ -25,7 +24,7 @@ interface ColorInputFieldProps {
   hideTooltip?: boolean;
 }
 
-export const ColorInputField: React.SFC<ColorInputFieldProps> = (
+export const ColorInputField: React.FC<ColorInputFieldProps> = (
   props: ColorInputFieldProps
 ) => {
   const pickerContainer = React.useRef<HTMLDivElement>(null);

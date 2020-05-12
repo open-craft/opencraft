@@ -1,1 +1,2 @@
-import * as reactscript from "react-scripts";
+/* eslint-disable spaced-comment */
+/// <reference types="react-scripts" />
