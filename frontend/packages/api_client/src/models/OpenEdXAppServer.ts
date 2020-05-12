@@ -121,6 +121,12 @@ export interface OpenEdXAppServer {
      */
     provisioningFailureNotificationEmails?: Array<string>;
     /**
+     * The number of Open edX AppServers to deploy for this instance.
+     * @type {number}
+     * @memberof OpenEdXAppServer
+     */
+    openedxAppserverCount?: number;
+    /**
      * YAML vars for database configuration
      * @type {string}
      * @memberof OpenEdXAppServer
@@ -195,6 +201,7 @@ export function OpenEdXAppServerFromJSONTyped(json: any, ignoreDiscriminator: bo
         'additionalSecurityGroups': !exists(json, 'additional_security_groups') ? undefined : json['additional_security_groups'],
         'additionalMonitoringEmails': !exists(json, 'additional_monitoring_emails') ? undefined : json['additional_monitoring_emails'],
         'provisioningFailureNotificationEmails': !exists(json, 'provisioning_failure_notification_emails') ? undefined : json['provisioning_failure_notification_emails'],
+        'openedxAppserverCount': !exists(json, 'openedx_appserver_count') ? undefined : json['openedx_appserver_count'],
         'configurationDatabaseSettings': !exists(json, 'configuration_database_settings') ? undefined : json['configuration_database_settings'],
         'configurationStorageSettings': !exists(json, 'configuration_storage_settings') ? undefined : json['configuration_storage_settings'],
         'configurationThemeSettings': !exists(json, 'configuration_theme_settings') ? undefined : json['configuration_theme_settings'],
@@ -230,6 +237,7 @@ export function OpenEdXAppServerToJSON(value?: OpenEdXAppServer | null): any {
         'additional_security_groups': value.additionalSecurityGroups,
         'additional_monitoring_emails': value.additionalMonitoringEmails,
         'provisioning_failure_notification_emails': value.provisioningFailureNotificationEmails,
+        'openedx_appserver_count': value.openedxAppserverCount,
         'configuration_database_settings': value.configurationDatabaseSettings,
         'configuration_storage_settings': value.configurationStorageSettings,
         'configuration_theme_settings': value.configurationThemeSettings,
