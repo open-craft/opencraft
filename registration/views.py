@@ -83,6 +83,7 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
         verify_user_emails(user, user.email, self.object.public_contact_email)
         return response
 
+    # pylint: disable=arguments-differ
     def get(self, *args, **kwargs):
         """
         Get registration form.
