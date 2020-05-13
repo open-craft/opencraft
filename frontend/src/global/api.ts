@@ -12,7 +12,7 @@ const config = new Configuration({
   },
   middleware: [
     {
-      post: async (context) => {
+      post: async context => {
         if (context.response.status === 403) {
           // Failed requests return 403 and mean that the access token is
           // expired, so we trigger a page refresh.

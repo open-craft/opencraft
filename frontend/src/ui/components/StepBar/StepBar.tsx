@@ -46,7 +46,7 @@ export const StepBar: React.FC<StepBarProps> = ({
   currentStep
 }: StepBarProps) => (
   <div className="step-bar">
-    {[...Array(count).keys()].map((num) => (
+    {[...Array(count).keys()].map(num => (
       <React.Fragment key={`registration_stepbar_${num}`}>
         {num + 1 === currentStep ? <CircledNumber number={num + 1} /> : circle}
         <span className="line" />

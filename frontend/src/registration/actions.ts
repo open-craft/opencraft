@@ -97,7 +97,7 @@ export const goToNextStep = (nextStep: RegistrationSteps) => async (
 export const performValidationAndStore = (
   data: RegistrationModel,
   nextStep?: RegistrationSteps
-): OcimThunkAction<void> => async (dispatch) => {
+): OcimThunkAction<void> => async dispatch => {
   dispatch({
     type: Types.REGISTRATION_VALIDATION,
     data

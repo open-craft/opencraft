@@ -75,7 +75,7 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
-              {AVAILABLE_CUSTOM_PAGES.map((pageName) => {
+              {AVAILABLE_CUSTOM_PAGES.map(pageName => {
                 return customPageLink(pageName);
               })}
             </Nav>
@@ -101,7 +101,7 @@ export const CustomizationSideMenu: React.FC = () => {
                 exact
                 to=""
                 className="disabled"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                 }}
               >

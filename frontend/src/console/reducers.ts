@@ -52,7 +52,7 @@ export function consoleReducer(
         activeInstance: {
           data: { $merge: action.data },
           loading: {
-            $set: state.activeInstance.loading.filter((x) => !keys.includes(x))
+            $set: state.activeInstance.loading.filter(x => !keys.includes(x))
           }
         }
       });
@@ -63,7 +63,7 @@ export function consoleReducer(
         activeInstance: {
           feedback: { $merge: action.data },
           loading: {
-            $set: state.activeInstance.loading.filter((x) => !keys.includes(x))
+            $set: state.activeInstance.loading.filter(x => !keys.includes(x))
           }
         }
       });
@@ -85,7 +85,7 @@ export function consoleReducer(
           },
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => x !== 'draftThemeConfig'
+              x => x !== 'draftThemeConfig'
             )
           }
         }
@@ -95,7 +95,7 @@ export function consoleReducer(
         activeInstance: {
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => x !== 'draftThemeConfig'
+              x => x !== 'draftThemeConfig'
             )
           }
         }
@@ -118,7 +118,7 @@ export function consoleReducer(
           },
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => x !== 'draftStaticContentOverrides'
+              x => x !== 'draftStaticContentOverrides'
             )
           }
         }
@@ -128,7 +128,7 @@ export function consoleReducer(
         activeInstance: {
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => x !== 'draftStaticContentOverrides'
+              x => x !== 'draftStaticContentOverrides'
             )
           }
         }
@@ -165,7 +165,7 @@ export function consoleReducer(
           deployment: { $set: undefined },
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => !(x === 'deployment')
+              x => !(x === 'deployment')
             )
           }
         }
@@ -177,7 +177,7 @@ export function consoleReducer(
         activeInstance: {
           loading: {
             $set: state.activeInstance.loading.filter(
-              (x) => !(x === 'deployment')
+              x => !(x === 'deployment')
             )
           }
         }

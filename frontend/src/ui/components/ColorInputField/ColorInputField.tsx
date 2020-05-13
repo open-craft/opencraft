@@ -45,7 +45,6 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
     props.onChange(props.fieldName, '');
   };
 
-
   /**
    * Using effect dependent on color to update bound functions
    * when the color is changed, otherwise it would always pick
@@ -66,8 +65,8 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
      */
     const handleClick = (event: any) => {
       if (
-          pickerContainer.current &&
-          !pickerContainer.current.contains(event.target)
+        pickerContainer.current &&
+        !pickerContainer.current.contains(event.target)
       ) {
         hideColorPickerAndSubmit();
       }
@@ -142,7 +141,7 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
         <div ref={pickerContainer} className="input-color-picker">
           <SketchPicker
             color={selectedColor}
-            onChangeComplete={(color) => {
+            onChangeComplete={color => {
               setColor(color.hex);
             }}
           />
