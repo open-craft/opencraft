@@ -38,14 +38,14 @@ def fix_invalid_domain_names(apps, schema_editor):
     BetaTestApplication = apps.get_model('registration', 'BetaTestApplication')
     OpenEdXInstance = apps.get_model('instance', 'OpenEdXInstance')
 
-    # BetaTestApplication.objects.update(subdomain=clean_domain_name('subdomain'))
-    # OpenEdXInstance.objects.update(
-    #     internal_lms_domain=clean_domain_name('internal_lms_domain'),
-    #     internal_lms_preview_domain=clean_domain_name('internal_lms_preview_domain'),
-    #     internal_studio_domain=clean_domain_name('internal_studio_domain'),
-    #     internal_discovery_domain=clean_domain_name('internal_discovery_domain'),
-    #     internal_ecommerce_domain=clean_domain_name('internal_ecommerce_domain'),
-    # )
+    BetaTestApplication.objects.update(subdomain=clean_domain_name('subdomain'))
+    OpenEdXInstance.objects.update(
+        internal_lms_domain=clean_domain_name('internal_lms_domain'),
+        internal_lms_preview_domain=clean_domain_name('internal_lms_preview_domain'),
+        internal_studio_domain=clean_domain_name('internal_studio_domain'),
+        internal_discovery_domain=clean_domain_name('internal_discovery_domain'),
+        internal_ecommerce_domain=clean_domain_name('internal_ecommerce_domain'),
+    )
 
 
 def migrate_noop(apps, schema_editor):
@@ -59,5 +59,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_invalid_domain_names, migrate_noop),
     ]

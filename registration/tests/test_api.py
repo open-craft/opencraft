@@ -19,6 +19,7 @@
 """
 Tests for the registration API
 """
+from typing import Optional, Union
 from unittest.mock import patch
 
 import ddt
@@ -491,7 +492,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, {"non_field_errors": "Schema validation failed."})
+        self.assertDictEqual(response.data, {"non_field_errors": "Schema validation failed."})
 
         # Add missing property and enable customization.
         response = self.client.patch(
@@ -614,7 +615,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format='multipart',
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
+        self.assertDictEqual(
             response.data,
             {
                 'logo': ['The logo image must be 48px tall to fit into the header.']
@@ -736,6 +737,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     """
 
     def setUp(self):
+        self.maxDiff = None
         self.user_with_instance = create_user_and_profile("instance.user", "instance.user@example.com")
         self.instance_config = BetaTestApplication.objects.create(
             user=self.user_with_instance,
@@ -765,6 +767,31 @@ class InstanceDeploymentAPITestCase(APITestCase):
         self.instance_config.save()
         return instance
 
+    def assert_deployment_response(
+            self,
+            response_data: dict,
+            status: str = None,
+            deployed_changes: Optional[Union[int, list]] = None,
+            undeployed_changes: Union[int, list] = 0,
+            deployment_type: Optional[str] = None,
+    ):
+        """Make assertions about response from deployment API"""
+        if status is not None:
+            self.assertEqual(response_data.get('status'), status,
+                             response_data)
+        if deployed_changes is not None:
+            if isinstance(deployed_changes, int):
+                self.assertEqual(len(response_data.get('deployed_changes')), deployed_changes, response_data)
+            else:
+                self.assertEqual(response_data.get('deployed_changes'), deployed_changes, response_data)
+        if undeployed_changes is not None:
+            if isinstance(undeployed_changes, int):
+                self.assertEqual(len(response_data.get('undeployed_changes')), undeployed_changes, response_data)
+            else:
+                self.assertEqual(response_data.get('undeployed_changes'), undeployed_changes, response_data)
+        if deployment_type is not None:
+            self.assertEqual(response_data.get('deployment_type'), deployment_type, response_data)
+
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
@@ -782,7 +809,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'preparing', 'undeployed_changes': 3})
+        self.assert_deployment_response(response.data, status='preparing', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -806,7 +833,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'healthy', 'undeployed_changes': 0})
+        self.assert_deployment_response(response.data, status='healthy', undeployed_changes=0)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -825,7 +852,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'changes_pending', 'undeployed_changes': 3})
+        self.assert_deployment_response(response.data, status='changes_pending', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -841,7 +868,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'preparing', 'undeployed_changes': 3})
+        self.assert_deployment_response(response.data, status='preparing', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',

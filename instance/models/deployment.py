@@ -22,7 +22,6 @@ Instance app models - Deployment
 
 # Imports #####################################################################
 
-from enum import Enum
 import logging
 
 from django.db import models
@@ -30,9 +29,9 @@ from django_extensions.db.models import TimeStampedModel
 
 from userprofile.models import UserProfile
 from .instance import InstanceReference
+from ..utils import DjangoChoiceEnum
 
 # Logging #####################################################################
-from ..utils import DjangoChoiceEnum
 
 logger = logging.getLogger(__name__)
 

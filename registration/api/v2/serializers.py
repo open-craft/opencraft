@@ -32,11 +32,11 @@ from rest_framework.validators import UniqueValidator
 
 from instance.models.deployment import DeploymentType
 from instance.models.openedx_deployment import DeploymentState
-from registration.models import BetaTestApplication
-from userprofile.models import UserProfile
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
+from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 

@@ -168,19 +168,18 @@ def build_instance_config_diff(instance_config: 'BetaTestApplication'):
     Builds an configuration diff for the provided instance configuration.
     """
     instance = instance_config.instance
+    if not instance:
+        instance = object()
     original_config = {}
     new_config = {}
     for attr in ('instance_name', 'privacy_policy_url', 'public_contact_email'):
         original_config[attr] = getattr(instance, attr, None)
         new_config[attr] = getattr(instance_config, attr, None)
 
-    if instance_config.draft_theme_config != instance.theme_config:
-        original_config['theme_config'] = instance.theme_config
-        new_config['theme_config'] = instance_config.draft_theme_config
-
-    if instance_config.draft_static_content_overrides != instance.static_content_overrides:
-        original_config['static_content_overrides'] = instance.static_content_overrides
-        new_config['static_content_overrides'] = instance_config.draft_static_content_overrides
+    original_config['theme_config'] = getattr(instance, 'theme_config', None) or {}
+    new_config['theme_config'] = instance_config.draft_theme_config or {}
+    original_config['static_content_overrides'] = getattr(instance, 'static_content_overrides', None) or {}
+    new_config['static_content_overrides'] = instance_config.draft_static_content_overrides or {}
 
     return list(diff(original_config, new_config))
 
