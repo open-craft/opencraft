@@ -88,13 +88,14 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
         """
         Get registration form.
 
-        Retirects to new frontend if flag is set, otherwise
-        returns old registration form.
+        Redirects to new frontend if `settings.NEW_USER_CONSOLE_REGISTRATION_ENABLED`
+        is set, otherwise returns old registration form.
 
         Note: `USER_CONSOLE_FRONTEND_URL` must be set to a
         full valid URL.
         """
-        if settings.REDIRECT_TO_NEW_CONSOLE and settings.USER_CONSOLE_FRONTEND_URL:
+        # TODO: Remove this when cleaning up old registration console on BB-2422.
+        if settings.NEW_USER_CONSOLE_REGISTRATION_ENABLED and settings.USER_CONSOLE_FRONTEND_URL:
             return redirect(settings.USER_CONSOLE_FRONTEND_URL)
 
         return super(BetaTestApplicationView, self).get(*args, **kwargs)
