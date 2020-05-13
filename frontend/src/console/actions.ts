@@ -200,9 +200,7 @@ export const clearErrorMessage = (field: keyof InstanceSettingsModel) => async (
   });
 };
 
-export const listUserInstances = (): OcimThunkAction<
-  void
-> => async dispatch => {
+export const listUserInstances = (): OcimThunkAction<void> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
 
   V2Api.instancesOpenedxConfigList()

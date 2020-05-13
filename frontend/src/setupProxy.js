@@ -1,10 +1,10 @@
-const createProxyMiddleware = require('http-proxy-middleware');
+const proxy = require('http-proxy-middleware');
 
 // @ts-ignore
 module.exports = function(app) {
   app.use(
     '/api',
-    createProxyMiddleware({
+    proxy({
       target: process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000',
       changeOrigin: true
     })

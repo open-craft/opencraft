@@ -1,6 +1,9 @@
 export const toCamelCase = (s: string) => {
   return s.replace(/([-_][a-z])/gi, $1 => {
-    return $1.toUpperCase().replace('-', '').replace('_', '');
+    return $1
+        .toUpperCase()
+        .replace('-', '')
+        .replace('_', '');
   });
 };
 

@@ -41,9 +41,10 @@ from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import build_instance_config_diff, sufficient_time_passed
 from pr_watch import github
+from userprofile.models import UserProfile
+
 
 # Logging #####################################################################
-from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 

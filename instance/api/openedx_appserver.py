@@ -39,8 +39,9 @@ from instance.serializers.openedx_appserver import (
 )
 from instance.tasks import create_new_deployment, make_appserver_active
 from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
-# Views - API #################################################################
 from ..models.deployment import DeploymentType
+
+# Views - API #################################################################
 
 
 class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):

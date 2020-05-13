@@ -31,7 +31,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-
 # Exceptions ##################################################################
 
 
@@ -118,7 +117,6 @@ class ValidateModelMixin:
 
     https://gist.github.com/glarrain/5448253
     """
-
     def save(self, **kwargs):
         """Call :meth:`full_clean` before saving."""
         self.full_clean()
@@ -127,7 +125,6 @@ class ValidateModelMixin:
 
 class ClassProperty(property):
     """ Same as built-in 'property' global but also works when accessed as a class attribute """
-
     def __get__(self, cls, owner):
         # TODO: Requires astroid 2.0+ to pass pylint
         # https://bitbucket.org/logilab/pylint/issues/439/confused-by-descriptors
@@ -212,14 +209,12 @@ class ResourceState:
 
         Then you can use MyStates.states to get a list of the state classes.
         """
-
         @ClassProperty
         @classmethod
         def states(cls):
             """
             Get a tuple listing all the classes defined within this class
             """
-
             def generate():
                 """ Search for ResourceStates defined on this class or inherited classes """
                 for name in dir(cls):
@@ -260,7 +255,6 @@ class ResourceStateDescriptor:
     The 'state' property cannot be assigned to; only the current state instance is allowed to
     change the state. This makes it easy to reason about the behavior of the state.
     """
-
     def __init__(self, state_classes, default_state):
         """
         Instantiate a ResourceStateDescriptor to manage a state machine.
@@ -320,7 +314,6 @@ class ResourceStateDescriptor:
             """
             Create a MagicWrapper descriptor that will implement the only_for() behavior.
             """
-
             def require_valid_state(resource):
                 """
                 Raise a WrongStateException if resource is not in one of the required states
@@ -335,7 +328,6 @@ class ResourceStateDescriptor:
 
             class MagicWrapper:
                 """ Class which can wrap a method; the result can be used as a property or as a method. """
-
                 def __call__(self, resource):
                     """ We are wrapping a property, not a method. No fancy stuff needed. """
                     require_valid_state(resource)
@@ -343,7 +335,6 @@ class ResourceStateDescriptor:
 
                 def __get__(self, resource, _type):
                     """ Get the (wrapped) method, and add a .is_available method to it """
-
                     def wrapped_method(*args, **kwargs):
                         """ Wrapper around the method which checks the state requirements first """
                         require_valid_state(resource)
@@ -378,7 +369,6 @@ class ResourceStateDescriptor:
             if hasattr(resource, 'logger'):
                 resource.logger.info('Transition from "%s" to "%s"', current_state.name, to_state.name)
             self._set_state(resource, to_state)
-
         do_transition.from_states = from_states  # Convenient way for other code to inspect this transition
         do_transition.to_state = to_state  # Convenient way for other code to inspect this transition
         return do_transition
@@ -414,7 +404,6 @@ class ModelResourceStateDescriptor(ResourceStateDescriptor):
     """
     Descriptor which implements a finite state machine, backed by a django field.
     """
-
     def __init__(self, state_classes, default_state, model_field_name):
         """
         Instantiate a ResourceStateDescriptor to manage a state machine.
