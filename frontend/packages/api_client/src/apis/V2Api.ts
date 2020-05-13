@@ -163,7 +163,7 @@ export interface PasswordResetValidateTokenCreateRequest {
 }
 
 /**
- * no description
+ * 
  */
 export class V2Api extends runtime.BaseAPI {
 

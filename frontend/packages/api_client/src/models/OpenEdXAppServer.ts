@@ -43,7 +43,7 @@ export interface OpenEdXAppServer {
      */
     privacyPolicyUrl?: string;
     /**
-     * Set this to a release tag like \"named-release/dogwood\" to build a specific release of Open edX. This setting becomes the default value for edx_platform_version, forum_version, notifier_version, xqueue_version, and certs_version so it should be a git branch that exists in all of those repositories. Note: to build a specific branch of edx-platform, you should just override edx_platform_commit rather than changing this setting. Note 2: This value does not affect the default value of configuration_version.
+     * Set this to a release tag like "named-release/dogwood" to build a specific release of Open edX. This setting becomes the default value for edx_platform_version, forum_version, notifier_version, xqueue_version, and certs_version so it should be a git branch that exists in all of those repositories. Note: to build a specific branch of edx-platform, you should just override edx_platform_commit rather than changing this setting. Note 2: This value does not affect the default value of configuration_version.
      * @type {string}
      * @memberof OpenEdXAppServer
      */
@@ -79,19 +79,19 @@ export interface OpenEdXAppServer {
      */
     edxPlatformRepositoryUrl?: string;
     /**
-     * edx-platform commit hash or branch or tag to use. Leave blank to use the default, which is equal to the value of \"openedx_release\".
+     * edx-platform commit hash or branch or tag to use. Leave blank to use the default, which is equal to the value of "openedx_release".
      * @type {string}
      * @memberof OpenEdXAppServer
      */
     edxPlatformCommit: string;
     /**
-     * JSON openstack flavor selector, e.g. {\"name\": \"vps-ssd-1\"}. Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.
+     * JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}. Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.
      * @type {object}
      * @memberof OpenEdXAppServer
      */
     openstackServerFlavor?: object | null;
     /**
-     * JSON openstack base image selector, e.g. {\"name\": \"xenial-16.04-unmodified\"} Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.
+     * JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"} Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.
      * @type {object}
      * @memberof OpenEdXAppServer
      */
@@ -103,7 +103,7 @@ export interface OpenEdXAppServer {
      */
     openstackServerSshKeyname?: string | null;
     /**
-     * Optional: A list of extra OpenStack security group names to use for this instance\'s VMs. A typical use case is to grant this instance access to a private database server that is behind a firewall. (In the django admin, separate group names with a comma.)
+     * Optional: A list of extra OpenStack security group names to use for this instance's VMs. A typical use case is to grant this instance access to a private database server that is behind a firewall. (In the django admin, separate group names with a comma.)
      * @type {Array<string>}
      * @memberof OpenEdXAppServer
      */

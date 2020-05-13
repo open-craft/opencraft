@@ -26,7 +26,7 @@ export interface Account {
      */
     fullName: string;
     /**
-     * This would also be the username of the administrator account on the users\'s instances.
+     * This would also be the username of the administrator account on the users's instances.
      * @type {string}
      * @memberof Account
      */
