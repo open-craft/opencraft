@@ -5,6 +5,7 @@ import { ROUTES } from 'global/constants';
 import { V2Api } from 'global/api';
 import { JwtToken, Token, Email, PasswordToken } from 'ocim-client';
 import { LoginFormModel, LoginStateModel } from './models';
+import * as ConsoleTypes from '../console/actions';
 import { sanitizeErrorFeedback } from '../utils/string_utils';
 
 export enum Types {
@@ -162,6 +163,7 @@ export const performLogout = () => async (dispatch: any) => {
   window.localStorage.removeItem('token_access');
   window.localStorage.removeItem('token_refresh');
   dispatch({ type: Types.LOGOUT });
+  dispatch(ConsoleTypes.clearConsoleData());
   dispatch(push(ROUTES.Auth.LOGIN));
 };
 
