@@ -25,7 +25,7 @@ export interface DeploymentInfoModel {
   status: OpenEdXInstanceDeploymentStatusStatusEnum;
   type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
   undeployedChanges: Array<Array<object>>;
-  deployedChanges: Array<Array<object>>;
+  deployedChanges: Array<Array<object>> | null;
 }
 
 // The loading key is used to store field names that are being updated through

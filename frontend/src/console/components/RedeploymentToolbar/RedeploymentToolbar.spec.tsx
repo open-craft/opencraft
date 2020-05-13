@@ -1,7 +1,10 @@
 import React from 'react';
 import { setupComponentForTesting } from "utils/testing";
 import { RedeploymentToolbar } from './RedeploymentToolbar';
-import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
+import {
+    OpenEdXInstanceDeploymentStatusDeploymentTypeEnum,
+    OpenEdXInstanceDeploymentStatusStatusEnum
+} from 'ocim-client';
 
 
 describe("RedeploymentToolbar Component", function() {
@@ -21,7 +24,9 @@ describe("RedeploymentToolbar Component", function() {
         <RedeploymentToolbar
           deployment={{
             status: OpenEdXInstanceDeploymentStatusStatusEnum.Preparing,
-            undeployedChanges: 0
+            undeployedChanges: [],
+            deployedChanges: null,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.Admin,
           }}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}
@@ -35,7 +40,9 @@ describe("RedeploymentToolbar Component", function() {
         <RedeploymentToolbar
           deployment={{
             status: OpenEdXInstanceDeploymentStatusStatusEnum.Healthy,
-            undeployedChanges: 0
+            undeployedChanges: [],
+            deployedChanges: null,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.Admin,
           }}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}
@@ -49,7 +56,25 @@ describe("RedeploymentToolbar Component", function() {
         <RedeploymentToolbar
           deployment={{
             status: OpenEdXInstanceDeploymentStatusStatusEnum.ChangesPending,
-            undeployedChanges: 3
+            undeployedChanges: [[], [], []],
+            deployedChanges: null,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.User,
+          }}
+          cancelRedeployment={() => {}}
+          performDeployment={() => {}}
+        />
+      ).toJSON();
+      expect(tree).toMatchSnapshot();
+  });
+
+  it('Correctly renders redeployment bar when deployment is by admin', () => {
+      const tree = setupComponentForTesting(
+        <RedeploymentToolbar
+          deployment={{
+            status: OpenEdXInstanceDeploymentStatusStatusEnum.ChangesPending,
+            undeployedChanges: [[], [], []],
+            deployedChanges: null,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.Admin,
           }}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}
@@ -63,7 +88,9 @@ describe("RedeploymentToolbar Component", function() {
         <RedeploymentToolbar
           deployment={{
             status: OpenEdXInstanceDeploymentStatusStatusEnum.Provisioning,
-            undeployedChanges: 0
+            undeployedChanges: [],
+            deployedChanges: null,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.Admin,
           }}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}

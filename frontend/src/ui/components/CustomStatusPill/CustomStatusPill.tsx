@@ -7,7 +7,6 @@ import messages from './displayMessages';
 import './styles.scss';
 
 interface Props {
-  deploymentChanges: number | null;
   loading: boolean;
   redeploymentStatus: string | null;
   cancelRedeployment: Function;

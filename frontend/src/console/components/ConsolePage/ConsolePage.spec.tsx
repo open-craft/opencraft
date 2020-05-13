@@ -36,7 +36,9 @@ describe("Console Page", function() {
               },
               deployment: {
                 status: "preparing",
-                undeployedChanges: 0
+                undeployedChanges: [],
+                deployedChanges: null,
+                type: 'admin',
               }
             },
             instances: [{

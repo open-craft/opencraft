@@ -33,7 +33,7 @@
     "@tinymce/tinymce-react": "^3.6.0",
     "@types/http-proxy-middleware": "^0.19.3",
     "@types/jest": "25.2.1",
-    "@types/node": "13.13.5",
+    "@types/node": "14.0.1",
     "@types/react": "16.9.35",
     "@types/react-color": "^3.0.1",
     "@types/react-dom": "16.9.8",
@@ -42,7 +42,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/react-test-renderer": "^16.9.2",
     "@types/tinymce": "^4.5.24",
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^4.5.0",
     "canvas": "^2.6.1",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.8.0",
@@ -72,6 +72,6 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
     "tinymce": "^5.2.2",
-    "typescript": "3.8.3"
+    "typescript": "3.9.2"
   }
 }
