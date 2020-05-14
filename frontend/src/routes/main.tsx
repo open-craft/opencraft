@@ -20,7 +20,7 @@ export const MainRoutes = () => (
       path="/"
       ifUnauthorizedRedirectTo={ROUTES.Registration.HOME}
     >
-      <Redirect to={ROUTES.Console.HOME} />
+      <Redirect to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL} />
     </PrivateRoute>
     <Route path={ROUTES.Error.UNKNOWN_ERROR} component={ErrorPage} />
     <Route path={ROUTES.Auth.LOGIN} component={LoginPage} />

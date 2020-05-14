@@ -1,11 +1,11 @@
-import { RegistrationSteps } from 'global/constants';
+import { GANDI_REFERRAL_LINK, RegistrationSteps } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { WrappedMessage } from 'utils/intl';
 import { RedirectToCorrectStep } from 'registration/components';
 import { RegistrationStateModel } from 'registration/models';
-import { Row, Col, Button, Spinner } from 'react-bootstrap';
+import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { goToNextStep } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
@@ -71,7 +71,7 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
         <tr>
           <td>{this.props.registrationData.externalDomain}</td>
           <td>CNAME</td>
-          <td>haproxy.net.opencraft.hosting</td>
+          <td>haproxy.net.opencraft.hosting.</td>
         </tr>
         <tr>
           <td>
@@ -79,7 +79,7 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
             {this.props.registrationData.externalDomain}
           </td>
           <td>CNAME</td>
-          <td>haproxy.net.opencraft.hosting</td>
+          <td>haproxy.net.opencraft.hosting.</td>
         </tr>
       </table>
     );
@@ -91,7 +91,7 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
         values={{
           a: (...chunks: string[]) => (
             <a
-              href="https://gandi.link/f/ba351d73"
+              href={GANDI_REFERRAL_LINK}
               target="_blank"
               rel="noopener noreferrer"
             >

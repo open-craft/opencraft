@@ -11,6 +11,9 @@ export const PRIVACY_POLICY_LINK =
 export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
 
+export const GANDI_REFERRAL_LINK =
+  process.env.REACT_APP_INTERNAL_DOMAIN_NAME || 'https://gandi.link/f/ba351d73'
+
 export interface StringIndexedArray {
   [key: string]: any;
 }

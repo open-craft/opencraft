@@ -118,7 +118,7 @@ exports[`renders without crashing 1`] = `
           <strong>
             both
           </strong>
-           of them for your instance tobe activated. Please follow the link(s) that we emailed you to your emailaccount(s) complete your application process.
+           of them for your instance to be activated. Please follow the link(s) that we emailed you to your email account(s) complete your application process.
         </p>
         <div
           className="text-center"
