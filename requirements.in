@@ -1,5 +1,0 @@
-# Please list here direct dependencies only.
-# Then run pip-compile to generate the full requirements.txt (which will include dependencies of dependencies).
-# Always commit requirements.in together with requirements.txt
-
--r requirements/dev.in
