@@ -22,13 +22,13 @@ interface State {
 interface ActionProps {
   updateFieldValue: Function;
 }
-interface StateProps extends InstancesModel {}
-interface Props extends StateProps, ActionProps {}
+interface StateProps extends InstancesModel { }
+interface Props extends StateProps, ActionProps { }
 
 export class InstanceSettingsComponent extends React.PureComponent<
   Props,
   State
-> {
+  > {
   constructor(props: Props) {
     super(props);
 
@@ -64,8 +64,8 @@ export class InstanceSettingsComponent extends React.PureComponent<
       this.state.renderBool
     ) {
       this.setState({
-        instanceName: props.activeInstance.data!.instanceName,
-        publicContactEmail: props.activeInstance.data!.publicContactEmail,
+        instanceName: props.activeInstance.data.instanceName,
+        publicContactEmail: props.activeInstance.data.publicContactEmail,
         renderBool: false
       });
     }
@@ -109,23 +109,12 @@ export class InstanceSettingsComponent extends React.PureComponent<
   private updateValue = (fieldName: string, value: string) => {
     const instance = this.props.activeInstance;
 
-    // Only make update request if instance name changed
     if (
-      instance.data &&
-      this.state.instanceName !== instance.data.instanceName
+      instance.data && 
+      this.state[fieldName as keyof State] !== 
+        instance.data[fieldName]
     ) {
-      this.props.updateFieldValue(instance.data.id, 'instanceName', value);
-    }
-    // Only make update request if public contact email changed
-    if (
-      instance.data &&
-      this.state.publicContactEmail !== instance.data.publicContactEmail
-    ) {
-      this.props.updateFieldValue(
-        instance.data.id,
-        'publicContactEmail',
-        value
-      );
+      this.props.updateFieldValue(instance.data.id, fieldName, value);
     }
   };
 

@@ -162,15 +162,9 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     const field = e.target.name;
     const { value } = e.target;
 
-    if (field === 'title') {
-      this.setState({
-        title: value
-      });
-    } else if (field === 'subtitle') {
-      this.setState({
-        subtitle: value
-      });
-    }
+    this.setState({
+      [field]: value
+    } as Pick<State, 'title' | 'subtitle'>);
   };
 
   private updateHeroText = () => {
@@ -271,7 +265,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                 <Row>
                   <Col>
                     {this.themeConfigExists() &&
-                      this.staticContentOverridesExists(this.props) && (
+                      this.staticContentOverridesExists() && (
                         <HeroPreview
                           heroCoverImage={instance.data!.heroCoverImage || ''}
                           homePageHeroTitleColor={
