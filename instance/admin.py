@@ -117,6 +117,7 @@ class OpenEdXDeploymentAdmin(admin.ModelAdmin):  # pylint: disable=missing-docst
     list_filter = ('creator', 'type', 'created')
 
     def has_changes(self, obj):
+        """Rerun whether deployment includes any changes"""
         return bool(obj.changes)
 
 

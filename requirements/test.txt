@@ -105,6 +105,7 @@ munch==2.5.0              # via openstacksdk
 mysqlclient==1.4.2.post1  # via -r requirements/base.in
 netaddr==0.7.19           # via oslo.config, oslo.utils
 netifaces==0.10.9         # via openstacksdk, oslo.utils
+nose==1.3.7               # via -r requirements/test.in
 openstacksdk==0.31.1      # via -r requirements/base.in, os-client-config, osc-lib, python-openstackclient
 os-client-config==1.32.0  # via -r requirements/base.in
 os-service-types==1.7.0   # via keystoneauth1, openstacksdk
