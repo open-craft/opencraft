@@ -112,7 +112,7 @@ class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docs
     list_display = ('domain', 'ssh_username')
 
 
-class OpenEdXDeploymentAdmin(admin.ModelAdmin):
+class OpenEdXDeploymentAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('instance', 'creator', 'type', 'has_changes', 'created')
     list_filter = ('creator', 'type', 'created')
 

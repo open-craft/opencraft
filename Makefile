@@ -89,7 +89,7 @@ create_db: ## Create blanket DBs, i.e. `opencraft`.
 	createdb --host 127.0.0.1 --encoding utf-8 --template template0 opencraft || \
 	    echo "Could not create database 'opencraft' - it probably already exists"
 
-.PHONY: static
+.PHONY: static upgrade requirements
 static: clean static_external ## Collect static files for production.
 	$(HONCHO_MANAGE) collectstatic --noinput
 
@@ -113,9 +113,6 @@ run.dev: clean migrations.check static_external ## Run the developmental server 
 
 shell: ## Start the power shell.
 	HUEY_QUEUE_NAME=opencraft_low_priority $(HONCHO_MANAGE) shell_plus
-
-upgrade_dependencies:
-	pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
 
 # Tests #######################################################################
 
@@ -192,3 +189,14 @@ cov.combine:
 
 cov.clean:
 	coverage erase
+
+# Requirements ################################################################
+upgrade:
+	pip install -q pip-tools
+	pip-compile --upgrade -o requirements/base.txt requirements/base.in
+	pip-compile --upgrade -o requirements/test.txt requirements/test.in
+	pip-compile --upgrade -o requirements/dev.txt requirements/dev.in
+	pip-compile --upgrade -o requirements.txt requirements.in
+
+requirements:
+	pip-sync

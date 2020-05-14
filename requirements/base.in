@@ -1,0 +1,67 @@
+# Please list here direct dependencies only.
+# Then run pip-compile to generate the full requirements.txt (which will include dependencies of dependencies).
+# Always commit requirements.in together with requirements.txt
+beautifulsoup4<4.8
+boto==2.49.0
+boto3<1.10
+channels<2.4
+channels_redis<2.5
+CherryPy<18.2
+colour==0.1.5
+cookies<2.3
+dictdiffer<0.9
+Django<2.3,>=2.2
+# using the latest django-angular (2.2 or later) requires a heavy rewrite of the registration form, so we use the old 1.0.0 version patched to work under Django 2
+-e git+https://github.com/open-craft/django-angular.git@v1-with-django2-support#egg=django_angular
+django-compressor==2.4
+django-cors-headers<3.3
+django-environ==0.4.5
+django-extensions==2.1.9
+django-grappelli==2.12.3
+django-inlinecss==0.3.0
+django-libsass==0.7
+django-rest-passwordreset==1.1.0
+django-redis==4.10.0
+django-simple-email-confirmation==0.60
+django-storage-swift==1.2.19
+django-storages==1.7.1
+django-zurb-foundation==5.5.0
+djangorestframework<3.10,>=3.9.4
+dns-lexicon==3.3.13
+djangorestframework-simplejwt==4.4.0
+docutils==0.14
+drf-yasg
+entrypoints==0.3
+future==0.17.1
+futures
+GitPython==2.1.15
+gunicorn==19.9.0
+honcho==1.0.1
+huey==2.1.0
+jsonschema==3.2.0
+keystoneauth1==3.14.0
+mysqlclient==1.4.2.post1
+openstacksdk==0.31.1
+os-client-config==1.32.0
+Pillow
+pip-tools
+psycopg2-binary==2.8.3
+pyjwkest==1.4.0
+pymongo==3.8.0
+python-consul==1.1.0
+python-glanceclient==2.16.0
+python-keystoneclient==3.19.0
+python-novaclient==14.1.0
+python-openstackclient==3.19.0
+python-swiftclient==3.7.0
+pytz==2019.1
+PyYAML<5.2,>=5.1.2
+redis==3.2.1
+requests
+requests-file==1.4.3
+responses==0.10.6
+service_identity==18.1.0
+six
+urllib3==1.25.3
+virtualenv
+Werkzeug==0.15.4
