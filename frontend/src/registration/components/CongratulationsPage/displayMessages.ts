@@ -12,7 +12,7 @@ const messages = {
       'We have sent you an email to verify your OpenCraft account email and ' +
       'your public contact email. If these are different email addresses, you ' +
       'will need to verify <strong>both</strong> of them for your instance to ' +
-      'be activated. Please follow the link(s) that we emailed you to your email' +
+      'be activated. Please follow the link(s) that we emailed you to your email ' +
       'account(s) complete your application process.',
     description: ''
   },
