@@ -10,6 +10,8 @@ export function consoleReducer(
   let activeInstanceId: number;
 
   switch (action.type) {
+    case Actions.Types.CLEAR_CONSOLE_DATA:
+      return initialConsoleState;
     case Actions.Types.CLEAR_ERROR_MESSAGE:
       return update(state, {
         activeInstance: {

@@ -11,6 +11,7 @@ export enum Types {
   // Support action to update root state and clean error messages when users change fields
   CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
   // To handle multiple user instances
+  CLEAR_CONSOLE_DATA = 'CLEAR_CONSOLE_DATA',
   USER_INSTANCE_LIST = 'USER_INSTANCE_LIST',
   USER_INSTANCE_LIST_SUCCESS = 'USER_INSTANCE_LIST_SUCCESS',
   USER_INSTANCE_LIST_FAILURE = 'USER_INSTANCE_LIST_FAILURE',
@@ -164,8 +165,14 @@ export interface CancelDeploymentFailure extends Action {
   readonly errors: any;
 }
 
+export interface ClearConsoleData extends Action {
+  readonly type: Types.CLEAR_CONSOLE_DATA;
+  readonly data: Array<InstanceSettingsModel>;
+}
+
 export type ActionTypes =
   | ClearFeedbackMessage
+  | ClearConsoleData
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
@@ -197,6 +204,12 @@ export const clearErrorMessage = (field: keyof InstanceSettingsModel) => async (
   dispatch({
     type: Types.CLEAR_ERROR_MESSAGE,
     field
+  });
+};
+
+export const clearConsoleData = (): OcimThunkAction<void> => async dispatch => {
+  dispatch({
+    type: Types.CLEAR_CONSOLE_DATA
   });
 };
 
