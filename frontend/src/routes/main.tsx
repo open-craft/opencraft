@@ -7,7 +7,7 @@ import {
   LogoutPage,
   PasswordForgottenPage,
   PasswordResetPage,
-  PrivateRoute,
+  PrivateRoute
 } from 'auth/components';
 import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
@@ -15,7 +15,11 @@ import { ROUTES } from '../global/constants';
 
 export const MainRoutes = () => (
   <Switch>
-    <PrivateRoute exact path="/" ifUnauthorizedRedirectTo={ROUTES.Registration.HOME}>
+    <PrivateRoute
+      exact
+      path="/"
+      ifUnauthorizedRedirectTo={ROUTES.Registration.HOME}
+    >
       <Redirect to={ROUTES.Console.HOME} />
     </PrivateRoute>
     <Route path={ROUTES.Error.UNKNOWN_ERROR} component={ErrorPage} />

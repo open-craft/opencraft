@@ -8,7 +8,7 @@ import './styles.scss';
 export const Header: React.FC = () => {
   const history = useHistory();
 
-  const navigateTo = (route:string) => () => history.push(route);
+  const navigateTo = (route: string) => () => history.push(route);
 
   // Only show login link when on registration page and only show registration
   // link when on login page
@@ -18,17 +18,15 @@ export const Header: React.FC = () => {
         <Navbar.Brand className="logo-container mx-auto">
           <Nav.Link onClick={navigateTo('/')}>
             <svg className="site-logo">
-              <use xlinkHref={`${logo}#opencraft_logo`}/>
+              <use xlinkHref={`${logo}#opencraft_logo`} />
             </svg>
           </Nav.Link>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav"/>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto">
             <Route path={ROUTES.Registration.HOME}>
-              <Nav.Link onClick={navigateTo(ROUTES.Auth.LOGIN)}>
-                Login
-              </Nav.Link>
+              <Nav.Link onClick={navigateTo(ROUTES.Auth.LOGIN)}>Login</Nav.Link>
             </Route>
             <Route path={ROUTES.Auth.LOGIN}>
               <Nav.Link onClick={navigateTo(ROUTES.Registration.HOME)}>
@@ -45,7 +43,8 @@ export const Header: React.FC = () => {
                 Log out
               </Nav.Link>
             </Route>
-          </Nav> </Navbar.Collapse>
+          </Nav>
+        </Navbar.Collapse>
       </Navbar>
     </Container>
   );

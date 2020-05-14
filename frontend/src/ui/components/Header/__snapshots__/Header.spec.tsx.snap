@@ -46,7 +46,6 @@ exports[`renders without crashing 1`] = `
         className="ml-auto navbar-nav"
         onKeyDown={[Function]}
       />
-       
     </div>
   </nav>
 </div>

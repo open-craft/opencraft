@@ -84,6 +84,24 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
       </table>
     );
 
+    const buyDomainInstruction = (
+      <WrappedMessage
+        messages={messages}
+        id="buyDomainStep"
+        values={{
+          a: (...chunks: string[]) => (
+            <a
+              href="https://gandi.link/f/ba351d73"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {chunks}
+            </a>
+          )
+        }}
+      />
+    );
+
     return (
       <div className="div-fill">
         <RegistrationPage
@@ -107,12 +125,7 @@ export class CustomDomainSetupPage extends React.PureComponent<Props, State> {
               />
             </p>
 
-            <StepBox
-              step={1}
-              instruction={
-                <WrappedMessage messages={messages} id="buyDomainStep" />
-              }
-            />
+            <StepBox step={1} instruction={buyDomainInstruction} />
             <StepBox
               step={2}
               instruction={

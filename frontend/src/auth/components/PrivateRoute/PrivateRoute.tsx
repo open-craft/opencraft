@@ -7,7 +7,9 @@ interface PrivateRouteProps extends RouteProps {
   ifUnauthorizedRedirectTo?: string;
 }
 
-export const PrivateRoute: React.FC<PrivateRouteProps> = (props: PrivateRouteProps) => {
+export const PrivateRoute: React.FC<PrivateRouteProps> = (
+  props: PrivateRouteProps
+) => {
   const fallbackRedirect = props.ifUnauthorizedRedirectTo || ROUTES.Auth.LOGOUT;
   const [isLoading, setIsLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);

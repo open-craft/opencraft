@@ -28,7 +28,7 @@ const messages = {
     description: 'Redeployment status.'
   },
   updatedDeploymentTooltip: {
-    defaultMessage: 'Your instance is being updated with the latest settings.',
+    defaultMessage: 'Your instance is running with the latest settings.',
     description: 'Redeployment status tooltip text.'
   },
   preparingInstance: {

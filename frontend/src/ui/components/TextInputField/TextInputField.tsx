@@ -14,9 +14,10 @@ interface InputFieldProps {
   isValid?: boolean;
   loading?: boolean;
   reset?: Function;
+  autoComplete?: string;
 }
 
-export const TextInputField: React.SFC<InputFieldProps> = (
+export const TextInputField: React.FC<InputFieldProps> = (
   props: InputFieldProps
 ) => {
   const hasHelpMessage = `${props.fieldName}Help` in props.messages;
@@ -36,6 +37,7 @@ export const TextInputField: React.SFC<InputFieldProps> = (
           type={props.type}
           isInvalid={!!props.error}
           isValid={props.isValid}
+          autoComplete={props.autoComplete}
         />
         {props.error && (
           <FormControl.Feedback type="invalid">

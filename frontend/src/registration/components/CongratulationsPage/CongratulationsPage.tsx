@@ -45,7 +45,13 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
             <WrappedMessage messages={messages} id="congratsMessage" />
           </p>
           <p>
-            <WrappedMessage messages={messages} id="congratsMessage2" />
+            <WrappedMessage
+              messages={messages}
+              id="congratsMessage2"
+              values={{
+                strong: (...chunks: string[]) => <strong>{chunks}</strong>
+              }}
+            />
           </p>
           <div className="text-center">
             <NavLink exact to={ROUTES.Console.HOME}>

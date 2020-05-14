@@ -1,7 +1,7 @@
 import { OCIM_API_BASE } from 'global/constants';
 import { Configuration, V2Api as _V2Api } from 'ocim-client';
 import { performLogout } from 'auth/actions';
-import { checkAuthAndRefreshToken } from "../auth/utils/helpers";
+import { checkAuthAndRefreshToken } from '../auth/utils/helpers';
 
 const config = new Configuration({
   basePath: `${OCIM_API_BASE}/api`,
