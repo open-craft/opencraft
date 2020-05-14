@@ -11,7 +11,7 @@ export const PrivateRoute: React.FC<RouteProps> = (props: RouteProps) => {
     const accessToken = localStorage.getItem('token_access');
     setIsAuthenticated(!!accessToken);
     setIsLoading(false);
-  });
+  }, [setIsAuthenticated, setIsLoading]);
 
   if (isLoading) {
     return null;
