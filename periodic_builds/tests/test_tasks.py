@@ -23,14 +23,17 @@ Periodic builds tasks - Tests
 # Imports #####################################################################
 
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from freezegun import freeze_time
+
 from instance.models.appserver import Status as AppServerStatus
+from instance.models.deployment import DeploymentType
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from periodic_builds import tasks
+
 
 # Tests #######################################################################
 
@@ -40,8 +43,8 @@ class PeriodicBuildsTestCase(TestCase):
     Test cases for tasks.launch_periodic_builds
     """
 
-    @patch("periodic_builds.tasks.spawn_appserver")
-    def test_periodic_builds_launched(self, mock_spawn_appserver):
+    @patch("periodic_builds.tasks.create_new_deployment")
+    def test_periodic_builds_launched(self, mock_create_new_deployment):
         """
         Test the launch_periodic_builds task
         """
@@ -67,21 +70,22 @@ class PeriodicBuildsTestCase(TestCase):
             tasks.launch_periodic_builds()
 
             # both enabled instances should have spawned an appserver
-            self.assertEqual(mock_spawn_appserver.call_count, 2)
-            mock_spawn_appserver.assert_any_call(
-                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
-                deactivate_old_appservers=True,
-            )
-            mock_spawn_appserver.assert_any_call(
-                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
-                deactivate_old_appservers=True,
+            self.assertEqual(mock_create_new_deployment.call_count, 2)
+            mock_create_new_deployment.assert_has_calls(
+                [
+                    call(instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
+                         deployment_type=DeploymentType.periodic),
+                    call(instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
+                         deployment_type=DeploymentType.periodic),
+                ],
+                any_order=True,
             )
 
             # mock both instances now have appservers
             make_test_appserver(instance_enabled, status=AppServerStatus.Running)
             make_test_appserver(instance_enabled2, status=AppServerStatus.Running)
 
-        mock_spawn_appserver.reset_mock()
+        mock_create_new_deployment.reset_mock()
 
         # now we run the task 30 min later
         with freeze_time("2019-01-03 09:30:00", tz_offset=0):
@@ -89,28 +93,28 @@ class PeriodicBuildsTestCase(TestCase):
 
             # no new appservers should have been spawned (not past any
             # intervals)
-            self.assertEqual(mock_spawn_appserver.call_count, 0)
+            self.assertEqual(mock_create_new_deployment.call_count, 0)
 
         # now we run the task 2 hours later
         with freeze_time("2019-01-03 11:00:00", tz_offset=0):
             tasks.launch_periodic_builds()
 
             # the shorter interval instance should have spawned a new one
-            mock_spawn_appserver.assert_called_once_with(
+            mock_create_new_deployment.assert_called_once_with(
                 instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
-                deactivate_old_appservers=True,
+                deployment_type=DeploymentType.periodic,
             )
             # fake that we have a new appserver but it's still configuring
             make_test_appserver(instance_enabled2, status=AppServerStatus.ConfiguringServer)
 
-        mock_spawn_appserver.reset_mock()
+        mock_create_new_deployment.reset_mock()
 
         # and again in another 3 hours. instance1 is ready, instance2 is ready,
         # but an appserver is still in progress (configuring)
         with freeze_time("2019-01-03 14:00:00", tz_offset=0):
             tasks.launch_periodic_builds()
 
-            mock_spawn_appserver.assert_called_once_with(
+            mock_create_new_deployment.assert_called_once_with(
                 instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
-                deactivate_old_appservers=True,
+                deployment_type=DeploymentType.periodic,
             )

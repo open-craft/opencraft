@@ -40,6 +40,46 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
 </div>
 `;
 
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when deployment is by admin 1`] = `
+<div
+  className="d-flex justify-content-center align-middle redeployment-toolbar"
+>
+  <div
+    className="redeployment-nav"
+  >
+    <span
+      className="status-pill badge badge-pill badge-primary"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
+    >
+      <span
+        className="dot"
+        style={
+          Object {
+            "backgroundColor": "#1abb64",
+          }
+        }
+      />
+      <div
+        className="text"
+      >
+        Status: Pending changes
+      </div>
+    </span>
+    <button
+      className="float-right loading btn btn-primary btn-lg"
+      disabled={true}
+      onClick={[Function]}
+      type="button"
+    >
+      Deploy (3 updates)
+    </button>
+  </div>
+</div>
+`;
+
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance has pending changes 1`] = `
 <div
   className="d-flex justify-content-center align-middle redeployment-toolbar"

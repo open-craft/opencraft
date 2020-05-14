@@ -22,23 +22,24 @@ Worker tasks - Tests
 
 # Imports #####################################################################
 
-import logging
+
 from datetime import timedelta
-from unittest.mock import call, patch, PropertyMock
+import logging
+from unittest.mock import PropertyMock, call, patch
 
 import ddt
-import freezegun
 from django.conf import settings
 from django.test import override_settings
 from django.utils import timezone
+import freezegun
 
 from instance import tasks
 from instance.models.log_entry import LogEntry
 from instance.tests.base import TestCase
 from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.models.factories.server import ReadyOpenStackServerFactory, BootingOpenStackServerFactory
+from instance.tests.models.factories.server import BootingOpenStackServerFactory, ReadyOpenStackServerFactory
 from pr_watch.tests.factories import make_watched_pr_and_instance
 
 
@@ -63,33 +64,41 @@ class SpawnAppServerTestCase(TestCase):
         self.mock_make_appserver_active = self.make_appserver_active_patcher.start()
         self.addCleanup(self.make_appserver_active_patcher.stop)
 
+    @ddt.data(None, 11)
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    def test_provision_sandbox_instance(self, mock_consul):
+    def test_provision_sandbox_instance(self, deployment_id, mock_consul):
         """
         Test the spawn_appserver() task, and that it can be used to spawn an AppServer for a new
         instance.
         """
         instance = OpenEdXInstanceFactory()
-        tasks.spawn_appserver(instance.ref.pk)
+        tasks.spawn_appserver(instance.ref.pk, deployment_id=deployment_id)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         self.mock_spawn_appserver.assert_called_once_with(
             instance,
             failure_tag=None,
             success_tag=None,
-            num_attempts=1
+            num_attempts=1,
+            deployment_id=deployment_id,
         )
         # By default we don't mark_active_on_success:
         self.assertEqual(self.mock_make_appserver_active.call_count, 0)
 
-    @ddt.data(True, False)
+    @ddt.data(
+        (tasks.spawn_appserver, True),
+        (tasks.spawn_appserver, False),
+        (tasks.create_new_deployment, True),
+        (tasks.create_new_deployment, False),
+    )
+    @ddt.unpack
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    def test_mark_active_on_success(self, provisioning_succeeds, mock_consul):
+    def test_mark_active_on_success(self, task_function, provisioning_succeeds, mock_consul):
         """
         Test that when mark_active_on_success=True, the spawn_appserver task will mark the
         newly provisioned AppServer as active, if provisioning succeeded.
@@ -99,18 +108,19 @@ class SpawnAppServerTestCase(TestCase):
         appserver = make_test_appserver(instance=instance, server=server)
 
         self.mock_spawn_appserver.return_value = appserver.pk if provisioning_succeeds else None
-        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
+        task_function(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         if provisioning_succeeds:
             self.mock_make_appserver_active.assert_called_once_with(appserver.pk, active=True, deactivate_others=False)
         else:
             self.mock_make_appserver_active.assert_not_called()
 
+    @ddt.data(tasks.spawn_appserver, tasks.create_new_deployment)
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    def test_not_mark_active_if_pending(self, mock_consul):
+    def test_not_mark_active_if_pending(self, task_function, mock_consul):
         """
         Test that we when mark_active_on_success=True, the spawn_appserver task will not mark the
         newly provisioned AppServer as active if the OpenStack server is not ready.
@@ -124,7 +134,7 @@ class SpawnAppServerTestCase(TestCase):
         self.make_appserver_active_patcher.stop()
         self.addCleanup(self.make_appserver_active_patcher.start)
 
-        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
+        task_function(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(appserver.is_active, False)
 
     @ddt.data(True, False)
@@ -150,12 +160,13 @@ class SpawnAppServerTestCase(TestCase):
         else:
             self.mock_make_appserver_active.assert_not_called()
 
+    @ddt.data(tasks.spawn_appserver, tasks.create_new_deployment)
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
-    def test_num_attempts(self, mock_spawn, mock_consul):
+    def test_num_attempts(self, task_function, mock_spawn, mock_consul):
         """
         Test that if num_attempts > 1, the spawn_appserver task will automatically re-try
         provisioning.
@@ -169,7 +180,7 @@ class SpawnAppServerTestCase(TestCase):
         # Mock provisioning failure
         mock_spawn.return_value = None
 
-        tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
+        task_function(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
         # Check mocked functions call count
         self.assertEqual(mock_spawn.call_count, 3)
@@ -180,13 +191,14 @@ class SpawnAppServerTestCase(TestCase):
         self.assertTrue(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertTrue(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
+    @ddt.data(tasks.spawn_appserver, tasks.create_new_deployment)
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_num_attempts_successful(self, mock_provision, mock_spawn, mock_consul):
+    def test_num_attempts_successful(self, task_function, mock_provision, mock_spawn, mock_consul):
         """
         Test that if num_attempts > 1, the spawn_appserver task will stop trying to provision
         after a successful attempt.
@@ -201,7 +213,7 @@ class SpawnAppServerTestCase(TestCase):
         mock_provision.return_value = True
         mock_spawn.return_value = make_test_appserver(instance)
 
-        tasks.spawn_appserver(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
+        task_function(instance.ref.pk, num_attempts=3, mark_active_on_success=True)
 
         # Check mocked functions call count
         self.assertEqual(mock_spawn.call_count, 1)
@@ -213,13 +225,14 @@ class SpawnAppServerTestCase(TestCase):
         self.assertFalse(any("Spawning new AppServer, attempt 2 of 3" in log.text for log in instance.log_entries))
         self.assertFalse(any("Spawning new AppServer, attempt 3 of 3" in log.text for log in instance.log_entries))
 
+    @ddt.data(tasks.spawn_appserver, tasks.create_new_deployment)
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_one_attempt_default(self, mock_provision, mock_spawn, mock_consul):
+    def test_one_attempt_default(self, task_function, mock_provision, mock_spawn, mock_consul):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning.
         """
@@ -233,7 +246,7 @@ class SpawnAppServerTestCase(TestCase):
         mock_provision.return_value = True
         mock_spawn.return_value = make_test_appserver(instance)
 
-        tasks.spawn_appserver(instance.ref.pk)
+        task_function(instance.ref.pk)
 
         # Check mocked functions call count
         self.assertEqual(mock_spawn.call_count, 1)
@@ -242,13 +255,14 @@ class SpawnAppServerTestCase(TestCase):
         # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 1" in log.text for log in instance.log_entries))
 
+    @ddt.data(tasks.spawn_appserver, tasks.create_new_deployment)
     @patch(
         'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
     @patch('instance.models.openedx_instance.OpenEdXInstance._spawn_appserver')
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
-    def test_one_attempt_default_fail(self, mock_provision, mock_spawn, mock_consul):
+    def test_one_attempt_default_fail(self, task_function, mock_provision, mock_spawn, mock_consul):
         """
         Test that by default, the spawn_appserver task will not re-try provisioning, even when failing.
         """
@@ -262,7 +276,7 @@ class SpawnAppServerTestCase(TestCase):
         mock_provision.return_value = False
         mock_spawn.return_value = make_test_appserver(instance)
 
-        tasks.spawn_appserver(instance.ref.pk)
+        task_function(instance.ref.pk)
 
         # Check mocked functions call count
         self.assertEqual(mock_spawn.call_count, 1)
@@ -552,3 +566,79 @@ class DeleteOldLogsTestCase(TestCase):
         # Only the new log remains.
         self.assertFalse(remaining_logs.filter(text__contains='old log').exists())
         self.assertTrue(remaining_logs.filter(text__contains='new log').exists())
+
+
+@ddt.ddt
+class CreateNewDeploymentTestCase(TestCase):
+    """
+    Test cases for tasks.create_new_deployment, which wraps tasks.spawn_appserver.
+    """
+
+    def setUp(self):
+        self.spawn_appserver_patcher = patch(
+            'instance.models.openedx_instance.OpenEdXInstance.spawn_appserver',
+            autospec=True,
+        )
+        self.addCleanup(self.spawn_appserver_patcher.stop)
+        self.mock_spawn_appserver = self.spawn_appserver_patcher.start()
+        self.mock_spawn_appserver.return_value = 10
+
+        self.make_appserver_active_patcher = patch('instance.tasks.make_appserver_active')
+        self.mock_make_appserver_active = self.make_appserver_active_patcher.start()
+        self.addCleanup(self.make_appserver_active_patcher.stop)
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_new_deployment(self, mock_consul):
+        """
+        Test the create_new_deployment() task, and that it can be used to spawn AppServer(s) for a new
+        instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.openedx_appserver_count = 3
+        instance.save()
+        deployment_id = tasks.create_new_deployment(instance.ref.pk).get()
+        self.assertEqual(self.mock_spawn_appserver.call_count, 3)
+        self.mock_spawn_appserver.assert_has_calls(
+            [
+                call(
+                    instance,
+                    failure_tag=None,
+                    success_tag=None,
+                    num_attempts=1,
+                    deployment_id=deployment_id,
+                )
+                for _ in range(3)
+            ]
+        )
+        # By default we don't mark_active_on_success:
+        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
+
+    @patch('instance.tasks.OpenEdXAppServer.make_active')
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_multi_appserver_activation(self, mock_consul, mock_make_active):
+        """
+        Test the create_new_deployment task, and that it can be used to spawn multiple AppServer(s)
+        for a new instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.openedx_appserver_count = 3
+        instance.save()
+        make_test_deployment(instance, active=True)
+        self.assertEqual(instance.appserver_set.count(), 3)
+        appservers = list(instance.appserver_set.all())
+        self.assertTrue(all(instance.appserver_set.values_list('_is_active', flat=True)))
+        with self.assertLogs() as ctx:
+            tasks.create_new_deployment(
+                instance.ref.pk,
+                mark_active_on_success=True,
+            ).get()
+        self.assertEqual(self.mock_make_appserver_active.call_count, 3)
+        self.assertEqual(mock_make_active.call_count, 3)
+        for appserver in appservers:
+            self.assertIn(f'INFO:instance.tasks:Deactivating {appserver} [{appserver.id}]', ctx.output)

@@ -1,39 +1,43 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Tooltip, OverlayTrigger, Badge, Nav } from 'react-bootstrap';
-import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
+import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
 
 import messages from './displayMessages';
 import './styles.scss';
 
 interface Props {
   loading: boolean;
-  redeploymentStatus: string;
+  redeploymentStatus: string | null;
   cancelRedeployment: Function;
 }
 
-export const CustomStatusPill: React.FC<Props> = (props: Props) => {
+export const CustomStatusPill: React.FC<Props> = ({
+  loading,
+  redeploymentStatus,
+  cancelRedeployment
+}: Props) => {
   let dotColor = 'grey';
   let deploymentStatusText = 'unavailable';
   let tooltipText = 'unavailableTooltip';
 
-  switch (props.redeploymentStatus) {
-    case OpenEdXInstanceDeploymentStatusStatusEnum.UPTODATE:
+  switch (redeploymentStatus) {
+    case DeploymentStatus.Healthy:
       dotColor = '#1abb64';
       deploymentStatusText = 'updatedDeployment';
       tooltipText = 'updatedDeploymentTooltip';
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING:
+    case DeploymentStatus.Provisioning:
       dotColor = '#ff9b04';
       deploymentStatusText = 'runningDeployment';
       tooltipText = 'runningDeploymentTooltip';
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.PREPARINGINSTANCE:
+    case DeploymentStatus.Preparing:
       dotColor = '#ff9b04';
       deploymentStatusText = 'preparingInstance';
       tooltipText = 'preparingInstanceTooltip';
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.PENDINGCHANGES:
+    case DeploymentStatus.ChangesPending:
       dotColor = '#1abb64';
       deploymentStatusText = 'pendingChanges';
       tooltipText = 'pendingChangesTooltip';
@@ -56,19 +60,17 @@ export const CustomStatusPill: React.FC<Props> = (props: Props) => {
         <div className="text">
           <WrappedMessage id={deploymentStatusText} messages={messages} />
         </div>
-        {props.redeploymentStatus ===
-          OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING &&
-          !props.loading && (
-            <Nav
-              className="text cancel-deployment"
-              onClick={() => {
-                props.cancelRedeployment();
-              }}
-            >
-              <i className="fas fa-xs fa-times" />
-              <WrappedMessage id="cancelRedeployment" messages={messages} />
-            </Nav>
-          )}
+        {redeploymentStatus === DeploymentStatus.Provisioning && !loading && (
+          <Nav
+            className="text cancel-deployment"
+            onClick={() => {
+              cancelRedeployment();
+            }}
+          >
+            <i className="fas fa-xs fa-times" />
+            <WrappedMessage id="cancelRedeployment" messages={messages} />
+          </Nav>
+        )}
       </Badge>
     </OverlayTrigger>
   );

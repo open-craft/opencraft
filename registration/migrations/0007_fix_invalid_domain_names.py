@@ -59,5 +59,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(fix_invalid_domain_names, migrate_noop),
     ]

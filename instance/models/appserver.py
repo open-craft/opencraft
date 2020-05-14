@@ -32,11 +32,11 @@ from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from instance.logging import ModelLoggerAdapter
+from .deployment import Deployment
 from .instance import InstanceReference
 from .log_entry import LogEntry
 from .server import OpenStackServer
 from .utils import ModelResourceStateDescriptor, ResourceState, ValidateModelMixin
-
 
 # Logging #####################################################################
 
@@ -72,6 +72,14 @@ class AppServerState(ResourceState):
     # - Status.Terminated
     is_healthy_state = True
 
+    # An instance is in the configuration state if it is being configured but is not yet running.
+    # This information can be used to check if an instance is currently being provisioned.
+    # Configuration states include:
+    # - Status.New
+    # - Status.WaitingForServer
+    # - Status.ConfiguringServer
+    is_configuration_state = False
+
 
 class Status(ResourceState.Enum):
     """
@@ -81,18 +89,21 @@ class Status(ResourceState.Enum):
     class New(AppServerState):
         """ Newly created """
         state_id = 'new'
+        is_configuration_state = True
 
     class WaitingForServer(AppServerState):
         """ VM not yet accessible """
         state_id = 'waiting'
         name = 'Waiting for VM'
         is_steady_state = False
+        is_configuration_state = True
 
     class ConfiguringServer(AppServerState):
         """ Running Ansible playbooks on VM """
         state_id = 'configuring'
         name = 'Configuring VM'
         is_steady_state = False
+        is_configuration_state = True
 
     class Running(AppServerState):
         """ App server is up and running """
@@ -168,6 +179,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
     # Used for billing to determine the server running period
     terminated = models.DateTimeField(null=True, blank=True)
     _is_active = models.BooleanField(default=False, db_column="is_active")
+    deployment = models.ForeignKey(Deployment, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ('-created', )

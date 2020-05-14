@@ -29,10 +29,7 @@ describe('Hero customization page', function () {
                 homepageOverlayHtml: "<h1>Welcome to My Instance</h1><p>It works! Powered by Open edX®</p>"
               }
             },
-            deployment: {
-              status: "NO_STATUS",
-              undeployedChanges: 0
-            }
+            deployment: null
           },
           instances: [{
             id: 1,
@@ -58,10 +55,7 @@ describe('Hero customization page', function () {
               subdomain: "test",
               draftThemeConfig: {}
             },
-            deployment: {
-              status: "NO_STATUS",
-              undeployedChanges: 0
-            }
+            deployment: null,
           },
           instances: [{
             id: 1,
@@ -95,10 +89,7 @@ describe('Hero customization page', function () {
                   homepageOverlayHtml: "<h1>Welcome to My Instance</h1><p>It works! Powered by Open edX®</p>"
                 }
               },
-              deployment: {
-                status: "NO_STATUS",
-                undeployedChanges: 0
-              }
+              deployment: null,
             },
             instances: [{
               id: 1,
@@ -132,10 +123,7 @@ describe('Hero customization page', function () {
                   homepageOverlayHtml: "<h1>Welcome to My Instance</h1><p>It works! Powered by Open edX®</p>"
                 }
               },
-              deployment: {
-                status: "NO_STATUS",
-                undeployedChanges: 0
-              }
+              deployment: null,
             },
             instances: [{
               id: 1,

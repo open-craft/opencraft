@@ -35,8 +35,10 @@ describe("Console Page", function() {
                 studioUrl: "test-url"
               },
               deployment: {
-                status: "NO_STATUS",
-                undeployedChanges: 0
+                status: "preparing",
+                undeployedChanges: [],
+                deployedChanges: null,
+                type: 'admin',
               }
             },
             instances: [{

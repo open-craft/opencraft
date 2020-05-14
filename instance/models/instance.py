@@ -177,8 +177,20 @@ class Instance(ValidateModelMixin, models.Model):
             # The InstanceReference does not yet exist - create it:
             return InstanceReference(instance=self)
 
+    def get_latest_deployment(self):
+        """ Get the latest deployment for this instance """
+        if self.ref.deployment_set.exists():
+            return self.ref.deployment_set.latest()
+        else:
+            return None
+
     @property
     def name(self):
+        """ Get this instance's name, which is stored in the InstanceReference """
+        return self.ref.name
+
+    @property
+    def instance_name(self):
         """ Get this instance's name, which is stored in the InstanceReference """
         return self.ref.name
 

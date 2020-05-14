@@ -27,7 +27,9 @@ describe("Theme preview and colors page", function() {
               },
               deployment: {
                 status: "NO_STATUS",
-                undeployedChanges: 0
+                undeployedChanges: [],
+                deployedChanges: null,
+                deploymentType: 'admin',
               }
             },
             instances: [{
@@ -62,10 +64,7 @@ describe("Theme preview and colors page", function() {
                 }
               },
               loading: [],
-              deployment: {
-                status: "NO_STATUS",
-                undeployedChanges: 0
-              }
+              deployment: null,
             },
             instances: [{
               id: 1,
@@ -99,10 +98,7 @@ describe("Theme preview and colors page", function() {
                 }
               },
               loading: ['draftThemeConfig'],
-              deployment: {
-                status: "NO_STATUS",
-                undeployedChanges: 0
-              }
+              deployment: null,
             },
             instances: [{
               id: 1,

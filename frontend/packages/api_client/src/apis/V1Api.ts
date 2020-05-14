@@ -85,7 +85,7 @@ export interface PrWatchUpdateInstanceRequest {
 }
 
 /**
- * no description
+ * 
  */
 export class V1Api extends runtime.BaseAPI {
 

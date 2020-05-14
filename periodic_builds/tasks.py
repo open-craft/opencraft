@@ -28,10 +28,10 @@ import datetime
 from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task, lock_task
 
+from instance.models.deployment import DeploymentType
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.appserver import Status
-from instance.tasks import spawn_appserver
-
+from instance.tasks import create_new_deployment
 
 # Logging #####################################################################
 
@@ -69,9 +69,9 @@ def launch_periodic_builds():
                     break
             else:
                 # NOTE: this is async - enqueues as a new huey task and returns immediately
-                spawn_appserver(
+                create_new_deployment(
                     instance.ref.pk,
                     num_attempts=instance.periodic_builds_retries + 1,
                     mark_active_on_success=True,
-                    deactivate_old_appservers=True,
+                    deployment_type=DeploymentType.periodic,
                 )

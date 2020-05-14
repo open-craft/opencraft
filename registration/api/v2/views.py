@@ -34,45 +34,41 @@ from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
 )
-from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
-from opencraft.swagger import (
-    VALIDATION_AND_AUTH_RESPONSES,
-    VALIDATION_RESPONSE,
-    viewset_swagger_helper,
-)
-from registration.api.v2 import constants
-from registration.api.v2.serializers import (
-    AccountSerializer,
-    ApplicationImageUploadSerializer,
-    OpenEdXInstanceConfigSerializer,
-    OpenEdXInstanceConfigUpdateSerializer,
-    OpenEdXInstanceDeploymentStatusSerializer,
-    OpenEdXInstanceDeploymentCreateSerializer,
-    StaticContentOverridesSerializer,
-    ThemeSchemaSerializer,
-)
-from registration.models import BetaTestApplication
-from registration.utils import verify_user_emails
-from userprofile.models import UserProfile
+from instance.models.deployment import DeploymentType
+from instance.models.openedx_deployment import DeploymentState
 from instance.schemas.static_content_overrides import (
     DEFAULT_STATIC_CONTENT_OVERRIDES,
     fill_default_hero_text,
     static_content_overrides_schema_validate,
 )
-from instance.schemas.theming import theme_schema_validate, DEFAULT_THEME
-
+from instance.schemas.theming import DEFAULT_THEME, theme_schema_validate
+from instance.utils import build_instance_config_diff
+from opencraft.swagger import (
+    VALIDATION_AND_AUTH_RESPONSES,
+    VALIDATION_RESPONSE,
+    viewset_swagger_helper,
+)
+from registration.api.v2.serializers import (
+    AccountSerializer, ApplicationImageUploadSerializer, OpenEdXInstanceConfigSerializer,
+    OpenEdXInstanceConfigUpdateSerializer, OpenEdXInstanceDeploymentCreateSerializer,
+    OpenEdXInstanceDeploymentStatusSerializer, StaticContentOverridesSerializer, ThemeSchemaSerializer,
+)
+from registration.models import BetaTestApplication
+from registration.utils import verify_user_emails
+from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +307,7 @@ class OpenEdXInstanceConfigViewSet(
     @action(
         detail=True,
         methods=['post'],
-        parser_classes=(MultiPartParser, ),
+        parser_classes=(MultiPartParser,),
         serializer_class=ApplicationImageUploadSerializer
     )
     def image(self, request, pk: str):
@@ -450,6 +446,13 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
                 openapi.IN_QUERY,
                 type=openapi.TYPE_BOOLEAN,
                 description="Force launching a new instance even if one is already in progress.",
+            ),
+            openapi.Parameter(
+                "deployment_type",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+                enum=DeploymentType.names(),
+                description="The type of deployment being initiated.",
             )
         ],
     )
@@ -465,6 +468,12 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         case prevents a new one from being launched unless forced.
         """
         force = request.query_params.get("force", False)
+        if self.request.user.is_superuser:
+            default_deployment_type = DeploymentType.admin.name
+        else:
+            default_deployment_type = DeploymentType.user.name
+        # Allow overriding trigger in case deployment is created by API in some other way.
+        deployment_type = request.query_params.get("deployment_type", default_deployment_type)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -490,8 +499,10 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
             )
 
         instance_config.commit_changes_to_instance(
-            spawn_on_commit=True,
+            deploy_on_commit=True,
             retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
+            creator=self.request.user.id,
+            deployment_type=deployment_type,
         )
 
         return Response(status=status.HTTP_200_OK)
@@ -511,35 +522,25 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         """
         application = self.get_object()
         instance = application.instance
-        deployment_status = constants.NO_STATUS
+        undeployed_changes = build_instance_config_diff(application)
+        deployed_changes = None
+        deployment_type = None
 
-        # Get latest active appserver
-        if not instance or not instance.get_active_appservers().exists():
-            deployment_status = constants.PREPARING_INSTANCE
-            num_changes = 0
+        if not instance or not instance.get_latest_deployment():
+            deployment_status = DeploymentState.preparing
         else:
-            deployment_status = constants.UP_TO_DATE
-
-            # Get number of undeployed changes
-            num_changes = sum((
-                application.instance_name != instance.name,
-                application.privacy_policy_url != instance.privacy_policy_url,
-                application.public_contact_email != instance.email,
-                application.use_advanced_theme and application.draft_theme_config != instance.theme_config,
-            ))
-
-            if num_changes != 0:
-                deployment_status = constants.PENDING_CHANGES
-
-            # Check if there's any ongoing provisioning
-            provisioning_appservers = instance.get_provisioning_appservers()
-            if provisioning_appservers:
-                # TODO: Differentiate between user deployments and OpenCraft deployments
-                deployment_status = constants.DEPLOYING
+            deployment = instance.get_latest_deployment()
+            deployment_status = deployment.status()
+            if deployment_status == DeploymentState.healthy and undeployed_changes:
+                deployment_status = DeploymentState.changes_pending
+            deployment_type = deployment.type
+            deployed_changes = deployment.changes
 
         data = {
-            'undeployed_changes': num_changes,
-            'status': deployment_status,
+            'undeployed_changes': undeployed_changes,
+            'deployed_changes': deployed_changes,
+            'status': deployment_status.name,
+            'deployment_type': deployment_type,
         }
 
         return Response(
@@ -565,10 +566,15 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
                     'details': "Can't cancel deployment while server is being prepared."
                 }
             )
-        # TODO: Prevent appservers provisioned by staff/redeployments to be cancelled
+        deployment = instance.get_latest_deployment()
 
-        provisioning_appservers = instance.get_provisioning_appservers()
-        for appserver in provisioning_appservers:
-            appserver.terminate_vm()
+        if deployment.type != DeploymentType.user.name:
+            return Response(
+                status=status.HTTP_403_FORBIDDEN,
+                data={
+                    'details': "Can't cancel deployment not manually initiated by user."
+                }
+            )
 
+        deployment.terminate_deployment()
         return Response(status=status.HTTP_204_NO_CONTENT)

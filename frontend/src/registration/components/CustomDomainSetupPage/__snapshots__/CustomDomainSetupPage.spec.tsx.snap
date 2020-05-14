@@ -133,7 +133,15 @@ exports[`renders without crashing 1`] = `
               <div
                 className="instruction col-lg-11"
               >
-                If you already have a domain, skip this step. If you don't have a domain name yet, we recommend you go to Gandi.net to order one. Come back to this page after ordering it.
+                If you already have a domain, skip this step. If you don't have a domain name yet, we recommend you go to 
+                <a
+                  href="https://gandi.link/f/ba351d73"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Gandi.net
+                </a>
+                 to order one. Come back to this page after ordering it.
               </div>
             </div>
           </div>
@@ -180,7 +188,7 @@ exports[`renders without crashing 1`] = `
                       CNAME
                     </td>
                     <td>
-                      haproxy.net.opencraft.hosting
+                      haproxy.net.opencraft.hosting.
                     </td>
                   </tr>
                   <tr>
@@ -192,7 +200,7 @@ exports[`renders without crashing 1`] = `
                       CNAME
                     </td>
                     <td>
-                      haproxy.net.opencraft.hosting
+                      haproxy.net.opencraft.hosting.
                     </td>
                   </tr>
                 </table>
