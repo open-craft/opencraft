@@ -10,13 +10,21 @@ exports[`renders without crashing 1`] = `
     <span
       className="logo-container mx-auto navbar-brand"
     >
-      <svg
-        className="site-logo"
+      <a
+        className="nav-link"
+        href="#"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+        role="button"
       >
-        <use
-          xlinkHref="icons.svg#opencraft_logo"
-        />
-      </svg>
+        <svg
+          className="site-logo"
+        >
+          <use
+            xlinkHref="icons.svg#opencraft_logo"
+          />
+        </svg>
+      </a>
     </span>
     <button
       aria-controls="basic-navbar-nav"
@@ -38,6 +46,7 @@ exports[`renders without crashing 1`] = `
         className="ml-auto navbar-nav"
         onKeyDown={[Function]}
       />
+       
     </div>
   </nav>
 </div>

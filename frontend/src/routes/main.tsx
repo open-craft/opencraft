@@ -15,9 +15,9 @@ import { ROUTES } from '../global/constants';
 export const MainRoutes = () => (
   <Switch>
     <Redirect from="/" to={ROUTES.Registration.HOME} exact />
-    <Route path="/error" component={ErrorPage} />
-    <Route path="/login" component={LoginPage} />
-    <Route path="/logout" component={LogoutPage} />
+    <Route path={ROUTES.Error.UNKNOWN_ERROR} component={ErrorPage} />
+    <Route path={ROUTES.Auth.LOGIN} component={LoginPage} />
+    <Route path={ROUTES.Auth.LOGOUT} component={LogoutPage} />
     <Route
       path={ROUTES.Auth.PASSWORD_FORGOTTEN}
       component={PasswordForgottenPage}

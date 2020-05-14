@@ -1,6 +1,7 @@
 import { OCIM_API_BASE } from 'global/constants';
-import { V2Api as _V2Api, Configuration } from 'ocim-client';
+import { Configuration, V2Api as _V2Api } from 'ocim-client';
 import { performLogout } from 'auth/actions';
+import { checkAuthAndRefreshToken } from "../auth/utils/helpers";
 
 const config = new Configuration({
   basePath: `${OCIM_API_BASE}/api`,
@@ -16,7 +17,10 @@ const config = new Configuration({
         if (context.response.status === 403) {
           // Failed requests return 403 and mean that the access token is
           // expired, so we trigger a page refresh.
-          window.location.reload(false);
+          const authenticated = await checkAuthAndRefreshToken();
+          if (!authenticated) {
+            window.location.reload(false);
+          }
         } else if (context.response.status === 401) {
           // If the refresh endpoint fails, it means that the refresh
           // is expired, and the user is effectively logged out.

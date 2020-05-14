@@ -2,17 +2,15 @@ import * as React from 'react';
 import { ROUTES } from 'global/constants';
 import { Redirect, Route, RouteProps } from 'react-router';
 import './styles.scss';
-import { checkAuthAndRefreshToken } from 'auth/utils/helpers';
 
 export const PrivateRoute: React.FC<RouteProps> = (props: RouteProps) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
-    checkAuthAndRefreshToken().then((authenticated: boolean) => {
-      setIsAuthenticated(authenticated);
-      setIsLoading(false);
-    });
+    const accessToken = localStorage.getItem('token_access');
+    setIsAuthenticated(!!accessToken);
+    setIsLoading(false);
   });
 
   if (isLoading) {
