@@ -22,13 +22,13 @@ interface State {
 interface ActionProps {
   updateFieldValue: Function;
 }
-interface StateProps extends InstancesModel { }
-interface Props extends StateProps, ActionProps { }
+interface StateProps extends InstancesModel {}
+interface Props extends StateProps, ActionProps {}
 
 export class InstanceSettingsComponent extends React.PureComponent<
   Props,
   State
-  > {
+> {
   constructor(props: Props) {
     super(props);
 
@@ -110,9 +110,8 @@ export class InstanceSettingsComponent extends React.PureComponent<
     const instance = this.props.activeInstance;
 
     if (
-      instance.data && 
-      this.state[fieldName as keyof State] !== 
-        instance.data[fieldName]
+      instance.data &&
+      this.state[fieldName as keyof State] !== instance.data[fieldName]
     ) {
       this.props.updateFieldValue(instance.data.id, fieldName, value);
     }
