@@ -188,7 +188,7 @@ exports[`renders without crashing 1`] = `
                       CNAME
                     </td>
                     <td>
-                      haproxy.net.opencraft.hosting
+                      haproxy.net.opencraft.hosting.
                     </td>
                   </tr>
                   <tr>
@@ -200,7 +200,7 @@ exports[`renders without crashing 1`] = `
                       CNAME
                     </td>
                     <td>
-                      haproxy.net.opencraft.hosting
+                      haproxy.net.opencraft.hosting.
                     </td>
                   </tr>
                 </table>
