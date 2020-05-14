@@ -8,7 +8,7 @@ const getApiKey = () => {
   // The current version of the API client requires us to specify the word "Bearer"
   // The previous version did not.
   return authToken ? `Bearer ${authToken}` : '';
-}
+};
 
 const config = new Configuration({
   basePath: `${OCIM_API_BASE}/api`,
