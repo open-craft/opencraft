@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('type', models.CharField(choices=[('user', 'Deployment initiated by user'), ('batch', 'Deployment created by batch redeplpoyment script'), ('admin', 'Deployment initiated by Ocim admin user'), ('pr', 'Deployment for GitHub PR'), ('periodic', 'Deployment for periodic build'), ('registration', 'Deployment created during registration'), ('unknown', 'Deployment created unknown or legacy reasons')], default=instance.models.deployment.DeploymentType('Deployment created unknown or legacy reasons'), max_length=15)),
+                ('type', models.CharField(choices=[('user', 'Deployment initiated by user'), ('batch', 'Deployment created by batch redeployment script'), ('admin', 'Deployment initiated by Ocim admin user'), ('pr', 'Deployment for GitHub PR'), ('periodic', 'Deployment for periodic build'), ('registration', 'Deployment created during registration'), ('unknown', 'Deployment created unknown or legacy reasons')], default=instance.models.deployment.DeploymentType('Deployment created unknown or legacy reasons'), max_length=15)),
                 ('creator', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='userprofile.UserProfile')),
                 ('instance', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='instance.InstanceReference')),
             ],
