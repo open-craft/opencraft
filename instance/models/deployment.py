@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 class DeploymentType(DjangoChoiceEnum):
     """Enumeration of all types of deployments"""
     user = 'Deployment initiated by user'
-    batch = 'Deployment created by batch redeplpoyment script'
+    batch = 'Deployment created by batch redeployment script'
     admin = 'Deployment initiated by Ocim admin user'
     pr = 'Deployment for GitHub PR'
     periodic = 'Deployment for periodic build'
