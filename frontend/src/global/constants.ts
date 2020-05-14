@@ -30,6 +30,7 @@ export enum RegistrationSteps {
 
 export const ROUTES = {
   Auth: {
+    EMAIL_VERIFICATION: '/verify-email/:verificationCode',
     LOGIN: '/login',
     LOGOUT: '/logout',
     PASSWORD_FORGOTTEN: '/password-forgotten',

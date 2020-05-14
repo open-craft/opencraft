@@ -1,0 +1,15 @@
+@import '~styles/theme';
+
+
+.email-verification-container {
+    justify-content: center;
+    text-align: center;
+
+    .page-title {
+        background-color: black;
+
+        i.title-icon {
+            padding: 20px;
+        }
+    }
+}
