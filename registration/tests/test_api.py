@@ -19,6 +19,7 @@
 """
 Tests for the registration API
 """
+from typing import Optional, Union
 from unittest.mock import patch
 
 import ddt
@@ -30,9 +31,10 @@ from rest_framework.test import APITestCase
 
 from simple_email_confirmation.models import EmailAddress
 from instance.models.appserver import Status
+from instance.models.deployment import DeploymentType
 from instance.schemas.theming import DEFAULT_THEME
 from instance.tests.base import create_user_and_profile
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.models import BetaTestApplication
 
@@ -490,7 +492,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, {"non_field_errors": "Schema validation failed."})
+        self.assertDictEqual(response.data, {"non_field_errors": "Schema validation failed."})
 
         # Add missing property and enable customization.
         response = self.client.patch(
@@ -613,7 +615,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format='multipart',
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
+        self.assertDictEqual(
             response.data,
             {
                 'logo': ['The logo image must be 48px tall to fit into the header.']
@@ -735,6 +737,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     """
 
     def setUp(self):
+        self.maxDiff = None
         self.user_with_instance = create_user_and_profile("instance.user", "instance.user@example.com")
         self.instance_config = BetaTestApplication.objects.create(
             user=self.user_with_instance,
@@ -764,12 +767,37 @@ class InstanceDeploymentAPITestCase(APITestCase):
         self.instance_config.save()
         return instance
 
+    def assert_deployment_response(
+            self,
+            response_data: dict,
+            status: str = None,
+            deployed_changes: Optional[Union[int, list]] = None,
+            undeployed_changes: Union[int, list] = 0,
+            deployment_type: Optional[str] = None,
+    ):
+        """Make assertions about response from deployment API"""
+        if status is not None:
+            self.assertEqual(response_data.get('status'), status,
+                             response_data)
+        if deployed_changes is not None:
+            if isinstance(deployed_changes, int):
+                self.assertEqual(len(response_data.get('deployed_changes')), deployed_changes, response_data)
+            else:
+                self.assertEqual(response_data.get('deployed_changes'), deployed_changes, response_data)
+        if undeployed_changes is not None:
+            if isinstance(undeployed_changes, int):
+                self.assertEqual(len(response_data.get('undeployed_changes')), undeployed_changes, response_data)
+            else:
+                self.assertEqual(response_data.get('undeployed_changes'), undeployed_changes, response_data)
+        if deployment_type is not None:
+            self.assertEqual(response_data.get('deployment_type'), deployment_type, response_data)
+
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_get_deployment_status_no_active(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_get_deployment_status_no_active(self, mock_create_new_deployment, mock_consul):
         """
         Test that the correct status is returned when provisioning first instance.
         """
@@ -781,14 +809,14 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'PREPARING_INSTANCE', 'undeployed_changes': 0})
+        self.assert_deployment_response(response.data, status='preparing', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_get_deployment_status_up_to_date(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_get_deployment_status_up_to_date(self, mock_create_new_deployment, mock_consul):
         """
         Test that the correct status is returned when instance is up-to-date.
         """
@@ -800,42 +828,38 @@ class InstanceDeploymentAPITestCase(APITestCase):
         instance.theme_config = self.instance_config.draft_theme_config
         instance.save()
 
-        app_server = make_test_appserver(instance, status=Status.Running)
-        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
-        app_server.save()
+        make_test_deployment(instance, appserver_states=[Status.Running], active=True)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'UP_TO_DATE', 'undeployed_changes': 0})
+        self.assert_deployment_response(response.data, status='healthy', undeployed_changes=0)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_get_deployment_status_pending_changes(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_get_deployment_status_pending_changes(self, mock_create_new_deployment, mock_consul):
         """
         Test that the correct status is returned when there's changes to be deployed.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
-        app_server = make_test_appserver(instance, status=Status.Running)
-        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
-        app_server.save()
+        make_test_deployment(instance, active=True)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'PENDING_CHANGES', 'undeployed_changes': 3})
+        self.assert_deployment_response(response.data, status='changes_pending', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_get_deployment_status_preparing_instance(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_get_deployment_status_preparing_instance(self, mock_create_new_deployment, mock_consul):
         """
         Test that the correct status is returned when provisioning first instance.
         """
@@ -844,14 +868,14 @@ class InstanceDeploymentAPITestCase(APITestCase):
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'PREPARING_INSTANCE', 'undeployed_changes': 0})
+        self.assert_deployment_response(response.data, status='preparing', undeployed_changes=3)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_cancel_first_deployment_fails(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_cancel_first_deployment_fails(self, mock_create_new_deployment, mock_consul):
         """
         Test that trying to stop the first provisioning fails.
         """
@@ -866,24 +890,28 @@ class InstanceDeploymentAPITestCase(APITestCase):
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
+        return_value=(1, True),
     )
-    @patch('registration.models.spawn_appserver')
-    def test_cancel_deployment(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    @ddt.data(
+        (DeploymentType.user, 204),
+        (DeploymentType.admin, 403),
+        (DeploymentType.batch, 403),
+    )
+    @ddt.unpack
+    def test_cancel_deployment(self, deploy_type, status_code, mock_create_new_deployment, mock_consul):
         """
         Test that trying to stop a provisioning succeeds.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
-        app_server = make_test_appserver(instance, status=Status.Running)
-        app_server.is_active = True  # Outside of tests, use app_server.make_active() instead
-        app_server.save()
-        make_test_appserver(instance, status=Status.ConfiguringServer)
+        make_test_deployment(instance, appserver_states=[Status.Running], active=True)
+        make_test_deployment(instance, appserver_states=[Status.ConfiguringServer], deployment_type=deploy_type)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, status_code)
 
     def test_commit_changes_fail_new_user(self):
         """
@@ -901,13 +929,15 @@ class InstanceDeploymentAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    def test_commit_changes_fail_running_appserver(self, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_fail_running_appserver(self, mock_create_deployment, mock_consul):
         """
         Test that committing changes fails when a user is new.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
-        make_test_appserver(instance, status=Status.ConfiguringServer)
+
+        make_test_deployment(instance, appserver_states=[Status.ConfiguringServer])
         response = self.client.post(
             reverse('api:v2:openedx-instance-deployment-list'),
             data={"id": self.instance_config.id}
@@ -940,8 +970,8 @@ class InstanceDeploymentAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_commit_changes_success(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_success(self, mock_create_new_deployment, mock_consul):
         """
         Test that committing changes fails when a user is new.
         """
@@ -955,7 +985,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
             data={"id": self.instance_config.id}
         )
         self.assertEqual(response.status_code, 200)
-        mock_spawn_appserver.assert_called()
+        mock_create_new_deployment.assert_called()
         instance.refresh_from_db()
         self.assertEqual(instance.privacy_policy_url, "http://www.some/url")
         self.assertEqual(instance.email, "instance.user.public@example.com")
@@ -965,8 +995,8 @@ class InstanceDeploymentAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
-    @patch('registration.models.spawn_appserver')
-    def test_commit_changes_force_running_appserver(self, mock_spawn_appserver, mock_consul):
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_force_running_appserver(self, mock_create_new_deployment, mock_consul):
         """
         Test that committing changes fails when a user is new.
         """
@@ -976,4 +1006,4 @@ class InstanceDeploymentAPITestCase(APITestCase):
         url = reverse('api:v2:openedx-instance-deployment-list')
         response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
         self.assertEqual(response.status_code, 200)
-        mock_spawn_appserver.assert_called()
+        mock_create_new_deployment.assert_called()

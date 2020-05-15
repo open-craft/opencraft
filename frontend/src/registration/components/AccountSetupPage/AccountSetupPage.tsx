@@ -113,12 +113,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
   render() {
     const checkboxLinks = {
       tos: (
-        <a href={PRIVACY_POLICY_LINK}>
+        <a href={PRIVACY_POLICY_LINK} target="_blank" rel="noopener noreferrer">
           <WrappedMessage id="privacyPolicy" messages={messages} />
         </a>
       ),
       privacy_policy: (
-        <a href={TOS_LINK}>
+        <a href={TOS_LINK} target="_blank" rel="noopener noreferrer">
           <WrappedMessage id="termsOfService" messages={messages} />
         </a>
       )

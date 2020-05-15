@@ -10,8 +10,8 @@ import { sanitizeErrorFeedback } from 'utils/string_utils';
 export enum Types {
   // Support action to update root state and clean error messages when users change fields
   CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
-  // To handle multiple user instances
   CLEAR_CONSOLE_DATA = 'CLEAR_CONSOLE_DATA',
+  // To handle multiple user instances
   USER_INSTANCE_LIST = 'USER_INSTANCE_LIST',
   USER_INSTANCE_LIST_SUCCESS = 'USER_INSTANCE_LIST_SUCCESS',
   USER_INSTANCE_LIST_FAILURE = 'USER_INSTANCE_LIST_FAILURE',
@@ -213,7 +213,9 @@ export const clearConsoleData = (): OcimThunkAction<void> => async dispatch => {
   });
 };
 
-export const listUserInstances = (): OcimThunkAction<void> => async dispatch => {
+export const listUserInstances = (): OcimThunkAction<
+  void
+> => async dispatch => {
   dispatch({ type: Types.USER_INSTANCE_LIST });
 
   V2Api.instancesOpenedxConfigList()

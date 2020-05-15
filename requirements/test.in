@@ -1,0 +1,19 @@
+-r base.in
+
+coverage<4.6
+ddt
+factory-boy<2.13
+Faker
+flake8<3.6
+flake8-polyfill<1.1
+freezegun<0.4
+nose
+prospector==1.1.4
+pylint<2.3
+pylint-celery<0.4
+pylint-common<0.3
+pylint-django<2.1
+pylint-plugin-utils<0.6
+pylint-django<2.1
+selenium<2.54
+testfixtures<6.11

@@ -17,7 +17,7 @@ const messages = {
     defaultMessage:
       'If you already have a domain, skip this step. ' +
       "If you don't have a domain name yet, we recommend " +
-      'you go to Gandi.net to order one. Come back to this page after ordering it.',
+      'you go to <a>Gandi.net</a> to order one. Come back to this page after ordering it.',
     description: ''
   },
   setDnsRecordsStep: {

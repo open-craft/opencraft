@@ -1,5 +1,4 @@
 import * as React from 'react';
-// import { useOutsideCallback } from 'global/customHooks';
 import {
   FormControl,
   FormGroup,
@@ -25,7 +24,7 @@ interface ColorInputFieldProps {
   hideTooltip?: boolean;
 }
 
-export const ColorInputField: React.SFC<ColorInputFieldProps> = (
+export const ColorInputField: React.FC<ColorInputFieldProps> = (
   props: ColorInputFieldProps
 ) => {
   const pickerContainer = React.useRef<HTMLDivElement>(null);
@@ -46,38 +45,37 @@ export const ColorInputField: React.SFC<ColorInputFieldProps> = (
     props.onChange(props.fieldName, '');
   };
 
-  const hideColorPickerAndSubmit = () => {
-    setColorPicker(false);
-
-    if (selectedColor !== props.initialValue) {
-      // Only trigger action if value changed
-      props.onChange(props.fieldName, selectedColor);
-    }
-  };
-
-  /**
-   * Bind function to document to detect when
-   * user clicks outside color picker.
-   */
-  const handleClick = (event: any) => {
-    if (
-      pickerContainer.current &&
-      !pickerContainer.current.contains(event.target)
-    ) {
-      hideColorPickerAndSubmit();
-    }
-  };
   /**
    * Using effect dependent on color to update bound functions
    * when the color is changed, otherwise it would always pick
    * props.initialColor and never made the request.
    */
   React.useEffect(() => {
+    const hideColorPickerAndSubmit = () => {
+      setColorPicker(false);
+
+      if (selectedColor !== props.initialValue) {
+        // Only trigger action if value changed
+        props.onChange(props.fieldName, selectedColor);
+      }
+    };
+    /**
+     * Bind function to document to detect when
+     * user clicks outside color picker.
+     */
+    const handleClick = (event: any) => {
+      if (
+        pickerContainer.current &&
+        !pickerContainer.current.contains(event.target)
+      ) {
+        hideColorPickerAndSubmit();
+      }
+    };
     document.addEventListener('mousedown', handleClick);
     return () => {
       document.removeEventListener('mousedown', handleClick);
     };
-  }, [selectedColor]);
+  }, [selectedColor, props]);
 
   const tooltip = !props.hideTooltip ? (
     <Tooltip id="redeployment-status">

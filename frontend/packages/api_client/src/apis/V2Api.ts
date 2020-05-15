@@ -139,6 +139,7 @@ export interface InstancesOpenedxConfigValidateRequest {
 export interface InstancesOpenedxDeploymentCreateRequest {
     data: OpenEdXInstanceDeploymentCreate;
     force?: boolean;
+    deploymentType?: InstancesOpenedxDeploymentCreateDeploymentTypeEnum;
 }
 
 export interface InstancesOpenedxDeploymentDeleteRequest {
@@ -162,7 +163,7 @@ export interface PasswordResetValidateTokenCreateRequest {
 }
 
 /**
- * no description
+ * 
  */
 export class V2Api extends runtime.BaseAPI {
 
@@ -461,7 +462,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
      * Create new user instance.
      */
     async instancesOpenedxConfigCreateRaw(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
@@ -494,7 +495,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
      * Create new user instance.
      */
     async instancesOpenedxConfigCreate(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<OpenEdXInstanceConfig> {
@@ -886,6 +887,10 @@ export class V2Api extends runtime.BaseAPI {
             queryParameters['force'] = requestParameters.force;
         }
 
+        if (requestParameters.deploymentType !== undefined) {
+            queryParameters['deployment_type'] = requestParameters.deploymentType;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
@@ -1148,4 +1153,18 @@ export class V2Api extends runtime.BaseAPI {
         return await response.value();
     }
 
+}
+
+/**
+    * @export
+    * @enum {string}
+    */
+export enum InstancesOpenedxDeploymentCreateDeploymentTypeEnum {
+    User = 'user',
+    Batch = 'batch',
+    Admin = 'admin',
+    Pr = 'pr',
+    Periodic = 'periodic',
+    Registration = 'registration',
+    Unknown = 'unknown'
 }

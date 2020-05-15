@@ -33,6 +33,7 @@ exports[`Login Page disables login button when loading login 1`] = `
               Username
             </label>
             <input
+              autoComplete="username"
               className="form-control"
               name="username"
               onChange={[Function]}
@@ -53,6 +54,7 @@ exports[`Login Page disables login button when loading login 1`] = `
               Password
             </label>
             <input
+              autoComplete="password"
               className="form-control"
               name="password"
               onChange={[Function]}
@@ -121,6 +123,7 @@ exports[`Login Page renders error messages 1`] = `
               Username
             </label>
             <input
+              autoComplete="username"
               className="form-control"
               name="username"
               onChange={[Function]}
@@ -141,6 +144,7 @@ exports[`Login Page renders error messages 1`] = `
               Password
             </label>
             <input
+              autoComplete="password"
               className="form-control"
               name="password"
               onChange={[Function]}
@@ -212,6 +216,7 @@ exports[`Login Page renders without crashing 1`] = `
               Username
             </label>
             <input
+              autoComplete="username"
               className="form-control"
               name="username"
               onChange={[Function]}
@@ -232,6 +237,7 @@ exports[`Login Page renders without crashing 1`] = `
               Password
             </label>
             <input
+              autoComplete="password"
               className="form-control"
               name="password"
               onChange={[Function]}
