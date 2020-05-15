@@ -89,13 +89,22 @@ def create_new_deployment(
         changes=changes,
     )
     logger.info('Spawning servers for deployment %s [%s]', deployment, deployment.id)
-    # Launch configured number of appservers for instance
-    appserver_spawn_tasks = spawn_appserver.map(
-        (instance_ref_id, mark_active_on_success, False, num_attempts, success_tag, failure_tag, deployment.id)
-        for _ in range(instance.openedx_appserver_count)
-    )
 
-    appserver_ids = appserver_spawn_tasks.get(blocking=True)
+    # Launch configured number of appservers for instance
+    appserver_ids = []
+    for _ in range(instance.openedx_appserver_count):
+        # This is a blocking task
+        appserver_ids.append(
+            _spawn_appserver(
+                instance_ref_id,
+                mark_active_on_success,
+                False,
+                num_attempts,
+                success_tag,
+                failure_tag,
+                deployment.id
+            )
+        )
 
     if not all(appserver_ids):
         return False
@@ -109,8 +118,7 @@ def create_new_deployment(
     return deployment.pk
 
 
-@db_task()
-def spawn_appserver(
+def _spawn_appserver(
         instance_ref_id,
         mark_active_on_success=False,
         deactivate_old_appservers=False,
@@ -148,8 +156,15 @@ def spawn_appserver(
     if appserver and mark_active_on_success:
         make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
 
-    # Huey doesn't seem to resolve properly if the result of a task is so return False
-    return appserver or False
+    return appserver
+
+
+@db_task()
+def _spawn_appserver(*args, **kwargs):
+    """
+    Async task for spawning appservers, returns immediately.
+    """
+    return _spawn_appserver(*args, **kwargs) or False
 
 
 @db_task()
