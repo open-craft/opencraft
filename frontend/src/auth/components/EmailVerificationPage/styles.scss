@@ -4,12 +4,16 @@
 .email-verification-container {
     justify-content: center;
     text-align: center;
+}
 
-    .page-title {
-        background-color: black;
+i.email-verification-title-icon {
+    padding-left: 15px;
+}
 
-        i.title-icon {
-            padding: 20px;
-        }
+.email-verification-console-button {
+    margin-bottom: 20px;
+
+    i {
+        padding-left: 10px;
     }
 }

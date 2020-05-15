@@ -10,8 +10,7 @@ const messages = {
   followUp: {
     defaultMessage:
       'Your instance should be ready within the next 2 hours. ' +
-      'Once ready, we will send you a confirmation email containing ' +
-      'all the necessary instructions.',
+      'In the meantime, you can start customizing your instance.',
     description: ''
   },
   contact: {
@@ -22,6 +21,10 @@ const messages = {
   },
   emailVerified: {
     defaultMessage: 'Email verified',
+    description: ''
+  },
+  goToConsole: {
+    defaultMessage: 'Go to the customization console',
     description: ''
   }
 };
