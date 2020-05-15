@@ -96,10 +96,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     if (
       this.staticContentOverridesExists() &&
       this.staticContentOverridesExists(prevProps) &&
-      prevProps.activeInstance.data &&
-      this.props.activeInstance.data &&
-      prevProps.activeInstance.data.draftStaticContentOverrides !==
-        this.props.activeInstance.data.draftStaticContentOverrides
+      prevProps.activeInstance.data!.draftStaticContentOverrides !==
+        this.props.activeInstance.data!.draftStaticContentOverrides
     ) {
       this.checkNewAndUpdateState();
     }

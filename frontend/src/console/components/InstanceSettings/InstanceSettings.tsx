@@ -94,16 +94,9 @@ export class InstanceSettingsComponent extends React.PureComponent<
     const field = e.target.name;
     const { value } = e.target;
 
-    if (field === 'instanceName') {
-      this.setState({
-        instanceName: value
-      });
-    }
-    if (field === 'publicContactEmail') {
-      this.setState({
-        publicContactEmail: value
-      });
-    }
+    this.setState({
+      [field]: value
+    } as Pick<State, 'instanceName' | 'publicContactEmail'>);
   };
 
   private updateValue = (fieldName: string, value: string) => {
