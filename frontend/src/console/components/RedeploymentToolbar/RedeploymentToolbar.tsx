@@ -29,6 +29,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
   const handleShowModal = () => setShow(true);
 
   let deploymentDisabled: boolean = true;
+  let cancelDeploymentDisabled: boolean = true;
   let undeployedChanges: number = 0;
   let deploymentStatus: DeploymentStatus | null = null;
   let deploymentType: DeploymentType | null = null;
@@ -37,13 +38,36 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     deploymentStatus = deployment.status;
     undeployedChanges = deployment.undeployedChanges.length;
     deploymentType = deployment.type;
+    /**
+     * The user can't trigger a deployment when:
+     * 1. There's a pending request.
+     * 2. The instance is being prepared.
+     * 3. There are no new changes to deploy.
+     * 4. There's already a provisioning running.
+     */
     deploymentDisabled =
       loading ||
       !undeployedChanges ||
       deploymentStatus === DeploymentStatus.Provisioning ||
-      deploymentStatus === DeploymentStatus.Preparing ||
-      deploymentType !== DeploymentType.User;
+      deploymentStatus === DeploymentStatus.Preparing;
+
+    /**
+     * The user can't cancel a deployment when:
+     * 1. There's a pending request.
+     * 2. There's no provisioning running.
+     * 3. There's a provisionin running, but it wasn't triggered
+     *    by the user.
+     */
+    cancelDeploymentDisabled =
+      loading ||
+      deploymentStatus !== DeploymentStatus.Provisioning ||
+      (deploymentStatus !== DeploymentStatus.Provisioning &&
+        deploymentType !== DeploymentType.User);
   }
+
+  const cancelDeploymentHandler = cancelDeploymentDisabled
+    ? undefined
+    : handleShowModal;
 
   return (
     <div className="d-flex justify-content-center align-middle redeployment-toolbar">
@@ -51,7 +75,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
         <CustomStatusPill
           loading={loading}
           redeploymentStatus={deploymentStatus}
-          cancelRedeployment={handleShowModal}
+          cancelRedeployment={cancelDeploymentHandler}
         />
 
         <Button
