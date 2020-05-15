@@ -226,8 +226,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       staticContentOverrides = instance.data!.draftStaticContentOverrides;
     }
     return (
-      <div className="hero-page">
-        <ConsolePage contentLoading={this.props.loading}>
+      <ConsolePage contentLoading={this.props.loading}>
+        <div className="hero-page">
           <ConsolePageCustomizationContainer>
             <Row>
               <Col md={9}>
@@ -356,8 +356,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
               </div>
             )}
           </ConsolePageCustomizationContainer>
-        </ConsolePage>
-      </div>
+        </div>
+      </ConsolePage>
     );
   }
 }

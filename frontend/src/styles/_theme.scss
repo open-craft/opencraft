@@ -22,6 +22,12 @@ $roboto-font: 'Roboto', sans-serif;
 // Disable rounded button corners
 $enable-rounded: false;
 
+// This is a fix that prevents the vertical
+// scrollbar to resize the page
+body {
+  overflow-y: overlay;
+}
+
 // Form group styling
 .form-group {
   .form-label {
