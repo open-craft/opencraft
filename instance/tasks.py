@@ -160,7 +160,7 @@ def _spawn_appserver(
 
 
 @db_task()
-def _spawn_appserver(*args, **kwargs):
+def spawn_appserver(*args, **kwargs):
     """
     Async task for spawning appservers, returns immediately.
     """
