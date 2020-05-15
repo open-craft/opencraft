@@ -19,8 +19,8 @@ boto==2.49.0              # via -r requirements/base.in
 botocore==1.12.253        # via boto3, s3transfer
 certifi==2020.4.5.1       # via requests
 cffi==1.14.0              # via cryptography
-channels-redis==2.4.2     # via -r requirements/base.in
-channels==2.3.1           # via -r requirements/base.in, channels-redis
+channels==2.3.0           # via -r requirements/base.in, channels-redis
+channels_redis==2.4.0     # via -r requirements/base.in
 chardet==3.0.4            # via requests
 cheroot==8.3.0            # via cherrypy
 cherrypy==18.1.2          # via -r requirements/base.in
