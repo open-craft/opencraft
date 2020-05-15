@@ -21,8 +21,8 @@ boto==2.49.0              # via -r requirements/base.in
 botocore==1.12.253        # via boto3, s3transfer
 certifi==2020.4.5.1       # via requests
 cffi==1.14.0              # via cryptography
-channels-redis==2.4.2     # via -r requirements/base.in
-channels==2.3.1           # via -r requirements/base.in, channels-redis
+channels==2.3.0           # via -r requirements/base.in, channels-redis
+channels_redis==2.4.0     # via -r requirements/base.in
 chardet==3.0.4            # via requests
 cheroot==8.3.0            # via cherrypy
 cherrypy==18.1.2          # via -r requirements/base.in
@@ -38,7 +38,7 @@ coverage==4.5.4           # via -r requirements/test.in
 cryptography==2.9.2       # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
 cssutils==1.0.2           # via pynliner
 daphne==2.5.0             # via channels
-ddt==1.4.0                # via -r requirements/test.in
+ddt==1.4.1                # via -r requirements/test.in
 debtcollector==2.0.1      # via oslo.config, oslo.serialization, oslo.utils, python-keystoneclient
 decorator==4.4.2          # via dogpile.cache, ipython, openstacksdk, traitlets
 dictdiffer==0.8.1         # via -r requirements/base.in
