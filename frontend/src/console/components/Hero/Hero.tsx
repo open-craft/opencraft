@@ -26,10 +26,10 @@ import messages from './displayMessages';
 import './styles.scss';
 
 interface State {
-  [key: string]: string;
-
   title: string;
   subtitle: string;
+  // extra state to manage the empty title and subtitle and rendering
+  renderBool: boolean;
 }
 
 interface ActionProps {
@@ -82,7 +82,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
 
     this.state = {
       title: '',
-      subtitle: ''
+      subtitle: '',
+      renderBool: true
     };
   }
 
@@ -90,54 +91,67 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     this.checkAndUpdateState();
   }
 
-  public componentDidUpdate() {
+  public componentDidUpdate(prevProps: Props) {
     this.checkAndUpdateState();
+    if (
+      this.staticContentOverridesExists() &&
+      this.staticContentOverridesExists(prevProps) &&
+      prevProps.activeInstance.data!.draftStaticContentOverrides !==
+        this.props.activeInstance.data!.draftStaticContentOverrides
+    ) {
+      this.checkNewAndUpdateState();
+    }
   }
 
-  private checkAndUpdateState = () => {
-    if (
-      this.homePageOverlayHtmlExists() &&
-      // FIXME: The below condition causes issues when the user tries to empty either text box.
-      //  Investigat and come up with a way to fix this.
-      (this.state.title === '' || this.state.subtitle === '')
-    ) {
-      const { draftStaticContentOverrides } = this.props.activeInstance.data!;
-      const heroHtmlRegex = /^<h1>(.*)<\/h1><p>(.*)<\/p>$/;
-      const matched = heroHtmlRegex.exec(
-        draftStaticContentOverrides!.homepageOverlayHtml as string
-      );
-      const updatedTitle = matched ? matched[1] : '';
-      const updatedSubttitle = matched ? matched[2] : '';
+  private checkNewAndUpdateState = () => {
+    if (this.homePageOverlayHtmlExists()) {
+      const dataFromProps = getHeroContents(this.props);
       this.setState({
-        title: updatedTitle,
-        subtitle: updatedSubttitle
+        title: dataFromProps.title,
+        subtitle: dataFromProps.subtitle
       });
     }
   };
 
-  private activeInstanceDataExists = () => {
-    return this.props.activeInstance && this.props.activeInstance.data;
+  private checkAndUpdateState = () => {
+    if (
+      this.homePageOverlayHtmlExists() &&
+      (this.state.title.trim() === '' || this.state.subtitle.trim() === '') &&
+      this.state.renderBool
+    ) {
+      const dataFromProps = getHeroContents(this.props);
+
+      this.setState({
+        title: dataFromProps.title,
+        subtitle: dataFromProps.subtitle,
+        renderBool: false
+      });
+    }
   };
 
-  private themeConfigExists = () => {
+  private activeInstanceDataExists = (props: Props = this.props) => {
+    return props.activeInstance && props.activeInstance.data;
+  };
+
+  private themeConfigExists = (props: Props = this.props) => {
     return (
-      this.activeInstanceDataExists() &&
-      this.props.activeInstance.data!.draftThemeConfig
+      this.activeInstanceDataExists(props) &&
+      props.activeInstance.data!.draftThemeConfig
     );
   };
 
-  private staticContentOverridesExists = () => {
+  private staticContentOverridesExists = (props: Props = this.props) => {
     return (
-      this.activeInstanceDataExists() &&
-      this.props.activeInstance.data!.draftStaticContentOverrides
+      this.activeInstanceDataExists(props) &&
+      props.activeInstance.data!.draftStaticContentOverrides
     );
   };
 
-  private homePageOverlayHtmlExists = () => {
+  private homePageOverlayHtmlExists = (props: Props = this.props) => {
     return (
-      this.activeInstanceDataExists() &&
-      this.staticContentOverridesExists() &&
-      this.props.activeInstance.data!.draftStaticContentOverrides!
+      this.activeInstanceDataExists(props) &&
+      this.staticContentOverridesExists(props) &&
+      props.activeInstance.data!.draftStaticContentOverrides!
         .homepageOverlayHtml
     );
   };
@@ -148,7 +162,7 @@ export class HeroComponent extends React.PureComponent<Props, State> {
 
     this.setState({
       [field]: value
-    });
+    } as Pick<State, 'title' | 'subtitle'>);
   };
 
   private updateHeroText = () => {
@@ -159,6 +173,11 @@ export class HeroComponent extends React.PureComponent<Props, State> {
         'homepageOverlayHtml',
         homepageOverlayHtml
       );
+    }
+    if (this.state.title.trim() === '' || this.state.subtitle.trim() === '') {
+      this.setState({
+        renderBool: true
+      });
     }
   };
 
