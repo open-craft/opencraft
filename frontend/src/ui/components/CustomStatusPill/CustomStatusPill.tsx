@@ -9,7 +9,7 @@ import './styles.scss';
 interface Props {
   loading: boolean;
   redeploymentStatus: string | null;
-  cancelRedeployment: Function;
+  cancelRedeployment: Function | undefined;
 }
 
 export const CustomStatusPill: React.FC<Props> = ({
@@ -60,17 +60,19 @@ export const CustomStatusPill: React.FC<Props> = ({
         <div className="text">
           <WrappedMessage id={deploymentStatusText} messages={messages} />
         </div>
-        {redeploymentStatus === DeploymentStatus.Provisioning && !loading && (
-          <Nav
-            className="text cancel-deployment"
-            onClick={() => {
-              cancelRedeployment();
-            }}
-          >
-            <i className="fas fa-xs fa-times" />
-            <WrappedMessage id="cancelRedeployment" messages={messages} />
-          </Nav>
-        )}
+        {cancelRedeployment !== undefined &&
+          redeploymentStatus === DeploymentStatus.Provisioning &&
+          !loading && (
+            <Nav
+              className="text cancel-deployment"
+              onClick={() => {
+                cancelRedeployment();
+              }}
+            >
+              <i className="fas fa-xs fa-times" />
+              <WrappedMessage id="cancelRedeployment" messages={messages} />
+            </Nav>
+          )}
       </Badge>
     </OverlayTrigger>
   );

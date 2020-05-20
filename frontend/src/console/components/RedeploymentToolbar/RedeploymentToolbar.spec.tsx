@@ -83,14 +83,14 @@ describe("RedeploymentToolbar Component", function() {
       expect(tree).toMatchSnapshot();
   });
 
-  it('Correctly renders redeployment bar when instance is being deployed', () => {
+  it('Correctly renders redeployment bar when instance is being deployed by user', () => {
       const tree = setupComponentForTesting(
         <RedeploymentToolbar
           deployment={{
             status: OpenEdXInstanceDeploymentStatusStatusEnum.Provisioning,
             undeployedChanges: [],
             deployedChanges: null,
-            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.Admin,
+            type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum.User,
           }}
           cancelRedeployment={() => {}}
           performDeployment={() => {}}
