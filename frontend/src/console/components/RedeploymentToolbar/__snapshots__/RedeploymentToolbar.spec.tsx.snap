@@ -147,16 +147,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
       >
         Status: deploying changes
       </div>
-      <div
-        className="text cancel-deployment nav"
-        onClick={[Function]}
-        onKeyDown={[Function]}
-      >
-        <i
-          className="fas fa-xs fa-times"
-        />
-        Cancel deployment
-      </div>
     </span>
     <button
       className="float-right loading btn btn-primary btn-lg"
