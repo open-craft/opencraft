@@ -37,7 +37,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
   if (deployment) {
     deploymentStatus = deployment.status;
     undeployedChanges = deployment.undeployedChanges.length;
-    deploymentType = deployment.type;
+    deploymentType = deployment.deploymentType;
     /**
      * The user can't trigger a deployment when:
      * 1. There's a pending request.
@@ -61,7 +61,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     cancelDeploymentDisabled =
       loading ||
       deploymentStatus !== DeploymentStatus.Provisioning ||
-      (deploymentStatus !== DeploymentStatus.Provisioning &&
+      (deploymentStatus === DeploymentStatus.Provisioning &&
         deploymentType !== DeploymentType.User);
   }
 
