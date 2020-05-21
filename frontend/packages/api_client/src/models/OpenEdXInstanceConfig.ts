@@ -71,6 +71,14 @@ export interface OpenEdXInstanceConfig {
      */
     instanceName: string;
     /**
+     * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.
+     * 
+     * This needs to be a valid email.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    publicContactEmail?: string;
+    /**
      * URL to the privacy policy.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
@@ -130,6 +138,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'subdomain': json['subdomain'],
         'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
+        'publicContactEmail': json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
@@ -152,6 +161,7 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
         'subdomain': value.subdomain,
         'external_domain': value.externalDomain,
         'instance_name': value.instanceName,
+        'public_contact_email': value.publicContactEmail,
         'privacy_policy_url': value.privacyPolicyUrl,
         'use_advanced_theme': value.useAdvancedTheme,
         'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),

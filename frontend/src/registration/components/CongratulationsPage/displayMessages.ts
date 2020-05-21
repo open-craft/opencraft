@@ -9,9 +9,9 @@ const messages = {
   },
   congratsMessage2: {
     defaultMessage:
-      'We have sent you an email to verify your OpenCraft account email. ' +
-      'Please follow the link that we emailed you in your email ' +
-      'account to verify and complete your application process.',
+      'We have sent you an email to verify your OpenCraft account. ' +
+      'Please follow the link in your email account to ' +
+      'verify and complete your application process.',
     description: ''
   },
   consoleButton: {

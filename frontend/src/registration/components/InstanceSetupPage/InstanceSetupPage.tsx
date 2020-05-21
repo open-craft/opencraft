@@ -46,7 +46,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      instanceName: props.registrationData.instanceName,
+      instanceName: props.registrationData.instanceName
     };
   }
 

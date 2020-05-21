@@ -312,6 +312,18 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         else:
             return value
 
+    public_contact_email = serializers.EmailField(required=False)
+
+    # pylint: disable=arguments-differ
+    def validate(self, data):
+        """
+        Check for public contact email and override with user email.
+        """
+        public_contact_email = data.get('public_contact_email')
+        if not public_contact_email and 'user' in data:
+            data['public_contact_email'] = data['user'].email
+        return data
+
     class Meta:
         model = BetaTestApplication
         fields = (
