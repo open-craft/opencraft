@@ -12,7 +12,6 @@ export interface DomainInfoModel {
 
 export interface InstanceInfoModel {
   instanceName: string;
-  publicContactEmail: string;
 }
 
 export interface AccountInfoModel {
@@ -55,7 +54,6 @@ export const blankRegistration: Readonly<RegistrationModel> = {
   instanceName: '',
   password: '',
   passwordConfirm: '',
-  publicContactEmail: '',
   username: '',
   ...DefaultTheme
 };
