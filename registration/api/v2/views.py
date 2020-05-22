@@ -184,6 +184,8 @@ class OpenEdXInstanceConfigViewSet(
 
         This check if `external_domain` is filled, if so, generate a valid subdomain slug
         and fill in the field before passing it to the serializer.
+
+        Checks if public contact email is empty or not, if empty override it with user mail
         """
         external_domain = request.data.get('external_domain')
         if external_domain:
@@ -195,6 +197,13 @@ class OpenEdXInstanceConfigViewSet(
             self.request.data.update({
                 "subdomain": subdomain
             })
+
+        public_contact_email = request.data.get('public_contact_email')
+        if not public_contact_email:
+            self.request.data.update({
+                "public_contact_email": request.user.email
+            })
+
 
         # Perform create as usual
         return super(OpenEdXInstanceConfigViewSet, self).create(request, *args, **kwargs)

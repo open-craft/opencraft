@@ -67,7 +67,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
   private submitInstanceData = () => {
     this.props.performValidationAndStore(
       {
-        instanceName: this.state.instanceName,
+        instanceName: this.state.instanceName
       },
       RegistrationSteps.ACCOUNT
     );
