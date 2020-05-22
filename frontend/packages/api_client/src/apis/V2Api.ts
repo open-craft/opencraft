@@ -162,6 +162,10 @@ export interface PasswordResetValidateTokenCreateRequest {
     data: Token;
 }
 
+export interface VerifyEmailReadRequest {
+    id: string;
+}
+
 /**
  * 
  */
@@ -1150,6 +1154,43 @@ export class V2Api extends runtime.BaseAPI {
      */
     async passwordResetValidateTokenCreate(requestParameters: PasswordResetValidateTokenCreateRequest): Promise<Token> {
         const response = await this.passwordResetValidateTokenCreateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Return a list of all users.
+     */
+    async verifyEmailReadRaw(requestParameters: VerifyEmailReadRequest): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling verifyEmailRead.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/verify_email/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Return a list of all users.
+     */
+    async verifyEmailRead(requestParameters: VerifyEmailReadRequest): Promise<object> {
+        const response = await this.verifyEmailReadRaw(requestParameters);
         return await response.value();
     }
 

@@ -24,6 +24,7 @@ REST Framework API - Router
 
 from rest_framework import routers
 
+from email_verification.api.v2.views import VerifyEmailViewset
 from instance.api.instance import InstanceViewSet
 from instance.api.openedx_appserver import OpenEdXAppServerViewSet
 from instance.api.server import OpenStackServerViewSet
@@ -53,3 +54,4 @@ v2_router.register(
     OpenEdxInstanceDeploymentViewSet,
     base_name='openedx-instance-deployment'
 )
+v2_router.register(r'verify_email', VerifyEmailViewset, base_name='verify-email-api')

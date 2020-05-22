@@ -31,6 +31,7 @@ from simple_email_confirmation.models import EmailAddress
 
 # Views #######################################################################
 
+# TODO: Remove this after fully migrating to new console
 def verify_email(request, code):
     """
     Verify the given email address, and display a message to the user.
