@@ -7,10 +7,13 @@ import { ROUTES } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { ContentPage } from 'ui/components';
 import { Button, Spinner } from 'react-bootstrap';
+import { performEmailActivation } from 'auth/actions';
 import messages from './displayMessages';
 import './styles.scss';
 
-interface ActionProps {}
+interface ActionProps {
+  performEmailActivation: Function;
+}
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {
   // Passing URL as parameter to custom page
@@ -26,12 +29,17 @@ interface Props extends StateProps, ActionProps {
 
 @connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.loginState,
-  {}
+  {
+    performEmailActivation
+  }
 )
 export class EmailVerificationPage extends React.PureComponent<Props> {
   componentDidMount() {
-    // Make request
-    console.log('asd');
+    /**
+     * Make a the email activation request as soon as component is
+     * mounted and wait for server reply in loading page.
+     */
+    this.props.performEmailActivation(this.props.match.params.verificationCode);
   }
 
   public render() {
@@ -45,13 +53,14 @@ export class EmailVerificationPage extends React.PureComponent<Props> {
       );
     }
 
-    if (!this.props.succeeded) {
+    if (this.props.succeeded) {
       const title = (
         <span className="page-title">
           <WrappedMessage messages={messages} id="emailVerified" />
           <i className="email-verification-title-icon far fa-check-circle fa-xs" />
         </span>
       );
+
       return (
         <ContentPage
           title={title}

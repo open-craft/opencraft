@@ -9,6 +9,18 @@ export function loginStateReducer(
   action: LoginActions.ActionTypes
 ): LoginStateModel {
   switch (action.type) {
+    case LoginActions.Types.EMAIL_ACTIVATION_SUBMIT:
+      return update(state, { loading: { $set: true } });
+    case LoginActions.Types.EMAIL_ACTIVATION_SUBMIT_SUCCESS:
+      return update(state, {
+        succeeded: { $set: true },
+        loading: { $set: false }
+      });
+    case LoginActions.Types.EMAIL_ACTIVATION_SUBMIT_FAILURE:
+      return update(state, {
+        loading: { $set: false },
+        error: { $set: action.error }
+      });
     case LoginActions.Types.LOGIN_SUBMIT:
       return update(state, { loading: { $set: true } });
     case LoginActions.Types.LOGIN_SUCCESS:
