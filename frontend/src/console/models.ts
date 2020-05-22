@@ -23,7 +23,7 @@ export interface InstanceSettingsModel {
 
 export interface DeploymentInfoModel {
   status: OpenEdXInstanceDeploymentStatusStatusEnum;
-  type: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
+  deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
   undeployedChanges: Array<Array<object>>;
   deployedChanges: Array<Array<object>> | null;
 }

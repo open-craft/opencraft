@@ -244,86 +244,70 @@ exports[`renders without crashing 1`] = `
             <div
               className="footer-top-links row"
             >
-              <div
-                className="col"
-              >
-                <button
-                  className="customizable-link noHover"
-                  onMouseEnter={[Function]}
-                  onMouseLeave={[Function]}
-                  style={
-                    Object {
-                      "borderBottomColor": undefined,
-                      "color": undefined,
-                    }
+              <button
+                className="customizable-link noHover"
+                onMouseEnter={[Function]}
+                onMouseLeave={[Function]}
+                style={
+                  Object {
+                    "borderBottomColor": undefined,
+                    "color": undefined,
                   }
-                  type="button"
-                >
-                  <span>
-                    About
-                  </span>
-                </button>
-              </div>
-              <div
-                className="col"
+                }
+                type="button"
               >
-                <button
-                  className="customizable-link noHover"
-                  onMouseEnter={[Function]}
-                  onMouseLeave={[Function]}
-                  style={
-                    Object {
-                      "borderBottomColor": undefined,
-                      "color": undefined,
-                    }
+                <span>
+                  About
+                </span>
+              </button>
+              <button
+                className="customizable-link noHover"
+                onMouseEnter={[Function]}
+                onMouseLeave={[Function]}
+                style={
+                  Object {
+                    "borderBottomColor": undefined,
+                    "color": undefined,
                   }
-                  type="button"
-                >
-                  <span>
-                    Blog
-                  </span>
-                </button>
-              </div>
-              <div
-                className="col"
+                }
+                type="button"
               >
-                <button
-                  className="customizable-link noHover"
-                  onMouseEnter={[Function]}
-                  onMouseLeave={[Function]}
-                  style={
-                    Object {
-                      "borderBottomColor": undefined,
-                      "color": undefined,
-                    }
+                <span>
+                  Blog
+                </span>
+              </button>
+              <button
+                className="customizable-link noHover"
+                onMouseEnter={[Function]}
+                onMouseLeave={[Function]}
+                style={
+                  Object {
+                    "borderBottomColor": undefined,
+                    "color": undefined,
                   }
-                  type="button"
-                >
-                  <span>
-                    Contact
-                  </span>
-                </button>
-              </div>
-              <div
-                className="col"
+                }
+                type="button"
               >
-                <button
-                  className="customizable-link noHover"
-                  onMouseEnter={[Function]}
-                  onMouseLeave={[Function]}
-                  style={
-                    Object {
-                      "borderBottomColor": undefined,
-                      "color": undefined,
-                    }
+                <span>
+                  Contact
+                </span>
+              </button>
+              <button
+                className="customizable-link noHover"
+                onMouseEnter={[Function]}
+                onMouseLeave={[Function]}
+                style={
+                  Object {
+                    "borderBottomColor": undefined,
+                    "color": undefined,
                   }
-                  type="button"
-                >
-                  <span>
-                    Donate
-                  </span>
-                </button>
-              </div>
+                }
+                type="button"
+              >
+                <span>
+                  Donate
+                </span>
+              </button>
             </div>
           </div>
           <div
@@ -349,7 +333,7 @@ exports[`renders without crashing 1`] = `
           className="row"
         >
           <div
-            className="copyright col"
+            className="copyright"
             style={
               Object {
                 "color": undefined,
@@ -363,101 +347,70 @@ exports[`renders without crashing 1`] = `
         <div
           className="legal row"
         >
-          <div
-            className="col"
-          >
-            <button
-              className="customizable-link noHover"
-              onMouseEnter={[Function]}
-              onMouseLeave={[Function]}
-              style={
-                Object {
-                  "borderBottomColor": undefined,
-                  "color": undefined,
-                }
+          <button
+            className="customizable-link noHover"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+            style={
+              Object {
+                "borderBottomColor": undefined,
+                "color": undefined,
               }
-              type="button"
-            >
-              <span>
-                Privacy Policy
-              </span>
-            </button>
-          </div>
-          <div
-            className="separator col"
+            }
+            type="button"
           >
-            -
-          </div>
-          <div
-            className="col"
-          >
-            <button
-              className="customizable-link noHover"
-              onMouseEnter={[Function]}
-              onMouseLeave={[Function]}
-              style={
-                Object {
-                  "borderBottomColor": undefined,
-                  "color": undefined,
-                }
+            <span>
+              Privacy Policy
+            </span>
+          </button>
+          <button
+            className="customizable-link noHover"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+            style={
+              Object {
+                "borderBottomColor": undefined,
+                "color": undefined,
               }
-              type="button"
-            >
-              <span>
-                Terms of Service
-              </span>
-            </button>
-          </div>
-          <div
-            className="separator col"
+            }
+            type="button"
           >
-            -
-          </div>
-          <div
-            className="col"
-          >
-            <button
-              className="customizable-link noHover"
-              onMouseEnter={[Function]}
-              onMouseLeave={[Function]}
-              style={
-                Object {
-                  "borderBottomColor": undefined,
-                  "color": undefined,
-                }
+            <span>
+              Terms of Service
+            </span>
+          </button>
+          <button
+            className="customizable-link noHover"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+            style={
+              Object {
+                "borderBottomColor": undefined,
+                "color": undefined,
               }
-              type="button"
-            >
-              <span>
-                Honor Code
-              </span>
-            </button>
-          </div>
-          <div
-            className="separator col"
+            }
+            type="button"
           >
-            -
-          </div>
-          <div
-            className="col"
-          >
-            <button
-              className="customizable-link noHover"
-              onMouseEnter={[Function]}
-              onMouseLeave={[Function]}
-              style={
-                Object {
-                  "borderBottomColor": undefined,
-                  "color": undefined,
-                }
+            <span>
+              Honor Code
+            </span>
+          </button>
+          <button
+            className="customizable-link noHover"
+            onMouseEnter={[Function]}
+            onMouseLeave={[Function]}
+            style={
+              Object {
+                "borderBottomColor": undefined,
+                "color": undefined,
               }
-              type="button"
-            >
-              <span>
-                Take free online courses at edX.org
-              </span>
-            </button>
-          </div>
+            }
+            type="button"
+          >
+            <span>
+              Take free online courses at edX.org
+            </span>
+          </button>
         </div>
       </div>
     </div>

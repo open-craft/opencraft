@@ -1,4 +1,4 @@
-import { OCIM_API_BASE } from 'global/constants';
+import { OCIM_API_BASE, ROUTES } from 'global/constants';
 import { Configuration, V2Api as _V2Api } from 'ocim-client';
 import { performLogout } from 'auth/actions';
 import { checkAuthAndRefreshToken } from '../auth/utils/helpers';
@@ -21,7 +21,10 @@ const config = new Configuration({
           // expired, so we trigger a page refresh.
           const authenticated = await checkAuthAndRefreshToken();
           if (!authenticated) {
-            window.location.reload(false);
+            // Redirect user to login when token refresh fails.
+            // Since we don't have access to dispatching actions here
+            // we redirect the user to the login.
+            window.location.replace(ROUTES.Auth.LOGIN);
           } else {
             // Retry request after updating API key
             const requestContext = context.init;

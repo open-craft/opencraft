@@ -19,7 +19,7 @@ export const ConsoleRoutes = () => {
     <Switch>
       // Redirect to main customization page
       <Route exact path={ROUTES.Console.HOME}>
-        <Redirect to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL} />
+        <Redirect to={ROUTES.Console.THEME_PREVIEW_AND_COLORS} />
       </Route>
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}

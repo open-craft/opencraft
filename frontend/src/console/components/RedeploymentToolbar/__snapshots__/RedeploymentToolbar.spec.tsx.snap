@@ -70,7 +70,7 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
     </span>
     <button
       className="float-right loading btn btn-primary btn-lg"
-      disabled={true}
+      disabled={false}
       onClick={[Function]}
       type="button"
     >
@@ -120,7 +120,7 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
 </div>
 `;
 
-exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being deployed 1`] = `
+exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being deployed by user 1`] = `
 <div
   className="d-flex justify-content-center align-middle redeployment-toolbar"
 >
@@ -146,16 +146,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
         className="text"
       >
         Status: deploying changes
-      </div>
-      <div
-        className="text cancel-deployment nav"
-        onClick={[Function]}
-        onKeyDown={[Function]}
-      >
-        <i
-          className="fas fa-xs fa-times"
-        />
-        Cancel deployment
       </div>
     </span>
     <button

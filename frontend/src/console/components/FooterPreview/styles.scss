@@ -14,15 +14,6 @@
     .row.footer-top-links {
       padding-left: 4px;
       flex-wrap: nowrap;
-
-      .col {
-        flex-grow: 0;
-      }
-    }
-
-    .col {
-      padding-right: 2px;
-      padding-left: 2px;
     }
 
     .customizable-link {
@@ -80,18 +71,7 @@
   }
 
   .row.legal {
-    flex-wrap: wrap;
     align-items: start;
-
-    .col:first-of-type {
-      padding-left: 6px;
-    }
-
-    .col {
-      flex-grow: 0;
-      padding-right: 0;
-      padding-left: 0;
-    }
 
     .customizable-link {
       width: max-content;

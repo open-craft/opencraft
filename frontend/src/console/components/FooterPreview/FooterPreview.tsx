@@ -24,26 +24,18 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
       <Row>
         <Col md={4}>
           <Row className="footer-top-links">
-            <Col>
-              <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                <span>About</span>
-              </CustomizableLink>
-            </Col>
-            <Col>
-              <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                <span>Blog</span>
-              </CustomizableLink>
-            </Col>
-            <Col>
-              <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                <span>Contact</span>
-              </CustomizableLink>
-            </Col>
-            <Col>
-              <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-                <span>Donate</span>
-              </CustomizableLink>
-            </Col>
+            <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+              <span>About</span>
+            </CustomizableLink>
+            <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+              <span>Blog</span>
+            </CustomizableLink>
+            <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+              <span>Contact</span>
+            </CustomizableLink>
+            <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+              <span>Donate</span>
+            </CustomizableLink>
           </Row>
         </Col>
         <Col md={5} />
@@ -59,35 +51,24 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
         </Col>
       </Row>
       <Row>
-        <Col className="copyright" style={{ color: themeData.footerColor }}>
+        <div className="copyright" style={{ color: themeData.footerColor }}>
           {`© ${props.instanceData && props.instanceData.instanceName}. `}
           <WrappedMessage id="copyright" messages={messages} />
-        </Col>
+        </div>
       </Row>
       <Row className="legal">
-        <Col>
-          <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            <span>Privacy Policy</span>
-          </CustomizableLink>
-        </Col>
-        <Col className="separator">-</Col>
-        <Col>
-          <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            <span>Terms of Service</span>
-          </CustomizableLink>
-        </Col>
-        <Col className="separator">-</Col>
-        <Col>
-          <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            <span>Honor Code</span>
-          </CustomizableLink>
-        </Col>
-        <Col className="separator">-</Col>
-        <Col>
-          <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
-            <span>Take free online courses at edX.org</span>
-          </CustomizableLink>
-        </Col>
+        <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+          <span>Privacy Policy</span>
+        </CustomizableLink>
+        <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+          <span>Terms of Service</span>
+        </CustomizableLink>
+        <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+          <span>Honor Code</span>
+        </CustomizableLink>
+        <CustomizableLink linkColor={themeData.footerLinkColor} noHover>
+          <span>Take free online courses at edX.org</span>
+        </CustomizableLink>
       </Row>
     </div>
   );
