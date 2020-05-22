@@ -347,7 +347,6 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         dict(instance_name=None),
         dict(instance_name=" "),
         dict(public_contact_email="invalid.email"),
-        dict(public_contact_email=None),
     )
     def test_instance_validation_failure(self, override):
         """
