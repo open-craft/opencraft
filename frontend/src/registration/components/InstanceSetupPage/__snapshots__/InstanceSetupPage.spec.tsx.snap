@@ -156,29 +156,6 @@ exports[`renders without crashing 1`] = `
             </p>
           </div>
         </div>
-        <div
-          className="text-input-container"
-        >
-          <div
-            className="form-group"
-          >
-            <label
-              className="form-label"
-            >
-              Public contact email
-            </label>
-            <input
-              className="form-control"
-              name="publicContactEmail"
-              onChange={[Function]}
-              type="email"
-              value=""
-            />
-            <p>
-              The email your instance of Open edX will be using to send emails, and where your users should send their support requests. This needs to be a valid email.
-            </p>
-          </div>
-        </div>
       </form>
       <div
         className="registration-nav"

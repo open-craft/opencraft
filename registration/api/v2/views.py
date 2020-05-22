@@ -204,7 +204,6 @@ class OpenEdXInstanceConfigViewSet(
                 "public_contact_email": request.user.email
             })
 
-
         # Perform create as usual
         return super(OpenEdXInstanceConfigViewSet, self).create(request, *args, **kwargs)
 
