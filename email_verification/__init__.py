@@ -55,7 +55,7 @@ def send_email_verification(email: "EmailAddress"):
     """
     verification_url = urljoin(
         settings.USER_CONSOLE_FRONTEND_URL,
-        f"/verify-email/{email.key}"
+        f"/verify-email/{email.key}/"
     )
     html_email_helper(
         template_base_name=EMAIL_VERIFICATION_TEMPLATE,
