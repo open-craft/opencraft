@@ -113,7 +113,7 @@ class BetaTestApplicationViewTestMixin:
                     }
                 )
                 # Fix to add the server url when running browser tests
-                if self.live_server_url:
+                if hasattr(self, 'live_server_url'):
                     verification_url = '{host}{path}'.format(
                         host=self.live_server_url,
                         path=verification_url,
