@@ -65,9 +65,7 @@ export interface OpenEdXInstanceConfigUpdate {
      */
     instanceName?: string;
     /**
-     * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.
      * 
-     * This needs to be a valid email.
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */

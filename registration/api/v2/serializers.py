@@ -281,9 +281,11 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     draft_theme_config = ThemeSchemaSerializer(read_only=True)
     draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
 
-    # LMS and Studio URLs (if the instance is provisisoned)
+    # LMS and Studio URLs (if the instance is provisioned)
     lms_url = serializers.SerializerMethodField()
     studio_url = serializers.SerializerMethodField()
+
+    public_contact_email = serializers.EmailField(required=False)
 
     def get_lms_url(self, obj):
         """

@@ -71,13 +71,11 @@ export interface OpenEdXInstanceConfig {
      */
     instanceName: string;
     /**
-     * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.
      * 
-     * This needs to be a valid email.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
-    publicContactEmail: string;
+    publicContactEmail?: string;
     /**
      * URL to the privacy policy.
      * @type {string}
@@ -138,7 +136,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'subdomain': json['subdomain'],
         'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
-        'publicContactEmail': json['public_contact_email'],
+        'publicContactEmail': !exists(json, 'public_contact_email') ? undefined : json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),

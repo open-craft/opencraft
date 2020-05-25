@@ -103,8 +103,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       {
         externalDomain: this.props.registrationData.externalDomain,
         subdomain: this.props.registrationData.subdomain,
-        instanceName: this.props.registrationData.instanceName,
-        publicContactEmail: this.props.registrationData.publicContactEmail
+        instanceName: this.props.registrationData.instanceName
       },
       RegistrationSteps.CONGRATS
     );

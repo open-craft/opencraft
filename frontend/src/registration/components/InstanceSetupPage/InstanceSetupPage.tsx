@@ -23,7 +23,6 @@ interface ActionProps {
 interface State {
   [key: string]: string;
   instanceName: string;
-  publicContactEmail: string;
 }
 
 interface StateProps extends RegistrationStateModel {}
@@ -47,8 +46,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      instanceName: props.registrationData.instanceName,
-      publicContactEmail: props.registrationData.publicContactEmail
+      instanceName: props.registrationData.instanceName
     };
   }
 
@@ -69,8 +67,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
   private submitInstanceData = () => {
     this.props.performValidationAndStore(
       {
-        instanceName: this.state.instanceName,
-        publicContactEmail: this.state.publicContactEmail
+        instanceName: this.state.instanceName
       },
       RegistrationSteps.ACCOUNT
     );
@@ -108,14 +105,6 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
             onChange={this.onChange}
             messages={messages}
             error={this.props.registrationFeedback.instanceName}
-          />
-          <TextInputField
-            fieldName="publicContactEmail"
-            value={this.state.publicContactEmail}
-            onChange={this.onChange}
-            messages={messages}
-            type="email"
-            error={this.props.registrationFeedback.publicContactEmail}
           />
         </Form>
         <RegistrationNavButtons
