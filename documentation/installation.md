@@ -68,7 +68,7 @@ command:
 Inside the virtual machine, set HUEY_ALWAYS_EAGER to false in
 /home/vagrant/opencraft/.env. Run all the pending migrations:
 
-    make manage migrate
+    make migrate
 
 
 Also, create a superuser account which will be used to log in to Ocim:
