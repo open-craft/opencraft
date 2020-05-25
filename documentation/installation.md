@@ -43,7 +43,7 @@ pointing to it instead:
 
 **Note:** Make sure to use Python 3.5 or 3.6 as the ansible-playbooks are not yet compatible 
 with the newer Python versions. You can use pyvenv to setup Python 3.5 or 3.6. For more information
-see https://hackernoon.com/reaching-python-development-nirvana-bb5692adf30c
+see https://github.com/pyenv/pyenv
 
 Create a new virtualenv to install the dependencies of the `ansible-playbooks`
 repository – most notably Ansible:
