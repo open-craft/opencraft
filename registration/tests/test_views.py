@@ -105,13 +105,20 @@ class BetaTestApplicationViewTestMixin:
                     r'\/verify-email/(.*)/',
                     verification_email.body
                 ).group(1)
-                # Reverse validation URL and make request
+                # Reverse validation URL
                 verification_url = reverse(
                     'api:v2:verify-email-api-detail',
                     kwargs={
                         'pk': verify_code,
                     }
                 )
+                # Fix to add the server url when running browser tests
+                if self.live_server_url:
+                    verification_url = '{host}{path}'.format(
+                        host=self.live_server_url,
+                        path=verification_url,
+                    )
+                # Make email confirmation request
                 self.client.get(verification_url)
                 expected_call_count += 1
             # Check to make sure we called _provision_instance when emails were verified.
