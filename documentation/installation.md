@@ -40,6 +40,11 @@ pointing to it instead:
 
     ln -s <cloned_repo_path> deploy
 
+
+**Note:** Make sure to use Python 3.5 or 3.6 as the ansible-playbooks are not yet compatible 
+with the newer Python versions. You can use pyvenv to setup Python 3.5 or 3.6. For more information
+see https://hackernoon.com/reaching-python-development-nirvana-bb5692adf30c
+
 Create a new virtualenv to install the dependencies of the `ansible-playbooks`
 repository – most notably Ansible:
 
@@ -61,8 +66,12 @@ command:
     vagrant ssh
 
 Inside the virtual machine, set HUEY_ALWAYS_EAGER to false in
-/home/vagrant/opencraft/.env. Also, create a superuser account which will
-be used to log in to Ocim:
+/home/vagrant/opencraft/.env. Run all the pending migrations:
+
+    make manage migrate
+
+
+Also, create a superuser account which will be used to log in to Ocim:
 
     make manage createsuperuser
 
