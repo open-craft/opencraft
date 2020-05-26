@@ -16,7 +16,7 @@ const messages = {
   contact: {
     defaultMessage:
       "At any point, don't hesitate to write to us at " +
-      'contact@opencraft.com if you have any questions or issues.',
+      '{contactEmail} if you have any questions or issues.',
     description: ''
   },
   emailVerified: {

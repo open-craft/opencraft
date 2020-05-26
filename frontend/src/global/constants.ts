@@ -2,6 +2,8 @@ export const OCIM_API_BASE =
   process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000';
 
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
+export const CONTACT_US_EMAIL =
+  process.env.REACT_APP_CONTACT_US_EMAIL || 'contact@opencraft.com';
 export const ENTERPRISE_COMPARISON_LINK =
   process.env.REACT_APP_ENTERPRISE_COMPARISON_LINK || '/#';
 export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
@@ -12,7 +14,7 @@ export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
 
 export const GANDI_REFERRAL_LINK =
-  process.env.REACT_APP_INTERNAL_DOMAIN_NAME || 'https://gandi.link/f/ba351d73';
+  process.env.GANDI_REFERRAL_LINK || 'https://gandi.link/';
 
 export interface StringIndexedArray {
   [key: string]: any;

@@ -3,7 +3,7 @@ import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { NavLink } from 'react-router-dom';
-import { ROUTES } from 'global/constants';
+import { CONTACT_US_EMAIL, ROUTES } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { ContentPage } from 'ui/components';
 import { Button, Spinner } from 'react-bootstrap';
@@ -81,7 +81,13 @@ export class EmailVerificationPage extends React.PureComponent<Props> {
             </div>
 
             <p>
-              <WrappedMessage messages={messages} id="contact" />
+              <WrappedMessage
+                messages={messages}
+                id="contact"
+                values={{
+                  contactEmail: CONTACT_US_EMAIL
+                }}
+              />
             </p>
           </div>
         </ContentPage>
