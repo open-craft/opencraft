@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Alert } from 'react-bootstrap';
 import { CustomStatusPill } from 'ui/components';
 import { DeploymentInfoModel } from 'console/models';
 import {
@@ -25,6 +25,10 @@ export const RedeploymentToolbar: React.FC<Props> = ({
 }: Props) => {
   const [show, setShow] = React.useState(false);
 
+  const [alertShow, setAlertShow] = React.useState(true);
+
+  const handleCloseAlert = () => setAlertShow(false);
+
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
 
@@ -33,11 +37,13 @@ export const RedeploymentToolbar: React.FC<Props> = ({
   let undeployedChanges: number = 0;
   let deploymentStatus: DeploymentStatus | null = null;
   let deploymentType: DeploymentType | null = null;
+  let isEmailVerified: boolean = false;
 
   if (deployment) {
     deploymentStatus = deployment.status;
     undeployedChanges = deployment.undeployedChanges.length;
     deploymentType = deployment.deploymentType;
+    isEmailVerified = deployment.isEmailVerified;
     /**
      * The user can't trigger a deployment when:
      * 1. There's a pending request.
@@ -70,73 +76,90 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     : handleShowModal;
 
   return (
-    <div className="d-flex justify-content-center align-middle redeployment-toolbar">
-      <div className="redeployment-nav">
-        <CustomStatusPill
-          loading={loading}
-          redeploymentStatus={deploymentStatus}
-          cancelRedeployment={cancelDeploymentHandler}
-        />
-
-        <Button
-          className="float-right loading"
-          variant="primary"
-          size="lg"
-          onClick={() => {
-            performDeployment();
-          }}
-          disabled={deploymentDisabled}
-        >
-          <WrappedMessage
-            id="deploy"
-            messages={messages}
-            values={{ undeployedChanges }}
+    <div>
+      <div className="d-flex justify-content-center align-middle redeployment-toolbar">
+        <div className="redeployment-nav">
+          <CustomStatusPill
+            loading={loading}
+            redeploymentStatus={deploymentStatus}
+            cancelRedeployment={cancelDeploymentHandler}
           />
-        </Button>
-      </div>
 
-      <Modal
-        show={show}
-        onHide={handleCloseModal}
-        className="cancel-redeployment-modal"
-        centered
-      >
-        <Modal.Header>
-          <Modal.Title>
-            <p>
-              <WrappedMessage
-                id="cancelDeploymentConfirm"
-                messages={messages}
-              />
-            </p>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <WrappedMessage
-            id="cancelDeploymentConfirmText"
-            messages={messages}
-          />
-        </Modal.Body>
-        <Modal.Footer>
           <Button
-            variant="outline-primary"
-            size="lg"
-            onClick={handleCloseModal}
-          >
-            <WrappedMessage id="closeModalButton" messages={messages} />
-          </Button>
-          <Button
+            className="float-right loading"
             variant="primary"
             size="lg"
             onClick={() => {
-              cancelRedeployment();
-              handleCloseModal();
+              performDeployment();
             }}
+            disabled={deploymentDisabled}
           >
-            <WrappedMessage id="confirmCancelDeployment" messages={messages} />
+            <WrappedMessage
+              id="deploy"
+              messages={messages}
+              values={{ undeployedChanges }}
+            />
           </Button>
-        </Modal.Footer>
-      </Modal>
+        </div>
+
+        <Modal
+          show={show}
+          onHide={handleCloseModal}
+          className="cancel-redeployment-modal"
+          centered
+        >
+          <Modal.Header>
+            <Modal.Title>
+              <p>
+                <WrappedMessage
+                  id="cancelDeploymentConfirm"
+                  messages={messages}
+                />
+              </p>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <WrappedMessage
+              id="cancelDeploymentConfirmText"
+              messages={messages}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="outline-primary"
+              size="lg"
+              onClick={handleCloseModal}
+            >
+              <WrappedMessage id="closeModalButton" messages={messages} />
+            </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => {
+                cancelRedeployment();
+                handleCloseModal();
+              }}
+            >
+              <WrappedMessage
+                id="confirmCancelDeployment"
+                messages={messages}
+              />
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
+      {!isEmailVerified && alertShow ? (
+        <div className="redeployment-toolbar">
+          <Alert
+            className="alert-info"
+            onClose={() => handleCloseAlert()}
+            variant="info"
+            dismissible
+          >
+            <Alert.Heading>Please verify all your emails!</Alert.Heading>
+          </Alert>
+        </div>
+      ) : null}
     </div>
   );
 };

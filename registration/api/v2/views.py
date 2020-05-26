@@ -529,6 +529,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         that need to be deployed and return a status code to the frontend.
         """
         application = self.get_object()
+        email_verified = application.email_addresses_verified()
         instance = application.instance
         undeployed_changes = build_instance_config_diff(application)
         deployed_changes = None
@@ -549,6 +550,7 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
             'deployed_changes': deployed_changes,
             'status': deployment_status.name,
             'deployment_type': deployment_type,
+            'is_email_verified': email_verified,
         }
 
         return Response(

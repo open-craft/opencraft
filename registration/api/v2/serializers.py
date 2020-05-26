@@ -367,6 +367,7 @@ class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     undeployed_changes = serializers.JSONField()
     deployed_changes = serializers.JSONField()
     deployment_type = serializers.ChoiceField(choices=DeploymentType.choices())
+    is_email_verified = serializers.BooleanField()
 
 
 # pylint: disable=abstract-method

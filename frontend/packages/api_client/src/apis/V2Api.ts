@@ -466,7 +466,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreateRaw(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
@@ -499,7 +499,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreate(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<OpenEdXInstanceConfig> {

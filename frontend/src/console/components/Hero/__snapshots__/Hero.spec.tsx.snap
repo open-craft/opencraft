@@ -25,41 +25,73 @@ exports[`Hero customization page renders the hero customization page when instan
       </a>
     </h2>
   </div>
-  <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
-  >
+  <div>
     <div
-      className="redeployment-nav"
+      className="d-flex justify-content-center align-middle redeployment-toolbar"
     >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
+      <div
+        className="redeployment-nav"
       >
         <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
+          className="status-pill badge badge-pill badge-primary"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
         >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
+          <span
+            className="dot"
+            style={
+              Object {
+                "backgroundColor": "grey",
+              }
+            }
+          />
+          <div
+            className="text"
+          >
+            Status: loading
+          </div>
+        </span>
+        <button
+          className="float-right loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          Deploy (0 updates)
+        </button>
+      </div>
+    </div>
+    <div
+      className="redeployment-toolbar"
+    >
+      <div
+        className="fade alert-info alert alert-info alert-dismissible show"
+        role="alert"
       >
-        Deploy (0 updates)
-      </button>
+        <button
+          className="close"
+          onClick={[Function]}
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+          <span
+            className="sr-only"
+          >
+            Close alert
+          </span>
+        </button>
+        <div
+          className="alert-heading h4"
+        >
+          Please verify all your emails!
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -327,41 +359,73 @@ exports[`Hero customization page renders the hero customization page when instan
       </a>
     </h2>
   </div>
-  <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
-  >
+  <div>
     <div
-      className="redeployment-nav"
+      className="d-flex justify-content-center align-middle redeployment-toolbar"
     >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
+      <div
+        className="redeployment-nav"
       >
         <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
+          className="status-pill badge badge-pill badge-primary"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
         >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
+          <span
+            className="dot"
+            style={
+              Object {
+                "backgroundColor": "grey",
+              }
+            }
+          />
+          <div
+            className="text"
+          >
+            Status: loading
+          </div>
+        </span>
+        <button
+          className="float-right loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          Deploy (0 updates)
+        </button>
+      </div>
+    </div>
+    <div
+      className="redeployment-toolbar"
+    >
+      <div
+        className="fade alert-info alert alert-info alert-dismissible show"
+        role="alert"
       >
-        Deploy (0 updates)
-      </button>
+        <button
+          className="close"
+          onClick={[Function]}
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+          <span
+            className="sr-only"
+          >
+            Close alert
+          </span>
+        </button>
+        <div
+          className="alert-heading h4"
+        >
+          Please verify all your emails!
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -629,41 +693,73 @@ exports[`Hero customization page renders the hero customization page when the in
       </a>
     </h2>
   </div>
-  <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
-  >
+  <div>
     <div
-      className="redeployment-nav"
+      className="d-flex justify-content-center align-middle redeployment-toolbar"
     >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
+      <div
+        className="redeployment-nav"
       >
         <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
+          className="status-pill badge badge-pill badge-primary"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
         >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
+          <span
+            className="dot"
+            style={
+              Object {
+                "backgroundColor": "grey",
+              }
+            }
+          />
+          <div
+            className="text"
+          >
+            Status: loading
+          </div>
+        </span>
+        <button
+          className="float-right loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          Deploy (0 updates)
+        </button>
+      </div>
+    </div>
+    <div
+      className="redeployment-toolbar"
+    >
+      <div
+        className="fade alert-info alert alert-info alert-dismissible show"
+        role="alert"
       >
-        Deploy (0 updates)
-      </button>
+        <button
+          className="close"
+          onClick={[Function]}
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+          <span
+            className="sr-only"
+          >
+            Close alert
+          </span>
+        </button>
+        <div
+          className="alert-heading h4"
+        >
+          Please verify all your emails!
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -931,41 +1027,73 @@ exports[`Hero customization page renders the hero customization page when the in
       </a>
     </h2>
   </div>
-  <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
-  >
+  <div>
     <div
-      className="redeployment-nav"
+      className="d-flex justify-content-center align-middle redeployment-toolbar"
     >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
+      <div
+        className="redeployment-nav"
       >
         <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
+          className="status-pill badge badge-pill badge-primary"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
         >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
+          <span
+            className="dot"
+            style={
+              Object {
+                "backgroundColor": "grey",
+              }
+            }
+          />
+          <div
+            className="text"
+          >
+            Status: loading
+          </div>
+        </span>
+        <button
+          className="float-right loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          Deploy (0 updates)
+        </button>
+      </div>
+    </div>
+    <div
+      className="redeployment-toolbar"
+    >
+      <div
+        className="fade alert-info alert alert-info alert-dismissible show"
+        role="alert"
       >
-        Deploy (0 updates)
-      </button>
+        <button
+          className="close"
+          onClick={[Function]}
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+          <span
+            className="sr-only"
+          >
+            Close alert
+          </span>
+        </button>
+        <div
+          className="alert-heading h4"
+        >
+          Please verify all your emails!
+        </div>
+      </div>
     </div>
   </div>
   <div
@@ -1221,41 +1349,73 @@ exports[`Hero customization page renders without crashing 1`] = `
       />
     </h1>
   </div>
-  <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
-  >
+  <div>
     <div
-      className="redeployment-nav"
+      className="d-flex justify-content-center align-middle redeployment-toolbar"
     >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
+      <div
+        className="redeployment-nav"
       >
         <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
+          className="status-pill badge badge-pill badge-primary"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
         >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
+          <span
+            className="dot"
+            style={
+              Object {
+                "backgroundColor": "grey",
+              }
+            }
+          />
+          <div
+            className="text"
+          >
+            Status: loading
+          </div>
+        </span>
+        <button
+          className="float-right loading btn btn-primary btn-lg"
+          disabled={true}
+          onClick={[Function]}
+          type="button"
+        >
+          Deploy (0 updates)
+        </button>
+      </div>
+    </div>
+    <div
+      className="redeployment-toolbar"
+    >
+      <div
+        className="fade alert-info alert alert-info alert-dismissible show"
+        role="alert"
       >
-        Deploy (0 updates)
-      </button>
+        <button
+          className="close"
+          onClick={[Function]}
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+          <span
+            className="sr-only"
+          >
+            Close alert
+          </span>
+        </button>
+        <div
+          className="alert-heading h4"
+        >
+          Please verify all your emails!
+        </div>
+      </div>
     </div>
   </div>
   <div

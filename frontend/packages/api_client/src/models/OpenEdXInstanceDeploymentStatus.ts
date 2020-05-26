@@ -43,6 +43,12 @@ export interface OpenEdXInstanceDeploymentStatus {
      * @memberof OpenEdXInstanceDeploymentStatus
      */
     deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OpenEdXInstanceDeploymentStatus
+     */
+    isEmailVerified: boolean;
 }
 
 export function OpenEdXInstanceDeploymentStatusFromJSON(json: any): OpenEdXInstanceDeploymentStatus {
@@ -59,6 +65,7 @@ export function OpenEdXInstanceDeploymentStatusFromJSONTyped(json: any, ignoreDi
         'undeployedChanges': json['undeployed_changes'],
         'deployedChanges': json['deployed_changes'],
         'deploymentType': json['deployment_type'],
+        'isEmailVerified': json['is_email_verified'],
     };
 }
 
@@ -75,6 +82,7 @@ export function OpenEdXInstanceDeploymentStatusToJSON(value?: OpenEdXInstanceDep
         'undeployed_changes': value.undeployedChanges,
         'deployed_changes': value.deployedChanges,
         'deployment_type': value.deploymentType,
+        'is_email_verified': value.isEmailVerified,
     };
 }
 

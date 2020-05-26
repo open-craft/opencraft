@@ -26,6 +26,7 @@ export interface DeploymentInfoModel {
   deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
   undeployedChanges: Array<Array<object>>;
   deployedChanges: Array<Array<object>> | null;
+  isEmailVerified: boolean;
 }
 
 // The loading key is used to store field names that are being updated through
