@@ -25,74 +25,11 @@ exports[`Theme preview and colors page Render theme settings page when instance 
       </a>
     </h2>
   </div>
-  <div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
-    >
-      <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="redeployment-toolbar"
-    >
-      <div
-        className="fade alert-info alert alert-info alert-dismissible show"
-        role="alert"
-      >
-        <button
-          className="close"
-          onClick={[Function]}
-          type="button"
-        >
-          <span
-            aria-hidden="true"
-          >
-            ×
-          </span>
-          <span
-            className="sr-only"
-          >
-            Close alert
-          </span>
-        </button>
-        <div
-          className="alert-heading h4"
-        >
-          Please verify all your emails!
-        </div>
-      </div>
-    </div>
+  <div
+    className="fade d-flex justify-content-center align-middle alert-warning alert alert-warning show"
+    role="alert"
+  >
+    Some of your email addresses are pending confirmation. Please verify them to begin managing your Open EdX instance
   </div>
   <div
     className="console-page-container"
@@ -344,74 +281,11 @@ exports[`Theme preview and colors page Render theme settings page with theme set
       </a>
     </h2>
   </div>
-  <div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
-    >
-      <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="redeployment-toolbar"
-    >
-      <div
-        className="fade alert-info alert alert-info alert-dismissible show"
-        role="alert"
-      >
-        <button
-          className="close"
-          onClick={[Function]}
-          type="button"
-        >
-          <span
-            aria-hidden="true"
-          >
-            ×
-          </span>
-          <span
-            className="sr-only"
-          >
-            Close alert
-          </span>
-        </button>
-        <div
-          className="alert-heading h4"
-        >
-          Please verify all your emails!
-        </div>
-      </div>
-    </div>
+  <div
+    className="fade d-flex justify-content-center align-middle alert-warning alert alert-warning show"
+    role="alert"
+  >
+    Some of your email addresses are pending confirmation. Please verify them to begin managing your Open EdX instance
   </div>
   <div
     className="console-page-container"
@@ -1188,74 +1062,11 @@ exports[`Theme preview and colors page Render theme settings page with theme set
       </a>
     </h2>
   </div>
-  <div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
-    >
-      <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="redeployment-toolbar"
-    >
-      <div
-        className="fade alert-info alert alert-info alert-dismissible show"
-        role="alert"
-      >
-        <button
-          className="close"
-          onClick={[Function]}
-          type="button"
-        >
-          <span
-            aria-hidden="true"
-          >
-            ×
-          </span>
-          <span
-            className="sr-only"
-          >
-            Close alert
-          </span>
-        </button>
-        <div
-          className="alert-heading h4"
-        >
-          Please verify all your emails!
-        </div>
-      </div>
-    </div>
+  <div
+    className="fade d-flex justify-content-center align-middle alert-warning alert alert-warning show"
+    role="alert"
+  >
+    Some of your email addresses are pending confirmation. Please verify them to begin managing your Open EdX instance
   </div>
   <div
     className="console-page-container"
@@ -2056,36 +1867,6 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
         >
           Deploy (0 updates)
         </button>
-      </div>
-    </div>
-    <div
-      className="redeployment-toolbar"
-    >
-      <div
-        className="fade alert-info alert alert-info alert-dismissible show"
-        role="alert"
-      >
-        <button
-          className="close"
-          onClick={[Function]}
-          type="button"
-        >
-          <span
-            aria-hidden="true"
-          >
-            ×
-          </span>
-          <span
-            className="sr-only"
-          >
-            Close alert
-          </span>
-        </button>
-        <div
-          className="alert-heading h4"
-        >
-          Please verify all your emails!
-        </div>
       </div>
     </div>
   </div>

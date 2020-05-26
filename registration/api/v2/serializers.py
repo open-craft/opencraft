@@ -286,6 +286,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     studio_url = serializers.SerializerMethodField()
 
     public_contact_email = serializers.EmailField(required=False)
+    is_email_verified = serializers.SerializerMethodField()
 
     def get_lms_url(self, obj):
         """
@@ -314,6 +315,14 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         else:
             return value
 
+    def get_is_email_verified(self, obj):
+        """
+        Returns whether the user is verifies there mails or not
+        """
+        if obj:
+            return obj.email_addresses_verified()
+        return False
+
     class Meta:
         model = BetaTestApplication
         fields = (
@@ -331,7 +340,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "logo",
             "favicon",
             "hero_cover_image",
-            "draft_static_content_overrides"
+            "draft_static_content_overrides",
+            "is_email_verified"
         )
         read_only_fields = [
             "logo",
@@ -367,7 +377,6 @@ class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     undeployed_changes = serializers.JSONField()
     deployed_changes = serializers.JSONField()
     deployment_type = serializers.ChoiceField(choices=DeploymentType.choices())
-    is_email_verified = serializers.BooleanField()
 
 
 # pylint: disable=abstract-method

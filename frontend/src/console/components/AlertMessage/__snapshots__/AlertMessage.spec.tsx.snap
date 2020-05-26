@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="fade d-flex justify-content-center align-middle alert-warning alert alert-warning show"
+  role="alert"
+>
+  Some of your email addresses are pending confirmation. Please verify them to begin managing your Open EdX instance
+</div>
+`;

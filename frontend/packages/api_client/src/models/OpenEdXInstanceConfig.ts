@@ -118,6 +118,12 @@ export interface OpenEdXInstanceConfig {
      * @memberof OpenEdXInstanceConfig
      */
     draftStaticContentOverrides?: StaticContentOverrides;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly isEmailVerified?: string;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -144,6 +150,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
+        'isEmailVerified': !exists(json, 'is_email_verified') ? undefined : json['is_email_verified'],
     };
 }
 

@@ -39,36 +39,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
       </button>
     </div>
   </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
-    </div>
-  </div>
 </div>
 `;
 
@@ -109,36 +79,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
       >
         Deploy (3 updates)
       </button>
-    </div>
-  </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
     </div>
   </div>
 </div>
@@ -183,36 +123,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
       </button>
     </div>
   </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
-    </div>
-  </div>
 </div>
 `;
 
@@ -253,36 +163,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
       >
         Deploy (0 updates)
       </button>
-    </div>
-  </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
     </div>
   </div>
 </div>
@@ -327,36 +207,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
       </button>
     </div>
   </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
-    </div>
-  </div>
 </div>
 `;
 
@@ -397,36 +247,6 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
       >
         Deploy (0 updates)
       </button>
-    </div>
-  </div>
-  <div
-    className="redeployment-toolbar"
-  >
-    <div
-      className="fade alert-info alert alert-info alert-dismissible show"
-      role="alert"
-    >
-      <button
-        className="close"
-        onClick={[Function]}
-        type="button"
-      >
-        <span
-          aria-hidden="true"
-        >
-          ×
-        </span>
-        <span
-          className="sr-only"
-        >
-          Close alert
-        </span>
-      </button>
-      <div
-        className="alert-heading h4"
-      >
-        Please verify all your emails!
-      </div>
     </div>
   </div>
 </div>
