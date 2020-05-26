@@ -60,7 +60,18 @@ class VerifyEmailViewset(RetrieveModelMixin, GenericViewSet):
     # pylint: disable=arguments-differ
     def retrieve(self, request, pk=None):
         """
-        Return a list of all users.
+        Confirms a user's email address.
+
+        Checks if the verification code is valid and then confirms
+        the user email address.
+        Note that the user can use the same activation code multiple
+        times since the library we're using doesn't expire the
+        verification codes after confirming.
+
+        Returns:
+          200 if email confirmed
+          404 if verification code doesn't exist
+          400 if verification code is expired
         """
         try:
             EmailAddress.objects.confirm(pk).email
