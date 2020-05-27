@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
+import { CustomizationSideMenu, RedeploymentToolbar } from 'console/components';
+import { EmailActivationAlertMessage } from 'ui/components';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
@@ -13,7 +14,6 @@ import {
 } from 'console/actions';
 import messages from './displayMessages';
 import './styles.scss';
-import { AlertMessage } from '../AlertMessage/AlertMessage';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -132,9 +132,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         {this.renderHeader()}
 
         {!isEmailVerified ? (
-          <AlertMessage>
-            <WrappedMessage id="verifyEmail" messages={messages} />
-          </AlertMessage>
+          <EmailActivationAlertMessage />
         ) : (
           <RedeploymentToolbar
             deployment={

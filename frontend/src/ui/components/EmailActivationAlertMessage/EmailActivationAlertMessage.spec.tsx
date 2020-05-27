@@ -1,8 +1,8 @@
 import React from 'react';
 import { setupComponentForTesting } from 'utils/testing';
-import { AlertMessage } from './AlertMessage';
+import { EmailActivationAlertMessage } from './EmailActivationAlertMessage';
 
 it('renders without crashing', () => {
-  const tree = setupComponentForTesting(<AlertMessage />).toJSON();
+  const tree = setupComponentForTesting(<EmailActivationAlertMessage />).toJSON();
   expect(tree).toMatchSnapshot();
 });

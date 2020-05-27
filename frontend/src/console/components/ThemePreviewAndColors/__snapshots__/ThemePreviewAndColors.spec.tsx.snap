@@ -26,10 +26,12 @@ exports[`Theme preview and colors page Render theme settings page when instance 
     </h2>
   </div>
   <div
-    className="fade text-center alert alert-warning show"
-    role="alert"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    Some of your email addresses are pending confirmation. Please confirm them to begin managing your Open edX instance.
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
@@ -282,10 +284,12 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     </h2>
   </div>
   <div
-    className="fade text-center alert alert-warning show"
-    role="alert"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    Some of your email addresses are pending confirmation. Please confirm them to begin managing your Open edX instance.
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
@@ -1063,10 +1067,12 @@ exports[`Theme preview and colors page Render theme settings page with theme set
     </h2>
   </div>
   <div
-    className="fade text-center alert alert-warning show"
-    role="alert"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    Some of your email addresses are pending confirmation. Please confirm them to begin managing your Open edX instance.
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
