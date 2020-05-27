@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const AlertMessage: React.FC<Props> = (props: Props) => (
-  <Alert 
+  <Alert
     className={classNames('text-center', props.className)}
     variant="warning"
   >
