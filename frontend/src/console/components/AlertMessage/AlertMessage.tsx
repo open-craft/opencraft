@@ -1,14 +1,17 @@
 import React from 'react';
 import { Alert } from 'react-bootstrap';
-import './styles.scss';
-import { WrappedMessage } from 'utils/intl';
-import messages from './displayMessages';
+import classNames from 'classnames';
 
-export const AlertMessage: React.FC = () => (
-  <Alert
-    className="d-flex justify-content-center align-middle alert-warning"
+interface Props {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const AlertMessage: React.FC<Props> = (props: Props) => (
+  <Alert 
+    className={classNames('text-center', props.className)}
     variant="warning"
   >
-    <WrappedMessage id="verifyEmail" messages={messages} />
+    {props.children}
   </Alert>
 );

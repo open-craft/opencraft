@@ -132,7 +132,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         {this.renderHeader()}
 
         {!isEmailVerified ? (
-          <AlertMessage />
+          <AlertMessage>
+            <WrappedMessage id="verifyEmail" messages={messages} />
+          </AlertMessage>
         ) : (
           <RedeploymentToolbar
             deployment={
