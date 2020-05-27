@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Tooltip, OverlayTrigger, Badge, Nav } from 'react-bootstrap';
-import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
+import {
+  OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus,
+  OpenEdXInstanceDeploymentStatusDeploymentTypeEnum as DeploymentType
+} from 'ocim-client';
 
 import messages from './displayMessages';
 import './styles.scss';
@@ -9,12 +12,14 @@ import './styles.scss';
 interface Props {
   loading: boolean;
   redeploymentStatus: string | null;
+  deploymentType: string | null;
   cancelRedeployment: Function | undefined;
 }
 
 export const CustomStatusPill: React.FC<Props> = ({
   loading,
   redeploymentStatus,
+  deploymentType,
   cancelRedeployment
 }: Props) => {
   let dotColor = 'grey';
@@ -29,8 +34,19 @@ export const CustomStatusPill: React.FC<Props> = ({
       break;
     case DeploymentStatus.Provisioning:
       dotColor = '#ff9b04';
-      deploymentStatusText = 'runningDeployment';
-      tooltipText = 'runningDeploymentTooltip';
+      // If there's a deployment provisioning, but it's the
+      // first on (from registration), show preparing instance
+      // message.
+      if (deploymentType === DeploymentType.Registration) {
+        deploymentStatusText = 'preparingInstance';
+        tooltipText = 'preparingInstanceTooltip';
+      }
+      // If not, then this is a normal deployment, so show the usual
+      // running deployment message.
+      else {
+        deploymentStatusText = 'runningDeployment';
+        tooltipText = 'runningDeploymentTooltip';
+      }
       break;
     case DeploymentStatus.Preparing:
       dotColor = '#ff9b04';
