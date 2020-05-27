@@ -23,11 +23,12 @@ Email verification
 # Imports #####################################################################
 
 from typing import TYPE_CHECKING
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.urls import reverse
 
-from opencraft.utils import get_site_url, html_email_helper
+from opencraft.utils import html_email_helper
 
 if TYPE_CHECKING:
     from simple_email_confirmation.models import EmailAddress
@@ -47,13 +48,18 @@ EMAIL_VERIFICATION_TEMPLATE = getattr(settings, 'EMAIL_VERIFICATION_TEMPLATE',
 def send_email_verification(email: "EmailAddress"):
     """
     Verify the given `EmailAddress`.
+
+    The verification link points to the frontend, which then
+    uses the Email verification viewset to make a request to
+    the backend and activate the email.
     """
-    verification_url = reverse('email-verification:verify', kwargs={
-        'code': email.key,
-    })
+    verification_url = urljoin(
+        settings.USER_CONSOLE_FRONTEND_URL,
+        f"/verify-email/{email.key}/"
+    )
     html_email_helper(
         template_base_name=EMAIL_VERIFICATION_TEMPLATE,
-        context={'verification_url': get_site_url(verification_url)},
+        context={'verification_url': verification_url},
         subject=EMAIL_VERIFICATION_SUBJECT,
         recipient_list=(email.email,),
         from_email=EMAIL_VERIFICATION_SENDER,
