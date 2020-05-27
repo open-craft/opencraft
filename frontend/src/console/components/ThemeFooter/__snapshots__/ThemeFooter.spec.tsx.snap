@@ -13,43 +13,41 @@ exports[`renders without crashing 1`] = `
       />
     </h1>
   </div>
-  <div>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
     <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
+      className="redeployment-nav"
     >
-      <div
-        className="redeployment-nav"
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
       >
         <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
+          className="dot"
+          style={
+            Object {
+              "backgroundColor": "grey",
             }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
+          }
+        />
+        <div
+          className="text"
         >
-          Deploy (0 updates)
-        </button>
-      </div>
+          Status: loading
+        </div>
+      </span>
+      <button
+        className="float-right loading btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        Deploy (0 updates)
+      </button>
     </div>
   </div>
   <div

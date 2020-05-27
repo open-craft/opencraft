@@ -70,78 +70,73 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     : handleShowModal;
 
   return (
-    <div>
-      <div className="d-flex justify-content-center align-middle redeployment-toolbar">
-        <div className="redeployment-nav">
-          <CustomStatusPill
-            loading={loading}
-            redeploymentStatus={deploymentStatus}
-            cancelRedeployment={cancelDeploymentHandler}
-          />
+    <div className="d-flex justify-content-center align-middle redeployment-toolbar">
+      <div className="redeployment-nav">
+        <CustomStatusPill
+          loading={loading}
+          redeploymentStatus={deploymentStatus}
+          cancelRedeployment={cancelDeploymentHandler}
+        />
 
+        <Button
+          className="float-right loading"
+          variant="primary"
+          size="lg"
+          onClick={() => {
+            performDeployment();
+          }}
+          disabled={deploymentDisabled}
+        >
+          <WrappedMessage
+            id="deploy"
+            messages={messages}
+            values={{ undeployedChanges }}
+          />
+        </Button>
+      </div>
+
+      <Modal
+        show={show}
+        onHide={handleCloseModal}
+        className="cancel-redeployment-modal"
+        centered
+      >
+        <Modal.Header>
+          <Modal.Title>
+            <p>
+              <WrappedMessage
+                id="cancelDeploymentConfirm"
+                messages={messages}
+              />
+            </p>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <WrappedMessage
+            id="cancelDeploymentConfirmText"
+            messages={messages}
+          />
+        </Modal.Body>
+        <Modal.Footer>
           <Button
-            className="float-right loading"
+            variant="outline-primary"
+            size="lg"
+            onClick={handleCloseModal}
+          >
+            <WrappedMessage id="closeModalButton" messages={messages} />
+          </Button>
+          <Button
             variant="primary"
             size="lg"
             onClick={() => {
-              performDeployment();
+              cancelRedeployment();
+              handleCloseModal();
             }}
-            disabled={deploymentDisabled}
           >
-            <WrappedMessage
-              id="deploy"
-              messages={messages}
-              values={{ undeployedChanges }}
-            />
+            <WrappedMessage id="confirmCancelDeployment" messages={messages} />
           </Button>
-        </div>
-
-        <Modal
-          show={show}
-          onHide={handleCloseModal}
-          className="cancel-redeployment-modal"
-          centered
-        >
-          <Modal.Header>
-            <Modal.Title>
-              <p>
-                <WrappedMessage
-                  id="cancelDeploymentConfirm"
-                  messages={messages}
-                />
-              </p>
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <WrappedMessage
-              id="cancelDeploymentConfirmText"
-              messages={messages}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="outline-primary"
-              size="lg"
-              onClick={handleCloseModal}
-            >
-              <WrappedMessage id="closeModalButton" messages={messages} />
-            </Button>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => {
-                cancelRedeployment();
-                handleCloseModal();
-              }}
-            >
-              <WrappedMessage
-                id="confirmCancelDeployment"
-                messages={messages}
-              />
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

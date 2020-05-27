@@ -1,4 +1,4 @@
-@import '~styles/theme';
+@import "~styles/theme";
 
 .console-page {
   width: 100%;
@@ -9,13 +9,13 @@
   .title-container {
     margin: 60px;
 
-    @media only screen and (max-width: 600px) {
+    @media only screen and (max-width: 600px)
+    {
       margin: 30px;
     }
   }
 
-  h1,
-  h2 {
+  h1, h2 {
     text-align: center;
     color: #fff;
   }
@@ -32,9 +32,9 @@
   }
 
   h3 {
-    font-family: $chivo-font;
-    font-size: 15px;
-  }
+   font-family: $chivo-font;
+   font-size: 15px;
+ }
 
   .console-page-container {
     background-color: #fff;
@@ -70,6 +70,8 @@
     }
   }
 }
+
+
 
 .header-link {
   color: white;

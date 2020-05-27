@@ -1,5 +1,6 @@
 @import '~styles/theme';
 
+
 .redeployment-toolbar {
   background-color: $light-blue;
   padding: 15px;
@@ -7,7 +8,7 @@
 
   display: flex;
   align-items: center;
-  justify-content: center;
+
   .redeployment-nav {
     display: inline-block;
     width: 100%;
@@ -39,7 +40,7 @@
     font-family: $playfair-font;
     font-size: 24px;
     color: #0f1f24;
-    margin-bottom: -15px;
+    margin-bottom: -15px
   }
 
   .modal-body {

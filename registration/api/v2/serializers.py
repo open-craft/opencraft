@@ -286,7 +286,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     studio_url = serializers.SerializerMethodField()
 
     public_contact_email = serializers.EmailField(required=False)
-    is_email_verified = serializers.SerializerMethodField()
+    is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
     def get_lms_url(self, obj):
         """
@@ -314,14 +314,6 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             raise ValidationError("User has reached limit of allowed Open edX instances.")
         else:
             return value
-
-    def get_is_email_verified(self, obj):
-        """
-        Returns whether the user is verifies there mails or not
-        """
-        if obj:
-            return obj.email_addresses_verified()
-        return False
 
     class Meta:
         model = BetaTestApplication
@@ -353,10 +345,10 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
 
 class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
     """
-    A version of OpenEdXInstanceConfigSerializer that excludes the 'id' field and makes
+    A version of OpenEdXInstanceConfigSerializer that excludes non-updatable fields and makes
     all other fields optional. Used for editing existing items.
     """
-    EXCLUDE_FIELDS = ("id",)
+    EXCLUDE_FIELDS = ("id", "is_email_verified")
 
     def __init__(self, *args, **kwargs):
         """ Override fields """

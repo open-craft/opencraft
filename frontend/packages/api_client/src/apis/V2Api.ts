@@ -1158,7 +1158,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Return a list of all users.
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
      */
     async verifyEmailReadRaw(requestParameters: VerifyEmailReadRequest): Promise<runtime.ApiResponse<object>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -1187,7 +1188,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Return a list of all users.
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
      */
     async verifyEmailRead(requestParameters: VerifyEmailReadRequest): Promise<object> {
         const response = await this.verifyEmailReadRaw(requestParameters);

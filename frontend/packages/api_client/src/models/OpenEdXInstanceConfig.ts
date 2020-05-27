@@ -120,10 +120,10 @@ export interface OpenEdXInstanceConfig {
     draftStaticContentOverrides?: StaticContentOverrides;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof OpenEdXInstanceConfig
      */
-    readonly isEmailVerified?: string;
+    readonly isEmailVerified?: boolean;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
