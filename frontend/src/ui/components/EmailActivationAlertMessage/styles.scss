@@ -2,12 +2,10 @@
 
 
 .email-activation-alert {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: $alert-bg-yellow;
+  color: $alert-text-yellow;
   padding: 15px;
   margin: 0 -15px;
-
-  display: flex;
   align-items: center;
 
   .alert-icon {
