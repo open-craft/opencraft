@@ -136,3 +136,4 @@ describe('Hero customization page', function () {
       expect(tree).toMatchSnapshot();
     });
 });
+
