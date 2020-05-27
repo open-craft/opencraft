@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Redirect, Route, Switch } from 'react-router';
 import { ErrorPage } from 'ui/components';
 import {
+  EmailVerificationPage,
   LoginPage,
   LogoutPage,
   PasswordForgottenPage,
@@ -30,6 +31,10 @@ export const MainRoutes = () => (
       component={PasswordForgottenPage}
     />
     <Route path={ROUTES.Auth.PASSWORD_RESET} component={PasswordResetPage} />
+    <Route
+      path={ROUTES.Auth.EMAIL_VERIFICATION}
+      component={EmailVerificationPage}
+    />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
   </Switch>
