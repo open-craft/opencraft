@@ -286,6 +286,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     studio_url = serializers.SerializerMethodField()
 
     public_contact_email = serializers.EmailField(required=False)
+    is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
     def get_lms_url(self, obj):
         """
@@ -331,7 +332,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "logo",
             "favicon",
             "hero_cover_image",
-            "draft_static_content_overrides"
+            "draft_static_content_overrides",
+            "is_email_verified"
         )
         read_only_fields = [
             "logo",
@@ -343,10 +345,10 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
 
 class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
     """
-    A version of OpenEdXInstanceConfigSerializer that excludes the 'id' field and makes
+    A version of OpenEdXInstanceConfigSerializer that excludes non-updatable fields and makes
     all other fields optional. Used for editing existing items.
     """
-    EXCLUDE_FIELDS = ("id",)
+    EXCLUDE_FIELDS = ("id", "is_email_verified")
 
     def __init__(self, *args, **kwargs):
         """ Override fields """

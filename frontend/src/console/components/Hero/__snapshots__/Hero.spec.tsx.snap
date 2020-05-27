@@ -26,41 +26,12 @@ exports[`Hero customization page renders the hero customization page when instan
     </h2>
   </div>
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    <div
-      className="redeployment-nav"
-    >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
-        >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
-      >
-        Deploy (0 updates)
-      </button>
-    </div>
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
@@ -328,41 +299,12 @@ exports[`Hero customization page renders the hero customization page when instan
     </h2>
   </div>
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    <div
-      className="redeployment-nav"
-    >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
-        >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
-      >
-        Deploy (0 updates)
-      </button>
-    </div>
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
@@ -630,41 +572,12 @@ exports[`Hero customization page renders the hero customization page when the in
     </h2>
   </div>
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    <div
-      className="redeployment-nav"
-    >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
-        >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
-      >
-        Deploy (0 updates)
-      </button>
-    </div>
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"
@@ -932,41 +845,12 @@ exports[`Hero customization page renders the hero customization page when the in
     </h2>
   </div>
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-center align-middle email-activation-alert"
   >
-    <div
-      className="redeployment-nav"
-    >
-      <span
-        className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
-          }
-        />
-        <div
-          className="text"
-        >
-          Status: loading
-        </div>
-      </span>
-      <button
-        className="float-right loading btn btn-primary btn-lg"
-        disabled={true}
-        onClick={[Function]}
-        type="button"
-      >
-        Deploy (0 updates)
-      </button>
-    </div>
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"

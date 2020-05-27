@@ -466,7 +466,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreateRaw(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
@@ -499,7 +499,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreate(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<OpenEdXInstanceConfig> {
@@ -1158,7 +1158,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Return a list of all users.
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
      */
     async verifyEmailReadRaw(requestParameters: VerifyEmailReadRequest): Promise<runtime.ApiResponse<object>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -1187,7 +1188,8 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Return a list of all users.
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
      */
     async verifyEmailRead(requestParameters: VerifyEmailReadRequest): Promise<object> {
         const response = await this.verifyEmailReadRaw(requestParameters);
