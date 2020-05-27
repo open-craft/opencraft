@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Constants ###################################################################
 
-SYNTHETICS_API_URL = 'https://synthetics.newrelic.com/synthetics/api/v1'
+SYNTHETICS_API_URL = 'https://synthetics.newrelic.com/synthetics/api/v3'
 
 NEW_RELIC_API_BASE = 'https://api.newrelic.com/v2'
 ALERTS_CHANNELS_API_URL = '{}/alerts_channels'.format(NEW_RELIC_API_BASE)
@@ -83,39 +83,10 @@ def create_synthetics_monitor(uri, name=None, monitor_type='SIMPLE',
         'frequency': frequency,
         'locations': locations,
         'status': 'ENABLED',
-        'options': {'verifySSL': True},
+        'options': {'verifySSL': True}, # SSL valid only for SIMPLE and BROWSER 
     })
     r.raise_for_status()
     return r.headers['location'].rsplit('/', 1)[-1]
-
-
-def get_synthetics_notification_emails(monitor_id):
-    """
-    Get the list of emails that New Relic will notify when the monitor
-    detects that the URI is offline.
-    """
-    url = '{0}/monitors/{1}/notifications'.format(SYNTHETICS_API_URL,
-                                                  monitor_id)
-    logger.info('GET %s', url)
-    r = requests.get(url, headers=_request_headers())
-    r.raise_for_status()
-    return r.json()['emails']
-
-
-def add_synthetics_email_alerts(monitor_id, emails):
-    """
-    Add email addresses to the notification list for the given monitor.
-
-    Will raise an error if the email is already on the list.
-    """
-    url = '{0}/monitors/{1}/notifications'.format(SYNTHETICS_API_URL,
-                                                  monitor_id)
-    logger.info('POST %s', url)
-    r = requests.post(url, headers=_request_headers(), json={
-        'count': len(emails),
-        'emails': emails,
-    })
-    r.raise_for_status()
 
 
 def delete_synthetics_monitor(monitor_id):
