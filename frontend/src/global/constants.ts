@@ -14,7 +14,7 @@ export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
 
 export const GANDI_REFERRAL_LINK =
-  process.env.GANDI_REFERRAL_LINK || 'https://gandi.link/';
+  process.env.REACT_APP_GANDI_REFERRAL_LINK || 'https://gandi.link/';
 
 export interface StringIndexedArray {
   [key: string]: any;
