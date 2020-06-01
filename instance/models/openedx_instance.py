@@ -450,8 +450,19 @@ class OpenEdXInstance(
             appserver.terminate_vm()
         self.deprovision_rabbitmq()
         self.purge_consul_metadata()
+        self.disable_users()
         super().archive()
         self.logger.info('Archiving instance finished.')
+
+    def disable_users(self):
+        """
+        Deactivate users associated with this instance.
+        """
+        lms_users = self.lms_users.all()
+        for user in lms_users:
+            if not user.is_superuser:
+                user.is_active = False
+                user.save()
 
     @staticmethod
     def shut_down():
