@@ -1,0 +1,56 @@
+@import '~styles/theme';
+
+.login {
+  width: 100%;
+  padding: 32px 32px;
+
+  .forgot-password {
+    text-align: left;
+    text-decoration: underline;
+    font-family: $chivo-font;
+    font-size: 18px;
+    letter-spacing: 0.54px;
+    color: #1e4c59;
+    margin-top: 15px;
+  }
+}
+
+// FIXME: These are placed in the LoginPage styles, because putting them in `_theme.scss` causes recursive imports.
+// Customized alerts
+%alert {
+  color: #ffffff;
+  font-family: $chivo-font;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    padding-right: 8px;
+    font: normal normal normal 24px/1 FontAwesome;
+    -webkit-text-stroke: 2px transparent;  // Reduces the "weight" of the icon. Needs specifying a color to work.
+    display: inline-flex;
+    align-self: center;
+  }
+}
+
+.alert-success {
+  @extend %alert;
+  $alert-color: #00a556;
+  background-color: $alert-color;
+
+  &::before {
+    content: "\f00c";  // fa-check
+    -webkit-text-stroke-color: $alert-color;
+  }
+}
+
+.alert-danger {
+  @extend %alert;
+  $alert-color: #dd0000;
+  background-color: $alert-color;
+
+  &::before {
+    content: "\f00d";  // fa-times
+    -webkit-text-stroke-color: $alert-color;
+  }
+}

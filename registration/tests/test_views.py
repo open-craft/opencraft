@@ -100,11 +100,33 @@ class BetaTestApplicationViewTestMixin:
         with patch('registration.provision._provision_instance', autospec=True) as mock_handler:
             expected_call_count = 0
             for verification_email in mail.outbox:
-                verify_url = re.search(r'https?://[^\s]+',
-                                       verification_email.body).group(0)
-                print(verify_url)
-                self.client.get(verify_url)
+                # Retrieve email being verified
+                pending_email = EmailAddress.objects.get(
+                    email__in=verification_email.to
+                )
+
+                # Check if confirmation code is present in email
+                self.assertIn(pending_email.key, verification_email.body)
+
+                # Reverse validation URL
+                verification_url = reverse(
+                    'api:v2:verify-email-api-detail',
+                    kwargs={
+                        'pk': pending_email.key,
+                    }
+                )
+
+                # Fix to add the server url when running browser tests
+                if hasattr(self, 'live_server_url'):
+                    verification_url = '{host}{path}'.format(
+                        host=self.live_server_url,
+                        path=verification_url,
+                    )
+
+                # Make email confirmation request
+                self.client.get(verification_url)
                 expected_call_count += 1
+
             # Check to make sure we called _provision_instance when emails were verified.
             self.assertEqual(mock_handler.call_count, expected_call_count)
         self._assert_email_addresses_verified(application)

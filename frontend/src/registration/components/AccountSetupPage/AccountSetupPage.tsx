@@ -101,9 +101,9 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         subscribeToUpdates: this.state.subscribeToUpdates
       },
       {
+        externalDomain: this.props.registrationData.externalDomain,
         subdomain: this.props.registrationData.subdomain,
-        instanceName: this.props.registrationData.instanceName,
-        publicContactEmail: this.props.registrationData.publicContactEmail
+        instanceName: this.props.registrationData.instanceName
       },
       RegistrationSteps.CONGRATS
     );
@@ -112,12 +112,12 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
   render() {
     const checkboxLinks = {
       tos: (
-        <a href={PRIVACY_POLICY_LINK}>
+        <a href={PRIVACY_POLICY_LINK} target="_blank" rel="noopener noreferrer">
           <WrappedMessage id="privacyPolicy" messages={messages} />
         </a>
       ),
       privacy_policy: (
-        <a href={TOS_LINK}>
+        <a href={TOS_LINK} target="_blank" rel="noopener noreferrer">
           <WrappedMessage id="termsOfService" messages={messages} />
         </a>
       )
@@ -128,7 +128,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         currentStep={3}
       >
         <RedirectToCorrectStep
-          currentPageStep={2}
+          currentPageStep={3}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <Form className="account-form">

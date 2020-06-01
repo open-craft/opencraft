@@ -30,6 +30,7 @@ from instance.models.instance import InstanceReference, InstanceTag
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.rabbitmq_server import RabbitMQServer
 from instance.models.server import OpenStackServer
@@ -111,6 +112,15 @@ class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docs
     list_display = ('domain', 'ssh_username')
 
 
+class OpenEdXDeploymentAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+    list_display = ('instance', 'creator', 'type', 'has_changes', 'created')
+    list_filter = ('creator', 'type', 'created')
+
+    def has_changes(self, obj):
+        """Rerun whether deployment includes any changes"""
+        return bool(obj.changes)
+
+
 admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(OpenStackServer, OpenStackServerAdmin)
 admin.site.register(InstanceReference, InstanceReferenceAdmin)
@@ -122,3 +132,4 @@ admin.site.register(MongoDBServer, MongoDBServerAdmin)
 admin.site.register(MongoDBReplicaSet, MongoDBReplicaSetAdmin)
 admin.site.register(RabbitMQServer, RabbitMQServerAdmin)
 admin.site.register(LoadBalancingServer, LoadBalancingServerAdmin)
+admin.site.register(OpenEdXDeployment, OpenEdXDeploymentAdmin)

@@ -97,3 +97,10 @@ yarn-debug.log*
 yarn-error.log*
 
 frontend/junit.xml
+
+# Media files
+media/
+.python-version
+
+#MyPy
+.mypy_cache

@@ -4,6 +4,15 @@ $secondary-1: #0f1f24;
 $secondary-2: #7a7a7a;
 $secondary-4: #666666;
 
+$light-blue: #d3e1e7;
+$light-blue-2: #b6cdd7;
+$light-blue-3: #e2ebef;
+$console-bg: #f0f5f7;
+$light-gray: #f4f6f7;
+
+$alert-bg-yellow: #fff3cd;
+$alert-text-yellow: #856404;
+
 $theme-colors: (
   "primary": $primary-1,
   "secondary": $secondary-1
@@ -15,6 +24,12 @@ $roboto-font: 'Roboto', sans-serif;
 
 // Disable rounded button corners
 $enable-rounded: false;
+
+// This is a fix that prevents the vertical
+// scrollbar to resize the page
+body {
+  overflow-y: overlay;
+}
 
 // Form group styling
 .form-group {

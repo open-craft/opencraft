@@ -1,0 +1,49 @@
+.courses-listing-item {
+  border: 1px solid #bebebe;
+  border-bottom: 1.5px solid #126f9a;
+  padding-left: 50px;
+  flex-direction: column;
+  height: 140px;
+  max-width: 100px;
+
+  .col {
+    height: auto;
+    padding: 0 0 0 5px;
+    font-size: 10px;
+    flex-grow: unset;
+    color: #474747;
+  }
+
+  .course-image {
+    padding-left: 0;
+    padding-bottom: 6px;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  .organization, .course-number {
+    font-size: 6px;
+  }
+
+  .course-name {
+    .customizable-link {
+      height: auto;
+      display: contents;
+      padding: 0;
+      color: #0075b4;
+      span {
+        font-size: 7px;
+      }
+    }
+  }
+
+  .course-start {
+    padding-bottom: 3px;
+    flex-grow: 1;
+    display: inline-flex;
+    align-items: flex-end;
+    font-size: 6px;
+  }
+}

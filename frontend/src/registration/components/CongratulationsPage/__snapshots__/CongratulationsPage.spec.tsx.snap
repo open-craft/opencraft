@@ -8,90 +8,94 @@ exports[`renders without crashing 1`] = `
     Pro & Teacher Account
   </h1>
   <div
-    className="d-flex justify-content-center"
+    className="step-bar-container"
   >
     <div
-      className="step-bar"
+      className="d-flex justify-content-center"
     >
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        className="step-bar"
       >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
-        />
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
-        />
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
-        />
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="circled-number"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          className="outer-circle"
-          cx={10}
-          cy={10}
-          r={10}
-        />
-        <circle
-          className="inner-circle"
-          cx={10}
-          cy={10}
-          r={7}
-          strokeWidth={2}
-        />
-        <text
-          className="circle-text"
-          color="#1e4c59"
-          dy="0.4em"
-          fontSize="10px"
-          strokeWidth="1px"
-          textAnchor="middle"
-          x="50%"
-          y="50%"
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          4
-        </text>
-      </svg>
-      <span
-        className="line"
-      />
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
+        />
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
+        />
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
+        />
+        <svg
+          className="circled-number"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            className="outer-circle"
+            cx={10}
+            cy={10}
+            r={10}
+          />
+          <circle
+            className="inner-circle"
+            cx={10}
+            cy={10}
+            r={7}
+            strokeWidth={2}
+          />
+          <text
+            className="circle-text"
+            color="#1e4c59"
+            dy="0.4em"
+            fontSize="10px"
+            strokeWidth="1px"
+            textAnchor="middle"
+            x="50%"
+            y="50%"
+          >
+            4
+          </text>
+        </svg>
+        <span
+          className="line"
+        />
+      </div>
     </div>
   </div>
   <div
@@ -110,8 +114,25 @@ exports[`renders without crashing 1`] = `
           You have successfully created your OpenCraft account.
         </p>
         <p>
-          We have sent you an email to verify your email address. Please follow the link that we emailed you to complete your application process.
+          We have sent you an email to verify your OpenCraft account. Please follow the link in your email account to verify and complete your application process.
         </p>
+        <div
+          className="text-center"
+        >
+          <a
+            aria-current={null}
+            href="/console"
+            onClick={[Function]}
+          >
+            <button
+              className="btn btn-primary btn-lg"
+              disabled={false}
+              type="button"
+            >
+              Go To Console
+            </button>
+          </a>
+        </div>
       </div>
     </div>
   </div>

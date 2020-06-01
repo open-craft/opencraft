@@ -21,16 +21,62 @@ OpenEdXAppServer model - Factories
 """
 
 # Imports #####################################################################
+import itertools
+from typing import Iterable, Optional
 
-from instance.models.appserver import Status as AppServerStatus
+from instance.models.appserver import AppServerState, Status as AppServerStatus
+from instance.models.deployment import DeploymentType
 from instance.models.load_balancer import LoadBalancingServer
+from instance.models.openedx_deployment import OpenEdXDeployment
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+
 
 # Functions ###################################################################
 
 
+def make_test_deployment(
+        instance: OpenEdXInstance = None,
+        active: bool = False,
+        appserver_states: Optional[Iterable[AppServerState]] = None,
+        deployment_type: DeploymentType = DeploymentType.admin,
+) -> OpenEdXDeployment:
+    """
+    Factory method to create a Deployment for an instance using `make_test_appserver`.
+
+    :param instance: The OpenEdx instance to create an AppServer for, if not
+                     given will create a new instance.
+    :param appserver_states: states for the AppServers in the deployment
+    :param active: Whether the entire set is
+    :param deployment_type: Type of deploymetn
+    :return: An OpenEdXDeployment instance
+    """
+    if not instance:
+        instance = OpenEdXInstanceFactory()
+    if not appserver_states:
+        appserver_states = itertools.repeat(AppServerStatus.Running, instance.openedx_appserver_count)
+    deployment = OpenEdXDeployment.objects.create(instance=instance.ref, type=deployment_type)
+
+    for appserver_state in appserver_states:
+        make_test_appserver(
+            instance=instance,
+            status=appserver_state,
+            is_active=active,
+            deployment=deployment,
+        )
+    return deployment
+
+
 # pylint: disable=too-many-branches, useless-suppression
-def make_test_appserver(instance=None, s3=False, server=None, organization=None, status=None):  # noqa: MC0001
+def make_test_appserver(  # noqa: MC0001
+        instance=None,
+        s3=False,
+        server=None,
+        organization=None,
+        status=None,
+        is_active=None,
+        deployment=None
+):
     """
     Factory method to create an OpenEdXAppServer (and OpenStackServer).
 
@@ -45,6 +91,8 @@ def make_test_appserver(instance=None, s3=False, server=None, organization=None,
     :param server: The OpenStackServer to associate with this AppServer.
     :param organization: The organization that owns this AppServer.
     :param status: Will move an AppServer to the specified state
+    :param is_active: Will mark the AppServer as active
+    :param deployment: Will associate AppServer with the deployment
     :return: appserver for `instance`
     """
     if not instance:
@@ -63,8 +111,18 @@ def make_test_appserver(instance=None, s3=False, server=None, organization=None,
         instance.ref.save()
     appserver = instance._create_owned_appserver()
 
+    updated = False
+
     if server:
         appserver.server = server
+        updated = True
+    if is_active is not None:
+        appserver.is_active = is_active
+        updated = True
+    if deployment:
+        appserver.deployment = deployment
+        updated = True
+    if updated:
         appserver.save()
 
     if status == AppServerStatus.Running:

@@ -13,7 +13,7 @@ exports[`renders without crashing 1`] = `
       <p>
         Something went wrong!
       </p>
-      We hit an internal server error, try again soon, or, if that doesn'twork, contact us.
+      We hit an internal server error, try again soon, or, if that doesn't work, contact us.
     </div>
   </div>
 </div>

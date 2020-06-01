@@ -7,12 +7,11 @@ export enum Theme {
 
 export interface DomainInfoModel {
   subdomain: string;
-  domainIsExternal: boolean;
+  externalDomain: string;
 }
 
 export interface InstanceInfoModel {
   instanceName: string;
-  publicContactEmail: string;
 }
 
 export interface AccountInfoModel {
@@ -27,19 +26,13 @@ export interface AccountInfoModel {
 }
 
 export interface ThemeInfoModel {
-  theme: Theme;
   mainColour: string;
   accentColour: string;
-  logo: null | string;
-  cover: null | string;
 }
 
 export const DefaultTheme: Readonly<ThemeInfoModel> = {
-  theme: Theme.LIGHT,
   mainColour: 'blue',
-  accentColour: 'green',
-  logo: null,
-  cover: null
+  accentColour: 'green'
 };
 
 export interface RegistrationModel
@@ -54,16 +47,13 @@ export const blankRegistration: Readonly<RegistrationModel> = {
   acceptPaidSupport: false,
   acceptTOS: false,
   subscribeToUpdates: false,
-  cover: null,
   subdomain: '',
-  domainIsExternal: false,
+  externalDomain: '',
   email: '',
   fullName: '',
   instanceName: '',
-  logo: null,
   password: '',
   passwordConfirm: '',
-  publicContactEmail: '',
   username: '',
   ...DefaultTheme
 };

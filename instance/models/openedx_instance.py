@@ -37,9 +37,11 @@ from instance.models.instance import Instance
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.mixins.domain_names import DomainNameInstance
 from instance.models.mixins.load_balanced import LoadBalancedInstance
+from instance.models.mixins.openedx_static_content_overrides import OpenEdXStaticContentOverridesMixin
 from instance.models.mixins.openedx_database import OpenEdXDatabaseMixin
 from instance.models.mixins.openedx_monitoring import OpenEdXMonitoringMixin
 from instance.models.mixins.openedx_periodic_builds import OpenEdXPeriodicBuildsMixin
+from instance.models.mixins.openedx_site_configuration import OpenEdXSiteConfigurationMixin
 from instance.models.mixins.openedx_storage import OpenEdXStorageMixin
 from instance.models.mixins.openedx_theme import OpenEdXThemeMixin
 from instance.models.mixins.secret_keys import SecretKeyInstanceMixin
@@ -56,11 +58,13 @@ class OpenEdXInstance(
         DomainNameInstance,
         LoadBalancedInstance,
         OpenEdXAppConfiguration,
+        OpenEdXStaticContentOverridesMixin,
         OpenEdXDatabaseMixin,
         OpenEdXMonitoringMixin,
         OpenEdXStorageMixin,
         OpenEdXThemeMixin,
         OpenEdXPeriodicBuildsMixin,
+        OpenEdXSiteConfigurationMixin,
         SecretKeyInstanceMixin,
         Instance
 ):
@@ -109,6 +113,13 @@ class OpenEdXInstance(
             # (This is used to optimize the /api/v1/instances/ endpoint query for example)
             return self.ref._cached_active_appservers
         return self.appserver_set.filter(_is_active=True)
+
+    def get_latest_deployment(self):
+        """ The latest OpenEdXDeployment associated with this instance. """
+        deployment = super(OpenEdXInstance, self).get_latest_deployment()
+        if deployment:
+            return deployment.openedxdeployment
+        return None
 
     @property
     def database_name(self):
@@ -266,7 +277,7 @@ class OpenEdXInstance(
         except models.ObjectDoesNotExist:
             return None
 
-    def _spawn_appserver(self):
+    def _spawn_appserver(self, deployment_id=None):
         """
             Provision a new AppServer
 
@@ -298,14 +309,15 @@ class OpenEdXInstance(
         self.logger.info('Provisioning RabbitMQ vhost...')
         self.provision_rabbitmq()
 
-        return self._create_owned_appserver()
+        return self._create_owned_appserver(deployment_id=deployment_id)
 
     @log_exception
     def spawn_appserver(self,
                         mark_active_on_success=False,
                         num_attempts=1,
                         success_tag=None,
-                        failure_tag=None):
+                        failure_tag=None,
+                        deployment_id=None):
         """
         Provision a new AppServer
 
@@ -320,7 +332,7 @@ class OpenEdXInstance(
         """
         for attempt in range(num_attempts):
             self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
-            app_server = self._spawn_appserver()
+            app_server = self._spawn_appserver(deployment_id=deployment_id)
 
             if app_server and app_server.provision():
                 break
@@ -355,7 +367,7 @@ class OpenEdXInstance(
 
         return app_server.pk
 
-    def _create_owned_appserver(self):
+    def _create_owned_appserver(self, deployment_id=None):
         """
         Core internal code that actually creates the child appserver.
 
@@ -372,10 +384,12 @@ class OpenEdXInstance(
             app_server = self.appserver_set.create(
                 # Name for the app server: this will usually generate a unique name (and won't cause any issues if not):
                 name="AppServer {}".format(self.appserver_set.count() + 1),
+                deployment_id=deployment_id,
                 # Copy the current value of each setting into the AppServer, preserving it permanently:
                 configuration_database_settings=self.get_database_settings(),
                 configuration_storage_settings=self.get_storage_settings(),
                 configuration_theme_settings=self.get_theme_settings(),
+                configuration_site_configuration_settings=self.get_site_configuration_settings(),
                 configuration_secret_keys=self.get_secret_key_settings(),
                 **instance_config
             )
@@ -522,6 +536,7 @@ class OpenEdXInstance(
 
         :return: A dict of the configurations.
         """
+        dns_records_updated = self.dns_records_updated.timestamp() if self.dns_records_updated else None
         active_servers = self.get_active_appservers()
         basic_auth = self.http_auth_info_base64()
         enable_health_checks = active_servers.count() > 1
@@ -531,6 +546,7 @@ class OpenEdXInstance(
             'domain': self.domain,
             'name': self.name,
             'domains': self.get_load_balanced_domains(),
+            'dns_records_updated': dns_records_updated,
             'health_checks_enabled': enable_health_checks,
             'basic_auth': basic_auth,
             'active_app_servers': active_servers_data,
@@ -584,9 +600,5 @@ class OpenEdXInstance(
         """
         Returns a list of AppServers that are currently in the process of being launched.
         """
-        in_progress_statuses = (
-            AppServerStatus.New.state_id,
-            AppServerStatus.ConfiguringServer.state_id,
-            AppServerStatus.WaitingForServer.state_id,
-        )
+        in_progress_statuses = AppServerStatus.states_with(ids_only=True, is_configuration_state=True)
         return self.appserver_set.filter(_status__in=in_progress_statuses)

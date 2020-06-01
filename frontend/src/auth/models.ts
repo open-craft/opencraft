@@ -13,6 +13,10 @@ export interface LoginStateModel extends LoginFormModel {
   access: string;
   /** The JWT refresh token to renew auth token */
   refresh: string;
+  /** State of login request */
+  loading: boolean;
+  /** State of a page-specific action */
+  succeeded: boolean;
 }
 
 export const notLoggedInStatus: LoginStateModel = {
@@ -20,5 +24,20 @@ export const notLoggedInStatus: LoginStateModel = {
   username: '',
   password: '',
   access: '',
-  refresh: ''
+  refresh: '',
+  loading: false,
+  succeeded: false
+};
+
+export const getInitialState = () => {
+  const refreshToken = localStorage.getItem('token_refresh');
+  const accessToken = localStorage.getItem('token_access');
+  const loginState: LoginStateModel = notLoggedInStatus;
+
+  if (refreshToken && accessToken) {
+    loginState.access = accessToken;
+    loginState.refresh = refreshToken;
+  }
+
+  return loginState;
 };

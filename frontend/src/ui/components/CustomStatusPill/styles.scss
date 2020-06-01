@@ -1,0 +1,41 @@
+@import '~styles/theme';
+
+.status-pill {
+  background-color: $primary-2;
+  border-radius: 39px;
+  margin: 4px 2px;
+  padding: 8px 10px;
+  display: inline-flex;
+
+  .text {
+    font-family: $roboto-font;
+    text-align: center;
+    font-weight: 500;
+    font-size: 16px;
+    margin-top: 6px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .dot {
+    height: 25px;
+    width: 25px;
+    border: solid 2px #1e4c59;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .cancel-deployment {
+    margin-left: 20px;
+    margin-right: 10px;
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    i {
+      margin-right: 3px;
+    }
+  }
+}

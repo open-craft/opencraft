@@ -22,7 +22,7 @@ OpenEdXInstance model - Tests
 
 # Imports #####################################################################
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch, Mock, PropertyMock
 
 import ddt
@@ -1098,6 +1098,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         metadata = instance._generate_consul_metadata()
 
+        dns_records_updated = instance.dns_records_updated.timestamp() if instance.dns_records_updated else None
         active_servers = instance.get_active_appservers()
         basic_auth = instance.http_auth_info_base64()
         enable_health_checks = active_servers.count() > 1
@@ -1108,6 +1109,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
             'domain': instance.domain,
             'name': instance.name,
             'domains': instance.get_load_balanced_domains(),
+            'dns_records_updated': dns_records_updated,
             'health_checks_enabled': enable_health_checks,
             'basic_auth': basic_auth,
             'active_app_servers': active_servers_data,
@@ -1173,6 +1175,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
             'domain': 'domain',
             'name': 'name',
             'domains': ['domain1', 'domain2'],
+            'dns_records_updated': None,
             'health_checks_enabled': False,
             'basic_auth': 'basic_auth',
             'active_app_servers': [],
@@ -1243,6 +1246,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
             'domain': 'domain',
             'name': 'name',
             'domains': ['domain1', 'domain2'],
+            'dns_records_updated': datetime.now().timestamp(),
             'health_checks_enabled': False,
             'basic_auth': 'basic_auth',
             'active_app_servers': [],

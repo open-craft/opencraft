@@ -8,90 +8,94 @@ exports[`renders without crashing 1`] = `
     Create your Pro & Teacher Account
   </h1>
   <div
-    className="d-flex justify-content-center"
+    className="step-bar-container"
   >
     <div
-      className="step-bar"
+      className="d-flex justify-content-center"
     >
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        className="step-bar"
       >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
-        />
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
-        />
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="circled-number"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          className="outer-circle"
-          cx={10}
-          cy={10}
-          r={10}
-        />
-        <circle
-          className="inner-circle"
-          cx={10}
-          cy={10}
-          r={7}
-          strokeWidth={2}
-        />
-        <text
-          className="circle-text"
-          color="#1e4c59"
-          dy="0.4em"
-          fontSize="10px"
-          strokeWidth="1px"
-          textAnchor="middle"
-          x="50%"
-          y="50%"
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          3
-        </text>
-      </svg>
-      <span
-        className="line"
-      />
-      <svg
-        className="step"
-        viewBox="0 0 10 10"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx={5}
-          cy={5}
-          fill="#6d9cae"
-          r={5}
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
         />
-      </svg>
-      <span
-        className="line"
-      />
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
+        />
+        <svg
+          className="circled-number"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            className="outer-circle"
+            cx={10}
+            cy={10}
+            r={10}
+          />
+          <circle
+            className="inner-circle"
+            cx={10}
+            cy={10}
+            r={7}
+            strokeWidth={2}
+          />
+          <text
+            className="circle-text"
+            color="#1e4c59"
+            dy="0.4em"
+            fontSize="10px"
+            strokeWidth="1px"
+            textAnchor="middle"
+            x="50%"
+            y="50%"
+          >
+            3
+          </text>
+        </svg>
+        <span
+          className="line"
+        />
+        <svg
+          className="step"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx={5}
+            cy={5}
+            fill="#6d9cae"
+            r={5}
+          />
+        </svg>
+        <span
+          className="line"
+        />
+      </div>
     </div>
   </div>
   <div
@@ -107,97 +111,117 @@ exports[`renders without crashing 1`] = `
           Create your account
         </h2>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Your full name*
-          </label>
-          <input
-            className="form-control"
-            name="fullName"
-            onChange={[Function]}
-            value=""
-          />
-          <p>
-            Name and surname.
-          </p>
+            <label
+              className="form-label"
+            >
+              Your full name*
+            </label>
+            <input
+              className="form-control"
+              name="fullName"
+              onChange={[Function]}
+              value=""
+            />
+            <p>
+              Name and surname.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Username*
-          </label>
-          <input
-            className="form-control"
-            name="username"
-            onChange={[Function]}
-            value=""
-          />
-          <p>
-            This would also be the username of the administrator account on the Open edX instance.
-          </p>
+            <label
+              className="form-label"
+            >
+              Username*
+            </label>
+            <input
+              className="form-control"
+              name="username"
+              onChange={[Function]}
+              value=""
+            />
+            <p>
+              This would also be the username of the administrator account on the Open edX instance.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Email address*
-          </label>
-          <input
-            className="form-control"
-            name="email"
-            onChange={[Function]}
-            type="email"
-            value=""
-          />
-          <p>
-            This is also your account name, and where we will send important notices.
-          </p>
+            <label
+              className="form-label"
+            >
+              Email address*
+            </label>
+            <input
+              className="form-control"
+              name="email"
+              onChange={[Function]}
+              type="email"
+              value=""
+            />
+            <p>
+              This is also your account name, and where we will send important notices.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Password*
-          </label>
-          <input
-            className="form-control"
-            name="password"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p>
-            Password must have 8 characters, 1 number, 1 capital letter and 1 special character.
-          </p>
+            <label
+              className="form-label"
+            >
+              Password*
+            </label>
+            <input
+              className="form-control"
+              name="password"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+            <p>
+              Password must have 8 characters, 1 number, 1 capital letter and 1 special character.
+            </p>
+          </div>
         </div>
         <div
-          className="form-group"
+          className="text-input-container"
         >
-          <label
-            className="form-label"
+          <div
+            className="form-group"
           >
-            Confirm password*
-          </label>
-          <input
-            className="form-control"
-            name="passwordConfirm"
-            onChange={[Function]}
-            type="password"
-            value=""
-          />
-          <p>
-            Confirm the password in the field above.
-          </p>
+            <label
+              className="form-label"
+            >
+              Confirm password*
+            </label>
+            <input
+              className="form-control"
+              name="passwordConfirm"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+            <p>
+              Confirm the password in the field above.
+            </p>
+          </div>
         </div>
         <div
           className="custom-control custom-checkbox"
@@ -217,12 +241,16 @@ exports[`renders without crashing 1`] = `
             I accept that this is a free trial, and that the instance is provided without any guarantee. 
             <a
               href="/#"
+              rel="noopener noreferrer"
+              target="_blank"
             >
               Privacy Policy
             </a>
              and 
             <a
               href="/#"
+              rel="noopener noreferrer"
+              target="_blank"
             >
               Terms of Service
             </a>

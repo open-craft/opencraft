@@ -4,226 +4,57 @@ exports[`renders without crashing 1`] = `
 <div
   className="app-container container-fluid"
 >
-  <header
-    className="app-header row"
+  <div
+    className="container"
   >
-    <div
-      className="col-lg"
-    />
-    <div
-      className="logo-container col-lg"
+    <nav
+      className="navbar navbar-expand-md navbar-dark bg-transparent"
     >
-      <svg
-        className="site-logo"
+      <span
+        className="logo-container mx-auto navbar-brand"
       >
-        <use
-          xlinkHref="icons.svg#opencraft_logo"
+        <a
+          className="nav-link"
+          href="#"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          role="button"
+        >
+          <svg
+            className="site-logo"
+          >
+            <use
+              xlinkHref="icons.svg#opencraft_logo"
+            />
+          </svg>
+        </a>
+      </span>
+      <button
+        aria-controls="basic-navbar-nav"
+        aria-label="Toggle navigation"
+        className="navbar-toggler collapsed"
+        onClick={[Function]}
+        type="button"
+      >
+        <span
+          className="navbar-toggler-icon"
         />
-      </svg>
-    </div>
-    <div
-      className="col-lg"
-    />
-  </header>
+      </button>
+      <div
+        aria-expanded={null}
+        className="navbar-collapse collapse"
+        id="basic-navbar-nav"
+      >
+        <div
+          className="ml-auto navbar-nav"
+          onKeyDown={[Function]}
+        />
+      </div>
+    </nav>
+  </div>
   <div
     className="app-main row"
-  >
-    <div
-      className="registration-container col"
-    >
-      <div
-        className="div-fill"
-      >
-        <div
-          className="registration-page"
-        >
-          <h1>
-            Pro & Teacher Account
-          </h1>
-          <h2>
-            Create your own Open edX instance now.
-          </h2>
-          <div
-            className="d-flex justify-content-center"
-          >
-            <div
-              className="step-bar"
-            >
-              <svg
-                className="circled-number"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  className="outer-circle"
-                  cx={10}
-                  cy={10}
-                  r={10}
-                />
-                <circle
-                  className="inner-circle"
-                  cx={10}
-                  cy={10}
-                  r={7}
-                  strokeWidth={2}
-                />
-                <text
-                  className="circle-text"
-                  color="#1e4c59"
-                  dy="0.4em"
-                  fontSize="10px"
-                  strokeWidth="1px"
-                  textAnchor="middle"
-                  x="50%"
-                  y="50%"
-                >
-                  1
-                </text>
-              </svg>
-              <span
-                className="line"
-              />
-              <svg
-                className="step"
-                viewBox="0 0 10 10"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx={5}
-                  cy={5}
-                  fill="#6d9cae"
-                  r={5}
-                />
-              </svg>
-              <span
-                className="line"
-              />
-              <svg
-                className="step"
-                viewBox="0 0 10 10"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx={5}
-                  cy={5}
-                  fill="#6d9cae"
-                  r={5}
-                />
-              </svg>
-              <span
-                className="line"
-              />
-              <svg
-                className="step"
-                viewBox="0 0 10 10"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx={5}
-                  cy={5}
-                  fill="#6d9cae"
-                  r={5}
-                />
-              </svg>
-              <span
-                className="line"
-              />
-            </div>
-          </div>
-          <div
-            className="registration-page-container"
-          >
-            <div
-              className="registration-page-content row"
-            >
-              <div
-                className="domain-input-container"
-              >
-                <div
-                  className="domain-label"
-                >
-                  Type your domain name below
-                </div>
-                <div
-                  className="input-group"
-                >
-                  <input
-                    className="form-control"
-                    onChange={[Function]}
-                    value=""
-                  />
-                  <div
-                    className="input-group-append"
-                  >
-                    <span
-                      className="input-group-text"
-                    >
-                      .opencraft.hosting
-                    </span>
-                  </div>
-                  <div
-                    className="input-group-append"
-                  >
-                    <button
-                      className="btn btn-primary"
-                      disabled={false}
-                      onClick={[Function]}
-                      type="button"
-                    >
-                      Check Availability
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div
-                className="use-own"
-              >
-                <a
-                  href="/#"
-                >
-                  I want to use my own domain
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          className="hero-container"
-        >
-          <div
-            className="hero-div"
-          >
-            <h2>
-              Institutional account
-            </h2>
-            <p>
-              An institutional account gives you access to analytics, paid courses and certificates, mobile apps, priority support and more.
-            </p>
-            <div
-              className="institutional-button-container"
-            >
-              <button
-                className="btn btn-outline-primary btn-lg"
-                disabled={false}
-                onClick={[Function]}
-                type="button"
-              >
-                Contact Us
-              </button>
-              <button
-                className="btn btn-secondary btn-lg"
-                disabled={false}
-                onClick={[Function]}
-                type="button"
-              >
-                Find out more
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  />
   <footer
     className="app-footer align-items-center row"
   >

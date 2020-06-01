@@ -55,29 +55,48 @@ class OpenEdXThemeMixin(models.Model):
     class Meta:
         abstract = True
 
-    def get_theme_settings(self):
+    def get_simple_theme_static_files_settings(self, application):
         """
-        Returns a text string with ansible variables for design fields (colors, logo, ...)
-        in YAML format, to be passed to configuration_theme_settings.
+        Returns a dict with the keys corresponding to the ansible variables supported by the 'simple-theme' role and
+        the values corresponding to the supported values for those variables.
         """
 
-        if not self.deploy_simpletheme:
-            # This is the case e.g. of instances registered before the theme fields were available.
-            # We don't change their colors and we don't use simple_theme
-            return ""
+        static_files_settings = [
+            {
+                "url": application.logo.url,
+                "dest": "lms/static/images/logo.png",
+            },
+            {
+                "url": application.favicon.url,
+                "dest": "lms/static/images/favicon.ico",
+            },
+        ]
 
-        # application can be None (for instances not created through the form) or a
-        # BetaTestApplication object. first() returns None or object.
-        application = self.betatestapplication_set.first()
+        if application.hero_cover_image:
+            static_files_settings.append({
+                "url": application.hero_cover_image.url,
+                "dest": "lms/static/images/hero_cover.png"
+            })
+        return static_files_settings
 
-        if not application:
-            # Instance wasn't created from application form, so no colors will be set or changed
-            # and simple_theme won't be used (unless manually requested through other settings).
-            return ""
+    def get_common_settings(self, application):
+        """
+        Returns a dict with the simple-theme settings common to the v0 and v1 implementation.
+        """
+        return {
+            "SIMPLETHEME_ENABLE_DEPLOY": True,
+            "SIMPLETHEME_STATIC_FILES_URLS": self.get_simple_theme_static_files_settings(application),
+            "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
+        }
 
-        # These settings set the values required by simple_theme
-        theme_settings = {
-            # This block defines our theme by applying the chosen colors to SASS-defined color variables
+    def get_v0_theme_settings(self, application):
+        """
+        Returns a dict with the ansible SASS variables used by the 'simple-theme' role to deploy the v0 theme. Passed
+        to configuration_theme_settings.
+        """
+        return {
+            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_REPO,
+            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_LEGACY_VERSION,
             "SIMPLETHEME_SASS_OVERRIDES": [
                 {
                     "variable": "link-color",
@@ -103,20 +122,6 @@ class OpenEdXThemeMixin(models.Model):
                     ),
                 },
             ],
-            "SIMPLETHEME_STATIC_FILES_URLS": [
-                {
-                    "url": application.logo.url,
-                    "dest": "lms/static/images/logo.png",
-                },
-                {
-                    "url": application.favicon.url,
-                    "dest": "lms/static/images/favicon.ico",
-                },
-            ],
-            "SIMPLETHEME_ENABLE_DEPLOY": True,
-            "EDXAPP_DEFAULT_SITE_THEME": "simple-theme",
-            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
-            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
             "SIMPLETHEME_EXTRA_SASS": """
                 $main-color: {main_color};
                 $link-color: {link_color};
@@ -138,6 +143,62 @@ class OpenEdXThemeMixin(models.Model):
             )
         }
 
+    def get_v1_theme_settings(self, application):
+        """
+        Returns a dict with the ansible SASS variables used by the 'simple-theme' role to deploy the v1 theme. Passed
+        to configuration_theme_settings.
+        """
+        metadata_keys = ('version', 'theme')
+        sass_overrides = []
+        for key, value in self.theme_config.items():
+            if key in metadata_keys:
+                continue
+            sass_overrides.append({
+                'variable': key,
+                'value': value
+            })
+
+        if application.hero_cover_image:
+            sass_overrides.append({
+                'variable': 'homepage-bg-image',
+                'value': 'url("../images/hero_cover.png")'
+            })
+
+        # TODO: map the values in main_variables keys to the appropriate SASS variables
+        return {
+            "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
+            "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
+            'SIMPLETHEME_SASS_OVERRIDES': sass_overrides
+        }
+
+    def get_theme_settings(self):
+        """
+        Returns a text string with ansible variables for design fields (colors, logo, ...)
+        in YAML format, to be passed to configuration_theme_settings.
+        """
+
+        if not self.deploy_simpletheme:
+            # This is the case e.g. of instances registered before the theme fields were available.
+            # We don't change their colors and we don't use simple_theme
+            return ""
+
+        # application can be None (for instances not created through the form) or a
+        # BetaTestApplication object. first() returns None or object.
+        application = self.betatestapplication_set.first()
+
+        if not application:
+            # Instance wasn't created from application form, so no colors will be set or changed
+            # and simple_theme won't be used (unless manually requested through other settings).
+            return ""
+
+        theme_settings = self.get_common_settings(application)
+
+        if self.theme_config:
+            sass_customizations = self.get_v1_theme_settings(application)
+        else:
+            sass_customizations = self.get_v0_theme_settings(application)
+
+        theme_settings.update(sass_customizations)
         return yaml.dump(theme_settings, default_flow_style=False)
 
     @staticmethod

@@ -23,7 +23,6 @@ interface ActionProps {
 interface State {
   [key: string]: string;
   instanceName: string;
-  publicContactEmail: string;
 }
 
 interface StateProps extends RegistrationStateModel {}
@@ -47,8 +46,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      instanceName: props.registrationData.instanceName,
-      publicContactEmail: props.registrationData.publicContactEmail
+      instanceName: props.registrationData.instanceName
     };
   }
 
@@ -69,26 +67,32 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
   private submitInstanceData = () => {
     this.props.performValidationAndStore(
       {
-        instanceName: this.state.instanceName,
-        publicContactEmail: this.state.publicContactEmail
+        instanceName: this.state.instanceName
       },
       RegistrationSteps.ACCOUNT
     );
   };
 
   render() {
+    let isDomainExternal = false;
+    let domainName = this.props.registrationData.subdomain;
+    if (this.props.registrationData.externalDomain !== '') {
+      isDomainExternal = true;
+      domainName = this.props.registrationData.externalDomain;
+    }
+
     return (
       <RegistrationPage
         title="Create your Pro & Teacher Account"
         currentStep={2}
       >
         <RedirectToCorrectStep
-          currentPageStep={1}
+          currentPageStep={2}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
         <DomainSuccessJumbotron
-          domain={this.props.registrationData.subdomain}
-          domainIsExternal={this.props.registrationData.domainIsExternal}
+          domain={domainName}
+          domainIsExternal={isDomainExternal}
         />
         <Form className="secure-domain-form">
           <h2>
@@ -101,14 +105,6 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
             onChange={this.onChange}
             messages={messages}
             error={this.props.registrationFeedback.instanceName}
-          />
-          <TextInputField
-            fieldName="publicContactEmail"
-            value={this.state.publicContactEmail}
-            onChange={this.onChange}
-            messages={messages}
-            type="email"
-            error={this.props.registrationFeedback.publicContactEmail}
           />
         </Form>
         <RegistrationNavButtons

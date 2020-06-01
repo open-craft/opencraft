@@ -30,10 +30,55 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
+from instance.models.deployment import DeploymentType
+from instance.models.openedx_deployment import DeploymentState
+from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
+from instance.schemas.theming import theme_schema_v1
+from instance.schemas.utils import ref
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
+
+
+class DataSerializer(serializers.Serializer):
+    """
+    Serializer for data that does not need to be persisted directly.
+    Inherit from it to avoid needing to disable abstract-method warnings.
+    """
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass
+
+
+class GenericObjectSerializer(DataSerializer):
+    """
+    Serializer for any response that returns a JSON dict, without specifying
+    the fields of that dict in detail.
+    """
+    def to_representation(self, instance):
+        return instance
+
+    def to_internal_value(self, data):
+        return data
+
+    class Meta:
+        swagger_schema_fields = {
+            "type": "object",
+            "additionalProperties": True,
+        }
+
+
+class ApplicationImageUploadSerializer(DataSerializer):
+    """
+    Serializer for images to be uploaded for an application.
+    """
+    logo = serializers.ImageField(required=False, use_url=True)
+    favicon = serializers.ImageField(required=False, use_url=True)
+    hero_cover_image = serializers.ImageField(required=False, use_url=True)
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -163,12 +208,101 @@ class AccountSerializer(serializers.ModelSerializer):
         }
 
 
+# pylint: disable=abstract-method
+class ThemeSchemaSerializer(serializers.Serializer):
+    """
+    Custom automatically generated serializer from the theme schemas.
+
+    This is needed to make the Swagger code generator correctly generate the
+    schema model in the frontend without requiring to duplicate the schema
+    there.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Start with empty serializer and add fields from both theme schemas
+        """
+        super().__init__(*args, **kwargs)
+
+        # We're just going to use the v1 theme schema here since v0 is
+        # getting deprecated soon
+        theme_schema_combined = {
+            **theme_schema_v1['properties']
+        }
+        for key, value in theme_schema_combined.items():
+            field_type = None
+            if key == 'version':
+                field_type = serializers.IntegerField(required=False)
+            elif value == ref('flag'):
+                field_type = serializers.BooleanField(required=False)
+            else:
+                field_type = serializers.CharField(
+                    max_length=7,
+                    required=False,
+                    allow_blank=True,
+                    # TODO: Add a color validator here
+                )
+            self.fields[key] = field_type
+
+
+class StaticContentOverridesSerializer(serializers.Serializer):
+    """
+    Custom automatically generated serializer from the static content overrides schema.
+
+    This is needed to make the Swagger code generator correctly generate the schema model in the frontend
+    without having to duplicate teh schema there.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Add fields dynamically from the schema.
+        """
+        super().__init__(*args, **kwargs)
+        static_content_overrides = {
+            **static_content_overrides_v0_schema['properties']
+        }
+
+        for key, _ in static_content_overrides.items():
+            if key == 'version':
+                field_type = serializers.IntegerField(required=False)
+            else:
+                field_type = serializers.CharField(required=False, allow_blank=True)
+            self.fields[key] = field_type
+
+
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
-    """
 
+    Make sure to prefetch the instance data when using this serializer to
+    avoid a high query count in LIST operations.
+    """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    # Theme and static overrides serializers
+    draft_theme_config = ThemeSchemaSerializer(read_only=True)
+    draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
+
+    # LMS and Studio URLs (if the instance is provisioned)
+    lms_url = serializers.SerializerMethodField()
+    studio_url = serializers.SerializerMethodField()
+
+    public_contact_email = serializers.EmailField(required=False)
+    is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
+
+    def get_lms_url(self, obj):
+        """
+        Returns instance LMS url if available
+        """
+        if obj.instance:
+            return obj.instance.url
+        return ""
+
+    def get_studio_url(self, obj):
+        """
+        Returns instance Studio url if available
+        """
+        if obj.instance:
+            return obj.instance.studio_url
+        return ""
 
     def validate_user(self, value):
         """
@@ -186,11 +320,60 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "user",
+            "lms_url",
+            "studio_url",
             "subdomain",
+            "external_domain",
             "instance_name",
             "public_contact_email",
-            "project_description",
             "privacy_policy_url",
             "use_advanced_theme",
             "draft_theme_config",
+            "logo",
+            "favicon",
+            "hero_cover_image",
+            "draft_static_content_overrides",
+            "is_email_verified"
         )
+        read_only_fields = [
+            "logo",
+            "favicon",
+            "lms_url",
+            "studio_url",
+        ]
+
+
+class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
+    """
+    A version of OpenEdXInstanceConfigSerializer that excludes non-updatable fields and makes
+    all other fields optional. Used for editing existing items.
+    """
+    EXCLUDE_FIELDS = ("id", "is_email_verified")
+
+    def __init__(self, *args, **kwargs):
+        """ Override fields """
+        super().__init__(*args, **kwargs)
+        for field_name in self.EXCLUDE_FIELDS:
+            self.fields.pop(field_name)
+        # Mark all fields as optional:
+        for field in self.fields.values():
+            field.required = False
+
+
+# pylint: disable=abstract-method
+class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
+    """
+    Serializer with configuration details about the user's Open edX instance.
+    """
+    status = serializers.ChoiceField(choices=DeploymentState.choices())
+    undeployed_changes = serializers.JSONField()
+    deployed_changes = serializers.JSONField()
+    deployment_type = serializers.ChoiceField(choices=DeploymentType.choices())
+
+
+# pylint: disable=abstract-method
+class OpenEdXInstanceDeploymentCreateSerializer(serializers.Serializer):
+    """
+    Serializer with configuration details about the user's Open edX instance.
+    """
+    id = serializers.IntegerField()

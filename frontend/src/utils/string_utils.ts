@@ -1,9 +1,6 @@
 export const toCamelCase = (s: string) => {
   return s.replace(/([-_][a-z])/gi, $1 => {
-    return $1
-      .toUpperCase()
-      .replace('-', '')
-      .replace('_', '');
+    return $1.toUpperCase().replace('-', '').replace('_', '');
   });
 };
 
@@ -19,4 +16,8 @@ export const sanitizeErrorFeedback = (input: {
   });
 
   return newObject;
+};
+
+export const capitalizeFirstLetter = (str: string) => {
+  return str[0].toUpperCase() + str.slice(1);
 };
