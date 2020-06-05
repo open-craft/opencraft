@@ -839,6 +839,7 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             'hosts': [REDIS_URL],
+            'capacity': env('CHANNEL_CAPACITY', default=1500),
         },
     },
 }
@@ -859,6 +860,8 @@ USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
     default='http://localhost:3000'
 )
+# Redirect from old registration form to new one
+NEW_USER_CONSOLE_REGISTRATION_ENABLED = env.bool('NEW_USER_CONSOLE_REGISTRATION_ENABLED', default=False)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [

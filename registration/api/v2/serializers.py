@@ -30,12 +30,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
-from registration.api.v2 import constants
-from registration.models import BetaTestApplication
-from userprofile.models import UserProfile
+from instance.models.deployment import DeploymentType
+from instance.models.openedx_deployment import DeploymentState
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
+from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -280,9 +281,12 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     draft_theme_config = ThemeSchemaSerializer(read_only=True)
     draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
 
-    # LMS and Studio URLs (if the instance is provisisoned)
+    # LMS and Studio URLs (if the instance is provisioned)
     lms_url = serializers.SerializerMethodField()
     studio_url = serializers.SerializerMethodField()
+
+    public_contact_email = serializers.EmailField(required=False)
+    is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
     def get_lms_url(self, obj):
         """
@@ -328,7 +332,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "logo",
             "favicon",
             "hero_cover_image",
-            "draft_static_content_overrides"
+            "draft_static_content_overrides",
+            "is_email_verified"
         )
         read_only_fields = [
             "logo",
@@ -340,10 +345,10 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
 
 class OpenEdXInstanceConfigUpdateSerializer(OpenEdXInstanceConfigSerializer):
     """
-    A version of OpenEdXInstanceConfigSerializer that excludes the 'id' field and makes
+    A version of OpenEdXInstanceConfigSerializer that excludes non-updatable fields and makes
     all other fields optional. Used for editing existing items.
     """
-    EXCLUDE_FIELDS = ("id",)
+    EXCLUDE_FIELDS = ("id", "is_email_verified")
 
     def __init__(self, *args, **kwargs):
         """ Override fields """
@@ -360,10 +365,10 @@ class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
     """
     Serializer with configuration details about the user's Open edX instance.
     """
-    status = serializers.ChoiceField(
-        choices=constants.DEPLOYMENT_STATUS_CHOICES
-    )
-    undeployed_changes = serializers.IntegerField()
+    status = serializers.ChoiceField(choices=DeploymentState.choices())
+    undeployed_changes = serializers.JSONField()
+    deployed_changes = serializers.JSONField()
+    deployment_type = serializers.ChoiceField(choices=DeploymentType.choices())
 
 
 # pylint: disable=abstract-method

@@ -218,11 +218,31 @@ class ResourceState:
             def generate():
                 """ Search for ResourceStates defined on this class or inherited classes """
                 for name in dir(cls):
-                    if name[:1] == '_' or name == 'states':
+                    if name[:1] == '_' or name in ['states', 'states_with']:
                         continue
                     state = getattr(cls, name)
                     if inspect.isclass(state) and issubclass(state, ResourceState):
                         yield state
+
+            return tuple(generate())
+
+        @classmethod
+        def states_with(cls, ids_only=False, **attrs):
+            """
+            Get a tuple listing all the classes defined within this class have the supplied
+            attribute values.
+            """
+
+            def generate():
+                """ Search for ResourceStates defined on this class or inherited classes """
+                for name in dir(cls):
+                    if name[:1] == '_' or name in ['states', 'states_with']:
+                        continue
+                    state = getattr(cls, name)
+                    if inspect.isclass(state) and issubclass(state, ResourceState):
+                        if all(getattr(state, attr, object()) == value for attr, value in attrs.items()):
+                            yield state.state_id if ids_only else state
+
             return tuple(generate())
 
 
@@ -319,10 +339,12 @@ class ResourceStateDescriptor:
                         """ Wrapper around the method which checks the state requirements first """
                         require_valid_state(resource)
                         return method(resource, *args, **kwargs)
+
                     wrapped_method.is_available = lambda: isinstance(descriptor.__get__(resource), accepted_states)
                     return wrapped_method
 
             return MagicWrapper()
+
         return wrap
 
     def transition(self, to_state, from_states=None):
@@ -514,15 +536,14 @@ class ConsulAgent:
         if get_data:
             stored = json.loads(get_data['Value'].decode('utf-8'))
             updates = {
-                k: value[k] for k in value
-                if (k in stored and
-                    value[k] != stored[k]) or
-                k not in stored
+                k: value[k]
+                for k in value
+                if (k in stored and value[k] != stored[k]) or k not in stored
             }
             payload = {
-                k: stored[k] for k in stored
-                if k not in value and
-                k != 'version'
+                k: stored[k]
+                for k in stored
+                if k not in value and k != 'version'
             }
             updated = bool(updates)
             payload['version'] = stored['version']

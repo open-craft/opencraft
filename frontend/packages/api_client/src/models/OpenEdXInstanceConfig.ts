@@ -49,7 +49,9 @@ export interface OpenEdXInstanceConfig {
      */
     readonly studioUrl?: string;
     /**
-     * The URL students will visit. In the future, you will also have the possibility to use your own domain name.  Example: hogwarts.opencraft.hosting
+     * The URL students will visit. In the future, you will also have the possibility to use your own domain name.
+     * 
+     * Example: hogwarts.opencraft.hosting
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
@@ -61,17 +63,19 @@ export interface OpenEdXInstanceConfig {
      */
     externalDomain?: string | null;
     /**
-     * The name of your institution, company or project.  Example: Hogwarts Online Learning
+     * The name of your institution, company or project.
+     * 
+     * Example: Hogwarts Online Learning
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
     instanceName: string;
     /**
-     * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.  This needs to be a valid email.
+     * 
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
-    publicContactEmail: string;
+    publicContactEmail?: string;
     /**
      * URL to the privacy policy.
      * @type {string}
@@ -91,13 +95,13 @@ export interface OpenEdXInstanceConfig {
      */
     draftThemeConfig?: ThemeSchema;
     /**
-     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft\'s logo will be used.
+     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft's logo will be used.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
     readonly logo?: string;
     /**
-     * This is used as the browser tab icon for your instance\'s pages. If unset, OpenCraft\'s icon will be used.
+     * This is used as the browser tab icon for your instance's pages. If unset, OpenCraft's icon will be used.
      * @type {string}
      * @memberof OpenEdXInstanceConfig
      */
@@ -114,6 +118,12 @@ export interface OpenEdXInstanceConfig {
      * @memberof OpenEdXInstanceConfig
      */
     draftStaticContentOverrides?: StaticContentOverrides;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly isEmailVerified?: boolean;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -132,7 +142,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'subdomain': json['subdomain'],
         'externalDomain': !exists(json, 'external_domain') ? undefined : json['external_domain'],
         'instanceName': json['instance_name'],
-        'publicContactEmail': json['public_contact_email'],
+        'publicContactEmail': !exists(json, 'public_contact_email') ? undefined : json['public_contact_email'],
         'privacyPolicyUrl': !exists(json, 'privacy_policy_url') ? undefined : json['privacy_policy_url'],
         'useAdvancedTheme': !exists(json, 'use_advanced_theme') ? undefined : json['use_advanced_theme'],
         'draftThemeConfig': !exists(json, 'draft_theme_config') ? undefined : ThemeSchemaFromJSON(json['draft_theme_config']),
@@ -140,6 +150,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
+        'isEmailVerified': !exists(json, 'is_email_verified') ? undefined : json['is_email_verified'],
     };
 }
 

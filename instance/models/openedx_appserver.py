@@ -182,6 +182,17 @@ class OpenEdXAppConfiguration(models.Model):
             "who should receive alerts when an AppServer fails to provision."
         )
     )
+    openedx_appserver_count = models.IntegerField(
+        default=1,
+        help_text=(
+            "The number of Open edX AppServers to deploy for this instance."
+        )
+    )
+
+    @property
+    def public_contact_email(self):
+        """ Helper to provide similar API to get email as BetaTestApplication """
+        return self.email
 
     @property
     def base_playbook_name(self):

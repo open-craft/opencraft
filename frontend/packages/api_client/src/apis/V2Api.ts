@@ -139,6 +139,7 @@ export interface InstancesOpenedxConfigValidateRequest {
 export interface InstancesOpenedxDeploymentCreateRequest {
     data: OpenEdXInstanceDeploymentCreate;
     force?: boolean;
+    deploymentType?: InstancesOpenedxDeploymentCreateDeploymentTypeEnum;
 }
 
 export interface InstancesOpenedxDeploymentDeleteRequest {
@@ -161,8 +162,12 @@ export interface PasswordResetValidateTokenCreateRequest {
     data: Token;
 }
 
+export interface VerifyEmailReadRequest {
+    id: string;
+}
+
 /**
- * no description
+ * 
  */
 export class V2Api extends runtime.BaseAPI {
 
@@ -461,7 +466,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreateRaw(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<runtime.ApiResponse<OpenEdXInstanceConfig>> {
@@ -494,7 +499,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Checks if user is creating account with external domain and fill subdomain slug.  This check if `external_domain` is filled, if so, generate a valid subdomain slug and fill in the field before passing it to the serializer.  Checks if public contact email is empty or not, if empty override it with user mail
      * Create new user instance.
      */
     async instancesOpenedxConfigCreate(requestParameters: InstancesOpenedxConfigCreateRequest): Promise<OpenEdXInstanceConfig> {
@@ -886,6 +891,10 @@ export class V2Api extends runtime.BaseAPI {
             queryParameters['force'] = requestParameters.force;
         }
 
+        if (requestParameters.deploymentType !== undefined) {
+            queryParameters['deployment_type'] = requestParameters.deploymentType;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
@@ -1148,4 +1157,57 @@ export class V2Api extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /**
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
+     */
+    async verifyEmailReadRaw(requestParameters: VerifyEmailReadRequest): Promise<runtime.ApiResponse<object>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling verifyEmailRead.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/verify_email/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Checks if the verification code is valid and then confirms the user email address. Note that the user can use the same activation code multiple times since the library we\'re using doesn\'t expire the verification codes after confirming.
+     * Confirms a user\'s email address.
+     */
+    async verifyEmailRead(requestParameters: VerifyEmailReadRequest): Promise<object> {
+        const response = await this.verifyEmailReadRaw(requestParameters);
+        return await response.value();
+    }
+
+}
+
+/**
+    * @export
+    * @enum {string}
+    */
+export enum InstancesOpenedxDeploymentCreateDeploymentTypeEnum {
+    User = 'user',
+    Batch = 'batch',
+    Admin = 'admin',
+    Pr = 'pr',
+    Periodic = 'periodic',
+    Registration = 'registration',
+    Unknown = 'unknown'
 }

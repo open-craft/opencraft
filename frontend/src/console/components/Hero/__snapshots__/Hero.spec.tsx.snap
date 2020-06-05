@@ -2,278 +2,249 @@
 
 exports[`Hero customization page renders the hero customization page when instance all its dependencies are set up 1`] = `
 <div
-  className="hero-page"
+  className="console-page"
 >
   <div
-    className="console-page"
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="console-page-container"
   >
     <div
-      className="title-container"
-    >
-      <h1>
-        <a
-          className="header-link"
-        >
-          test
-          <i
-            className="instance-link fas fa-link fa-xs"
-          />
-        </a>
-      </h1>
-      <h2>
-        <a
-          className="header-link"
-        >
-          Edit courses (Studio)
-        </a>
-      </h2>
-    </div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
+      className="console-page-content row"
     >
       <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="console-page-container"
-    >
-      <div
-        className="console-page-content row"
+        className="container-fluid"
       >
         <div
-          className="container-fluid"
+          className="row"
         >
           <div
-            className="row"
+            className="col-md-3"
           >
             <div
-              className="col-md-3"
+              className="customization-menu accordion"
             >
               <div
-                className="customization-menu accordion"
+                className="card"
               >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
                   >
-                    <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
-                    >
-                      Theme
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse show"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
-                      >
-                        <a
-                          aria-current={null}
-                          href="/console/theming/preview-and-colors"
-                          onClick={[Function]}
-                        >
-                          Preview & colors
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/logos"
-                          onClick={[Function]}
-                        >
-                          Logos
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/buttons"
-                          onClick={[Function]}
-                        >
-                          Buttons
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/navigation"
-                          onClick={[Function]}
-                        >
-                          Navigation
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/footer"
-                          onClick={[Function]}
-                        >
-                          Footer
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                      </div>
-                    </div>
+                    Theme
                   </div>
                 </div>
                 <div
-                  className="card"
+                  aria-expanded={null}
+                  className="collapse show"
                 >
                   <div
-                    className="card-header"
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Custom Pages
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/about"
-                          onClick={[Function]}
-                        >
-                          About
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/contact"
-                          onClick={[Function]}
-                        >
-                          Contact
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/donate"
-                          onClick={[Function]}
-                        >
-                          Donate
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/tos"
-                          onClick={[Function]}
-                        >
-                          Terms of Service
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/honor"
-                          onClick={[Function]}
-                        >
-                          Honor Code
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/privacy"
-                          onClick={[Function]}
-                        >
-                          Privacy Policy
-                        </a>
-                      </div>
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                className="card"
+              >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Instance Settings
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
                   <div
-                    aria-expanded={null}
-                    className="collapse"
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-body"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/settings/general"
-                          onClick={[Function]}
-                        >
-                          General
-                        </a>
-                        <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
-                          onClick={[Function]}
-                          style={Object {}}
-                        >
-                          Domain
-                        </a>
-                      </div>
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
             <div
-              className="col-md-9"
+              className="hero-page"
             >
               <div
                 className="customization-form"
@@ -304,278 +275,249 @@ exports[`Hero customization page renders the hero customization page when instan
 
 exports[`Hero customization page renders the hero customization page when instance does not have the theme set up 1`] = `
 <div
-  className="hero-page"
+  className="console-page"
 >
   <div
-    className="console-page"
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="console-page-container"
   >
     <div
-      className="title-container"
-    >
-      <h1>
-        <a
-          className="header-link"
-        >
-          test
-          <i
-            className="instance-link fas fa-link fa-xs"
-          />
-        </a>
-      </h1>
-      <h2>
-        <a
-          className="header-link"
-        >
-          Edit courses (Studio)
-        </a>
-      </h2>
-    </div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
+      className="console-page-content row"
     >
       <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="console-page-container"
-    >
-      <div
-        className="console-page-content row"
+        className="container-fluid"
       >
         <div
-          className="container-fluid"
+          className="row"
         >
           <div
-            className="row"
+            className="col-md-3"
           >
             <div
-              className="col-md-3"
+              className="customization-menu accordion"
             >
               <div
-                className="customization-menu accordion"
+                className="card"
               >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
                   >
-                    <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
-                    >
-                      Theme
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse show"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
-                      >
-                        <a
-                          aria-current={null}
-                          href="/console/theming/preview-and-colors"
-                          onClick={[Function]}
-                        >
-                          Preview & colors
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/logos"
-                          onClick={[Function]}
-                        >
-                          Logos
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/buttons"
-                          onClick={[Function]}
-                        >
-                          Buttons
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/navigation"
-                          onClick={[Function]}
-                        >
-                          Navigation
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/footer"
-                          onClick={[Function]}
-                        >
-                          Footer
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                      </div>
-                    </div>
+                    Theme
                   </div>
                 </div>
                 <div
-                  className="card"
+                  aria-expanded={null}
+                  className="collapse show"
                 >
                   <div
-                    className="card-header"
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Custom Pages
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/about"
-                          onClick={[Function]}
-                        >
-                          About
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/contact"
-                          onClick={[Function]}
-                        >
-                          Contact
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/donate"
-                          onClick={[Function]}
-                        >
-                          Donate
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/tos"
-                          onClick={[Function]}
-                        >
-                          Terms of Service
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/honor"
-                          onClick={[Function]}
-                        >
-                          Honor Code
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/privacy"
-                          onClick={[Function]}
-                        >
-                          Privacy Policy
-                        </a>
-                      </div>
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                className="card"
+              >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Instance Settings
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
                   <div
-                    aria-expanded={null}
-                    className="collapse"
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-body"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/settings/general"
-                          onClick={[Function]}
-                        >
-                          General
-                        </a>
-                        <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
-                          onClick={[Function]}
-                          style={Object {}}
-                        >
-                          Domain
-                        </a>
-                      </div>
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
             <div
-              className="col-md-9"
+              className="hero-page"
             >
               <div
                 className="customization-form"
@@ -606,278 +548,249 @@ exports[`Hero customization page renders the hero customization page when instan
 
 exports[`Hero customization page renders the hero customization page when the instance does not have the cover image set up 1`] = `
 <div
-  className="hero-page"
+  className="console-page"
 >
   <div
-    className="console-page"
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="console-page-container"
   >
     <div
-      className="title-container"
-    >
-      <h1>
-        <a
-          className="header-link"
-        >
-          test
-          <i
-            className="instance-link fas fa-link fa-xs"
-          />
-        </a>
-      </h1>
-      <h2>
-        <a
-          className="header-link"
-        >
-          Edit courses (Studio)
-        </a>
-      </h2>
-    </div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
+      className="console-page-content row"
     >
       <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="console-page-container"
-    >
-      <div
-        className="console-page-content row"
+        className="container-fluid"
       >
         <div
-          className="container-fluid"
+          className="row"
         >
           <div
-            className="row"
+            className="col-md-3"
           >
             <div
-              className="col-md-3"
+              className="customization-menu accordion"
             >
               <div
-                className="customization-menu accordion"
+                className="card"
               >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
                   >
-                    <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
-                    >
-                      Theme
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse show"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
-                      >
-                        <a
-                          aria-current={null}
-                          href="/console/theming/preview-and-colors"
-                          onClick={[Function]}
-                        >
-                          Preview & colors
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/logos"
-                          onClick={[Function]}
-                        >
-                          Logos
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/buttons"
-                          onClick={[Function]}
-                        >
-                          Buttons
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/navigation"
-                          onClick={[Function]}
-                        >
-                          Navigation
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/footer"
-                          onClick={[Function]}
-                        >
-                          Footer
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                      </div>
-                    </div>
+                    Theme
                   </div>
                 </div>
                 <div
-                  className="card"
+                  aria-expanded={null}
+                  className="collapse show"
                 >
                   <div
-                    className="card-header"
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Custom Pages
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/about"
-                          onClick={[Function]}
-                        >
-                          About
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/contact"
-                          onClick={[Function]}
-                        >
-                          Contact
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/donate"
-                          onClick={[Function]}
-                        >
-                          Donate
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/tos"
-                          onClick={[Function]}
-                        >
-                          Terms of Service
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/honor"
-                          onClick={[Function]}
-                        >
-                          Honor Code
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/privacy"
-                          onClick={[Function]}
-                        >
-                          Privacy Policy
-                        </a>
-                      </div>
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                className="card"
+              >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Instance Settings
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
                   <div
-                    aria-expanded={null}
-                    className="collapse"
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-body"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/settings/general"
-                          onClick={[Function]}
-                        >
-                          General
-                        </a>
-                        <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
-                          onClick={[Function]}
-                          style={Object {}}
-                        >
-                          Domain
-                        </a>
-                      </div>
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
             <div
-              className="col-md-9"
+              className="hero-page"
             >
               <div
                 className="customization-form"
@@ -908,278 +821,249 @@ exports[`Hero customization page renders the hero customization page when the in
 
 exports[`Hero customization page renders the hero customization page when the instance does not have the static content overrides set up 1`] = `
 <div
-  className="hero-page"
+  className="console-page"
 >
   <div
-    className="console-page"
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="console-page-container"
   >
     <div
-      className="title-container"
-    >
-      <h1>
-        <a
-          className="header-link"
-        >
-          test
-          <i
-            className="instance-link fas fa-link fa-xs"
-          />
-        </a>
-      </h1>
-      <h2>
-        <a
-          className="header-link"
-        >
-          Edit courses (Studio)
-        </a>
-      </h2>
-    </div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
+      className="console-page-content row"
     >
       <div
-        className="redeployment-nav"
-      >
-        <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
-            }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
-        >
-          Deploy (0 updates)
-        </button>
-      </div>
-    </div>
-    <div
-      className="console-page-container"
-    >
-      <div
-        className="console-page-content row"
+        className="container-fluid"
       >
         <div
-          className="container-fluid"
+          className="row"
         >
           <div
-            className="row"
+            className="col-md-3"
           >
             <div
-              className="col-md-3"
+              className="customization-menu accordion"
             >
               <div
-                className="customization-menu accordion"
+                className="card"
               >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
                   >
-                    <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
-                    >
-                      Theme
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse show"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
-                      >
-                        <a
-                          aria-current={null}
-                          href="/console/theming/preview-and-colors"
-                          onClick={[Function]}
-                        >
-                          Preview & colors
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/logos"
-                          onClick={[Function]}
-                        >
-                          Logos
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/buttons"
-                          onClick={[Function]}
-                        >
-                          Buttons
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/navigation"
-                          onClick={[Function]}
-                        >
-                          Navigation
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/footer"
-                          onClick={[Function]}
-                        >
-                          Footer
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                      </div>
-                    </div>
+                    Theme
                   </div>
                 </div>
                 <div
-                  className="card"
+                  aria-expanded={null}
+                  className="collapse show"
                 >
                   <div
-                    className="card-header"
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Custom Pages
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/about"
-                          onClick={[Function]}
-                        >
-                          About
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/contact"
-                          onClick={[Function]}
-                        >
-                          Contact
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/donate"
-                          onClick={[Function]}
-                        >
-                          Donate
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/tos"
-                          onClick={[Function]}
-                        >
-                          Terms of Service
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/honor"
-                          onClick={[Function]}
-                        >
-                          Honor Code
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/privacy"
-                          onClick={[Function]}
-                        >
-                          Privacy Policy
-                        </a>
-                      </div>
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                className="card"
+              >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Instance Settings
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
                   <div
-                    aria-expanded={null}
-                    className="collapse"
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-body"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/settings/general"
-                          onClick={[Function]}
-                        >
-                          General
-                        </a>
-                        <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
-                          onClick={[Function]}
-                          style={Object {}}
-                        >
-                          Domain
-                        </a>
-                      </div>
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
             <div
-              className="col-md-9"
+              className="hero-page"
             >
               <div
                 className="customization-form"
@@ -1210,277 +1094,273 @@ exports[`Hero customization page renders the hero customization page when the in
 
 exports[`Hero customization page renders without crashing 1`] = `
 <div
-  className="hero-page"
+  className="console-page"
 >
   <div
-    className="console-page"
+    className="title-container"
+  >
+    <h1>
+      <i
+        className="fas fa-sync-alt fa-spin"
+      />
+    </h1>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
-      className="title-container"
+      className="redeployment-nav"
     >
-      <h1>
-        <i
-          className="fas fa-sync-alt fa-spin"
-        />
-      </h1>
-    </div>
-    <div
-      className="d-flex justify-content-center align-middle redeployment-toolbar"
-    >
-      <div
-        className="redeployment-nav"
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        onBlur={[Function]}
+        onFocus={[Function]}
+        onMouseOut={[Function]}
+        onMouseOver={[Function]}
       >
         <span
-          className="status-pill badge badge-pill badge-primary"
-          onBlur={[Function]}
-          onFocus={[Function]}
-          onMouseOut={[Function]}
-          onMouseOver={[Function]}
-        >
-          <span
-            className="dot"
-            style={
-              Object {
-                "backgroundColor": "grey",
-              }
+          className="dot"
+          style={
+            Object {
+              "backgroundColor": "grey",
             }
-          />
-          <div
-            className="text"
-          >
-            Status: loading
-          </div>
-        </span>
-        <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={true}
-          onClick={[Function]}
-          type="button"
+          }
+        />
+        <div
+          className="text"
         >
-          Deploy (0 updates)
-        </button>
-      </div>
+          Status: loading
+        </div>
+      </span>
+      <button
+        className="float-right loading btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        Deploy (0 updates)
+      </button>
     </div>
+  </div>
+  <div
+    className="console-page-container"
+  >
     <div
-      className="console-page-container"
+      className="console-page-content row"
     >
       <div
-        className="console-page-content row"
+        className="container-fluid"
       >
         <div
-          className="container-fluid"
+          className="row"
         >
           <div
-            className="row"
+            className="col-md-3"
           >
             <div
-              className="col-md-3"
+              className="customization-menu accordion"
             >
               <div
-                className="customization-menu accordion"
+                className="card"
               >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
                   >
-                    <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
-                    >
-                      Theme
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse show"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
-                      >
-                        <a
-                          aria-current={null}
-                          href="/console/theming/preview-and-colors"
-                          onClick={[Function]}
-                        >
-                          Preview & colors
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/logos"
-                          onClick={[Function]}
-                        >
-                          Logos
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/buttons"
-                          onClick={[Function]}
-                        >
-                          Buttons
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/navigation"
-                          onClick={[Function]}
-                        >
-                          Navigation
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/footer"
-                          onClick={[Function]}
-                        >
-                          Footer
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/theming/hero"
-                          onClick={[Function]}
-                        >
-                          Hero
-                        </a>
-                      </div>
-                    </div>
+                    Theme
                   </div>
                 </div>
                 <div
-                  className="card"
+                  aria-expanded={null}
+                  className="collapse show"
                 >
                   <div
-                    className="card-header"
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Custom Pages
-                    </div>
-                  </div>
-                  <div
-                    aria-expanded={null}
-                    className="collapse"
-                  >
-                    <div
-                      className="card-body"
-                    >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/about"
-                          onClick={[Function]}
-                        >
-                          About
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/contact"
-                          onClick={[Function]}
-                        >
-                          Contact
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/donate"
-                          onClick={[Function]}
-                        >
-                          Donate
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/tos"
-                          onClick={[Function]}
-                        >
-                          Terms of Service
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/honor"
-                          onClick={[Function]}
-                        >
-                          Honor Code
-                        </a>
-                        <a
-                          aria-current={null}
-                          href="/console/custom-pages/privacy"
-                          onClick={[Function]}
-                        >
-                          Privacy Policy
-                        </a>
-                      </div>
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
                     </div>
                   </div>
                 </div>
+              </div>
+              <div
+                className="card"
+              >
                 <div
-                  className="card"
+                  className="card-header"
                 >
                   <div
                     className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-header"
-                      onClick={[Function]}
-                      variant="link"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      Instance Settings
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
                   <div
-                    aria-expanded={null}
-                    className="collapse"
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
                   >
                     <div
-                      className="card-body"
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
                     >
-                      <div
-                        className="flex-column nav card-header-undefined"
-                        onKeyDown={[Function]}
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
                       >
-                        <a
-                          aria-current={null}
-                          href="/console/settings/general"
-                          onClick={[Function]}
-                        >
-                          General
-                        </a>
-                        <a
-                          aria-current="page"
-                          className="disabled active"
-                          href="/"
-                          onClick={[Function]}
-                          style={Object {}}
-                        >
-                          Domain
-                        </a>
-                      </div>
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
             <div
-              className="col-md-9"
+              className="customization-form"
             >
               <div
-                className="customization-form"
+                className="loading"
               >
-                <div
-                  className="loading"
-                >
-                  <i
-                    className="fas fa-2x fa-sync-alt fa-spin"
-                  />
-                </div>
+                <i
+                  className="fas fa-2x fa-sync-alt fa-spin"
+                />
               </div>
             </div>
           </div>

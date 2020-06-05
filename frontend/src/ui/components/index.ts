@@ -21,3 +21,5 @@ export * from './CollapseEditArea';
 export * from './ImageUploadField';
 
 export * from './HeroPreview';
+
+export * from './EmailActivationAlertMessage';

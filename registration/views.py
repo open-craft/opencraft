@@ -22,8 +22,10 @@ Registration views
 
 # Imports #####################################################################
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.db import transaction
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -80,6 +82,23 @@ class BetaTestApplicationView(BetaTestApplicationMixin, UpdateView):
             login(self.request, user)
         verify_user_emails(user, user.email, self.object.public_contact_email)
         return response
+
+    # pylint: disable=arguments-differ
+    def get(self, *args, **kwargs):
+        """
+        Get registration form.
+
+        Redirects to new frontend if `settings.NEW_USER_CONSOLE_REGISTRATION_ENABLED`
+        is set, otherwise returns old registration form.
+
+        Note: `USER_CONSOLE_FRONTEND_URL` must be set to a
+        full valid URL.
+        """
+        # TODO: Remove this when cleaning up old registration console on BB-2422.
+        if settings.NEW_USER_CONSOLE_REGISTRATION_ENABLED and settings.USER_CONSOLE_FRONTEND_URL:
+            return redirect(settings.USER_CONSOLE_FRONTEND_URL)
+
+        return super(BetaTestApplicationView, self).get(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(BetaTestApplicationView, self).get_form_kwargs()

@@ -323,14 +323,14 @@ exports[`Console Page Correctly renders page with data 1`] = `
           className="dot"
           style={
             Object {
-              "backgroundColor": "grey",
+              "backgroundColor": "#ff9b04",
             }
           }
         />
         <div
           className="text"
         >
-          Status: loading
+          Status: We're preparing your instance 
         </div>
       </span>
       <button
@@ -342,6 +342,262 @@ exports[`Console Page Correctly renders page with data 1`] = `
         Deploy (0 updates)
       </button>
     </div>
+  </div>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <div
+              className="customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-9"
+          >
+            <span>
+               Test! 
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Console Page Correctly renders page with email not verified alert 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+        href="test-url"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+        href="test-url"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
     className="console-page-container"

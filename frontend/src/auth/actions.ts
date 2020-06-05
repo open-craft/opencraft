@@ -5,9 +5,13 @@ import { ROUTES } from 'global/constants';
 import { V2Api } from 'global/api';
 import { JwtToken, Token, Email, PasswordToken } from 'ocim-client';
 import { LoginFormModel, LoginStateModel } from './models';
+import { clearConsoleData } from '../console/actions';
 import { sanitizeErrorFeedback } from '../utils/string_utils';
 
 export enum Types {
+  EMAIL_ACTIVATION_SUBMIT = 'EMAIL_ACTIVATION_SUBMIT',
+  EMAIL_ACTIVATION_SUBMIT_SUCCESS = 'EMAIL_ACTIVATION_SUBMIT_SUCCESS',
+  EMAIL_ACTIVATION_SUBMIT_FAILURE = 'EMAIL_ACTIVATION_SUBMIT_FAILURE',
   LOGIN_SUBMIT = 'LOGIN_SUBMIT',
   LOGIN_SUCCESS = 'LOGIN_SUCCESS',
   LOGIN_FAILURE = 'LOGIN_FAILURE',
@@ -22,6 +26,19 @@ export enum Types {
   PASSWORD_RESET_FAILURE = 'PASSWORD_RESET_FAILURE',
   CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
   CLEAR_SUCCESS_MESSAGE = 'CLEAR_SUCCESS_MESSAGE'
+}
+
+export interface EmailActivationSubmit extends Action {
+  readonly type: Types.EMAIL_ACTIVATION_SUBMIT;
+}
+
+export interface EmailActivationSubmitSuccess extends Action {
+  readonly type: Types.EMAIL_ACTIVATION_SUBMIT_SUCCESS;
+}
+
+export interface EmailActivationSubmitFailure extends Action {
+  readonly type: Types.EMAIL_ACTIVATION_SUBMIT_FAILURE;
+  readonly error: string | null;
 }
 
 export interface SubmitLogin extends Action {
@@ -92,6 +109,9 @@ export interface ClearSuccessMessage extends Action {
 }
 
 export type ActionTypes =
+  | EmailActivationSubmit
+  | EmailActivationSubmitSuccess
+  | EmailActivationSubmitFailure
   | SubmitLogin
   | LoginSuccess
   | LoginFailure
@@ -113,6 +133,28 @@ export const clearErrorMessage = () => async (dispatch: any) => {
 
 export const clearSuccessMessage = () => async (dispatch: any) => {
   dispatch({ type: Types.CLEAR_SUCCESS_MESSAGE });
+};
+
+/**
+ * Perform email activation request.
+ *
+ * Uses the V2Api and submits the email confirmation code to the backend.
+ * If the request fails, just show a generic error message.
+ */
+export const performEmailActivation = (
+  verificationCode: string
+): OcimThunkAction<void> => async dispatch => {
+  dispatch({ type: Types.EMAIL_ACTIVATION_SUBMIT });
+
+  try {
+    // We don't need the response, if the request goes through
+    // then the email activation succeeded.
+    await V2Api.verifyEmailRead({ id: verificationCode });
+    dispatch({ type: Types.EMAIL_ACTIVATION_SUBMIT_SUCCESS });
+  } catch (e) {
+    // If any error happends, push user to the error page.
+    dispatch({ type: Types.EMAIL_ACTIVATION_SUBMIT_FAILURE });
+  }
 };
 
 export const performLogin = (
@@ -162,6 +204,7 @@ export const performLogout = () => async (dispatch: any) => {
   window.localStorage.removeItem('token_access');
   window.localStorage.removeItem('token_refresh');
   dispatch({ type: Types.LOGOUT });
+  dispatch(clearConsoleData());
   dispatch(push(ROUTES.Auth.LOGIN));
 };
 

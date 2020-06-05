@@ -97,43 +97,6 @@ class NewRelicTestCase(TestCase):
         })
 
     @responses.activate
-    def test_get_synthetics_notification_emails(self):
-        """
-        Check that the get_synthetics_notification_emails function gets a list of
-        email addresses receiving alerts for the specified monitor.
-        """
-        monitor_id = '924a289a-6997-41ba-92be-bbe497b49753'
-        emails = ['foo@example.com', 'bar@example.com']
-        response_json = {
-            'count': 2,
-            'emails': emails,
-        }
-        responses.add(responses.GET,
-                      '{0}/monitors/{1}/notifications'.format(newrelic.SYNTHETICS_API_URL, monitor_id),
-                      json=response_json, status=200)
-        self.assertEqual(newrelic.get_synthetics_notification_emails(monitor_id), emails)
-
-    @responses.activate
-    def test_add_synthetics_email_alerts(self):
-        """
-        Check that the add_synthetics_email_alerts function adds email alerts.
-        """
-        monitor_id = '924a289a-6997-41ba-92be-bbe497b49753'
-        monitor_url = '{0}/monitors/{1}'.format(newrelic.SYNTHETICS_API_URL,
-                                                monitor_id)
-        responses.add(responses.POST,
-                      '{0}/notifications'.format(monitor_url),
-                      status=204)
-        emails = ['foo@example.com', 'bar@example.com']
-        newrelic.add_synthetics_email_alerts(monitor_id, emails)
-        self.assertEqual(len(responses.calls), 1)
-        request_json = json.loads(responses.calls[0].request.body.decode())
-        self.assertEqual(request_json, {
-            'count': len(emails),
-            'emails': emails,
-        })
-
-    @responses.activate
     def test_delete_synthetics_monitor(self):
         """
         Check that the delete_synthetics_monitor function deletes the monitor

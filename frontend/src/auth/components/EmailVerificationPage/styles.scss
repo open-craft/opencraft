@@ -1,0 +1,19 @@
+@import '~styles/theme';
+
+
+.email-verification-container {
+    justify-content: center;
+    text-align: center;
+}
+
+i.email-verification-title-icon {
+    padding-left: 15px;
+}
+
+.email-verification-console-button {
+    margin-bottom: 20px;
+
+    i {
+        padding-left: 10px;
+    }
+}

@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Email verification page renders loading page 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Email Verification
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <div
+        className="spinner-border"
+        role="status"
+      >
+        <span
+          className="sr-only"
+        >
+          Loading...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Email verification page renders the confirmed email verification page 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Email Verification
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <div
+        className="spinner-border"
+        role="status"
+      >
+        <span
+          className="sr-only"
+        >
+          Loading...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Email verification page renders the failed email verification page 1`] = `
+<div
+  className="content-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      Email Verification
+    </h1>
+  </div>
+  <div
+    className="content-page-container"
+  >
+    <div
+      className="content-page-content row"
+    >
+      <div
+        className="spinner-border"
+        role="status"
+      >
+        <span
+          className="sr-only"
+        >
+          Loading...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;

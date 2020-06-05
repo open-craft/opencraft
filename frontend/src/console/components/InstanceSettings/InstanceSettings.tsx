@@ -13,9 +13,10 @@ import { updateFieldValue } from 'console/actions';
 import messages from './displayMessages';
 
 interface State {
-  [key: string]: string;
   instanceName: string;
   publicContactEmail: string;
+  // extra state to manage the empty title and subtitle and rendering
+  renderBool: boolean;
 }
 
 interface ActionProps {
@@ -33,21 +34,42 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
     this.state = {
       instanceName: '',
-      publicContactEmail: ''
+      publicContactEmail: '',
+      renderBool: true
     };
 
     if (this.props.activeInstance.data) {
       this.state = {
         instanceName: this.props.activeInstance.data.instanceName,
-        publicContactEmail: this.props.activeInstance.data.publicContactEmail
+        publicContactEmail: this.props.activeInstance.data.publicContactEmail,
+        renderBool: false
       };
     }
   }
 
   public componentDidUpdate(prevProps: Props) {
     // Fill fields after finishing loading data
+    if (this.props.activeInstance.data) {
+      this.updateInitialState(this.props);
+    }
     this.needToUpdateInstanceFields(prevProps);
   }
+
+  // Set an initial state or restore empty values
+  private updateInitialState = (props: Props) => {
+    if (
+      (this.state.instanceName.trim() === '' ||
+        this.state.publicContactEmail.trim() === '') &&
+      props.activeInstance.data &&
+      this.state.renderBool
+    ) {
+      this.setState({
+        instanceName: props.activeInstance.data.instanceName,
+        publicContactEmail: props.activeInstance.data.publicContactEmail,
+        renderBool: false
+      });
+    }
+  };
 
   private needToUpdateInstanceFields = (prevProps: Props) => {
     if (
@@ -74,14 +96,16 @@ export class InstanceSettingsComponent extends React.PureComponent<
 
     this.setState({
       [field]: value
-    });
+    } as Pick<State, 'instanceName' | 'publicContactEmail'>);
   };
 
   private updateValue = (fieldName: string, value: string) => {
     const instance = this.props.activeInstance;
 
-    // Only make update request if field changed
-    if (instance.data && this.state[fieldName] !== instance.data[fieldName]) {
+    if (
+      instance.data &&
+      this.state[fieldName as keyof State] !== instance.data[fieldName]
+    ) {
       this.props.updateFieldValue(instance.data.id, fieldName, value);
     }
   };

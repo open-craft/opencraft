@@ -23,7 +23,8 @@ from urllib.parse import urlparse
 
 from django.core.management.base import BaseCommand
 
-from instance.tasks import spawn_appserver
+from instance.models.deployment import DeploymentType
+from instance.tasks import create_new_deployment
 from pr_watch.github import get_pr_by_number
 from pr_watch.models import WatchedPullRequest
 
@@ -73,4 +74,9 @@ class Command(BaseCommand):
             self.stderr.write(self.style.WARNING(
                 "The specified PR already has a sandbox instance. Updating existing instance."
             ))
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        create_new_deployment(
+            instance.ref.pk,
+            mark_active_on_success=True,
+            num_attempts=2,
+            deployment_type=DeploymentType.pr,
+        )

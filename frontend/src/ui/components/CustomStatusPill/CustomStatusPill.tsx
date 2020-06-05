@@ -1,39 +1,59 @@
 import * as React from 'react';
 import { WrappedMessage } from 'utils/intl';
 import { Tooltip, OverlayTrigger, Badge, Nav } from 'react-bootstrap';
-import { OpenEdXInstanceDeploymentStatusStatusEnum } from 'ocim-client';
+import {
+  OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus,
+  OpenEdXInstanceDeploymentStatusDeploymentTypeEnum as DeploymentType
+} from 'ocim-client';
 
 import messages from './displayMessages';
 import './styles.scss';
 
 interface Props {
   loading: boolean;
-  redeploymentStatus: string;
-  cancelRedeployment: Function;
+  redeploymentStatus: string | null;
+  deploymentType: string | null;
+  cancelRedeployment: Function | undefined;
 }
 
-export const CustomStatusPill: React.FC<Props> = (props: Props) => {
+export const CustomStatusPill: React.FC<Props> = ({
+  loading,
+  redeploymentStatus,
+  deploymentType,
+  cancelRedeployment
+}: Props) => {
   let dotColor = 'grey';
   let deploymentStatusText = 'unavailable';
   let tooltipText = 'unavailableTooltip';
 
-  switch (props.redeploymentStatus) {
-    case OpenEdXInstanceDeploymentStatusStatusEnum.UPTODATE:
+  switch (redeploymentStatus) {
+    case DeploymentStatus.Healthy:
       dotColor = '#1abb64';
       deploymentStatusText = 'updatedDeployment';
       tooltipText = 'updatedDeploymentTooltip';
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING:
+    case DeploymentStatus.Provisioning:
       dotColor = '#ff9b04';
-      deploymentStatusText = 'runningDeployment';
-      tooltipText = 'runningDeploymentTooltip';
+      // If there's a deployment provisioning, but it's the
+      // first on (from registration), show preparing instance
+      // message.
+      if (deploymentType === DeploymentType.Registration) {
+        deploymentStatusText = 'preparingInstance';
+        tooltipText = 'preparingInstanceTooltip';
+      }
+      // If not, then this is a normal deployment, so show the usual
+      // running deployment message.
+      else {
+        deploymentStatusText = 'runningDeployment';
+        tooltipText = 'runningDeploymentTooltip';
+      }
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.PREPARINGINSTANCE:
+    case DeploymentStatus.Preparing:
       dotColor = '#ff9b04';
       deploymentStatusText = 'preparingInstance';
       tooltipText = 'preparingInstanceTooltip';
       break;
-    case OpenEdXInstanceDeploymentStatusStatusEnum.PENDINGCHANGES:
+    case DeploymentStatus.ChangesPending:
       dotColor = '#1abb64';
       deploymentStatusText = 'pendingChanges';
       tooltipText = 'pendingChangesTooltip';
@@ -56,13 +76,13 @@ export const CustomStatusPill: React.FC<Props> = (props: Props) => {
         <div className="text">
           <WrappedMessage id={deploymentStatusText} messages={messages} />
         </div>
-        {props.redeploymentStatus ===
-          OpenEdXInstanceDeploymentStatusStatusEnum.DEPLOYING &&
-          !props.loading && (
+        {cancelRedeployment !== undefined &&
+          redeploymentStatus === DeploymentStatus.Provisioning &&
+          !loading && (
             <Nav
               className="text cancel-deployment"
               onClick={() => {
-                props.cancelRedeployment();
+                cancelRedeployment();
               }}
             >
               <i className="fas fa-xs fa-times" />

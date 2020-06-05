@@ -43,7 +43,9 @@ export interface OpenEdXInstanceConfigUpdate {
      */
     readonly studioUrl?: string;
     /**
-     * The URL students will visit. In the future, you will also have the possibility to use your own domain name.  Example: hogwarts.opencraft.hosting
+     * The URL students will visit. In the future, you will also have the possibility to use your own domain name.
+     * 
+     * Example: hogwarts.opencraft.hosting
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */
@@ -55,13 +57,15 @@ export interface OpenEdXInstanceConfigUpdate {
      */
     externalDomain?: string | null;
     /**
-     * The name of your institution, company or project.  Example: Hogwarts Online Learning
+     * The name of your institution, company or project.
+     * 
+     * Example: Hogwarts Online Learning
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */
     instanceName?: string;
     /**
-     * The email your instance of Open edX will be using to send emails, and where your users should send their support requests.  This needs to be a valid email.
+     * 
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */
@@ -85,13 +89,13 @@ export interface OpenEdXInstanceConfigUpdate {
      */
     draftThemeConfig?: ThemeSchema;
     /**
-     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft\'s logo will be used.
+     * Your branding to be displayed throughout your instance. It should be 48px tall. If unset, OpenCraft's logo will be used.
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */
     readonly logo?: string;
     /**
-     * This is used as the browser tab icon for your instance\'s pages. If unset, OpenCraft\'s icon will be used.
+     * This is used as the browser tab icon for your instance's pages. If unset, OpenCraft's icon will be used.
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */

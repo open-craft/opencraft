@@ -82,6 +82,7 @@ export class LoginPage extends React.PureComponent<Props, State> {
             onChange={this.onChange}
             messages={messages}
             type="username"
+            autoComplete="username"
           />
           <TextInputField
             fieldName="password"
@@ -89,6 +90,7 @@ export class LoginPage extends React.PureComponent<Props, State> {
             onChange={this.onChange}
             messages={messages}
             type="password"
+            autoComplete="password"
           />
 
           {this.props.succeeded && (

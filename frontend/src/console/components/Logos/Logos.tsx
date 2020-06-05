@@ -36,8 +36,8 @@ export class LogosComponent extends React.PureComponent<Props, State> {
     const instance = this.props.activeInstance;
 
     return (
-      <div className="custom-logo-pages">
-        <ConsolePage contentLoading={this.props.loading}>
+      <ConsolePage contentLoading={this.props.loading}>
+        <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
             <Row>
               <Col md={9}>
@@ -106,8 +106,8 @@ export class LogosComponent extends React.PureComponent<Props, State> {
               />
             </CollapseEditArea>
           </ConsolePageCustomizationContainer>
-        </ConsolePage>
-      </div>
+        </div>
+      </ConsolePage>
     );
   }
 }

@@ -1,22 +1,38 @@
-import { OCIM_API_BASE } from 'global/constants';
-import { V2Api as _V2Api, Configuration } from 'ocim-client';
+import { OCIM_API_BASE, ROUTES } from 'global/constants';
+import { Configuration, V2Api as _V2Api } from 'ocim-client';
 import { performLogout } from 'auth/actions';
+import { checkAuthAndRefreshToken } from '../auth/utils/helpers';
+
+const getApiKey = () => {
+  const authToken = localStorage.getItem('token_access');
+  // The current version of the API client requires us to specify the word "Bearer"
+  // The previous version did not.
+  return authToken ? `Bearer ${authToken}` : '';
+};
 
 const config = new Configuration({
   basePath: `${OCIM_API_BASE}/api`,
-  apiKey: (name: string, scopes?: string[]) => {
-    const authToken = localStorage.getItem('token_access');
-    // The current version of the API client requires us to specify the word "Bearer"
-    // The previous version did not.
-    return authToken ? `Bearer ${authToken}` : '';
-  },
+  apiKey: (name: string, scopes?: string[]) => getApiKey(),
   middleware: [
     {
       post: async context => {
         if (context.response.status === 403) {
           // Failed requests return 403 and mean that the access token is
           // expired, so we trigger a page refresh.
-          window.location.reload(false);
+          const authenticated = await checkAuthAndRefreshToken();
+          if (!authenticated) {
+            // Redirect user to login when token refresh fails.
+            // Since we don't have access to dispatching actions here
+            // we redirect the user to the login.
+            window.location.replace(ROUTES.Auth.LOGIN);
+          } else {
+            // Retry request after updating API key
+            const requestContext = context.init;
+            requestContext.headers = {
+              Authorization: getApiKey()
+            };
+            return context.fetch(context.url, requestContext);
+          }
         } else if (context.response.status === 401) {
           // If the refresh endpoint fails, it means that the refresh
           // is expired, and the user is effectively logged out.

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { RedeploymentToolbar, CustomizationSideMenu } from 'console/components';
+import { CustomizationSideMenu, RedeploymentToolbar } from 'console/components';
+import { EmailActivationAlertMessage } from 'ui/components';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
@@ -12,7 +13,6 @@ import {
   cancelDeployment
 } from 'console/actions';
 import messages from './displayMessages';
-
 import './styles.scss';
 
 interface ActionProps {
@@ -122,24 +122,33 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       );
     }
 
+    let isEmailVerified = true;
+    if (this.props.activeInstance && this.props.activeInstance.data) {
+      isEmailVerified = this.props.activeInstance.data.isEmailVerified;
+    }
+
     return (
       <div className="console-page">
         {this.renderHeader()}
 
-        <RedeploymentToolbar
-          deployment={
-            this.props.activeInstance
-              ? this.props.activeInstance.deployment
-              : undefined
-          }
-          cancelRedeployment={() => {
-            this.cancelDeployment();
-          }}
-          performDeployment={() => {
-            this.performDeployment();
-          }}
-          loading={deploymentLoading}
-        />
+        {!isEmailVerified ? (
+          <EmailActivationAlertMessage />
+        ) : (
+          <RedeploymentToolbar
+            deployment={
+              this.props.activeInstance
+                ? this.props.activeInstance.deployment
+                : undefined
+            }
+            cancelRedeployment={() => {
+              this.cancelDeployment();
+            }}
+            performDeployment={() => {
+              this.performDeployment();
+            }}
+            loading={deploymentLoading}
+          />
+        )}
 
         <div className="console-page-container">
           <Row className="console-page-content">

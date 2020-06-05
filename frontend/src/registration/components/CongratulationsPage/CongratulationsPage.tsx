@@ -1,8 +1,10 @@
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
-import { RegistrationSteps } from 'global/constants';
+import { RegistrationSteps, ROUTES } from 'global/constants';
 import { RedirectToCorrectStep } from 'registration/components';
 import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
@@ -43,8 +45,21 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
             <WrappedMessage messages={messages} id="congratsMessage" />
           </p>
           <p>
-            <WrappedMessage messages={messages} id="congratsMessage2" />
+            <WrappedMessage
+              messages={messages}
+              id="congratsMessage2"
+              values={{
+                strong: (...chunks: string[]) => <strong>{chunks}</strong>
+              }}
+            />
           </p>
+          <div className="text-center">
+            <NavLink exact to={ROUTES.Console.HOME}>
+              <Button size="lg">
+                <WrappedMessage messages={messages} id="consoleButton" />
+              </Button>
+            </NavLink>
+          </div>
         </div>
       </RegistrationPage>
     );
