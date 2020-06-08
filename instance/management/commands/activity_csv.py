@@ -54,6 +54,11 @@ class Command(BaseCommand):
             default=None,
             help='Path to the output file of the new CSV. Leave blank to use stdout.'
         )
+        parser.add_argument(
+            '--host',
+            default=False,
+            help='Create an ansible hosts file instead of the CSV'
+        )
 
     def handle(self, *args, **options):
         # Determine the stream to be used for outputting the CSV.
@@ -67,8 +72,10 @@ class Command(BaseCommand):
                     'Permission denied while attempting to write file: {outfile}'.format(outfile=options['out'])
                 ))
                 sys.exit(1)
-
-        self.activity_csv(out)
+        if options['host']:
+            self.write_hosts_file(out)
+        else:
+            self.activity_csv(out)
 
     @staticmethod
     def get_active_appservers():
@@ -79,6 +86,21 @@ class Command(BaseCommand):
             if public_ip is not None:
                 active_appservers[public_ip] = appserver.instance
         return active_appservers
+
+    def write_hosts_file(self, out):
+        """Generate ansible hosts file"""
+        active_appservers = self.get_active_appservers()
+        if not active_appservers:
+            self.stderr.write(
+                self.style.SUCCESS('There are no active app servers! Nothing to do.')
+            )
+            sys.exit(0)
+        with open(out, "w") as hosts_file:
+            for public_ip, instance in active_appservers.items():
+                host_to_write = public_ip + " # " + instance.internal_lms_domain + "\n"
+                hosts_file.write(host_to_write)
+
+        self.stderr.write(self.style.SUCCESS('Done generating Hosts file.'))
 
     # TODO simplify to reduce the number of local variables
     def activity_csv(self, out):  # pylint: disable=too-many-locals
