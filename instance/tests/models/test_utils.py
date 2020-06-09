@@ -851,21 +851,22 @@ class ConsulAgentTest(TestCase):
 
     def test_purge_with_prefix(self):
         """
-        Purging with prefix should only remove the prefixed keys with the given prefix.
+        Purging with prefix should only remove the key with the given prefix.
         All other values must not be touched.
         """
         prefix = 'nice-prefix'
         agent = ConsulAgent(prefix=prefix)
+        self.client.kv.put(prefix, 'only prefix value')
         self.client.kv.put(prefix + 'key', 'value')
         self.client.kv.put(prefix + 'another_key', 'another value')
         self.client.kv.put('dummy_key', '1')
 
         _, values = self.client.kv.get('', recurse=True)
-        self.assertEqual(len(values), 3)
+        self.assertEqual(len(values), 4)
 
         agent.purge()
         _, values = self.client.kv.get('', recurse=True)
-        self.assertEqual(len(values), 1)
+        self.assertEqual(len(values), 3)
 
     def test_cast_value(self):
         """
