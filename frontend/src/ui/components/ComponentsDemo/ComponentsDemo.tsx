@@ -42,7 +42,7 @@ export const ComponentsDemo: React.FC = () => (
             <td>Content Page</td>
             <td>
               Content Page component will takes a title and some components as
-              it's children and provides you a div container with the component
+              its children and provides you a div container with the component
               wrapped inside it. The login has an use case of it.
             </td>
           </tr>
@@ -65,14 +65,14 @@ export const ComponentsDemo: React.FC = () => (
             <td>Email Activation Alert Message</td>
             <td>
               This component wraps the WrappedMessage component for an email
-              alert which you can see if you haven't verified your registered
+              alert which you can see if you have not verified your registered
               email.
             </td>
           </tr>
           <tr>
             <td>Footer</td>
             <td>
-              It's the footer component which shows you copyright and trademark
+              Its the footer component which shows you copyright and trademark
               messages.
             </td>
           </tr>

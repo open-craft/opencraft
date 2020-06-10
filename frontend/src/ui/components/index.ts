@@ -24,4 +24,4 @@ export * from './HeroPreview';
 
 export * from './EmailActivationAlertMessage';
 
-export * from "./ComponentsDemo";
+export * from './ComponentsDemo';
