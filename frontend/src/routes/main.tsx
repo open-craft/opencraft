@@ -13,6 +13,7 @@ import {
 import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
 import { ROUTES } from '../global/constants';
+import { ComponentsDemo } from 'ui/components/ComponentsDemo';
 
 export const MainRoutes = () => (
   <Switch>
@@ -37,5 +38,8 @@ export const MainRoutes = () => (
     />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
+    { process.env.NODE_ENV === 'development' &&
+      <Route path={ROUTES.Demo.COMPONENTS_DEMO} component={ComponentsDemo} />
+    }
   </Switch>
 );

@@ -227,99 +227,10 @@ To access the console, you can use `shell_plus`:
 
 ## OCIM Frontend
 
-The frontend of OCIM is a single-page app using the React and Redux. All the code can be found inside `frontend` directory.
+The frontend of OCIM is a single-page app using the React and Redux.
+All the code can be found inside `frontend` directory.
+All reusable UI components description been described in the `/demo` route in dev environment.
 
 ### Provisioning
 
-- Install the API client:
-
-```bash
-./scripts/build-api-client.sh
-```
-
-- Install requirements:
-
-```bash
-npm install
-```
-
-- Run frontend:
-
-```bash
-npm start
-```
-
-- Updating the API Client:
-
-```bash
-cd ./frontend # go to frontend directory
-npm run update-api-client
-```
-
-- Building the API Client:
-
-```bash
-cd ./frontend # go to frontend directory
-npm run build-api-client
-```
-
-- Deployment:
-
-We use the screen for running the OCIM in production and staging. For this ssh into staging or production servers
-
-```bash
-# go to screen session where the OCIM running(most probably it will be with
-# suffix .stage or .console) and go to bash window
-# fetch the latest changes
-git fetch
-
-
-# go to screen window where the OCIM running(probably the first window)
-# based on the environment(Staging or Production), you might have to stop
-# the NewRelic Monitoring and then stop the OCIM running service
-make run
-
-
-# Go to the shell window and restart the shell by exiting and running it again
-make shell
-```
-
-### Running with Vagrant
-
-While it is possible to run this frontend server within Vagrant during
-development, for performance reasons it's better to run it separately
-outside of Vagrant instead.
-
-### Frontend Architecture/Stack
-
-We use React, TypeScript, Bootstrap, and SCSS for the frontend.
-
-For global state shared among different parts of the application, we use Redux.
-So things like the user's login/logout status, the user's details etc. should
-be kept in the Redux state and modified using actions.
-
-For all other state, such as data required just for a particular
-widget/component/page, we just use "normal" React props/state; this is because
-Redux imposes a lot of boilerplate code overhead and offers little value if the
-state is not shared among diverse parts of the application.
-
-However, just because we use React and, when necessary, Redux, this doesn't mean
-all the code has to be inside React components or the Redux store; "regular"
-JavaScript code launched from main.tsx that for example talks to the Redux
-store is always an option.
-
-### React Component Guidelines
-
-When coding React components, please keep the following in mind:
-
-- All components should subclass [`React.PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent).
-- All component props and redux state variables that are complex objects should be immutable (enforced via TypeScript by declaring them as `ReadOnlyArray<T>`, `ReadOnlySet<T>`, and `ReadOnly<T>`, mutated using [`immutability-helper`](https://github.com/kolodny/immutability-helper) or plain ES6).
-- Write sensible tests, including unit tests, [snapshot tests](https://jestjs.io/docs/en/snapshot-testing), and/or end-to-end tests.
-  - When reviewing changes to snapshot tests, carefully review the HTML diff to ensure the changes are expected.
-  - Test files should be located alongside the component they test (so `Card.tsx` is tested in `Card.spec.tsx`)
-  - Never import jest/test related code in `.ts` files that are part of the application (only in `.spec.tsx` files); this avoids adding several megabytes of test code to the app bundle.
-  - When in doubt, end-to-end tests and Enzyme behavior tests are preferred. Snapshot tests are still useful, but not as important as an end to end test or even a regular React component test that simulates user interaction with the component and then make assertions about the result.
-- Prefer to split big components up into smaller components that get composed together.
-- Use the [Container Pattern](https://medium.freecodecamp.org/react-superpowers-container-pattern-20d664bdae65)
-  - Don't write a `FoobarComponent` that loads `Foobar` data from the REST API then renders it; instead write a `FoobarComponent` that accepts `Foobar` data as a prop (so its props are never `undefined`), and then write a `FoobarContainerComponent` which loads the `Foobar` data from the REST API and then once it's loaded renders a `<FoobarComponent data={foobarData}/>`. This lets us test the presentation/UX separately from the API/backend, provides better separation of concerns, and reduces the need to write code that checks if the prop has data or not when rendering.
-- Make sure the component is internationalized (see below) and accessible.
+Check the Frontend README all the instructions are given there.

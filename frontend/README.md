@@ -36,32 +36,40 @@ cd ./frontend # go to frontend directory
 npm run build-api-client
 ```
 
-6. Deployment:
+6. Generating New Components:
 
-We use the screen for running the OCIM in production and staging. For this ssh into staging or production servers
+This 
 
 ```bash
-# go to screen session where the OCIM running(most probably it will be with
-# suffix .stage or .console) and go to bash window
-# fetch the latest changes
-git fetch
-
-
-# go to screen window where the OCIM running(probably the first window)
-# based on the environment(Staging or Production), you might have to stop
-# the NewRelic Monitoring and then stop the OCIM running service
-make run
-
-
-# Go to the shell window and restart the shell by exiting and running it again
-make shell
+npm run generate # uses plop, more information here(https://plopjs.com/)
 ```
+
+7. Running the tests:
+
+```bash
+npm run lint # for running the linting
+
+npm run lint-fix # for fixing the linting
+
+npm run test # for running the tests
+
+make test.js && make test.frontend && npm run lint # for running the test using the makefile
+```
+
+8. Deployment:
+
+The Deployment been done on the master automatically using CircleCI. The bundle been hosted on S3 and been directly served from the Cloudfront.
 
 # Running with Vagrant
 
 While it is possible to run this frontend server within Vagrant during
 development, for performance reasons it's better to run it separately
 outside of Vagrant instead.
+
+# Reuseable UI Components
+
+All reusable UI components description been described in the `/demo`
+route in dev environment.
 
 # Frontend Architecture/Stack
 
