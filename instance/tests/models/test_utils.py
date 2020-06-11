@@ -849,25 +849,6 @@ class ConsulAgentTest(TestCase):
         _, values = self.client.kv.get('', recurse=True)
         self.assertIsNone(values)
 
-    def test_purge_with_prefix(self):
-        """
-        Purging with prefix should only remove the key with the given prefix.
-        All other values must not be touched.
-        """
-        prefix = 'nice-prefix'
-        agent = ConsulAgent(prefix=prefix)
-        self.client.kv.put(prefix, 'only prefix value')
-        self.client.kv.put(prefix + 'key', 'value')
-        self.client.kv.put(prefix + 'another_key', 'another value')
-        self.client.kv.put('dummy_key', '1')
-
-        _, values = self.client.kv.get('', recurse=True)
-        self.assertEqual(len(values), 4)
-
-        agent.purge()
-        _, values = self.client.kv.get('', recurse=True)
-        self.assertEqual(len(values), 3)
-
     def test_cast_value(self):
         """
         Test the supported casted values in our Consul agent. Currently supporting integers,
@@ -934,14 +915,6 @@ class ConsulAgentTest(TestCase):
         _, args, _ = mock_kv_put.mock_calls[0]
         self.assertEqual(args[0], self.agent.prefix)
         self.assertDictEqual({'key2': 'value2', 'version': 2}, json.loads(args[1].decode('utf-8')))
-
-    @patch.object(consul.Consul.KV, 'delete')
-    def test_remove_dict(self, mock_kv_delete):
-        """
-        Test delete a config dict.
-        """
-        self.agent.remove_dict()
-        mock_kv_delete.assert_called_with(self.agent.prefix)
 
     def tearDown(self):
         self.client.kv.delete('', recurse=True)
