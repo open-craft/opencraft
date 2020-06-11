@@ -1,77 +1,77 @@
 # OpenCraft Instance Manager Frontend
 
-A single-page app for the [OpenCraft Instance Manager (OCIM)](https://github.com/open-craft/opencraft).
+A single-page app(SPA) for the [OpenCraft Instance Manager (OCIM)](https://github.com/open-craft/opencraft).
 
-# Provisioning
+## Running Locally
 
-1. Install the API client:
+Run this outside the vagrant environment, but it is possible to run this frontend server within Vagrant during
+development, for performance reasons it's better to run it separately outside of Vagrant instead. Also, use this
+devstack as an independent React SPA.
+
+- Install the API client:
 
 ```bash
 ./scripts/build-api-client.sh
 ```
 
-2. Install requirements:
+- Install requirements:
 
 ```bash
 npm install
 ```
 
-3. Run frontend:
+- Run frontend:
 
 ```bash
 npm start
 ```
 
-4. Updating the API Client:
+- Generating New Components:
+
+```bash
+npm run generate # uses plop, more information here(https://plopjs.com/)
+```
+
+## API Client Instructions
+
+- Updating the API Client:
 
 ```bash
 cd ./frontend # go to frontend directory
 npm run update-api-client
 ```
 
-5. Building the API Client:
+- Building the API Client:
 
 ```bash
 cd ./frontend # go to frontend directory
 npm run build-api-client
 ```
 
-6. Generating New Components:
+## Testing
 
-This 
-
-```bash
-npm run generate # uses plop, more information here(https://plopjs.com/)
-```
-
-7. Running the tests:
+- Running the tests and checks:
 
 ```bash
 npm run lint # for running the linting
 
-npm run lint-fix # for fixing the linting
+# for fixing the linting(it usually runs `--fix` flag with eslint so it tries to correct as many issues as possible but still can fail)
+npm run lint-fix 
 
 npm run test # for running the tests
-
-make test.js && make test.frontend && npm run lint # for running the test using the makefile
 ```
 
-8. Deployment:
+## Deployment Process
 
-The Deployment been done on the master automatically using CircleCI. The bundle been hosted on S3 and been directly served from the Cloudfront.
+The Deployment is done on automatically using CircleCI when any commit is added in the `master` 
+branch (for details, check `frontend-deploy` job in [circle.yml](../circle.yml)). The bundle is
+hosted on S3 and is directly served from Cloudfront.
 
-# Running with Vagrant
+## Reuseable UI Components
 
-While it is possible to run this frontend server within Vagrant during
-development, for performance reasons it's better to run it separately
-outside of Vagrant instead.
+A partial list of reusable UI components is shown in the `/demo` route, accessible in the development environment through [http://localhost:3000/demo](http://localhost:3000/demo).
 
-# Reuseable UI Components
-
-All reusable UI components description been described in the `/demo`
-route in dev environment.
-
-# Frontend Architecture/Stack
+## Frontend Architecture/Stack
 
 We use React, TypeScript, Bootstrap, and SCSS for the frontend.
 

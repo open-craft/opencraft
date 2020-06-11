@@ -6,7 +6,7 @@ Installation
 For development, we recommend using [Vagrant](https://www.vagrantup.com/)
 to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
-system.
+system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) for your vagrant environment as the playbooks supports them for now.
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
