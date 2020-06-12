@@ -68,35 +68,6 @@ class ReportViewTestCase(WithUserTestCase):
         )
 
     @ddt.data(
-        None,  # Anonymous User
-        'user1',  # Normal User
-        'user2',  # Staff User
-        'user4',  # Sandbox user
-    )
-    def test_report_view_not_superuser(self, username):
-        """
-        Users who are not logged in or logged in but don't have
-        superuser credentials should not be able to see the page.
-        """
-        invoice_url = reverse(self.url, kwargs={
-            'organization': 'dummy_org',
-            'year': '2018',
-            'month': '9'
-        })
-        expected_redirect = '{}?next={}'.format(reverse('registration:login'), invoice_url)
-
-        if username:
-            self.client.login(username=username, password=self.password)
-
-        response = self.client.get(invoice_url)
-        self.assertRedirects(
-            response, expected_redirect,
-            status_code=302,
-            target_status_code=200,
-            msg_prefix=''
-        )
-
-    @ddt.data(
         '15',
         '0',
     )
@@ -130,37 +101,6 @@ class ReportViewTestCase(WithUserTestCase):
         url = reverse(self.url, kwargs=wrong_org)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
-
-    def test_report_view_no_forks(self):
-        """
-        If an organization doesn't have a any foks then the total charges
-        must be 0
-        """
-        self.client.login(username=self.username, password=self.password)
-
-        url = reverse(self.url, kwargs={
-            'organization': self.organization.github_handle,
-            'year': '2018',
-            'month': '10'
-        })
-        response = self.client.get(url)
-        self.assertContains(response, 'TOTAL including all forks: 0 €')
-
-    @mock.patch("reports.views.generate_charges")
-    def test_report_view_good_behavior(self, generate_charges_mock):
-        """
-        Good behavior here should return a 200 response
-        """
-        self.client.login(username=self.username, password=self.password)
-        url = reverse(self.url, kwargs={
-            'organization': self.organization.github_handle,
-            'year': '2018',
-            'month': '10'
-        })
-
-        generate_charges_mock.return_value = ({}, 10)
-        response = self.client.get(url)
-        self.assertContains(response, 'TOTAL including all forks: 10 €')
 
 
 @ddt.ddt

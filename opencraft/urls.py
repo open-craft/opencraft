@@ -37,9 +37,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls', namespace='api')),
     url(r'^instance/', include('instance.urls', namespace='instance')),
-    url(r'^registration/', include('registration.urls', namespace='registration')),
     url(r'^reports/', include('reports.urls', namespace='reports')),
-    url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
