@@ -586,13 +586,9 @@ class ConsulAgent:
     def purge(self):
         """
         Will remove the key/prefixed-key from Key-Value store.
-        If no key/prefixed-key is specified, all keys/prefixed-keys will be removed.
         :return: True if the operation succeeded, False otherwise.
         """
-        if not self.prefix:
-            return self._client.kv.delete(self.prefix, recurse=True)
-        else:
-            return self._client.kv.delete(self.prefix)
+        return self._client.kv.delete(self.prefix)
 
     @staticmethod
     def _cast_value(value):
