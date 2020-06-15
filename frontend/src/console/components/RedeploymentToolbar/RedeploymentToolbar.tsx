@@ -75,6 +75,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
         <CustomStatusPill
           loading={loading}
           redeploymentStatus={deploymentStatus}
+          deploymentType={deploymentType}
           cancelRedeployment={cancelDeploymentHandler}
         />
 
