@@ -33,7 +33,7 @@ class LoginTestCase(UserMixin, TestCase):
     """
     Tests for the login view.
     """
-    url = reverse('registration:login')
+    url = reverse('login')
 
     @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_login(self):
@@ -62,7 +62,7 @@ class LogoutTestCase(UserMixin, TestCase):
     """
     Tests for the logout view.
     """
-    url = reverse('registration:logout')
+    url = reverse('logout')
 
     def setUp(self):
         self.client.login(username=self.username, password=self.password)

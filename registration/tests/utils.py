@@ -171,7 +171,7 @@ class BrowserTestMixin:
         """
         login_url = '{host}{path}'.format(
             host=self.live_server_url,
-            path=reverse('registration:login'),
+            path=reverse('login'),
         )
         self.client.get(login_url)
         self.fill_form(kwargs)

@@ -29,6 +29,7 @@ from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView, LogoutView
 from registration.forms import LoginForm
+import opencraft.views as views
 
 # URL Patterns ################################################################
 
@@ -41,7 +42,7 @@ urlpatterns = [
     url(r'^logout/$', LogoutView.as_view(next_page='/'), name='logout'),
     url(r'^reports/', include('reports.urls', namespace='reports')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^$', RedirectView.as_view(url='/login'), name='index'),
+    url(r'^$', views.IndexView.as_view(), name='index'),
 ]
 
 if settings.DEBUG:

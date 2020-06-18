@@ -24,9 +24,9 @@ OpenCraft views
 
 from django.views.generic.base import RedirectView
 from django.urls import reverse
-
+from django.conf import settings
 from instance.models.instance import InstanceReference
-
+from django.shortcuts import redirect
 
 # Views #######################################################################
 
@@ -41,7 +41,9 @@ class IndexView(RedirectView):
         Redirect instance manager users to the instance list, and anyone else to the registration form
         """
         user = self.request.user
-        if InstanceReference.can_manage(user):
+        if not user:
+            return reverse('login')
+        elif InstanceReference.can_manage(user):
             return reverse('instance:index')
         else:
-            return reverse('registration:register')
+            return redirect(settings.USER_CONSOLE_FRONTEND_URL)

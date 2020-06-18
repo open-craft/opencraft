@@ -32,7 +32,7 @@ from .decorators import instance_manager_required
 
 
 @login_required
-@instance_manager_required(redirect_to='registration:register')
+@instance_manager_required(redirect_to='login')
 def index(request):
     """
     Index view
