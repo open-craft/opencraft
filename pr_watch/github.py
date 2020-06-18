@@ -22,7 +22,7 @@ GitHub Service API - Helper functions
 
 # Imports #####################################################################
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import functools
 import logging
 import operator
@@ -143,8 +143,11 @@ def get_pr_list_from_usernames(user_names, fork_name):
     if not user_names:
         return []
 
+    last_hour_dt = datetime.today() - timedelta(hours=1)
     authors = ' '.join('author:{author}'.format(author=author) for author in user_names)
-    q = 'is:open is:pr {authors} repo:{repo}'.format(authors=authors, repo=fork_name)
+    q = 'is:open is:pr {authors} repo:{repo} created:>{created_dt}'.format(authors=authors,
+                                                                           repo=fork_name,
+                                                                           created_dt=last_hour_dt)
     r_pr_list = get_object_from_url('https://api.github.com/search/issues?sort=created&q={}'.format(q))
 
     pr_list = []
