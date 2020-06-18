@@ -86,7 +86,8 @@ class ReportViewTestCase(WithUserTestCase):
         expected_redirect = '{}?next={}'.format(reverse('login'), invoice_url)
 
         if username:
-            self.client.login(username=username, password=self.password)
+            self.client.login(username=username,
+                              password=self.password)
 
         response = self.client.get(invoice_url)
         self.assertRedirects(
@@ -143,7 +144,6 @@ class ReportViewTestCase(WithUserTestCase):
             'year': '2018',
             'month': '10'
         })
-        print(self.client, url, self.url)
         response = self.client.get(url)
         self.assertContains(response, 'TOTAL including all forks: 0 €')
 
