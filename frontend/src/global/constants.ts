@@ -57,6 +57,9 @@ export const ROUTES = {
     ACCOUNT: '/registration/account',
     CONGRATS: '/registration/congrats'
   },
+  StaticPages: {
+    FAQ: '/faq'
+  },
   Error: {
     UNKNOWN_ERROR: '/error'
   }

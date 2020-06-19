@@ -10,7 +10,7 @@ import {
   PasswordResetPage,
   PrivateRoute
 } from 'auth/components';
-import { RegistrationContainer } from 'registration/components';
+import { RegistrationContainer, FaqPage } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
 import { ROUTES } from '../global/constants';
 
@@ -37,5 +37,6 @@ export const MainRoutes = () => (
     />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
+    <Route path={ROUTES.StaticPages.FAQ} component={FaqPage} />
   </Switch>
 );

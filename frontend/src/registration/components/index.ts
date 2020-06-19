@@ -9,3 +9,5 @@ export * from './RegistrationNavButtons';
 export * from './RedirectToCorrectStep';
 
 export * from './CustomDomainSetupPage';
+
+export * from './FaqPage';
