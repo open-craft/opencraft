@@ -22,7 +22,7 @@ GitHub - Tests
 
 # Imports #####################################################################
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from unittest.mock import patch
 
@@ -152,13 +152,15 @@ class GitHubTestCase(TestCase):
         """
         Get list of open PR for user
         """
+        last_hour_dt = (datetime.today() - timedelta(hours=1)).date()
         responses.add(
-            responses.GET, 'https://api.github.com/search/issues?sort=created'
-                           '&q=is:open is:pr author:itsjeyd repo:edx/edx-platform',
+            responses.GET, 'https://api.github.com/search/issues?sort=created&q=is:open '
+                           'is:pr author:itsjeyd repo:edx/edx-platform created:>{}'.format(last_hour_dt),
             match_querystring=True,
             body=get_raw_fixture('github/api_search_open_prs_user.json'),
             content_type='application/json; charset=utf8',
-            status=200)
+            status=200,
+        )
 
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
@@ -176,9 +178,11 @@ class GitHubTestCase(TestCase):
         # Verify we get no PRs when invoking the function with an empty username list.
         self.assertEqual(github.get_pr_list_from_usernames([], 'edx/edx-platform'), [])
 
+        last_hour_dt = (datetime.today() - timedelta(hours=1)).date()
         responses.add(
             responses.GET, 'https://api.github.com/search/issues?sort=created&q=is:open '
-                           'is:pr author:itsjeyd author:haikuginger repo:edx/edx-platform',
+                           'is:pr author:itsjeyd author:haikuginger repo:edx/edx-platform '
+                           'created:>{}'.format(last_hour_dt),
             match_querystring=True,
             body=get_raw_fixture('github/api_search_open_prs_multiple_users.json'),
             content_type='application/json; charset=utf8',
@@ -186,6 +190,7 @@ class GitHubTestCase(TestCase):
 
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
+        print(github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'))
         self.assertEqual(
             github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'),
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146], ['edx/edx-platform', 15921]]
