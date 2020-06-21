@@ -143,7 +143,7 @@ def get_pr_list_from_usernames(user_names, fork_name):
     if not user_names:
         return []
 
-    last_hour_dt = datetime.today() - timedelta(hours=1)
+    last_hour_dt = (datetime.today() - timedelta(hours=1)).date()
     authors = ' '.join('author:{author}'.format(author=author) for author in user_names)
     q = 'is:open is:pr {authors} repo:{repo} created:>{created_dt}'.format(authors=authors,
                                                                            repo=fork_name,
