@@ -13,6 +13,7 @@ export const ENTERPRISE_COMPARISON_LINK =
 export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
 export const PRIVACY_POLICY_LINK =
   process.env.REACT_APP_PRIVACY_POLICY_LINK || '/#';
+export const FAQ_PAGE_LINK = process.env.REACT_APP_FAQ_PAGE_LINK || '/#';
 
 export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
