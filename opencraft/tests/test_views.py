@@ -23,7 +23,6 @@ OpenCraft - Views - Tests
 # Imports #####################################################################
 import ddt
 from django.conf import settings
-from django.test.utils import override_settings
 from django.urls import reverse
 
 from instance.tests.base import WithUserTestCase
@@ -50,7 +49,6 @@ class IndexViewTestCase(WithUserTestCase):
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, self.register_url)
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @ddt.data('user1', 'user2')
     def test_index_authenticated(self, username):
         """
@@ -69,7 +67,6 @@ class IndexViewTestCase(WithUserTestCase):
         self.assertRedirects(response, self.instance_url)
         self.assertContains(response, 'ng-app="InstanceApp"')
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     @ddt.data('user1', 'user2')
     def test_login_authenticated(self, username):
         """

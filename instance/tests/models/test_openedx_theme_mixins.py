@@ -28,7 +28,6 @@ import ddt
 import yaml
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test.utils import override_settings
 
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
@@ -67,7 +66,6 @@ class OpenEdXThemeMixinTestCase(TestCase):
         )
         return application
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_colors_and_images_applied(self):
         """
         Creates a beta application with asks for some colors and logo/favicon, and checks that the generated
@@ -132,7 +130,6 @@ class OpenEdXThemeMixinTestCase(TestCase):
             self.assertIn('opencraft_logo_small.png', logo['url'])
             self.assertIn('favicon.ico', favicon['url'])
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_hero_cover_image_set(self):
         """
         Test that when the hero cover image is set, the corresponding ansible variables are generated.

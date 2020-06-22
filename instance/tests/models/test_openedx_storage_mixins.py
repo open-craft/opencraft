@@ -292,7 +292,6 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.assertIs(instance.swift_provisioned, False)
 
     @patch('instance.openstack_utils.create_swift_container')
-    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_swift_disabled(self, create_swift_container, mock_consul):
         """
         Verify disabling Swift provisioning works.
@@ -310,7 +309,6 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         appserver = make_test_appserver(instance)
         self.check_ansible_settings(appserver)
 
-    @override_settings(INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE)
     def test_ansible_settings_swift_disabled(self, mock_consul):
         """
         Verify Swift Ansible configuration is not included when Swift is disabled.
@@ -324,7 +322,6 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
 @override_settings(
     AWS_ACCESS_KEY='test',
     AWS_SECRET_ACCESS_KEY_ID='test',
-    INSTANCE_STORAGE_TYPE=StorageContainer.S3_STORAGE,
 )
 @patch(
     'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
