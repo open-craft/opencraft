@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 def watch_pr():
     """
     Automatically create sandboxes for PRs opened by members of the watched
-    organization on the watched repository
+    organization on the watched repository during the last hour
     """
     try:
         for watched_fork in WatchedFork.objects.filter(enabled=True):

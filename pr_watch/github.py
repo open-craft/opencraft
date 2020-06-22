@@ -138,7 +138,7 @@ def get_pr_list_from_username(user_name, fork_name):
 
 def get_pr_list_from_usernames(user_names, fork_name):
     """
-    Retrieve the current active PRs for a given set of users
+    Retrieve active PRs from the previous hour for a given set of users
     """
     if not user_names:
         return []
