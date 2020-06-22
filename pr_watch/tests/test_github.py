@@ -190,7 +190,6 @@ class GitHubTestCase(TestCase):
 
         mock_get_pr_by_number.side_effect = lambda fork_name, pr_number: [fork_name, pr_number]
 
-        print(github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'))
         self.assertEqual(
             github.get_pr_list_from_usernames(['itsjeyd', 'haikuginger'], 'edx/edx-platform'),
             [['edx/edx-platform', 9147], ['edx/edx-platform', 9146], ['edx/edx-platform', 15921]]
