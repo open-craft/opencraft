@@ -1,7 +1,7 @@
 #!/edx/bin/python.edxapp
 # pylint: skip-file
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 import gzip
 import os
 import re

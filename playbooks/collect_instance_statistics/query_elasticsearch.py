@@ -1,10 +1,10 @@
 #!/edx/bin/python.edxapp
 # pylint: skip-file
 
-from ConfigParser import ConfigParser
-from datetime import datetime
+from configparser import ConfigParser
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
+import time
 import sys
 
 
@@ -21,15 +21,19 @@ if __name__ == '__main__':
     name_prefix = sys.argv[1]
 
     # Get the number of days going back that we should search ES for
-    num_days = sys.argv[2]
-    now = int(datetime.utcnow().timestamp() * 1000)
+    num_days = int(sys.argv[2])
+
+    # Must use time.time() because it has a more accurate representation of
+    # seconds since epoch than datetime.datetime.utcnow().timestamp() (which
+    # appears to be about 25000 seconds, or almost 7 hours, behind)
+    now = int(time.time() * 1000)
 
     # Query for the host matching the name_prefix
     # Only query access log data, and ignore heartbeat or xqueue/get_queuelen requests
-    base_search = Search(using=client)
-        .query("match", host=name_prefix)
-        .query("match", source="/edx/var/log/nginx/access.log")
-        .exclude("match", request="heartbeat")
+    base_search = Search(using=client) \
+        .query("match", host=name_prefix) \
+        .query("match", source="/edx/var/log/nginx/access.log") \
+        .exclude("match", request="heartbeat") \
         .exclude("match", request="xqueue/get_queuelen")
 
     # Aggregate the unique hits by proxy_ip
@@ -55,7 +59,7 @@ if __name__ == '__main__':
 
         # Python slice syntax is used to set the `from` and `size`
         # parameters for the search, which we want set to 0
-        response = es_search[0:0]
+        response = es_search[0:0].execute()
 
         for bucket in response["aggregations"]["unique_hits"]["buckets"]:
             ip = bucket["key"]
@@ -74,9 +78,9 @@ if __name__ == '__main__':
 
     # Build the ConfigParser data.
     config = ConfigParser()
-    config.add_section(public_ip)
+    config.add_section(name_prefix)
     for key, value in stats.items():
-        config.set(public_ip, key, value)
+        config.set(name_prefix, key, str(value))
 
     # Output the data in ConfigParser format to stdout and to a file.
     config.write(sys.stdout)
