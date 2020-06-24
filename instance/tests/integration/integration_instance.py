@@ -77,6 +77,31 @@ def retry(f, exception=AssertionError, tries=5, delay=10):
     return f_retry  # true decorator
 
 
+def spawn_openstack_server(name_prefix, retries=1):
+    """
+    Spawn an OpenStack server.
+
+    :param name_prefix: Name prefix for OpenStack server
+    :param retries: Number of times it retry spawn a server, defaults to 1
+    :return: OpenStack server instance
+    :raises: TimeoutError
+    """
+    while retries >= 0:
+        server = OpenStackServer(name_prefix=name_prefix)
+        server.save()
+        server.start()
+
+        try:
+            server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
+        except TimeoutError as e:
+            server.os_server.delete()
+            retries -= 1
+            if retries < 0:
+                raise e
+        else:
+            return server
+
+
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks
@@ -489,10 +514,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Test that OpenStackServer detects if the VM was terminated externally.
         """
-        server = OpenStackServer(name_prefix="integration_test")
-        server.save()
-        server.start()
-        server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
+        server = spawn_openstack_server("integration_test")
         server.os_server.delete()
         self.assert_server_terminated(server)
 
