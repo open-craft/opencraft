@@ -301,6 +301,7 @@ class SwiftContainerInstanceTestCase(ContainerTestCase):
         self.assertIs(instance.swift_provisioned, False)
         self.assertFalse(create_swift_container.called)
 
+    @override_settings(INSTANCE_STORAGE_TYPE='swift')
     def test_ansible_settings_swift(self, mock_consul):
         """
         Verify Swift Ansible configuration when Swift is enabled.
