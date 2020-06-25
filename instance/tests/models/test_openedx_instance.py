@@ -213,6 +213,9 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(
             sub_domain='test.spawn',
             privacy_policy_url=privacy_policy_url,
+            s3_access_key='test-s3-access-key',
+            s3_secret_access_key='test-s3-secret-access-key',
+            s3_bucket_name='test-s3-bucket-name',
         )
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mock_provision.call_count, 1)
@@ -474,7 +477,12 @@ class OpenEdXInstanceTestCase(TestCase):
         """
         Run spawn_appserver() sequence, with external databases
         """
-        instance = OpenEdXInstanceFactory(sub_domain='test.persistent')
+        instance = OpenEdXInstanceFactory(
+            sub_domain='test.persistent',
+            s3_access_key='test-s3-access-key',
+            s3_secret_access_key='test-s3-secret-access-key',
+            s3_bucket_name='test-s3-bucket-name',
+        )
 
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
