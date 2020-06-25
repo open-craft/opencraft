@@ -6,7 +6,7 @@ Installation
 For development, we recommend using [Vagrant](https://www.vagrantup.com/)
 to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
-system.
+system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) for your vagrant environment as the playbooks supports them for now.
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
@@ -170,7 +170,6 @@ and loads the environment from the `.env` file:
 * *worker\**: runs asynchronous jobs (Huey).
 * *periodic*: runs periodic, asynchronous jobs in production (Huey).
 
-
 Static assets collection
 ------------------------
 
@@ -225,3 +224,13 @@ Debug
 To access the console, you can use `shell_plus`:
 
     make shell
+
+## OCIM Frontend
+
+The frontend of OCIM is a single-page app using the React and Redux.
+All the code can be found inside `frontend` directory.
+All reusable UI components description been described in the `/demo` route in dev environment.
+
+### Provisioning
+
+Check the Frontend README all the instructions are given there.
