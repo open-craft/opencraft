@@ -140,6 +140,9 @@ def patch_services(func):
                 mock_provision_swift=stack_patch(
                     'instance.models.mixins.openedx_storage.SwiftContainerInstanceMixin.provision_swift'
                 ),
+                mock_provision_s3=stack_patch(
+                    'instance.models.mixins.openedx_storage.S3BucketInstanceMixin.provision_s3'
+                ),
                 mock_load_balancer_run_playbook=stack_patch(
                     'instance.models.load_balancer.LoadBalancingServer.run_playbook'
                 ),
