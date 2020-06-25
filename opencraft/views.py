@@ -44,8 +44,8 @@ class IndexView(RedirectView):
         user = self.request.user
         try:
             beta_test_user = BetaTestApplication.objects.filter(user=user)
-        except TypeError as e:
-            beta_test_user= []
+        except TypeError:
+            beta_test_user = []
         if InstanceReference.can_manage(user):
             return reverse('instance:index')
         elif beta_test_user:
