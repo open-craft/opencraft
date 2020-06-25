@@ -59,7 +59,7 @@ class IndexViewTestCase(WithUserTestCase):
         """
         self.client.login(username=username, password='pass')
         response = self.client.get(self.url, follow=True)
-        self.assertRedirects(response, self.register_url)
+        self.assertRedirects(response, self.new_console_url)
 
     def test_index_authenticated_instance_manager(self):
         """
@@ -78,7 +78,7 @@ class IndexViewTestCase(WithUserTestCase):
         """
         login_data = dict(username=username, password='pass')
         response = self.client.post(self.login_url, login_data, follow=True)
-        self.assertRedirects(response, self.register_url)
+        self.assertRedirects(response, self.new_console_url)
 
     @ddt.data('user3', 'user4')
     def test_login_instance_manager(self, username):
