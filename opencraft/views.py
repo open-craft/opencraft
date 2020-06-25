@@ -42,7 +42,10 @@ class IndexView(RedirectView):
         Redirect instance manager users to the instance list, and anyone else to the registration form
         """
         user = self.request.user
-        beta_test_user = BetaTestApplication.objects.filter(user=user)
+        try:
+            beta_test_user = BetaTestApplication.objects.filter(user=user)
+        except TypeError as e:
+            beta_test_user= []
         if InstanceReference.can_manage(user):
             return reverse('instance:index')
         elif beta_test_user:
