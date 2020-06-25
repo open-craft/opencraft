@@ -1,0 +1,58 @@
+@import '~styles/theme';
+
+.components-demo-page {
+  width: 100%;
+
+  .components-demo-heading {
+    padding: 1rem;
+  }
+
+  h1,
+  h2 {
+    text-align: center;
+    color: #fff;
+  }
+
+  h1 {
+    font-family: $playfair-font;
+    font-weight: bold;
+    font-size: 40px;
+  }
+
+  h2 {
+    font-family: $chivo-font;
+    font-size: 20px;
+    margin-bottom: 4rem;
+  }
+
+  .components-demo-container {
+    background-color: #fff;
+    padding: 4rem 1rem;
+    margin: 0 -15px;
+    flex: 1;
+
+    .components-demo-text {
+      margin-bottom: 1rem;
+      margin-left: 1rem;
+    }
+
+    .collapse-edit-area {
+      padding: 0rem 2rem;
+    }
+
+    .color-input-field {
+      padding: 2rem;
+    }
+
+    .table-cell {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .components-demo-table-container {
+    margin: 0 1rem;
+  }
+}
