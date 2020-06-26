@@ -343,9 +343,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 'static_template_about_content': 'Hello world!',
                 'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
             },
-            s3_access_key='test-s3-access-key',
-            s3_secret_access_key='test-s3-secret-access-key',
-            s3_bucket_name='test-s3-bucket-name',
         )
         instance = OpenEdXInstance.objects.get()
 
