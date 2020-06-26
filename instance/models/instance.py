@@ -69,6 +69,7 @@ class InstanceReference(TimeStampedModel):
         "<strong>Note: You currently cannot archive an instance from the admin panel. You can "
         "however un-archive an instance that was already archived.</strong>"
     ))
+    notes = models.TextField(blank=True)
     creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE)
 
