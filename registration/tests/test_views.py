@@ -469,9 +469,7 @@ class BetaTestApplicationViewTestMixin:
             ],
         })
 
-    @override_settings(
-        DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/test-no-privacy'
-    )
+    @override_settings(DEFAULT_PRIVACY_POLICY_URL='http://example.com:5000/test-no-privacy')
     def test_no_privacy_url_specified(self):
         """
         Ensure that new registrations succeed when no privacy policy URL is
