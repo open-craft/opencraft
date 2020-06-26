@@ -37,6 +37,7 @@ from django.test import override_settings
 from django.utils.six import StringIO
 import MySQLdb as mysql
 import pymongo
+from requests.exceptions import HTTPError
 
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.mixins.ansible import Playbook
@@ -59,21 +60,20 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
-def retry(f, exception=AssertionError, tries=5, delay=10):
+def retry(f, exceptions=(AssertionError, HTTPError), tries=5, delay=10):
     """
     Retry calling the decorated function
     """
     @wraps(f)
     def f_retry(*args, **kwargs):
-        mtries, mdelay = tries, delay
-        while mtries > 1:
+        mtries = 0
+        while mtries < tries:
             try:
                 return f(*args, **kwargs)
-            except exception:
-                time.sleep(mdelay)
-                mtries -= 1
+            except exceptions:
+                time.sleep(2 ** mtries * delay)
+                mtries += 1
         return f(*args, **kwargs)
-
     return f_retry  # true decorator
 
 
