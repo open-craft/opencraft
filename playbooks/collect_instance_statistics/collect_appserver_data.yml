@@ -20,7 +20,7 @@
 
     - name: Run user_stats script
       command: >
-        /edx/bin/python.edxapp /tmp/user_stats.py {{ server_name_prefix }} {{ inventory_hostname }} {{ remote_output_filename }}
+        /edx/bin/python.edxapp /tmp/user_stats.py {{ server_name_prefix }} {{ remote_output_filename }}
       register: stats_results
       become: yes
       become_user: www-data

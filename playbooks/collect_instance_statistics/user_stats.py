@@ -28,9 +28,8 @@ if __name__ == '__main__':
 
     # Grab the server_name_prefix passed to this script by the ansible playbook. This will be used as the
     # ConfigParser "section" name for the output data. This is so the data can easily be associated with this app
-    # server by the `activity_csv` management command.
+    # server by the `instance_statistics_csv` management command.
     server_name_prefix = sys.argv[1]
-    public_ip = sys.argv[2]
 
     # Build the ConfigParser data.
     config = ConfigParser()

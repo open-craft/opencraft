@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # OpenCraft -- tools to aid developing and hosting free software projects
-# Copyright (C) 2015-2019 OpenCraft <contact@opencraft.com>
+# Copyright (C) 2015-2020 OpenCraft <contact@opencraft.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -62,8 +62,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--days',
             '-d',
-            default=60,
-            help='The number of days that should be queried for statistics. Default is 60 days'
+            default=30,
+            help='The number of days that should be queried for statistics. Default is 30 days'
         )
         parser.add_argument(
             '--out',
@@ -97,10 +97,10 @@ class Command(BaseCommand):
             ))
             sys.exit(1)
 
-        # If there are no appservers for the instance, we should error out
-        if instance.appserver_set.first() is None:
+        # If there are no active appservers for the instance, we should error out
+        if not instance.successfully_provisioned or not instance.get_active_appservers():
             self.stderr.write(self.style.ERROR(
-                'No OpenEdXAppServers have been created for the instance with external or internal domain of {qualified_domain}'.format(qualified_domain=qualified_domain)
+                'No active OpenEdXAppServers exist for the instance with external or internal domain of {qualified_domain}'.format(qualified_domain=qualified_domain)
             ))
             sys.exit(1)
 
@@ -132,7 +132,7 @@ class Command(BaseCommand):
                 num_days=num_days
             ),
             playbook_path=playbook_path,
-            username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
+            username=settings.OPENSTACK_LOGS_SERVER_SSH_USERNAME,
             logger_=log_line,
         )
 
@@ -167,7 +167,7 @@ class Command(BaseCommand):
     def collect_instance_statistics(self, out, qualified_domain, num_days):  # pylint: disable=too-many-locals
         """Generate the activity CSV."""
         instance = self.get_instance_from_qualified_domain(qualified_domain)
-        appserver = instance.appserver_set.first()
+        appserver = instance.get_active_appservers().first()
         name_prefix = appserver.server_name_prefix
 
         self.stderr.write(self.style.SUCCESS('Running playbook...'))

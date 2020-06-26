@@ -1,6 +1,6 @@
 ---
 # A simple one-off playbook that gathers basic usage information from OpenedX hosts.
-# This is used by the `activity_csv` management command.
+# This is used by the `instance_statistics_csv` management command.
 
 - hosts: all
   vars:
