@@ -60,7 +60,7 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
-def retry(f, exception=AssertionError, tries=5, delay=10):
+def retry(f, exceptions=(AssertionError, HTTPError), tries=5, delay=10):
     """
     Retry calling the decorated function
     """
@@ -70,7 +70,7 @@ def retry(f, exception=AssertionError, tries=5, delay=10):
         while mtries < tries:
             try:
                 return f(*args, **kwargs)
-            except exception:
+            except exceptions:
                 time.sleep(2 ** mtries * delay)
                 mtries += 1
         return f(*args, **kwargs)
@@ -125,7 +125,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.status, AppServerStatus.Running)
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
-    @retry(exception=(AssertionError, HTTPError))
+    @retry
     def assert_instance_up(self, instance):
         """
         Check that the given instance is up and accepting requests
