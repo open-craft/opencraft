@@ -213,8 +213,8 @@ class OpenEdXInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory(
             sub_domain='test.spawn',
             privacy_policy_url=privacy_policy_url,
-            s3_access_key='test-s3-access-key',
-            s3_secret_access_key='test-s3-secret-access-key',
+            s3_access_key='test',
+            s3_secret_access_key='test',
             s3_bucket_name='test-s3-bucket-name',
         )
         appserver_id = instance.spawn_appserver()
