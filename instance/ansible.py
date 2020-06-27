@@ -25,15 +25,13 @@ Ansible - Helper functions
 from contextlib import contextmanager
 import logging
 import os
-import shutil
 import subprocess
-from tempfile import mkdtemp, NamedTemporaryFile
+from tempfile import NamedTemporaryFile
 import yaml
 
 from django.conf import settings
 
-from instance.utils import poll_streams
-
+from instance.utils import poll_streams, create_temp_dir
 
 # Logging #####################################################################
 
@@ -91,21 +89,6 @@ def string_to_file_path(string, root_dir=None):
     f.write(string)
     f.close()
     return f.name
-
-
-@contextmanager
-def create_temp_dir():
-    """
-    A context manager that creates a temporary directory, returns it. Directory is deleted upon context manager exit.
-    """
-    temp_dir = None
-    try:
-        temp_dir = mkdtemp()
-        yield temp_dir
-    finally:
-        # If tempdir is None it means that if wasn't created, so we don't need to delete it
-        if temp_dir is not None:
-            shutil.rmtree(temp_dir)
 
 
 def render_sandbox_creation_command(
