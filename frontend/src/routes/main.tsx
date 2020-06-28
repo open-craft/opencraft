@@ -12,6 +12,7 @@ import {
 } from 'auth/components';
 import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
+import { ComponentsDemo } from 'ui/components/ComponentsDemo';
 import { ROUTES } from '../global/constants';
 
 export const MainRoutes = () => (
@@ -37,5 +38,8 @@ export const MainRoutes = () => (
     />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
+    {process.env.NODE_ENV === 'development' && (
+      <Route path={ROUTES.Demo.COMPONENTS_DEMO} component={ComponentsDemo} />
+    )}
   </Switch>
 );
