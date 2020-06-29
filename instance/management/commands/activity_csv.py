@@ -31,7 +31,7 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from instance import ansible
+from instance import ansible, utils
 from instance.models.openedx_appserver import OpenEdXAppServer
 from registration.models import BetaTestApplication
 
@@ -92,7 +92,7 @@ class Command(BaseCommand):
 
         self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
-        with ansible.create_temp_dir() as playbook_output_dir:
+        with utils.create_temp_dir() as playbook_output_dir:
             inventory = '[apps]\n{servers}'.format(servers='\n'.join(active_appservers.keys()))
             playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_activity/collect_activity.yml')
 
