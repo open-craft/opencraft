@@ -1,4 +1,4 @@
-#!/edx/bin/python.edxapp
+#!/home/ubuntu/instance_statistics_venv/bin/python
 # pylint: skip-file
 
 from argparse import ArgumentParser

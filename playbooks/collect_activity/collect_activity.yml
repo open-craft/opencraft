@@ -20,7 +20,9 @@
 
     - name: Run stats script
       command: >
-        /edx/bin/python.edxapp /tmp/collect_activity.py {{ inventory_hostname }} {{ remote_output_filename }}
+        /edx/bin/python.edxapp /tmp/collect_activity.py
+          --config-section {{ inventory_hostname }}
+          --out {{ remote_output_filename }}
       register: stats_results
       become: yes
       become_user: www-data

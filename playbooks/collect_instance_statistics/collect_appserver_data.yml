@@ -11,16 +11,19 @@
     # We have to do a copy+command pair here (instead of script) in order to get
     #   separate channels for stdout and stderr.
     # See also: https://github.com/ansible/ansible-modules-core/pull/4000/files
-    - name: Copy user_stats script
+    - name: Copy collect_activity script
       copy:
-        src: user_stats.py
-        dest: /tmp/user_stats.py
+        src: ../collect_activity/stats.py
+        dest: /tmp/collect_activity.py
       become: yes
       become_user: www-data
 
-    - name: Run user_stats script
+    - name: Run collect_activity script
       command: >
-        /edx/bin/python.edxapp /tmp/user_stats.py {{ server_name_prefix }} {{ remote_output_filename }}
+        /edx/bin/python.edxapp /tmp/collect_activity.py
+          --config-section {{ inventory_hostname }}
+          --out {{ remote_output_filename }}
+          --skip-hits-statistics
       register: stats_results
       become: yes
       become_user: www-data
