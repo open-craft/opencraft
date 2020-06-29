@@ -22,9 +22,10 @@ Instance app - Activity report management command
 
 # Imports #####################################################################
 
+import argparse
 from configparser import ConfigParser
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import sys
 
@@ -35,6 +36,19 @@ from django.db.models import Q
 from instance import ansible
 from instance.models.openedx_instance import OpenEdXInstance
 from registration.models import BetaTestApplication
+
+
+def valid_date(s):
+    try:
+        date = datetime.strptime(s, "%Y-%m-%d").date()
+    except ValueError:
+        msg = "Not a valid date: '{0}'.".format(s)
+        raise argparse.ArgumentTypeError(msg)
+
+    if date <= datetime.utcnow().date():
+        return date
+
+    raise argparse.ArgumentTypeError("Date must be earlier than or equal to today: '{0}'.".format(s))
 
 
 # Classes #####################################################################
@@ -49,21 +63,29 @@ class Command(BaseCommand):
         ' (numbers for hits, distinct hits, users, and courses).'
     )
 
+    DEFAULT_NUM_DAYS = 30
     LOGS_SERVER = 'logs.opencraft.com'
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--qualified-domain',
-            '-q',
+            '--domain',
+            '-d',
             default=None,
             help='The fully qualified domain name to filter results by',
             required=True
         )
         parser.add_argument(
-            '--days',
-            '-d',
-            default=30,
-            help='The number of days that should be queried for statistics. Default is 30 days'
+            '--from',
+            default=datetime.utcnow().date() - timedelta(days=self.DEFAULT_NUM_DAYS),
+            type=valid_date,
+            help='The first day on which statistics should be gathered. ' \
+                'Defaults to {num_days_ago} days ago (UTC)'.format(num_days_ago=self.DEFAULT_NUM_DAYS)
+        )
+        parser.add_argument(
+            '--to',
+            default=datetime.utcnow().date(),
+            type=valid_date,
+            help='The last day on which statistics should be gathered. Defaults to today (UTC)'
         )
         parser.add_argument(
             '--out',
@@ -84,7 +106,16 @@ class Command(BaseCommand):
                 ))
                 sys.exit(1)
 
-        self.collect_instance_statistics(out, options['qualified_domain'], options['days'])
+        # Verify that --to date is greater than or equal to --from date
+        from_date = options['from']
+        to_date = options['to']
+        if to_date < from_date:
+            self.stderr.write(self.style.ERROR(
+                '--to date ({to_date}) must be later than or equal to --from date ({from_date})'.format(to_date=to_date, from_date=from_date)
+            ))
+            sys.exit(1)
+
+        self.collect_instance_statistics(out, options['qualified_domain'], from_date, to_date)
 
     def get_instance_from_qualified_domain(self, qualified_domain):
         try:
@@ -106,7 +137,7 @@ class Command(BaseCommand):
 
         return instance
 
-    def get_elasticsearch_statistics(playbook_output_dir, name_prefix, num_days):
+    def get_elasticsearch_statistics(playbook_output_dir, name_prefix, from_date, to_date):
         inventory = '[apps]\n{server}'.format(server=self.LOGS_SERVER)
         playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_instance_statistics/collect_elasticsearch_data.yml')
 
@@ -125,11 +156,13 @@ class Command(BaseCommand):
                 'local_output_dir: {output_dir}\n'
                 'remote_output_filename: /tmp/activity_report\n'
                 'server_name_prefix: {server_name_prefix}\n'
-                'num_days: {num_days}'
+                'from_date: {from_date}\n'
+                'to_date: {to_date}'
             ).format(
                 output_dir=playbook_output_dir,
                 server_name_prefix=name_prefix,
-                num_days=num_days
+                from_date=from_date,
+                to_date=to_date
             ),
             playbook_path=playbook_path,
             username=settings.OPENSTACK_LOGS_SERVER_SSH_USERNAME,
@@ -164,7 +197,7 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def collect_instance_statistics(self, out, qualified_domain, num_days):  # pylint: disable=too-many-locals
+    def collect_instance_statistics(self, out, qualified_domain, from_date, to_date):  # pylint: disable=too-many-locals
         """Generate the activity CSV."""
         instance = self.get_instance_from_qualified_domain(qualified_domain)
         appserver = instance.get_active_appservers().first()
@@ -173,7 +206,7 @@ class Command(BaseCommand):
         self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
         with ansible.create_temp_dir() as playbook_output_dir:
-            get_elasticsearch_statistics(playbook_output_dir, name_prefix, num_days)
+            get_elasticsearch_statistics(playbook_output_dir, name_prefix, from_date, to_date)
             get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)

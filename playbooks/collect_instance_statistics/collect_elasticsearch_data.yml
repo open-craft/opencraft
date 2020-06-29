@@ -8,6 +8,23 @@
     local_output_dir: /tmp/
     remote_output_filename: /tmp/activity_report
   tasks:
+    - name: Ensure necessary packages are installed
+      become: yes
+      apt:
+        name: ['python-setuptools', 'virtualenv']
+        state: present
+
+    - name: Copy elasticsearch_requirements.txt
+      copy:
+        src: elasticsearch_requirements.txt
+        dest: /tmp/elasticsearch_requirements.txt
+
+    - name: Install Elasticsearch packages
+      pip:
+        requirements: /tmp/elasticsearch_requirements.txt
+        virtualenv: /home/ubuntu/instance_activity_venv
+        virtualenv_python: python3
+
     # We have to do a copy+command pair here (instead of script) in order to get
     #   separate channels for stdout and stderr.
     # See also: https://github.com/ansible/ansible-modules-core/pull/4000/files
@@ -15,15 +32,15 @@
       copy:
         src: query_elasticsearch.py
         dest: /tmp/query_elasticsearch.py
-      become: yes
-      become_user: www-data
 
     - name: Run query_elasticsearch script
       command: >
-        /edx/bin/python.edxapp /tmp/query_elasticsearch.py {{ server_name_prefix }} {{ num_days }} {{ remote_output_filename }}
+        /home/ubuntu/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
+          --out {{ remote_output_filename }}
+          --name-prefix {{ server_name_prefix }}
+          --from {{ from_date }}
+          --to {{ to_date }}
       register: stats_results
-      become: yes
-      become_user: www-data
 
     # For debugging purposes:
     #   stdout contains the computed stats
