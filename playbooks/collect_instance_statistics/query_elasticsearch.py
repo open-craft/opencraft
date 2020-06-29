@@ -12,16 +12,13 @@ import sys
 def valid_date(s):
     try:
         # Set the tzinfo to `timezone.utc` to be consistent
-        return datetime.strptime(s, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        return datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
 
 
 if __name__ == '__main__':
-
-    def hours_to_milliseconds(hours):
-        return hours * 60 * 60 * 1000
 
     parser = ArgumentParser()
     parser.add_argument(
@@ -53,46 +50,31 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    # datetime.timestamp() returns the value in seconds
-    start_timestamp_ms = int(args.from_date.timestamp() * 1000)
-
-    # The MS timestamp for the end date is 1 day later, minus 1 millisecond
-    end_timestamp_ms = int((args.to_date + timedelta(days=1) - timedelta(milliseconds=1)).timestamp() * 1000)
-
     client = Elasticsearch()
-
-    # Query for the host matching the name_prefix
-    # Only query access log data, and ignore heartbeat or xqueue/get_queuelen requests
-    base_search = Search(using=client) \
-        .query("match_phrase", host=args.name_prefix) \
-        .query("match_phrase", source="/edx/var/log/nginx/access.log") \
-        .exclude("match_phrase", request="heartbeat") \
-        .exclude("match_phrase", request="xqueue/get_queuelen")
-
-    # Aggregate the unique hits by proxy_ip
-    base_search.aggs.bucket("unique_hits", "terms", size=10000, field="proxy_ip.keyword")
 
     unique_ips = set()
     total_hits = 0
 
-    # Start num_days ago, and query for every 6 hour timeframe since
-    for start_time in range(start_timestamp_ms, end_timestamp_ms, hours_to_milliseconds(6)):
-        # Don't search beyond right end_timestamp_ms
-        end_time = min(start_time + hours_to_milliseconds(6), end_timestamp_ms)
+    # Start at from_date and go until to_date, incrementing by 1 day
+    # (at the end of the loop)
+    date = args.from_date
+    while date <= args.to_date:
+        es_index = 'filebeat-{date}'.format(date=date.strftime("%Y.%m.%d"))
 
-        # Search for the current 6 hour window
-        time_filter = {
-            "@timestamp": {
-                "gte": start_time,
-                "lt": end_time,
-                "format": "epoch_millis"
-            }
-        }
-        es_search = base_search.filter("range", **time_filter)
+        # Query for the host matching the name_prefix
+        # Only query access log data, and ignore heartbeat or xqueue/get_queuelen requests
+        search = Search(using=client, index=es_index) \
+            .query("match_phrase", host=args.name_prefix) \
+            .query("match_phrase", source="/edx/var/log/nginx/access.log") \
+            .exclude("match_phrase", request="heartbeat") \
+            .exclude("match_phrase", request="xqueue/get_queuelen")
+
+        # Aggregate the unique hits by proxy_ip
+        search.aggs.bucket("unique_hits", "terms", size=10000, field="proxy_ip.keyword")
 
         # Python slice syntax is used to set the `from` and `size`
         # parameters for the search, which we want set to 0
-        response = es_search[0:0].execute()
+        response = search[0:0].execute()
 
         for bucket in response["aggregations"]["unique_hits"]["buckets"]:
             ip = bucket["key"]
@@ -103,6 +85,8 @@ if __name__ == '__main__':
 
             unique_ips.add(ip)
             total_hits += bucket["doc_count"]
+
+        date += timedelta(days=1)
 
     stats = {
         'unique_hits': len(unique_ips),
