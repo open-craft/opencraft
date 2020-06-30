@@ -37,7 +37,6 @@ from django.test import override_settings
 from django.utils.six import StringIO
 import MySQLdb as mysql
 import pymongo
-from requests.exceptions import HTTPError
 
 from instance.models.appserver import AppServer, Status as AppServerStatus
 from instance.models.mixins.ansible import Playbook
@@ -70,7 +69,7 @@ def retry(f, tries=5, delay=10):
         while mtries < tries:
             try:
                 return f(*args, **kwargs)
-            except Exception:
+            except:  # pylint: disable=bare-except
                 time.sleep(2 ** mtries * delay)
                 mtries += 1
         return f(*args, **kwargs)
