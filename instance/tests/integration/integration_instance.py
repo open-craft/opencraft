@@ -69,7 +69,7 @@ def retry(f, tries=5, delay=10):
         while mtries < tries:
             try:
                 return f(*args, **kwargs)
-            except:  # pylint: disable=bare-except
+            except Exception:  # pylint: disable=broad-except
                 time.sleep(2 ** mtries * delay)
                 mtries += 1
         return f(*args, **kwargs)
