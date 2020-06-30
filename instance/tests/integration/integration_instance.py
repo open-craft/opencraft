@@ -60,7 +60,7 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
-def retry(f, exceptions=(AssertionError, HTTPError), tries=5, delay=10):
+def retry(f, tries=5, delay=10):
     """
     Retry calling the decorated function
     """
@@ -70,7 +70,7 @@ def retry(f, exceptions=(AssertionError, HTTPError), tries=5, delay=10):
         while mtries < tries:
             try:
                 return f(*args, **kwargs)
-            except exceptions:
+            except Exception:
                 time.sleep(2 ** mtries * delay)
                 mtries += 1
         return f(*args, **kwargs)
