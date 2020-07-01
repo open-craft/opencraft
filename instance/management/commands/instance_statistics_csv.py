@@ -202,7 +202,7 @@ class Command(BaseCommand):
         inventory = '[apps]\n{server}'.format(server=public_ip)
         playbook_path = os.path.join(
             settings.SITE_ROOT,
-            'playbooks/collect_instance_statistics/collect_appserver_data.yml'
+            'playbooks/collect_activity/collect_activity.yml'
         )
 
         def log_line(line):
