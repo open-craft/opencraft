@@ -59,20 +59,21 @@ print('TEST_GROUP: %s', (TEST_GROUP, ))
 # Tests #######################################################################
 
 
-def retry(f, tries=5, delay=10):
+def retry(f, exception=AssertionError, tries=5, delay=10):
     """
     Retry calling the decorated function
     """
     @wraps(f)
     def f_retry(*args, **kwargs):
-        mtries = 0
-        while mtries < tries:
+        mtries, mdelay = tries, delay
+        while mtries > 1:
             try:
                 return f(*args, **kwargs)
-            except Exception:  # pylint: disable=broad-except
-                time.sleep(2 ** mtries * delay)
-                mtries += 1
+            except exception:
+                time.sleep(mdelay)
+                mtries -= 1
         return f(*args, **kwargs)
+
     return f_retry  # true decorator
 
 
