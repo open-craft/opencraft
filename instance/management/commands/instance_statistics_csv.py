@@ -218,8 +218,10 @@ class Command(BaseCommand):
             inventory_str=inventory,
             vars_str=(
                 'local_output_dir: {output_dir}\n'
+                'local_output_filename: user_statistics\n'
                 'remote_output_filename: /tmp/activity_report\n'
-                'server_name_prefix: {server_name_prefix}'
+                'server_name_prefix: {server_name_prefix}\n'
+                'extra_script_arguments: --skip-hit-statistics'
             ).format(
                 output_dir=playbook_output_dir,
                 server_name_prefix=name_prefix

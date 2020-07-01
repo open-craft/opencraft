@@ -6,23 +6,26 @@
   vars:
     # This should be overridden to be more unique.
     local_output_dir: /tmp/
+    local_output_filename: "{{ inventory_hostname }}"
     remote_output_filename: /tmp/activity_report
+    extra_script_arguments: ""
   tasks:
     # We have to do a copy+command pair here (instead of script) in order to get
     #   separate channels for stdout and stderr.
     # See also: https://github.com/ansible/ansible-modules-core/pull/4000/files
-    - name: Copy stats script
+    - name: Copy collect_activity script
       copy:
         src: stats.py
         dest: /tmp/collect_activity.py
       become: yes
       become_user: www-data
 
-    - name: Run stats script
+    - name: Run collect_activity script
       command: >
         /edx/bin/python.edxapp /tmp/collect_activity.py
           --config-section {{ inventory_hostname }}
           --out {{ remote_output_filename }}
+          {{ extra_script_arguments }}
       register: stats_results
       become: yes
       become_user: www-data
@@ -36,7 +39,7 @@
     - name: Fetch stats
       fetch:
         src: '{{ remote_output_filename }}'
-        dest: '{{ local_output_dir }}/{{ inventory_hostname }}'
+        dest: '{{ local_output_dir }}/{{ local_output_filename }}'
         flat: yes
       register: fetch_results
 
