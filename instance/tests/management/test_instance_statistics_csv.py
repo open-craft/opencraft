@@ -23,7 +23,7 @@ Instance - Logs Activity CSV unit tests
 
 from argparse import ArgumentTypeError
 from datetime import datetime, date, timedelta
-from unittest.mock import patch, PropertyMock, Mock, ANY
+from unittest.mock import patch, PropertyMock, Mock
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -72,6 +72,7 @@ class ValidDateTestCase(TestCase):
         """
         self.assertEqual(valid_date('2019-01-01'), '2019-01-01')
 
+
 class InstanceStatisticsCSVTestCase(TestCase):
     """
     Test cases for the `instance_statistics_csv` management command.
@@ -103,7 +104,8 @@ class InstanceStatisticsCSVTestCase(TestCase):
 
     def test_no_matching_instances(self):
         """
-        Verify that the command correctly notifies the user that there are no matching instances.
+        Verify that the command correctly notifies the user that
+        there are no matching instances.
         """
         stderr = StringIO()
         with self.assertRaises(SystemExit):
@@ -117,7 +119,8 @@ class InstanceStatisticsCSVTestCase(TestCase):
     @patch('instance.models.openedx_instance.OpenEdXInstance.objects')
     def test_instance_not_successfully_provisioned(self, mock_openedx_instance):
         """
-        Verify that the command correctly notifies the user that there are no active app servers if the instance failed to provision.
+        Verify that the command correctly notifies the user that
+        there are no active app servers if the instance failed to provision.
         """
         mock_instance = PropertyMock(successfully_provisioned=False)
         mock_openedx_instance.get.return_value = mock_instance
@@ -129,12 +132,16 @@ class InstanceStatisticsCSVTestCase(TestCase):
                 domain='test.opencraft.hosting',
                 stderr=stderr
             )
-        self.assertIn('No active OpenEdXAppServers exist for the instance with external or internal domain', stderr.getvalue())
+        self.assertIn(
+            'No active OpenEdXAppServers exist for the instance',
+            stderr.getvalue()
+        )
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.objects')
     def test_no_active_appservers(self, mock_openedx_instance):
         """
-        Verify that the command correctly notifies the user that there are no active app servers if none exist.
+        Verify that the command correctly notifies the user that
+        there are no active app servers if none exist.
         """
         mock_instance = PropertyMock(successfully_provisioned=True)
         mock_instance.get_active_appservers.return_value = []
@@ -147,13 +154,16 @@ class InstanceStatisticsCSVTestCase(TestCase):
                 domain='test.opencraft.hosting',
                 stderr=stderr
             )
-        self.assertIn('No active OpenEdXAppServers exist for the instance with external or internal domain', stderr.getvalue())
+        self.assertIn(
+            'No active OpenEdXAppServers exist for the instance',
+            stderr.getvalue()
+        )
 
     @freezegun.freeze_time('2020-01-01')
     @patch('instance.management.commands.instance_statistics_csv.Command.collect_instance_statistics')
     @patch('instance.management.commands.instance_statistics_csv.open')
     @patch('instance.management.commands.instance_statistics_csv.Command.DEFAULT_NUM_DAYS', 10)
-    def test_default_dates(self, mock_open, mock_collect_instance_statistics):
+    def test_default_dates(self, mock_open, mock_collect_statistics):
         """
         Verify that the command uses correct default dates
         """
@@ -172,7 +182,12 @@ class InstanceStatisticsCSVTestCase(TestCase):
         expected_end_date = datetime.utcnow().date()
         expected_start_date = expected_end_date - timedelta(days=10)
 
-        mock_collect_instance_statistics.assert_called_with(mock_file, domain, expected_start_date, expected_end_date)
+        mock_collect_statistics.assert_called_with(
+            mock_file,
+            domain,
+            expected_start_date,
+            expected_end_date
+        )
 
     @freezegun.freeze_time('2020-01-01')
     @patch('instance.management.commands.instance_statistics_csv.open')
@@ -205,7 +220,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
     @freezegun.freeze_time('2020-01-01')
     @patch('instance.management.commands.instance_statistics_csv.Command.collect_instance_statistics')
     @patch('instance.management.commands.instance_statistics_csv.open')
-    def test_custom_dates(self, mock_open, mock_collect_instance_statistics):
+    def test_custom_dates(self, mock_open, mock_collect_statistics):
         """
         Verify that the command uses custom dates
         """
@@ -229,5 +244,9 @@ class InstanceStatisticsCSVTestCase(TestCase):
         expected_end_date = date(2019, 5, 1)
         expected_start_date = date(2019, 1, 1)
 
-        mock_collect_instance_statistics.assert_called_with(mock_file, domain, expected_start_date, expected_end_date)
-
+        mock_collect_statistics.assert_called_with(
+            mock_file,
+            domain,
+            expected_start_date,
+            expected_end_date
+        )

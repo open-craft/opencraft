@@ -81,17 +81,17 @@ class Command(BaseCommand):
                 datetime.utcnow().date() - timedelta(days=self.DEFAULT_NUM_DAYS)
             ).strftime("%Y-%m-%d"),
             type=valid_date,
-            help='The first day on which statistics should be gathered. ' \
-                'Defaults to {num_days_ago} days ago (UTC).' \
-                'FORMAT: YYYY-MM-DD'.format(num_days_ago=self.DEFAULT_NUM_DAYS)
+            help='The first day on which statistics should be gathered. '
+            'Defaults to {num_days_ago} days ago (UTC).'
+            'FORMAT: YYYY-MM-DD'.format(num_days_ago=self.DEFAULT_NUM_DAYS)
         )
         parser.add_argument(
             '--end-date',
             default=datetime.utcnow().date().strftime("%Y-%m-%d"),
             type=valid_date,
-            help='The last day on which statistics should be gathered. ' \
-                'Defaults to today (UTC).' \
-                'FORMAT: YYYY-MM-DD'
+            help='The last day on which statistics should be gathered. '
+            'Defaults to today (UTC).'
+            'FORMAT: YYYY-MM-DD'
         )
         parser.add_argument(
             '--out',
@@ -108,7 +108,10 @@ class Command(BaseCommand):
                 out = open(options['out'], 'w')
             except PermissionError:
                 self.stderr.write(self.style.ERROR(
-                    'Permission denied while attempting to write file: {outfile}'.format(outfile=options['out'])
+                    'Permission denied while attempting to write '
+                    'file: {outfile}'.format(
+                        outfile=options['out']
+                    )
                 ))
                 sys.exit(1)
 
@@ -118,35 +121,50 @@ class Command(BaseCommand):
         # Verify that --end-date is greater than or equal to --start-date
         if end_date < start_date:
             self.stderr.write(self.style.ERROR(
-                '--end-date ({end_date}) must be later than or equal to --start-date ({start_date})'.format(end_date=end_date, start_date=start_date)
+                '--end-date ({end_date}) must be later than or equal '
+                'to --start-date ({start_date})'.format(
+                    end_date=end_date,
+                    start_date=start_date
+                )
             ))
             sys.exit(1)
 
         self.collect_instance_statistics(out, options['domain'], start_date, end_date)
 
-    def get_instance_from_qualified_domain(self, qualified_domain):
+    def get_instance_from_domain_name(self, domain_name):
+        """ Get an instance object for a given domain name """
         try:
             instance = OpenEdXInstance.objects.get(
-                Q(external_lms_domain=qualified_domain) | Q(internal_lms_domain=qualified_domain)
+                Q(external_lms_domain=domain_name) | Q(internal_lms_domain=domain_name)
             )
         except OpenEdXInstance.DoesNotExist:
             self.stderr.write(self.style.ERROR(
-                'No OpenEdXInstance exists with an external or internal domain of {qualified_domain}'.format(qualified_domain=qualified_domain)
+                'No OpenEdXInstance exists with an external or internal '
+                'domain of {domain_name}'.format(
+                    domain_name=domain_name
+                )
             ))
             sys.exit(1)
 
         # If there are no active appservers for the instance, we should error out
         if not instance.successfully_provisioned or not instance.get_active_appservers():
             self.stderr.write(self.style.ERROR(
-                'No active OpenEdXAppServers exist for the instance with external or internal domain of {qualified_domain}'.format(qualified_domain=qualified_domain)
+                'No active OpenEdXAppServers exist for the instance with '
+                'external or internal domain of {domain_name}'.format(
+                    domain_name=domain_name
+                )
             ))
             sys.exit(1)
 
         return instance
 
-    def get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date):
+    def get_elasticsearch_statistics(self, playbook_output_dir, name_prefix, start_date, end_date):
+        """ Execute the collect_elasticsearch_data playbook to gather statistics """
         inventory = '[apps]\n{server}'.format(server=settings.INSTANCE_LOGS_SERVER_SSH_URL)
-        playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_instance_statistics/collect_elasticsearch_data.yml')
+        playbook_path = os.path.join(
+            settings.SITE_ROOT,
+            'playbooks/collect_instance_statistics/collect_elasticsearch_data.yml'
+        )
 
         def log_line(line):
             """Helper to pass to capture_playbook_output()."""
@@ -157,7 +175,10 @@ class Command(BaseCommand):
         # Launch the collect_elasticsearch_data playbook, which places a file into the `playbook_output_dir`
         # on this host.
         ansible.capture_playbook_output(
-            requirements_path=os.path.join(os.path.dirname(playbook_path), 'requirements.txt'),
+            requirements_path=os.path.join(
+                os.path.dirname(playbook_path),
+                'requirements.txt'
+            ),
             inventory_str=inventory,
             vars_str=(
                 'local_output_dir: {output_dir}\n'
@@ -176,9 +197,13 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def get_appserver_statistics(playbook_output_dir, name_prefix, public_ip):
+    def get_appserver_statistics(self, playbook_output_dir, name_prefix, public_ip):
+        """ Execute the collect_appserver_data playbook to gather statistics """
         inventory = '[apps]\n{server}'.format(server=public_ip)
-        playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_instance_statistics/collect_appserver_data.yml')
+        playbook_path = os.path.join(
+            settings.SITE_ROOT,
+            'playbooks/collect_instance_statistics/collect_appserver_data.yml'
+        )
 
         def log_line(line):
             """Helper to pass to capture_playbook_output()."""
@@ -204,17 +229,23 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def collect_instance_statistics(self, out, qualified_domain, start_date, end_date):  # pylint: disable=too-many-locals
-        """Generate the activity CSV."""
-        instance = self.get_instance_from_qualified_domain(qualified_domain)
+    def collect_instance_statistics(
+            self,
+            out,
+            domain_name,
+            start_date,
+            end_date
+    ):  # pylint: disable=too-many-locals
+        """Generate the instance statistics CSV."""
+        instance = self.get_instance_from_domain_name(domain_name)
         appserver = instance.get_active_appservers().first()
         name_prefix = appserver.server_name_prefix
 
         self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
         with ansible.create_temp_dir() as playbook_output_dir:
-            get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date)
-            get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
+            self.get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date)
+            self.get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
             csv_writer.writerow([
