@@ -425,7 +425,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
         template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
-        # master and newer releases djangoapps.heartbeat installed by default now.
+        # master and juniper release onwards has djangoapps.heartbeat installed by default
         # openedx <= ironwood requires this if celery check is included in
         # heartbeat extended checks (which we add by default above)
         if any(release_name in self.openedx_release for release_name in [
