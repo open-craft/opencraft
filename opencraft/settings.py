@@ -299,6 +299,11 @@ HUEY = {
     'consumer': {'workers': 1, 'loglevel': logging.INFO},
 }
 
+# Instance Logs Server ########################################################
+
+INSTANCE_LOGS_SERVER_SSH_URL = env('INSTANCE_LOGS_SERVER_SSH_URL', default='logs.opencraft.com')
+INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
+
 # OpenStack ###################################################################
 
 OPENSTACK_USER = env('OPENSTACK_USER')
@@ -311,7 +316,6 @@ OPENSTACK_SANDBOX_FLAVOR = env.json('OPENSTACK_SANDBOX_FLAVOR', default={"ram": 
 OPENSTACK_SANDBOX_BASE_IMAGE = env.json('OPENSTACK_SANDBOX_BASE_IMAGE', default={"name": "Ubuntu 16.04"})
 OPENSTACK_SANDBOX_SSH_KEYNAME = env('OPENSTACK_SANDBOX_SSH_KEYNAME', default='opencraft')
 OPENSTACK_SANDBOX_SSH_USERNAME = env('OPENSTACK_SANDBOX_SSH_USERNAME', default='ubuntu')
-OPENSTACK_LOGS_SERVER_SSH_USERNAME = env('OPENSTACK_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 OPENSTACK_PRODUCTION_INSTANCE_FLAVOR = env.json(
     'OPENSTACK_PRODUCTION_INSTANCE_FLAVOR',
     default={"ram": 8192, "disk": 80}

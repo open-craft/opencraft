@@ -3,15 +3,17 @@
 
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 import sys
 
 
 def valid_date(s):
+    """
+    Verify that the string passed in is a date
+    """
     try:
-        # Set the tzinfo to `timezone.utc` to be consistent
         return datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
@@ -24,20 +26,18 @@ if __name__ == '__main__':
     parser.add_argument(
         '--name-prefix',
         default=None,
-        help='The fully qualified domain name to filter results by',
+        help='The fully qualified domain name to filter results by. FORMAT: YYYY-MM-DD',
         required=True
     )
     parser.add_argument(
-        '--from',
-        dest='from_date',
+        '--start-date',
         default=None,
         type=valid_date,
-        help='The first day on which statistics should be gathered.',
+        help='The first day on which statistics should be gathered. FORMAT: YYYY-MM-DD',
         required=True
     )
     parser.add_argument(
-        '--to',
-        dest='to_date',
+        '--end-date',
         default=None,
         type=valid_date,
         help='The last day on which statistics should be gathered.',
@@ -55,10 +55,10 @@ if __name__ == '__main__':
     unique_ips = set()
     total_hits = 0
 
-    # Start at from_date and go until to_date, incrementing by 1 day
+    # Start at start_date and go until end_date, incrementing by 1 day
     # (at the end of the loop)
-    date = args.from_date
-    while date <= args.to_date:
+    date = args.start_date
+    while date <= args.end_date:
         es_index = 'filebeat-{date}'.format(date=date.strftime("%Y.%m.%d"))
 
         # Query for the host matching the name_prefix

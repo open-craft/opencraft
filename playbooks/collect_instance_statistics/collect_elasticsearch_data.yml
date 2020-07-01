@@ -1,5 +1,5 @@
 ---
-# A simple one-off playbook that gathers basic usage information from OpenedX hosts.
+# A simple one-off playbook that gathers basic usage information from the configured logs server.
 # This is used by the `instance_statistics_csv` management command.
 
 - hosts: all
@@ -38,8 +38,8 @@
         /home/ubuntu/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
           --out {{ remote_output_filename }}
           --name-prefix {{ server_name_prefix }}
-          --from {{ from_date }}
-          --to {{ to_date }}
+          --start-date {{ start_date }}
+          --end-date {{ end_date }}
       register: stats_results
 
     # For debugging purposes:

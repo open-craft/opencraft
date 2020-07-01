@@ -39,14 +39,16 @@ from registration.models import BetaTestApplication
 
 
 def valid_date(s):
+    """
+    Verify that the string passed in is a date no later than today (UTC)
+    """
     try:
         date = datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
-        msg = "Not a valid date: '{0}'.".format(s)
-        raise argparse.ArgumentTypeError(msg)
+        raise argparse.ArgumentTypeError("Not a valid date: '{0}'.".format(s))
 
     if date <= datetime.utcnow().date():
-        return date
+        return s
 
     raise argparse.ArgumentTypeError("Date must be earlier than or equal to today: '{0}'.".format(s))
 
@@ -64,28 +66,32 @@ class Command(BaseCommand):
     )
 
     DEFAULT_NUM_DAYS = 30
-    LOGS_SERVER = 'logs.opencraft.com'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--domain',
             '-d',
             default=None,
-            help='The fully qualified domain name to filter results by',
+            help='The fully qualified domain of the instance to get the data for',
             required=True
         )
         parser.add_argument(
-            '--from',
-            default=datetime.utcnow().date() - timedelta(days=self.DEFAULT_NUM_DAYS),
+            '--start-date',
+            default=(
+                datetime.utcnow().date() - timedelta(days=self.DEFAULT_NUM_DAYS)
+            ).strftime("%Y-%m-%d"),
             type=valid_date,
             help='The first day on which statistics should be gathered. ' \
-                'Defaults to {num_days_ago} days ago (UTC)'.format(num_days_ago=self.DEFAULT_NUM_DAYS)
+                'Defaults to {num_days_ago} days ago (UTC).' \
+                'FORMAT: YYYY-MM-DD'.format(num_days_ago=self.DEFAULT_NUM_DAYS)
         )
         parser.add_argument(
-            '--to',
-            default=datetime.utcnow().date(),
+            '--end-date',
+            default=datetime.utcnow().date().strftime("%Y-%m-%d"),
             type=valid_date,
-            help='The last day on which statistics should be gathered. Defaults to today (UTC)'
+            help='The last day on which statistics should be gathered. ' \
+                'Defaults to today (UTC).' \
+                'FORMAT: YYYY-MM-DD'
         )
         parser.add_argument(
             '--out',
@@ -106,16 +112,17 @@ class Command(BaseCommand):
                 ))
                 sys.exit(1)
 
-        # Verify that --to date is greater than or equal to --from date
-        from_date = options['from']
-        to_date = options['to']
-        if to_date < from_date:
+        start_date = datetime.strptime(options['start_date'], "%Y-%m-%d").date()
+        end_date = datetime.strptime(options['end_date'], "%Y-%m-%d").date()
+
+        # Verify that --end-date is greater than or equal to --start-date
+        if end_date < start_date:
             self.stderr.write(self.style.ERROR(
-                '--to date ({to_date}) must be later than or equal to --from date ({from_date})'.format(to_date=to_date, from_date=from_date)
+                '--end-date ({end_date}) must be later than or equal to --start-date ({start_date})'.format(end_date=end_date, start_date=start_date)
             ))
             sys.exit(1)
 
-        self.collect_instance_statistics(out, options['qualified_domain'], from_date, to_date)
+        self.collect_instance_statistics(out, options['domain'], start_date, end_date)
 
     def get_instance_from_qualified_domain(self, qualified_domain):
         try:
@@ -137,8 +144,8 @@ class Command(BaseCommand):
 
         return instance
 
-    def get_elasticsearch_statistics(playbook_output_dir, name_prefix, from_date, to_date):
-        inventory = '[apps]\n{server}'.format(server=self.LOGS_SERVER)
+    def get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date):
+        inventory = '[apps]\n{server}'.format(server=settings.INSTANCE_LOGS_SERVER_SSH_URL)
         playbook_path = os.path.join(settings.SITE_ROOT, 'playbooks/collect_instance_statistics/collect_elasticsearch_data.yml')
 
         def log_line(line):
@@ -156,13 +163,13 @@ class Command(BaseCommand):
                 'local_output_dir: {output_dir}\n'
                 'remote_output_filename: /tmp/activity_report\n'
                 'server_name_prefix: {server_name_prefix}\n'
-                'from_date: {from_date}\n'
-                'to_date: {to_date}'
+                'start_date: {start_date}\n'
+                'end_date: {end_date}'
             ).format(
                 output_dir=playbook_output_dir,
                 server_name_prefix=name_prefix,
-                from_date=from_date,
-                to_date=to_date
+                start_date=start_date,
+                end_date=end_date
             ),
             playbook_path=playbook_path,
             username=settings.OPENSTACK_LOGS_SERVER_SSH_USERNAME,
@@ -197,7 +204,7 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def collect_instance_statistics(self, out, qualified_domain, from_date, to_date):  # pylint: disable=too-many-locals
+    def collect_instance_statistics(self, out, qualified_domain, start_date, end_date):  # pylint: disable=too-many-locals
         """Generate the activity CSV."""
         instance = self.get_instance_from_qualified_domain(qualified_domain)
         appserver = instance.get_active_appservers().first()
@@ -206,7 +213,7 @@ class Command(BaseCommand):
         self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
         with ansible.create_temp_dir() as playbook_output_dir:
-            get_elasticsearch_statistics(playbook_output_dir, name_prefix, from_date, to_date)
+            get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date)
             get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
