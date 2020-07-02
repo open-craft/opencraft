@@ -27,7 +27,7 @@ import time
 import requests
 
 
-def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
+def get_url_contents(url, auth=None, attempts=10, delay=60, verify_ssl=True):
     """
     Connect to the given URL and returns its contents as a string.
     Does several attempts in case the first one failed.
@@ -53,7 +53,7 @@ def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
         time.sleep(delay)
 
 
-def check_url_accessible(url, auth=None, attempts=3, delay=15):
+def check_url_accessible(url, auth=None, attempts=10, delay=60):
     """
     Check that the given URL is accessible and that it returns a success status code.
 

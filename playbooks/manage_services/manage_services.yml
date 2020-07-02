@@ -7,5 +7,7 @@
   become: yes
   tasks:
     - name: Change state of supervisord managed services
-      command: /edx/bin/supervisorctl {{ supervisord_action }} {{ services }}
-      retries: 3
+      supervisorctl:
+        name:  "{{ services }}"
+        state: "{{ supervisord_action }}"
+        supervisorctl_path: /edx/bin/supervisorctl
