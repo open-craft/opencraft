@@ -58,10 +58,10 @@ def valid_date(s):
 
 class Command(BaseCommand):
     """
-    Logs_activity_csv management command class
+    Instance_statistics_csv management command class
     """
     help = (
-        'Generates a CSV containing basic activity information about all app servers'
+        'Generates a CSV containing basic activity information for the given instance'
         ' (numbers for hits, distinct hits, users, and courses).'
     )
 
@@ -158,9 +158,9 @@ class Command(BaseCommand):
 
         return instance
 
-    def get_elasticsearch_statistics(self, playbook_output_dir, name_prefix, start_date, end_date):
+    def get_elasticsearch_hits_data_summary(self, playbook_output_dir, name_prefix, start_date, end_date):
         """ Execute the collect_elasticsearch_data playbook to gather statistics """
-        inventory = '[apps]\n{server}'.format(server=settings.INSTANCE_LOGS_SERVER_SSH_URL)
+        inventory = '[apps]\n{server}'.format(server=settings.INSTANCE_LOGS_SERVER_HOST)
         playbook_path = os.path.join(
             settings.SITE_ROOT,
             'playbooks/collect_instance_statistics/collect_elasticsearch_data.yml'
@@ -193,12 +193,12 @@ class Command(BaseCommand):
                 end_date=end_date
             ),
             playbook_path=playbook_path,
-            username=settings.OPENSTACK_LOGS_SERVER_SSH_USERNAME,
+            username=settings.INSTANCE_LOGS_SERVER_SSH_USERNAME,
             logger_=log_line,
         )
 
     def get_appserver_statistics(self, playbook_output_dir, name_prefix, public_ip):
-        """ Execute the collect_appserver_data playbook to gather statistics """
+        """ Execute the collect_activity playbook to gather statistics """
         inventory = '[apps]\n{server}'.format(server=public_ip)
         playbook_path = os.path.join(
             settings.SITE_ROOT,
@@ -211,7 +211,7 @@ class Command(BaseCommand):
         log_line.info = log_line
         log_line.error = log_line
 
-        # Launch the collect_appserver_data playbook, which places a file into the `playbook_output_dir`
+        # Launch the collect_activity playbook, which places a file into the `playbook_output_dir`
         # on this host.
         ansible.capture_playbook_output(
             requirements_path=os.path.join(os.path.dirname(playbook_path), 'requirements.txt'),
@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 server_name_prefix=name_prefix
             ),
             playbook_path=playbook_path,
-            username=settings.OPENSTACK_SANDBOX_SSH_USERNAME,
+            username=settings.INSTANCE_LOGS_SERVER_SSH_USERNAME,
             logger_=log_line,
         )
 
@@ -246,7 +246,7 @@ class Command(BaseCommand):
         self.stderr.write(self.style.SUCCESS('Running playbook...'))
 
         with ansible.create_temp_dir() as playbook_output_dir:
-            self.get_elasticsearch_statistics(playbook_output_dir, name_prefix, start_date, end_date)
+            self.get_elasticsearch_hits_data_summary(playbook_output_dir, name_prefix, start_date, end_date)
             self.get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)

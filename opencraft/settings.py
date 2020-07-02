@@ -301,7 +301,7 @@ HUEY = {
 
 # Instance Logs Server ########################################################
 
-INSTANCE_LOGS_SERVER_SSH_URL = env('INSTANCE_LOGS_SERVER_SSH_URL', default='logs.opencraft.com')
+INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default='logs.opencraft.com')
 INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 
 # OpenStack ###################################################################

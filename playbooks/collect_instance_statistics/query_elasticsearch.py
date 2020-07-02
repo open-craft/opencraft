@@ -1,4 +1,4 @@
-#!/home/ubuntu/instance_statistics_venv/bin/python
+#!/usr/bin/env python3
 # pylint: skip-file
 
 from argparse import ArgumentParser
