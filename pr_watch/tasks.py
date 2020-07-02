@@ -25,7 +25,7 @@ Worker tasks for development of Open edX
 import logging
 
 from huey.api import crontab
-from huey.contrib.djhuey import db_periodic_task
+from huey.contrib.djhuey import db_periodic_task, lock_task
 
 from instance.models.deployment import DeploymentType
 from instance.tasks import create_new_deployment
@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 # Tasks #######################################################################
 
 @db_periodic_task(crontab(minute='*/1'))
+@lock_task('watch_pr-lock')
 def watch_pr():
     """
     Automatically create sandboxes for PRs opened by members of the watched
