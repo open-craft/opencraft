@@ -22,7 +22,7 @@
     - name: Install Elasticsearch packages
       pip:
         requirements: /tmp/elasticsearch_requirements.txt
-        virtualenv: /home/ubuntu/instance_activity_venv
+        virtualenv: "{{ ansible_env.HOME }}/instance_activity_venv"
         virtualenv_python: python3
 
     # We have to do a copy+command pair here (instead of script) in order to get
@@ -35,7 +35,7 @@
 
     - name: Run query_elasticsearch script
       command: >
-        /home/ubuntu/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
+        {{ ansible_env.HOME }}/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
           --out {{ remote_output_filename }}
           --name-prefix {{ server_name_prefix }}
           --start-date {{ start_date }}
