@@ -59,6 +59,9 @@ export const ROUTES = {
   },
   Error: {
     UNKNOWN_ERROR: '/error'
+  },
+  Demo: {
+    COMPONENTS_DEMO: '/demo'
   }
 };
 

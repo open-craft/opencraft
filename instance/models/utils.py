@@ -572,12 +572,6 @@ class ConsulAgent:
         stored['version'] = stored['version'] + 1
         return self._client.kv.put(self.prefix, json.dumps(stored).encode('utf-8'))
 
-    def remove_dict(self):
-        """
-        Remove a config dict using this instance's prefix.
-        """
-        self._client.kv.delete(self.prefix)
-
     def delete(self, key, **kwargs):
         """
         Will delete the given key/prefixed-key value from Consul's Key-Value store.
@@ -591,10 +585,10 @@ class ConsulAgent:
 
     def purge(self):
         """
-        Will simply removes all keys/prefixed-keys from Key-Value store.
+        Will remove the key/prefixed-key from Key-Value store.
         :return: True if the operation succeeded, False otherwise.
         """
-        return self._client.kv.delete(self.prefix, recurse=True)
+        return self._client.kv.delete(self.prefix)
 
     @staticmethod
     def _cast_value(value):

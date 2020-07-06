@@ -1,29 +1,77 @@
 # OpenCraft Instance Manager Frontend
 
-A single-page app for the [OpenCraft Instance Manager (OCIM)](https://github.com/open-craft/opencraft).
+A single-page app(SPA) for the [OpenCraft Instance Manager (OCIM)](https://github.com/open-craft/opencraft).
 
-# Provisioning
+## Running Locally
 
-1. Install the API client:
-```
+Run this outside the vagrant environment, but it is possible to run this frontend server within Vagrant during
+development, for performance reasons it's better to run it separately outside of Vagrant instead. Also, use this
+devstack as an independent React SPA.
+
+- Install the API client:
+
+```bash
 ./scripts/build-api-client.sh
 ```
-2. Install requirements:
-```
+
+- Install requirements:
+
+```bash
 npm install
 ```
-3. Run frontend:
-```
+
+- Run frontend:
+
+```bash
 npm start
 ```
 
-# Running with Vagrant
+- Generating New Components:
 
-While it is possible to run this frontend server within Vagrant during
-development, for performance reasons it's better to run it separately
-outside of Vagrant instead.
+```bash
+npm run generate # uses plop, more information here(https://plopjs.com/)
+```
 
-# Frontend Architecture/Stack
+## API Client Instructions
+
+- Updating the API Client:
+
+```bash
+cd ./frontend # go to frontend directory
+npm run update-api-client
+```
+
+- Building the API Client:
+
+```bash
+cd ./frontend # go to frontend directory
+npm run build-api-client
+```
+
+## Testing
+
+- Running the tests and checks:
+
+```bash
+npm run lint # for running the linting
+
+# for fixing the linting(it usually runs `--fix` flag with eslint so it tries to correct as many issues as possible but still can fail)
+npm run lint-fix 
+
+npm run test # for running the tests
+```
+
+## Deployment Process
+
+The Deployment is done on automatically using CircleCI when any commit is added in the `master` 
+branch (for details, check `frontend-deploy` job in [circle.yml](../circle.yml)). The bundle is
+hosted on S3 and is directly served from Cloudfront.
+
+## Reuseable UI Components
+
+A partial list of reusable UI components is shown in the `/demo` route, accessible in the development environment through [http://localhost:3000/demo](http://localhost:3000/demo).
+
+## Frontend Architecture/Stack
 
 We use React, TypeScript, Bootstrap, and SCSS for the frontend.
 

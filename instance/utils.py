@@ -21,20 +21,24 @@ Instance app - Util functions
 """
 
 # Imports #####################################################################
-from enum import Enum
+
 import itertools
 import json
 import logging
 import selectors
+import shutil
 import socket
 import time
+from enum import Enum
+from contextlib import contextmanager
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
-from asgiref.sync import async_to_sync
 import channels.layers
-from dictdiffer import diff
 import requests
+from asgiref.sync import async_to_sync
+from dictdiffer import diff
 
 if TYPE_CHECKING:
     from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
@@ -182,6 +186,21 @@ def build_instance_config_diff(instance_config: 'BetaTestApplication'):
     new_config['static_content_overrides'] = instance_config.draft_static_content_overrides or {}
 
     return list(diff(original_config, new_config))
+
+
+@contextmanager
+def create_temp_dir():
+    """
+    A context manager that creates a temporary directory, returns it. Directory is deleted upon context manager exit.
+    """
+    temp_dir = None
+    try:
+        temp_dir = mkdtemp()
+        yield temp_dir
+    finally:
+        # If tempdir is None it means that if wasn't created, so we don't need to delete it
+        if temp_dir is not None:
+            shutil.rmtree(temp_dir)
 
 
 class DjangoChoiceEnum(Enum):

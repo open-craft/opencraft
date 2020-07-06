@@ -22,12 +22,12 @@ Git repository - Helper functions
 
 # Imports #####################################################################
 
-from contextlib import contextmanager
 import logging
-import shutil
-import tempfile
+from contextlib import contextmanager
 
 import git
+
+from instance import utils
 
 
 # Logging #####################################################################
@@ -44,12 +44,11 @@ def open_repository(repo_url, ref='master'):
 
     Note that this clones the repository locally.
     """
-    repo_dir_path = tempfile.mkdtemp()
-    logger.info('Cloning repository %s (ref=%s) in %s...', repo_url, ref, repo_dir_path)
+    with utils.create_temp_dir() as repo_dir_path:
+        logger.info('Cloning repository %s (ref=%s) in %s...', repo_url, ref, repo_dir_path)
 
-    # We can technically clone into a branch directly, but that wouldn't work for arbitrary references.
-    repo = git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
-    repo.git.checkout(ref)
-    repo.submodule_update()
-    yield repo.git
-    shutil.rmtree(repo_dir_path)
+        # We can technically clone into a branch directly, but that wouldn't work for arbitrary references.
+        repo = git.repo.base.Repo.clone_from(repo_url, repo_dir_path)
+        repo.git.checkout(ref)
+        repo.submodule_update()
+        yield repo.git
