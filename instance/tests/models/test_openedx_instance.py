@@ -914,6 +914,10 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         user = get_user_model().objects.create_user(username='test', email='test@example.com')
         instance.lms_users.add(user)
+        super_user = get_user_model().objects.create_user(username='test-superuser', email='test2@example.com')
+        super_user.is_superuser = True
+        super_user.save()
+        instance.lms_users.add(super_user)
         appserver = self._create_running_appserver(instance)
         instance.archive()
         self.assertEqual(mock_reconfigure.call_count, 1)
@@ -924,7 +928,8 @@ class OpenEdXInstanceTestCase(TestCase):
             (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)
         ])
         self.assertTrue(instance.ref.is_archived)
-        self.assertFalse(instance.lms_users.get().is_active)
+        self.assertFalse(instance.lms_users.get(username=user.username).is_active)
+        self.assertTrue(instance.lms_users.get(username=super_user.username).is_active)
 
     @patch('instance.models.server.OpenStackServer.public_ip')
     @ddt.data(2, 5, 10)

@@ -472,11 +472,10 @@ class OpenEdXInstance(
         """
         Deactivate users associated with this instance.
         """
-        lms_users = self.lms_users.all()
+        lms_users = self.lms_users.filter(is_superuser=False)
         for user in lms_users:
-            if not user.is_superuser:
-                user.is_active = False
-                user.save()
+            user.is_active = False
+            user.save()
 
     @staticmethod
     def shut_down():
