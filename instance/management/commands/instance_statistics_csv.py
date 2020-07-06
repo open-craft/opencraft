@@ -220,11 +220,11 @@ class Command(BaseCommand):
                 'local_output_dir: {output_dir}\n'
                 'local_output_filename: user_statistics\n'
                 'remote_output_filename: /tmp/activity_report\n'
-                'server_name_prefix: {server_name_prefix}\n'
+                'config_section: {config_section}\n'
                 'extra_script_arguments: --skip-hit-statistics'
             ).format(
                 output_dir=playbook_output_dir,
-                server_name_prefix=name_prefix
+                config_section=name_prefix
             ),
             playbook_path=playbook_path,
             username=settings.INSTANCE_LOGS_SERVER_SSH_USERNAME,

@@ -8,6 +8,7 @@
     local_output_dir: /tmp/
     local_output_filename: "{{ inventory_hostname }}"
     remote_output_filename: /tmp/activity_report
+    config_section: "{{ inventory_hostname }}"
     extra_script_arguments: ""
   tasks:
     # We have to do a copy+command pair here (instead of script) in order to get
@@ -23,7 +24,7 @@
     - name: Run collect_activity script
       command: >
         /edx/bin/python.edxapp /tmp/collect_activity.py
-          --config-section {{ inventory_hostname }}
+          --config-section {{ config_section }}
           --out {{ remote_output_filename }}
           {{ extra_script_arguments }}
       register: stats_results
