@@ -299,11 +299,6 @@ HUEY = {
     'consumer': {'workers': 1, 'loglevel': logging.INFO},
 }
 
-# Instance Logs Server ########################################################
-
-INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default='logs.opencraft.com')
-INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
-
 # OpenStack ###################################################################
 
 OPENSTACK_USER = env('OPENSTACK_USER')
@@ -861,6 +856,13 @@ CHANNEL_LAYERS = {
 #: the instance launch is triggered by a user.
 SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)
 
+# Instance Logs Server ########################################################
+
+instance_logs_server_host_default = ''
+if FILEBEAT_LOGSTASH_HOSTS:
+    instance_logs_server_host_default = FILEBEAT_LOGSTASH_HOSTS[0].split(':')[0]
+INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default=instance_logs_server_host_default)
+INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 
 # Instances ###################################################################
 

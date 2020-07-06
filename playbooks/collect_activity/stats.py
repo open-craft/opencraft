@@ -2,13 +2,14 @@
 # pylint: skip-file
 
 from argparse import ArgumentParser
-from configparser import ConfigParser
 import gzip
 import os
 import re
 import sys
 
 import django
+
+from six.moves.configparser import ConfigParser
 
 
 # This regex pattern is used to extract the IPv4 address from the beginning of each line in the Nginx access logs.
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     config = ConfigParser()
     config.add_section(args.config_section)
     for key, value in stats.items():
-        config.set(public_ip, key, value)
+        config.set(args.config_section, key, value)
 
     # Output the data in ConfigParser format to stdout and to a file.
     config.write(sys.stdout)

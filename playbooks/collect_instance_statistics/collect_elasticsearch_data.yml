@@ -14,14 +14,14 @@
         name: ['python-setuptools', 'virtualenv']
         state: present
 
-    - name: Copy elasticsearch_requirements.txt
+    - name: Copy logs_server_requirements.txt
       copy:
-        src: elasticsearch_requirements.txt
-        dest: /tmp/elasticsearch_requirements.txt
+        src: logs_server_requirements.txt
+        dest: /tmp/logs_server_requirements.txt
 
     - name: Install Elasticsearch packages
       pip:
-        requirements: /tmp/elasticsearch_requirements.txt
+        requirements: /tmp/logs_server_requirements.txt
         virtualenv: "{{ ansible_env.HOME }}/instance_activity_venv"
         virtualenv_python: python3
 

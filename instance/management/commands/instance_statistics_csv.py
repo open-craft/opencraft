@@ -197,7 +197,7 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def get_appserver_statistics(self, playbook_output_dir, name_prefix, public_ip):
+    def get_instance_usage_data(self, playbook_output_dir, name_prefix, public_ip):
         """ Execute the collect_activity playbook to gather statistics """
         inventory = '[apps]\n{server}'.format(server=public_ip)
         playbook_path = os.path.join(

@@ -32,6 +32,8 @@ from django.test import TestCase
 import freezegun
 
 from instance.management.commands.instance_statistics_csv import valid_date
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
@@ -116,20 +118,19 @@ class InstanceStatisticsCSVTestCase(TestCase):
             )
         self.assertIn('No OpenEdXInstance exists with an external or internal domain', stderr.getvalue())
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.objects')
-    def test_instance_not_successfully_provisioned(self, mock_openedx_instance):
+    @patch_services
+    def test_instance_not_successfully_provisioned(self, mock_run_playbook):
         """
         Verify that the command correctly notifies the user that
         there are no active app servers if the instance failed to provision.
         """
-        mock_instance = PropertyMock(successfully_provisioned=False)
-        mock_openedx_instance.get.return_value = mock_instance
+        instance = OpenEdXInstanceFactory()
 
         stderr = StringIO()
         with self.assertRaises(SystemExit):
             call_command(
                 'instance_statistics_csv',
-                domain='test.opencraft.hosting',
+                domain=instance.domain,
                 stderr=stderr
             )
         self.assertIn(
@@ -137,21 +138,20 @@ class InstanceStatisticsCSVTestCase(TestCase):
             stderr.getvalue()
         )
 
-    @patch('instance.models.openedx_instance.OpenEdXInstance.objects')
-    def test_no_active_appservers(self, mock_openedx_instance):
+    @patch_services
+    def test_no_active_appservers(self, mock_run_playbook):
         """
         Verify that the command correctly notifies the user that
         there are no active app servers if none exist.
         """
-        mock_instance = PropertyMock(successfully_provisioned=True)
-        mock_instance.get_active_appservers.return_value = []
-        mock_openedx_instance.get.return_value = mock_instance
+        instance = OpenEdXInstanceFactory()
+        instance.spawn_appserver()
 
         stderr = StringIO()
         with self.assertRaises(SystemExit):
             call_command(
                 'instance_statistics_csv',
-                domain='test.opencraft.hosting',
+                domain=instance.domain,
                 stderr=stderr
             )
         self.assertIn(

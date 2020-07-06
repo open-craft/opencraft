@@ -2,11 +2,12 @@
 # pylint: skip-file
 
 from argparse import ArgumentParser
-from configparser import ConfigParser
 from datetime import datetime, timedelta
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 import sys
+
+from six.moves.configparser import ConfigParser
 
 
 def valid_date(s):
