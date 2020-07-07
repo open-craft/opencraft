@@ -32,6 +32,7 @@ from pr_watch.api import WatchedPullRequestViewSet
 from registration.api.v1.views import BetaTestApplicationViewSet
 from registration.api.v2.views import (
     AccountViewSet,
+    NotificationsViewSet,
     OpenEdXInstanceConfigViewSet,
     OpenEdxInstanceDeploymentViewSet,
 )
@@ -53,5 +54,10 @@ v2_router.register(
     r'instances/openedx_deployment',
     OpenEdxInstanceDeploymentViewSet,
     base_name='openedx-instance-deployment'
+)
+v2_router.register(
+    r'notifications',
+    NotificationsViewSet,
+    base_name='notifications'
 )
 v2_router.register(r'verify_email', VerifyEmailViewset, base_name='verify-email-api')

@@ -33,8 +33,7 @@ from drf_yasg.utils import swagger_auto_schema
 from jsonschema.exceptions import ValidationError as JSONSchemaValidationError
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
-from rest_framework.generics import CreateAPIView, RetrieveDestroyAPIView
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -48,7 +47,7 @@ from rest_framework.viewsets import GenericViewSet
 from simple_email_confirmation.models import EmailAddress
 
 from instance.models.deployment import DeploymentType
-from instance.models.openedx_deployment import DeploymentState
+from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
 from instance.schemas.static_content_overrides import (
     DEFAULT_STATIC_CONTENT_OVERRIDES,
     fill_default_hero_text,
@@ -64,7 +63,8 @@ from opencraft.swagger import (
 from registration.api.v2.serializers import (
     AccountSerializer, ApplicationImageUploadSerializer, OpenEdXInstanceConfigSerializer,
     OpenEdXInstanceConfigUpdateSerializer, OpenEdXInstanceDeploymentCreateSerializer,
-    OpenEdXInstanceDeploymentStatusSerializer, StaticContentOverridesSerializer, ThemeSchemaSerializer,
+    OpenEdXInstanceDeploymentNotificationSerializer, OpenEdXInstanceDeploymentStatusSerializer,
+    StaticContentOverridesSerializer, ThemeSchemaSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -131,6 +131,117 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
             return UserProfile.objects.all()
         else:
             return UserProfile.objects.filter(user=self.request.user)
+
+
+class NotificationsViewSet(GenericViewSet):
+    """
+    Notifications API.
+
+    For now, can retrieve notifications based on Open edX Instance Deployments status.
+    """
+
+    serializer_class = OpenEdXInstanceDeploymentNotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_application(self):
+        """
+        Get latest `BetaTestApplication` instance owned by current user.
+        """
+
+        user = self.request.user
+
+        applications = BetaTestApplication.objects.select_related('instance')
+
+        if user.is_staff:
+            applications = applications.all()
+        else:
+            applications = applications.filter(user=self.request.user)
+
+        return applications.latest('created')
+
+    def limit_queryset(self, queryset):
+        """
+        Limits given queryset if ``limit`` query param passed.
+        """
+
+        notifications_limit = self.request.query_params.get('limit')
+        if notifications_limit is not None:
+            try:
+                notifications_limit = int(notifications_limit)
+            except ValueError:
+                raise ParseError("Notifications limit must be integer.")
+
+            if notifications_limit < 0:
+                raise ParseError("Notifications limit can't be negative.")
+
+            return queryset[:notifications_limit]
+
+        return queryset
+
+    def get_queryset(self, application=None): # pylint: disable=arguments-differ
+        if application is None:
+            application = self.get_application()
+
+        queryset = OpenEdXDeployment.objects.filter(
+            instance=application.instance.ref
+        )
+
+        return self.limit_queryset(queryset)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "limit",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="How many notifications should be fetched.",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """
+        Returns Open edX deployments information in form of status notifications.
+
+        If there is no deployments at all, this endpoint returns blank notification,
+        that deployment is preparing.
+        """
+
+        application = self.get_application()
+        deployments = self.get_queryset(application)
+
+        undeployed_changes = build_instance_config_diff(application)
+
+        notifications = []
+        for deployment in deployments:
+            deployment_status = deployment.status()
+            notifications.append({
+                "deployed_changes": deployment.changes or [],
+                "status": deployment_status.name,
+                "date": deployment.created,
+            })
+
+        if not notifications:
+            notifications.append({
+                "deployed_changes": [],
+                "status": DeploymentState.preparing.name,
+                "date": application.instance.created,
+            })
+
+        # Configuration diff relates only to last created deployment, so if
+        # last deployment is healthy and diff is not empty,
+        # we manually change its status.
+        last_notification = notifications[0]
+        if last_notification['status'] == DeploymentState.healthy.name:
+            undeployed_changes = build_instance_config_diff(application)
+            if undeployed_changes:
+                last_notification['status'] = DeploymentState.changes_pending
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data=OpenEdXInstanceDeploymentNotificationSerializer(
+                notifications, many=True
+            ).data
+        )
 
 
 @viewset_swagger_helper(
@@ -434,7 +545,7 @@ class OpenEdXInstanceConfigViewSet(
             ).select_related("instance")
 
 
-class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, GenericViewSet):
+class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
     """
     Open edX Instance Deployment API.
 
@@ -450,12 +561,14 @@ class OpenEdxInstanceDeploymentViewSet(CreateAPIView, RetrieveDestroyAPIView, Ge
         For a regular user it should return a single object (for now).
         """
         user: User = self.request.user
+        queryset = BetaTestApplication.objects.select_related("instance")
+
         if not user.is_authenticated:
-            return BetaTestApplication.objects.none()
+            return queryset.none()
         elif user.is_staff:
-            return BetaTestApplication.objects.all()
+            return queryset.all()
         else:
-            return BetaTestApplication.objects.filter(user=self.request.user)
+            return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "create":
