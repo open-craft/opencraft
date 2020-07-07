@@ -37,6 +37,11 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.USER_INSTANCE_LIST_FAILURE:
+      return update(state, {
+        loading: { $set: false },
+        error: { $set: action.error }
+      });
     case Actions.Types.UPDATE_INSTANCE_INFO:
       return update(state, {
         activeInstance: {

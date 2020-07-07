@@ -32,6 +32,7 @@ export interface DeploymentInfoModel {
 // a request. This allows us to individually update fields.
 export interface InstancesModel {
   loading: boolean;
+  error: any;
   activeInstance: {
     data: InstanceSettingsModel | null;
     feedback: Partial<InstanceSettingsModel>;
@@ -43,6 +44,7 @@ export interface InstancesModel {
 
 export const initialConsoleState: Readonly<InstancesModel> = {
   loading: false,
+  error: null,
   activeInstance: {
     data: null,
     feedback: {},

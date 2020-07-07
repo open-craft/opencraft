@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { CustomizationSideMenu, RedeploymentToolbar } from 'console/components';
-import { EmailActivationAlertMessage } from 'ui/components';
+import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
+import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
@@ -114,6 +115,20 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       }
       return this.props.children;
     };
+    if (
+      this.props.error &&
+      this.props.error.code === 'NOT_ACCESSIBLE_TO_STAFF'
+    ) {
+      return (
+        <ErrorPage
+          messages={messages}
+          messageId="notAllowedForStaff"
+          values={{
+            link: (text: string) => <a href={OCIM_API_BASE}>{text}</a>
+          }}
+        />
+      );
+    }
 
     let deploymentLoading = true;
     if (this.props.activeInstance && this.props.activeInstance.loading) {
