@@ -120,7 +120,7 @@ class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
         if 'context' in kwargs:
             if 'request' in kwargs['context']:
                 request = kwargs['context']['request']
-                if not request.user.is_staff:
+                if not request.user.is_staff or not request.user.is_superuser:
                     self.fields.pop('notes')
 
 
