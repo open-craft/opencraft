@@ -14,11 +14,11 @@ exports[`renders without crashing 1`] = `
         className="logo-container mx-auto navbar-brand"
       >
         <a
-          className="nav-link"
-          href="#"
+          aria-current="page"
+          className="nav-link active"
+          href="/"
           onClick={[Function]}
-          onKeyDown={[Function]}
-          role="button"
+          style={Object {}}
         >
           <svg
             className="site-logo"
