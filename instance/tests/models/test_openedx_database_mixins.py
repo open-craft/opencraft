@@ -475,12 +475,12 @@ class MongoDBInstanceTestCase(TestCase):
             rendered_edxapp_mongo_hosts = ansible_vars_data['EDXAPP_MONGO_HOSTS']
         else:
             rendered_edxapp_mongo_hosts = ansible_vars_data['EDXAPP_MONGO_HOSTS'].split(',')
-        self.assertEqual(expected_hosts, rendered_edxapp_mongo_hosts)
+        self.assertSetEqual(set(expected_hosts), set(rendered_edxapp_mongo_hosts))
         if expected_replica_set:
             self.assertIn('EDXAPP_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
             self.assertIn('FORUM_MONGO_REPLICA_SET: {0}'.format(expected_replica_set), ansible_vars)
             self.assertIn('FORUM_MONGO_URL', ansible_vars_data)
-            self.assertListEqual(ansible_vars_data['FORUM_MONGO_HOSTS'], expected_hosts)
+            self.assertSetEqual(set(ansible_vars_data['FORUM_MONGO_HOSTS']), set(expected_hosts))
         else:
             self.assertNotIn('EDXAPP_MONGO_REPLICA_SET', ansible_vars)
             self.assertNotIn('FORUM_MONGO_REPLICA_SET', ansible_vars)
