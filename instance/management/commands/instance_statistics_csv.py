@@ -247,7 +247,7 @@ class Command(BaseCommand):
 
         with ansible.create_temp_dir() as playbook_output_dir:
             self.get_elasticsearch_hits_data_summary(playbook_output_dir, name_prefix, start_date, end_date)
-            self.get_appserver_statistics(playbook_output_dir, name_prefix, appserver.server.public_ip)
+            self.get_instance_usage_data(playbook_output_dir, name_prefix, appserver.server.public_ip)
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
             csv_writer.writerow([
