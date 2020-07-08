@@ -57,6 +57,7 @@ class InlineInstanceReferenceAdmin(GenericStackedInline):  # pylint: disable=mis
     ct_fk_field = 'instance_id'
     max_num = 1
     can_delete = False
+    inline_classes = ('collapse open',)
 
 
 class InstanceTagAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
@@ -67,9 +68,9 @@ class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstrin
     list_display = ('internal_lms_domain', 'name', 'created', 'modified',
                     'successfully_provisioned')
     search_fields = ('internal_lms_domain',)
-    inlines = [
+    inlines = (
         InlineInstanceReferenceAdmin,
-    ]
+    )
 
     def get_inline_instances(self, request, obj=None):
         """
