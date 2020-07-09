@@ -169,11 +169,16 @@ jobs:
       - run:
           name: Run Consul
           command: |
-            echo Running consul agent to connect to the integration consul server
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
             sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
             mkdir -p /tmp/consul-data
-            consul agent -retry-join haproxy-integration.net.opencraft.hosting -data-dir /tmp/consul-data
+            if [[ "<< parameters.tests_type >>" == "test.integration" ]] ; then
+              echo Running consul agent to connect to the integration consul server
+              consul agent -retry-join $CONSUL_SERVERS -encrypt $CONSUL_ENCRYPT -data-dir /tmp/consul-data
+            else
+              echo Running a local consul agent
+              consul agent -dev
+            fi
           background: true
       - save_cache:
           key: dependencies-{{ checksum "requirements.txt" }}
@@ -260,7 +265,7 @@ jobs:
             sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
             sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
             mkdir -p /tmp/consul-data
-            consul agent -retry-join haproxy-integration.net.opencraft.hosting -data-dir /tmp/consul-data
+            consul agent -retry-join $CONSUL_SERVERS -encrypt $CONSUL_ENCRYPT -data-dir /tmp/consul-data
           background: true
       - run:
           name: Wait for Redis
