@@ -331,7 +331,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             variables=self.lms_user_settings,
         )
 
-    def manage_services_playbook(self, action, services="all"):
+    def manage_services_playbook(self, action, services="edxapp_worker:"):
         """
         Return a Playbook instance for creating LMS users.
         """
@@ -610,9 +610,9 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         taking tasks from the celery queues.
         """
         if active:
-            action = 'start'
+            action = 'started'
         else:
-            action = 'stop'
+            action = 'stopped'
 
         playbook = self.manage_services_playbook(action=action)
         _, returncode = self._run_playbook(

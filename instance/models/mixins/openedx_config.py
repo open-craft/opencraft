@@ -255,6 +255,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Restart them every 1-2 days.
             "EDXAPP_CMS_MAX_REQ": 1000,
 
+            # Allow configuring the course visibility from Studio.
+            "EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION": "see_in_catalog",
+            "EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION": "see_about_page",
+
             # Celery workers
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
 
