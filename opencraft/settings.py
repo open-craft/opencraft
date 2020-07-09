@@ -858,10 +858,10 @@ SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', def
 
 # Instance Logs Server ########################################################
 
-instance_logs_server_host_default = ''
+logs_server_host_default = ''
 if FILEBEAT_LOGSTASH_HOSTS:
-    instance_logs_server_host_default = FILEBEAT_LOGSTASH_HOSTS[0].split(':')[0]
-INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default=instance_logs_server_host_default)
+    logs_server_host_default = FILEBEAT_LOGSTASH_HOSTS[0].split(':')[0]
+INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default=logs_server_host_default)
 INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 
 # Instances ###################################################################
