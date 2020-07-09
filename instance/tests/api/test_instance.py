@@ -249,3 +249,59 @@ class InstanceAPITestCase(APITestCase):
         self.assertEqual(len(response.data['app_servers']), 10)
         self.assertTrue('name' in response.data['app_servers'][0])
         self.assertTrue('name' in response.data['app_servers'][9])
+
+    def test_set_notes_instance_updates(self, mock_consul):
+        """
+        POST - Update instance notes
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(name='Test!')
+
+        self.assertEqual(instance.ref.notes, '')
+
+        response = self.api_client.post('/api/v1/instance/{pk}/set_notes/'.format(pk=instance.ref.pk),
+                                        {'notes': 'Test notes'})
+
+        instance.ref.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(instance.ref.notes, 'Test notes')
+
+    def test_set_notes_instance_do_nothing_if_notes_not_in_payload(self, mock_consul):
+        """
+        POST - Update instance notes does not change if not 'notes' field is provided
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(name='Test!')
+
+        self.assertEqual(instance.ref.notes, '')
+
+        old_instance_ref_dict = instance.ref.__dict__.copy()
+        response = self.api_client.post('/api/v1/instance/{pk}/set_notes/'.format(pk=instance.ref.pk))
+        instance.ref.refresh_from_db()
+        current_instance_ref_dict = {}
+        for k, _ in old_instance_ref_dict.items():
+            current_instance_ref_dict[k] = instance.ref.__dict__[k]
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual({'status': 'No notes value provided.'}, response.data)
+        self.assertEqual(current_instance_ref_dict, old_instance_ref_dict)
+
+    @patch(
+        'instance.serializers.instance.InstanceReferenceBasicSerializer.is_valid',
+        return_value=False
+    )
+    def test_set_notes_instance_gives_error_if_extra_field_is_provided(self, mock_consul, mock_is_valid):
+        """
+        POST - Update instance notes returns 400 if trying to save invalid data
+        """
+        self.api_client.login(username='user3', password='pass')
+        instance = OpenEdXInstanceFactory(name='Test!')
+
+        self.assertFalse(mock_is_valid.called)
+
+        response = self.api_client.post('/api/v1/instance/{pk}/set_notes/'.format(pk=instance.ref.pk),
+                                        {'notes': 'Test notes'})
+
+        self.assertFalse(mock_is_valid.called)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual({"error": "Instance attributes are not valid."}, response.data)

@@ -657,7 +657,7 @@ class OpenEdXAppServerTestCase(TestCase):
             source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/manage_services'),
             playbook_path='manage_services.yml',
             requirements_path='requirements.txt',
-            variables='services: all\nsupervisord_action: start\n'
+            variables="services: 'edxapp_worker:'\nsupervisord_action: started\n"
         )
 
         appserver.manage_instance_services(active=True)

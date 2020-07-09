@@ -20,14 +20,17 @@
 Integration tests - helper functions.
 """
 
+import logging
 import pathlib
 import socket
 import time
 
 import requests
 
+logger = logging.getLogger(__name__)
 
-def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
+
+def get_url_contents(url, auth=None, attempts=10, delay=60, verify_ssl=True):
     """
     Connect to the given URL and returns its contents as a string.
     Does several attempts in case the first one failed.
@@ -36,6 +39,7 @@ def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
     Raises an exception if there is an HTTP error.
     """
     ca_path = str(pathlib.Path(__file__).parent / "certs" / "lets-encrypt-staging-ca.pem")
+    total_attempts = attempts
 
     while True:
         attempts -= 1
@@ -48,12 +52,13 @@ def get_url_contents(url, auth=None, attempts=3, delay=15, verify_ssl=True):
             res.raise_for_status()
             return res.text
         except Exception:  # pylint: disable=broad-except
+            logger.error('Attempt: %d - Unable to retrieve %s. ', total_attempts - attempts, url)
             if not attempts:
                 raise
         time.sleep(delay)
 
 
-def check_url_accessible(url, auth=None, attempts=3, delay=15):
+def check_url_accessible(url, auth=None, attempts=10, delay=60):
     """
     Check that the given URL is accessible and that it returns a success status code.
 

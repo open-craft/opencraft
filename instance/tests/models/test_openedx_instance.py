@@ -889,6 +889,46 @@ class OpenEdXInstanceTestCase(TestCase):
         ])
         self.assertTrue(instance.ref.is_archived)
 
+    @override_settings(DISABLE_LOAD_BALANCER_CONFIGURATION=False)
+    @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.purge_consul_metadata')
+    @patch('instance.tests.models.factories.openedx_instance.OpenEdXInstance.deprovision_rabbitmq')
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
+    def test_archive_instance_with_lms_users(
+            self,
+            mock_reconfigure,
+            mock_disable_monitoring,
+            mock_remove_dns_records,
+            mock_deprovision_rabbitmq,
+            mock_consul2,
+            mock_consul,
+            mock_appserver_dns_clean_up):
+        """
+        Test that the archive method deactivates users associated with the instance
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.load_balancing_server = LoadBalancingServer.objects.select_random()
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        instance.lms_users.add(user)
+        super_user = get_user_model().objects.create_user(username='test-superuser', email='test2@example.com')
+        super_user.is_superuser = True
+        super_user.save()
+        instance.lms_users.add(super_user)
+        appserver = self._create_running_appserver(instance)
+        instance.archive()
+        self.assertEqual(mock_reconfigure.call_count, 1)
+        self.assertEqual(mock_disable_monitoring.call_count, 1)
+        self.assertEqual(mock_remove_dns_records.call_count, 1)
+        self.assertEqual(mock_deprovision_rabbitmq.call_count, 1)
+        self._assert_status([
+            (appserver, AppServerStatus.Terminated, ServerStatus.Terminated)
+        ])
+        self.assertTrue(instance.ref.is_archived)
+        self.assertFalse(instance.lms_users.get(username=user.username).is_active)
+        self.assertTrue(instance.lms_users.get(username=super_user.username).is_active)
+
     @patch('instance.models.server.OpenStackServer.public_ip')
     @ddt.data(2, 5, 10)
     @patch_services

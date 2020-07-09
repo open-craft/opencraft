@@ -28,7 +28,7 @@ from unittest.mock import patch
 
 import yaml
 
-from instance import ansible
+from instance import ansible, utils
 from instance.tests.base import TestCase
 
 
@@ -168,7 +168,7 @@ class AnsibleTestCase(TestCase):
         By behave correctly we mean: creates and returns a tempdir, which
         is deleted after we exit the context manager.
         """
-        with ansible.create_temp_dir() as temp_dir:
+        with utils.create_temp_dir() as temp_dir:
             self.assertTrue(os.path.exists(temp_dir))
             self.assertTrue(os.path.isdir(temp_dir))
         self.assertFalse(os.path.exists(temp_dir))
@@ -183,7 +183,7 @@ class AnsibleTestCase(TestCase):
         """
         saved_temp_dir = None
         with self.assertRaises(KeyboardInterrupt):
-            with ansible.create_temp_dir() as temp_dir:
+            with utils.create_temp_dir() as temp_dir:
                 saved_temp_dir = temp_dir
                 self.assertTrue(os.path.exists(temp_dir))
                 self.assertTrue(os.path.isdir(temp_dir))

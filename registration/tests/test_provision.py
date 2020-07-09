@@ -74,7 +74,6 @@ class ApprovalTestCase(TestCase):
             self.assertTrue(mock_spawn_appserver.called)
         application.refresh_from_db()
         instance = application.instance
-        self.assertIsNot(instance, None)
         self.assertTrue(instance.internal_lms_domain.startswith(application.subdomain))
         self.assertEqual(instance.email, application.public_contact_email)
         self.assertEqual(instance.lms_users.get(), user)

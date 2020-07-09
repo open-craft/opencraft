@@ -76,6 +76,31 @@ def retry(f, exception=AssertionError, tries=5, delay=10):
     return f_retry  # true decorator
 
 
+def spawn_openstack_server(name_prefix, retries=1):
+    """
+    Spawn an OpenStack server.
+
+    :param name_prefix: Name prefix for OpenStack server
+    :param retries: Number of times it retry spawn a server, defaults to 1
+    :return: OpenStack server instance
+    :raises: TimeoutError
+    """
+    while retries >= 0:
+        server = OpenStackServer(name_prefix=name_prefix)
+        server.save()
+        server.start()
+
+        try:
+            server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
+        except TimeoutError as e:
+            server.os_server.delete()
+            retries -= 1
+            if retries < 0:
+                raise e
+        else:
+            return server
+
+
 class InstanceIntegrationTestCase(IntegrationTestCase):
     """
     Integration test cases for instance high-level tasks
@@ -331,10 +356,15 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertIn(instance.static_content_overrides['static_template_{}_content'.format(page)], server_html)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
-    def test_spawn_appserver(self):
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.manage_instance_services")
+    def test_spawn_appserver(self, manage_instance_services):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
+        # Mock the execution of the manage_instance_services playbook as the celery workers aren't
+        # set up in the playbook used for setting up the instance for this test.
+        manage_instance_services.return_value = True
+
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
@@ -449,9 +479,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.manage_instance_services")
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.get_playbooks")
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
-    def test_ansible_failignore(self, heartbeat_active, get_playbooks):
+    def test_ansible_failignore(self, heartbeat_active, get_playbooks, manage_instance_services):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
@@ -465,6 +496,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 variables='{}',
             )
         ]
+
+        # Mocking the manage_services.yml playbook because the services it tries to manage
+        # will not be installed in the appserver provisioned by the dummy failignore.yml
+        # playbook.
+        manage_instance_services.return_value = True
+
         instance = OpenEdXInstanceFactory(
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
@@ -484,10 +521,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         """
         Test that OpenStackServer detects if the VM was terminated externally.
         """
-        server = OpenStackServer(name_prefix="integration_test")
-        server.save()
-        server.start()
-        server.sleep_until(lambda: server.status.accepts_ssh_commands, timeout=120)
+        server = spawn_openstack_server("integration_test")
         server.os_server.delete()
         self.assert_server_terminated(server)
 
