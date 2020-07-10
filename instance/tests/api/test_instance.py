@@ -138,13 +138,31 @@ class InstanceAPITestCase(APITestCase):
 
     def test_get_details(self, mock_consul):
         """
-        GET - Detailed attributes
+        GET - Detailed attributes for staff and superuser user
+
+        Staff and Superuser user is able to see instance notes.
         """
         self.api_client.login(username='user3', password='pass')
         instance = OpenEdXInstanceFactory(sub_domain='domain.api')
         response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_serialized_instance(response.data, instance)
+        self.assertIn('notes', response.data)
+
+    def test_get_details_does_not_have_notes_if_no_staff_and_no_superuser(self, mock_consul):
+        """
+        GET - Detailed attributes for owner user
+
+        User can see instance from the same organization, but instance notes is not in response.
+        """
+        self.api_client.login(username='user4', password='pass')
+        instance = OpenEdXInstanceFactory(sub_domain='domain.api')
+        instance.ref.owner = self.user4.profile.organization
+        instance.ref.save()
+        response = self.api_client.get('/api/v1/instance/{pk}/'.format(pk=instance.ref.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.check_serialized_instance(response.data, instance)
+        self.assertNotIn('notes', response.data)
 
     def test_not_all_appservers_are_loaded_by_default(self, mock_consul):
         """
