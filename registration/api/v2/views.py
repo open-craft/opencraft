@@ -401,6 +401,23 @@ class OpenEdXInstanceConfigViewSet(
 
             return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
 
+    def list(self, request, *args, **kwargs):
+        """
+        Endpoint for getting the list of instances owned by the current user.
+
+        If the user is staff, return a 400 error. This is used by the frontend to prevent
+        staff users from accidentally accessing and updating other users' instances (see SE-2865).
+        """
+        if request.user.is_staff:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'code': 'NOT_ACCESSIBLE_TO_STAFF',
+                    'details': "Not allowed for staff users"
+                }
+            )
+        return super(OpenEdXInstanceConfigViewSet, self).list(request, *args, **kwargs)
+
     def get_queryset(self):
         """
         Get `BetaTestApplication` instances owned by current user.
