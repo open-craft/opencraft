@@ -225,9 +225,11 @@ export const listUserInstances = (): OcimThunkAction<
         data: response
       });
     })
-    .catch((e: any) => {
+    .catch(async (e: any) => {
+      const error = await e.json();
       dispatch({
-        type: Types.USER_INSTANCE_LIST_FAILURE
+        type: Types.USER_INSTANCE_LIST_FAILURE,
+        error
       });
     });
 };
