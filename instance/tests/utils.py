@@ -86,6 +86,12 @@ def patch_services(func):
     """
     new_servers = [Mock(id='server1'), Mock(id='server2'), Mock(id='server3'), Mock(id='server4')]
 
+    def set_s3_kwargs(s3_bucket_instance):
+        s3_bucket_instance.s3_access_key = 'test-s3-access-key'
+        s3_bucket_instance.s3_secret_access_key = 'test-s3-secret-access-key'
+        s3_bucket_instance.s3_bucket_name = 'test-s3-bucket-name'
+        s3_bucket_instance.save()
+
     @patch_publish_data
     def wrapper(self, *args, **kwargs):
         """ Wrap the test with appropriate mocks """
@@ -139,6 +145,11 @@ def patch_services(func):
                 ),
                 mock_provision_swift=stack_patch(
                     'instance.models.mixins.openedx_storage.SwiftContainerInstanceMixin.provision_swift'
+                ),
+                mock_provision_s3=stack_patch(
+                    'instance.models.mixins.openedx_storage.S3BucketInstanceMixin.provision_s3',
+                    autospec=True,
+                    side_effect=set_s3_kwargs,
                 ),
                 mock_load_balancer_run_playbook=stack_patch(
                     'instance.models.load_balancer.LoadBalancingServer.run_playbook'
