@@ -855,6 +855,8 @@ CHANNEL_LAYERS = {
 #: How many times should OCIM retry launching an instance before giving up when
 #: the instance launch is triggered by a user.
 SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', default=2)
+# Number of seconds to wait before starting a new deployment
+SELF_SERVICE_DEPLOYMENT_START_DELAY = env('SELF_SERVICE_DEPLOYMENT_START_DELAY', default=600)
 
 
 # Instances ###################################################################

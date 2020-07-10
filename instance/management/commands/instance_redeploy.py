@@ -31,7 +31,7 @@ from instance.ansible import load_yaml
 from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceTag
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.tasks import create_new_deployment
+from instance.utils import create_new_deployment
 
 LOG = logging.getLogger(__name__)
 
@@ -328,7 +328,7 @@ class Command(BaseCommand):
                 LOG.info("SPAWNING: %s [%s]", instance, instance.id)
                 instance.tags.add(self.ongoing_tag)
                 create_new_deployment(
-                    instance.ref.pk,
+                    instance,
                     success_tag=self.success_tag,
                     failure_tag=self.failure_tag,
                     num_attempts=num_attempts,

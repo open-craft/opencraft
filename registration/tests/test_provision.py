@@ -64,14 +64,14 @@ class ApprovalTestCase(TestCase):
                 public_contact_email=user.email,
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
-        with mock.patch('registration.provision.create_new_deployment') as mock_spawn_appserver, \
+        with mock.patch('registration.provision.create_new_deployment') as mock_create_new_deployment, \
             mock.patch(
                     'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
                     return_value=(1, True)
             ):
             # Confirm email address.  This triggers provisioning the instance.
             EmailAddress.objects.confirm(user.email_address_set.get().key)
-            self.assertTrue(mock_spawn_appserver.called)
+            self.assertTrue(mock_create_new_deployment.called)
         application.refresh_from_db()
         instance = application.instance
         self.assertTrue(instance.internal_lms_domain.startswith(application.subdomain))
@@ -101,14 +101,14 @@ class ApprovalTestCase(TestCase):
                 draft_theme_config=DEFAULT_THEME
             )
         EmailAddress.objects.create_unconfirmed(user.email, user)
-        with mock.patch('registration.provision.create_new_deployment') as mock_spawn_appserver, \
+        with mock.patch('registration.provision.create_new_deployment') as mock_create_new_deployment, \
             mock.patch(
                     'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
                     return_value=(1, True)
             ):
             # Confirm email address.  This triggers provisioning the instance.
             EmailAddress.objects.confirm(user.email_address_set.get().key)
-            self.assertTrue(mock_spawn_appserver.called)
+            self.assertTrue(mock_create_new_deployment.called)
         application.refresh_from_db()
         instance = application.instance
         self.assertEqual(instance.theme_config, DEFAULT_THEME)

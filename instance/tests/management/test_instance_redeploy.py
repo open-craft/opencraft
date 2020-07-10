@@ -180,7 +180,7 @@ class InstanceRedeployTestCase(TestCase):
         instances = self.create_test_instances(tag, success=True)
 
         def _create_new_deployment_success(
-                instance_ref_id,
+                instance,
                 mark_active_on_success=False,
                 deactivate_old_appservers=False,
                 num_attempts=1,
@@ -191,7 +191,6 @@ class InstanceRedeployTestCase(TestCase):
             Mock the instance.tasks.create_new_deployment method to
             instantly mark appserver as successfully spawned.
             """
-            instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
             instance.tags.remove(failure_tag)
             instance.tags.add(success_tag)
 
@@ -264,7 +263,7 @@ class InstanceRedeployTestCase(TestCase):
         instances = self.create_test_instances(tag, success=False)
 
         def _create_new_deployment_failed(
-                instance_ref_id,
+                instance,
                 mark_active_on_success=False,
                 deactivate_old_appservers=False,
                 num_attempts=1,
@@ -275,7 +274,6 @@ class InstanceRedeployTestCase(TestCase):
             Mock the instance.tasks.create_new_deployment method to
             instantly mark appserver as failed.
             """
-            instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
             instance.tags.add(failure_tag)
             instance.tags.remove(success_tag)
 

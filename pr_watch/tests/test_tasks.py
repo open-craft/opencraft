@@ -28,8 +28,6 @@ import yaml
 
 from django.test import TestCase, override_settings
 
-from instance.models.openedx_instance import OpenEdXInstance
-
 from userprofile.factories import make_user_and_organization
 
 from pr_watch import tasks
@@ -50,7 +48,7 @@ class TasksTestCase(TestCase):
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_pr_new(self, mock_get_pr_list_from_usernames,
-                          mock_spawn_appserver, mock_get_commit_id_from_ref):
+                          mock_create_new_deployment, mock_get_commit_id_from_ref):
         """
         New PR created on the watched repo
         """
@@ -78,9 +76,8 @@ class TasksTestCase(TestCase):
         mock_get_commit_id_from_ref.return_value = '7' * 40
 
         tasks.watch_pr()
-        self.assertEqual(mock_spawn_appserver.call_count, 1)
-        new_instance_ref_id = mock_spawn_appserver.mock_calls[0][1][0]
-        instance = OpenEdXInstance.objects.get(ref_set__pk=new_instance_ref_id)
+        self.assertEqual(mock_create_new_deployment.call_count, 1)
+        instance = mock_create_new_deployment.mock_calls[0][1][0]
         self.assertEqual(instance.internal_lms_domain, 'pr234.sandbox.awesome.hosting.org')
         self.assertEqual(instance.internal_lms_preview_domain, 'preview.pr234.sandbox.awesome.hosting.org')
         self.assertEqual(instance.internal_studio_domain, 'studio.pr234.sandbox.awesome.hosting.org')
@@ -106,7 +103,7 @@ class TasksTestCase(TestCase):
 
         # Once the new instance/appserver has been spawned, it shouldn't spawn again:
         tasks.watch_pr()
-        self.assertEqual(mock_spawn_appserver.call_count, 1)
+        self.assertEqual(mock_create_new_deployment.call_count, 1)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.create_new_deployment')
@@ -115,7 +112,7 @@ class TasksTestCase(TestCase):
     def test_watch_pr_rate_limit_exceeded(
             self,
             mock_get_pr_list_from_usernames,
-            mock_spawn_appserver,
+            mock_create_new_deployment,
             mock_get_commit_id_from_ref
     ):
         """
@@ -143,14 +140,14 @@ class TasksTestCase(TestCase):
         mock_get_commit_id_from_ref.return_value = '7' * 40
 
         tasks.watch_pr()
-        self.assertEqual(mock_spawn_appserver.call_count, 0)
+        self.assertEqual(mock_create_new_deployment.call_count, 0)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_watch_several_forks(self, mock_get_pr_list_from_usernames,
-                                 mock_spawn_appserver, mock_get_commit_id_from_ref):
+                                 mock_create_new_deployment, mock_get_commit_id_from_ref):
         """
         Create 2 watched forks with different settings, do a PR on each and check that both are seen and set up.
         """
@@ -228,20 +225,19 @@ class TasksTestCase(TestCase):
         # Commit ID is the same in both PRs
         mock_get_commit_id_from_ref.return_value = '7' * 40
 
-        self.assertEqual(mock_spawn_appserver.call_count, 0)
+        self.assertEqual(mock_create_new_deployment.call_count, 0)
 
         # Check github (with our mocked response), this will detect 2 watched PRs and spawn 1 instance for each
         tasks.watch_pr()
 
-        self.assertEqual(mock_spawn_appserver.call_count, 2)
+        self.assertEqual(mock_create_new_deployment.call_count, 2)
 
         # Now do checks twice, once for every instance, checking the appropriate values each time
         for pr_number in [1, 2]:
             # "pr" contains the data we expect to see: URL, settings, and the PR object itself
             pr = test_data[pr_number - 1]
 
-            new_instance_ref_id = mock_spawn_appserver.mock_calls[pr_number - 1][1][0]
-            instance = OpenEdXInstance.objects.get(ref_set__pk=new_instance_ref_id)
+            instance = mock_create_new_deployment.mock_calls[pr_number - 1][1][0]
             subdomain_part = 'pr2300{}'.format(pr_number) # e.g. pr23001, pr23002, etc.
             self.assertEqual(instance.internal_lms_domain, '{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.internal_lms_preview_domain,
@@ -276,14 +272,14 @@ class TasksTestCase(TestCase):
 
         # Once the new instance/appservers have been spawned, they shouldn't spawn again:
         tasks.watch_pr()
-        self.assertEqual(mock_spawn_appserver.call_count, 2)
+        self.assertEqual(mock_create_new_deployment.call_count, 2)
 
     @patch('pr_watch.github.get_commit_id_from_ref')
     @patch('pr_watch.tasks.create_new_deployment')
     @patch('pr_watch.tasks.get_pr_list_from_usernames')
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org')
     def test_disabled_watchedfork(self, mock_get_pr_list_from_usernames,
-                                  mock_spawn_appserver, mock_get_commit_id_from_ref):
+                                  mock_create_new_deployment, mock_get_commit_id_from_ref):
         """
         Creates WatchedFork with the 'enabled' field set to false and checks that its PRs are not watched.
         """
@@ -315,5 +311,5 @@ class TasksTestCase(TestCase):
         mock_get_pr_list_from_usernames.return_value = [pr]
 
         tasks.watch_pr()
-        self.assertEqual(mock_spawn_appserver.call_count, 0)
+        self.assertEqual(mock_create_new_deployment.call_count, 0)
         self.assertEqual(WatchedPullRequest.objects.count(), 0)

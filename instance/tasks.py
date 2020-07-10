@@ -33,15 +33,13 @@ from django.utils import timezone
 from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task
 
-from instance.models.deployment import DeploymentType
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
-from instance.utils import build_instance_config_diff, sufficient_time_passed
+from instance.utils import sufficient_time_passed
 from pr_watch import github
-from userprofile.models import UserProfile
 
 
 # Logging #####################################################################
@@ -53,41 +51,35 @@ logger = logging.getLogger(__name__)
 
 
 @db_task()
-def create_new_deployment(
+def start_deployment(
         instance_ref_id: int,
+        deployment_id: int,
         mark_active_on_success: bool = False,
         num_attempts: int = 1,
         success_tag: Optional[str] = None,
         failure_tag: Optional[str] = None,
-        creator: Optional[int] = None,
-        deployment_type: Optional[DeploymentType] = DeploymentType.unknown,
 ) -> Optional[int]:
     """
-    Create a new Deployment for an existing instance.
+    Start the deployment for an existing instance.
 
     :param instance_ref_id: ID of an InstanceReference (instance.ref.pk)
+    :param deployment_id: ID of an OpenEdXDeployment (OpenEdXDeployment.pk)
     :param mark_active_on_success: Optionally mark the new AppServer as active when the provisioning completes.
     :param num_attempts: Optionally retry up to 'num_attempts' times.
     :param success_tag: Optionally tag the instance with 'success_tag' when the deployment succeeds.
     :param failure_tag: Optionally tag the instance with 'failure_tag' when the deployment fails.
-    :param creator: Optionally associate deployment with this user.
-    :param deployment_type: Optionally specify a deployment type.
     :return: The ID of the new deployment.
     """
     logger.info('Retrieving instance: ID=%s', instance_ref_id)
     instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
-    changes = None
-    if instance.betatestapplication_set.exists():
-        changes = build_instance_config_diff(instance.betatestapplication_set.get())
 
-    creator_profile = creator and UserProfile.objects.get(user_id=creator)
+    logger.info('Retrieving deployment: ID=%s', instance_ref_id)
+    deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
 
-    deployment = OpenEdXDeployment.objects.create(
-        instance_id=instance_ref_id,
-        creator=creator_profile,
-        type=deployment_type,
-        changes=changes,
-    )
+    if deployment.cancelled:
+        logger.info('Deployment %s was cancelled, returning.', deployment.id)
+        return False
+
     logger.info('Spawning servers for deployment %s [%s]', deployment, deployment.id)
     # Launch configured number of appservers for instance
     appserver_spawn_tasks = spawn_appserver.map(
@@ -98,6 +90,13 @@ def create_new_deployment(
     appserver_ids = appserver_spawn_tasks.get(blocking=True)
 
     if not all(appserver_ids):
+        return False
+
+    # For redundancy - if app server deployment was successful even after cancelling, we prevent the change in
+    # active appserver here
+    deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
+    if deployment.cancelled:
+        logger.info('Deployment %s was cancelled, returning.', deployment.id)
         return False
 
     # If this deployment is to be marked active on success, others should be deactivated automatically
