@@ -155,6 +155,8 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
             $scope.isEditingNotes = false;
             $scope.originalNotes = "";
 
+            $scope.showNotes = false;
+
             $scope.refresh();
         };
 
@@ -239,7 +241,13 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
                     $scope.is_spawning_appserver = false;
                 }
                 $scope.old_appserver_count = instance.appserver_count;
-                $scope.originalNotes = $scope.instance.notes;
+                if ('notes' in $scope.instance) {
+                    $scope.originalNotes = $scope.instance.notes;
+                    $scope.showNotes = true;
+                } else {
+                    $scope.showNotes = false;
+                }
+
             });
         };
 

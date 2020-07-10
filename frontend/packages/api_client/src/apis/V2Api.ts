@@ -580,7 +580,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Endpoint for getting the list of instances owned by the current user.  If the user is staff, return a 400 error. This is used by the frontend to prevent staff users from accidentally accessing and updating other users\' instances (see SE-2865).
      * Get all instances owned by user
      */
     async instancesOpenedxConfigListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceConfig>>> {
@@ -606,7 +606,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Endpoint for getting the list of instances owned by the current user.  If the user is staff, return a 400 error. This is used by the frontend to prevent staff users from accidentally accessing and updating other users\' instances (see SE-2865).
      * Get all instances owned by user
      */
     async instancesOpenedxConfigList(): Promise<Array<OpenEdXInstanceConfig>> {
