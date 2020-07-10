@@ -10,6 +10,8 @@ export * from './ThemePreviewAndColors';
 
 export * from './Logos';
 
+export * from './NoticeBoard';
+
 export * from './ThemeButtons';
 
 export * from './CustomizableButton';

@@ -5,6 +5,7 @@ import {
   Hero,
   InstanceSettings,
   Logos,
+  NoticeBoard,
   ThemeButtons,
   ThemeNavigation,
   ThemeFooter,
@@ -24,6 +25,10 @@ export const ConsoleRoutes = () => {
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
+      />
+      <PrivateRoute
+        path={ROUTES.Console.NOTICE_BOARD}
+        component={NoticeBoard}
       />
       <PrivateRoute
         path={ROUTES.Console.THEME_PREVIEW_AND_COLORS}

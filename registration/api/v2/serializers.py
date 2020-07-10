@@ -372,6 +372,16 @@ class OpenEdXInstanceDeploymentStatusSerializer(serializers.Serializer):
 
 
 # pylint: disable=abstract-method
+class OpenEdXInstanceDeploymentNotificationSerializer(serializers.Serializer):
+    """
+    Simplistic serializer with status and changes for certain Open edX instance.
+    """
+    status = serializers.ChoiceField(choices=DeploymentState.choices())
+    deployed_changes = serializers.JSONField()
+    date = serializers.DateTimeField()
+
+
+# pylint: disable=abstract-method
 class OpenEdXInstanceDeploymentCreateSerializer(serializers.Serializer):
     """
     Serializer with configuration details about the user's Open edX instance.

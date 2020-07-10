@@ -19,6 +19,7 @@
 """
 Tests for the registration API
 """
+import json
 from typing import Optional, Union
 from unittest.mock import patch
 
@@ -36,6 +37,7 @@ from instance.schemas.theming import DEFAULT_THEME
 from instance.tests.base import create_user_and_profile
 from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.utils import build_instance_config_diff
 from registration.models import BetaTestApplication
 
 from .utils import create_image
@@ -1006,3 +1008,133 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
         self.assertEqual(response.status_code, 200)
         mock_create_new_deployment.assert_called()
+
+
+class NotificationAPITestCase(APITestCase):
+    """
+    Tests for the Notifications APIs.
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+        self.user_with_instance = create_user_and_profile("instance.user", "instance.user@example.com")
+        self.instance_config = BetaTestApplication.objects.create(
+            user=self.user_with_instance,
+            subdomain="somesubdomain",
+            instance_name="User's Instance",
+            public_contact_email="instance.user.public@example.com",
+            privacy_policy_url="http://www.some/url",
+        )
+        self.client.force_login(self.user_with_instance)
+
+    def _setup_user_instance(self):
+        """
+        Set up an instance for the test user.
+        """
+        instance = OpenEdXInstanceFactory()
+        self.instance_config.instance = instance
+        self.instance_config.save()
+        return instance
+
+    @patch(
+        "instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul",
+        return_value=(1, True),
+    )
+    def test_get_no_notifications(self, mock_consul):
+        """
+        Tests, that we receive at least one blank notification about preparing
+        changes if there are no deployments yet.
+        """
+
+        instance = self._setup_user_instance()
+
+        url = reverse("api:v2:notifications-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+        notification = dict(response.data[0])
+
+        self.assertEqual(
+            notification,
+            {
+                "deployed_changes": [],
+                "status": "preparing",
+                "date": instance.created.isoformat().replace("+00:00", "Z"),
+            },
+            response.data,
+        )
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.create_new_deployment')
+    def test_get_deployment_notifications(self, mock_create_new_deployment, mock_consul):
+        """
+        Ensures that notification contain deployment's deployed changes and
+        that status of last healthy deployment with undeployed changes
+        is 'changes_pending'.
+        """
+
+        instance = self._setup_user_instance()
+        first_deployment = make_test_deployment(instance, appserver_states=[Status.Running], active=True)
+        second_deployment = make_test_deployment(instance, appserver_states=[Status.Running], active=True)
+
+        changes = build_instance_config_diff(self.instance_config)
+        first_deployment.changes = changes
+        first_deployment.save()
+
+        url = reverse("api:v2:notifications-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            dict(response.data[0]),
+            {
+                "deployed_changes": [],
+                "status": "changes_pending",
+                "date": second_deployment.created.isoformat().replace("+00:00", "Z"),
+            },
+            response.data
+        )
+
+        self.assertEqual(
+            dict(response.data[1]),
+            {
+                # simulate postgres json field serialization and deserialization
+                "deployed_changes": json.loads(json.dumps(changes)),
+                "status": "healthy",
+                "date": first_deployment.created.isoformat().replace("+00:00", "Z"),
+            },
+            response.data
+        )
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.create_new_deployment')
+    def test_notifications_limit(self, mock_create_new_deployment, mock_consul):
+        """
+        Tests that limit query param works as intended and doesn't allow malformed
+        data.
+        """
+
+        instance = self._setup_user_instance()
+
+        for _ in range(5):
+            make_test_deployment(instance, appserver_states=[Status.Running], active=True)
+
+        url = reverse("api:v2:notifications-list")
+
+        response = self.client.get(url, data={'limit': -1})
+
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.get(url, data={'limit': 3})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)

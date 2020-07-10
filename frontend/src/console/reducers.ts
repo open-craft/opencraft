@@ -138,6 +138,19 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.GET_NOTIFICATIONS:
+      return update(state, {
+        notificationsLoading: { $set: true }
+      });
+    case Actions.Types.GET_NOTIFICATIONS_SUCCESS:
+      return update(state, {
+        notifications: { $set: action.data },
+        notificationsLoading: { $set: false }
+      });
+    case Actions.Types.GET_NOTIFICATIONS_FAILURE:
+      return update(state, {
+        notificationsLoading: { $set: false }
+      });
     case Actions.Types.GET_DEPLOYMENT_STATUS:
       return state;
     case Actions.Types.GET_DEPLOYMENT_STATUS_SUCCESS:

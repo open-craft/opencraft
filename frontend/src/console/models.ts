@@ -21,11 +21,23 @@ export interface InstanceSettingsModel {
   heroCoverImage: null | string;
 }
 
+export interface DeploymentNotificationModel {
+  status: OpenEdXInstanceDeploymentStatusStatusEnum;
+  deployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  > | null;
+  date: Date;
+}
+
 export interface DeploymentInfoModel {
   status: OpenEdXInstanceDeploymentStatusStatusEnum;
   deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
-  undeployedChanges: Array<Array<object>>;
-  deployedChanges: Array<Array<object>> | null;
+  undeployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  >;
+  deployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  > | null;
 }
 
 // The loading key is used to store field names that are being updated through
@@ -40,6 +52,8 @@ export interface InstancesModel {
     deployment: DeploymentInfoModel | undefined;
   };
   instances: Array<InstanceSettingsModel>;
+  notifications: Array<DeploymentNotificationModel>;
+  notificationsLoading: boolean;
 }
 
 export const initialConsoleState: Readonly<InstancesModel> = {
@@ -51,5 +65,7 @@ export const initialConsoleState: Readonly<InstancesModel> = {
     loading: [],
     deployment: undefined
   },
-  instances: []
+  instances: [],
+  notifications: [],
+  notificationsLoading: false
 };
