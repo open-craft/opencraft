@@ -25,6 +25,7 @@ from typing import Dict
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -314,6 +315,37 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             raise ValidationError("User has reached limit of allowed Open edX instances.")
         else:
             return value
+
+    def validate_external_domain(self, value):
+        """
+        Prevent user from using a bad domain.
+
+        Bad domains are understood as:
+            - OpenCraft domain
+            - Domain in use or such that it is a subdomain of an existing domain
+            - Domain such that, when studio, ecommerce and preview subdomains are created, they
+            override a domain in use
+        """
+        is_opencraft_domain = BetaTestApplication.BASE_DOMAIN == value
+        if is_opencraft_domain:
+            raise ValidationError("Can not use OpenCraft domain.")
+
+        _, _, domain = value.partition('.')
+        is_domain_in_use = BetaTestApplication.objects.filter(external_domain=domain).exists()
+        if is_domain_in_use:
+            raise ValidationError("This domain is already taken.")
+
+        applications = BetaTestApplication.objects.filter(
+            Q(external_domain__startswith='studio')
+            | Q(external_domain__startswith='ecommerce')
+            | Q(external_domain__startswith='preview')
+        )
+        for app in applications:
+            _, _, domain = app.external_domain.partition('.')
+            if value == domain:
+                raise ValidationError("This domain is not allowed.")
+
+        return value
 
     class Meta:
         model = BetaTestApplication
