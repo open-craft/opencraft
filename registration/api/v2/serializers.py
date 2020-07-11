@@ -316,36 +316,36 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         else:
             return value
 
-    def validate_external_domain(self, value):
-        """
-        Prevent user from using a bad domain.
-
-        Bad domains are understood as:
-            - OpenCraft domain
-            - Domain in use or such that it is a subdomain of an existing domain
-            - Domain such that, when studio, ecommerce and preview subdomains are created, they
-            override a domain in use
-        """
-        is_opencraft_domain = BetaTestApplication.BASE_DOMAIN == value
-        if is_opencraft_domain:
-            raise ValidationError("Can not use OpenCraft domain.")
-
-        _, _, domain = value.partition('.')
-        is_domain_in_use = BetaTestApplication.objects.filter(external_domain=domain).exists()
-        if is_domain_in_use:
-            raise ValidationError("This domain is already taken.")
-
-        applications = BetaTestApplication.objects.filter(
-            Q(external_domain__startswith='studio')
-            | Q(external_domain__startswith='ecommerce')
-            | Q(external_domain__startswith='preview')
-        )
-        for app in applications:
-            _, _, domain = app.external_domain.partition('.')
-            if value == domain:
-                raise ValidationError("This domain is not allowed.")
-
-        return value
+    # def validate_external_domain(self, value):
+    #     """
+    #     Prevent user from using a bad domain.
+    #
+    #     Bad domains are understood as:
+    #         - OpenCraft domain
+    #         - Domain in use or such that it is a subdomain of an existing domain
+    #         - Domain such that, when studio, ecommerce and preview subdomains are created, they
+    #         override a domain in use
+    #     """
+    #     is_opencraft_domain = BetaTestApplication.BASE_DOMAIN == value
+    #     if is_opencraft_domain:
+    #         raise ValidationError("Can not use OpenCraft domain.")
+    #
+    #     _, _, domain = value.partition('.')
+    #     is_domain_in_use = BetaTestApplication.objects.filter(external_domain=domain).exists()
+    #     if is_domain_in_use:
+    #         raise ValidationError("This domain is already taken.")
+    #
+    #     applications = BetaTestApplication.objects.filter(
+    #         Q(external_domain__startswith='studio')
+    #         | Q(external_domain__startswith='ecommerce')
+    #         | Q(external_domain__startswith='preview')
+    #     )
+    #     for app in applications:
+    #         _, _, domain = app.external_domain.partition('.')
+    #         if value == domain:
+    #             raise ValidationError("This domain is not allowed.")
+    #
+    #     return value
 
     class Meta:
         model = BetaTestApplication
