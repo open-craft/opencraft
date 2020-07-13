@@ -77,6 +77,8 @@ def _provision_instance(sender, **kwargs):
             privacy_policy_url=application.privacy_policy_url,
         )
         application.instance.lms_users.add(user)
+        application.instance.ref.creator = user.profile
+        application.instance.ref.save()
 
         # Check if simple theme is set up and add it to instance
         if application.draft_theme_config:

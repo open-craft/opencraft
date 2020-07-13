@@ -255,6 +255,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Restart them every 1-2 days.
             "EDXAPP_CMS_MAX_REQ": 1000,
 
+            # Allow configuring the course visibility from Studio.
+            "EDXAPP_COURSE_CATALOG_VISIBILITY_PERMISSION": "see_in_catalog",
+            "EDXAPP_COURSE_ABOUT_VISIBILITY_PERMISSION": "see_about_page",
+
             # Celery workers
             "EDXAPP_WORKER_DEFAULT_STOPWAITSECS": 1200,
 
@@ -425,10 +429,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
         template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
-        # master has djangoapps.heartbeat installed by default now.
+        # master and juniper release onwards has djangoapps.heartbeat installed by default
         # openedx <= ironwood requires this if celery check is included in
         # heartbeat extended checks (which we add by default above)
-        if self.openedx_release != 'master':
+        if any(release_name in self.openedx_release for release_name in [
+                'ironwood',
+                'hawthorn',
+                'ginkgo',
+        ]):
             hb_app = "openedx.core.djangoapps.heartbeat"
             template["EDXAPP_CMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
             template["EDXAPP_LMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-rm -f packages/api_client/apis/*.ts
-rm -f packages/api_client/models/*.ts
+rm -f packages/api_client/src/apis/*.ts
+rm -f packages/api_client/src/models/*.ts
 
 docker run --rm --network="host" -v ${PWD}:/local \
     openapitools/openapi-generator-cli:v4.3.1 generate \

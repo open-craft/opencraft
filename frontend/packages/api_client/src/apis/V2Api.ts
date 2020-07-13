@@ -42,6 +42,9 @@ import {
     OpenEdXInstanceDeploymentCreate,
     OpenEdXInstanceDeploymentCreateFromJSON,
     OpenEdXInstanceDeploymentCreateToJSON,
+    OpenEdXInstanceDeploymentNotification,
+    OpenEdXInstanceDeploymentNotificationFromJSON,
+    OpenEdXInstanceDeploymentNotificationToJSON,
     OpenEdXInstanceDeploymentStatus,
     OpenEdXInstanceDeploymentStatusFromJSON,
     OpenEdXInstanceDeploymentStatusToJSON,
@@ -148,6 +151,10 @@ export interface InstancesOpenedxDeploymentDeleteRequest {
 
 export interface InstancesOpenedxDeploymentReadRequest {
     id: string;
+}
+
+export interface NotificationsListRequest {
+    limit?: number;
 }
 
 export interface PasswordResetConfirmCreateRequest {
@@ -580,7 +587,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Endpoint for getting the list of instances owned by the current user.  If the user is staff, return a 400 error. This is used by the frontend to prevent staff users from accidentally accessing and updating other users\' instances (see SE-2865).
      * Get all instances owned by user
      */
     async instancesOpenedxConfigListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceConfig>>> {
@@ -606,7 +613,7 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
-     * Open edX Instance Configuration API.  This API can be used to manage the configuration for Open edX instances owned by clients.
+     * Endpoint for getting the list of instances owned by the current user.  If the user is staff, return a 400 error. This is used by the frontend to prevent staff users from accidentally accessing and updating other users\' instances (see SE-2865).
      * Get all instances owned by user
      */
     async instancesOpenedxConfigList(): Promise<Array<OpenEdXInstanceConfig>> {
@@ -1032,6 +1039,45 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxDeploymentRead(requestParameters: InstancesOpenedxDeploymentReadRequest): Promise<OpenEdXInstanceDeploymentStatus> {
         const response = await this.instancesOpenedxDeploymentReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * If there is no deployments at all, this endpoint returns blank notification, that deployment is preparing.
+     * Returns Open edX deployments information in form of status notifications.
+     */
+    async notificationsListRaw(requestParameters: NotificationsListRequest): Promise<runtime.ApiResponse<Array<OpenEdXInstanceDeploymentNotification>>> {
+        const queryParameters: runtime.HTTPQuery = {};
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/notifications/`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OpenEdXInstanceDeploymentNotificationFromJSON));
+    }
+
+    /**
+     * If there is no deployments at all, this endpoint returns blank notification, that deployment is preparing.
+     * Returns Open edX deployments information in form of status notifications.
+     */
+    async notificationsList(requestParameters: NotificationsListRequest): Promise<Array<OpenEdXInstanceDeploymentNotification>> {
+        const response = await this.notificationsListRaw(requestParameters);
         return await response.value();
     }
 

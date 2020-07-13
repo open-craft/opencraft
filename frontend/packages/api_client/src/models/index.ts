@@ -11,6 +11,7 @@ export * from './OpenEdXAppServer';
 export * from './OpenEdXInstanceConfig';
 export * from './OpenEdXInstanceConfigUpdate';
 export * from './OpenEdXInstanceDeploymentCreate';
+export * from './OpenEdXInstanceDeploymentNotification';
 export * from './OpenEdXInstanceDeploymentStatus';
 export * from './OpenStackServer';
 export * from './PasswordToken';

@@ -56,9 +56,13 @@ class OpenEdXDeployment(Deployment):
     """
     OpenEdXDeployment: A deployment of Open edX and related services.
 
-    Can include multiple AppServers
+    Can include multiple AppServers.
+
+    ``changes`` field contains diff between old and new deployment
+    configuration in format described here: https://dictdiffer.readthedocs.io/en/latest/#usage
     """
-    # The changed fields, with old and new values
+
+    # TODO: we should write custom validator for this
     changes = JSONField(null=True, blank=True)
 
     def status(self):

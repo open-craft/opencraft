@@ -23,7 +23,6 @@ Views - Index - Tests
 # Imports #####################################################################
 
 from django.conf import settings
-from django.test.utils import override_settings
 from django.urls import reverse
 
 from instance.tests.base import WithUserTestCase
@@ -47,7 +46,6 @@ class IndexViewsTestCase(WithUserTestCase):
         self.assertRedirects(response,
                              '{0}?next={1}'.format(self.login_url, self.url))
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_index_authenticated_basic_user(self):
         """
         Index view - Authenticated, unprivileged user
@@ -56,7 +54,6 @@ class IndexViewsTestCase(WithUserTestCase):
         response = self.client.get(self.url)
         self.assertRedirects(response, self.register_url)
 
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_index_authenticated_staff(self):
         """
         Index view - Authenticated, staff user

@@ -33,7 +33,6 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.test import override_settings
 from django.utils.six import StringIO
 import MySQLdb as mysql
 import pymongo
@@ -357,11 +356,15 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertIn(instance.static_content_overrides['static_template_{}_content'.format(page)], server_html)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '1', "Test not in test group.")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_spawn_appserver(self):
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.manage_instance_services")
+    def test_spawn_appserver(self, manage_instance_services):
         """
         Provision an instance and spawn an AppServer, complete with custom theme (colors)
         """
+        # Mock the execution of the manage_instance_services playbook as the celery workers aren't
+        # set up in the playbook used for setting up the instance for this test.
+        manage_instance_services.return_value = True
+
         OpenEdXInstanceFactory(
             name='Integration - test_spawn_appserver',
             deploy_simpletheme=True,
@@ -457,7 +460,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
     @patch_git_checkout
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_ansible_failure(self, git_checkout, git_working_dir):
         """
         Ensure failures in the ansible flow are reflected in the instance
@@ -477,10 +479,10 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(appserver.server.status, ServerStatus.Ready)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
+    @patch("instance.models.openedx_appserver.OpenEdXAppServer.manage_instance_services")
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.get_playbooks")
     @patch("instance.models.openedx_appserver.OpenEdXAppServer.heartbeat_active")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
-    def test_ansible_failignore(self, heartbeat_active, get_playbooks):
+    def test_ansible_failignore(self, heartbeat_active, get_playbooks, manage_instance_services):
         """
         Ensure failures that are ignored aren't reflected in the instance
         """
@@ -494,6 +496,12 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
                 variables='{}',
             )
         ]
+
+        # Mocking the manage_services.yml playbook because the services it tries to manage
+        # will not be installed in the appserver provisioned by the dummy failignore.yml
+        # playbook.
+        manage_instance_services.return_value = True
+
         instance = OpenEdXInstanceFactory(
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
@@ -509,7 +517,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assertEqual(server.update_status(), ServerStatus.Terminated)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_openstack_server_terminated(self):
         """
         Test that OpenStackServer detects if the VM was terminated externally.
@@ -519,7 +526,6 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         self.assert_server_terminated(server)
 
     @skipIf(TEST_GROUP is not None and TEST_GROUP != '2', "Test not in test group.")
-    @override_settings(INSTANCE_STORAGE_TYPE='s3')
     def test_betatest_accepted(self):
         """
         Provision an instance, spawn an AppServer and accepts the application.
