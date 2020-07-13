@@ -37,6 +37,11 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.USER_INSTANCE_LIST_FAILURE:
+      return update(state, {
+        loading: { $set: false },
+        error: { $set: action.error }
+      });
     case Actions.Types.UPDATE_INSTANCE_INFO:
       return update(state, {
         activeInstance: {
@@ -132,6 +137,19 @@ export function consoleReducer(
             )
           }
         }
+      });
+    case Actions.Types.GET_NOTIFICATIONS:
+      return update(state, {
+        notificationsLoading: { $set: true }
+      });
+    case Actions.Types.GET_NOTIFICATIONS_SUCCESS:
+      return update(state, {
+        notifications: { $set: action.data },
+        notificationsLoading: { $set: false }
+      });
+    case Actions.Types.GET_NOTIFICATIONS_FAILURE:
+      return update(state, {
+        notificationsLoading: { $set: false }
       });
     case Actions.Types.GET_DEPLOYMENT_STATUS:
       return state;

@@ -2,9 +2,13 @@ import { OcimThunkAction } from 'global/types';
 import { Action } from 'redux';
 import { push } from 'connected-react-router';
 import { V2Api } from 'global/api';
-import { InstanceSettingsModel, DeploymentInfoModel } from 'console/models';
+import {
+  InstanceSettingsModel,
+  DeploymentInfoModel,
+  DeploymentNotificationModel
+} from 'console/models';
 import { ThemeSchema, StaticContentOverrides } from 'ocim-client';
-import { ROUTES } from 'global/constants';
+import { NOTIFICATIONS_LIMIT, ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 
 export enum Types {
@@ -30,6 +34,11 @@ export enum Types {
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES',
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS',
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE',
+
+  // Notifications related actions
+  GET_NOTIFICATIONS = 'GET_NOTIFICATIONS',
+  GET_NOTIFICATIONS_SUCCESS = 'GET_NOTIFICATIONS_SUCCESS',
+  GET_NOTIFICATIONS_FAILURE = 'GET_NOTIFICATIONS_FAILURE',
 
   // Redeployment related actions
   GET_DEPLOYMENT_STATUS = 'GET_DEPLOYMENT_STATUS',
@@ -122,6 +131,20 @@ export interface UpdateInstanceStaticContentOverridesFailure extends Action {
   readonly data: Partial<StaticContentOverrides>;
 }
 
+export interface GetDeploymentsNotifications extends Action {
+  readonly type: Types.GET_NOTIFICATIONS;
+}
+
+export interface GetDeploymentsNotificationsSuccess extends Action {
+  readonly type: Types.GET_NOTIFICATIONS_SUCCESS;
+  readonly data: Array<DeploymentNotificationModel>;
+}
+
+export interface GetDeploymentsNotificationsFailure extends Action {
+  readonly type: Types.GET_NOTIFICATIONS_FAILURE;
+  readonly errors: any;
+}
+
 export interface GetDeploymentStatus extends Action {
   readonly type: Types.GET_DEPLOYMENT_STATUS;
   readonly instanceId: number;
@@ -188,6 +211,9 @@ export type ActionTypes =
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
+  | GetDeploymentsNotifications
+  | GetDeploymentsNotificationsSuccess
+  | GetDeploymentsNotificationsFailure
   | GetDeploymentStatus
   | GetDeploymentStatusSuccess
   | GetDeploymentStatusFailure
@@ -225,9 +251,11 @@ export const listUserInstances = (): OcimThunkAction<
         data: response
       });
     })
-    .catch((e: any) => {
+    .catch(async (e: any) => {
+      const error = await e.json();
       dispatch({
-        type: Types.USER_INSTANCE_LIST_FAILURE
+        type: Types.USER_INSTANCE_LIST_FAILURE,
+        error
       });
     });
 };
@@ -375,6 +403,27 @@ export const updateStaticContentOverridesFieldValue = (
       data: {
         [fieldName]: value
       }
+    });
+  }
+};
+
+export const getNotifications = (): OcimThunkAction<void> => async dispatch => {
+  dispatch({
+    type: Types.GET_NOTIFICATIONS
+  });
+
+  try {
+    const response = await V2Api.notificationsList({
+      limit: NOTIFICATIONS_LIMIT
+    });
+    dispatch({
+      type: Types.GET_NOTIFICATIONS_SUCCESS,
+      data: response
+    });
+  } catch (e) {
+    dispatch({
+      type: Types.GET_NOTIFICATIONS_FAILURE,
+      errors: e
     });
   }
 };

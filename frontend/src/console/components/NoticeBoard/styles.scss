@@ -1,0 +1,45 @@
+@import '~styles/theme';
+
+.deployment-notification {
+  .deployment-notification-header {
+    & i {
+      font-size: 35px;
+    }
+
+    .deployment-notification-date {
+      line-height: 15px;
+      font-size: 15px;
+    }
+
+    .expand-caret-button {
+      i {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .deployment-notification-body {
+    font-size: 14px;
+
+    &.bg-light-blue {
+      border-top: 1px solid $primary-2;
+    }
+
+    &.bg-alert-red {
+      border-top: 1px solid $alert-red-2;
+    }
+
+    &.bg-alert-yellow-1 {
+      border-top: 1px solid $alert-yellow-2;
+    }
+
+    &.bg-light-gray {
+      border-top: 1px solid grey;
+    }
+  }
+}
+
+.notice-board-heading {
+  font-size: 25px;
+  margin-bottom: 30px;
+}

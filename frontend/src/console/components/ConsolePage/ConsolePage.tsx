@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { CustomizationSideMenu, RedeploymentToolbar } from 'console/components';
-import { EmailActivationAlertMessage } from 'ui/components';
+import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
+import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
@@ -26,6 +27,7 @@ interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {
   children: React.ReactNode;
   contentLoading: boolean;
+  showSidebar: boolean;
 }
 
 interface CustomizationContainerProps {
@@ -38,6 +40,11 @@ export const ConsolePageCustomizationContainer: React.FC<CustomizationContainerP
 
 export class ConsolePageComponent extends React.PureComponent<Props> {
   refreshInterval?: NodeJS.Timer;
+
+  // eslint-disable-next-line react/static-property-placement
+  public static defaultProps: Partial<Props> = {
+    showSidebar: true
+  };
 
   public componentDidMount() {
     if (!this.props.loading && this.props.activeInstance.data === null) {
@@ -103,8 +110,10 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
   public render() {
     const content = () => {
+      let innerContent = this.props.children;
+
       if (this.props.contentLoading) {
-        return (
+        innerContent = (
           <ConsolePageCustomizationContainer>
             <div className="loading">
               <i className="fas fa-2x fa-sync-alt fa-spin" />
@@ -112,8 +121,34 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
           </ConsolePageCustomizationContainer>
         );
       }
-      return this.props.children;
+
+      if (this.props.showSidebar) {
+        innerContent = (
+          <Row>
+            <Col md="3">
+              <CustomizationSideMenu />
+            </Col>
+            <Col md="9">{innerContent}</Col>
+          </Row>
+        );
+      }
+
+      return innerContent;
     };
+    if (
+      this.props.error &&
+      this.props.error.code === 'NOT_ACCESSIBLE_TO_STAFF'
+    ) {
+      return (
+        <ErrorPage
+          messages={messages}
+          messageId="notAllowedForStaff"
+          values={{
+            link: (text: string) => <a href={OCIM_API_BASE}>{text}</a>
+          }}
+        />
+      );
+    }
 
     let deploymentLoading = true;
     if (this.props.activeInstance && this.props.activeInstance.loading) {
@@ -152,14 +187,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
         <div className="console-page-container">
           <Row className="console-page-content">
-            <Container fluid>
-              <Row>
-                <Col md="3">
-                  <CustomizationSideMenu />
-                </Col>
-                <Col md="9">{content()}</Col>
-              </Row>
-            </Container>
+            <Container fluid>{content()}</Container>
           </Row>
         </div>
       </div>

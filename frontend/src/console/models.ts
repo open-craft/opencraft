@@ -21,17 +21,30 @@ export interface InstanceSettingsModel {
   heroCoverImage: null | string;
 }
 
+export interface DeploymentNotificationModel {
+  status: OpenEdXInstanceDeploymentStatusStatusEnum;
+  deployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  > | null;
+  date: Date;
+}
+
 export interface DeploymentInfoModel {
   status: OpenEdXInstanceDeploymentStatusStatusEnum;
   deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
-  undeployedChanges: Array<Array<object>>;
-  deployedChanges: Array<Array<object>> | null;
+  undeployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  >;
+  deployedChanges: Array<
+    Array<Array<Array<number | string> | number> | string>
+  > | null;
 }
 
 // The loading key is used to store field names that are being updated through
 // a request. This allows us to individually update fields.
 export interface InstancesModel {
   loading: boolean;
+  error: any;
   activeInstance: {
     data: InstanceSettingsModel | null;
     feedback: Partial<InstanceSettingsModel>;
@@ -39,15 +52,20 @@ export interface InstancesModel {
     deployment: DeploymentInfoModel | undefined;
   };
   instances: Array<InstanceSettingsModel>;
+  notifications: Array<DeploymentNotificationModel>;
+  notificationsLoading: boolean;
 }
 
 export const initialConsoleState: Readonly<InstancesModel> = {
   loading: false,
+  error: null,
   activeInstance: {
     data: null,
     feedback: {},
     loading: [],
     deployment: undefined
   },
-  instances: []
+  instances: [],
+  notifications: [],
+  notificationsLoading: false
 };

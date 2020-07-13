@@ -10,12 +10,19 @@ $light-blue-3: #e2ebef;
 $console-bg: #f0f5f7;
 $light-gray: #f4f6f7;
 
-$alert-bg-yellow: #fff3cd;
-$alert-text-yellow: #856404;
+$alert-red: #ffe6e6;
+$alert-red-2: #fdc7c7;
+$alert-yellow-1: #fff3cd;
+$alert-yellow-2: #856404;
 
 $theme-colors: (
   "primary": $primary-1,
-  "secondary": $secondary-1
+  "secondary-2": $secondary-2,
+  "light-blue": $light-blue,
+  "light-gray": $light-gray,
+  "alert-yellow-1": $alert-yellow-1,
+  "alert-yellow-2": $alert-yellow-2,
+  "alert-red": $alert-red,
 );
 
 $playfair-font: 'Playfair Display', serif;

@@ -224,7 +224,7 @@ class OpenEdXInstanceTestCase(TestCase):
         # Make sure databases were provisioned:
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
         self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
-        self.assertEqual(mocks.mock_provision_swift.call_count, 1)
+        self.assertEqual(mocks.mock_provision_s3.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
         dns_records = gandi.api.list_records('example.com')
@@ -245,10 +245,8 @@ class OpenEdXInstanceTestCase(TestCase):
                 getattr(appserver, field_name),
             )
         storage_settings = {
-            'EDXAPP_DEFAULT_FILE_STORAGE: swift.storage.SwiftStorage',
-            'EDXAPP_GRADE_STORAGE_CLASS: swift.storage.SwiftStorage',
-            'VHOST_NAME: openstack',
-            'XQUEUE_SETTINGS: openstack_settings'
+            'EDXAPP_DEFAULT_FILE_STORAGE: storages.backends.s3boto.S3BotoStorage',
+            'EDXAPP_GRADE_STORAGE_CLASS: storages.backends.s3boto.S3BotoStorage',
         }
         self.assertTrue(storage_settings <= set(appserver.configuration_storage_settings.split('\n')))
         configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
@@ -481,13 +479,13 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver_id = instance.spawn_appserver()
         self.assertEqual(mocks.mock_provision_mysql.call_count, 1)
         self.assertEqual(mocks.mock_provision_mongo.call_count, 1)
-        self.assertEqual(mocks.mock_provision_swift.call_count, 1)
+        self.assertEqual(mocks.mock_provision_s3.call_count, 1)
 
         appserver = instance.appserver_set.get(pk=appserver_id)
         ansible_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         for setting in ('EDXAPP_MYSQL_USER', 'EDXAPP_MONGO_PASSWORD',
                         'EDXAPP_MONGO_USER', 'EDXAPP_MONGO_PASSWORD',
-                        'EDXAPP_SWIFT_USERNAME', 'EDXAPP_SWIFT_KEY'):
+                        'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'):
             self.assertTrue(ansible_vars[setting])
 
     @patch_services

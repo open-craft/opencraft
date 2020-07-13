@@ -1,3 +1,7 @@
+export const NOTIFICATIONS_LIMIT = process.env.REACT_APP_NOTIFICATIONS_LIMIT
+  ? Number(process.env.REACT_APP_NOTIFICATIONS_LIMIT)
+  : 6;
+
 export const OCIM_API_BASE =
   process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000';
 
@@ -40,6 +44,7 @@ export const ROUTES = {
   },
   Console: {
     HOME: '/console',
+    NOTICE_BOARD: '/console/notice',
     CUSTOM_PAGES: '/console/custom-pages/:pageName',
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',
