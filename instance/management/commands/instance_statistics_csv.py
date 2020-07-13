@@ -160,6 +160,13 @@ class Command(BaseCommand):
 
     def get_elasticsearch_hits_data_summary(self, playbook_output_dir, name_prefix, start_date, end_date):
         """ Execute the collect_elasticsearch_data playbook to gather statistics """
+        if not settings.INSTANCE_LOGS_SERVER_HOST:
+            self.stderr.write(self.style.WARNING(
+                'Skipping Elasticsearch data collection because '
+                'INSTANCE_LOGS_SERVER_HOST is unset'
+            ))
+            return
+
         inventory = '[apps]\n{server}'.format(server=settings.INSTANCE_LOGS_SERVER_HOST)
         playbook_path = os.path.join(
             settings.SITE_ROOT,
