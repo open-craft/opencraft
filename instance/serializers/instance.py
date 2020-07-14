@@ -115,15 +115,6 @@ class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
     """
     summary_only = False
 
-    def __init__(self, *args, **kwargs):
-        super(InstanceReferenceDetailedSerializer, self).__init__(*args, **kwargs)
-
-        if 'context' in kwargs:
-            if 'request' in kwargs['context']:
-                request = kwargs['context']['request']
-                if not request.user.is_staff or not request.user.is_superuser:
-                    self.fields.pop('notes')
-
 
 class InstanceLogSerializer(serializers.ModelSerializer):
     """
