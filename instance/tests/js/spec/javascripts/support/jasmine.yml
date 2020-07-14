@@ -15,13 +15,11 @@ src_files:
     - static/external/js/underscore-min.js
     - static/external/js/angular.min.js
     - static/external/js/angular-route.min.js
-    - static/external/js/angular-sanitize.min.js
     - static/external/js/angular-ui-router.min.js
     - static/js/dist/angular-foundation-tpls.js
     - static/external/js/restangular.min.js
     - static/external/js/angular-mocks.js
     - static/external/js/jshint.js
-    - static/external/js/marked.min.js
     - instance/static/js/src/instance.js
     - instance/static/js/src/openedx_appserver.js
 
