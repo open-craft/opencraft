@@ -124,11 +124,6 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Update notes attribute of selected instance.
         """
-        if not request.user.is_staff or not request.user.is_superuser:
-            return Response(
-                {"error": "You do not have permissions to edit this field."},
-                status=status.HTTP_403_FORBIDDEN
-            )
         if 'notes' not in request.data:
             return Response({'status': 'No notes value provided.'})
 
