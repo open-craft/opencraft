@@ -170,16 +170,25 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "edx_platform_repo": self.edx_platform_repository_url,
 
             # Pin down dependencies to specific (known to be compatible) commits.
+            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # case variables will be deprecated
             "edx_platform_version": self.edx_platform_commit,
+            "EDX_PLATFORM_VERSION": self.edx_platform_commit,
             "configuration_version": self.configuration_version,
+            "CONFIGURATION_VERSION": self.configuration_version,
             "forum_version": self.openedx_release,
+            "FORUM_VERSION": self.openedx_release,
 
             # The 'xqueue_version' variable only works for the pre-Hawthorn versions. This can be removed
             # after we drop support for Ginkgo.
             "xqueue_version": self.openedx_release,
             "XQUEUE_VERSION": self.openedx_release,
 
+            # After this PR (https://github.com/edx/configuration/pull/5827), some lower
+            # case variables will be deprecated
             "certs_version": self.openedx_release,
+            "CERTS_VERSION": self.openedx_release,
+
             "NOTIFIER_VERSION": self.openedx_release,
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
