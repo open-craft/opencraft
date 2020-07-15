@@ -201,7 +201,9 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         _, [(_, config)] = instance.get_preliminary_page_config(instance.ref.pk)
         self.assertIn(
-            "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
+            "server preliminary-page {}:443 ssl verify required ca-file /etc/ssl/certs/ca-certificates.crt".format(
+                settings.PRELIMINARY_PAGE_SERVER_IP
+            ),
             config
         )
         self.assertNotIn('http-request set-header Host', config)
@@ -215,7 +217,9 @@ class LoadBalancedInstanceTestCase(TestCase):
         instance = OpenEdXInstanceFactory()
         _, [(_, config)] = instance.get_preliminary_page_config(instance.ref.pk)
         self.assertIn(
-            "server preliminary-page {}:80".format(settings.PRELIMINARY_PAGE_SERVER_IP),
+            "server preliminary-page {}:443 ssl verify required ca-file /etc/ssl/certs/ca-certificates.crt".format(
+                settings.PRELIMINARY_PAGE_SERVER_IP
+            ),
             config
         )
         self.assertIn(
