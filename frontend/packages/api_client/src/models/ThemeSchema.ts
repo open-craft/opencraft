@@ -240,7 +240,7 @@ export interface ThemeSchema {
      * @type {boolean}
      * @memberof ThemeSchema
      */
-    customizeLogistrationActionBtn?: boolean;
+    customizeLogistrationBtn?: boolean;
     /**
      * 
      * @type {string}
@@ -385,7 +385,7 @@ export function ThemeSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'btnRegisterHoverBg': !exists(json, 'btn-register-hover-bg') ? undefined : json['btn-register-hover-bg'],
         'btnRegisterHoverColor': !exists(json, 'btn-register-hover-color') ? undefined : json['btn-register-hover-color'],
         'btnRegisterHoverBorderColor': !exists(json, 'btn-register-hover-border-color') ? undefined : json['btn-register-hover-border-color'],
-        'customizeLogistrationActionBtn': !exists(json, 'customize-logistration-action-btn') ? undefined : json['customize-logistration-action-btn'],
+        'customizeLogistrationBtn': !exists(json, 'customize-logistration-btn') ? undefined : json['customize-logistration-btn'],
         'btnLogistrationBg': !exists(json, 'btn-logistration-bg') ? undefined : json['btn-logistration-bg'],
         'btnLogistrationColor': !exists(json, 'btn-logistration-color') ? undefined : json['btn-logistration-color'],
         'btnLogistrationBorderColor': !exists(json, 'btn-logistration-border-color') ? undefined : json['btn-logistration-border-color'],
@@ -450,7 +450,7 @@ export function ThemeSchemaToJSON(value?: ThemeSchema | null): any {
         'btn-register-hover-bg': value.btnRegisterHoverBg,
         'btn-register-hover-color': value.btnRegisterHoverColor,
         'btn-register-hover-border-color': value.btnRegisterHoverBorderColor,
-        'customize-logistration-action-btn': value.customizeLogistrationActionBtn,
+        'customize-logistration-btn': value.customizeLogistrationBtn,
         'btn-logistration-bg': value.btnLogistrationBg,
         'btn-logistration-color': value.btnLogistrationColor,
         'btn-logistration-border-color': value.btnLogistrationBorderColor,
