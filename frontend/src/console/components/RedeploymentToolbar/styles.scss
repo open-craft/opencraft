@@ -30,6 +30,9 @@
     letter-spacing: 0.44px;
     color: $secondary-1;
   }
+  &.show {
+    opacity: 1;
+  }
 }
 
 .cancel-redeployment-modal {
