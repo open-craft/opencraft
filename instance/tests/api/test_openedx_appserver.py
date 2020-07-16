@@ -34,7 +34,7 @@ from instance.tests.api.base import APITestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import ReadyOpenStackServerFactory
-from instance.tests.utils import patch_gandi, patch_url
+from instance.tests.utils import patch_gandi, patch_url, patch_services
 
 
 # Tests #######################################################################
@@ -219,11 +219,9 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
     Test cases for OpenEdXAppServer API calls related to spawning new servers.
     """
 
-    @patch_gandi
-    @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
+    @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    def test_spawn_appserver(self, mock_run_playbook, mock_provision, mock_provision_rabbitmq, mock_consul):
+    def test_spawn_appserver(self, mocks, mock_consul, mock_provision):
         """
         POST /api/v1/openedx_appserver/ - Spawn a new OpenEdXAppServer for the given instance.
 
@@ -239,7 +237,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(mock_provision_rabbitmq.call_count, 1)
+        self.assertEqual(mocks.mock_provision_rabbitmq.call_count, 1)
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)
@@ -250,19 +248,14 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         self.assertEqual(app_server.edx_platform_commit, '1' * 40)
 
     @ddt.data(True, False)
-    @patch_gandi
-    @patch('instance.models.openedx_instance.OpenEdXInstance.provision_rabbitmq')
+    @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
-    @patch('instance.models.mixins.load_balanced.LoadBalancingServer.run_playbook')
-    @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
     def test_spawn_appserver_break_on_success(
             self,
+            mocks,
             mark_active,
-            mock_run_appserver_playbook,
-            mock_run_playbook,
-            mock_provision,
-            mock_provision_rabbitmq,
             mock_consul,
+            mock_provision,
     ):
         """
         This test makes sure that upon a successful instance creation, further instances are not created
@@ -275,7 +268,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=mark_active, num_attempts=4)
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(mock_provision_rabbitmq.call_count, 1)
+        self.assertEqual(mocks.mock_provision_rabbitmq.call_count, 1)
 
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),

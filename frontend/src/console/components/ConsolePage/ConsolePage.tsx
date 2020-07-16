@@ -144,7 +144,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
           messages={messages}
           messageId="notAllowedForStaff"
           values={{
-            link: (text: string) => <a href={OCIM_API_BASE}>{text}</a>
+            link: (text: string) => (
+              <a href={`${OCIM_API_BASE}/instance`}>{text}</a>
+            )
           }}
         />
       );
