@@ -218,6 +218,8 @@ class Command(BaseCommand):
         log_line.info = log_line
         log_line.error = log_line
 
+        playbook_extra_script_arguments = '--skip-hit-statistics' if settings.INSTANCE_LOGS_SERVER_HOST else ''
+
         # Launch the collect_activity playbook, which places a file into the `playbook_output_dir`
         # on this host.
         ansible.capture_playbook_output(
@@ -228,10 +230,11 @@ class Command(BaseCommand):
                 'local_output_filename: user_statistics\n'
                 'remote_output_filename: /tmp/activity_report\n'
                 'config_section: {config_section}\n'
-                'extra_script_arguments: --skip-hit-statistics'
+                'extra_script_arguments: {extra_script_arguments}'
             ).format(
                 output_dir=playbook_output_dir,
-                config_section=name_prefix
+                config_section=name_prefix,
+                extra_script_arguments=playbook_extra_script_arguments
             ),
             playbook_path=playbook_path,
             username=settings.INSTANCE_LOGS_SERVER_SSH_USERNAME,
