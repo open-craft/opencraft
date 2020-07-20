@@ -55,6 +55,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     * `id`
     * `name`
+    * `notes`
     * `created`
     * `modified`
     * `instance_type`

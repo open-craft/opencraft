@@ -23,7 +23,8 @@ var app = angular.module('InstanceApp', [
     'ngRoute',
     'ui.router',
     'restangular',
-    'mm.foundation'
+    'mm.foundation',
+    'ngSanitize'
 ]);
 
 app.config(function($httpProvider) {
@@ -178,6 +179,25 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
                 $scope.is_updating_from_pr = false;
             });
         };
+
+        $scope.editNotes = function() {
+            let data = {"notes": $scope.instance.notes};
+            OpenCraftAPI.one("instance", $scope.instance.id).customPOST(data, "set_notes").then(function () {
+                $scope.notify('Instance notes updated.');
+                $scope.refresh().then(function() {
+                    $scope.isEditingNotes = false;
+                });
+            }, function() {
+                $scope.notify('Update failed.', 'alert');
+            });
+        };
+
+        $scope.cancelEditNotes = function() {
+            $scope.instance.notes = $scope.originalNotes;
+            $scope.isEditingNotes = false;
+        };
+
+        $scope.render = (text) => marked.parse(text);
 
         $scope.fetchLogs = function() {
             if ($scope.instanceLogs || $scope.isFetchingLogs) {

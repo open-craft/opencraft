@@ -19,6 +19,8 @@
     "static/external/js/jshint.js",
     "static/external/js/django-angular.min.js",
     "static/external/js/icheck.min.js",
+    "static/external/js/angular-sanitize.min.js",
+    "static/external/js/marked.min.js",
     "instance/static/js/src/instance.js",
     "instance/static/js/src/openedx_appserver.js",
     "registration/static/js/src/*.js"

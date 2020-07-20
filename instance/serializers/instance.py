@@ -69,6 +69,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'id',
             'api_url',
             'name',
+            'notes',
             'created',
             'modified',
             'is_archived',
