@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0132_remove_instancereference_notes'),
+        ('instance', '0133_add_notes_attribute_to_instance'),
     ]
 
     operations = [
