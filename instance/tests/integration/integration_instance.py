@@ -45,7 +45,8 @@ from instance.tests.decorators import patch_git_checkout
 from instance.tests.integration.base import IntegrationTestCase
 from instance.tests.integration.factories.instance import OpenEdXInstanceFactory
 from instance.tests.integration.utils import check_url_accessible, get_url_contents, is_port_open
-from instance.tasks import create_new_deployment, spawn_appserver
+from instance.tasks import spawn_appserver
+from instance.utils import create_new_deployment
 from registration.approval import on_appserver_spawned
 from registration.models import BetaTestApplication
 from userprofile.models import UserProfile
@@ -506,7 +507,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             name='Integration - test_ansible_failignore',
             configuration_playbook_name='playbooks/failignore.yml'
         )
-        create_new_deployment(instance.ref.pk, mark_active_on_success=True, num_attempts=1)
+        create_new_deployment(instance, mark_active_on_success=True, num_attempts=1)
         self.assert_server_ready(instance)
 
     @retry

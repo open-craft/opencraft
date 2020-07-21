@@ -73,9 +73,9 @@ class PeriodicBuildsTestCase(TestCase):
             self.assertEqual(mock_create_new_deployment.call_count, 2)
             mock_create_new_deployment.assert_has_calls(
                 [
-                    call(instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
+                    call(instance_enabled, num_attempts=1, mark_active_on_success=True,
                          deployment_type=DeploymentType.periodic),
-                    call(instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
+                    call(instance_enabled2, num_attempts=2, mark_active_on_success=True,
                          deployment_type=DeploymentType.periodic),
                 ],
                 any_order=True,
@@ -101,7 +101,7 @@ class PeriodicBuildsTestCase(TestCase):
 
             # the shorter interval instance should have spawned a new one
             mock_create_new_deployment.assert_called_once_with(
-                instance_enabled2.ref.pk, num_attempts=2, mark_active_on_success=True,
+                instance_enabled2, num_attempts=2, mark_active_on_success=True,
                 deployment_type=DeploymentType.periodic,
             )
             # fake that we have a new appserver but it's still configuring
@@ -115,6 +115,6 @@ class PeriodicBuildsTestCase(TestCase):
             tasks.launch_periodic_builds()
 
             mock_create_new_deployment.assert_called_once_with(
-                instance_enabled.ref.pk, num_attempts=1, mark_active_on_success=True,
+                instance_enabled, num_attempts=1, mark_active_on_success=True,
                 deployment_type=DeploymentType.periodic,
             )

@@ -464,7 +464,8 @@ export const performDeployment = (
 
   try {
     await V2Api.instancesOpenedxDeploymentCreate({
-      data: { id: instanceId }
+      data: { id: instanceId },
+      cancelPendingDeployments: true
     });
 
     const { activeInstance } = getState().console;

@@ -36,6 +36,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import channels.layers
+from django.conf import settings
 import requests
 from asgiref.sync import async_to_sync
 from dictdiffer import diff
@@ -218,3 +219,49 @@ class DjangoChoiceEnum(Enum):
     def names(cls):
         """Return enum as list of string names """
         return list(prop.name for prop in cls)
+
+
+def create_new_deployment(
+        instance,
+        creator=None,
+        deployment_type=None,
+        cancel_pending=False,
+        add_delay=False,
+        **kwargs,
+):
+    """
+    Create a new deployment for an existing instance, and start it asynchronously
+    """
+    # pylint: disable=cyclic-import, useless-suppression
+    from instance.models.deployment import DeploymentType
+    from instance.models.openedx_deployment import DeploymentState, OpenEdXDeployment
+    from instance.tasks import start_deployment
+
+    changes = None
+    if instance.betatestapplication_set.exists():
+        changes = build_instance_config_diff(instance.betatestapplication_set.get())
+
+    deployment_type = deployment_type or DeploymentType.unknown
+    creator_profile = creator and creator.profile
+    if cancel_pending:
+        deployment = instance.get_latest_deployment()
+        if deployment.status() in (DeploymentState.changes_pending, DeploymentState.provisioning):
+            deployment.cancel_deployment()
+    if add_delay:
+        # We delay the deployment instead of starting right now to give user some time to update the instance
+        # without us having to setup and teardown the appserver.
+        delay = settings.SELF_SERVICE_DEPLOYMENT_START_DELAY
+    else:
+        delay = 0
+    deployment = OpenEdXDeployment.objects.create(
+        instance_id=instance.ref.id,
+        creator=creator_profile,
+        type=deployment_type,
+        changes=changes,
+    )
+    instance.logger.info('Deployment {} created. It will start after a delay of {}s.'.format(deployment.id, delay))
+    start_deployment.schedule(
+        args=(instance.ref.id, deployment.id),
+        kwargs=kwargs,
+        delay=delay
+    )

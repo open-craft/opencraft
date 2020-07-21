@@ -64,6 +64,8 @@ class OpenEdXDeployment(Deployment):
 
     # TODO: we should write custom validator for this
     changes = JSONField(null=True, blank=True)
+    # Field which denotes if the deployment was cancelled by the user
+    cancelled = models.BooleanField(default=False)
 
     def status(self):
         """
@@ -152,6 +154,14 @@ class OpenEdXDeployment(Deployment):
             appserver.terminate_vm()
 
         return True
+
+    def cancel_deployment(self, force=False):
+        """
+        Mark the deployment as cancelled, and terminate associated appservers"
+        """
+        self.cancelled = True
+        self.save()
+        self.terminate_deployment(force)
 
     @property
     def first_activated(self):

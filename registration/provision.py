@@ -31,7 +31,7 @@ from simple_email_confirmation.signals import email_confirmed
 
 from instance.factories import production_instance_factory
 from instance.models.deployment import DeploymentType
-from instance.tasks import create_new_deployment
+from instance.utils import create_new_deployment
 from registration.models import BetaTestApplication
 from registration.utils import send_account_info_email
 
@@ -99,9 +99,9 @@ def _provision_instance(sender, **kwargs):
         # So we can go ahead and send the account info email.
         transaction.on_commit(lambda: send_account_info_email(application))
     create_new_deployment(
-        application.instance.ref.pk,
+        application.instance,
         mark_active_on_success=True,
         num_attempts=2,
-        creator=user.id,
+        creator=user,
         deployment_type=DeploymentType.registration,
     )

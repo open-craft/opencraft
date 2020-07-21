@@ -37,7 +37,8 @@ from instance.serializers.openedx_appserver import (
     OpenEdXAppServerSerializer,
     SpawnAppServerSerializer,
 )
-from instance.tasks import create_new_deployment, make_appserver_active
+from instance.tasks import make_appserver_active
+from instance.utils import create_new_deployment
 from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
 from ..models.deployment import DeploymentType
 
@@ -96,8 +97,8 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
             raise serializers.ValidationError('Invalid InstanceReference ID: Not an OpenEdXInstance.')
 
         create_new_deployment(
-            instance_id,
-            creator=self.request.user.id,
+            instance,
+            creator=self.request.user,
             deployment_type=deployment_type,
         )
         return Response({'status': 'Instance provisioning started'})

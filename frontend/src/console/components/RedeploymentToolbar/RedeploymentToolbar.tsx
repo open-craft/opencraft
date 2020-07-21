@@ -48,7 +48,6 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     deploymentDisabled =
       loading ||
       !undeployedChanges ||
-      deploymentStatus === DeploymentStatus.Provisioning ||
       deploymentStatus === DeploymentStatus.Preparing;
 
     /**
