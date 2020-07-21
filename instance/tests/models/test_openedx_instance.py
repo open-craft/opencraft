@@ -508,7 +508,7 @@ class OpenEdXInstanceTestCase(TestCase):
         Verify the load balancer configuration given in backend_map and config.
         """
         [(backend, config_str)] = config
-        self.assertRegex(config_str, r"\bserver\b.*\b{}:80\b".format(ip_address))
+        self.assertRegex(config_str, r"\bserver\b.*\b{}:(80|443)\b".format(ip_address))
         self.assertCountEqual(backend_map, [(domain, backend) for domain in domain_names])
 
     def _check_load_balancer_configuration_prefix_domains(self,
