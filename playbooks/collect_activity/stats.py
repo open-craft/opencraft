@@ -65,6 +65,7 @@ if __name__ == '__main__':
 
         # Walk through all of the Nginx logs, storing the found remote host IP addresses in a set to enforce uniqueness.
         unique_hits = set()
+        total_hits = 0
         for file in log_files:
             print >> sys.stderr, 'Parsing log file: {file}'.format(file=file)
 
@@ -79,10 +80,12 @@ if __name__ == '__main__':
             for line in handle:
                 match = re.match(NGINX_ACCESS_PATTERN, line)
                 if match:
+                    total_hits += 1
                     unique_hits.add(match.group('ipaddress'))
             handle.close()
 
-        stats['hits'] = len(unique_hits)
+        stats['unique_hits'] = len(unique_hits)
+        stats['total_hits'] = len(total_hits)
 
     # Build the ConfigParser data.
     config = ConfigParser()
