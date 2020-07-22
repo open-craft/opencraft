@@ -858,6 +858,13 @@ SELF_SERVICE_SPAWN_RETRY_ATTEMPTS = env('SELF_SERVICE_SPAWN_RETRY_ATTEMPTS', def
 # Number of seconds to wait before starting a new deployment
 SELF_SERVICE_DEPLOYMENT_START_DELAY = env('SELF_SERVICE_DEPLOYMENT_START_DELAY', default=600)
 
+# Instance Logs Server ########################################################
+
+logs_server_host_default = ''
+if FILEBEAT_LOGSTASH_HOSTS:
+    logs_server_host_default = FILEBEAT_LOGSTASH_HOSTS[0].split(':')[0]
+INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default=logs_server_host_default)
+INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 
 # Instances ###################################################################
 

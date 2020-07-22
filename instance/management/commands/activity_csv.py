@@ -131,7 +131,7 @@ class Command(BaseCommand):
                     section = data[public_ip]
                 except KeyError:
                     # Fill in stats for any instaces that failed with "N/A"
-                    section = {'hits': 'N/A', 'users': 'N/A', 'courses': 'N/A'}
+                    section = {'unique_hits': 'N/A', 'users': 'N/A', 'courses': 'N/A'}
 
                 instance_age = datetime.now(instance.created.tzinfo) - instance.created
 
@@ -142,7 +142,7 @@ class Command(BaseCommand):
 
                 csv_writer.writerow([
                     public_ip, instance.internal_lms_domain, instance.ref.name, email,
-                    section['hits'], section['users'], section['courses'],
+                    section['unique_hits'], section['users'], section['courses'],
                     instance_age.days
                 ])
 
