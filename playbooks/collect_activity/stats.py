@@ -85,7 +85,7 @@ if __name__ == '__main__':
             handle.close()
 
         stats['unique_hits'] = len(unique_hits)
-        stats['total_hits'] = len(total_hits)
+        stats['total_hits'] = total_hits
 
     # Build the ConfigParser data.
     config = ConfigParser()
