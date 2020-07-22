@@ -28,7 +28,7 @@ from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task
 
 from instance.models.deployment import DeploymentType
-from instance.tasks import create_new_deployment
+from instance.utils import create_new_deployment
 from pr_watch.github import (RateLimitExceeded, get_pr_list_from_usernames)
 from pr_watch.models import WatchedFork, WatchedPullRequest
 from userprofile.models import UserProfile
@@ -63,7 +63,7 @@ def watch_pr():
                 if created:
                     logger.info('New PR found, creating sandbox: %s', pr)
                     create_new_deployment(
-                        instance.ref.pk,
+                        instance,
                         mark_active_on_success=True,
                         num_attempts=2,
                         deployment_type=DeploymentType.pr,

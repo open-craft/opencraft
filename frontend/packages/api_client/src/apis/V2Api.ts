@@ -141,6 +141,7 @@ export interface InstancesOpenedxConfigValidateRequest {
 
 export interface InstancesOpenedxDeploymentCreateRequest {
     data: OpenEdXInstanceDeploymentCreate;
+    cancelPendingDeployments?: boolean;
     force?: boolean;
     deploymentType?: InstancesOpenedxDeploymentCreateDeploymentTypeEnum;
 }
@@ -893,6 +894,10 @@ export class V2Api extends runtime.BaseAPI {
         }
 
         const queryParameters: runtime.HTTPQuery = {};
+
+        if (requestParameters.cancelPendingDeployments !== undefined) {
+            queryParameters['cancel_pending_deployments'] = requestParameters.cancelPendingDeployments;
+        }
 
         if (requestParameters.force !== undefined) {
             queryParameters['force'] = requestParameters.force;

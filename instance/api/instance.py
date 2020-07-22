@@ -22,7 +22,7 @@ Instance API
 
 # Imports #####################################################################
 from django.db.models import Prefetch
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
@@ -55,6 +55,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     * `id`
     * `name`
+    * `notes`
     * `created`
     * `modified`
     * `instance_type`
@@ -117,3 +118,29 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         Get this Instance's entire list of AppServers
         """
         return Response(InstanceAppServerSerializer(self.get_object(), context={'request': request}).data)
+
+    @detail_route(methods=['post'])
+    def set_notes(self, request, pk):
+        """
+        Update notes attribute of selected instance.
+        """
+        if not request.user.is_staff or not request.user.is_superuser:
+            return Response(
+                {"error": "You do not have permissions to edit this field."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if 'notes' not in request.data:
+            return Response({'status': 'No notes value provided.'})
+
+        instance = InstanceReferenceBasicSerializer(self.get_object(),
+                                                    context={'request': request},
+                                                    data={'notes': request.data['notes']},
+                                                    partial=True)
+        if instance.is_valid():
+            instance.save()
+            return Response({'status': 'Instance attributes updated.'})
+        else:
+            return Response(
+                {"error": "Instance attributes are not valid."},
+                status=status.HTTP_400_BAD_REQUEST
+            )

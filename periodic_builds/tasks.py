@@ -31,7 +31,7 @@ from huey.contrib.djhuey import db_periodic_task, lock_task
 from instance.models.deployment import DeploymentType
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.appserver import Status
-from instance.tasks import create_new_deployment
+from instance.utils import create_new_deployment
 
 # Logging #####################################################################
 
@@ -70,7 +70,7 @@ def launch_periodic_builds():
             else:
                 # NOTE: this is async - enqueues as a new huey task and returns immediately
                 create_new_deployment(
-                    instance.ref.pk,
+                    instance,
                     num_attempts=instance.periodic_builds_retries + 1,
                     mark_active_on_success=True,
                     deployment_type=DeploymentType.periodic,
