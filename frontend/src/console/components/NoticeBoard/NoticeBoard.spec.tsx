@@ -1,12 +1,13 @@
 import React from 'react';
 
+import update from 'immutability-helper';
+
 import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'ocim-client';
 import { setupComponentForTesting } from 'utils/testing';
 
 import { NoticeBoard } from './NoticeBoard'
 
-
-it('Renders all notification types without crashing', () => {
+describe('NoticeBoard tests', () => {
   const deployedChanges = [
     [
       'change',
@@ -93,37 +94,60 @@ it('Renders all notification types without crashing', () => {
     status, date, deployedChanges
   }));
 
-  const tree = setupComponentForTesting(
-    <NoticeBoard />,
-    {
-      console: {
-        loading: false,
-        activeInstance: {
-          data: {
-            id: 1,
-            instanceName: "test",
-            subdomain: "test",
-            lmsUrl: "test-url",
-            studioUrl: "test-url",
-            isEmailVerified: true,
-          },
-          deployment: {
-            status: "preparing",
-            undeployedChanges: [],
-            deployedChanges: null,
-            type: 'admin',
-          }
-        },
-        instances: [{
+  const state = {
+    console: {
+      loading: false,
+      activeInstance: {
+        data: {
           id: 1,
           instanceName: "test",
           subdomain: "test",
-        }],
-        notifications: notifications,
-        notificationsLoading: false
-      }
+          lmsUrl: "test-url",
+          studioUrl: "test-url",
+          isEmailVerified: true,
+        },
+        deployment: {
+          status: "preparing",
+          undeployedChanges: [],
+          deployedChanges: null,
+          type: 'admin',
+        }
+      },
+      instances: [{
+        id: 1,
+        instanceName: "test",
+        subdomain: "test",
+      }],
+      notifications: notifications,
+      notificationsLoading: false
     }
-  ).toJSON();
+  };
 
-  expect(tree).toMatchSnapshot();
+  it('Renders all notification types without crashing', () => {
+    const tree = setupComponentForTesting(
+      <NoticeBoard />, state, jest.fn()
+    ).toJSON();
+
+    expect(tree).toMatchSnapshot();
+  });
+
+  it('Renders message about non-existent instance if email is not verified', () => {
+    const tree = setupComponentForTesting(
+      <NoticeBoard getNotifications={() => {}}/>,
+      update(state, {
+        console: {
+          activeInstance: {
+            data: {
+              isEmailVerified: {
+                $set: false
+              }
+            }
+          }
+        }
+      }),
+      jest.fn(),
+    ).toJSON();
+
+    expect(tree).toMatchSnapshot();
+  });
 });

@@ -1047,7 +1047,7 @@ class NotificationAPITestCase(APITestCase):
         changes if there are no deployments yet.
         """
 
-        instance = self._setup_user_instance()
+        self._setup_user_instance()
 
         url = reverse("api:v2:notifications-list")
         response = self.client.get(url)
@@ -1061,7 +1061,7 @@ class NotificationAPITestCase(APITestCase):
             {
                 "deployed_changes": [],
                 "status": "preparing",
-                "date": instance.created.isoformat().replace("+00:00", "Z"),
+                "date": self.instance_config.created.isoformat().replace("+00:00", "Z"),
             },
             response.data,
         )

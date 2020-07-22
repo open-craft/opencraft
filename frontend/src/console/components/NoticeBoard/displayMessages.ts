@@ -29,6 +29,12 @@ const messages = {
     defaultMessage: 'Notice Board',
     description: 'Notice board heading.'
   },
+  noActiveInstance: {
+    defaultMessage:
+      'There are no notifications available because your instance has not yet been created.',
+    description:
+      'Message to users who have not confirmed their email and therefore have no instance.'
+  },
   noDetails: {
     defaultMessage: 'No redeployment details.',
     description:

@@ -10,7 +10,8 @@ import { createRootReducer } from '../global/reducers';
 
 export const setupComponentForTesting = (
   reactContent: JSX.Element,
-  storeContents = {}
+  storeContents = {},
+  dispatchMock?: (...args: any[]) => any
 ) => {
   const middleware = applyMiddleware(thunk);
 
@@ -19,6 +20,10 @@ export const setupComponentForTesting = (
     storeContents,
     middleware
   );
+
+  if (dispatchMock) {
+    store.dispatch = dispatchMock;
+  }
 
   return renderer.create(
     <IntlProvider textComponent={React.Fragment} locale="en">

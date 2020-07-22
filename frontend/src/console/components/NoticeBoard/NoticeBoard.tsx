@@ -7,7 +7,7 @@ import { OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus } from 'o
 import { Col, Collapse, Nav, Row } from 'react-bootstrap';
 
 import { getNotifications } from 'console/actions';
-import { DeploymentNotificationModel } from 'console/models';
+import { DeploymentNotificationModel, InstancesModel } from 'console/models';
 import { WrappedMessage } from 'utils/intl';
 
 import messages from './displayMessages';
@@ -19,6 +19,7 @@ interface ActionProps {
   getNotifications: Function;
 }
 interface Props extends ActionProps {
+  activeInstance: InstancesModel['activeInstance'];
   notifications: Array<DeploymentNotificationModel>;
   loading: boolean;
 }
@@ -180,6 +181,19 @@ const NoticeBoardComponent: React.FC<Props> = (props: Props) => {
     />
   ));
 
+  let isEmailVerified = true;
+  if (props.activeInstance && props.activeInstance.data) {
+    isEmailVerified = props.activeInstance.data.isEmailVerified;
+  }
+
+  const pageContent = isEmailVerified ? (
+    notifications
+  ) : (
+    <p>
+      <WrappedMessage id="noActiveInstance" messages={messages} />
+    </p>
+  );
+
   return (
     <ConsolePage showSidebar={false} contentLoading={props.loading}>
       <Row className="justify-content-center">
@@ -189,7 +203,7 @@ const NoticeBoardComponent: React.FC<Props> = (props: Props) => {
               <WrappedMessage id="noticeBoard" messages={messages} />
             </p>
           </div>
-          {notifications}
+          {pageContent}
         </Col>
       </Row>
     </ConsolePage>
@@ -198,6 +212,7 @@ const NoticeBoardComponent: React.FC<Props> = (props: Props) => {
 
 export const NoticeBoard = connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => ({
+    activeInstance: state.console.activeInstance,
     notifications: state.console.notifications,
     loading: state.console.notificationsLoading
   }),
