@@ -95,7 +95,7 @@ theme_schema_v1 = {
         "btn-register-hover-bg": ref("color"),
         "btn-register-hover-color": ref("color"),
         "btn-register-hover-border-color": ref("color"),
-        "customize-logistration-action-btn": ref("flag"),
+        "customize-logistration-btn": ref("flag"),
         "btn-logistration-bg": ref("color"),
         "btn-logistration-color": ref("color"),
         "btn-logistration-border-color": ref("color"),
@@ -130,7 +130,7 @@ theme_schema_v1 = {
             "btn-register-hover-color",
             "btn-register-hover-border-color",
         ],
-        "customize-logistration-action-btn": [
+        "customize-logistration-btn": [
             "btn-logistration-bg",
             "btn-logistration-color",
             "btn-logistration-border-color",

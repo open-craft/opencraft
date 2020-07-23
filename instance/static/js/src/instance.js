@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 (function(){
 "use strict";
 
@@ -62,6 +61,7 @@ app.config(function($stateProvider, $urlRouterProvider, RestangularProvider, $lo
             controller: "Details",
         });
 });
+
 
 // Services
 app.factory('OpenCraftAPI', function(Restangular) {
@@ -154,7 +154,6 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
 
             $scope.isEditingNotes = false;
             $scope.originalNotes = "";
-
             $scope.showNotes = false;
 
             $scope.refresh();
@@ -241,13 +240,13 @@ app.controller("Details", ['$scope', '$state', '$stateParams', 'OpenCraftAPI',
                     $scope.is_spawning_appserver = false;
                 }
                 $scope.old_appserver_count = instance.appserver_count;
+
                 if ('notes' in $scope.instance) {
                     $scope.originalNotes = $scope.instance.notes;
                     $scope.showNotes = true;
                 } else {
                     $scope.showNotes = false;
                 }
-
             });
         };
 

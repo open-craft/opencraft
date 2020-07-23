@@ -43,7 +43,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer, OPENEDX_APPSERVE
 from instance.models.server import Server
 from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
 from userprofile.factories import make_user_and_organization, OrganizationFactory
@@ -731,6 +731,40 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertEqual(appserver.status, AppServer.Status.Terminated)
         appserver.terminate_vm()
         self.assertEqual(appserver.terminated, first_termination_time)
+
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    @patch_services
+    def test_spawn_when_cancelled(self, mocks, mock_provision, mock_consul):
+        """
+        Spawn appserver with a cancelled deployment
+        """
+        mock_provision.return_value = False
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
+        deployment = make_test_deployment(instance)
+        deployment.cancelled = True
+        deployment.save()
+        appserver_id = instance.spawn_appserver(deployment_id=deployment.id)
+        self.assertEqual(mock_provision.call_count, 1)
+        self.assertIs(appserver_id, None)
+
+    @patch_services
+    def test_provision_when_cancelled(self, mocks, mock_consul):
+        """
+        Provision appserver with a cancelled deployment
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log'], 0)
+
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.activate.opencraft.co.uk')
+        deployment = make_test_deployment(instance)
+        deployment.cancelled = True
+        deployment.save()
+        appserver = make_test_appserver(deployment=deployment)
+        self.assertEqual(appserver.status, AppServerStatus.New)
+        self.assertEqual(appserver.server.status, Server.Status.Pending)
+        result = appserver.provision()
+        self.assertFalse(result)
+        self.assertEqual(mocks.mock_run_ansible_playbooks.call_count, 0)
+        self.assertEqual(appserver.status, AppServerStatus.ConfiguringServer)
 
 
 @ddt

@@ -580,6 +580,12 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         responses={**VALIDATION_AND_AUTH_RESPONSES, 200: openapi.Response("Changes committed"), },
         manual_parameters=[
             openapi.Parameter(
+                "cancel_pending_deployments",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Cancel any deployments which might have been pending, and start a new one.",
+            ),
+            openapi.Parameter(
                 "force",
                 openapi.IN_QUERY,
                 type=openapi.TYPE_BOOLEAN,
@@ -606,6 +612,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         case prevents a new one from being launched unless forced.
         """
         force = request.query_params.get("force", False)
+        cancel_pending_deployments = request.query_params.get("cancel_pending_deployments", False)
         if self.request.user.is_superuser:
             default_deployment_type = DeploymentType.admin.name
         else:
@@ -628,7 +635,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
                 "Must verify email before launching an instance", code="email-unverified",
             )
 
-        if not force and instance.get_provisioning_appservers().exists():
+        if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
             raise ValidationError("Instance launch already in progress", code="in-progress")
 
         if not EmailAddress.objects.get(email=instance_config.public_contact_email).is_confirmed:
@@ -639,8 +646,9 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         instance_config.commit_changes_to_instance(
             deploy_on_commit=True,
             retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
-            creator=self.request.user.id,
+            creator=self.request.user,
             deployment_type=deployment_type,
+            cancel_pending_deployments=cancel_pending_deployments
         )
 
         return Response(status=status.HTTP_200_OK)
@@ -714,5 +722,5 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
                 }
             )
 
-        deployment.terminate_deployment()
+        deployment.cancel_deployment()
         return Response(status=status.HTTP_204_NO_CONTENT)

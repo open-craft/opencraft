@@ -24,8 +24,8 @@ CDNJS = https://cdnjs.cloudflare.com/ajax/libs
 # Files #######################################################################
 
 all: angular.min.js angular.min.js.map angular-mocks.js angular-route.min.js angular-route.min.js.map \
-	 angular-ui-router.min.js angular-sanitize.min.js django-angular.min.js icheck.min.js jquery.min.js \
-	 jshint.js marked.min.js restangular.min.js underscore-min.js underscore-min.map zxcvbn.js
+     angular-ui-router.min.js angular-sanitize.min.js django-angular.min.js icheck.min.js jquery.min.js \
+     jshint.js marked.min.js restangular.min.js underscore-min.js underscore-min.map zxcvbn.js
 
 angular.min.js:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular.min.js
@@ -39,11 +39,11 @@ angular-mocks.js:
 angular-route.min.js:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-route.min.js
 
-angular-route.min.js.map:
-	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-route.min.js.map
-
 angular-sanitize.min.js:
 	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-sanitize.min.js
+
+angular-route.min.js.map:
+	$(GET) $@ $(CDNJS)/angular.js/1.4.6/angular-route.min.js.map
 
 angular-ui-router.min.js:
 	$(GET) $@ $(CDNJS)/angular-ui-router/0.2.15/angular-ui-router.min.js

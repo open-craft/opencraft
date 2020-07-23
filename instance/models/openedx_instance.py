@@ -330,12 +330,22 @@ class OpenEdXInstance(
 
         Returns the ID of the new AppServer or None in case of failure.
         """
+        # pylint: disable=cyclic-import, useless-suppression
+        from instance.models.openedx_deployment import OpenEdXDeployment
+
         for attempt in range(num_attempts):
             self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
             app_server = self._spawn_appserver(deployment_id=deployment_id)
 
             if app_server and app_server.provision():
                 break
+
+            # Don't retry if the deployment was explicitly cancelled.
+            if deployment_id:
+                deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
+                if deployment.cancelled:
+                    self.logger.info('Deployment %s was cancelled, returning.', deployment_id)
+                    return None
 
             self.logger.error('Failed to provision new app server')
 

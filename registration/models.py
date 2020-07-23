@@ -35,7 +35,7 @@ from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
-from instance.tasks import create_new_deployment
+from instance.utils import create_new_deployment
 
 
 # Models ######################################################################
@@ -352,14 +352,21 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if errors:
             raise ValidationError(errors)
 
-    def commit_changes_to_instance(self, deploy_on_commit=False, retry_attempts=2, creator=None, deployment_type=None):
+    def commit_changes_to_instance(
+            self,
+            deploy_on_commit=False,
+            retry_attempts=2,
+            creator=None,
+            deployment_type=None,
+            cancel_pending_deployments=False
+    ):
         """
         Copies over configuration changes stored in this model to the related instance,
         and optionally spawn a new instance.
 
         :param deploy_on_commit: Initiate new deployment after committing changes
         :param deployment_type: Type of deployment
-        :param creator: ID of user initiating deployment
+        :param creator: User initiating deployment
         :param retry_attempts: Number of times to retry deployment
         """
         instance = self.instance
@@ -372,12 +379,13 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         instance.privacy_policy_url = self.privacy_policy_url
         instance.email = self.public_contact_email
         instance.save()
-
         if deploy_on_commit:
             create_new_deployment(
-                instance.ref.pk,
-                mark_active_on_success=True,
-                num_attempts=retry_attempts,
+                instance,
                 creator=creator,
                 deployment_type=deployment_type,
+                mark_active_on_success=True,
+                num_attempts=retry_attempts,
+                cancel_pending=cancel_pending_deployments,
+                add_delay=True,
             )

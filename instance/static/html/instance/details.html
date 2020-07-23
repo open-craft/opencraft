@@ -28,18 +28,24 @@
   </div>
 </div>
 
-<div class="panel" ng-controller="Details" ng-if="showNotes">
-  <div class="row">
-    <div class="large-10 columns">
-      <h3>Notes <a ng-click="isEditingNotes=true"><i class="fa fa-edit"></i></a></h3>
+<div ng-if="showNotes">
+  <div class="panel" ng-controller="Details" >
+    <div class="row">
+      <div class="large-12 columns">
+        <h3>Notes <a ng-click="isEditingNotes=true"><i class="fa fa-edit"></i></a></h3>
 
-      <div ng-if="!isEditingNotes" ng-bind-html="render(instance.notes)"></div>
+        <div class="description">
+          * Use this field only for backlinks of maintained instances. Otherwise, you can use it for temporary ephemeral notes, links to tickets with more information, etc.
+        </div>
 
-      <form name="editNotesForm" ng-if="isEditingNotes">
-        <textarea rows="4" cols="50" ng-model="instance.notes">{{ instance.notes }}</textarea>
-        <a ng-click="cancelEditNotes()">Cancel</a>
-        <button class="btn btn-primary" type="submit" ng-click="editNotes()">Save</button>
-      </form>
+        <div ng-if="!isEditingNotes" ng-bind-html="render(instance.notes)"></div>
+
+        <form name="editNotesForm" ng-if="isEditingNotes">
+          <textarea rows="4" cols="50" ng-model="instance.notes">{{ instance.notes }}</textarea>
+          <a ng-click="cancelEditNotes()">Cancel</a>
+          <button class="btn btn-primary" type="submit" ng-click="editNotes()">Save</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

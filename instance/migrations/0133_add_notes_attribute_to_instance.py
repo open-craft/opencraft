@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('instance', '0129_add_deployments_and_appserver_count'),
+        ('instance', '0132_remove_instancereference_notes'),
     ]
 
     operations = [

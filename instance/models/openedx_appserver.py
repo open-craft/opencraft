@@ -525,7 +525,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         except requests.exceptions.ConnectionError:
             return False
 
-    @log_exception
+    @log_exception  # noqa: MC0001
     @AppServer.status.only_for(AppServer.Status.New)
     def provision(self):
         """
@@ -533,6 +533,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         Returns True on success or False on failure
         """
+        # pylint: disable=cyclic-import, useless-suppression
+        from instance.models.openedx_deployment import OpenEdXDeployment
         self.logger.info('Starting provisioning')
 
         # Check firewall rules:
@@ -576,6 +578,17 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             # Provisioning (ansible)
             self.logger.info('Provisioning server...')
             self._status_to_configuring_server()
+
+            # Check if deployment was cancelled before starting the playbooks.
+            # Terminating here in case any previous terminations were no-op due to VM being in a pre-ready state.
+            # Use self.deployment_id for the canonical ID, as self.deployment can be either of type Deployment or
+            # OpenEdXDeployment
+            if self.deployment_id:
+                deployment = OpenEdXDeployment.objects.get(pk=self.deployment_id)
+                if deployment.cancelled:
+                    deployment.terminate_deployment()
+                    return False
+
             log, exit_code = self.run_ansible_playbooks()
             if exit_code != 0:
                 self.logger.info('Provisioning failed')
@@ -593,7 +606,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self._status_to_running()
 
             return True
-
         except:  # pylint: disable=bare-except
             self._status_to_configuration_failed()
             message = "AppServer deploy failed: unhandled exception"
