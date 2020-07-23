@@ -375,11 +375,6 @@ DEFAULT_RABBITMQ_API_URL = env('DEFAULT_RABBITMQ_API_URL', default=None)
 # This rate is per user per day in euros
 BILLING_RATE = env('BILLING_RATE', default=3)
 
-# DNS (Gandi) #################################################################
-
-# See https://www.gandi.net/admin/api_key
-GANDI_API_KEY = env('GANDI_API_KEY')
-
 # GitHub - Forks & organizations ##############################################
 
 # The worker queue will watch for PRs from members of a given organization
@@ -884,3 +879,19 @@ CORS_ORIGIN_REGEX_WHITELIST = [
 # Enable cross domain requests to make testing easier on devstack
 if DEBUG:
     CORS_ORIGIN_ALLOW_ALL = True
+
+
+# MailChimp ###################################################################
+
+# Is MailChimp integration enabled?
+MAILCHIMP_ENABLED = env.bool('MAILCHIMP_ENABLED', default=False)
+
+# See https://us7.admin.mailchimp.com/account/api/
+MAILCHIMP_API_KEY = env('MAILCHIMP_API_KEY', default='')
+
+# MailChimp list id for opted-in trial users
+MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', default='')
+
+# Batched updates are maximum 500 members at a time, as per
+# https://github.com/VingtCinq/python-mailchimp/blob/ad09dee/mailchimp3/entities/lists.py#L146
+MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)

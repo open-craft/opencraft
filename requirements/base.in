@@ -40,6 +40,8 @@ honcho==1.0.1
 huey==2.1.0
 jsonschema==3.2.0
 keystoneauth1==3.14.0
+mailchimp3==3.0.13
+mccabe==0.6.1
 mysqlclient==1.4.2.post1
 openstacksdk==0.31.1
 os-client-config==1.32.0

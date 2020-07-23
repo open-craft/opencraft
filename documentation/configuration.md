@@ -149,16 +149,16 @@ edit its security group rules to only allow access to VMs in the
 * `LOGGING_ROTATE_MAX_FILES`: The max number of log files to keep (default: 60)
 * `SUBDOMAIN_BLACKLIST`: A comma-separated list of subdomains that are to be
   rejected when registering new instances
-  
+
 ### Email settings
-* `INSTANCES_EMAIL_SENDER`: Sender of the emails related to user instances before 
+* `INSTANCES_EMAIL_SENDER`: Sender of the emails related to user instances before
   and after trial period
 * `EMAIL_SIGNATURE_NAME`: The name of the person signing off emails sent to users
 * `EMAIL_SIGNATURE_TITLE`: The title of the person signing off emails sent to users
-* `WELCOME_EMAIL_SUBJECT`: The subject for welcome email sent to users when their 
+* `WELCOME_EMAIL_SUBJECT`: The subject for welcome email sent to users when their
   instance has been successfully set up
 * `ACCOUNT_INFO_EMAIL_SUBJECT`: The subject for the email sent to users with their
-  instance config and account info right after they finish registration 
+  instance config and account info right after they finish registration
 
 ### OpenStack credentials
 
@@ -347,6 +347,13 @@ set the following configuration variables:
   drastic reduction RabbitMQ usage. This setting sets
   `worker_django_enable_heartbeats` and `EDXAPP_CELERY_HEARTBEAT_ENABLED` on
   supported playbooks. Defaults to `False`.
+
+### MailChimp settings
+
+* `MAILCHIMP_ENABLED`: Is MailChimp integration enabled (default: False)?
+* `MAILCHIMP_API_KEY`: Your MailChimp API key, see https://us7.admin.mailchimp.com/account/api/
+* `MAILCHIMP_LIST_ID_FOR_TRIAL_USERS`: MailChimp list id for opted-in trial users
+* `MAILCHIMP_BATCH_SIZE`: The size of MailChimp batched updates (default: 500)
 
 Databases
 ---------
