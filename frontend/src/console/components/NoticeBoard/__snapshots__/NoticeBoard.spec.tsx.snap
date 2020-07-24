@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Renders all notification types without crashing 1`] = `
+exports[`NoticeBoard tests Renders all notification types without crashing 1`] = `
 <div
   className="console-page"
 >
@@ -1400,6 +1400,74 @@ exports[`Renders all notification types without crashing 1`] = `
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`NoticeBoard tests Renders message about non-existent instance if email is not verified 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="title-container"
+  >
+    <h1>
+      <a
+        className="header-link"
+        href="test-url"
+      >
+        test
+        <i
+          className="instance-link fas fa-link fa-xs"
+        />
+      </a>
+    </h1>
+    <h2>
+      <a
+        className="header-link"
+        href="test-url"
+      >
+        Edit courses (Studio)
+      </a>
+    </h2>
+  </div>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-7"
+          >
+            <div
+              className="notice-board-heading"
+            >
+              <p>
+                Notice Board
+              </p>
+            </div>
+            <p>
+              There are no notifications available because your instance has not yet been created.
+            </p>
           </div>
         </div>
       </div>

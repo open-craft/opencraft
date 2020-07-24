@@ -182,8 +182,12 @@ class NotificationsViewSet(GenericViewSet):
         if application is None:
             application = self.get_application()
 
+        instance = application.instance
+        if instance is None:
+            return OpenEdXDeployment.objects.none()
+
         queryset = OpenEdXDeployment.objects.filter(
-            instance=application.instance.ref
+            instance=instance.ref
         )
 
         return self.limit_queryset(queryset)
@@ -224,7 +228,7 @@ class NotificationsViewSet(GenericViewSet):
             notifications.append({
                 "deployed_changes": [],
                 "status": DeploymentState.preparing.name,
-                "date": application.instance.created,
+                "date": application.created,
             })
 
         # Configuration diff relates only to last created deployment, so if
