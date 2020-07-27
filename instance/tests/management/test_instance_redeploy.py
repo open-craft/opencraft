@@ -24,6 +24,7 @@ Instance - Redeployment task unit tests
 from unittest.mock import patch, MagicMock
 from testfixtures import LogCapture
 
+from django.core import mail as django_mail
 from django.core.management import call_command, CommandError
 from django.utils.six import StringIO
 from django.test import TestCase
@@ -341,3 +342,43 @@ class InstanceRedeployTestCase(TestCase):
             )
             # Verify the logs
             captured_logs.check(*expected_logs)
+
+    @patch('instance.management.commands.instance_redeploy.create_new_deployment')
+    def test_redeployment_failure_dont_send_emails(self, mock_create_new_deployment, mock_consul):
+        """
+        Test the instance redeployment when instances fail.
+
+        TODO: test update, and sql commands.
+        """
+        tag = 'test-tag'
+        _ = self.create_test_instances(tag, success=False)
+
+        def _create_new_deployment_failed(
+                instance,
+                mark_active_on_success=False,
+                deactivate_old_appservers=False,
+                num_attempts=1,
+                success_tag=None,
+                failure_tag=None,
+                deployment_type=None):
+            """
+            Mock the instance.tasks.create_new_deployment method to
+            instantly mark appserver as failed.
+            """
+            instance.tags.add(failure_tag)
+            instance.tags.remove(success_tag)
+
+        mock_create_new_deployment.side_effect = _create_new_deployment_failed
+
+        call_command(
+            'instance_redeploy',
+            '--tag=' + tag,
+            '--force',
+            '--batch-size=1',
+            '--batch-frequency=1',
+            '--filter={"openedx_release": "z.1"}',
+            stdout=StringIO(),
+        )
+
+        # Given these deployment types, no email should be sended
+        self.assertEqual(len(django_mail.outbox), 0)
