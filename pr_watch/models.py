@@ -119,20 +119,14 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         """
         Get or create an instance for the given pull request
         """
-        created = False
-        try:
-            watched_pr = WatchedPullRequest.objects.get(fork_name=pr.fork_name,
-                                                        branch_name=pr.branch_name,
-                                                        github_pr_url=pr.github_pr_url,
-                                                        watched_fork=watched_fork)
-
-        except WatchedPullRequest.DoesNotExist:
-            watched_pr = self.create(fork_name=pr.fork_name,
-                                     branch_name=pr.branch_name,
-                                     github_pr_url=pr.github_pr_url,
-                                     watched_fork=watched_fork)
-            watched_pr.save()
-            created = True
+        github_organization_name, github_repository_name = fork_name2tuple(pr.fork_name)
+        watched_pr, created = super().get_or_create(
+            defaults={'github_pr_url': pr.github_pr_url},
+            github_organization_name=github_organization_name,
+            github_repository_name=github_repository_name,
+            branch_name=pr.branch_name,
+            watched_fork=watched_fork,
+        )
 
         if created:
             watched_pr.update_instance_from_pr(pr)
@@ -179,7 +173,7 @@ class WatchedPullRequest(models.Model):
     # api (including the head commit sha hash, which does not require a separate API call as
     # is currently used.)
     watched_fork = models.ForeignKey(WatchedFork, blank=True, null=True, on_delete=models.CASCADE)
-    branch_name = models.CharField(max_length=255, default='master')
+    branch_name = models.CharField(max_length=255, default='master', db_index=True)
     ref_type = models.CharField(max_length=50, default='heads')
     github_organization_name = models.CharField(max_length=200, db_index=True)
     github_repository_name = models.CharField(max_length=200, db_index=True)
@@ -364,3 +358,8 @@ class WatchedPullRequest(models.Model):
             if not self.instance:
                 self.instance = instance
                 self.save(update_fields=["instance"])
+
+    class Meta:
+        unique_together = (
+            'github_organization_name', 'github_repository_name', 'branch_name', 'watched_fork',
+        )

@@ -448,11 +448,11 @@ class CleanUpTestCase(TestCase):
             # Check if task tried to shut down instances
             if data['instance_is_archived']:
                 self.assertEqual(mock_archive.call_count, 5)
-                self.assertEqual(mock_logger.call_count, 15)
+                self.assertEqual(mock_logger.call_count, 10)
                 mock_logger.assert_called_with("Shutting down obsolete sandbox instance", {})
             else:
                 self.assertEqual(mock_archive.call_count, 0)
-                self.assertEqual(mock_logger.call_count, 10)
+                self.assertEqual(mock_logger.call_count, 5)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',

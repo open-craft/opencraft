@@ -26,6 +26,7 @@ import textwrap
 from unittest.mock import call, patch
 
 import ddt
+from django.db import IntegrityError
 from django.test import TestCase, override_settings
 import yaml
 
@@ -210,3 +211,29 @@ class WatchedPullRequestTestCase(TestCase):
                          'named-release/elder-fromwatchedfork')
         self.assertEqual(instance.openedx_release, 'ginkgo.8')
         self.assertEqual(yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader), {'PHRASE': 'Hello'})
+
+    def test_unique_constraints(self):
+        """
+        Verifies that we cannot create multiple database entries for following a specific pull request.
+        """
+        pr = PRFactory()
+        _, organization = make_user_and_organization()
+        watched_fork = WatchedForkFactory(
+            fork=pr.fork_name,
+            organization=organization,
+            configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
+        )
+        WatchedPullRequest.objects.create(
+            github_organization_name='get-by',
+            github_repository_name='fork-name',
+            branch_name='test',
+            watched_fork=watched_fork,
+        )
+        self.assertRaises(
+            IntegrityError,
+            WatchedPullRequest.objects.create,
+            github_organization_name='get-by',
+            github_repository_name='fork-name',
+            branch_name='test',
+            watched_fork=watched_fork,
+        )
