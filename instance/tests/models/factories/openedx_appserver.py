@@ -48,12 +48,12 @@ def make_test_deployment(
                      given will create a new instance.
     :param appserver_states: states for the AppServers in the deployment
     :param active: Whether the entire set is
-    :param deployment_type: Type of deploymetn
+    :param deployment_type: Type of deployment
     :return: An OpenEdXDeployment instance
     """
     if not instance:
         instance = OpenEdXInstanceFactory()
-    if not appserver_states:
+    if appserver_states is None:
         appserver_states = itertools.repeat(AppServerStatus.Running, instance.openedx_appserver_count)
     deployment = OpenEdXDeployment.objects.create(instance=instance.ref, type=deployment_type)
 

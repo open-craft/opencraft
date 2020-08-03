@@ -625,6 +625,22 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         deployment_type = request.query_params.get("deployment_type", default_deployment_type)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        instance_config = self.commit_pre_flight(serializer, cancel_pending_deployments, force)
+
+        instance_config.commit_changes_to_instance(
+            deploy_on_commit=True,
+            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
+            creator=self.request.user,
+            deployment_type=deployment_type,
+            cancel_pending_deployments=cancel_pending_deployments
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+    def commit_pre_flight(self, serializer, cancel_pending_deployments, force):
+        """
+        Completes several pre-flight sanity checks and then returns an instance configuration for commit.
+        """
         try:
             instance_config = BetaTestApplication.objects.get(id=serializer.data['id'])
         except BetaTestApplication.DoesNotExist:
@@ -639,6 +655,12 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
                 "Must verify email before launching an instance", code="email-unverified",
             )
 
+        deployment = instance.get_latest_deployment()
+        if deployment and deployment.status() == DeploymentState.preparing:
+            raise ValidationError(
+                'You must wait for your initial instance to finish building.', code='first-build-incomplete',
+            )
+
         if not cancel_pending_deployments and not force and instance.get_provisioning_appservers().exists():
             raise ValidationError("Instance launch already in progress", code="in-progress")
 
@@ -646,16 +668,7 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
             raise ValidationError(
                 "Updated public email needs to be confirmed.", code="email-unverified"
             )
-
-        instance_config.commit_changes_to_instance(
-            deploy_on_commit=True,
-            retry_attempts=settings.SELF_SERVICE_SPAWN_RETRY_ATTEMPTS,
-            creator=self.request.user,
-            deployment_type=deployment_type,
-            cancel_pending_deployments=cancel_pending_deployments
-        )
-
-        return Response(status=status.HTTP_200_OK)
+        return instance_config
 
     def list(self, request, *args, **kwargs):
         """

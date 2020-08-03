@@ -70,8 +70,6 @@ class InstanceReference(TimeStampedModel):
         "however un-archive an instance that was already archived.</strong>"
     ))
     notes = models.TextField(blank=True)
-    creator = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
-    owner = models.ForeignKey(Organization, null=True, on_delete=models.CASCADE)
     creator = models.ForeignKey(UserProfile, null=True, blank=True, on_delete=models.CASCADE)
     owner = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
 

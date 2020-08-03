@@ -950,6 +950,25 @@ class InstanceDeploymentAPITestCase(APITestCase):
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
         return_value=(1, True)
     )
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_fail_first_deployment(self, mock_create_deployment, mock_consul):
+        """
+        Test that committing changes fails when a user is new.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        make_test_deployment(instance, appserver_states=[])
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("You must wait for your initial instance to finish building.", response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
     def test_commit_changes_email_validation_fail(self, mock_consul):
         """
         Test that committing changes fails when a user is new.
