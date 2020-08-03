@@ -29,8 +29,6 @@ ecommerce_create_demo_data: false
 SANDBOX_ENABLE_DISCOVERY: yes
 SANDBOX_ENABLE_ECOMMERCE: yes
 DISCOVERY_VERSION: "{{ ECOMMERCE_VERSION }}"
-nginx_discovery_gunicorn_hosts:
-    - "127.0.0.1"
 COMMON_HOSTNAME: ""
 ECOMMERCE_PAYMENT_PROCESSOR_CONFIG:
     partn_id: # this is arbitrary, limited to 8 characters; will be used later
