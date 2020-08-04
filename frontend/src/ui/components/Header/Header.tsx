@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
-import { CONTACT_US_LINK, ROUTES } from 'global/constants';
+import { CONTACT_US_LINK, FAQ_PAGE_LINK, ROUTES } from 'global/constants';
 import { NavLink, Route } from 'react-router-dom';
 import logo from 'assets/icons.svg';
 import './styles.scss';
@@ -22,6 +22,13 @@ export const Header: React.FC = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto">
             <Route path={ROUTES.Registration.HOME}>
+              <Nav.Link
+                className="nav-link"
+                target="_blank"
+                href={FAQ_PAGE_LINK}
+              >
+                FAQ
+              </Nav.Link>
               <NavLink className="nav-link" to={ROUTES.Auth.LOGIN}>
                 Login
               </NavLink>
