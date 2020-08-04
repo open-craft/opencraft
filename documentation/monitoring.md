@@ -8,7 +8,7 @@ On Synthetics, monitors can be created to the check liveness of an endpoint/URL 
 New Relic Alerts allows configuring the alerting behaviour. An alert has two main components:
 
 * **Alert Policy**: An alert policy is a group of one or more alert conditions. A policy has two settings that apply to all of its conditions: incident preference and notification channels. The incident preference is used to configure how an incident is created - per error, per condition or per policy and the notification channels are the various modes of sending out alert notifications like email, PagerDuty etc. A policy should be created before adding conditions to it.
-* **Alert Conditions**: An alert condition is a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. Synthetics only reports if the pings succeeded or not, so our threshold is to check if the ping failed.
+* **Alert Conditions**: An alert condition is a combination of monitored data source, such as a Synthetics Monitor, and thresholds that define the behavior that will be considered a violation. In Ocim we use [`NRQL`](https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/nrql-syntax-clauses-functions) alert conditions, which allow us to set up alert thresholds so that alerts are only triggered after a monitor has failed several times in a row. This helps us avoid false alerts caused by temporary network blips.
 
 Each **Alert Policy** contains one or more **Alert Conditions**  which specify the alerting behaviour.
 

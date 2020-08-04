@@ -768,6 +768,9 @@ NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 # The basic auth password needed to access the node exporter.
 NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default=None)
 
+# Thresholds for NRQL alert conditions
+NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='16')
+
 # Load balancing ##############################################################
 
 # The load-balancing server given in the form ssh_username@server.domain will be created

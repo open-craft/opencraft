@@ -39,7 +39,7 @@ NEW_RELIC_API_BASE = 'https://api.newrelic.com/v2'
 ALERTS_CHANNELS_API_URL = '{}/alerts_channels'.format(NEW_RELIC_API_BASE)
 ALERTS_POLICIES_API_URL = '{}/alerts_policies'.format(NEW_RELIC_API_BASE)
 ALERTS_POLICIES_CHANNELS_API_URL = '{}/alerts_policy_channels.json'.format(NEW_RELIC_API_BASE)
-ALERTS_CONDITIONS_API_URL = '{}/alerts_synthetics_conditions'.format(NEW_RELIC_API_BASE)
+ALERTS_NRQL_CONDITIONS_API_URL = '{}/alerts_nrql_conditions'.format(NEW_RELIC_API_BASE)
 
 
 # Functions ###################################################################
@@ -169,25 +169,38 @@ def add_notification_channels_to_policy(policy_id, channel_ids):
     r.raise_for_status()
 
 
-def add_alert_condition(policy_id, monitor_id, name):
+def add_alert_nrql_condition(policy_id, monitor_url, name):
     """
-    Add an alert condition to the alert policy with the given id for the monitor with the given id.
+    Add a NRQL alert condition to the alert policy with the given id for the given URL.
     """
-    url = '{}/policies/{}.json'.format(ALERTS_CONDITIONS_API_URL, policy_id)
+    url = '{}/policies/{}.json'.format(ALERTS_NRQL_CONDITIONS_API_URL, policy_id)
     logger.info('POST %s', url)
+    query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'SUCCESS'".format(monitor_url)
     r = requests.post(
         url,
         headers=_request_headers(),
         json={
-            'synthetics_condition': {
+            'nrql_condition': {
+                'type': 'static',
                 'name': name,
-                'monitor_id': monitor_id,
-                'enabled': True
+                'enabled': True,
+                'value_function': 'single_value',
+                'terms': [{
+                    'duration': settings.NEWRELIC_NRQL_ALERT_CONDITION_DURATION,
+                    'threshold': '1',
+                    'operator': 'below',
+                    'priority': 'critical',
+                    'time_function': 'all',
+                }],
+                'nrql': {
+                    'query': query,
+                    'since_value': '3',
+                }
             }
         }
     )
     r.raise_for_status()
-    return r.json()['synthetics_condition']['id']
+    return r.json()['nrql_condition']['id']
 
 
 def delete_alert_policy(policy_id):
@@ -201,7 +214,7 @@ def delete_alert_policy(policy_id):
         r.raise_for_status()
     except requests.exceptions.HTTPError:
         if r.status_code == requests.codes.not_found:
-            logger.info('Alert condition for %s has already been deleted. Proceeding.')
+            logger.info('Alert policy for %s has already been deleted. Proceeding.')
         else:
             raise
 
@@ -225,14 +238,14 @@ def delete_email_notification_channel(channel_id):
             raise
 
 
-def delete_alert_condition(condition_id):
+def delete_alert_nrql_condition(condition_id):
     """
-    Delete the New Relic alerts alert condition with the given id.
+    Delete the New Relic NRQL alerts alert condition with the given id.
 
     If the alert condition can't be found (DELETE request comes back with 404),
     treat it as if it has already been deleted; do not raise an exception in that case.
     """
-    url = '{}/{}.json'.format(ALERTS_CONDITIONS_API_URL, condition_id)
+    url = '{}/{}.json'.format(ALERTS_NRQL_CONDITIONS_API_URL, condition_id)
     logger.info('DELETE %s', url)
     try:
         r = requests.delete(url, headers=_request_headers())
