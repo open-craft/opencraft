@@ -91,6 +91,9 @@ class OpenEdXDeployment(Deployment):
 
         # There are no AppServers yet so this deployment is still being set up.
         if not appservers_statuses:
+            if not self.instance.deployment_set.exclude(id=self.id).exists():
+                # This is the VERY first time we've ever been set up, which is special.
+                return DeploymentState.preparing
             return DeploymentState.changes_pending
 
         configuring_states = Status.states_with(ids_only=True, is_configuration_state=True)
