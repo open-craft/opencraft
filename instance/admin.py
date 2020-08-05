@@ -79,7 +79,7 @@ class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstrin
         # Doesn't show the inline instance for new objects since we have custom
         # logic for creating InstanceReference objects
         if obj is None or obj.pk is None:
-            self.inlines = []
+            return []
         return super().get_inline_instances(request, obj)
 
 
