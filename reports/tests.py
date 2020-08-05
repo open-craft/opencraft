@@ -487,7 +487,7 @@ class ReportsHelpersTestCase(TestCase):
         )
         WatchedPullRequest.objects.create(
             fork_name=watched_fork1.fork,
-            branch_name='new-tag',
+            branch_name='new-tag2',
             ref_type='tag',
             watched_fork=watched_fork1,
             instance=instance2
