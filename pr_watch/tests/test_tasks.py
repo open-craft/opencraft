@@ -313,3 +313,18 @@ class TasksTestCase(TestCase):
         tasks.watch_pr()
         self.assertEqual(mock_create_new_deployment.call_count, 0)
         self.assertEqual(WatchedPullRequest.objects.count(), 0)
+
+    @patch('pr_watch.github.get_commit_id_from_ref')
+    @patch('pr_watch.tasks.create_new_deployment')
+    @patch('pr_watch.tasks.get_pr_list_from_usernames')
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='awesome.hosting.org', WATCH_PRS=False)
+    def test_watching_disabled(
+            self, mock_get_pr_list_from_usernames, mock_create_new_deployment, mock_get_commit_id_from_ref,
+    ):
+        """
+        Verifies that watch_pr exits early if WATCH_PRS is disabled.
+        """
+        tasks.watch_pr()
+        mock_get_pr_list_from_usernames.assert_not_called()
+        mock_create_new_deployment.assert_not_called()
+        mock_get_commit_id_from_ref.assert_not_called()

@@ -24,6 +24,7 @@ Worker tasks for development of Open edX
 
 import logging
 
+from django.conf import settings
 from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task
 
@@ -46,6 +47,8 @@ def watch_pr():
     Automatically create sandboxes for PRs opened by members of the watched
     organization on the watched repository
     """
+    if not settings.WATCH_PRS:
+        return
     try:
         for watched_fork in WatchedFork.objects.filter(enabled=True):
             usernames = list(

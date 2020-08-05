@@ -387,6 +387,10 @@ GITHUB_ACCESS_TOKEN = env('GITHUB_ACCESS_TOKEN')
 DEFAULT_FORK = env('DEFAULT_FORK', default='edx/edx-platform')
 DEFAULT_EDX_PLATFORM_REPO_URL = 'https://github.com/{}.git'.format(DEFAULT_FORK)
 
+# Whether to actively watch forks for new pull requests. Set to false if this instance is not responsible for
+# auto-creating sandboxes.
+WATCH_PRS = env.bool('WATCH_PRS', default=True)
+
 # Open edX Instance and App Server Settings  ##################################
 
 # Time in seconds to wait before making a force termination for servers.
@@ -778,7 +782,7 @@ PRELIMINARY_PAGE_HOSTNAME = env('PRELIMINARY_PAGE_HOSTNAME', default=None)
 # If using the new load balancer, this setting must be set to True, as the
 # load balancing configuration is done by Consul Template on the load balancers,
 # without needing any direct action from Ocim on the load balancers.
-# !!! This should only be set after the new loab balancers are configured and
+# !!! This should only be set after the new load balancers are configured and
 # tested to be working !!!
 DISABLE_LOAD_BALANCER_CONFIGURATION = env.bool(
     'DISABLE_LOAD_BALANCER_CONFIGURATION',
