@@ -83,8 +83,8 @@ class OpenEdXMonitoringMixin:
                 # and create one if it doesn't. This helps when the alert condition
                 # wasn't created in a previous invocation due to some issue.
                 if not monitor.new_relic_alert_conditions.exists():
-                    alert_condition_id = newrelic.add_alert_condition(
-                        alert_policy.id, monitor.id, urls_to_monitor_dict[url]
+                    alert_condition_id = newrelic.add_alert_nrql_condition(
+                        alert_policy.id, url, urls_to_monitor_dict[url]
                     )
                     monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
             else:
@@ -95,8 +95,8 @@ class OpenEdXMonitoringMixin:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             monitor = self.new_relic_availability_monitors.create(pk=new_monitor_id)
-            alert_condition_id = newrelic.add_alert_condition(
-                alert_policy.id, new_monitor_id, urls_to_monitor_dict[url]
+            alert_condition_id = newrelic.add_alert_nrql_condition(
+                alert_policy.id, url, urls_to_monitor_dict[url]
             )
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 

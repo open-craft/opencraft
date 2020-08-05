@@ -221,32 +221,51 @@ class NewRelicTestCase(TestCase):
         self.assertEqual(request_body, None)
 
     @responses.activate
-    def test_add_alert_condition(self):
+    @override_settings(NEWRELIC_NRQL_ALERT_CONDITION_DURATION='11')
+    def test_add_alert_nrql_condition(self):
         """
-        Check that the add_alert_condition function adds an alert condition for the given monitor to
+        Check that the add_alert_nrql_condition function adds an alert condition for the given URL to
         the given alert policy
         """
         policy_id = 1
-        monitor_id = 'abcde-fghij-klmno-12345'
-        synthetics_condition_id = 1
-        condition_name = 'Test'
-        url = '{}/policies/{}.json'.format(newrelic.ALERTS_CONDITIONS_API_URL, policy_id)
+        monitor_url = 'https://mysandbox.opencraft.hosting/heartbeat'
+        nrql_condition_id = 1
+        condition_name = 'Test NRQL'
+        url = '{}/policies/{}.json'.format(newrelic.ALERTS_NRQL_CONDITIONS_API_URL, policy_id)
         responses.add(
             responses.POST,
             url,
-            json={'synthetics_condition': {'id': synthetics_condition_id}},
+            json={'nrql_condition': {'id': nrql_condition_id}},
             status=201
         )
-        self.assertEqual(newrelic.add_alert_condition(policy_id, monitor_id, condition_name), synthetics_condition_id)
+        self.assertEqual(
+            newrelic.add_alert_nrql_condition(policy_id, monitor_url, condition_name),
+            nrql_condition_id
+        )
         self.assertEqual(len(responses.calls), 1)
         request_json = json.loads(responses.calls[0].request.body.decode())
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
+        query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'SUCCESS'".format(
+            monitor_url
+        )
         self.assertEqual(request_json, {
-            'synthetics_condition': {
+            'nrql_condition': {
+                'type': 'static',
                 'name': condition_name,
-                'monitor_id': monitor_id,
-                'enabled': True
+                'enabled': True,
+                'value_function': 'single_value',
+                'terms': [{
+                    'duration': '11',
+                    'threshold': '1',
+                    'operator': 'below',
+                    'priority': 'critical',
+                    'time_function': 'all',
+                }],
+                'nrql': {
+                    'query': query,
+                    'since_value': '3',
+                }
             }
         })
 
@@ -311,9 +330,9 @@ class NewRelicTestCase(TestCase):
                     if not error == requests.codes.not_found:
                         self.fail('Should raise an exception for {} response.'.format(error))
 
-    def test_delete_alert_condition(self):
+    def test_delete_alert_nrql_condition(self):
         """
-        Check that the delete_alert_condition function behaves correctly if DELETE request unsuccessful.
+        Check that the delete_alert_nrql_condition function behaves correctly if DELETE request unsuccessful.
 
         We expect the function *not* to raise an exception if the alert_condition to delete
         can not be found (i.e., if the DELETE request comes back with a 404).
@@ -329,11 +348,11 @@ class NewRelicTestCase(TestCase):
             with responses.RequestsMock() as mock_responses:
                 mock_responses.add(
                     responses.DELETE,
-                    '{}/{}.json'.format(newrelic.ALERTS_CONDITIONS_API_URL, condition_id),
+                    '{}/{}.json'.format(newrelic.ALERTS_NRQL_CONDITIONS_API_URL, condition_id),
                     status=error
                 )
                 try:
-                    newrelic.delete_alert_condition(condition_id)
+                    newrelic.delete_alert_nrql_condition(condition_id)
                 except requests.exceptions.HTTPError:
                     if error == requests.codes.not_found:
                         self.fail('Should not raise an exception for {} response.'.format(error))
