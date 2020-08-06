@@ -227,6 +227,7 @@ class WatchedPullRequestTestCase(TestCase):
             github_organization_name='get-by',
             github_repository_name='fork-name',
             branch_name='test',
+            github_pr_url='https://github.com/open-craft/opencraft/pull/123/',
             watched_fork=watched_fork,
         )
         self.assertRaises(
@@ -235,5 +236,34 @@ class WatchedPullRequestTestCase(TestCase):
             github_organization_name='get-by',
             github_repository_name='fork-name',
             branch_name='test',
+            github_pr_url='https://github.com/open-craft/opencraft/pull/123/',
             watched_fork=watched_fork,
         )
+
+    def test_unique_constraints_allow_multiple_per_branch(self):
+        """
+        Verifies that the unique constraint on a pull request allows for multiple copies of the same branch,
+        but different URLs.
+        """
+        pr = PRFactory()
+        _, organization = make_user_and_organization()
+        watched_fork = WatchedForkFactory(
+            fork=pr.fork_name,
+            organization=organization,
+            configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
+        )
+        watched_pr1 = WatchedPullRequest.objects.create(
+            github_organization_name='get-by',
+            github_repository_name='fork-name',
+            branch_name='test',
+            github_pr_url='https://github.com/open-craft/opencraft/pull/123/',
+            watched_fork=watched_fork,
+        )
+        watched_pr2 = WatchedPullRequest.objects.create(
+            github_organization_name='get-by',
+            github_repository_name='fork-name',
+            branch_name='test',
+            github_pr_url='https://github.com/open-craft/opencraft/pull/1234/',
+            watched_fork=watched_fork,
+        )
+        self.assertNotEqual(watched_pr1, watched_pr2)
