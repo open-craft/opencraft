@@ -121,7 +121,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
         """
         github_organization_name, github_repository_name = fork_name2tuple(pr.fork_name)
         watched_pr, created = super().get_or_create(
-            defaults={'github_pr_url': pr.github_pr_url},
+            github_pr_url=pr.github_pr_url,
             github_organization_name=github_organization_name,
             github_repository_name=github_repository_name,
             branch_name=pr.branch_name,
@@ -361,5 +361,5 @@ class WatchedPullRequest(models.Model):
 
     class Meta:
         unique_together = (
-            'github_organization_name', 'github_repository_name', 'branch_name', 'watched_fork',
+            'github_organization_name', 'github_repository_name', 'branch_name', 'watched_fork', 'github_pr_url',
         )
