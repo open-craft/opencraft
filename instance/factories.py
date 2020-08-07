@@ -87,8 +87,26 @@ def instance_factory(**kwargs):
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
 
+    # HACK: This is a temporary change for BB-2558. It will be removed after upgrading MongoDB to SCRAM.
+    sandbox_settings = {
+        "FORUM_MONGO_AUTH_MECH": ":mongodb_cr",
+    }
+    configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
+    if configuration_extra_settings:
+        configuration_extra_settings = yaml.load(configuration_extra_settings, Loader=yaml.SafeLoader)
+    else:
+        configuration_extra_settings = {}
+    extra_settings = yaml.dump(
+        ansible.dict_merge(sandbox_settings, configuration_extra_settings),
+        default_flow_style=False
+    )
+    instance_kwargs = dict(
+        configuration_extra_settings=extra_settings,
+    )
+    instance_kwargs.update(kwargs)
+
     # Create instance
-    instance = OpenEdXInstance.objects.create(**kwargs)
+    instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return instance
 
 
