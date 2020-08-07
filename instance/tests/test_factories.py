@@ -96,13 +96,22 @@ class FactoriesTestCase(TestCase):
         sub_domain = "sandbox-with-defaults"
         instance = instance_factory(sub_domain=sub_domain)
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
-        self._assert_field_values(instance, sub_domain)
+        self._assert_field_values(
+            instance, sub_domain, configuration_extra_settings="FORUM_MONGO_AUTH_MECH: :mongodb_cr"
+        )
 
         # Create instance with custom field values
         sub_domain = "sandbox-customized"
         custom_instance = instance_factory(sub_domain=sub_domain, **self.PRODUCTION_DEFAULTS)
         custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
-        self._assert_field_values(custom_instance, sub_domain, **self.PRODUCTION_DEFAULTS)
+        expected_settings = self.PRODUCTION_DEFAULTS.copy()
+        expected_settings["configuration_extra_settings"] = """
+        DEMO_CREATE_STAFF_USER: false
+        demo_test_users: []
+        SANDBOX_ENABLE_CERTIFICATES: false
+        FORUM_MONGO_AUTH_MECH: :mongodb_cr
+        """
+        self._assert_field_values(custom_instance, sub_domain, **expected_settings)
 
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
@@ -141,6 +150,7 @@ class FactoriesTestCase(TestCase):
         SANDBOX_ENABLE_CERTIFICATES: false
         EXTRA_SETTINGS: false
         ADDITIONAL_SETTINGS: true
+        FORUM_MONGO_AUTH_MECH: :mongodb_cr
         """
         expected_settings["configuration_extra_settings"] = configuration_extra_settings
         extra_settings_instance = production_instance_factory(sub_domain=sub_domain, **expected_settings)
