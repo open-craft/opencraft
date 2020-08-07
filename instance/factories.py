@@ -131,6 +131,8 @@ def production_instance_factory(**kwargs):
         "demo_test_users": [],
         # Disable certificates process to reduce load on RabbitMQ and MySQL
         "SANDBOX_ENABLE_CERTIFICATES": False,
+        # HACK: This is a temporary change for BB-2558. It will be removed after upgrading MongoDB to SCRAM.
+        "FORUM_MONGO_AUTH_MECH": ":mongodb_cr",
     }
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
     if configuration_extra_settings:
