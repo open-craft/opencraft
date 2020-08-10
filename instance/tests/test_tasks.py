@@ -25,7 +25,7 @@ Worker tasks - Tests
 
 from datetime import timedelta
 import logging
-from unittest.mock import PropertyMock, call, patch
+from unittest.mock import PropertyMock, call, patch, Mock
 
 import ddt
 from django.conf import settings
@@ -34,10 +34,12 @@ from django.utils import timezone
 import freezegun
 
 from instance import tasks
+from instance.models.appserver import Status as AppServerStatus
+from instance.models.server import Status as ServerStatus
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_deployment import OpenEdXDeployment
+from instance.tasks import make_appserver_active
 from instance.tests.base import TestCase
-from instance.tests.models.factories.load_balancer import LoadBalancingServerFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import BootingOpenStackServerFactory, ReadyOpenStackServerFactory
@@ -96,7 +98,7 @@ class SpawnAppServerTestCase(TestCase):
             deployment_id=deployment_id,
         )
         # By default we don't mark_active_on_success:
-        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)
 
     @ddt.data(
         (tasks.spawn_appserver, True),
@@ -122,9 +124,9 @@ class SpawnAppServerTestCase(TestCase):
         self.call_task_function(task_function, instance, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         if provisioning_succeeds:
-            self.mock_make_appserver_active.assert_called_once_with(appserver.pk, active=True, deactivate_others=False)
+            self.mock_make_appserver_active.s.assert_called_once_with(appserver.pk, active=True)
         else:
-            self.mock_make_appserver_active.assert_not_called()
+            self.mock_make_appserver_active.s.assert_not_called()
 
     @ddt.data(tasks.spawn_appserver, tasks.start_deployment)
     @patch(
@@ -164,12 +166,12 @@ class SpawnAppServerTestCase(TestCase):
         appserver = make_test_appserver(instance=instance, server=server)
 
         self.mock_spawn_appserver.return_value = appserver.pk if provisioning_succeeds else None
-        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True, deactivate_old_appservers=True)
+        tasks.spawn_appserver(instance.ref.pk, mark_active_on_success=True)
         self.assertEqual(self.mock_spawn_appserver.call_count, 1)
         if provisioning_succeeds:
-            self.mock_make_appserver_active.assert_called_once_with(appserver.pk, active=True, deactivate_others=True)
+            self.mock_make_appserver_active.s.assert_called_once_with(appserver.pk, active=True)
         else:
-            self.mock_make_appserver_active.assert_not_called()
+            self.mock_make_appserver_active.s.assert_not_called()
 
     @ddt.data(tasks.spawn_appserver, tasks.start_deployment)
     @patch(
@@ -229,7 +231,7 @@ class SpawnAppServerTestCase(TestCase):
         # Check mocked functions call count
         self.assertEqual(mock_spawn.call_count, 1)
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(self.mock_make_appserver_active.call_count, 1)
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 1)
 
         # Confirm logs
         self.assertTrue(any("Spawning new AppServer, attempt 1 of 3" in log.text for log in instance.log_entries))
@@ -340,35 +342,6 @@ class MakeAppserverActiveTestCase(TestCase):
                 mock_make_active.assert_called_once_with(active=True)
             else:
                 mock_make_active.assert_not_called()
-
-    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
-    def test_deactivate_others(self, mock_make_active):
-        """
-        When activating the appserver, optionally deactivate others.
-        """
-        for dummy in range(5):
-            appserver = make_test_appserver(self.appserver.instance)
-            appserver.is_active = True
-            appserver.save()
-        tasks.make_appserver_active(self.appserver.id, active=True, deactivate_others=True)
-        mock_make_active.assert_has_calls(
-            # Calls to make the appserver active.
-            [call(active=True)] +
-            # Calls to deactivate other appservers.
-            [call(active=False) for dummy in range(5)]
-        )
-
-    @patch('instance.models.openedx_appserver.OpenEdXAppServer.make_active')
-    def test_disallow_deactivating_all(self, mock_make_active):
-        """
-        Disallow attempts to deactivate all appservers by passing in `active=False` and `deactivate_others=True`.
-        """
-        # Make an extra appserver to make sure it is not deactivated.
-        appserver = make_test_appserver(self.appserver.instance)
-        appserver.is_active = True
-        appserver.save()
-        tasks.make_appserver_active(self.appserver.id, active=False, deactivate_others=True)
-        mock_make_active.assert_called_once_with(active=False)
 
 
 @ddt.ddt
@@ -506,29 +479,6 @@ class CleanUpTestCase(TestCase):
         mock_terminate_appservers.assert_called_once_with()
 
 
-class ReconfigureDirtyLoadBalancersTestCase(TestCase):
-    """
-    Test cases for periodic task that reconfigures all dirty load balancers.
-    """
-
-    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
-    def test_reconfigure_dirty_load_balancers(self, mock_reconfigure):
-        """
-        `reconfigure_dirty_load_balancers` calls `reconfigure` on all dirty load balancers, and no others.
-        """
-        # Dirty load balancers.
-        for dummy in range(3):
-            LoadBalancingServerFactory(configuration_version=10, deployed_configuration_version=1)
-
-        # This is impossible.
-        LoadBalancingServerFactory(configuration_version=1, deployed_configuration_version=10)
-        # Clean load balancer.
-        LoadBalancingServerFactory(configuration_version=2, deployed_configuration_version=2)
-
-        tasks.reconfigure_dirty_load_balancers()
-        self.assertEqual(mock_reconfigure.call_count, 3)
-
-
 class DeleteOldLogsTestCase(TestCase):
     """
     Test cases for periodic task that deletes old logs.
@@ -579,6 +529,26 @@ class DeleteOldLogsTestCase(TestCase):
         self.assertTrue(remaining_logs.filter(text__contains='new log').exists())
 
 
+def gen_appserver_side_effect(deployment, instance, statuses):
+    """
+    Creates a side-effect function for app-server spawning tests
+    so that the tasks can have real database entries to look up
+    without invoking any network activity or creating real servers.
+    """
+    def gen_appserver(*_args, **_kwargs):
+        app_server_status, server_status = statuses.pop()
+        appserver = make_test_appserver(
+            instance=instance,
+            status=app_server_status,
+            is_active=True,
+            deployment=deployment,
+        )
+        appserver.server._status = server_status
+        appserver.server.save()
+        return appserver.id
+    return gen_appserver
+
+
 @ddt.ddt
 class CreateNewDeploymentTestCase(TestCase):
     """
@@ -626,7 +596,7 @@ class CreateNewDeploymentTestCase(TestCase):
             ]
         )
         # By default we don't mark_active_on_success:
-        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)
 
     @patch('instance.tasks.OpenEdXAppServer.make_active')
     @patch(
@@ -642,20 +612,94 @@ class CreateNewDeploymentTestCase(TestCase):
         instance.openedx_appserver_count = 3
         instance.save()
         make_test_deployment(instance, active=True)
+        self.mock_make_appserver_active.s = Mock()
+        self.mock_make_appserver_active.s.side_effect = make_appserver_active.s
         self.assertEqual(instance.appserver_set.count(), 3)
         appservers = list(instance.appserver_set.all())
         self.assertTrue(all(instance.appserver_set.values_list('_is_active', flat=True)))
-        deployment_id = OpenEdXDeployment.objects.create(instance_id=instance.ref.id).pk
+        deployment = OpenEdXDeployment.objects.create(instance_id=instance.ref.id)
+        statuses = [(AppServerStatus.Running, ServerStatus.Ready.state_id)] * 3
+        self.mock_spawn_appserver.side_effect = gen_appserver_side_effect(deployment, instance, statuses)
         with self.assertLogs() as ctx:
             tasks.start_deployment(
                 instance.ref.id,
-                deployment_id,
+                deployment.pk,
                 mark_active_on_success=True,
             ).get()
-        self.assertEqual(self.mock_make_appserver_active.call_count, 3)
-        self.assertEqual(mock_make_active.call_count, 3)
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 3)
+        self.assertEqual(mock_make_active.call_count, 6)
+        mock_make_active.assert_has_calls([
+            call(active=True),
+            call(active=True),
+            call(active=True),
+            call(active=False),
+            call(active=False),
+            call(active=False),
+        ])
         for appserver in appservers:
             self.assertIn(f'INFO:instance.tasks:Deactivating {appserver} [{appserver.id}]', ctx.output)
+
+    @patch('instance.tasks.OpenEdXAppServer.make_active')
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_multi_appserver_non_activation(self, mock_consul, mock_make_active):
+        """
+        Test the start_deployment task, and that it can be used to spawn multiple AppServer(s)
+        for a new instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.openedx_appserver_count = 3
+        instance.save()
+        make_test_deployment(instance, active=True)
+        self.mock_make_appserver_active.s = Mock()
+        self.mock_make_appserver_active.s.side_effect = make_appserver_active.s
+        self.assertEqual(instance.appserver_set.count(), 3)
+        self.assertTrue(all(instance.appserver_set.values_list('_is_active', flat=True)))
+        deployment = OpenEdXDeployment.objects.create(instance_id=instance.ref.id)
+        statuses = [(AppServerStatus.Running, ServerStatus.Ready.state_id)] * 3
+        self.mock_spawn_appserver.side_effect = gen_appserver_side_effect(deployment, instance, statuses)
+        tasks.start_deployment(
+            instance.ref.id,
+            deployment.pk,
+            mark_active_on_success=False,
+        ).get()
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)
+        self.assertEqual(mock_make_active.call_count, 0)
+
+    @patch('instance.tasks.OpenEdXAppServer.make_active')
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    def test_multi_appserver_partial_activation(self, mock_consul, mock_make_active):
+        """
+        Test the start_deployment task, and that it can be used to spawn multiple AppServer(s)
+        for a new instance.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.openedx_appserver_count = 3
+        instance.save()
+        make_test_deployment(instance, active=True)
+        self.mock_make_appserver_active.s = Mock()
+        self.mock_make_appserver_active.s.side_effect = make_appserver_active.s
+        self.assertEqual(instance.appserver_set.count(), 3)
+        self.assertTrue(all(instance.appserver_set.values_list('_is_active', flat=True)))
+        deployment = OpenEdXDeployment.objects.create(instance_id=instance.ref.id)
+        statuses = [
+            (AppServerStatus.Running, ServerStatus.Ready.state_id),
+            (AppServerStatus.ConfigurationFailed, ServerStatus.BuildFailed.state_id),
+            (AppServerStatus.Running, ServerStatus.Ready.state_id),
+        ]
+        self.mock_spawn_appserver.side_effect = gen_appserver_side_effect(deployment, instance, statuses)
+        tasks.start_deployment(
+            instance.ref.id,
+            deployment.pk,
+            mark_active_on_success=False,
+        ).get()
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)
+        self.assertEqual(mock_make_active.call_count, 0)
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -672,4 +716,4 @@ class CreateNewDeploymentTestCase(TestCase):
         deployment_id = OpenEdXDeployment.objects.create(instance_id=instance.ref.id, cancelled=True).pk
         tasks.start_deployment(instance.ref.id, deployment_id).get()
         self.assertEqual(self.mock_spawn_appserver.call_count, 0)
-        self.assertEqual(self.mock_make_appserver_active.call_count, 0)
+        self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)

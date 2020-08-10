@@ -38,7 +38,9 @@ import MySQLdb as mysql
 import pymongo
 
 from instance.models.appserver import AppServer, Status as AppServerStatus
+from instance.models.deployment import DeploymentType
 from instance.models.mixins.ansible import Playbook
+from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.server import OpenStackServer, Status as ServerStatus
 from instance.tests.decorators import patch_git_checkout
@@ -408,11 +410,24 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             footer_bg_color='#ddff89',
             instance=instance,
         )
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            creator=user.profile,
+            type=DeploymentType.user.name,
+            changes=None,
+        )
 
         # We don't want to simulate e-mail verification of the user who submitted the application,
         # because that would start provisioning. Instead, we provision ourselves here.
 
-        spawn_appserver(instance.ref.pk, mark_active_on_success=True, num_attempts=2)
+        spawn_appserver(
+            instance.ref.pk,
+            mark_active_on_success=True,
+            num_attempts=2,
+            deployment_id=deployment.id,
+            target_count=1,
+            old_server_ids=[],
+        )
 
         self.assert_server_ready(instance)
         self.assert_instance_up(instance)

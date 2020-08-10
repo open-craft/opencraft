@@ -286,6 +286,12 @@ CACHES = {
 
 # Huey (redis task queue) #####################################################
 
+# While this may seem like a lot of workers, our tasks are primarily IO bound, so this default should be safe.
+# If our tasks ever become CPU-bound, we may need to revisit this. As always, it can be overwritten in the .env file.
+HUEY_WORKERS = env.int('HUEY_WORKERS', default=6)
+
+HUEY_WORKER_TYPE = env('HUEY_WORKER_TYPE', default='thread')
+
 HUEY = {
     'name': env('HUEY_QUEUE_NAME', default='opencraft'),
     'connection': {
@@ -296,7 +302,7 @@ HUEY = {
     'immediate': env.bool('HUEY_ALWAYS_EAGER', default=False),
 
     # Options to pass into the consumer when running ``manage.py run_huey``
-    'consumer': {'workers': 1, 'loglevel': logging.INFO},
+    'consumer': {'workers': HUEY_WORKERS, 'loglevel': logging.INFO, 'worker_type': HUEY_WORKER_TYPE},
 }
 
 # OpenStack ###################################################################
