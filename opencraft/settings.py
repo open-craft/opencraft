@@ -418,7 +418,7 @@ DEFAULT_CONFIGURATION_VERSION = env('DEFAULT_CONFIGURATION_VERSION', default=DEF
 
 # Git ref for stable Open edX release. Used as a default refspec for
 # configuration, edx-platform, forum, notifier, xqueue, and certs when creating production instances.
-OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/ironwood.2')
+OPENEDX_RELEASE_STABLE_REF = env('OPENEDX_RELEASE_STABLE_REF', default='open-release/juniper.2')
 
 # The edx-platform repository used by default for production instances
 STABLE_EDX_PLATFORM_REPO_URL = env(
@@ -430,7 +430,7 @@ STABLE_EDX_PLATFORM_COMMIT = env('STABLE_EDX_PLATFORM_COMMIT', default=OPENEDX_R
 STABLE_CONFIGURATION_REPO_URL = env(
     'STABLE_CONFIGURATION_REPO_URL', default=DEFAULT_CONFIGURATION_REPO_URL
 )
-STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/ironwood.2')
+STABLE_CONFIGURATION_VERSION = env('STABLE_CONFIGURATION_VERSION', default='opencraft-release/juniper.2')
 
 # The name of the security group to use for edxapp App servers.
 # This is used to set appropriate firewall rules to prevent external access to
