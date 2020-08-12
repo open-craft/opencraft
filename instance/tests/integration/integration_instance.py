@@ -354,7 +354,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
         homepage_html = get_url_contents(instance.url)
         self.assertIn(instance.static_content_overrides['homepage_overlay_html'], homepage_html)
 
-        page_url = '{}/{}'.format(instance.url, page)
+        page_url = instance.url + page
         server_html = get_url_contents(page_url)
         self.assertIn(instance.static_content_overrides['static_template_{}_content'.format(page)], server_html)
 
