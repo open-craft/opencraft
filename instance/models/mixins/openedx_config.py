@@ -436,11 +436,18 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 ],
             })
 
+        if "MKTG_URL_OVERRIDES" not in template["EDXAPP_LMS_ENV_EXTRA"]:
+            template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {}
+
+        # rewrite marketing links:
+        # remove blog link - not supported yet
+        template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["BLOG"] = ""
+        # use different contact page
+        template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["CONTACT"] = "/contact"
+
         if self.privacy_policy_url:
             # Custom Privacy Policy
-            template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {
-                "PRIVACY": self.privacy_policy_url,
-            }
+            template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["PRIVACY"] = self.privacy_policy_url
 
         # The dotted import path to the forum heartbeat function has changed in Juniper.
         # So use the old path only for the older releases.
