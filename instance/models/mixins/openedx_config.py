@@ -5,6 +5,7 @@ Instance app model mixins - OpenEdX Instance Configuration
 # Imports #####################################################################
 
 from random import randint
+from typing import List
 
 from django.conf import settings
 
@@ -21,6 +22,12 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
     class Meta:
         abstract = True
+
+    def _is_openedx_release_in(self, releases: List[str]) -> bool:
+        """
+        Checks and returns whether self.openedx_release is any of the given releases
+        """
+        return any(release_name in self.openedx_release for release_name in releases)
 
     def _get_configuration_variables(self):
         """
@@ -430,22 +437,18 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "PRIVACY": self.privacy_policy_url,
             }
 
-        # use the new forum heartbeat path if on master. Note: will need to
-        # update this after the release after ironwood has landed.
-        if self.openedx_release == 'master':
-            forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
-        else:
+        # The dotted import path to the forum heartbeat function has changed in Juniper.
+        # So use the old path only for the older releases.
+        if self._is_openedx_release_in(['ironwood', 'hawthorn', 'ginkgo']):
             forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
+        else:
+            forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
         template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
         # master and juniper release onwards has djangoapps.heartbeat installed by default
         # openedx <= ironwood requires this if celery check is included in
         # heartbeat extended checks (which we add by default above)
-        if any(release_name in self.openedx_release for release_name in [
-                'ironwood',
-                'hawthorn',
-                'ginkgo',
-        ]):
+        if self._is_openedx_release_in(['ironwood', 'hawthorn', 'ginkgo']):
             hb_app = "openedx.core.djangoapps.heartbeat"
             template["EDXAPP_CMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
             template["EDXAPP_LMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
