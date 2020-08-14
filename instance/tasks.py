@@ -24,16 +24,14 @@ Worker tasks for instance hosting & management
 
 from datetime import datetime
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import F
 from django.utils import timezone
 from huey.api import crontab
-from huey.contrib.djhuey import db_periodic_task, db_task
+from huey.contrib.djhuey import db_periodic_task, db_task, HUEY
 
-from instance.models.load_balancer import LoadBalancingServer
 from instance.models.log_entry import LogEntry
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
@@ -78,45 +76,79 @@ def start_deployment(
 
     if deployment.cancelled:
         logger.info('Deployment %s was cancelled, returning.', deployment.id)
-        return False
+        return
 
     logger.info('Spawning servers for deployment %s [%s]', deployment, deployment.id)
+    old_server_ids = list(instance.appserver_set.filter(_is_active=True).values_list('id', flat=True))
     # Launch configured number of appservers for instance
-    appserver_spawn_tasks = spawn_appserver.map(
-        (instance_ref_id, mark_active_on_success, False, num_attempts, success_tag, failure_tag, deployment.id)
-        for _ in range(instance.openedx_appserver_count)
-    )
+    for _ in range(instance.openedx_appserver_count):
+        # NOTE: Though this does provision multiple servers in parallel, issues have been known to occur
+        # for deploying multiple instances at once in the case of outstanding migrations.
+        spawn_appserver(
+            instance_ref_id=instance_ref_id,
+            mark_active_on_success=mark_active_on_success,
+            num_attempts=num_attempts,
+            success_tag=success_tag,
+            failure_tag=failure_tag,
+            deployment_id=deployment.id,
+            old_server_ids=old_server_ids,
+            target_count=instance.openedx_appserver_count,
+        )
 
-    appserver_ids = appserver_spawn_tasks.get(blocking=True)
 
-    if not all(appserver_ids):
-        return False
+@db_task()
+def check_deactivation(
+        result: bool,
+        instance_ref_id: int = None,
+        deployment_id: int = None,
+        old_server_ids: List[int] = None,
+        target_count: int = None,
+):
+    """
+    Called in pipeline with make_appserver_active when the current deployment is meant to deactivate old servers
+    upon success. Since any particular server could be the last one, this checks to make sure that the correct number
+    of servers which are new are now available, and that the current deployment hasn't been cancelled.
 
+    If this is the case, it deactivates all the old app servers.
+    """
+    if not result:
+        # This function is chained after mark_appserver_active. If that function failed, we already know things aren't
+        # OK and bail out.
+        logger.info('Marking appserver active failed. Returning.')
+        return
+
+    # One last chance to prevent activation from switching over, in case some other deployment is now taking precedence.
     # For redundancy - if app server deployment was successful even after cancelling, we prevent the change in
     # active appserver here
     deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
     if deployment.cancelled:
         logger.info('Deployment %s was cancelled, returning.', deployment.id)
-        return False
+        return
+
+    instance = OpenEdXInstance.objects.get(ref_set__pk=instance_ref_id)
 
     # If this deployment is to be marked active on success, others should be deactivated automatically
-    if mark_active_on_success:
-        other_appservers = instance.appserver_set.filter(_is_active=True).exclude(pk__in=appserver_ids)
+    current_count = instance.appserver_set.exclude(id__in=old_server_ids).filter(_is_active=True).count()
+    if current_count == target_count:
+        other_appservers = instance.appserver_set.filter(id__in=old_server_ids, _is_active=True)
         for appserver_to_deactivate in other_appservers:
             logger.info('Deactivating %s [%s]', appserver_to_deactivate, appserver_to_deactivate.id)
             appserver_to_deactivate.make_active(active=False)
-    return deployment.pk
+    else:
+        logger.info('Not (yet) deactivating old servers. %s/%s ready.', current_count, target_count)
+    return
 
 
 @db_task()
 def spawn_appserver(
         instance_ref_id,
         mark_active_on_success=False,
-        deactivate_old_appservers=False,
         num_attempts=1,
         success_tag=None,
         failure_tag=None,
         deployment_id=None,
+        old_server_ids=None,
+        target_count=None,
 ):
     """
     Create a new AppServer for an existing instance.
@@ -145,14 +177,18 @@ def spawn_appserver(
     )
 
     if appserver and mark_active_on_success:
-        make_appserver_active(appserver, active=True, deactivate_others=deactivate_old_appservers)
-
-    # Huey doesn't seem to resolve properly if the result of a task is so return False
-    return appserver or False
+        pipeline = make_appserver_active.s(appserver, active=True).then(
+            check_deactivation,
+            instance_ref_id=instance_ref_id,
+            deployment_id=deployment_id,
+            old_server_ids=old_server_ids,
+            target_count=target_count,
+        )
+        HUEY.enqueue(pipeline)
 
 
 @db_task()
-def make_appserver_active(appserver_id, active=True, deactivate_others=False):
+def make_appserver_active(appserver_id, active=True):
     """
     Mark an AppServer as active or inactive.
 
@@ -160,7 +196,7 @@ def make_appserver_active(appserver_id, active=True, deactivate_others=False):
         True if the appserver was made active,
         False if the corresponding server was not healthy and thus the appserver was not made active.
     """
-    appserver = OpenEdXAppServer.objects.get(pk=appserver_id)
+    appserver = OpenEdXAppServer.objects.get(id=appserver_id)
     if not appserver.server.status.is_healthy_state:
         appserver.server.update_status()
         if not appserver.server.status.is_healthy_state:
@@ -170,12 +206,6 @@ def make_appserver_active(appserver_id, active=True, deactivate_others=False):
 
     logger.info('%s %s: ID=%s', "Activating" if active else "Deactivating", appserver, appserver_id)
     appserver.make_active(active=active)
-    if active and deactivate_others:
-        other_appservers = appserver.instance.appserver_set.filter(_is_active=True).exclude(pk=appserver_id)
-        for appserver_to_deactivate in other_appservers:
-            logger.info('Deactivating %s [%s]', appserver_to_deactivate, appserver_to_deactivate.id)
-            appserver_to_deactivate.make_active(active=False)
-
     return True
 
 
@@ -216,20 +246,6 @@ def clean_up():
     """
     shut_down_obsolete_pr_sandboxes()
     terminate_obsolete_appservers_all_instances()
-
-
-@db_periodic_task(crontab())
-def reconfigure_dirty_load_balancers():
-    """
-    Any load balancers that are dirty need to be reconfigured.
-
-    This task runs every minute.
-    """
-    logger.info('Reconfiguring all dirty load balancers')
-    for load_balancer in LoadBalancingServer.objects.filter(
-            configuration_version__gt=F('deployed_configuration_version')
-    ):
-        load_balancer.reconfigure(mark_dirty=False)
 
 
 @db_periodic_task(crontab(day='*/1', hour='0', minute='0'))
