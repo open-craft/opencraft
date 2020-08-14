@@ -74,8 +74,6 @@ def start_deployment(
     logger.info('Retrieving deployment: ID=%s', instance_ref_id)
     deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
 
-    # For redundancy - if app server deployment was successful even after cancelling, we prevent the change in
-    # active appserver here
     if deployment.cancelled:
         logger.info('Deployment %s was cancelled, returning.', deployment.id)
         return
@@ -120,6 +118,8 @@ def check_deactivation(
         return
 
     # One last chance to prevent activation from switching over, in case some other deployment is now taking precedence.
+    # For redundancy - if app server deployment was successful even after cancelling, we prevent the change in
+    # active appserver here
     deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
     if deployment.cancelled:
         logger.info('Deployment %s was cancelled, returning.', deployment.id)
