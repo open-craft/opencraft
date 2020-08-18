@@ -77,6 +77,13 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     # because we also add other extended checks
                     "openedx.core.djangoapps.heartbeat.default_checks.check_celery",
                 ],
+                "MKTG_URL_OVERRIDES": {
+                    # rewrite marketing links:
+                    # remove blog link - not supported yet
+                    "BLOG": "",
+                    # use different contact page
+                    "CONTACT": "/contact",
+                }
             },
 
             "EDXAPP_LMS_NGINX_PORT": 80,
@@ -435,15 +442,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     for github_username in check_github_users(self.admin_users)
                 ],
             })
-
-        if "MKTG_URL_OVERRIDES" not in template["EDXAPP_LMS_ENV_EXTRA"]:
-            template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"] = {}
-
-        # rewrite marketing links:
-        # remove blog link - not supported yet
-        template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["BLOG"] = ""
-        # use different contact page
-        template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["CONTACT"] = "/contact"
 
         if self.privacy_policy_url:
             # Custom Privacy Policy
