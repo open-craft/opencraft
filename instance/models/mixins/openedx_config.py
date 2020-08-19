@@ -29,6 +29,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         """
         return any(release_name in self.openedx_release for release_name in releases)
 
+    # pylint: disable=too-many-branches, useless-suppression
     def _get_configuration_variables(self):
         """
         Creates and returns a dictionary of ansible configuration variables for the instance
@@ -456,6 +457,19 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             hb_app = "openedx.core.djangoapps.heartbeat"
             template["EDXAPP_CMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
             template["EDXAPP_LMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
+
+        # See https://github.com/edx/cs_comments_service/pull/323
+        if self._is_openedx_release_in(['ironwood']):
+            # See https://github.com/open-craft/cs_comments_service/pull/5
+            template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
+            template["forum_version"] = "opencraft-release/ironwood.2"
+        if self._is_openedx_release_in(['juniper']):
+            # See https://github.com/open-craft/cs_comments_service/pull/6
+            # TODO: Once https://github.com/edx/cs_comments_service/pull/323 merges,
+            # update to use edx for forum_source_repo, and "open-release/juniper.master" for forum_version(s).
+            template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
+            template["forum_version"] = "opencraft-release/juniper.2"
+            template["FORUM_VERSION"] = "opencraft-release/juniper.2"
 
         return template
 
