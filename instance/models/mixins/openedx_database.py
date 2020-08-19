@@ -198,6 +198,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             port=self.mysql_server.port,
             database=db_name,
         )
+        conn.autocommit(True)
         return conn.cursor()
 
     def _get_mysql_user_name(self, suffix):
