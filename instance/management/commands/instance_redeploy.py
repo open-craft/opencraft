@@ -125,6 +125,11 @@ class Command(BaseCommand):
             default=1,
             help='Number of times to try spawning an appserver for a given instance before calling it a failure.'
         )
+        parser.add_argument(
+            '--show-instances',
+            action='store_true',
+            help="Don't actually run upgrades-- just show which instances would be upgraded.",
+        )
 
     def handle(self, *args, **options):
         """
@@ -139,12 +144,24 @@ class Command(BaseCommand):
         LOG.info("Number of upgrade attempts per instance: %d", self.options['num_attempts'])
 
         # Confirm redeployment
+        if options['show_instances']:
+            self.dump_instances()
+            LOG.info('** Dry run-- exiting. **')
+            return
         if self._confirm_redeploy():
             LOG.info("** Starting redeployment **")
             self._do_redeployment()
             LOG.info("** Redeployment done **")
         else:
             LOG.info("** Redeployment canceled **")
+
+    def dump_instances(self):
+        """
+        Log all instances that would be redeployed.
+        """
+        LOG.info('Upgrade would be run for:')
+        for instance in self._pending_instances():
+            LOG.info('  (%s) %s', instance.ref.id, instance.name)
 
     def get_statistics(self, pending=False, ongoing=False, failed=False, successful=False, all_statistics=False):
         """

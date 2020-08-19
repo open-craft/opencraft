@@ -200,3 +200,88 @@ Useful references when configuring or troubleshooting issues with ecommerce and 
 * [Adding E-Commerce to the Open edX Platform](http://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/ecommerce/install_ecommerce.html)
 * [edX Discovery Service](http://edx-discovery.readthedocs.io/)
 * [Setup Discovery Sandbox](https://openedx.atlassian.net/wiki/spaces/EDUCATOR/pages/162488548/Setup+Discovery+Sandbox)
+
+## Mass Upgrades and Reconfigurations
+
+To enable expedient upgrades across instances when there is a major update to the OpenEdX platform, the `instance_redeploy` management command is available.
+
+The `instance_redeploy` command requires several options to know which servers to upgrade and how to update them. Note that major platform updates are not the 
+only use for this command-- it can be used to fan out improvements to configuration as well.
+
+The following arguments are available:
+
+|     Name    |  Required?  | Description |
+| ----------- | ----------- | ----------- |
+|**--tag**| Yes | Base name of the tag used to mark instances for redeployment.  After the redeployment is complete, all instances which are successfully redeployed will be marked with this tag.  Instances which failed to redeploy will be marked with tag + `-failed`.  E.g., `zebrawood-redeployment-failed`. |
+|**--filter**| No | If omitted, respawn **ALL** unarchived instances. This should point to a YAML file that contains a data structure that can be passed via `**kwargs` to `OpenEdXInstance.objects.filter`. For example, `{'ref_set__id__in': [200]}`. |
+|**--exclude**| No | Like filter, but in reverse. This should point to a YAML file that contains a data structure that can be passed via `**kwargs` to `OpenEdXInstance.objects.exclude`. Useful if `--filter` might include instances that you need to make exceptions for. |
+|**--update**| No | Specify a YAML file with fields to update on the `OpenEdxInstance` before spawning the new app servers. For instance, setting `edx_platform_commit` to the latest release tag name. Note that this will replace each key in those settings-- so for nested data structures where the current settings are important to preserve, you should update these configurations manually ahead of time. |
+|**--preupgrade-sql-commands**| No | A list of SQL instructions to run, one after another, loaded from a YAML file that contains only an array. These will be run before the upgrade begins, and can be used to remediate any issues migrations are not able to solve on their own. **NOTE**: Failures from these commands will be silent. |
+|**--force**| No | Don't prompt to confirm settings before beginning upgrades. Useful if this command is being used as part of a script, or if you are feeling particularly infallible today.|
+|**--no-activate**| No | Don't mark successfully provisioned app servers as 'active' after upgrading, nor old servers as 'inactive'. |
+|**--batch-size**| No | How many app servers to provision at once. Don't make this more than the number of workers available or provisioning will likely fail. Default: 2. |
+|**--batch-frequency**| No | How frequently (in seconds) to check if workers are available to start the next app server upgrade. Default: 600 (10 minutes). |
+|**--num-attempts**| No | How many times to attempt provisioning an app server before giving up. Default: 1|
+|**--show-instances**| No | Don't actually redeploy-- show which instances would be provisioned and then exit.|
+
+### Upgrade Walkthrough
+
+Say you have a number of instances running the `ironwood.2` tagged release of `edx-platform` and you wish to upgrade them to `juniper.2`. The following files and commands would provide a plausible upgrade path. Move one directory up from your OCIM installation and create a directory for your configuration files. We'll name ours `upgrade`.
+
+We first need a `.yml` file for the `--filter` argument to ensure we only grab instances that we intend to upgrade. Create a file named `filter.yml` with a check for the correct platform version:
+```
+---
+edx_platform_commit: opencraft-release/ironwood.2
+```
+
+**NOTE**: In this demonstration, we are assuming the tags are pulled from [OpenCraft's fork of edx-platform](https://github.com/open-craft/edx-platform/). This fork is where we store modified releases with backported patches for OCIM.
+
+If there are any special instances we know are on `opencraft-release/ironwood.2` that we do NOT want to upgrade, we will want to create an `exclude.yml` for these cases:
+
+```
+---
+ref_set__id__in:
+  # School of Hard Knox
+  - 100
+  # ACME Looniversity Gritty Reboot Devision
+  - 45
+```
+
+From `ironwood.2` to `juniper.2` there is one dependency with a broken migration we need to remediate. We'll create a `sql.yml` file for this:
+
+```
+---
+# Faking this migration due to https://stackoverflow.com/a/35143733/4302112
+- "INSERT into django_migrations (app, name) values('thumbnail', '0001_initial');"
+```
+
+And, of course, we need an `update.yml` file containing the updated configuration settings for the new release.
+
+```
+---
+openedx_release: open-release/juniper.2
+edx_platform_repository_url: https://github.com/open-craft/edx-platform
+edx_platform_commit: opencraft-release/juniper.2
+configuration_source_repo_url: https://github.com/open-craft/configuration
+configuration_version: opencraft-release/juniper.2
+```
+
+Finally, we can run the upgrades with:
+
+```
+HUEY_QUEUE_NAME=opencraft_low_priority honcho run python3 manage.py instance_redeploy \
+   --batch-size=6 --num-attempts=3 \
+   --tag=juniper2 \
+   --filter=@../upgrade/filter.yml \
+   --exclude=@../upgrade/exclude.yml \
+   --update=@../upgrade/update.yml \
+   --preupgrade-sql-commands=@../upgrade/sql.yml \
+    |& tee -a @../upgrade/redeploy.log
+```
+
+Note the `HUEY_QUEUE_NAME` environment variable-- we set it here to use our alternative, low-priority queue so that we don't tie up workers dedicated to OCIM's normal customer-facing functions.
+We also use the `juniper2` tag as a way to mark instances that have been updated as we go along (see the documentation on the `--tag` argument above.)
+
+The command will give you a summary of what it intends to do, and then prompt you for confirmation. It is recommended you add 
+the `--show-instances` argument to do a dry run and see the specific instances that will be upgraded. Any failures will be logged 
+and tagged for further examination.
