@@ -96,6 +96,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_LOGIN_REDIRECT_WHITELIST": [self.instance.studio_domain, ],
             "EDXAPP_SESSION_COOKIE_DOMAIN": '.{}'.format(self.instance.domain),
 
+            # Use secure SameSite cookies
+            "EDXAPP_CSRF_COOKIE_SECURE": True,
+            "EDXAPP_SESSION_COOKIE_SECURE": True,
+
             # Run a command to delete expired sessions once a day. The time is random and different in each server
             # to avoid the case when all servers connect to the database at exactly the same time.
             # It's fine to use random numbers here because this function is called just once per appserver and the
