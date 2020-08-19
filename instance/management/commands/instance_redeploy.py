@@ -278,7 +278,7 @@ class Command(BaseCommand):
         mysql_commands = self.options.get('preupgrade_sql_commands', [])
         if mysql_commands:
             LOG.info("Performing MySQL commands: %s %s (%s)", instance, instance.domain, instance.id)
-            cursor = instance.get_mysql_cursor_for_db('edxapp')
+            cursor = instance.get_mysql_cursor_for_db('edxapp', autocommit=True)
             if cursor is not None:
                 for command in mysql_commands:
                     cursor.execute(command)
