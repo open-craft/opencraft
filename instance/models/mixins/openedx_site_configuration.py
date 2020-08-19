@@ -36,7 +36,10 @@ class OpenEdXSiteConfigurationMixin(models.Model):
         """
         Return the ansible variables to set the SiteConfiguration parameters.
         """
-        site_configuration_settings = {}
+        site_configuration_settings = {
+            # default site configuration
+            'CONTACT_US_CUSTOM_LINK': '/contact',
+        }
 
         if self.static_content_overrides:
             static_content_overrides = {k: v for k, v in self.static_content_overrides.items() if k != 'version'}

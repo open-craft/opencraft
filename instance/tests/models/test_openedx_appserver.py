@@ -1025,6 +1025,7 @@ class SiteConfigurationSettingsTestCase(TestCase):
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
+                        'CONTACT_US_CUSTOM_LINK': '/contact',
                         'static_template_about_content': 'Hello world!',
                         'homepage_overlay_html': 'Welcome to the LMS!',
                     }

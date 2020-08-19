@@ -45,7 +45,6 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "8.8.8.8",
                 "8.8.4.4"
             ],
-
             # HTTP authentication
             "COMMON_ENABLE_BASIC_AUTH": True,
             "COMMON_HTPASSWD_USER": self.instance.http_auth_user,
@@ -77,8 +76,8 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     # because we also add other extended checks
                     "openedx.core.djangoapps.heartbeat.default_checks.check_celery",
                 ],
+                # rewrite marketing links:
                 "MKTG_URL_OVERRIDES": {
-                    # rewrite marketing links:
                     # remove blog link - not supported yet
                     "BLOG": "",
                     # use different contact page
