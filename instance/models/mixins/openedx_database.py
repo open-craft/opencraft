@@ -182,10 +182,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert len(mysql_database_name) <= 64
         return mysql_database_name
 
-    def get_mysql_cursor_for_db(self, db_suffix):
+    def get_mysql_cursor_for_db(self, db_suffix, autocommit=False):
         """
         Get an adminstrative cursor with which to execute queries on the database
         for the application linked to the provided db_suffix.
+
+        MYSQLdb changes aren't committed automatically. Setting autocommit to True
+        enables auto committing changes.
         """
         if not self.mysql_server:
             return None
@@ -198,6 +201,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             port=self.mysql_server.port,
             database=db_name,
         )
+        conn.autocommit(autocommit)
         return conn.cursor()
 
     def _get_mysql_user_name(self, suffix):
