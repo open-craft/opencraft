@@ -253,6 +253,49 @@ class InstanceRedeployTestCase(TestCase):
             captured_logs.check(*expected_logs)
 
     @patch('instance.management.commands.instance_redeploy.create_new_deployment')
+    def test_show_instances(self, mock_create_new_deployment, mock_consul):
+        """
+        Test doing a dry run.
+        """
+        tag = 'test-tag'
+        instances = self.create_test_instances(tag, success=True)
+        # Redeploying with batch-size=2, so we'll spawn two appservers at a time.
+        expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
+            '******* Status *******',
+            'Instances pending redeployment: 3',
+            'Redeployments in progress: 0',
+            'Failed to redeploy: 1',
+            'Successfully redeployed (done): 1',
+            'Batch size: 2',
+            'Batch frequency: 0:00:01',
+            'Number of upgrade attempts per instance: 1',
+
+            'Upgrade would be run for:',
+            '  ({0.ref.id}) {0.name}'.format(instances['E']['instance']),
+            '  ({0.ref.id}) {0.name}'.format(instances['F']['instance']),
+            '  ({0.ref.id}) {0.name}'.format(instances['G']['instance']),
+
+            '** Dry run-- exiting. **',
+        ))
+
+        # Call the redeployment command, and verify the logs
+        with LogCapture() as captured_logs:
+            call_command(
+                'instance_redeploy',
+                '--tag=' + tag,
+                '--force',
+                '--batch-size=2',
+                '--batch-frequency=1',
+                '--filter={"openedx_release": "z.1"}',
+                '--show-instances',
+                stdout=StringIO(),
+            )
+            # Verify the logs
+            captured_logs.check(*expected_logs)
+        mock_create_new_deployment.assert_not_called()
+        mock_consul.assert_not_called()
+
+    @patch('instance.management.commands.instance_redeploy.create_new_deployment')
     def test_redeployment_failure(self, mock_create_new_deployment, mock_consul):
         """
         Test the instance redeployment when instances fail.
