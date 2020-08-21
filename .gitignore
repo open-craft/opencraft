@@ -104,3 +104,6 @@ media/
 
 #MyPy
 .mypy_cache
+
+# Generated scripts
+bin/archived_cleanup.sh

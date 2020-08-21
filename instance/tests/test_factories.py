@@ -31,13 +31,11 @@ import yaml
 from instance.factories import instance_factory, production_instance_factory
 from instance.models.log_entry import LogEntry
 from instance.models.database_server import MySQLServer, MongoDBServer
-from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.base import TestCase
 
 
 # Tests #######################################################################
-
 class FactoriesTestCase(TestCase):
     """
     Test cases for functions in the factories module
@@ -163,8 +161,7 @@ class FactoriesTestCase(TestCase):
         for custom_settings, warning in (
                 (
                     {
-                        'INSTANCE_STORAGE_TYPE': StorageContainer.S3_STORAGE,
-                        'AWS_ACCESS_KEY': None,
+                        'AWS_ACCESS_KEY_ID': None,
                         'AWS_SECRET_ACCESS_KEY': None
                     },
                     (
@@ -173,14 +170,18 @@ class FactoriesTestCase(TestCase):
                     ),
                 ),
                 (
-                    {'DEFAULT_INSTANCE_MYSQL_URL': None},
+                    {
+                        'DEFAULT_INSTANCE_MYSQL_URL': None,
+                    },
                     (
                         "No MySQL servers configured, and default URL for external MySQL database is missing."
                         "Create at least one MySQLServer, or set DEFAULT_INSTANCE_MYSQL_URL in your .env."
                     ),
                 ),
                 (
-                    {'DEFAULT_INSTANCE_MONGO_URL': None},
+                    {
+                        'DEFAULT_INSTANCE_MONGO_URL': None,
+                    },
                     (
                         "No MongoDB servers configured, and default URL for external MongoDB database is missing."
                         "Create at least one MongoDBServer, or set DEFAULT_INSTANCE_MONGO_URL in your .env."

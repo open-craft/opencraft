@@ -6,7 +6,9 @@ Installation
 For development, we recommend using [Vagrant](https://www.vagrantup.com/)
 to automatically provision a development environment in a virtual machine. This
 helps to keep your development environment isolated from the rest of your
-system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) for your vagrant environment as the playbooks supports them for now.
+system. Also, remember to use **Python 3.5.x** or **Python 3.6.x**(use `pyenv`) for your 
+vagrant environment as the playbooks only support them for now, and 
+**do not work** on Python 3.7 or higher.
 
 Vagrant uses [VirtualBox](https://www.virtualbox.org/) to create isolated
 virtual machines with the developer environment set up. To provision and
@@ -20,12 +22,14 @@ development environment:
 - [Vagrant Download](https://www.vagrantup.com/downloads.html)
 - [VirtualBox Download](https://www.virtualbox.org/wiki/Downloads)
 
+**NOTE**: Althought you are not prompted to do so, we recommend Mac users reboot
+after installation of these utilities to ensure all network extensions work properly.  
+
 Install the plugin vagrant-vbguest:
 
     vagrant plugin install vagrant-vbguest
 
-Once you have these tools installed, download the [Ocim repository]
-(https://github.com/open-craft/opencraft) if you have not already done it.
+Once you have these tools installed, download the [Ocim repository](https://github.com/open-craft/opencraft) if you have not already done it.
 
     git clone https://github.com/open-craft/opencraft ocim
     cd ocim
@@ -60,9 +64,11 @@ command:
 
     vagrant ssh
 
-Inside the virtual machine, set HUEY_ALWAYS_EAGER to false in
-/home/vagrant/opencraft/.env. Also, create a superuser account which will
-be used to log in to Ocim:
+Once inside the VM, you will need to run the initial database migrations:
+
+    make migrate
+
+Next, create a superuser account which will be used to log in to Ocim:
 
     make manage createsuperuser
 
@@ -75,7 +81,7 @@ reflected inside the virtual machine automatically.
 
 Vagrant will map port 5000 inside the virtual machine to port 5000 on the host.
 Once you have set everything up, you will be able to access the home webpage of
-the development server at http://localhost:5000/ using your web browser. Log in
+the [development server](#run) at http://localhost:5000/ using your web browser. Log in
 with the previously created superuser account credentials and you will then be
 redirected to the Ocim webpage which lists the Open edX instances.
 
@@ -149,6 +155,8 @@ Then go to:
 * User interface: [http://localhost:5000/](http://localhost:5000/)
 * API: [http://localhost:5000/api/](http://localhost:5000/api/)
 * Admin: [http://localhost:5000/admin/](http://localhost:5000/admin/)
+
+You will also want to start up the [Frontend](#ocim-frontend).
 
 To run the production server:
 
