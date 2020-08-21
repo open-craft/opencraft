@@ -299,6 +299,7 @@ class Command(BaseCommand):
             if cursor is not None:
                 for command in mysql_commands:
                     cursor.execute(command)
+                cursor.execute('COMMIT;')
                 cursor.close()
 
     # TODO simplify to reduce the number of branches
