@@ -24,6 +24,9 @@ User-related models
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from instance.models.utils import ValidateModelMixin
@@ -70,3 +73,20 @@ class UserProfile(ValidateModelMixin, TimeStampedModel):
 
     def __str__(self):
         return self.full_name
+
+
+@receiver(post_save, sender=User)
+def superuser_profile(sender, instance, created=False, **kwargs):
+    """
+    For the sake of the createsuperuser management command, which doesn't create a user profile.
+    """
+    if not created:
+        return
+    if created and instance.is_superuser:
+        instance.profile = UserProfile(
+            full_name='Administrator',
+            accepted_privacy_policy=timezone.now(),
+            accept_paid_support=True,
+            user_id=instance.id,
+        )
+        instance.profile.save()
