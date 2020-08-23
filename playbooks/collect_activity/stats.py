@@ -67,7 +67,7 @@ if __name__ == '__main__':
         unique_hits = set()
         total_hits = 0
         for file in log_files:
-            print >> sys.stderr, 'Parsing log file: {file}'.format(file=file)
+            print('Parsing log file: {file}'.format(file=file), file=sys.stderr)
 
             file_path = os.path.join(LOG_PATH, file)
             # Make sure we use gzip to decompress any compressed log files.
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     config = ConfigParser()
     config.add_section(args.config_section)
     for key, value in stats.items():
-        config.set(args.config_section, key, value)
+        config.set(args.config_section, key, str(value))
 
     # Output the data in ConfigParser format to stdout and to a file.
     config.write(sys.stdout)
