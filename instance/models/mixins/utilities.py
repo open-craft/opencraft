@@ -32,6 +32,7 @@ from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.views.debug import ExceptionReporter
 
+from instance.models.deployment import Deployment, DeploymentType
 from instance.signals import appserver_spawned
 
 logger = logging.getLogger(__name__)
@@ -147,10 +148,16 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
+    deployment_id = kwargs['deployment_id']
 
     # Only sending critical alerts for failures in registered clients' instances, not in test/sandboxes
     if not instance.betatestapplication_set.exists():
         return
+
+    if deployment_id is not None:
+        deployment = Deployment.objects.get(pk=deployment_id)
+        if deployment.type in (DeploymentType.admin.name, DeploymentType.batch.name, DeploymentType.pr.name):
+            return
 
     if appserver is None and instance.provisioning_failure_notification_emails:
         logger.warning(
