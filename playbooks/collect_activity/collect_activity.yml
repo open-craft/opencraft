@@ -22,11 +22,12 @@
       become_user: www-data
 
     - name: Run collect_activity script
-      command: >
+      shell: >
+        . /edx/app/edxapp/edxapp_env &&
         /edx/bin/python.edxapp /tmp/collect_activity.py
-          --config-section {{ config_section }}
-          --out {{ remote_output_filename }}
-          {{ extra_script_arguments }}
+        --config-section {{ config_section }}
+        --out {{ remote_output_filename }}
+        {{ extra_script_arguments }}
       register: stats_results
       become: yes
       become_user: www-data
