@@ -464,12 +464,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["forum_version"] = "opencraft-release/ironwood.2"
         if self._is_openedx_release_in(['juniper']):
-            # See https://github.com/open-craft/cs_comments_service/pull/6
-            # TODO: Once https://github.com/edx/cs_comments_service/pull/323 merges,
-            # update to use edx for forum_source_repo, and "open-release/juniper.master" for forum_version(s).
-            template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
-            template["forum_version"] = "opencraft-release/juniper.2"
-            template["FORUM_VERSION"] = "opencraft-release/juniper.2"
+            template["forum_source_repo"] = "https://github.com/edx/cs_comments_service.git"
+            template["forum_version"] = "open-release/juniper.master"
+            template["FORUM_VERSION"] = "open-release/juniper.master"
 
         return template
 
