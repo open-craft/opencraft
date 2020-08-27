@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
 import { CustomStatusPill } from 'ui/components';
@@ -27,6 +28,16 @@ export const RedeploymentToolbar: React.FC<Props> = ({
 
   const handleCloseModal = () => setShow(false);
   const handleShowModal = () => setShow(true);
+  const { trackEvent } = useMatomo();
+
+  const performDeploymentHandler = () => {
+    trackEvent({
+      category: 'deployment',
+      action: 'click-deploy',
+      name: 'Deploy'
+    });
+    performDeployment();
+  };
 
   let deploymentDisabled: boolean = true;
   let cancelDeploymentDisabled: boolean = true;
@@ -82,9 +93,7 @@ export const RedeploymentToolbar: React.FC<Props> = ({
           className="float-right loading"
           variant="primary"
           size="lg"
-          onClick={() => {
-            performDeployment();
-          }}
+          onClick={performDeploymentHandler}
           disabled={deploymentDisabled}
         >
           <WrappedMessage
