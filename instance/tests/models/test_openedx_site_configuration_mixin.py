@@ -40,7 +40,16 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
         require setting SiteConfiguration variables.
         """
         instance = OpenEdXInstanceFactory()
-        self.assertEqual(instance.get_site_configuration_settings(), '')
+        expected_variables = {
+            'EDXAPP_SITE_CONFIGURATION': [
+                {
+                    'values': {
+                        'CONTACT_US_CUSTOM_LINK': '/contact',
+                    }
+                }
+            ]
+        }
+        self.assertEqual(yaml.safe_load(instance.get_site_configuration_settings()), expected_variables)
 
     def test_static_content_overrides_set(self):
         """
@@ -60,6 +69,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
+                        'CONTACT_US_CUSTOM_LINK': '/contact',
                         'static_template_about_content': 'Hello world!',
                         'static_template_contact_content': 'Email: nobody@example.com',
                         'homepage_overlay_html': 'Welcome to the LMS!',
@@ -85,6 +95,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
+                        'CONTACT_US_CUSTOM_LINK': '/contact',
                         'static_template_about_content': 'வணக்கம்!',
                         'homepage_overlay_html': 'வணக்கம்',
                     }
@@ -109,6 +120,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
             'EDXAPP_SITE_CONFIGURATION': [
                 {
                     'values': {
+                        'CONTACT_US_CUSTOM_LINK': '/contact',
                         'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>',
                         'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
                     }
