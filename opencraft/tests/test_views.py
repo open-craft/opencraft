@@ -21,11 +21,16 @@ OpenCraft - Views - Tests
 """
 
 # Imports #####################################################################
+from unittest import mock
+
 import ddt
 from django.conf import settings
 from django.urls import reverse
+from psycopg2 import OperationalError
+from redis.exceptions import ConnectionError as RedisConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
-from instance.tests.base import WithUserTestCase
+from instance.tests.base import TestCase, WithUserTestCase
 
 
 # Tests #######################################################################
@@ -104,3 +109,53 @@ class IndexViewTestCase(WithUserTestCase):
         self.client.login(username=username, password='pass')
         response = self.client.get(self.admin_url, follow=True)
         self.assertEqual(response.status_code, 200)
+
+
+class HealthCheckViewTestCase(TestCase):
+    """
+    Test cases for the health check view
+    """
+    url = reverse('health_check')
+
+    @mock.patch('opencraft.views.HealthCheckView._check_postgres_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_redis_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_consul_connection', return_value=None)
+    def test_ok(self, mock_postgres, mock_redis, mock_consul):
+        """
+        Verify 200 response when all services are online
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    @mock.patch('opencraft.views.HealthCheckView._check_postgres_connection', side_effect=OperationalError)
+    @mock.patch('opencraft.views.HealthCheckView._check_redis_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_consul_connection', return_value=None)
+    def test_postgres_unreachable(self, mock_postgres, mock_redis, mock_consul):
+        """
+        Verify 503 response when postgres is offline
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.content, b'Postgres unreachable')
+
+    @mock.patch('opencraft.views.HealthCheckView._check_postgres_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_redis_connection', side_effect=RedisConnectionError)
+    @mock.patch('opencraft.views.HealthCheckView._check_consul_connection', return_value=None)
+    def test_redis_unreachable(self, mock_postgres, mock_redis, mock_consul):
+        """
+        Verify 503 response when redis is offline
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.content, b'Redis unreachable')
+
+    @mock.patch('opencraft.views.HealthCheckView._check_postgres_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_redis_connection', return_value=None)
+    @mock.patch('opencraft.views.HealthCheckView._check_consul_connection', side_effect=RequestsConnectionError)
+    def test_consul_unreachable(self, mock_postgres, mock_redis, mock_consul):
+        """
+        Verify 503 response when consul is offline
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.content, b'Consul unreachable')
