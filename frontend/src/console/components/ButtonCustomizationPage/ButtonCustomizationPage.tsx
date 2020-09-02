@@ -54,7 +54,13 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
     ]
   };
 
-  const customizationProp = `customize${props.buttonName}Btn`;
+  let customizationProp = `customize${props.buttonName}Btn`;
+  if (props.buttonName === 'Logistration') {
+    // Logistration toggle doesn't follow the common naming convention, hence setting it explicitly.
+    // See SE-2955 for discussion.
+    customizationProp = `customizeLogistrationActionBtn`;
+  }
+
   const allStylesDefined = Object.values(styles)
     .map(category =>
       category.every(style => themeData[style as keyof typeof themeData])
