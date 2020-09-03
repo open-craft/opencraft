@@ -22,8 +22,16 @@ OpenCraft views
 
 # Imports #####################################################################
 
+from consul import Consul
+from django.db import connection
+from django.http import HttpResponse
 from django.views.generic.base import RedirectView
+from django.views.generic import View
 from django.urls import reverse
+from huey.contrib.djhuey import HUEY
+from psycopg2 import OperationalError
+from redis.exceptions import ConnectionError as RedisConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from instance.models.instance import InstanceReference
 
@@ -45,3 +53,54 @@ class IndexView(RedirectView):
             return reverse('instance:index')
         else:
             return reverse('registration:register')
+
+
+class HealthCheckView(View):
+    """
+    Health Check view
+    """
+    def get(self, request):
+        """
+        GET method which returns 503 status if any required services are unreachable.
+        """
+        try:
+            # Verify that the postgres database backend is reachable
+            #
+            # Note that at the time of writing this, this view will not even get loaded if postgres is down due to an
+            # exception being thrown in instance.logging.DBHandler.emit which gets called before the view.
+            # This check exists so that we can monitor postgres even if the logging behaviour changes in the future.
+            self._check_postgres_connection()
+        except OperationalError:
+            return HttpResponse('Postgres unreachable', status=503)
+
+        try:
+            # Verify that the huey redis database backend is reachable
+            self._check_redis_connection()
+        except RedisConnectionError:
+            return HttpResponse('Redis unreachable', status=503)
+
+        try:
+            # Verify that the consul agent is reachable
+            self._check_consul_connection()
+        except RequestsConnectionError:
+            return HttpResponse('Consul unreachable', status=503)
+
+        return HttpResponse()
+
+    def _check_postgres_connection(self):
+        """
+        Attempts establishing a connection with postgres to check connection
+        """
+        connection.connect()
+
+    def _check_redis_connection(self):
+        """
+        Runs the redis ECHO command to check connection
+        """
+        HUEY.get_storage().conn.echo('health_check')
+
+    def _check_consul_connection(self):
+        """
+        Returns the services registered with Consul to check connection
+        """
+        Consul().agent.services()

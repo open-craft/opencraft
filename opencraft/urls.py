@@ -33,6 +33,7 @@ import opencraft.views as views
 # URL Patterns ################################################################
 
 urlpatterns = [
+    url(r'^health_check/', views.HealthCheckView.as_view(), name='health_check'),
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls', namespace='api')),
