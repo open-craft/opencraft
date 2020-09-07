@@ -37,7 +37,7 @@
       command: >
         {{ ansible_env.HOME }}/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
           --out {{ remote_output_filename }}
-          --name-prefix {{ server_name_prefix }}
+          --name-prefixes {{ server_name_prefixes }}
           --start-date {{ start_date }}
           --end-date {{ end_date }}
       register: stats_results

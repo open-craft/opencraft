@@ -1,6 +1,7 @@
 #!/edx/bin/python.edxapp
 # pylint: skip-file
 
+from __future__ import print_function
 from argparse import ArgumentParser
 import gzip
 import os
@@ -96,6 +97,6 @@ if __name__ == '__main__':
     # Output the data in ConfigParser format to stdout and to a file.
     config.write(sys.stdout)
     if args.out:
-        print('Writing to file passed via parameter: {filename}'.format(filename=args.out), sys.stderr)
+        print('Writing to file passed via parameter: {filename}'.format(filename=args.out), file=sys.stderr)
         with open(args.out, 'w') as output_file:
             config.write(output_file)
