@@ -32,8 +32,6 @@ from django.test import TestCase
 import freezegun
 
 from instance.management.commands.instance_statistics_csv import valid_date
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
-from instance.tests.utils import patch_services
 
 
 # Tests #######################################################################
@@ -98,7 +96,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
         with self.assertRaises(SystemExit):
             call_command(
                 'instance_statistics_csv',
-                domain='test',
+                domains='test',
                 out='does_not_exist.txt',
                 stderr=stderr
             )
@@ -113,51 +111,10 @@ class InstanceStatisticsCSVTestCase(TestCase):
         with self.assertRaises(SystemExit):
             call_command(
                 'instance_statistics_csv',
-                domain='test.opencraft.hosting',
+                domains='test.opencraft.hosting',
                 stderr=stderr
             )
-        self.assertIn('No OpenEdXInstance exists with an external or internal domain', stderr.getvalue())
-
-    @patch_services
-    def test_instance_not_successfully_provisioned(self, mock_run_playbook):
-        """
-        Verify that the command correctly notifies the user that
-        there are no active app servers if the instance failed to provision.
-        """
-        instance = OpenEdXInstanceFactory()
-
-        stderr = StringIO()
-        with self.assertRaises(SystemExit):
-            call_command(
-                'instance_statistics_csv',
-                domain=instance.domain,
-                stderr=stderr
-            )
-        self.assertIn(
-            'No active OpenEdXAppServers exist for the instance',
-            stderr.getvalue()
-        )
-
-    @patch_services
-    def test_no_active_appservers(self, mock_run_playbook):
-        """
-        Verify that the command correctly notifies the user that
-        there are no active app servers if none exist.
-        """
-        instance = OpenEdXInstanceFactory()
-        instance.spawn_appserver()
-
-        stderr = StringIO()
-        with self.assertRaises(SystemExit):
-            call_command(
-                'instance_statistics_csv',
-                domain=instance.domain,
-                stderr=stderr
-            )
-        self.assertIn(
-            'No active OpenEdXAppServers exist for the instance',
-            stderr.getvalue()
-        )
+        self.assertIn('No OpenEdXInstances exist with an external or internal domain', stderr.getvalue())
 
     @freezegun.freeze_time('2020-01-01')
     @patch('instance.management.commands.instance_statistics_csv.Command.collect_instance_statistics')
@@ -175,7 +132,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
 
         call_command(
             'instance_statistics_csv',
-            domain=domain,
+            domains=domain,
             out=outfile
         )
 
@@ -184,7 +141,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
 
         mock_collect_statistics.assert_called_with(
             mock_file,
-            domain,
+            [domain],
             expected_start_date,
             expected_end_date
         )
@@ -208,7 +165,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
         with self.assertRaises(SystemExit):
             call_command(
                 'instance_statistics_csv',
-                domain=domain,
+                domains=domain,
                 end_date=custom_end_date,
                 start_date=custom_start_date,
                 out=outfile,
@@ -235,7 +192,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
 
         call_command(
             'instance_statistics_csv',
-            domain=domain,
+            domains=domain,
             end_date=custom_end_date,
             start_date=custom_start_date,
             out=outfile
@@ -246,7 +203,37 @@ class InstanceStatisticsCSVTestCase(TestCase):
 
         mock_collect_statistics.assert_called_with(
             mock_file,
-            domain,
+            [domain],
+            expected_start_date,
+            expected_end_date
+        )
+
+    @freezegun.freeze_time('2020-01-01')
+    @patch('instance.management.commands.instance_statistics_csv.Command.collect_instance_statistics')
+    @patch('instance.management.commands.instance_statistics_csv.open')
+    def test_multiple_domains(self, mock_open, mock_collect_statistics):
+        """
+        Verify that the command uses custom dates
+        """
+        outfile = 'somefile.txt'
+        domain1 = 'test.opencraft.hosting'
+        domain2 = 'another.opencraft.hosting'
+
+        mock_file = Mock()
+        mock_open.return_value = mock_file
+
+        call_command(
+            'instance_statistics_csv',
+            domains=','.join([domain1, domain2]),
+            out=outfile
+        )
+
+        expected_end_date = datetime.utcnow().date()
+        expected_start_date = expected_end_date - timedelta(days=30)
+
+        mock_collect_statistics.assert_called_with(
+            mock_file,
+            [domain1, domain2],
             expected_start_date,
             expected_end_date
         )

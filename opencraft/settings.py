@@ -874,6 +874,14 @@ if FILEBEAT_LOGSTASH_HOSTS:
 INSTANCE_LOGS_SERVER_HOST = env('INSTANCE_LOGS_SERVER_HOST', default=logs_server_host_default)
 INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', default='ubuntu')
 
+# Trial Instances Report ######################################################
+
+TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS', default=['billing@opencraft.com'])
+
+# Crontab schedule for the Trial Instances Report.
+# Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
+TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
+
 # Instances ###################################################################
 
 # User Console - React SPA

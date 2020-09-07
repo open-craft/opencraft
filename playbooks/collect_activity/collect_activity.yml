@@ -6,9 +6,7 @@
   vars:
     # This should be overridden to be more unique.
     local_output_dir: /tmp/
-    local_output_filename: "{{ inventory_hostname }}"
     remote_output_filename: /tmp/activity_report
-    config_section: "{{ inventory_hostname }}"
     extra_script_arguments: ""
   tasks:
     # We have to do a copy+command pair here (instead of script) in order to get
@@ -25,7 +23,7 @@
       shell: >
         . /edx/app/edxapp/edxapp_env &&
         /edx/bin/python.edxapp /tmp/collect_activity.py
-        --config-section {{ config_section }}
+        --config-section {{ config_section | default(inventory_hostname) }}
         --out {{ remote_output_filename }}
         {{ extra_script_arguments }}
       register: stats_results
@@ -41,7 +39,7 @@
     - name: Fetch stats
       fetch:
         src: '{{ remote_output_filename }}'
-        dest: '{{ local_output_dir }}/{{ local_output_filename }}'
+        dest: '{{ local_output_dir }}/{{ local_output_filename | default(inventory_hostname) }}'
         flat: yes
       register: fetch_results
 
