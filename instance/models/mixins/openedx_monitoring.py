@@ -22,9 +22,12 @@ Open edX instance monitoring mixin
 
 # Imports #####################################################################
 
+import textwrap
+
 from django.conf import settings
 from django.db import models
 from django.db.models import ProtectedError
+from django.utils.html import escape
 
 from instance import newrelic
 
@@ -65,6 +68,26 @@ class OpenEdXMonitoringMixin:
         self._update_url_monitors(alert_policy)
         self._set_email_alerts(alert_policy)
 
+    @staticmethod
+    def _generate_monitor_condition_name(short_name: str, instance_name: str) -> str:
+        """
+        Generate monitor condition name for the given URL and short name of the instance.
+
+        Based on the documentation of New Relic, the monitor name should be less than
+        or equal to 64 chars. The shortening will not split a word into two, instead it
+        will skip the word which would be splitted.
+
+        Also, based on New Relic's documentation, the names cannot contain angle brackets
+        ("<" and ">"), so we need to escape them in case the instance names would contain any.
+        """
+
+        monitoring_name = "{short} of {instance}".format(
+            short=short_name,
+            instance=escape(instance_name)
+        )
+
+        return textwrap.shorten(monitoring_name, 64, placeholder="...")
+
     def _update_url_monitors(self, alert_policy):
         """
         Create a monitor for each URL to monitor, and delete the other monitors.
@@ -83,9 +106,8 @@ class OpenEdXMonitoringMixin:
                 # and create one if it doesn't. This helps when the alert condition
                 # wasn't created in a previous invocation due to some issue.
                 if not monitor.new_relic_alert_conditions.exists():
-                    alert_condition_id = newrelic.add_alert_nrql_condition(
-                        alert_policy.id, url, urls_to_monitor_dict[url]
-                    )
+                    monitor_name = self._generate_monitor_condition_name(urls_to_monitor_dict[url], self.name)
+                    alert_condition_id = newrelic.add_alert_nrql_condition(alert_policy.id, url, monitor_name)
                     monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
             else:
                 self.logger.info('Deleting New Relic Synthetics monitor for old public URL %s', url)
@@ -95,9 +117,8 @@ class OpenEdXMonitoringMixin:
             self.logger.info('Creating New Relic Synthetics monitor for new public URL %s', url)
             new_monitor_id = newrelic.create_synthetics_monitor(url)
             monitor = self.new_relic_availability_monitors.create(pk=new_monitor_id)
-            alert_condition_id = newrelic.add_alert_nrql_condition(
-                alert_policy.id, url, urls_to_monitor_dict[url]
-            )
+            monitor_name = self._generate_monitor_condition_name(urls_to_monitor_dict[url], self.name)
+            alert_condition_id = newrelic.add_alert_nrql_condition(alert_policy.id, url, monitor_name)
             monitor.new_relic_alert_conditions.create(id=alert_condition_id, alert_policy=alert_policy)
 
     def _set_email_alerts(self, alert_policy):

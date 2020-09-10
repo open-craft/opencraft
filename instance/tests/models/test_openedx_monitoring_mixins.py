@@ -106,18 +106,23 @@ class OpenEdXMonitoringTestCase(TestCase):
         )
 
         # Check that alert emails have been set up
-        created_condition_urls = set()
+        created_conditions = set()
         list_of_emails_added = []
 
         for add_call in mock_newrelic.add_alert_nrql_condition.call_args_list:
-            created_condition_urls.add(add_call[0][1])
+            created_conditions.add((add_call[0][1], add_call[0][2]))
 
         for add_call in mock_newrelic.add_email_notification_channel.call_args_list:
             list_of_emails_added.append(add_call[0][0])
 
         self.assertEqual(
-            created_condition_urls,
-            set([instance.url, instance.studio_url, instance.lms_preview_url, instance.lms_extended_heartbeat_url])
+            created_conditions,
+            set([
+                (instance.url, 'LMS of {}'.format(instance.name)),
+                (instance.studio_url, 'Studio of {}'.format(instance.name)),
+                (instance.lms_preview_url, 'Preview of {}'.format(instance.name)),
+                (instance.lms_extended_heartbeat_url, 'Extended heartbeat of {}'.format(instance.name)),
+            ])
         )
         self.assertEqual(set(list_of_emails_added), set(expected_monitor_emails))
         mock_newrelic.add_notification_channels_to_policy.assert_called_with(
