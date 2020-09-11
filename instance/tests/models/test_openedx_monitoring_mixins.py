@@ -129,6 +129,78 @@ class OpenEdXMonitoringTestCase(TestCase):
             1, list(range(len(expected_monitor_emails)))
         )
 
+    @ddt.data(
+        # [additional_monitoring_emails, expected final email monitor list]
+        [[], ['admin@opencraft.com']],
+        [['other@opencraft.com'], ['admin@opencraft.com', 'other@opencraft.com']],
+    )
+    @ddt.unpack
+    @patch('instance.models.mixins.openedx_monitoring.newrelic')
+    def test_enable_monitoring_on_extremely_long_instance_names(self, additional_monitoring_emails, expected_monitor_emails, mock_newrelic, mock_consul):
+        """
+        Check that the `enable_monitoring` method creates New Relic Synthetics
+        monitors for each of the instance's public urls, and enables email
+        alerts even for those instance names which has extremely long names.
+        """
+        monitor_ids = [str(uuid4()) for i in range(4)]
+        mock_newrelic.get_synthetics_monitor.return_value = []
+        mock_newrelic.get_synthetics_notification_emails.return_value = []
+        mock_newrelic.create_synthetics_monitor.side_effect = monitor_ids
+        mock_newrelic.add_alert_policy.return_value = 1
+        mock_newrelic.add_alert_nrql_condition.side_effect = list(range(4))
+        mock_newrelic.add_email_notification_channel.side_effect = list(range(len(expected_monitor_emails)))
+        instance = OpenEdXInstanceFactory()
+        instance.name += " long" * 15  # Generate a very long instance name
+        instance.additional_monitoring_emails = additional_monitoring_emails
+        instance.enable_monitoring()
+
+        # Check that the monitors have been created
+        mock_newrelic.delete_synthetics_monitor.assert_not_called()
+        mock_newrelic.create_synthetics_monitor.assert_has_calls([
+            call(instance.url),
+            call(instance.studio_url),
+            call(instance.lms_preview_url),
+            call(instance.lms_extended_heartbeat_url),
+        ], any_order=True)
+        self.assertCountEqual(
+            instance.new_relic_availability_monitors.values_list('pk', flat=True),
+            monitor_ids
+        )
+
+        # Check that alert emails have been set up
+        created_condition_urls = set()
+        created_condition_names = set()
+        list_of_emails_added = []
+
+        for add_call in mock_newrelic.add_alert_nrql_condition.call_args_list:
+            created_condition_urls.add(add_call[0][1])
+            created_condition_names.add(add_call[0][2])
+
+        for add_call in mock_newrelic.add_email_notification_channel.call_args_list:
+            list_of_emails_added.append(add_call[0][0])
+
+        expected_monitor_urls = [
+            instance.url,
+            instance.studio_url,
+            instance.lms_preview_url,
+            instance.lms_extended_heartbeat_url,
+        ]
+
+        for condition_name in created_condition_names:
+            self.assertTrue(condition_name.endswith("..."))
+            self.assertLessEqual(len(condition_name), 64)
+
+        self.assertEqual(created_condition_urls, set([
+            instance.url,
+            instance.studio_url,
+            instance.lms_preview_url,
+            instance.lms_extended_heartbeat_url,
+        ]))
+        self.assertEqual(set(list_of_emails_added), set(expected_monitor_emails))
+        mock_newrelic.add_notification_channels_to_policy.assert_called_with(
+            1, list(range(len(expected_monitor_emails)))
+        )
+
     @patch('instance.models.mixins.openedx_monitoring.newrelic')
     def test_enable_monitoring_for_pre_new_relic_alerts_instances(self, mock_newrelic, mock_consul):
         """
