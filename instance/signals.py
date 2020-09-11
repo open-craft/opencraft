@@ -29,4 +29,4 @@ import django.dispatch
 
 # Emitted after an appserver has been spawned
 # After all attempts have been tried, and the appserver activated if applicable
-appserver_spawned = django.dispatch.Signal(providing_args=['instance', 'appserver'])
+appserver_spawned = django.dispatch.Signal(providing_args=['instance', 'appserver', 'deployment_id'])
