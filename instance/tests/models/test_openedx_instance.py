@@ -547,6 +547,12 @@ class OpenEdXInstanceTestCase(TestCase):
         # Given these deployment types, no emails should be sended
         self.assertEqual(len(django_mail.outbox), 0)
 
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Skip sending urgent alert e-mail after instance {instance_name}"
+            "didn't provision initiated by OpenCraft member".format(instance_name=instance.name)
+        )
+
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_databases(self, mocks, mock_provision, mock_consul):
