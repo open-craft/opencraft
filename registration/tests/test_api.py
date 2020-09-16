@@ -31,6 +31,7 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from simple_email_confirmation.models import EmailAddress
+from instance.factories import instance_factory
 from instance.models.appserver import Status
 from instance.models.deployment import DeploymentType
 from instance.schemas.theming import DEFAULT_THEME
@@ -338,6 +339,175 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertTrue(
             EmailAddress.objects.filter(email="noinstance.user.public@example.com").exists()
         )
+
+    def test_external_domain_is_the_base_domain(self):
+        """
+        Validate that the user cannot register with the base domain of the beta test applications.
+        """
+        instance_data = dict(
+            external_domain=BetaTestApplication.BASE_DOMAIN,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-validate'),
+            data=instance_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 400)
+        self.assertEqual(
+            response,
+            {"external_domain": ['The domain "{}" is not allowed.'.format(BetaTestApplication.BASE_DOMAIN)]}
+        )
+
+    @ddt.data(
+        ("example.com", "example.com"),
+        ("subdomain-of.example.com", "example.com"),
+        ("example.com", "subdomain-of.example.com"),
+    )
+    @ddt.unpack
+    def test_external_domain_already_registered(self, new_domain, registered_domain):
+        """
+        Validate that the user cannot register a subdomain for an already registered domain.
+        """
+        self.client.force_login(self.user_without_instance)
+
+        instance_data = dict(
+            external_domain=registered_domain,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        instance_create_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-list'),
+            data=instance_data,
+            format="json",
+        )
+
+        instance_data["external_domain"] = new_domain
+        validation_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-validate'),
+            data=instance_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(instance_create_response.status_code, 201)
+        self.assertEqual(validation_response.status_code, 400)
+        self.assertEqual(response, {"external_domain": ["This domain is already taken."]})
+
+    @ddt.data(
+        ("example.com", "preview.example.com"),
+        ("example.com", "studio.example.com"),
+        ("example.com", "preview.example.com"),
+        ("example.com", "discovery.example.com"),
+        ("example.com", "ecommerce.example.com")
+    )
+    @ddt.unpack
+    def test_external_domain_forbidden_domain_not_causing_issue(self, new_domain, registered_domain):
+        """
+        Validate that the user cannot register a domain which would cause a conflict.
+
+        In this scenario, the database already has some instances which would be rejected if the user
+        would try to register now. For example, we already have an instance registered with
+        preview.example.com (LMS domain). The following urls are generated for the instance:
+
+            - preview.example.com
+            - studio.preview.example.com
+            - preview.preview.example.com
+            - discovery.preview.example.com
+            - ecommerce.preview.example.com
+
+        Because the already created instance, we cannot accept registrations for example.com since
+        a) the subdomain is already registered for example.com and b) the generated preview domain
+        for the new domain (example.com without the preview subdomain) would conflict with the existing
+        instance's LMS domain.
+        """
+        self.client.force_login(self.user_without_instance)
+
+        # Although instance_factory is not creating a BetaTestApplication, we can use it
+        # since we are curious about instances without BetaTestApplication as well. Also,
+        # this is not interesting from the point of this test.
+        instance_factory(
+            sub_domain=registered_domain.split(".")[0],
+            external_lms_domain=registered_domain
+        )
+
+        validation_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-validate'),
+            data=dict(
+                external_domain=new_domain,
+                instance_name="My Instance",
+                public_contact_email="noinstance.user.public@example.com",
+            ),
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 400)
+        self.assertEqual(response, {"external_domain": ["This domain is already taken."]})
+
+    @ddt.data(
+        ("studio.example.com", 'Cannot register domain starting with "studio".'),
+        ("preview.example.com", 'Cannot register domain starting with "preview".'),
+        ("discovery.example.com", 'Cannot register domain starting with "discovery".'),
+        ("ecommerce.example.com", 'Cannot register domain starting with "ecommerce".'),
+    )
+    @ddt.unpack
+    def test_external_domain_subdomain_is_reserved(self, domain, error_message):
+        """
+        Validate that the user cannot register a reserved subdomain.
+        """
+        instance_data = dict(
+            external_domain=domain,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-validate'),
+            data=instance_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 400)
+        self.assertEqual(response, {"external_domain": [error_message]})
+
+    @ddt.data(
+        ("studio", 'Cannot register domain starting with "studio".'),
+        ("preview", 'Cannot register domain starting with "preview".'),
+        ("discovery", 'Cannot register domain starting with "discovery".'),
+        ("ecommerce", 'Cannot register domain starting with "ecommerce".'),
+    )
+    @ddt.unpack
+    def test_subdomain_validation_failure_for_reserved_subdomain(self, subdomain, error_message):
+        """
+        Validate that the user cannot register a reserved subdomain.
+        """
+        instance_data = dict(
+            subdomain=subdomain,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.post(
+            reverse('api:v2:openedx-instance-config-validate'),
+            data=instance_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 400)
+        self.assertEqual(response, {"subdomain": [error_message]})
 
     @ddt.data(
         dict(subdomain="invalid subdomain"),

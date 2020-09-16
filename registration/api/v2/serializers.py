@@ -22,16 +22,21 @@ Serializers for registration API.
 import logging
 from typing import Dict
 
+import tldextract
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
 from instance.models.deployment import DeploymentType
+from instance.models.mixins.domain_names import DOMAIN_PREFIXES
 from instance.models.openedx_deployment import DeploymentState
+from instance.models.openedx_instance import OpenEdXInstance
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
@@ -288,6 +293,17 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     public_contact_email = serializers.EmailField(required=False)
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
+    def _validate_subdomain_not_contains_reserved_word(self, subdomain):
+        """
+        Validate that the subdomain not contains any reserved or blacklisted keywords.
+        """
+        truncated_subdomain = subdomain.split('.')[0]
+
+        if truncated_subdomain in DOMAIN_PREFIXES:
+            raise ValidationError('Cannot register domain starting with "{subdomain}".'.format(
+                subdomain=subdomain
+            ))
+
     def get_lms_url(self, obj):
         """
         Returns instance LMS url if available
@@ -314,6 +330,72 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             raise ValidationError("User has reached limit of allowed Open edX instances.")
         else:
             return value
+
+    def validate_external_domain(self, value) -> str:
+        """
+        Prevent users from registering with an external domain which was or currently in use.
+
+        The validation reduces the risk of security issues when someone is trying to take over
+        control of a client resource (domain) if they forget to restrict its access.
+        """
+        domain_data = tldextract.extract(value)
+
+        domain = domain_data.registered_domain
+
+        if domain == BetaTestApplication.BASE_DOMAIN:
+            raise ValidationError('The domain "{domain}" is not allowed.'.format(
+                domain=value
+            ))
+
+        self._validate_subdomain_not_contains_reserved_word(domain_data.subdomain)
+
+        is_domain_used_for_beta_app = BetaTestApplication.objects.filter(
+            external_domain__endswith=domain
+        ).exists()
+
+        if is_domain_used_for_beta_app:
+            raise ValidationError('This domain is already taken.')
+
+        is_taken = OpenEdXInstance.objects.filter(
+            Q(external_lms_domain=domain)
+            | Q(external_lms_preview_domain__endswith=domain)
+            | Q(external_studio_domain__endswith=domain)
+            | Q(external_discovery_domain__endswith=domain)
+            | Q(external_ecommerce_domain__endswith=domain)
+            # No need to check for subdomain, since it will match anyway
+            | Q(extra_custom_domains__contains=domain)
+        ).exists()
+
+        if is_taken:
+            raise ValidationError('This domain is already taken.')
+
+        return value
+
+    def validate_subdomain(self, value) -> str:
+        """
+        Prevent users from registering with a subdomain which is in use.
+
+        The validation reduces the risk of security issues when someone is trying to take over
+        control of a client resource (domain) if they forget to restrict its access.
+        """
+        truncated_subdomain = value.split(".")[0]
+        self._validate_subdomain_not_contains_reserved_word(truncated_subdomain)
+
+        # Although the validator on the model would catch the existence of
+        # the beta application with the given subdomain, this way we can potentially
+        # save an API request to Gandi for checking the existance of the DNS record.
+        is_subdomain_used_for_beta_app = BetaTestApplication.objects.filter(
+            subdomain=value
+        ).exists()
+
+        if is_subdomain_used_for_beta_app:
+            raise ValidationError('This domain is already taken.')
+
+        # TODO: # Go to Gandi and check the availability for OpenCraft domains:
+        # - *.opencraft.hosting
+        # - *.opencraft.com
+
+        return value
 
     class Meta:
         model = BetaTestApplication
