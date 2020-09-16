@@ -25,6 +25,15 @@ from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 
+# Constants ###################################################################
+
+DOMAIN_PREFIXES = [
+    'studio',
+    'preview',
+    'discovery',
+    'ecommerce'
+]
+
 # Functions ###################################################################
 
 
@@ -163,8 +172,7 @@ class DomainNameInstance(models.Model):
         """
         Return an iterable of domain names using prefixes for Studio, Preview, Discovery, E-Commerce
         """
-        prefixes = ['studio', 'preview', 'discovery', 'ecommerce']
-        return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in prefixes]
+        return ['{}-{}'.format(prefix, self.internal_lms_domain) for prefix in DOMAIN_PREFIXES]
 
     def get_load_balanced_domains(self):
         """
