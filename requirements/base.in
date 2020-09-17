@@ -64,6 +64,7 @@ requests-file==1.4.3
 responses==0.10.6
 service_identity==18.1.0
 six
+tldextract==2.2.3
 urllib3==1.25.3
 virtualenv
 Werkzeug==0.15.4
