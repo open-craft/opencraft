@@ -292,6 +292,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             "User has reached limit of allowed Open edX instances.",
         )
 
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
     @patch('registration.api.v2.serializers.gandi_api')
     def test_create_new_instance_success(self, mock_gandi_api):
         """
@@ -299,9 +300,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         internal_domains = ["some", "internal", "domain"]
         mock_gandi_api.filter_dns_records.return_value = [
-            {
-                "content": "{0}.{1}".format(domain, settings.DEFAULT_INSTANCE_BASE_DOMAIN)
-            } for domain in internal_domains
+            {"content": "{0}.example.com".format(domain)} for domain in internal_domains
         ]
 
         expected_subdomain = "newsubdomain"
@@ -326,6 +325,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
 
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
     @patch('registration.api.v2.serializers.gandi_api')
     @patch('random.choices', return_value=['1', '2', '3', '4', '5'])
     def test_create_new_instance_success_external_domain(self, mock_random, mock_gandi_api):
@@ -385,6 +385,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
     @patch('registration.api.v2.serializers.gandi_api')
     @ddt.data(
         ("mydomain.com", "mydomain.com"),
@@ -537,6 +538,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(response, {"subdomain": [error_message]})
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
     @patch('registration.api.v2.serializers.gandi_api')
     def test_subdomain_validation_failure_for_internal_subdomain(self, mock_gandi_api):
         """
