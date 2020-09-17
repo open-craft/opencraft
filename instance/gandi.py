@@ -136,6 +136,36 @@ class GandiV5API:
         result = client.execute()
         return result
 
+    def list_dns_records(self, record):
+        """
+        List all records of a domain name for a given type.
+        """
+        lexicon_config = self._get_base_config()
+        lexicon_config['domain'] = record["domain"]
+        lexicon_config['action'] = 'list'
+        lexicon_config['type'] = record["type"]
+        config = ConfigResolver()
+        config.with_dict(dict_object=lexicon_config)
+        client = Client(config)
+        return client.execute()
+
+    def filter_dns_records(self, domain, **record):
+        """
+        List all records which has type CNAME.
+        """
+        _, record["domain"] = self._split_domain_name(domain)
+
+        if "type" not in record.keys():
+            record["type"] = "CNAME"
+
+        def list_dns_records_callback():
+            return self.list_dns_records(record)
+
+        return self._dns_operation(
+            callback=list_dns_records_callback,
+            log_msg='Getting DNS records: {}'.format(domain),
+        )
+
     def set_dns_record(self, domain, **record):
         """
         Set a DNS record. This method takes the mandatory 'domain' parameter to be able to support multiple domains
