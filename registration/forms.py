@@ -275,7 +275,7 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
         """
         subdomain = self.cleaned_data.get('subdomain')
         if subdomain:
-            match = subdomain.rfind('.' + BetaTestApplication.BASE_DOMAIN)
+            match = subdomain.rfind('.' + settings.DEFAULT_INSTANCE_BASE_DOMAIN)
             if match != -1:
                 return subdomain[:match]
         return subdomain

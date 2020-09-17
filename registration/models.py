@@ -81,8 +81,6 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     """
     An application to beta test the Instance Manager.
     """
-    BASE_DOMAIN = 'opencraft.hosting'
-
     PENDING = 'pending'
     ACCEPTED = 'accepted'
     REJECTED = 'rejected'
@@ -99,7 +97,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         verbose_name='domain name',
         help_text=('The URL students will visit. In the future, you will also '
                    'have the possibility to use your own domain name.'
-                   '\n\nExample: hogwarts.{0}').format(BASE_DOMAIN),
+                   '\n\nExample: hogwarts.{0}').format(settings.DEFAULT_INSTANCE_BASE_DOMAIN),
         validators=[
             validators.MinLengthValidator(
                 3,
@@ -305,7 +303,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         The full domain requested for this application.
         """
-        return '{0}.{1}'.format(self.subdomain, self.BASE_DOMAIN)
+        return '{0}.{1}'.format(self.subdomain, settings.DEFAULT_INSTANCE_BASE_DOMAIN)
 
     def email_addresses_verified(self):
         """

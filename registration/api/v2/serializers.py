@@ -24,6 +24,7 @@ from typing import Dict
 
 import tldextract
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
@@ -33,6 +34,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
+from instance.gandi import api as gandi_api
 from instance.models.deployment import DeploymentType
 from instance.models.mixins.domain_names import DOMAIN_PREFIXES
 from instance.models.openedx_deployment import DeploymentState
@@ -339,10 +341,9 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         control of a client resource (domain) if they forget to restrict its access.
         """
         domain_data = tldextract.extract(value)
-
         domain = domain_data.registered_domain
 
-        if domain == BetaTestApplication.BASE_DOMAIN:
+        if domain == settings.DEFAULT_INSTANCE_BASE_DOMAIN:
             raise ValidationError('The domain "{domain}" is not allowed.'.format(
                 domain=value
             ))
@@ -389,11 +390,28 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         ).exists()
 
         if is_subdomain_used_for_beta_app:
-            raise ValidationError('This domain is already taken.')
+            raise ValidationError("This domain is already taken.")
 
-        # TODO: # Go to Gandi and check the availability for OpenCraft domains:
-        # - *.opencraft.hosting
-        # - *.opencraft.com
+        domains = set([
+            settings.DEFAULT_INSTANCE_BASE_DOMAIN,
+            settings.GANDI_DEFAULT_BASE_DOMAIN,
+        ])
+
+        for domain in domains:
+            try:
+                managed_domains = gandi_api.filter_dns_records(domain)
+                records = {tldextract.extract(record["content"]) for record in managed_domains}
+            except Exception as exc:
+                logger.warning("Unable to retrieve the domains for %s: %s.", domain, str(exc))
+                raise ValidationError("The domain cannot be validated.")
+
+            # Because manually registered CNAMEs may have a dot (.) in their subdomain
+            # we need to check for that. Ex: haproxy-integration.net.opencraft.hosting is
+            # registered, but we must reject registrations for net.opencraft.hosting as well.
+            registered_subdomains = {dns_record.subdomain.split(".")[-1] for dns_record in records}
+
+            if value in registered_subdomains:
+                raise ValidationError("This domain is already taken.")
 
         return value
 
