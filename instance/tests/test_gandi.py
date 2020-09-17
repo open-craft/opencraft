@@ -88,6 +88,36 @@ class GandiV5TestCase(TestCase):
         )
 
     @patch('lexicon.client.Client.execute')
+    def test_list_dns_record(self, mocked_lexicon_client_execute):
+        """
+        Test listing all DNS records for a domain.
+        """
+        self.populate_domain_cache()
+        self.api.list_dns_records(dict(domain='test.com', type='CNAME'))
+        self.assertEqual(mocked_lexicon_client_execute.call_count, 1)
+
+    @patch.object(GandiV5API, 'list_dns_records')
+    def test_filter_dns_record_default_cname(self, mocked_list_dns_records):
+        """
+        Test filtering DNS records for a domain.
+        """
+        expected_domain = 'test.com'
+        self.populate_domain_cache()
+        self.api.filter_dns_records(expected_domain)
+        mocked_list_dns_records.assert_called_once_with(dict(domain=expected_domain, type='CNAME'))
+
+    @patch.object(GandiV5API, 'list_dns_records')
+    def test_filter_dns_record_with_a_record(self, mocked_list_dns_records):
+        """
+        Test filtering DNS records for a domain.
+        """
+        expected_domain = 'test.com'
+        expected_type = 'A'
+        self.populate_domain_cache()
+        self.api.filter_dns_records(expected_domain, type=expected_type)
+        mocked_list_dns_records.assert_called_once_with(dict(domain=expected_domain, type=expected_type))
+
+    @patch('lexicon.client.Client.execute')
     def test_set_dns_record(self, mocked_lexicon_client_execute):
         """
         Test setting a DNS record calls the expected library method.
