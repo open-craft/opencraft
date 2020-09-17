@@ -540,11 +540,11 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
         domain_names = [
-            "test.load_balancer.example.com",
-            "preview.test.load_balancer.example.com",
-            "studio.test.load_balancer.example.com",
-            "ecommerce.test.load_balancer.example.com",
-            "discovery.test.load_balancer.example.com",
+            "test.load_balancer.opencraft.hosting",
+            "preview.test.load_balancer.opencraft.hosting",
+            "studio.test.load_balancer.opencraft.hosting",
+            "ecommerce.test.load_balancer.opencraft.hosting",
+            "discovery.test.load_balancer.opencraft.hosting",
         ]
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()

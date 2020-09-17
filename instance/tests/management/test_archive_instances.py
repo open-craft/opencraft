@@ -76,7 +76,7 @@ class ArchiveInstancesTestCase(TestCase):
             appserver._status_to_configuring_server()
             appserver._status_to_running()
 
-            domain = label + '.example.com'
+            domain = label + '.opencraft.hosting'
             instances[domain] = dict(instance=instance, appserver=appserver)
 
         return instances
@@ -87,7 +87,7 @@ class ArchiveInstancesTestCase(TestCase):
         without prompting.
         """
         out = StringIO()
-        call_command('archive_instances', '--domains=X.example.com', stdout=out)
+        call_command('archive_instances', '--domains=X.opencraft.hosting', stdout=out)
         self.assertEqual(out.getvalue().strip(), 'No active instances found (from 1 domains).')
 
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='no'))
@@ -97,7 +97,7 @@ class ArchiveInstancesTestCase(TestCase):
         """
         self.create_test_instances('A')
         out = StringIO()
-        call_command('archive_instances', '--domains=A.example.com', stdout=out)
+        call_command('archive_instances', '--domains=A.opencraft.hosting', stdout=out)
         self.assertTrue(out.getvalue().strip().endswith('Cancelled'))
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
@@ -112,16 +112,16 @@ class ArchiveInstancesTestCase(TestCase):
         """
         self.create_test_instances('A')
         out = StringIO()
-        call_command('archive_instances', '--domains=A.example.com', stdout=out)
+        call_command('archive_instances', '--domains=A.opencraft.hosting', stdout=out)
         self.assertRegex(out.getvalue(), r'.*Found 1 instances \(from 1 domains\) to be archived\.\.\..*')
-        self.assertRegex(out.getvalue(), r'.*- A.example.com.*')
-        self.assertRegex(out.getvalue(), r'.*Archiving A.example.com\.\.\..*')
+        self.assertRegex(out.getvalue(), r'.*- A.opencraft.hosting.*')
+        self.assertRegex(out.getvalue(), r'.*Archiving A.opencraft.hosting\.\.\..*')
         self.assertRegex(out.getvalue(), r'.*Archived 1 instances \(from 1 domains\).*')
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.clean_up_appserver_dns_records')
     @patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
-    @ddt.data([['A.example.com'], 1],
-              [['B.example.com', 'C.example.com', 'D.example.com'], 2])
+    @ddt.data([['A.opencraft.hosting'], 1],
+              [['B.opencraft.hosting', 'C.opencraft.hosting', 'D.opencraft.hosting'], 2])
     @ddt.unpack
     @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
@@ -134,8 +134,8 @@ class ArchiveInstancesTestCase(TestCase):
         """
         instances = self.create_test_instances('ABCDEFGH')
         # Mark instance B as archived, so it won't match the filter
-        instances['B.example.com']['instance'].ref.is_archived = True
-        instances['B.example.com']['instance'].save()
+        instances['B.opencraft.hosting']['instance'].ref.is_archived = True
+        instances['B.opencraft.hosting']['instance'].save()
 
         patch('instance.management.commands.archive_instances.input', MagicMock(return_value='yes'))
         out = StringIO()
@@ -208,7 +208,7 @@ class ArchiveInstancesTestCase(TestCase):
             stdout=out
         )
         self.assertRegex(out.getvalue(), r'.*Archived 3 instances \(from 4 domains\).')
-        self.assertRegex(out.getvalue(), r'.*Failed to archive A.example.com.')
+        self.assertRegex(out.getvalue(), r'.*Failed to archive A.opencraft.hosting.')
         self.assertEqual(
             OpenEdXInstance.objects.filter(internal_lms_domain__in=domains, ref_set__is_archived=True).count(),
             3
