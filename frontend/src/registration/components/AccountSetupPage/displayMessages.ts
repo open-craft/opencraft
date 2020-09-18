@@ -58,6 +58,12 @@ const messages = {
       'and that requests for support are subject to hourly fees.*',
     description: ''
   },
+  acceptDomainCondition: {
+    defaultMessage:
+      'By submitting the registration form, I assert that I have ' +
+      'rights to use the domain I provided.*',
+    description: ''
+  },
   subscribeToUpdates: {
     defaultMessage:
       'I want OpenCraft to occasionally email me about important news, tips and new features.',
