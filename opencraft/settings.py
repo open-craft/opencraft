@@ -876,11 +876,15 @@ INSTANCE_LOGS_SERVER_SSH_USERNAME = env('INSTANCE_LOGS_SERVER_SSH_USERNAME', def
 
 # Trial Instances Report ######################################################
 
-TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS', default=['billing@opencraft.com'])
+TRIAL_INSTANCES_REPORT_ENABLED = env.bool('TRIAL_INSTANCES_REPORT_ENABLED', default=False)
 
-# Crontab schedule for the Trial Instances Report.
-# Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
-TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
+if TRIAL_INSTANCES_REPORT_ENABLED:
+
+    TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS', default=['billing@opencraft.com'])
+
+    # Crontab schedule for the Trial Instances Report.
+    # Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
+    TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
 
 # Instances ###################################################################
 
