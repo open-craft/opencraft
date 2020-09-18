@@ -823,7 +823,7 @@ class RabbitMQServerManagerTestCase(TestCase):
         with self.assertRaises(RabbitMQServer.DoesNotExist):
             RabbitMQServer.objects.select_random()
 
-    @override_settings(DEFAULT_RABBITMQ_API_URL="http://doesnotexist.opencraft.hosting:12345")
+    @override_settings(DEFAULT_RABBITMQ_API_URL="http://doesnotexist.example.com:12345")
     def test_invalid_rabbitmq_server(self, mock_consul):
         """
         Verify that an exception gets raised when the credentials are missing from from the
@@ -839,8 +839,8 @@ class RabbitMQServerManagerTestCase(TestCase):
         and contains mismatching parameters with the given settings.
         """
         urls = [
-            'http://user:pass@doesnotexist.opencraft.hosting:12345',
-            'http://user2:pass2@doesnotexist.opencraft.hosting:12345'
+            'http://user:pass@doesnotexist.example.com:12345',
+            'http://user2:pass2@doesnotexist.example.com:12345'
         ]
         for url in urls:
             with override_settings(DEFAULT_RABBITMQ_API_URL=url):
@@ -851,7 +851,7 @@ class RabbitMQServerManagerTestCase(TestCase):
             'accepts_new_clients', True,
             'admin_password', 'pass2',
             'admin_username', 'user2',
-            'api_url', 'http://doesnotexist.opencraft.hosting:12345',
-            'instance_host', 'rabbitmq.opencraft.hosting',
+            'api_url', 'http://doesnotexist.example.com:12345',
+            'instance_host', 'rabbitmq.example.com',
             'instance_port', 5671,
         )

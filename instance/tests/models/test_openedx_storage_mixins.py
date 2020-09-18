@@ -79,7 +79,7 @@ class OpenEdXStorageMixinTestCase(TestCase):
 
         opts = parsed_vars['EDXAPP_PROFILE_IMAGE_BACKEND']['options']
         self.assertEqual(opts['headers'], {'Cache-Control': 'max-age-{{ EDXAPP_PROFILE_IMAGE_MAX_AGE }}'})
-        self.assertRegex(opts['location'], r'instance[\w]+_test_example_com/profile-images')
+        self.assertRegex(opts['location'], r'instance[\w]+_test_opencraft_hosting/profile-images')
 
     @patch(
         'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -715,14 +715,14 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         Test bucket_name is correct
         """
         instance = OpenEdXInstanceFactory()
-        self.assertRegex(instance.bucket_name, r'ocim-instance[A-Za-z0-9]*-test-example-com')
+        self.assertRegex(instance.bucket_name, r'ocim-instance[A-Za-z0-9]*-test-opencraft-hosting')
 
     def test_iam_username(self, mock_consul):
         """
         Test bucket_name is correct
         """
         instance = OpenEdXInstanceFactory()
-        self.assertRegex(instance.iam_username, r'ocim-instance[A-Za-z0-9]*_test_example_com')
+        self.assertRegex(instance.iam_username, r'ocim-instance[A-Za-z0-9]*_test_opencraft_hosting')
 
     def test_s3_region_default_value(self, mock_consul):
         """

@@ -227,7 +227,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_s3.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
-        dns_records = gandi.api.list_records('example.com')
+        dns_records = gandi.api.list_records('opencraft.hosting')
         self.assertCountEqual(dns_records, [
             dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='preview.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
