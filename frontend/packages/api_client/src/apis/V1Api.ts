@@ -44,6 +44,11 @@ export interface InstanceReadRequest {
     id: number;
 }
 
+export interface InstanceSetNotesRequest {
+    id: number;
+    data: InstanceReferenceDetailed;
+}
+
 export interface OpenedxAppserverCreateRequest {
     data: SpawnAppServer;
 }
@@ -197,7 +202,7 @@ export class V1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Uses InstanceReference to iterate all types of instances, and serializes them.  The fields that are returned for each instance depend on its instance_type and whether you are listing all instances (returns fewer fields) or just one instance (returns all fields).  The only fields that are available for all instances, regardless of type, are the fields defined on the InstanceReference class, namely:  * `id` * `name` * `created` * `modified` * `instance_type` * `is_archived`  Note that IDs used for instances are always the ID of the InstanceReference object, which may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance object has its own ID which should never be used - just use its InstanceReference ID). This detail is managed by the API so users of the API should not generally need to be aware of it.
+     * Uses InstanceReference to iterate all types of instances, and serializes them.  The fields that are returned for each instance depend on its instance_type and whether you are listing all instances (returns fewer fields) or just one instance (returns all fields).  The only fields that are available for all instances, regardless of type, are the fields defined on the InstanceReference class, namely:  * `id` * `name` * `notes` * `created` * `modified` * `instance_type` * `is_archived`  Note that IDs used for instances are always the ID of the InstanceReference object, which may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance object has its own ID which should never be used - just use its InstanceReference ID). This detail is managed by the API so users of the API should not generally need to be aware of it.
      * API to list and manipulate instances.
      */
     async instanceReadRaw(requestParameters: InstanceReadRequest): Promise<runtime.ApiResponse<InstanceReferenceDetailed>> {
@@ -227,11 +232,55 @@ export class V1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Uses InstanceReference to iterate all types of instances, and serializes them.  The fields that are returned for each instance depend on its instance_type and whether you are listing all instances (returns fewer fields) or just one instance (returns all fields).  The only fields that are available for all instances, regardless of type, are the fields defined on the InstanceReference class, namely:  * `id` * `name` * `created` * `modified` * `instance_type` * `is_archived`  Note that IDs used for instances are always the ID of the InstanceReference object, which may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance object has its own ID which should never be used - just use its InstanceReference ID). This detail is managed by the API so users of the API should not generally need to be aware of it.
+     * Uses InstanceReference to iterate all types of instances, and serializes them.  The fields that are returned for each instance depend on its instance_type and whether you are listing all instances (returns fewer fields) or just one instance (returns all fields).  The only fields that are available for all instances, regardless of type, are the fields defined on the InstanceReference class, namely:  * `id` * `name` * `notes` * `created` * `modified` * `instance_type` * `is_archived`  Note that IDs used for instances are always the ID of the InstanceReference object, which may not be the same as the ID of the specific Instance subclass (e.g. the OpenEdXInstance object has its own ID which should never be used - just use its InstanceReference ID). This detail is managed by the API so users of the API should not generally need to be aware of it.
      * API to list and manipulate instances.
      */
     async instanceRead(requestParameters: InstanceReadRequest): Promise<InstanceReferenceDetailed> {
         const response = await this.instanceReadRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Update notes attribute of selected instance.
+     */
+    async instanceSetNotesRaw(requestParameters: InstanceSetNotesRequest): Promise<runtime.ApiResponse<InstanceReferenceDetailed>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instanceSetNotes.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instanceSetNotes.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v1/instance/{id}/set_notes/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: InstanceReferenceDetailedToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => InstanceReferenceDetailedFromJSON(jsonValue));
+    }
+
+    /**
+     * Update notes attribute of selected instance.
+     */
+    async instanceSetNotes(requestParameters: InstanceSetNotesRequest): Promise<InstanceReferenceDetailed> {
+        const response = await this.instanceSetNotesRaw(requestParameters);
         return await response.value();
     }
 

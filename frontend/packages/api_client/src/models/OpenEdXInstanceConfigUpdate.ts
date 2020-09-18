@@ -45,7 +45,7 @@ export interface OpenEdXInstanceConfigUpdate {
     /**
      * The URL students will visit. In the future, you will also have the possibility to use your own domain name.
      * 
-     * Example: hogwarts.opencraft.hosting
+     * Example: hogwarts.yourdomain.com
      * @type {string}
      * @memberof OpenEdXInstanceConfigUpdate
      */
