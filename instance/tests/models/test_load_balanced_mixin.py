@@ -79,7 +79,7 @@ class LoadBalancedInstanceTestCase(TestCase):
         """
         Test set_dns_records() without external domains.
         """
-        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.opencraft.hosting')
+        instance = OpenEdXInstanceFactory(internal_lms_domain='test.dns.example.com')
         instance.load_balancing_server = LoadBalancingServer.objects.select_random()
         instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
