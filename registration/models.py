@@ -97,7 +97,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         verbose_name='domain name',
         help_text=('The URL students will visit. In the future, you will also '
                    'have the possibility to use your own domain name.'
-                   '\n\nExample: hogwarts.{0}').format(settings.DEFAULT_INSTANCE_BASE_DOMAIN),
+                   '\n\nExample: hogwarts.yourdomain.com'),
         validators=[
             validators.MinLengthValidator(
                 3,
