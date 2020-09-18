@@ -66,6 +66,7 @@ class AccountAPITestCase(APITestCase):
             "full_name": "Another User",
             "accepted_privacy_policy": self.reference_time,
             "accept_paid_support": True,
+            "accept_domain_condition": True,
             "subscribe_to_updates": True
         }
         self.account_data = {**self.user_data, **self.profile_data}
@@ -119,6 +120,7 @@ class AccountAPITestCase(APITestCase):
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(days=2)}),
         ({"accept_paid_support": False}),
+        ({"accept_domain_condition": False}),
     )
     def test_account_creation_failure_invalid(self, override_data):
         """
@@ -150,7 +152,15 @@ class AccountAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @ddt.data("full_name", "username", "email", "password", "accepted_privacy_policy", "accept_paid_support")
+    @ddt.data(
+        "full_name",
+        "username",
+        "email",
+        "password",
+        "accepted_privacy_policy",
+        "accept_paid_support",
+        "accept_domain_condition",
+    )
     def test_account_creation_failure_missing(self, field_to_remove):
         """
         Ensure that registration fails when data is missing.
@@ -175,6 +185,7 @@ class AccountAPITestCase(APITestCase):
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(hours=2)}),
         ({"accepted_privacy_policy": timezone.now() - timezone.timedelta(hours=1)}),
         ({"accept_paid_support": False}),
+        ({"accept_domain_condition": False}),
     )
     def test_account_update_failure(self, data):
         """

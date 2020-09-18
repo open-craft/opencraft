@@ -65,6 +65,10 @@ class UserProfile(ValidateModelMixin, TimeStampedModel):
         help_text=('User understands that they may email OpenCraft for support, '
                    'and that such emails are subject to hourly fees.'),
     )
+    accept_domain_condition = models.BooleanField(
+        default=False,
+        help_text=('User asserts that they have the rights to use to registered domain.'),
+    )
     subscribe_to_updates = models.BooleanField(
         default=False,
         help_text=('I want OpenCraft to keep me updated about important news, '
@@ -87,6 +91,7 @@ def superuser_profile(sender, instance, created=False, **kwargs):
             full_name='Administrator',
             accepted_privacy_policy=timezone.now(),
             accept_paid_support=True,
+            accept_domain_condition=True,
             user_id=instance.id,
         )
         instance.profile.save()
