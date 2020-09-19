@@ -184,13 +184,6 @@ class BetaTestApplicationForm(NgModelFormMixin, NgFormValidationMixin, NgModelFo
             'required': 'You must accept these terms to register.',
         },
     )
-    accept_domain_condition = forms.BooleanField(
-        required=True,
-        help_text=('I assert that I have rights to use the domain I provided.'),
-        error_messages={
-            'required': 'You must accept these terms to register.',
-        },
-    )
     accept_privacy_policy = forms.BooleanField(
         required=True,
         help_text=('I accept the privacy policy.'),
