@@ -179,7 +179,7 @@ export const submitRegistration = (
 
           dispatch({
             type: Types.REGISTRATION_VALIDATION_SUCCESS,
-            userData,
+            data: userData,
             nextStep
           });
           if (nextStep) {
