@@ -141,9 +141,9 @@ class GandiV5API:
         List all records of a domain name for a given type.
         """
         lexicon_config = self._get_base_config()
-        lexicon_config['domain'] = record["domain"]
+        lexicon_config['domain'] = record['domain']
         lexicon_config['action'] = 'list'
-        lexicon_config['type'] = record["type"]
+        lexicon_config['type'] = record['type']
         config = ConfigResolver()
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
@@ -153,10 +153,10 @@ class GandiV5API:
         """
         List all records which has type CNAME.
         """
-        _, record["domain"] = self._split_domain_name(domain)
+        _, record['domain'] = self._split_domain_name(domain)
 
         if "type" not in record.keys():
-            record["type"] = "CNAME"
+            record['type'] = "CNAME"
 
         def list_dns_records_callback():
             return self.list_dns_records(record)
