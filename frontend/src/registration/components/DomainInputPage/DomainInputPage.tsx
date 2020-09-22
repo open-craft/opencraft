@@ -58,15 +58,15 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleExternalDomainChange = (newDomain: string) => {
-    this.setState({
-      externalDomain: newDomain
-    });
-    // Clean up error feedback if any
-    if (this.props.registrationFeedback.subdomain) {
-      this.props.clearErrorMessage('externalDomain');
-    }
-  };
+  // private handleExternalDomainChange = (newDomain: string) => {
+  //   this.setState({
+  //     externalDomain: newDomain
+  //   });
+  //   // Clean up error feedback if any
+  //   if (this.props.registrationFeedback.subdomain) {
+  //     this.props.clearErrorMessage('externalDomain');
+  //   }
+  // };
 
   private submitDomain = () => {
     if (this.state.domainIsExternal) {
@@ -125,46 +125,46 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderExternalDomain = () => {
-    return (
-      <div className="div-fill">
-        <RegistrationPage
-          title="Pro & Teacher Account"
-          subtitleBig="Register with your own domain"
-          subtitle="Cost: +€25/month"
-          currentStep={1}
-        >
-          <RedirectToCorrectStep
-            currentPageStep={0}
-            currentRegistrationStep={this.props.currentRegistrationStep}
-          />
-          <DomainInput
-            domainName={this.state.externalDomain}
-            error={this.props.registrationFeedback.externalDomain}
-            internalDomain={false}
-            loading={this.props.loading}
-            handleDomainChange={this.handleExternalDomainChange}
-            handleSubmitDomain={this.submitDomain}
-          />
-          <div className="use-own">
-            <Nav.Link
-              onClick={() => {
-                this.handleSwitchPageToExternal(false);
-              }}
-            >
-              <WrappedMessage messages={messages} id="useInternalDomain" />
-            </Nav.Link>
-          </div>
-        </RegistrationPage>
-        <InstitutionalAccountHero />
-      </div>
-    );
-  };
+  // private renderExternalDomain = () => {
+  //   return (
+  //     <div className="div-fill">
+  //       <RegistrationPage
+  //         title="Pro & Teacher Account"
+  //         subtitleBig="Register with your own domain"
+  //         subtitle="Cost: +€25/month"
+  //         currentStep={1}
+  //       >
+  //         <RedirectToCorrectStep
+  //           currentPageStep={0}
+  //           currentRegistrationStep={this.props.currentRegistrationStep}
+  //         />
+  //         <DomainInput
+  //           domainName={this.state.externalDomain}
+  //           error={this.props.registrationFeedback.externalDomain}
+  //           internalDomain={false}
+  //           loading={this.props.loading}
+  //           handleDomainChange={this.handleExternalDomainChange}
+  //           handleSubmitDomain={this.submitDomain}
+  //         />
+  //         <div className="use-own">
+  //           <Nav.Link
+  //             onClick={() => {
+  //               this.handleSwitchPageToExternal(false);
+  //             }}
+  //           >
+  //             <WrappedMessage messages={messages} id="useInternalDomain" />
+  //           </Nav.Link>
+  //         </div>
+  //       </RegistrationPage>
+  //       <InstitutionalAccountHero />
+  //     </div>
+  //   );
+  // };
 
   public render() {
-    if (this.state.domainIsExternal) {
-      return this.renderExternalDomain();
-    }
+    // if (this.state.domainIsExternal) {
+    //   return this.renderExternalDomain();
+    // }
 
     return this.renderInternalDomain();
   }
