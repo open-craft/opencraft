@@ -54,7 +54,7 @@ ECOMMERCE_REPOS:
     REPO: 'ecommerce.git'
     # Use a branch which contains this fix:
     # https://github.com/open-craft/ecommerce/pull/13/files
-    VERSION: opencraft-release/juniper.2
+    VERSION: opencraft-release/juniper.3
     DESTINATION: "{{ ecommerce_code_dir }}"
     SSH_KEY: '{{ ECOMMERCE_GIT_IDENTITY }}'
 
