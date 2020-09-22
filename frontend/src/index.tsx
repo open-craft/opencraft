@@ -9,15 +9,18 @@ import * as serviceWorker from './serviceWorker';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './styles/app.scss';
 import { App } from './ui/components';
+import { MatomoTracker } from './utils/MatomoTracker';
 
 ReactDOM.render(
-  <IntlProvider locale="en" textComponent={React.Fragment}>
-    <Provider store={store}>
-      <ConnectedRouter history={history}>
-        <App />
-      </ConnectedRouter>
-    </Provider>
-  </IntlProvider>,
+  <MatomoTracker>
+    <IntlProvider locale="en" textComponent={React.Fragment}>
+      <Provider store={store}>
+        <ConnectedRouter history={history}>
+          <App />
+        </ConnectedRouter>
+      </Provider>
+    </IntlProvider>
+  </MatomoTracker>,
   document.getElementById('root')
 );
 

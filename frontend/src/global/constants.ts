@@ -21,6 +21,15 @@ export const INTERNAL_DOMAIN_NAME =
 export const GANDI_REFERRAL_LINK =
   process.env.REACT_APP_GANDI_REFERRAL_LINK || 'https://gandi.link/';
 
+export const MATOMO_BASE_URL = process.env.REACT_APP_MATOMO_BASE_URL || '';
+
+export const MATOMO_SITE_ID = process.env.REACT_APP_MATOMO_SITE_ID || '1';
+
+export const MATOMO_MY_DOMAIN = process.env.REACT_APP_MATOMO_MY_DOMAIN || '';
+
+export const MATOMO_ALIAS_DOMAIN =
+  process.env.REACT_APP_MATOMO_ALIAS_DOMAIN || '';
+
 export interface StringIndexedArray {
   [key: string]: any;
 }
