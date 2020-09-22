@@ -6,8 +6,7 @@ import {
   AccountSetupPage,
   CongratulationsPage,
   DomainInputPage,
-  InstanceSetupPage,
-  CustomDomainSetupPage
+  InstanceSetupPage
 } from 'registration/components';
 
 export const RegistrationRoutes = () => (
@@ -18,10 +17,6 @@ export const RegistrationRoutes = () => (
     <Route path={ROUTES.Registration.DOMAIN} component={DomainInputPage} />
     <Route path={ROUTES.Registration.INSTANCE} component={InstanceSetupPage} />
     <Route path={ROUTES.Registration.ACCOUNT} component={AccountSetupPage} />
-    <Route
-      path={ROUTES.Registration.CUSTOM_DOMAIN}
-      component={CustomDomainSetupPage}
-    />
     <Route
       path={ROUTES.Registration.CONGRATS}
       component={CongratulationsPage}
