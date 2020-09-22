@@ -6,16 +6,19 @@ import { Button } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { RegistrationSteps, ROUTES } from 'global/constants';
 import { RedirectToCorrectStep } from 'registration/components';
+import { MatomoUserIdTracker } from 'utils/MatomoTracker';
 import { submitRegistration } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
 import './styles.scss';
+import { RegistrationModel } from '../../models';
 
 interface ActionProps {
   submitRegistration: Function;
 }
 
 interface Props extends ActionProps {
+  registrationData: RegistrationModel;
   currentRegistrationStep: RegistrationSteps;
 }
 
@@ -37,6 +40,7 @@ export class CongratulationsPage extends React.PureComponent<Props, State> {
           currentPageStep={4}
           currentRegistrationStep={this.props.currentRegistrationStep}
         />
+        <MatomoUserIdTracker userId={this.props.registrationData.username} />
         <div className="congrats-page">
           <h1>
             <WrappedMessage messages={messages} id="congrats" />
