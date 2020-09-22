@@ -306,7 +306,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     public_contact_email = serializers.EmailField(required=False)
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
-    def _validate_subdomain_not_contains_reserved_word(self, subdomain):
+    @staticmethod
+    def _validate_subdomain_not_contains_reserved_word(subdomain):
         """
         Validate that the subdomain not contains any reserved or blacklisted keywords.
         """
