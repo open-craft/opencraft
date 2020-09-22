@@ -227,7 +227,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(mocks.mock_provision_s3.call_count, 1)
 
         lb_domain = instance.load_balancing_server.domain + '.'
-        dns_records = gandi.api.list_records('opencraft.hosting')
+        dns_records = gandi.api.list_records('example.com')
         self.assertCountEqual(dns_records, [
             dict(name='test.spawn', type='CNAME', value=lb_domain, ttl=1200),
             dict(name='preview.test.spawn', type='CNAME', value=lb_domain, ttl=1200),
@@ -540,11 +540,11 @@ class OpenEdXInstanceTestCase(TestCase):
         instance.enable_prefix_domains_redirect = enable_prefix_domains_redirect
         instance.save()
         domain_names = [
-            "test.load_balancer.opencraft.hosting",
-            "preview.test.load_balancer.opencraft.hosting",
-            "studio.test.load_balancer.opencraft.hosting",
-            "ecommerce.test.load_balancer.opencraft.hosting",
-            "discovery.test.load_balancer.opencraft.hosting",
+            "test.load_balancer.example.com",
+            "preview.test.load_balancer.example.com",
+            "studio.test.load_balancer.example.com",
+            "ecommerce.test.load_balancer.example.com",
+            "discovery.test.load_balancer.example.com",
         ]
         # Test configuration for preliminary page
         backend_map, config = instance.get_load_balancer_configuration()

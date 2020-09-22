@@ -93,10 +93,10 @@ class DeleteArchivedTestCase(TestCase):
         out = StringIO()
         call_command('delete_archived', '1', stdout=out)
         self.assertTrue('Found 2 archived instances older than 1 months' in out.getvalue())
-        self.assertTrue('Deleting old.opencraft.hosting' in out.getvalue())
-        self.assertTrue('Deleting new.opencraft.hosting' in out.getvalue())
+        self.assertTrue('Deleting old.example.com' in out.getvalue())
+        self.assertTrue('Deleting new.example.com' in out.getvalue())
         self.assertTrue('Deleted 2 archived instances older than 1 months' in out.getvalue())
-        self.assertTrue('Deleting newer.opencraft.hosting' not in out.getvalue())
+        self.assertTrue('Deleting newer.example.com' not in out.getvalue())
         self.assertTrue('Failed to delete' not in out.getvalue())
         self.assertEqual(mock_delete.call_count, 2)
 
@@ -110,9 +110,9 @@ class DeleteArchivedTestCase(TestCase):
         call_command('delete_archived', '-y', '3', stdout=out, stderr=err)
         self.assertTrue('Found 1 archived instances older than 3 months' in out.getvalue())
 
-        self.assertTrue('Deleting old.opencraft.hosting' in out.getvalue())
-        self.assertTrue('Deleting new.opencraft.hosting' not in out.getvalue())
-        self.assertTrue('Deleting newer.opencraft.hosting' not in out.getvalue())
+        self.assertTrue('Deleting old.example.com' in out.getvalue())
+        self.assertTrue('Deleting new.example.com' not in out.getvalue())
+        self.assertTrue('Deleting newer.example.com' not in out.getvalue())
 
         self.assertTrue('Failed to delete Instance' in out.getvalue())
         self.assertTrue('Failed to delete Instance' in err.getvalue())

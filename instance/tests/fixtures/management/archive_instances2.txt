@@ -1,1 +1,1 @@
-H.opencraft.hosting
+H.example.com

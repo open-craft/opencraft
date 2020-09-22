@@ -28,7 +28,6 @@ class FakeGandiV5APIClient:
         self._domains = {
             "test.com": [],
             "example.com": [],
-            "opencraft.hosting": [],
             "opencraft.co.uk": [],
         }
 

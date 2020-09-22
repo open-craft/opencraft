@@ -311,7 +311,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         internal_domains = ["some", "internal", "domain"]
         mock_gandi_api.filter_dns_records.return_value = [
-            {"content": "{0}.opencraft.hosting".format(domain)} for domain in internal_domains
+            {"content": "{0}.example.com".format(domain)} for domain in internal_domains
         ]
 
         expected_subdomain = "newsubdomain"
