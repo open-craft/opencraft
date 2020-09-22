@@ -6,7 +6,7 @@ import {
   AccountSetupPage,
   CongratulationsPage,
   DomainInputPage,
-  InstanceSetupPage,
+  InstanceSetupPage
   // CustomDomainSetupPage
 } from 'registration/components';
 
