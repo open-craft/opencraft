@@ -134,12 +134,20 @@ class GandiV5API:
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
         result = client.execute()
+        
+        # Invalidate cache for the domain-cname pair
+        cache.delete(f"{record['domain']}-{record['type']}")
+
         return result
 
     def list_dns_records(self, record):
         """
         List all records of a domain name for a given type.
         """
+        cached_result = cache.get(f"{record['domain']}-{record['type']}")
+        if cached_result:
+            return cached_result
+
         lexicon_config = self._get_base_config()
         lexicon_config['domain'] = record['domain']
         lexicon_config['action'] = 'list'
@@ -147,7 +155,11 @@ class GandiV5API:
         config = ConfigResolver()
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
-        return client.execute()
+
+        result = client.execute()
+        cache.set(f"{record['domain']}-{record['type']}", result)            
+        
+        return result
 
     def filter_dns_records(self, domain, **record):
         """
@@ -159,6 +171,7 @@ class GandiV5API:
             record['type'] = "CNAME"
 
         def list_dns_records_callback():
+            # Cache the list result for the type
             return self.list_dns_records(record)
 
         return self._dns_operation(
@@ -203,6 +216,9 @@ class GandiV5API:
         result = False
         try:
             result = client.execute()
+
+            # Invalidate cache for the domain-cname pair
+            cache.delete(f"{record['domain']}-{record['type']}")
         except Exception as e:  # pylint: disable=broad-except
             # This ugly checking of the exception message is needed
             # as the library only throws an instance of the Exception class.

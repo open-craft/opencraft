@@ -304,7 +304,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     def test_create_new_instance_success(self, mock_gandi_api):
         """
         Test successfully creating a new instance
@@ -337,7 +337,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     @patch('random.choices', return_value=['1', '2', '3', '4', '5'])
     def test_create_new_instance_success_external_domain(self, mock_random, mock_gandi_api):
         """
@@ -370,7 +370,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         )
         mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
 
-    @patch("registration.api.v2.serializers.gandi_api")
+    @patch("registration.models.gandi_api")
     def test_external_domain_is_the_base_domain(self, mock_gandi_api):
         """
         Validate that the user cannot register with the base domain of the beta test applications.
@@ -397,7 +397,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     @ddt.data(
         ("mydomain.com", "mydomain.com"),
         ("subdomain-of.mydomain.com", "mydomain.com"),
@@ -519,7 +519,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(validation_response.status_code, 400)
         self.assertEqual(response, {"external_domain": [error_message]})
 
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     @ddt.data(
         ("studio", 'Cannot register domain starting with "studio".'),
         ("preview", 'Cannot register domain starting with "preview".'),
@@ -550,7 +550,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="example.com", GANDI_DEFAULT_BASE_DOMAIN="example.com")
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     def test_subdomain_validation_failure_for_internal_subdomain(self, mock_gandi_api):
         """
         Validate that the user cannot register a internal subdomain.
@@ -585,7 +585,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="un.known", GANDI_DEFAULT_BASE_DOMAIN="un.known")
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     def test_subdomain_validation_failure_for_unknown_domain(self, mock_gandi_api):
         """
         Validate that the user cannot register domain if the provider (Gandi) is down
@@ -610,7 +610,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(response, {"subdomain": ["The domain cannot be validated."]})
         mock_gandi_api.filter_dns_records.assert_called_once_with("un.known")
 
-    @patch('registration.api.v2.serializers.gandi_api')
+    @patch('registration.models.gandi_api')
     @ddt.data(
         dict(subdomain="invalid subdomain"),
         dict(subdomain="invalid.subdomain"),

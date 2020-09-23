@@ -36,6 +36,11 @@ DOMAIN_PREFIXES = [
 
 # Functions ###################################################################
 
+def is_subdomain_contains_reserved_word(subdomain: str) -> bool:
+    """
+    Check if the subdomain contains a reserved word.
+    """
+    return subdomain.split('.')[0] in DOMAIN_PREFIXES
 
 def generate_internal_lms_domain(sub_domain):
     """

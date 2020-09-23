@@ -22,20 +22,27 @@ Models for the Instance Manager beta test
 
 # Imports #####################################################################
 
+import logging
+import tldextract
+
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django_extensions.db.models import TimeStampedModel
 from simple_email_confirmation.models import EmailAddress
 
-from instance.models.mixins.domain_names import generate_internal_lms_domain
+from instance.gandi import api as gandi_api
+from instance.models.mixins.domain_names import generate_internal_lms_domain, is_subdomain_contains_reserved_word
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
 from instance.utils import create_new_deployment
+
+logger = logging.getLogger(__name__)
 
 
 # Models ######################################################################
@@ -50,17 +57,117 @@ def validate_color(color):
         '{} is not a valid color, it must be either #123 or #123456'.format(color),
     )(color)
 
+def validate_available_external_domain(value):
+    """
+    Prevent users from registering with an external domain which was or currently in use.
 
-def validate_available_subdomain(subdomain):
+    The validation reduces the risk of security issues when someone is trying to take over
+    control of a client resource (domain) if they forget to restrict its access.
     """
-    Check that the given subdomain is not blacklisted.
+    domain_data = tldextract.extract(value)
+    domain = domain_data.registered_domain
+
+    if domain == settings.DEFAULT_INSTANCE_BASE_DOMAIN:
+        raise ValidationError(
+            message='The domain "{domain}" is not allowed.'.format(domain=value),
+            code='reserved'
+        )
+
+    if is_subdomain_contains_reserved_word(value):
+        raise ValidationError(
+            message='Cannot register domain starting with "{subdomain}".'.format(subdomain=domain_data.subdomain),
+            code='reserved'
+        )
+
+    is_domain_used_for_beta_app = BetaTestApplication.objects.filter(
+        Q(external_domain=domain)
+        | Q(external_domain__endswith=f".{domain}")
+    ).exists()
+
+    if is_domain_used_for_beta_app:
+        raise ValidationError(
+            message='This domain is already taken.',
+            code='unique'
+        )
+
+    is_taken = OpenEdXInstance.objects.filter(
+        Q(external_lms_domain=domain)
+        | Q(external_lms_preview_domain__endswith=domain)
+        | Q(external_studio_domain__endswith=domain)
+        | Q(external_discovery_domain__endswith=domain)
+        | Q(external_ecommerce_domain__endswith=domain)
+        # No need to check for subdomain, since it will match anyway
+        | Q(extra_custom_domains__contains=domain)
+    ).exists()
+
+    if is_taken:
+        raise ValidationError(
+            message='This domain is already taken.',
+            code='unique'
+        )
+
+def validate_available_subdomain(value):
     """
-    if subdomain in settings.SUBDOMAIN_BLACKLIST:
+    Prevent users from registering with a subdomain which is in use.
+
+    The validation reduces the risk of security issues when someone is trying to take over
+    control of a client resource (domain) if they forget to restrict its access.
+    """
+    if value in settings.SUBDOMAIN_BLACKLIST:
         raise ValidationError(
             message='This domain name is not publicly available.',
             code='blacklisted',
         )
 
+    if is_subdomain_contains_reserved_word(value):
+        raise ValidationError(
+            message='Cannot register domain starting with "{subdomain}".'.format(subdomain=value),
+            code='reserved'
+        )
+
+    # if subdomain_exists return instead of raising validation error, because the unique
+    # check already raises the error
+    is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
+    if is_subdomain_registered:
+        raise ValidationError(
+                message='This domain is already taken.',
+                code='unique'
+            )
+
+    managed_domains = set([
+        settings.DEFAULT_INSTANCE_BASE_DOMAIN,
+        settings.GANDI_DEFAULT_BASE_DOMAIN,
+    ])
+
+    # If a subdomain has only a suffix or domain it means that the
+    # user provided a managed subdomain which is a valid TLD like "net"
+    # in case of net.our.domain
+    parsed_domain = tldextract.extract(value)
+    has_no_domain = parsed_domain.suffix and not not parsed_domain.domain
+    has_no_suffix = parsed_domain.domain and not not parsed_domain.suffix
+    if has_no_domain or has_no_suffix:
+        return
+
+    for domain in managed_domains:
+        try:
+            records = gandi_api.filter_dns_records(domain)
+            records = {tldextract.extract(record["content"]) for record in records}
+        except Exception as exc:
+            logger.warning('Unable to retrieve the domains for %s: %s.', domain, str(exc))
+            raise ValidationError(
+                message='The domain cannot be validated.',
+                code='cannot_validate'
+            )
+
+        # Because manually registered CNAMEs may have dots (.) in their subdomain
+        # we need to check for that. Ex: haproxy-integration.net.opencraft.hosting is
+        # registered, but we must reject registrations for net.opencraft.hosting as well.
+        registered_subdomains = {dns_record.subdomain.split(".")[-1] for dns_record in records}
+        if value in registered_subdomains:
+            raise ValidationError(
+                message='This domain is already taken.',
+                code='unique'
+            )
 
 def validate_logo_height(image):
     """
@@ -113,11 +220,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 'lower-case letters, numbers, and hyphens. '
                 'Cannot start or end with a hyphen.',
             ),
-            validate_available_subdomain,
         ],
         error_messages={
             'unique': 'This domain is already taken.',
             'blacklisted': 'This domain name is not publicly available.',
+            'reserved': 'Cannot register domain with this subdomain.',
+            'cannot_validate': 'The domain cannot be validated.'
         },
     )
     external_domain = models.CharField(
@@ -144,11 +252,11 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 'containing lower-case letters, numbers, dots, and hyphens. '
                 'Cannot start or end with a hyphen.',
             ),
-            validate_available_subdomain,
         ],
         error_messages={
             'unique': 'This domain is already taken.',
             'blacklisted': 'This domain name is not publicly available.',
+            'reserved': 'Cannot register domain with this subdomain.',
         },
     )
     instance_name = models.CharField(
@@ -325,10 +433,18 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         errors = {}
 
+        original_data = next(iter(BetaTestApplication.objects.filter(pk=self.pk)), None)
+        is_subdomain_updated = original_data and original_data.subdomain != self.subdomain
+        is_external_domain_updated = original_data and original_data.external_domain != self.external_domain
+
         # Check internal domain
         generated_domain = generate_internal_lms_domain(self.subdomain)
         if self.instance is not None and self.instance.internal_lms_domain == generated_domain:
             return
+
+        if is_subdomain_updated:
+            validate_available_subdomain(self.subdomain)
+
         if OpenEdXInstance.objects.filter(internal_lms_domain=generated_domain).exists():
             subdomain_error = ValidationError(
                 message='This domain is already taken.',
@@ -340,6 +456,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if self.external_domain:
             if self.instance is not None and self.instance.external_lms_domain == self.external_domain:
                 return
+
+            if is_external_domain_updated:
+                validate_available_external_domain(self.external_domain)
+
             if OpenEdXInstance.objects.filter(external_lms_domain=self.external_domain).exists():
                 external_domain_error = ValidationError(
                     message='This domain is already taken.',
