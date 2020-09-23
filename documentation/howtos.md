@@ -54,7 +54,7 @@ ECOMMERCE_REPOS:
     REPO: 'ecommerce.git'
     # Use a branch which contains this fix:
     # https://github.com/open-craft/ecommerce/pull/13/files
-    VERSION: opencraft-release/juniper.2
+    VERSION: opencraft-release/juniper.3
     DESTINATION: "{{ ecommerce_code_dir }}"
     SSH_KEY: '{{ ECOMMERCE_GIT_IDENTITY }}'
 
@@ -77,7 +77,7 @@ EDXAPP_LMS_ENV_EXTRA:
 * We need to set the `COMMON_HOSTNAME` to something other than the external lms domain name (eg. `openlearning.example.com`), so that API requests made on the server can be properly routed through the
   load balancer-terminated SSL connection.  This is required because, by default, an /etc/hosts entry for the `COMMON_HOSTNAME` is set pointing to localhost, which will break SSL connections to the
   LMS from within the instance.
-* The [`ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`](https://github.com/edx/configuration/blob/open-release/juniper.2/playbooks/roles/ecommerce/defaults/main.yml#L103) should contain the payment processors
+* The [`ECOMMERCE_PAYMENT_PROCESSOR_CONFIG`](https://github.com/edx/configuration/blob/open-release/juniper.3/playbooks/roles/ecommerce/defaults/main.yml#L103) should contain the payment processors
   and their keys.
 * A larger appserver vm type may need to be used, since it will be running ecommerce and course discovery as well.
 
