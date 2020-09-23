@@ -82,7 +82,6 @@ export const ROUTES = {
 
 export const REGISTRATION_STEPS = [
   ROUTES.Registration.DOMAIN,
-  // ROUTES.Registration.CUSTOM_DOMAIN,
   ROUTES.Registration.INSTANCE,
   ROUTES.Registration.ACCOUNT,
   ROUTES.Registration.CONGRATS
