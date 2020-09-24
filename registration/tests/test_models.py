@@ -34,6 +34,7 @@ from registration.models import (
     BetaTestApplication,
     validate_available_external_domain,
     validate_available_subdomain,
+    validate_subdomain_is_not_blacklisted,
 )
 
 
@@ -53,6 +54,27 @@ class ValidatorTestCase(TestCase):
             privacy_policy_url='http://www.some/url'
         )
 
+    @override_settings(SUBDOMAIN_BLACKLIST=['otherdomain'])
+    def test_subdomain_is_not_blacklisted(self):
+        """
+        Validate that a blacklisted subdomain raises validation error.
+        """
+        subdomain = 'newsubdomain'
+        validate_subdomain_is_not_blacklisted(subdomain)
+
+    @override_settings(SUBDOMAIN_BLACKLIST=['newsubdomain'])
+    def test_subdomain_is_blacklisted(self):
+        """
+        Validate that a blacklisted subdomain raises validation error.
+        """
+        subdomain = 'newsubdomain'
+
+        with self.assertRaises(ValidationError) as exc:
+            validate_subdomain_is_not_blacklisted(subdomain)
+
+        self.assertEqual(exc.exception.message, 'This domain name is not publicly available.')
+        self.assertEqual(exc.exception.code, 'blacklisted')
+
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
     def test_validate_available_subdomain(self, mock_gandi_api):
@@ -68,21 +90,6 @@ class ValidatorTestCase(TestCase):
         validate_available_subdomain(subdomain)
 
         mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
-
-    @override_settings(SUBDOMAIN_BLACKLIST=['newsubdomain'])
-    @patch('registration.models.gandi_api')
-    def test_subdomain_is_blacklisted(self, mock_gandi_api):
-        """
-        Validate that a blacklisted subdomain raises validation error.
-        """
-        subdomain = 'newsubdomain'
-
-        with self.assertRaises(ValidationError) as exc:
-            validate_available_subdomain(subdomain)
-
-        self.assertEqual(exc.exception.message, 'This domain name is not publicly available.')
-        self.assertEqual(exc.exception.code, 'blacklisted')
-        self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')

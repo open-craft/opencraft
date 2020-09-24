@@ -108,6 +108,14 @@ def validate_available_external_domain(value):
         )
 
 
+def validate_subdomain_is_not_blacklisted(value):
+    """
+    Validate that a subdomain is not blacklisted.
+    """
+    if value in settings.SUBDOMAIN_BLACKLIST:
+        raise ValidationError(message='This domain name is not publicly available.', code='blacklisted')
+
+
 def validate_available_subdomain(value):
     """
     Prevent users from registering with a subdomain which is in use.
@@ -115,9 +123,6 @@ def validate_available_subdomain(value):
     The validation reduces the risk of security issues when someone is trying to take over
     control of a client resource (domain) if they forget to restrict its access.
     """
-    if value in settings.SUBDOMAIN_BLACKLIST:
-        raise ValidationError(message='This domain name is not publicly available.', code='blacklisted')
-
     if is_subdomain_contains_reserved_word(value):
         raise ValidationError(message=f'Cannot register domain starting with "{value}".', code='reserved')
 
@@ -199,6 +204,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 'lower-case letters, numbers, and hyphens. '
                 'Cannot start or end with a hyphen.',
             ),
+            validate_subdomain_is_not_blacklisted,
         ],
         error_messages={
             'unique': 'This domain is already taken.',
@@ -231,6 +237,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                 'containing lower-case letters, numbers, dots, and hyphens. '
                 'Cannot start or end with a hyphen.',
             ),
+            validate_subdomain_is_not_blacklisted,
         ],
         error_messages={
             'unique': 'This domain is already taken.',
