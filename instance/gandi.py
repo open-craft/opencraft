@@ -55,7 +55,7 @@ class GandiV5API:
         Populate the internal domain cache with all domains in the current Gandi account.
         """
         self._domain_cache = []
-        domains_api_url = '{}/domains'.format(self.api_base)
+        domains_api_url = f'{self.api_base}/domains'
 
         try:
             response = requests.get(domains_api_url, headers={'X-Api-Key': self.api_key})
@@ -86,7 +86,7 @@ class GandiV5API:
                 subdomain = '.'.join(labels[:split_index]) or '@'
                 return subdomain, registered_domain
         raise ValueError(
-            'The given domain name "{}" does not match any domain registered in the Gandi account.'.format(domain)
+            f'The given domain name "{domain}" does not match any domain registered in the Gandi account.'
         )
 
     def _get_base_config(self):
@@ -176,7 +176,7 @@ class GandiV5API:
 
         return self._dns_operation(
             callback=list_dns_records_callback,
-            log_msg='Getting DNS records: {}'.format(domain),
+            log_msg=f'Getting DNS records: {domain}',
         )
 
     def set_dns_record(self, domain, **record):
@@ -198,7 +198,7 @@ class GandiV5API:
 
         self._dns_operation(
             callback=set_dns_record_callback,
-            log_msg='Setting DNS record: {}'.format(record),
+            log_msg=f'Setting DNS record: {record}',
         )
 
     def delete_dns_record(self, record):
@@ -239,7 +239,7 @@ class GandiV5API:
 
         self._dns_operation(
             callback=remove_dns_record_callback,
-            log_msg='Deleting DNS record: {}'.format(record),
+            log_msg=f'Deleting DNS record: {record}',
         )
 
 

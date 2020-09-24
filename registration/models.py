@@ -54,7 +54,7 @@ def validate_color(color):
     """
     validators.RegexValidator(
         r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
-        '{} is not a valid color, it must be either #123 or #123456'.format(color),
+        f'{color} is not a valid color, it must be either #123 or #123456',
     )(color)
 
 def validate_available_external_domain(value):
@@ -69,13 +69,13 @@ def validate_available_external_domain(value):
 
     if domain == settings.DEFAULT_INSTANCE_BASE_DOMAIN:
         raise ValidationError(
-            message='The domain "{domain}" is not allowed.'.format(domain=value),
+            message=f'The domain "{value}" is not allowed.',
             code='reserved'
         )
 
     if is_subdomain_contains_reserved_word(value):
         raise ValidationError(
-            message='Cannot register domain starting with "{subdomain}".'.format(subdomain=domain_data.subdomain),
+            message=f'Cannot register domain starting with "{domain_data.subdomain}".',
             code='reserved'
         )
 
@@ -121,7 +121,7 @@ def validate_available_subdomain(value):
 
     if is_subdomain_contains_reserved_word(value):
         raise ValidationError(
-            message='Cannot register domain starting with "{subdomain}".'.format(subdomain=value),
+            message=f'Cannot register domain starting with "{value}".',
             code='reserved'
         )
 
@@ -411,7 +411,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         """
         The full domain requested for this application.
         """
-        return '{0}.{1}'.format(self.subdomain, settings.DEFAULT_INSTANCE_BASE_DOMAIN)
+        return f'{self.subdomain}.{settings.DEFAULT_INSTANCE_BASE_DOMAIN}'
 
     def email_addresses_verified(self):
         """

@@ -311,7 +311,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         internal_domains = ["some", "internal", "domain"]
         mock_gandi_api.filter_dns_records.return_value = [
-            {"content": "{0}.example.com".format(domain)} for domain in internal_domains
+            {"content": f"{domain}.example.com"} for domain in internal_domains
         ]
 
         expected_subdomain = "newsubdomain"
@@ -392,7 +392,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(validation_response.status_code, 400)
         self.assertEqual(
             response,
-            {"external_domain": ['The domain "{}" is not allowed.'.format(settings.DEFAULT_INSTANCE_BASE_DOMAIN)]}
+            {"external_domain": [f'The domain "{settings.DEFAULT_INSTANCE_BASE_DOMAIN}" is not allowed.']}
         )
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
@@ -557,7 +557,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         internal_subdomain = "haproxy"
         mock_gandi_api.filter_dns_records.return_value = [{
-            "content": "haproxy.{}".format(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
+            "content": "haproxy.{settings.DEFAULT_INSTANCE_BASE_DOMAIN}"
         }]
 
         instance_data = dict(
