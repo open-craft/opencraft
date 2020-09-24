@@ -375,6 +375,5 @@ workflows:
             branches:
               only:
                 - master
-                - stage
     jobs:
       - cleanup
