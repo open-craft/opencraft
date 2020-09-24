@@ -22,22 +22,9 @@ Tests for the registration views
 
 # Imports #####################################################################
 
-from collections import defaultdict
-import json
-import re
-from unittest.mock import patch
-
-from bs4 import BeautifulSoup
-from ddt import data, ddt, unpack
-from django.contrib.auth.models import User
-from django.core import mail
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
-from freezegun import freeze_time
-from pytz import utc
-from simple_email_confirmation.models import EmailAddress
 
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from registration.tests.utils import UserMixin
 
 

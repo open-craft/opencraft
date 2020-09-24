@@ -27,9 +27,9 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
+from django.contrib.auth.views import LoginView, LogoutView
 
 import opencraft.views as views
-from django.contrib.auth.views import LoginView, LogoutView
 from registration.forms import LoginForm
 
 # URL Patterns ################################################################
