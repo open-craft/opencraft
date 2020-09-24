@@ -21,9 +21,6 @@ Serializers for registration API.
 """
 from typing import Dict
 
-import tldextract
-
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
@@ -33,9 +30,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
 
 from instance.models.deployment import DeploymentType
-from instance.models.mixins.domain_names import DOMAIN_PREFIXES
 from instance.models.openedx_deployment import DeploymentState
-from instance.models.openedx_instance import OpenEdXInstance
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
@@ -334,7 +329,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         is_changed = self.instance and self.instance.subdomain == self.initial_data.get("subdomain")
 
-        if not self.instance or is_changed:    
+        if not self.instance or is_changed:
             validate_available_subdomain(value)
 
         return value
@@ -345,7 +340,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         is_changed = self.instance and self.instance.external_domain == self.initial_data.get("external_domain")
 
-        if not self.instance or is_changed:    
+        if not self.instance or is_changed:
             validate_available_external_domain(value)
 
         return value

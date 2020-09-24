@@ -57,6 +57,7 @@ def validate_color(color):
         f'{color} is not a valid color, it must be either #123 or #123456',
     )(color)
 
+
 def validate_available_external_domain(value):
     """
     Prevent users from registering with an external domain which was or currently in use.
@@ -106,6 +107,7 @@ def validate_available_external_domain(value):
             code='unique'
         )
 
+
 def validate_available_subdomain(value):
     """
     Prevent users from registering with a subdomain which is in use.
@@ -114,39 +116,21 @@ def validate_available_subdomain(value):
     control of a client resource (domain) if they forget to restrict its access.
     """
     if value in settings.SUBDOMAIN_BLACKLIST:
-        raise ValidationError(
-            message='This domain name is not publicly available.',
-            code='blacklisted',
-        )
+        raise ValidationError(message='This domain name is not publicly available.', code='blacklisted')
 
     if is_subdomain_contains_reserved_word(value):
-        raise ValidationError(
-            message=f'Cannot register domain starting with "{value}".',
-            code='reserved'
-        )
+        raise ValidationError(message=f'Cannot register domain starting with "{value}".', code='reserved')
 
     # if subdomain_exists return instead of raising validation error, because the unique
     # check already raises the error
     is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
     if is_subdomain_registered:
-        raise ValidationError(
-                message='This domain is already taken.',
-                code='unique'
-            )
+        raise ValidationError(message='This domain is already taken.', code='unique')
 
     managed_domains = set([
         settings.DEFAULT_INSTANCE_BASE_DOMAIN,
         settings.GANDI_DEFAULT_BASE_DOMAIN,
     ])
-
-    # If a subdomain has only a suffix or domain it means that the
-    # user provided a managed subdomain which is a valid TLD like "net"
-    # in case of net.our.domain
-    parsed_domain = tldextract.extract(value)
-    has_no_domain = parsed_domain.suffix and not not parsed_domain.domain
-    has_no_suffix = parsed_domain.domain and not not parsed_domain.suffix
-    if has_no_domain or has_no_suffix:
-        return
 
     for domain in managed_domains:
         try:
@@ -154,20 +138,15 @@ def validate_available_subdomain(value):
             records = {tldextract.extract(record["content"]) for record in records}
         except Exception as exc:
             logger.warning('Unable to retrieve the domains for %s: %s.', domain, str(exc))
-            raise ValidationError(
-                message='The domain cannot be validated.',
-                code='cannot_validate'
-            )
+            raise ValidationError(message='The domain cannot be validated.', code='cannot_validate')
 
         # Because manually registered CNAMEs may have dots (.) in their subdomain
         # we need to check for that. Ex: haproxy-integration.net.opencraft.hosting is
         # registered, but we must reject registrations for net.opencraft.hosting as well.
         registered_subdomains = {dns_record.subdomain.split(".")[-1] for dns_record in records}
         if value in registered_subdomains:
-            raise ValidationError(
-                message='This domain is already taken.',
-                code='unique'
-            )
+            raise ValidationError(message='This domain is already taken.', code='unique')
+
 
 def validate_logo_height(image):
     """

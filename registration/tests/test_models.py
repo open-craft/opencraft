@@ -21,9 +21,9 @@ Tests for the betatest approval helper functions
 """
 
 # Imports #####################################################################
-import ddt
 from unittest.mock import patch
 
+import ddt
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
@@ -39,6 +39,10 @@ from registration.models import (
 
 @ddt.ddt
 class ValidatorTestCase(TestCase):
+    """
+    Test case for validators used for models, but not strictly as a models field validator.
+    """
+
     def setUp(self):
         self.user_with_instance = create_user_and_profile('instance.user', 'instance.user@example.com')
         self.existing_instance_config = BetaTestApplication.objects.create(
@@ -52,6 +56,9 @@ class ValidatorTestCase(TestCase):
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
     def test_validate_available_subdomain(self, mock_gandi_api):
+        """
+        Validate that a correct subdomain does not cause a validation error.
+        """
         subdomain = 'newsubdomain'
         internal_domains = ['some', 'internal', 'domain']
         mock_gandi_api.filter_dns_records.return_value = [
@@ -65,6 +72,9 @@ class ValidatorTestCase(TestCase):
     @override_settings(SUBDOMAIN_BLACKLIST=['newsubdomain'])
     @patch('registration.models.gandi_api')
     def test_subdomain_is_blacklisted(self, mock_gandi_api):
+        """
+        Validate that a blacklisted subdomain raises validation error.
+        """
         subdomain = 'newsubdomain'
 
         with self.assertRaises(ValidationError) as exc:
@@ -77,6 +87,9 @@ class ValidatorTestCase(TestCase):
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
     def test_subdomain_is_taken(self, mock_gandi_api):
+        """
+        Validate that a taken subdomain raises validation error.
+        """
         subdomain = 'newsubdomain'
         mock_gandi_api.filter_dns_records.return_value = [
             {'content': f'{subdomain}.example.com'}
@@ -92,6 +105,11 @@ class ValidatorTestCase(TestCase):
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
     def test_subdomain_cannot_be_validated(self, mock_gandi_api):
+        """
+        Validate validation error raised when we cannot check the domain's DNS records.
+
+        It is better to raise an error to the user then mess up our domains.
+        """
         subdomain = 'newsubdomain'
         mock_gandi_api.filter_dns_records.side_effect = ValueError()
 
@@ -123,6 +141,10 @@ class ValidatorTestCase(TestCase):
 
     @patch('registration.models.gandi_api')
     def test_validate_available_external_domain(self, mock_gandi_api):
+        """
+        Validate that a correct external domain does not cause a test_external_domain_subdomain_is_reserved
+        validation error.
+        """
         domain = 'domain'
 
         validate_available_external_domain(domain)
@@ -177,7 +199,7 @@ class ValidatorTestCase(TestCase):
         ("ecommerce.mydomain.com", 'Cannot register domain starting with "ecommerce".'),
     )
     @ddt.unpack
-    def test_external_domain_subdomain_is_reserved(self, domain, error_message):
+    def test_external_domain_is_reserved(self, domain, error_message):
         """
         Validate that the user cannot register a reserved subdomain.
         """

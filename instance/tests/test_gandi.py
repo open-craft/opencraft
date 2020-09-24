@@ -216,7 +216,7 @@ class GandiV5TestCase(TestCase):
         """
         mocked_lexicon_client_execute.return_value = []
         self.populate_domain_cache()
-        
+
         self.api.remove_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
-        
+
         mocked_cache.delete.assert_called_once_with('test.com-A')

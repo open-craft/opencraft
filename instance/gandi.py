@@ -134,7 +134,7 @@ class GandiV5API:
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
         result = client.execute()
-        
+
         # Invalidate cache for the domain-cname pair
         cache.delete(f"{record['domain']}-{record['type']}")
 
@@ -157,8 +157,8 @@ class GandiV5API:
         client = Client(config)
 
         result = client.execute()
-        cache.set(f"{record['domain']}-{record['type']}", result)            
-        
+        cache.set(f"{record['domain']}-{record['type']}", result)
+
         return result
 
     def filter_dns_records(self, domain, **record):
