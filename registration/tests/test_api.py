@@ -557,7 +557,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         """
         internal_subdomain = "haproxy"
         mock_gandi_api.filter_dns_records.return_value = [{
-            "content": "haproxy.{settings.DEFAULT_INSTANCE_BASE_DOMAIN}"
+            "content": f"haproxy.{settings.DEFAULT_INSTANCE_BASE_DOMAIN}"
         }]
 
         instance_data = dict(
