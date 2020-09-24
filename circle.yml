@@ -332,7 +332,7 @@ workflows:
           context: ocim-frontend-stage
           requires:
             - frontend-test
-      # Frontend deployment (only on master branch)
+      # Frontend deployment (only on master and stage branches)
       - frontend-deploy:
           name: frontend-deploy-stage
           context: ocim-frontend-stage
@@ -342,6 +342,7 @@ workflows:
             branches:
               only:
                 - master
+                - stage
       # Deploy production
       - frontend-build:
           name: frontend-build-production
@@ -351,16 +352,21 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - production
+      - frontend-deploy-approval:
+          name: frontend-deploy-production-approval
+          type: approval
+          requires:
+            - frontend-build-production
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
           requires:
-            - frontend-build-production
+            - frontend-deploy-production-approval
           filters:
             branches:
               only:
-                - master
+                - production
   cleanup-workflow:
     triggers:
       - schedule:
@@ -369,5 +375,6 @@ workflows:
             branches:
               only:
                 - master
+                - stage
     jobs:
       - cleanup
