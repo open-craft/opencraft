@@ -62,7 +62,7 @@ AUTHENTICATION_BACKENDS = (
     'registration.auth_backends.ModelBackend',
 )
 
-LOGIN_URL = 'registration:login'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -890,8 +890,6 @@ USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
     default='http://localhost:3000'
 )
-# Redirect from old registration form to new one
-NEW_USER_CONSOLE_REGISTRATION_ENABLED = env.bool('NEW_USER_CONSOLE_REGISTRATION_ENABLED', default=False)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [
@@ -916,3 +914,15 @@ MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', def
 # Batched updates are maximum 500 members at a time, as per
 # https://github.com/VingtCinq/python-mailchimp/blob/ad09dee/mailchimp3/entities/lists.py#L146
 MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)
+
+# Terms of Service
+OPENCRAFT_TERMS_OF_SERVICE = env(
+    'OPENCRAFT_TERMS_OF_SERVICE',
+    default='https://opencraft.com/terms-of-service/'
+)
+
+# Privacy Policy
+OPENCRAFT_PRIVACY_POLICY = env(
+    'OPENCRAFT_PRIVACY_POLICY',
+    default='https://opencraft.com/privacy-policy/'
+)

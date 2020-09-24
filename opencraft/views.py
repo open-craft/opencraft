@@ -34,6 +34,7 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from instance.models.instance import InstanceReference
+from django.conf import settings
 
 
 # Views #######################################################################
@@ -52,7 +53,7 @@ class IndexView(RedirectView):
         if InstanceReference.can_manage(user):
             return reverse('instance:index')
         else:
-            return reverse('registration:register')
+            return settings.USER_CONSOLE_FRONTEND_URL
 
 
 class HealthCheckView(View):
