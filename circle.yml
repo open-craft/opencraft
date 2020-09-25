@@ -332,7 +332,7 @@ workflows:
           context: ocim-frontend-stage
           requires:
             - frontend-test
-      # Frontend deployment (only on master and stage branches)
+      # Frontend deployment (only on stage branch)
       - frontend-deploy:
           name: frontend-deploy-stage
           context: ocim-frontend-stage
@@ -341,7 +341,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - stage
       # Deploy production
       - frontend-build:
