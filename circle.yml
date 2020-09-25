@@ -347,7 +347,7 @@ workflows:
           name: frontend-build-production
           context: ocim-frontend-production
           requires:
-            - frontend-deploy-stage
+            - frontend-test
           filters:
             branches:
               only:
