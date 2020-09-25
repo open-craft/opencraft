@@ -412,7 +412,7 @@ class InstanceRedeployTestCase(TestCase):
                 'instance.models.mixins.utilities',
                 'WARNING',
                 "Skip sending urgent alert e-mail after instance "
-                "{0} didn't provision initiated by OpenCraft member".format(beta_test_instance)
+                "{} provisioning failed since it was initiated by OpenCraft member".format(beta_test_instance)
             ),
             (self.cmd_module, self.log_level, '******* Status *******'),
             (self.cmd_module, self.log_level, 'Instances pending redeployment: 0'),

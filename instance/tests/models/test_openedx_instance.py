@@ -550,7 +550,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertLogs(
             "instance.models.mixins.utilities",
             "Skip sending urgent alert e-mail after instance {instance_name}"
-            "didn't provision initiated by OpenCraft member".format(instance_name=instance.name)
+            "provisioning failed since it was initiated by OpenCraft member".format(instance_name=instance.name)
         )
 
     @patch_services
