@@ -167,7 +167,8 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         deployment = Deployment.objects.get(pk=deployment_id)
         if deployment.type in ignorable_deployment_types:
             logger.warning(
-                "Skip sending urgent alert e-mail after instance %s provisioning failed since it was initiated by OpenCraft member",
+                "Skip sending urgent alert e-mail after instance %s "
+                "provisioning failed since it was initiated by OpenCraft member",
                 instance,
             )
             return
