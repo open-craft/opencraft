@@ -151,6 +151,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'periodic_builds_enabled',
             'periodic_builds_interval',
             'periodic_builds_retries',
+            'periodic_build_failure_notification_emails',
             'admin_url',
         )
 

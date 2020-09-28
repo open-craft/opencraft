@@ -137,6 +137,46 @@ class EmailMixin:
 
 # Functions #####################################################################
 
+def send_urgent_deployment_failure_email(recipients: List[str], instance_name: str) -> None:
+    '''
+    Send urgent notification email about failed deployments.
+    '''
+    logger.warning(
+        "Sending urgent alert e-mail to %s after instance %s didn't provision",
+        recipients,
+        instance_name,
+    )
+
+    send_mail(
+        'Deployment failed at instance: {}'.format(instance_name),
+        'The deployment of a new appserver failed and needs manual intervention. '
+        'You can find the logs in the web interface.',
+        settings.DEFAULT_FROM_EMAIL,
+        recipients,
+        fail_silently=False,
+    )
+
+
+def send_periodic_deployment_failure_email(recipients: List[str], instance_name: str, openedx_release: str) -> None:
+    '''
+    Send notification email about failed periodic deployments.
+    '''
+    logger.warning(
+        "Sending notification e-mail to %s after instance %s didn't provision",
+        recipients,
+        instance_name,
+    )
+
+    send_mail(
+        'Deployment failed at instance: {}'.format(instance_name),
+        'The periodic deployment of {} failed. '
+        'You can find the logs in the web interface.'.format(openedx_release),
+        settings.DEFAULT_FROM_EMAIL,
+        recipients,
+        fail_silently=False,
+    )
+
+
 @receiver(appserver_spawned)
 def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
     """
@@ -157,8 +197,12 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         DeploymentType.pr.name
     ]
 
+    is_registered_by_client = instance.betatestapplication_set.exists()
+    is_periodic_builds_enabled = instance.periodic_builds_enabled
+
     # Only sending critical alerts for failures in registered clients' instances, not in test/sandboxes
-    if not instance.betatestapplication_set.exists():
+    # except for periodic builds
+    if not is_registered_by_client and not is_periodic_builds_enabled:
         return
 
     # In case a deployment initiated by an OpenCraft member
@@ -167,24 +211,25 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         deployment = Deployment.objects.get(pk=deployment_id)
         if deployment.type in ignorable_deployment_types:
             logger.warning(
-                "Skip sending urgent alert e-mail after instance %s "
-                "provisioning failed since it was initiated by OpenCraft member",
+                'Skip sending urgent alert e-mail after instance %s '
+                'provisioning failed since it was initiated by OpenCraft member',
                 instance,
             )
             return
 
-    if appserver is None and instance.provisioning_failure_notification_emails:
-        logger.warning(
-            "Sending urgent alert e-mail to %s after instance %s didn't provision",
-            instance.provisioning_failure_notification_emails,
-            instance,
-        )
+    if appserver is None:
+        provisioning_failure_emails = instance.provisioning_failure_notification_emails
+        periodic_build_failure_emails = instance.periodic_build_failure_notification_emails
 
-        send_mail(
-            'Deployment failed at instance: {}'.format(instance),
-            "The deployment of a new appserver failed and needs manual intervention. "
-            "You can find the logs in the web interface.",
-            settings.DEFAULT_FROM_EMAIL,
-            instance.provisioning_failure_notification_emails,
-            fail_silently=False,
-        )
+        if is_registered_by_client and provisioning_failure_emails:
+            send_urgent_deployment_failure_email(
+                provisioning_failure_emails,
+                str(instance)
+            )
+
+        if is_periodic_builds_enabled and periodic_build_failure_emails:
+            send_periodic_deployment_failure_email(
+                periodic_build_failure_emails,
+                str(instance),
+                instance.openedx_release
+            )

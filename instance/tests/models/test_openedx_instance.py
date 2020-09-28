@@ -507,7 +507,22 @@ class OpenEdXInstanceTestCase(TestCase):
             instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
 
         # Given these deployment types, at least one email should be sended
-        self.assertGreater(len(django_mail.outbox), 0)
+        outbox = django_mail.outbox[0]
+        self.assertEqual(len(django_mail.outbox), 1)
+        self.assertEqual(outbox.subject, f'Deployment failed at instance: {str(instance)}')
+        self.assertEqual(outbox.to, failure_emails)
+        self.assertEqual(
+            outbox.body,
+            'The deployment of a new appserver failed and needs manual intervention. '
+            'You can find the logs in the web interface.',
+        )
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Sending urgent alert e-mail to {recipients} after instance {instance_name} didn't provision.".format(
+                recipients=instance.provisioning_failure_notification_emails,
+                instance_name=instance.name
+            )
+        )
 
     @ddt.data(DeploymentType.admin, DeploymentType.batch, DeploymentType.pr)
     @patch_services
@@ -551,6 +566,45 @@ class OpenEdXInstanceTestCase(TestCase):
             "instance.models.mixins.utilities",
             "Skip sending urgent alert e-mail after instance {instance_name}"
             "provisioning failed since it was initiated by OpenCraft member".format(instance_name=instance.name)
+        )
+
+    @patch_services
+    def test_spawn_appserver_failed_all_attempts_periodic_build(self, mocks, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts).
+        Given that the appserver spawn is launched by a periodic build, we should send notification at least to
+        the provided notification address, if there is any.
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log: provisioning failed'], 1)
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        failure_emails = ['notification@localhost']
+        instance.periodic_builds_enabled = True
+        instance.provisioning_failure_notification_emails = ['provisionfailed@localhost']
+        instance.periodic_build_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+
+        # Create the deployment, setting the deployment type
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=DeploymentType.periodic,
+        )
+        instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
+
+        outbox = django_mail.outbox[0]
+        self.assertEqual(len(django_mail.outbox), 1)
+        self.assertEqual(outbox.subject, f'Deployment failed at instance: {str(instance)}')
+        self.assertEqual(outbox.to, failure_emails)
+        self.assertEqual(
+            outbox.body,
+            'The periodic deployment of {} failed. '
+            'You can find the logs in the web interface.'.format(instance.openedx_release),
+        )
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Sending notification e-mail to {recipients} after instance {instance_name} didn't provision.".format(
+                recipients=instance.periodic_build_failure_notification_emails,
+                instance_name=instance.name
+            )
         )
 
     @patch_services
