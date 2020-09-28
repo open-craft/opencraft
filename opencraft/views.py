@@ -38,6 +38,7 @@ from instance.models.instance import InstanceReference
 
 # Views #######################################################################
 
+
 class IndexView(RedirectView):
     """
     Index view
