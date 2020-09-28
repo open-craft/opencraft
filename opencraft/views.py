@@ -51,6 +51,8 @@ class IndexView(RedirectView):
         user = self.request.user
         if InstanceReference.can_manage(user):
             return reverse('instance:index')
+        elif user.is_authenticated is False:
+            return reverse('login')
         else:
             return settings.USER_CONSOLE_FRONTEND_URL
 

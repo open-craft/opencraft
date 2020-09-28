@@ -45,8 +45,6 @@ urlpatterns = [
     url(r'^registration/$', RedirectView.as_view(url=settings.USER_CONSOLE_FRONTEND_URL), name='registration'),
     url(r'^reports/', include('reports.urls', namespace='reports')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
-    url(r'^terms/$', RedirectView.as_view(url=settings.OPENCRAFT_TERMS_OF_SERVICE), name='terms'),
-    url(r'^privacy/$', RedirectView.as_view(url=settings.OPENCRAFT_PRIVACY_POLICY), name='privacy'),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]
 

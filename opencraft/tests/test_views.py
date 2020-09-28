@@ -49,10 +49,10 @@ class IndexViewTestCase(WithUserTestCase):
 
     def test_index_unauthenticated(self):
         """
-        Index view - Unauthenticated users go to registration page
+        Index view - Unauthenticated users go to login page
         """
         response = self.client.get(self.url)
-        self.assertRedirects(response, settings.USER_CONSOLE_FRONTEND_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, self.login_url)
 
     @ddt.data('user1', 'user2')
     def test_index_authenticated(self, username):

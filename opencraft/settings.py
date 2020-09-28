@@ -914,15 +914,3 @@ MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', def
 # Batched updates are maximum 500 members at a time, as per
 # https://github.com/VingtCinq/python-mailchimp/blob/ad09dee/mailchimp3/entities/lists.py#L146
 MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)
-
-# Terms of Service
-OPENCRAFT_TERMS_OF_SERVICE = env(
-    'OPENCRAFT_TERMS_OF_SERVICE',
-    default='https://opencraft.com/terms-of-service/'
-)
-
-# Privacy Policy
-OPENCRAFT_PRIVACY_POLICY = env(
-    'OPENCRAFT_PRIVACY_POLICY',
-    default='https://opencraft.com/privacy-policy/'
-)
