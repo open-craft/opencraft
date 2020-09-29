@@ -153,11 +153,9 @@ exports[`Domain Input Page Correctly goes to custom domain page and back 1`] = `
           className="use-own"
         >
           <a
-            className="nav-link"
-            href="#"
+            aria-current={null}
+            href="/registration/custom-domain"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
           >
             I want to use my own domain
           </a>
@@ -355,11 +353,9 @@ exports[`Domain Input Page Correctly renders domain input page 1`] = `
           className="use-own"
         >
           <a
-            className="nav-link"
-            href="#"
+            aria-current={null}
+            href="/registration/custom-domain"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
           >
             I want to use my own domain
           </a>
@@ -562,11 +558,9 @@ exports[`Domain Input Page Correctly renders domain input with error fedback 1`]
           className="use-own"
         >
           <a
-            className="nav-link"
-            href="#"
+            aria-current={null}
+            href="/registration/custom-domain"
             onClick={[Function]}
-            onKeyDown={[Function]}
-            role="button"
           >
             I want to use my own domain
           </a>

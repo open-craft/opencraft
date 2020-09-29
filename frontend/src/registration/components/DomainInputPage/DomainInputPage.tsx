@@ -1,12 +1,12 @@
-import { RegistrationSteps } from 'global/constants';
+import { RegistrationSteps, ROUTES } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
 import { RedirectToCorrectStep } from 'registration/components';
 import { RegistrationStateModel } from 'registration/models';
-import { Nav } from 'react-bootstrap';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
@@ -76,10 +76,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleSwitchPageToExternal = (domainIsExternal: boolean) => {
-    this.setState({ domainIsExternal });
-  };
-
   private renderInternalDomain = () => {
     return (
       <div className="div-fill">
@@ -101,13 +97,9 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
             handleSubmitDomain={this.submitDomain}
           />
           <div className="use-own">
-            <Nav.Link
-              onClick={() => {
-                this.handleSwitchPageToExternal(true);
-              }}
-            >
+            <NavLink to={ROUTES.Registration.CUSTOM_DOMAIN}>
               <WrappedMessage messages={messages} id="useOwnDomain" />
-            </Nav.Link>
+            </NavLink>
           </div>
         </RegistrationPage>
         <InstitutionalAccountHero />
