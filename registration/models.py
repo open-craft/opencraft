@@ -128,8 +128,11 @@ def validate_available_subdomain(value):
 
     # if subdomain_exists return instead of raising validation error, because the unique
     # check already raises the error
+    generated_domain = generate_internal_lms_domain(value)
     is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
-    if is_subdomain_registered:
+    is_assigned_to_instance = OpenEdXInstance.objects.filter(internal_lms_domain=generated_domain).exists()
+
+    if is_subdomain_registered or is_assigned_to_instance:
         raise ValidationError(message='This domain is already taken.', code='unique')
 
     managed_domains = set([

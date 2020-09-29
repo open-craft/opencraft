@@ -93,6 +93,24 @@ class ValidatorTestCase(TestCase):
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
+    def test_subdomain_is_taken_by_instance(self, mock_gandi_api):
+        """
+        Validate that a taken subdomain raises validation error.
+        """
+        subdomain = "mysubdomain"
+        mock_gandi_api.filter_dns_records.return_value = []
+
+        instance_factory(sub_domain=subdomain)
+
+        with self.assertRaises(ValidationError) as exc:
+            validate_available_subdomain(subdomain)
+
+        self.assertEqual(exc.exception.message, 'This domain is already taken.')
+        self.assertEqual(exc.exception.code, 'unique')
+        self.assertFalse(mock_gandi_api.filter_dns_records.called)
+
+    @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
+    @patch('registration.models.gandi_api')
     @ddt.data(
         ("newsubdomain", "newsubdomain"),
         ("stage", "stage"),
