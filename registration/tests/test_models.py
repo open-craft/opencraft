@@ -93,11 +93,16 @@ class ValidatorTestCase(TestCase):
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
-    def test_subdomain_is_taken(self, mock_gandi_api):
+    @ddt.data(
+        "newsubdomain",
+        "stage",
+        "my.stage",
+        "this.is.my.stage",
+    )
+    def test_subdomain_is_taken(self, subdomain, mock_gandi_api):
         """
         Validate that a taken subdomain raises validation error.
         """
-        subdomain = 'newsubdomain'
         mock_gandi_api.filter_dns_records.return_value = [
             {'name': f'{subdomain}.example.com'}
         ]

@@ -123,12 +123,14 @@ def validate_available_subdomain(value):
     The validation reduces the risk of security issues when someone is trying to take over
     control of a client resource (domain) if they forget to restrict its access.
     """
-    if is_subdomain_contains_reserved_word(value):
-        raise ValidationError(message=f'Cannot register domain starting with "{value}".', code='reserved')
+    subdomain = value.split(".")[0]
+
+    if is_subdomain_contains_reserved_word(subdomain):
+        raise ValidationError(message=f'Cannot register domain starting with "{subdomain}".', code='reserved')
 
     # if subdomain_exists return instead of raising validation error, because the unique
     # check already raises the error
-    is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
+    is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=subdomain).exists()
     if is_subdomain_registered:
         raise ValidationError(message='This domain is already taken.', code='unique')
 
@@ -148,8 +150,8 @@ def validate_available_subdomain(value):
         # Because manually registered CNAMEs may have dots (.) in their subdomain
         # we need to check for that. Ex: haproxy-integration.net.opencraft.hosting is
         # registered, but we must reject registrations for net.opencraft.hosting as well.
-        registered_subdomains = {dns_record.subdomain.split(".")[-1] for dns_record in records}
-        if value in registered_subdomains:
+        registered_subdomains = {dns_record.subdomain.split(".")[0] for dns_record in records}
+        if subdomain in registered_subdomains:
             raise ValidationError(message='This domain is already taken.', code='unique')
 
 
