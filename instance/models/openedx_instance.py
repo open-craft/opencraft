@@ -357,7 +357,7 @@ class OpenEdXInstance(
                 self.tags.remove(success_tag)
 
             # Warn spawn failed after given attempts
-            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None)
+            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None, deployment_id=deployment_id)
             return None
 
         self.logger.info('Provisioned new app server, %s', app_server.name)
@@ -373,7 +373,7 @@ class OpenEdXInstance(
             # use task.make_appserver_active to allow disabling others
             app_server.make_active()
 
-        appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server)
+        appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server, deployment_id=deployment_id)
 
         return app_server.pk
 
