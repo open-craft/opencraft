@@ -149,7 +149,7 @@ def validate_available_subdomain(value):
             raise ValidationError(message='The domain cannot be validated.', code='cannot_validate')
 
         # Because registered CNAMEs may have multiple dots (.) in their subdomain
-        # we need to check for the starting and ending part of it. 
+        # we need to check for the starting and ending part of it.
         # Ex: haproxy-integration.my.net.opencraft.hosting is registered, but we must reject
         # registrations for net.opencraft.hosting and haproxy-integration.my.net as well.
         registered_subdomains = set()
