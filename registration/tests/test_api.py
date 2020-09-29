@@ -582,7 +582,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         self.assertEqual(validation_response.status_code, 400)
         self.assertEqual(response, {"subdomain": ["This domain is already taken."]})
-        mock_gandi_api.filter_dns_records.assert_called_once_with(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
+        self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN="un.known", GANDI_DEFAULT_BASE_DOMAIN="un.known")
     @patch('registration.models.gandi_api')
