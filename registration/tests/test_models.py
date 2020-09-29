@@ -94,17 +94,20 @@ class ValidatorTestCase(TestCase):
     @override_settings(DEFAULT_INSTANCE_BASE_DOMAIN='example.com', GANDI_DEFAULT_BASE_DOMAIN='example.com')
     @patch('registration.models.gandi_api')
     @ddt.data(
-        "newsubdomain",
-        "stage",
-        "my.stage",
-        "this.is.my.stage",
+        ("newsubdomain", "newsubdomain"),
+        ("stage", "stage"),
+        ("my.stage", "my.stage"),
+        ("my.stage", "stage"),
+        ("is.my.stage", "my.stage"),
+        ("this.is.my.stage", "my.stage"),
     )
-    def test_subdomain_is_taken(self, subdomain, mock_gandi_api):
+    @ddt.unpack
+    def test_subdomain_is_taken(self, subdomain, registered_subdomain, mock_gandi_api):
         """
         Validate that a taken subdomain raises validation error.
         """
         mock_gandi_api.filter_dns_records.return_value = [
-            {'name': f'{subdomain}.example.com'}
+            {'name': f'{registered_subdomain}.example.com'}
         ]
 
         with self.assertRaises(ValidationError) as exc:

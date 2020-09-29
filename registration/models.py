@@ -123,14 +123,12 @@ def validate_available_subdomain(value):
     The validation reduces the risk of security issues when someone is trying to take over
     control of a client resource (domain) if they forget to restrict its access.
     """
-    subdomain = value.split(".")[0]
-
-    if is_subdomain_contains_reserved_word(subdomain):
-        raise ValidationError(message=f'Cannot register domain starting with "{subdomain}".', code='reserved')
+    if is_subdomain_contains_reserved_word(value):
+        raise ValidationError(message=f'Cannot register domain starting with "{value}".', code='reserved')
 
     # if subdomain_exists return instead of raising validation error, because the unique
     # check already raises the error
-    is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=subdomain).exists()
+    is_subdomain_registered = BetaTestApplication.objects.filter(subdomain=value).exists()
     if is_subdomain_registered:
         raise ValidationError(message='This domain is already taken.', code='unique')
 
@@ -147,11 +145,19 @@ def validate_available_subdomain(value):
             logger.warning('Unable to retrieve the domains for %s: %s.', domain, str(exc))
             raise ValidationError(message='The domain cannot be validated.', code='cannot_validate')
 
-        # Because manually registered CNAMEs may have dots (.) in their subdomain
-        # we need to check for that. Ex: haproxy-integration.net.opencraft.hosting is
-        # registered, but we must reject registrations for net.opencraft.hosting as well.
-        registered_subdomains = {dns_record.subdomain.split(".")[0] for dns_record in records}
-        if subdomain in registered_subdomains:
+        # Because registered CNAMEs may have multiple dots (.) in their subdomain
+        # we need to check for the starting and ending part of it. 
+        # Ex: haproxy-integration.my.net.opencraft.hosting is registered, but we must reject
+        # registrations for net.opencraft.hosting and haproxy-integration.my.net as well.
+        registered_subdomains = set()
+        for dns_record in records:
+            registered_subdomains.update([
+                dns_record.subdomain,  # the whole subdomain
+                dns_record.subdomain.split(".")[-1]  # base of the subdomain like .net.*
+            ])
+
+        subdomain_base = value.split(".")[-1]
+        if value in registered_subdomains or subdomain_base in registered_subdomains:
             raise ValidationError(message='This domain is already taken.', code='unique')
 
 
