@@ -138,9 +138,9 @@ class EmailMixin:
 # Functions #####################################################################
 
 def send_urgent_deployment_failure_email(recipients: List[str], instance_name: str) -> None:
-    '''
+    """
     Send urgent notification email about failed deployments.
-    '''
+    """
     logger.warning(
         "Sending urgent alert e-mail to %s after instance %s didn't provision",
         recipients,
@@ -158,9 +158,9 @@ def send_urgent_deployment_failure_email(recipients: List[str], instance_name: s
 
 
 def send_periodic_deployment_failure_email(recipients: List[str], instance_name: str, openedx_release: str) -> None:
-    '''
+    """
     Send notification email about failed periodic deployments.
-    '''
+    """
     logger.warning(
         "Sending notification e-mail to %s after instance %s didn't provision",
         recipients,
