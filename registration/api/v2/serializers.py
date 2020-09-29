@@ -327,9 +327,10 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         Prevent users from registering with a subdomain which is in use.
         """
-        is_changed = self.instance is not None and self.instance.subdomain == self.initial_data.get("subdomain")
+        is_new_instance self.instance is None
+        is_changed = not is_new_instance and self.instance.subdomain == self.initial_data.get("subdomain")
 
-        if self.instance is None or is_changed:
+        if is_new_instance or is_changed:
             validate_available_subdomain(value)
 
         return value
@@ -338,9 +339,10 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         Prevent users from registering with an external domain which was or currently in use.
         """
-        is_changed = self.instance is not None and self.instance.external_domain == self.initial_data.get("external_domain")
+        is_new_instance self.instance is None
+        is_changed = not is_new_instance and self.instance.external_domain == self.initial_data.get("external_domain")
 
-        if self.instance is None or is_changed:
+        if is_new_instance or is_changed:
             validate_available_external_domain(value)
 
         return value
