@@ -140,7 +140,7 @@ def validate_available_subdomain(value):
     for domain in managed_domains:
         try:
             records = gandi_api.filter_dns_records(domain)
-            records = {tldextract.extract(record["content"]) for record in records}
+            records = {tldextract.extract(record["name"]) for record in records}
         except Exception as exc:
             logger.warning('Unable to retrieve the domains for %s: %s.', domain, str(exc))
             raise ValidationError(message='The domain cannot be validated.', code='cannot_validate')

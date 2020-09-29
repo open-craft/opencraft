@@ -84,7 +84,7 @@ class ValidatorTestCase(TestCase):
         subdomain = 'newsubdomain'
         internal_domains = ['some', 'internal', 'domain']
         mock_gandi_api.filter_dns_records.return_value = [
-            {'content': f'{domain}.example.com'} for domain in internal_domains
+            {'name': f'{domain}.example.com'} for domain in internal_domains
         ]
 
         validate_available_subdomain(subdomain)
@@ -99,7 +99,7 @@ class ValidatorTestCase(TestCase):
         """
         subdomain = 'newsubdomain'
         mock_gandi_api.filter_dns_records.return_value = [
-            {'content': f'{subdomain}.example.com'}
+            {'name': f'{subdomain}.example.com'}
         ]
 
         with self.assertRaises(ValidationError) as exc:
