@@ -184,6 +184,22 @@ class ValidatorTestCase(TestCase):
 
         self.assertFalse(mock_gandi_api.filter_dns_records.called)
 
+    @override_settings(EXTERNAL_DOMAIN_BLACKLIST=['example.com'])
+    @ddt.data(
+        'example.com',
+        'subdomain-of.example.com',
+        'sub.domain.of.example.com',
+    )
+    def test_external_domain_is_blacklisted(self, external_domain):
+        """
+        Validate that the base domain cannot be used for external domain
+        """
+        with self.assertRaises(ValidationError) as exc:
+            validate_available_external_domain(external_domain)
+
+        self.assertEqual(exc.exception.message, 'This domain name is not publicly available.')
+        self.assertEqual(exc.exception.code, 'blacklisted')
+
     @patch('registration.models.gandi_api')
     def test_external_domain_is_the_base_domain(self, mock_gandi_api):
         """

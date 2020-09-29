@@ -744,6 +744,10 @@ NUM_INITIAL_APPSERVERS_SHOWN = env('NUM_INITIAL_APPSERVERS_SHOWN', default=5)
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
+# External domain blacklist ###################################################
+
+EXTERNAL_DOMAIN_BLACKLIST = env.list('EXTERNAL_DOMAIN_BLACKLIST', default=[])
+
 # Email settings ####################################################
 
 EMAIL_SIGNATURE_TITLE = env('EMAIL_SIGNATURE_TITLE', default='Open edX Product Specialist')

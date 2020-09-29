@@ -65,10 +65,17 @@ def validate_available_external_domain(value):
     The validation reduces the risk of security issues when someone is trying to take over
     control of a client resource (domain) if they forget to restrict its access.
     """
+    default_instance_domain = tldextract.extract(settings.DEFAULT_INSTANCE_BASE_DOMAIN)
     domain_data = tldextract.extract(value)
     domain = domain_data.registered_domain
 
-    if domain == settings.DEFAULT_INSTANCE_BASE_DOMAIN:
+    if domain in settings.EXTERNAL_DOMAIN_BLACKLIST:
+        raise ValidationError(
+            message='This domain name is not publicly available.',
+            code='blacklisted'
+        )
+
+    if default_instance_domain.registered_domain == domain:
         raise ValidationError(
             message=f'The domain "{value}" is not allowed.',
             code='reserved'
