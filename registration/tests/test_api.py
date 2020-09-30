@@ -610,6 +610,106 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(response, {"subdomain": ["The domain cannot be validated."]})
         mock_gandi_api.filter_dns_records.assert_called_once_with("un.known")
 
+    @patch('registration.models.validate_available_external_domain')
+    @patch('registration.api.v2.serializers.validate_available_external_domain')
+    def test_update_external_domain(self, mock_validate, mock_model_validate):
+        """
+        Test that the update of instance without changing external domain is not
+        triggering domain validation.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        update_data = dict(
+            external_domain="example-test-change.com",
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.patch(
+            reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)),
+            data=update_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 200)
+        self.assertTrue(mock_validate.called)
+        self.assertTrue(mock_model_validate.called)
+
+    @patch('registration.models.validate_available_subdomain')
+    @patch('registration.api.v2.serializers.validate_available_subdomain')
+    def test_update_subdomain(self, mock_validate, mock_model_validate):
+        """
+        Test that the update of instance without changing subdomain is not triggering
+        domain validation.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        update_data = dict(
+            subdomain="mnewsubdomain",
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.patch(
+            reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)),
+            data=update_data,
+            format="json",
+        )
+
+        self.assertEqual(validation_response.status_code, 200)
+        self.assertTrue(mock_validate.called)
+        self.assertTrue(mock_model_validate.called)
+
+    @patch('registration.api.v2.serializers.validate_available_external_domain')
+    def test_update_without_changing_external_domain(self, mock_validate):
+        """
+        Test that the update of instance without changing external domain is not
+        triggering domain validation.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        update_data = dict(
+            external_domain=self.instance_config.external_domain,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.patch(
+            reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)),
+            data=update_data,
+            format="json",
+        )
+
+        response = json.loads(validation_response.content)
+
+        self.assertEqual(validation_response.status_code, 200)
+        self.assertFalse(mock_validate.called)
+
+    @patch('registration.api.v2.serializers.validate_available_subdomain')
+    def test_update_without_changing_subdomain(self, mock_validate):
+        """
+        Test that the update of instance without changing subdomain is not triggering
+        domain validation.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        update_data = dict(
+            subdomain=self.instance_config.subdomain,
+            instance_name="My Instance",
+            public_contact_email="noinstance.user.public@example.com",
+        )
+
+        validation_response = self.client.patch(
+            reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)),
+            data=update_data,
+            format="json",
+        )
+
+        self.assertEqual(validation_response.status_code, 200)
+        self.assertFalse(mock_validate.called)
+
     @patch('registration.models.gandi_api')
     @ddt.data(
         dict(subdomain="invalid subdomain"),
