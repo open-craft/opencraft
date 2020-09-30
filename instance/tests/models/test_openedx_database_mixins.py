@@ -838,7 +838,10 @@ class RabbitMQServerManagerTestCase(TestCase):
         Test that a warning is logged when trying to spawn the default, but a default already
         and contains mismatching parameters with the given settings.
         """
-        urls = ['http://user:pass@doesnotexist.example.com:12345', 'http://user2:pass2@doesnotexist.example.com:12345']
+        urls = [
+            'http://user:pass@doesnotexist.example.com:12345',
+            'http://user2:pass2@doesnotexist.example.com:12345'
+        ]
         for url in urls:
             with override_settings(DEFAULT_RABBITMQ_API_URL=url):
                 RabbitMQServer.objects._create_default()

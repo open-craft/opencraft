@@ -281,6 +281,24 @@ exports[`renders without crashing 1`] = `
           <input
             checked={false}
             className="custom-control-input"
+            id="acceptDomainCondition"
+            name="acceptDomainCondition"
+            onChange={[Function]}
+            type="checkbox"
+          />
+          <label
+            className="custom-control-label"
+            htmlFor="acceptDomainCondition"
+          >
+            By submitting the registration form, I assert that I have rights to use the domain I provided.*
+          </label>
+        </div>
+        <div
+          className="custom-control custom-checkbox"
+        >
+          <input
+            checked={false}
+            className="custom-control-input"
             id="subscribeToUpdates"
             name="subscribeToUpdates"
             onChange={[Function]}
