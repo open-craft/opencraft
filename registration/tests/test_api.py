@@ -631,8 +631,6 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format="json",
         )
 
-        response = json.loads(validation_response.content)
-
         self.assertEqual(validation_response.status_code, 200)
         self.assertTrue(mock_validate.called)
         self.assertTrue(mock_model_validate.called)
@@ -681,8 +679,6 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             data=update_data,
             format="json",
         )
-
-        response = json.loads(validation_response.content)
 
         self.assertEqual(validation_response.status_code, 200)
         self.assertFalse(mock_validate.called)
