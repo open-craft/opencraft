@@ -62,7 +62,7 @@ AUTHENTICATION_BACKENDS = (
     'registration.auth_backends.ModelBackend',
 )
 
-LOGIN_URL = 'registration:login'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -890,8 +890,6 @@ USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
     default='http://localhost:3000'
 )
-# Redirect from old registration form to new one
-NEW_USER_CONSOLE_REGISTRATION_ENABLED = env.bool('NEW_USER_CONSOLE_REGISTRATION_ENABLED', default=False)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [

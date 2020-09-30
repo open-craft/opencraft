@@ -43,16 +43,16 @@ class IndexViewTestCase(WithUserTestCase):
     url = reverse('index')
     login_url = reverse(settings.LOGIN_URL)
     instance_url = reverse('instance:index')
-    register_url = reverse('registration:register')
+    register_url = login_url
     admin_url = reverse('admin:index')
     admin_login_url = '{}?next={}'.format(reverse('admin:login'), admin_url)
 
     def test_index_unauthenticated(self):
         """
-        Index view - Unauthenticated users go to registration page
+        Index view - Unauthenticated users go to login page
         """
-        response = self.client.get(self.url, follow=True)
-        self.assertRedirects(response, self.register_url)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, self.login_url)
 
     @ddt.data('user1', 'user2')
     def test_index_authenticated(self, username):
@@ -60,8 +60,8 @@ class IndexViewTestCase(WithUserTestCase):
         Index view - Authenticated basic and staff users
         """
         self.client.login(username=username, password='pass')
-        response = self.client.get(self.url, follow=True)
-        self.assertRedirects(response, self.register_url)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, settings.USER_CONSOLE_FRONTEND_URL, fetch_redirect_response=False)
 
     def test_index_authenticated_instance_manager(self):
         """
@@ -78,8 +78,8 @@ class IndexViewTestCase(WithUserTestCase):
         Login view - Authenticate a basic and staff users
         """
         login_data = dict(username=username, password='pass')
-        response = self.client.post(self.login_url, login_data, follow=True)
-        self.assertRedirects(response, self.register_url)
+        response = self.client.post(self.login_url, login_data)
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
 
     @ddt.data('user3', 'user4')
     def test_login_instance_manager(self, username):
