@@ -28,6 +28,7 @@ from django.http import HttpResponse
 from django.views.generic.base import RedirectView
 from django.views.generic import View
 from django.urls import reverse
+from django.conf import settings
 from huey.contrib.djhuey import HUEY
 from psycopg2 import OperationalError
 from redis.exceptions import ConnectionError as RedisConnectionError
@@ -35,8 +36,8 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from instance.models.instance import InstanceReference
 
-
 # Views #######################################################################
+
 
 class IndexView(RedirectView):
     """
@@ -51,8 +52,10 @@ class IndexView(RedirectView):
         user = self.request.user
         if InstanceReference.can_manage(user):
             return reverse('instance:index')
+        elif user.is_authenticated is False:
+            return reverse('login')
         else:
-            return reverse('registration:register')
+            return settings.USER_CONSOLE_FRONTEND_URL
 
 
 class HealthCheckView(View):

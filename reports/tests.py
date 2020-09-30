@@ -83,7 +83,7 @@ class ReportViewTestCase(WithUserTestCase):
             'year': '2018',
             'month': '9'
         })
-        expected_redirect = '{}?next={}'.format(reverse('registration:login'), invoice_url)
+        expected_redirect = '{}?next={}'.format(reverse('login'), invoice_url)
 
         if username:
             self.client.login(username=username, password=self.password)
