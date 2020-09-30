@@ -87,6 +87,43 @@ class GandiV5TestCase(TestCase):
             'The given domain name "sub.domain.unknown.com" does not match any domain registered in the Gandi account.'
         )
 
+    @patch('instance.gandi.cache')
+    @patch('lexicon.client.Client.execute')
+    def test_list_dns_record_no_cache(self, mocked_lexicon_client_execute, mocked_cache):
+        """
+        Test listing all DNS records for a domain.
+        """
+        mocked_cache.get.return_value = None
+        mocked_lexicon_client_execute.return_value = []
+
+        self.populate_domain_cache()
+        self.api.list_dns_records(dict(domain='test.com', type='CNAME'))
+        self.assertEqual(mocked_lexicon_client_execute.call_count, 1)
+        mocked_cache.set.assert_called_once_with('test.com-CNAME', [])
+
+    @patch.object(GandiV5API, 'list_dns_records')
+    def test_filter_dns_record_default_cname(self, mocked_list_dns_records):
+        """
+        Test filtering DNS records for a domain.
+        """
+        expected_domain = 'test.com'
+        mocked_list_dns_records.return_value = []
+        self.populate_domain_cache()
+        self.api.filter_dns_records(expected_domain)
+        mocked_list_dns_records.assert_called_once_with(dict(domain=expected_domain, type='CNAME'))
+
+    @patch.object(GandiV5API, 'list_dns_records')
+    def test_filter_dns_record_with_an_a_record(self, mocked_list_dns_records):
+        """
+        Test filtering DNS records for a domain.
+        """
+        expected_domain = 'test.com'
+        expected_type = 'A'
+        mocked_list_dns_records.return_value = []
+        self.populate_domain_cache()
+        self.api.filter_dns_records(expected_domain, type=expected_type)
+        mocked_list_dns_records.assert_called_once_with(dict(domain=expected_domain, type=expected_type))
+
     @patch('lexicon.client.Client.execute')
     def test_set_dns_record(self, mocked_lexicon_client_execute):
         """
@@ -96,6 +133,22 @@ class GandiV5TestCase(TestCase):
         self.populate_domain_cache()
         self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
         assert mocked_lexicon_client_execute.call_count == 2
+
+    @patch('instance.gandi.cache')
+    @patch('lexicon.client.Client.execute')
+    def test_set_dns_record_invalidates_cache(self, mocked_lexicon_client_execute, mocked_cache):
+        """
+        Test adding a DNS record invalidates the cache.
+        """
+        mocked_lexicon_client_execute.return_value = []
+        self.populate_domain_cache()
+
+        self.api.set_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+
+        mocked_cache.delete.has_calls([
+            call('test.com-A'),  # Called by deleting the existing record
+            call('test.com-A'),  # Called by setting the new record
+        ])
 
     @patch.object(GandiV5API, 'add_dns_record')
     @patch.object(GandiV5API, 'delete_dns_record')
@@ -154,3 +207,16 @@ class GandiV5TestCase(TestCase):
         mocked_delete.assert_called_once()
         expected_call_args = {'name': 'sub.domain', 'domain': 'test.com', 'type': 'A', 'value': '1.2.3.4'}
         assert mocked_delete.call_args_list == [call(expected_call_args)]
+
+    @patch('instance.gandi.cache')
+    @patch('lexicon.client.Client.execute')
+    def test_remove_dns_record_invalidates_cache(self, mocked_lexicon_client_execute, mocked_cache):
+        """
+        Test removing a DNS record invalidates the cache.
+        """
+        mocked_lexicon_client_execute.return_value = []
+        self.populate_domain_cache()
+
+        self.api.remove_dns_record('sub.domain.test.com', type='A', value='1.2.3.4')
+
+        mocked_cache.delete.assert_called_once_with('test.com-A')

@@ -19,7 +19,6 @@
 """
 Serializers for registration API.
 """
-import logging
 from typing import Dict
 
 from django.contrib.auth.models import User
@@ -35,10 +34,8 @@ from instance.models.openedx_deployment import DeploymentState
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
-from registration.models import BetaTestApplication
+from registration.models import BetaTestApplication, validate_available_subdomain, validate_available_external_domain
 from userprofile.models import UserProfile
-
-logger = logging.getLogger(__name__)
 
 
 class DataSerializer(serializers.Serializer):
@@ -183,6 +180,15 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("Cannot accept policy for a future date.")
         return value
 
+    def validate_accept_domain_condition(self, value):
+        """
+        Ensure that no account registers a domain without stating he/she has the rights
+        to use that domain.
+        """
+        if not value:
+            raise ValidationError("You must accept these terms to register.")
+        return value
+
     def validate_accept_paid_support(self, value):
         """
         Ensure that no account exists that hasn't accepted the support terms.
@@ -200,11 +206,13 @@ class AccountSerializer(serializers.ModelSerializer):
             "email",
             "accepted_privacy_policy",
             "accept_paid_support",
+            "accept_domain_condition",
             "subscribe_to_updates",
         )
         extra_kwargs = {
             "accepted_privacy_policy": {"required": True},
             "accept_paid_support": {"required": True},
+            "accept_domain_condition": {"required": True},
         }
 
 
@@ -314,6 +322,30 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             raise ValidationError("User has reached limit of allowed Open edX instances.")
         else:
             return value
+
+    def validate_subdomain(self, value):
+        """
+        Prevent users from registering with a subdomain which is in use.
+        """
+        is_new_instance = self.instance is None
+        is_changed = not is_new_instance and self.instance.subdomain != self.initial_data.get("subdomain")
+
+        if is_new_instance or is_changed:
+            validate_available_subdomain(value)
+
+        return value
+
+    def validate_external_domain(self, value):
+        """
+        Prevent users from registering with an external domain which was or currently in use.
+        """
+        is_new_instance = self.instance is None
+        is_changed = not is_new_instance and self.instance.external_domain != self.initial_data.get("external_domain")
+
+        if is_new_instance or is_changed:
+            validate_available_external_domain(value)
+
+        return value
 
     class Meta:
         model = BetaTestApplication

@@ -45,6 +45,7 @@ class UserAdmin(BaseUserAdmin):  # pylint: disable=missing-docstring
         'profile__subscribe_to_updates',
         'profile__accepted_privacy_policy',
         'profile__accept_paid_support',
+        'profile__accept_domain_condition',
     )
 
 

@@ -55,7 +55,7 @@ class GandiV5API:
         Populate the internal domain cache with all domains in the current Gandi account.
         """
         self._domain_cache = []
-        domains_api_url = '{}/domains'.format(self.api_base)
+        domains_api_url = f'{self.api_base}/domains'
 
         try:
             response = requests.get(domains_api_url, headers={'X-Api-Key': self.api_key})
@@ -86,7 +86,7 @@ class GandiV5API:
                 subdomain = '.'.join(labels[:split_index]) or '@'
                 return subdomain, registered_domain
         raise ValueError(
-            'The given domain name "{}" does not match any domain registered in the Gandi account.'.format(domain)
+            f'The given domain name "{domain}" does not match any domain registered in the Gandi account.'
         )
 
     def _get_base_config(self):
@@ -134,7 +134,50 @@ class GandiV5API:
         config.with_dict(dict_object=lexicon_config)
         client = Client(config)
         result = client.execute()
+
+        # Invalidate cache for the domain-cname pair
+        cache.delete(f"{record['domain']}-{record['type']}")
+
         return result
+
+    def list_dns_records(self, record):
+        """
+        List all records of a domain name for a given type.
+        """
+        cached_result = cache.get(f"{record['domain']}-{record['type']}")
+        if cached_result:
+            return cached_result
+
+        lexicon_config = self._get_base_config()
+        lexicon_config['domain'] = record['domain']
+        lexicon_config['action'] = 'list'
+        lexicon_config['type'] = record['type']
+        config = ConfigResolver()
+        config.with_dict(dict_object=lexicon_config)
+        client = Client(config)
+
+        result = client.execute()
+        cache.set(f"{record['domain']}-{record['type']}", result)
+
+        return result
+
+    def filter_dns_records(self, domain, **record):
+        """
+        List all records which has type CNAME.
+        """
+        _, record['domain'] = self._split_domain_name(domain)
+
+        if "type" not in record.keys():
+            record['type'] = "CNAME"
+
+        def list_dns_records_callback():
+            # Cache the list result for the type
+            return self.list_dns_records(record)
+
+        return self._dns_operation(
+            callback=list_dns_records_callback,
+            log_msg=f'Getting DNS records: {domain}',
+        )
 
     def set_dns_record(self, domain, **record):
         """
@@ -155,7 +198,7 @@ class GandiV5API:
 
         self._dns_operation(
             callback=set_dns_record_callback,
-            log_msg='Setting DNS record: {}'.format(record),
+            log_msg=f'Setting DNS record: {record}',
         )
 
     def delete_dns_record(self, record):
@@ -173,6 +216,9 @@ class GandiV5API:
         result = False
         try:
             result = client.execute()
+
+            # Invalidate cache for the domain-cname pair
+            cache.delete(f"{record['domain']}-{record['type']}")
         except Exception as e:  # pylint: disable=broad-except
             # This ugly checking of the exception message is needed
             # as the library only throws an instance of the Exception class.
@@ -193,7 +239,7 @@ class GandiV5API:
 
         self._dns_operation(
             callback=remove_dns_record_callback,
-            log_msg='Deleting DNS record: {}'.format(record),
+            log_msg=f'Deleting DNS record: {record}',
         )
 
 

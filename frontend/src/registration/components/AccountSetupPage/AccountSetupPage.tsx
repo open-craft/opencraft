@@ -33,6 +33,7 @@ interface State {
   passwordConfirm: string;
   acceptTOS: boolean;
   acceptPaidSupport: boolean;
+  acceptDomainCondition: boolean;
   subscribeToUpdates: boolean;
 }
 
@@ -64,6 +65,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       passwordConfirm: this.props.registrationData.passwordConfirm,
       acceptTOS: this.props.registrationData.acceptTOS,
       acceptPaidSupport: this.props.registrationData.acceptPaidSupport,
+      acceptDomainCondition: this.props.registrationData.acceptDomainCondition,
       subscribeToUpdates: this.props.registrationData.subscribeToUpdates
     };
   }
@@ -98,6 +100,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         passwordConfirm: this.state.passwordConfirm,
         acceptTOS: this.state.acceptTOS,
         acceptPaidSupport: this.state.acceptPaidSupport,
+        acceptDomainCondition: this.state.acceptDomainCondition,
         subscribeToUpdates: this.state.subscribeToUpdates
       },
       {
@@ -207,6 +210,22 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
           {this.props.registrationFeedback.acceptPaidSupport && (
             <div className="invalid-feedback-checkbox">
               {this.props.registrationFeedback.acceptPaidSupport}
+            </div>
+          )}
+          <Form.Check type="checkbox" id="acceptDomainCondition" custom>
+            <Form.Check.Input
+              type="checkbox"
+              name="acceptDomainCondition"
+              checked={this.state.acceptDomainCondition}
+              onChange={this.onChange}
+            />
+            <Form.Check.Label>
+              <WrappedMessage id="acceptDomainCondition" messages={messages} />
+            </Form.Check.Label>
+          </Form.Check>
+          {this.props.registrationFeedback.acceptDomainCondition && (
+            <div className="invalid-feedback-checkbox">
+              {this.props.registrationFeedback.acceptDomainCondition}
             </div>
           )}
           <Form.Check type="checkbox" id="subscribeToUpdates" custom>

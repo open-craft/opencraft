@@ -389,6 +389,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             full_name="Test user 1",
             accepted_privacy_policy=datetime.now(),
             accept_paid_support=True,
+            accept_domain_condition=True,
             subscribe_to_updates=True,
         )
         user.refresh_from_db()
@@ -562,6 +563,7 @@ class InstanceIntegrationTestCase(IntegrationTestCase):
             full_name="Test user 1",
             accepted_privacy_policy=datetime.now(),
             accept_paid_support=True,
+            accept_domain_condition=True,
             subscribe_to_updates=True,
         )
         user.refresh_from_db()
