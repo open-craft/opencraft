@@ -24,13 +24,19 @@ Instance - Redeployment task unit tests
 from unittest.mock import patch, MagicMock
 from testfixtures import LogCapture
 
+from django.contrib.auth import get_user_model
 from django.core.management import call_command, CommandError
 from django.utils.six import StringIO
 from django.test import TestCase
 
+from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceTag
+from instance.models.mixins.utilities import send_urgent_alert_on_permanent_deployment_failure
+from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
+from userprofile.models import UserProfile
+from registration.models import BetaTestApplication
 
 
 # Tests #######################################################################
@@ -305,7 +311,32 @@ class InstanceRedeployTestCase(TestCase):
         tag = 'test-tag'
         instances = self.create_test_instances(tag, success=False)
 
-        def _create_new_deployment_failed(
+        beta_test_instance = OpenEdXInstance.objects.create(
+            sub_domain='beta-test-instance',
+            openedx_release='z.1',
+            successfully_provisioned=True
+        )
+
+        user = get_user_model().objects.create_user(
+            username='instance_redeploy_test',
+            email='instance_redeploy_test@example.com'
+        )
+
+        UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='beta-test-instance',
+            instance=beta_test_instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+        )
+
+        def _create_new_failed_deployment(
                 instance,
                 mark_active_on_success=False,
                 deactivate_old_appservers=False,
@@ -317,59 +348,89 @@ class InstanceRedeployTestCase(TestCase):
             Mock the instance.tasks.create_new_deployment method to
             instantly mark appserver as failed.
             """
+            deployment = OpenEdXDeployment.objects.create(
+                instance_id=instance.ref.id,
+                creator=None,
+                type=DeploymentType.batch,
+                changes=None,
+            )
+
+            # We are not dispatching the signal here, to avoid activating other
+            # signal handlers.
+            send_urgent_alert_on_permanent_deployment_failure(
+                sender=instance.__class__,
+                instance=instance,
+                appserver=None,
+                deployment_id=deployment.id
+            )
+
             instance.tags.add(failure_tag)
             instance.tags.remove(success_tag)
 
-        mock_create_new_deployment.side_effect = _create_new_deployment_failed
+        mock_create_new_deployment.side_effect = _create_new_failed_deployment
 
         # Redeploying with batch-size=1, so we'll spawn one appservers at a time.
-        expected_logs = ((self.cmd_module, self.log_level, msg) for msg in (
-            '******* Status *******',
-            'Instances pending redeployment: 3',
-            'Redeployments in progress: 0',
-            'Failed to redeploy: 1',
-            'Successfully redeployed (done): 1',
-            'Batch size: 1',
-            'Batch frequency: 0:00:01',
-            'Number of upgrade attempts per instance: 1',
+        expected_logs = [
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 4'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 0'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 1'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, 'Batch size: 1'),
+            (self.cmd_module, self.log_level, 'Batch frequency: 0:00:01'),
+            (self.cmd_module, self.log_level, 'Number of upgrade attempts per instance: 1'),
+            (self.cmd_module, self.log_level, '** Starting redeployment **'),
+            (self.cmd_module, self.log_level, 'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance'])),
 
-            '** Starting redeployment **',
-            'SPAWNING: {0} [{0.id}]'.format(instances['E']['instance']),
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 3'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 1'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 2'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, 'Sleeping for 0:00:01'),
+            (self.cmd_module, self.log_level, 'FAILED: {0} [{0.id}]'.format(instances['E']['instance'])),
+            (self.cmd_module, self.log_level, 'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance'])),
 
-            '******* Status *******',
-            'Instances pending redeployment: 2',
-            'Redeployments in progress: 1',
-            'Failed to redeploy: 2',
-            'Successfully redeployed (done): 1',
-            'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['E']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['F']['instance']),
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 2'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 1'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 3'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, 'Sleeping for 0:00:01'),
+            (self.cmd_module, self.log_level, 'FAILED: {0} [{0.id}]'.format(instances['F']['instance'])),
+            (self.cmd_module, self.log_level, 'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance'])),
 
-            '******* Status *******',
-            'Instances pending redeployment: 1',
-            'Redeployments in progress: 1',
-            'Failed to redeploy: 3',
-            'Successfully redeployed (done): 1',
-            'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['F']['instance']),
-            'SPAWNING: {0} [{0.id}]'.format(instances['G']['instance']),
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 1'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 1'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 4'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, 'Sleeping for 0:00:01'),
+            (self.cmd_module, self.log_level, 'FAILED: {0} [{0.id}]'.format(instances['G']['instance'])),
+            (self.cmd_module, self.log_level, 'SPAWNING: {0} [{0.id}]'.format(beta_test_instance)),
+            (
+                'instance.models.mixins.utilities',
+                'WARNING',
+                "Skip sending urgent alert e-mail after instance "
+                "{} provisioning failed since it was initiated by OpenCraft member".format(beta_test_instance)
+            ),
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 0'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 1'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 5'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, 'Sleeping for 0:00:01'),
+            (self.cmd_module, self.log_level, 'FAILED: {0} [{0.id}]'.format(
+                beta_test_instance
+            )),
 
-            '******* Status *******',
-            'Instances pending redeployment: 0',
-            'Redeployments in progress: 1',
-            'Failed to redeploy: 4',
-            'Successfully redeployed (done): 1',
-            'Sleeping for 0:00:01',
-            'FAILED: {0} [{0.id}]'.format(instances['G']['instance']),
-
-            '******* Status *******',
-            'Instances pending redeployment: 0',
-            'Redeployments in progress: 0',
-            'Failed to redeploy: 4',
-            'Successfully redeployed (done): 1',
-
-            '** Redeployment done **',
-        ))
+            (self.cmd_module, self.log_level, '******* Status *******'),
+            (self.cmd_module, self.log_level, 'Instances pending redeployment: 0'),
+            (self.cmd_module, self.log_level, 'Redeployments in progress: 0'),
+            (self.cmd_module, self.log_level, 'Failed to redeploy: 5'),
+            (self.cmd_module, self.log_level, 'Successfully redeployed (done): 1'),
+            (self.cmd_module, self.log_level, '** Redeployment done **')
+        ]
 
         # Call the redeployment command, and capture the logs
         with LogCapture() as captured_logs:

@@ -32,6 +32,7 @@ from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.views.debug import ExceptionReporter
 
+from instance.models.deployment import Deployment, DeploymentType
 from instance.signals import appserver_spawned
 
 logger = logging.getLogger(__name__)
@@ -137,7 +138,7 @@ class EmailMixin:
 # Functions #####################################################################
 
 @receiver(appserver_spawned)
-def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs):
+def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
     """
     Send an urgent alert to an e-mail when the deployment fails in a way that blocks the user.
     This is more urgent than the usual failure e-mails, and it's meant to go for instance to PagerDuty.
@@ -147,10 +148,30 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs):
     """
     instance = kwargs['instance']
     appserver = kwargs['appserver']
+    deployment_id: int = kwargs['deployment_id']
+
+    # Those deployment types which are triggered by OpenCraft members
+    ignorable_deployment_types: List[str] = [
+        DeploymentType.admin.name,
+        DeploymentType.batch.name,
+        DeploymentType.pr.name
+    ]
 
     # Only sending critical alerts for failures in registered clients' instances, not in test/sandboxes
     if not instance.betatestapplication_set.exists():
         return
+
+    # In case a deployment initiated by an OpenCraft member
+    # and failed, skip sending urgent email
+    if deployment_id is not None:
+        deployment = Deployment.objects.get(pk=deployment_id)
+        if deployment.type in ignorable_deployment_types:
+            logger.warning(
+                "Skip sending urgent alert e-mail after instance %s "
+                "provisioning failed since it was initiated by OpenCraft member",
+                instance,
+            )
+            return
 
     if appserver is None and instance.provisioning_failure_notification_emails:
         logger.warning(

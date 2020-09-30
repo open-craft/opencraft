@@ -40,9 +40,11 @@ import yaml
 from instance import gandi
 from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
+from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceReference
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
+from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
 from instance.models.server import OpenStackServer, Server, Status as ServerStatus
 from instance.models.utils import WrongStateException
@@ -253,14 +255,13 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(configuration_vars['COMMON_HOSTNAME'], appserver.server_hostname)
         self.assertEqual(configuration_vars['EDXAPP_PLATFORM_NAME'], instance.name)
         self.assertEqual(configuration_vars['EDXAPP_CONTACT_EMAIL'], instance.email)
-
         self.assertEqual(configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES']['BLOG'], '')
         self.assertEqual(configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES']['CONTACT'], '/contact')
 
         if privacy_policy_url:
             self.assertEqual(
                 configuration_vars['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_OVERRIDES']['PRIVACY'],
-                'http://example.com/default-test-spawn-privacy',
+                'http://example.com/default-test-spawn-privacy'
             )
         else:
             self.assertNotIn('MKTG_URL_OVERRIDES', configuration_vars)
@@ -469,6 +470,88 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(instance.appserver_set.count(), 5)
 
         self.assertEqual(len(django_mail.outbox), 0)
+
+    @ddt.data(DeploymentType.user, DeploymentType.periodic, DeploymentType.registration, DeploymentType.unknown)
+    @patch_services
+    def test_spawn_appserver_failed_all_attempts_send_emails_if_external(self, mocks, deployment_type, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts).
+        Given that the appserver spawn is launched from users, we should send the email.
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log: provisioning failed'], 1)
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        failure_emails = ['provisionfailed@localhost']
+        instance.provisioning_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+
+        UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+        )
+
+        # Create the deployment, setting the deployment type
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=deployment_type,
+        )
+        with self.assertRaises(ApplicationNotReady):
+            instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
+
+        # Given these deployment types, at least one email should be sended
+        self.assertGreater(len(django_mail.outbox), 0)
+
+    @ddt.data(DeploymentType.admin, DeploymentType.batch, DeploymentType.pr)
+    @patch_services
+    def test_spawn_appserver_failed_all_attempts_no_emails_if_internal(self, mocks, deployment_type, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts).
+        Given that the appserver spawn is launched from members of OpenCraft, we shouldn't send the email.
+        """
+        mocks.mock_run_ansible_playbooks.return_value = (['log: provisioning failed'], 1)
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        failure_emails = ['provisionfailed@localhost']
+        instance.provisioning_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+
+        UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+        )
+
+        # Create the deployment, setting the deployment type
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=deployment_type,
+        )
+        with self.assertRaises(ApplicationNotReady):
+            instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
+
+        # Given these deployment types, no emails should be sended
+        self.assertEqual(len(django_mail.outbox), 0)
+
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Skip sending urgent alert e-mail after instance {instance_name}"
+            "provisioning failed since it was initiated by OpenCraft member".format(instance_name=instance.name)
+        )
 
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
