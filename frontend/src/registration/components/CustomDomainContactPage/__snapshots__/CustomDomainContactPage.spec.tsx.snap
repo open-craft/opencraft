@@ -11,7 +11,7 @@ exports[`Custom Domain Contact Page Correctly renders Custom Domain Contact page
     className="custom-domain-contact-inner"
   >
     <p>
-      To use custom domain, please contact -
+      To use custom domain, please contact us at 
       <a
         href="mailto:contact@opencraft.com"
       >

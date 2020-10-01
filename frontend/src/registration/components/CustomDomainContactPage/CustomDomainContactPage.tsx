@@ -11,7 +11,7 @@ export const CustomDomainContactPage: React.FC<Props> = (props: Props) => {
       <h1>Custom Domain</h1>
       <div className="custom-domain-contact-inner">
         <p>
-          To use custom domain, please contact -
+          To use custom domain, please contact us at&nbsp;
           <a href="mailto:contact@opencraft.com">contact@opencraft.com</a>
         </p>
         <NavLink className="nav-link back-link" to={ROUTES.Registration.HOME}>
