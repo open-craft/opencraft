@@ -412,6 +412,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "FUNCTION": "retirement_lms_retire",
                 },
             ],
+
+            "EDXAPP_CODE_JAIL_LIMITS": {
+                "REALTIME": 6
+            }
         }
 
         if self.smtp_relay_settings:
