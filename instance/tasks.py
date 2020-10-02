@@ -305,8 +305,7 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
             days=settings.DELETE_OLD_BETATEST_USER_DAYS
         )
 
-        User = get_user_model()
-        queryset = User.objects.filter(
+        queryset = get_user_model().objects.filter(
             # has a beta test application
             betatestapplication__isnull=False,
 
@@ -331,14 +330,13 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
             last_login__lte=inactive_cutoff
         )
 
-
         # mark user as inactive. Update ``Profile.modified`` to current time.
         users_to_inactive = queryset.filter(is_active=True)
-        logger.info('Marking {} users as inactive.'.format(users_to_inactive.count()))
+        logger.info('Marking %s users as inactive.', users_to_inactive.count())
         users_to_inactive.update(is_active=False)
         UserProfile.objects.filter(user__in=users_to_inactive).update(modified=timezone.now())
 
         # deletes inactive users that last modified ``DELETE_USER_DAYS`` ago.
         users_to_delete = queryset.filter(is_active=False, profile__modified__lte=delete_cutoff)
-        logger.info('Deleting {} users'.format(users_to_delete.count()))
+        logger.info('Deleting %s users.', users_to_delete.count())
         users_to_delete.delete()
