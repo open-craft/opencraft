@@ -27,6 +27,7 @@ import logging
 from typing import Optional, List
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django.utils import timezone
 from huey.api import crontab
@@ -37,6 +38,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.utils import sufficient_time_passed
+from userprofile.models import UserProfile
 from pr_watch import github
 
 
@@ -268,3 +270,75 @@ def delete_old_logs():
     logger.info(query)
     with connection.cursor() as cursor:
         cursor.execute(query)
+
+
+if settings.CLEANUP_OLD_BETATEST_USERS:
+
+    @db_periodic_task(crontab(day='3', hour='0', minute='0'))
+    def cleanup_old_betatest_users():
+        """
+        Delete old betatest users.
+
+        Finds users that meet following conditions -
+            - Associated with a betatest application
+            - Not a staff or superuser
+            - Not a paid user
+            - Associated instance doesn't exists or already deleted
+            - Betatest application created at least ``INACTIVE_USER_DAYS`` days ago
+            - Last logged in at least ``INACTIVE_USER_DAYS`` days ago
+
+        If those users are still active, marks as inactive. Updated ``UserProfile.modified``
+        to track when marked as inactive.
+
+        If those users are inactive for at least ``DELETE_USER_DAYS`` days, deletes them.
+
+        So this actually deletes an active old user after ``INACTIVE_USER_DAYS + DELETE_USER_DAYS`` days.
+
+        This job runs Wednesday, every week.
+        """
+
+        inactive_cutoff = timezone.now() - timezone.timedelta(
+            days=settings.INACTIVE_OLD_BETATEST_USER_DAYS
+        )
+
+        delete_cutoff = timezone.now() - timezone.timedelta(
+            days=settings.DELETE_OLD_BETATEST_USER_DAYS
+        )
+
+        User = get_user_model()
+        queryset = User.objects.filter(
+            # has a beta test application
+            betatestapplication__isnull=False,
+
+            # are not staff or superuser
+            is_staff=False,
+            is_superuser=False,
+
+            # don't belong to any organization (ex. opencraft)
+            profile__organization=None,
+
+            # not paid user
+            profile__accept_paid_support=False,
+
+            # instances doesn't exists or already deleted
+            profile__instancereference__isnull=True,
+            openedxinstance__isnull=True,
+            openedxappserver__isnull=True,
+            betatestapplication__instance__isnull=True,
+
+            # at least specified days old
+            betatestapplication__created__lte=inactive_cutoff,
+            last_login__lte=inactive_cutoff
+        )
+
+
+        # mark user as inactive. Update ``Profile.modified`` to current time.
+        users_to_inactive = queryset.filter(is_active=True)
+        logger.info('Marking {} users as inactive.'.format(users_to_inactive.count()))
+        users_to_inactive.update(is_active=False)
+        UserProfile.objects.filter(user__in=users_to_inactive).update(modified=timezone.now())
+
+        # deletes inactive users that last modified ``DELETE_USER_DAYS`` ago.
+        users_to_delete = queryset.filter(is_active=False, profile__modified__lte=delete_cutoff)
+        logger.info('Deleting {} users'.format(users_to_delete.count()))
+        users_to_delete.delete()
