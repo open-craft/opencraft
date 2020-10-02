@@ -93,6 +93,7 @@ def _provision_instance(sender, **kwargs):
 
         if settings.PROD_APPSERVER_FAIL_EMAILS:
             application.instance.provisioning_failure_notification_emails = settings.PROD_APPSERVER_FAIL_EMAILS
+            application.instance.additional_monitoring_emails = settings.PROD_APPSERVER_FAIL_EMAILS
             application.instance.save()
         application.save()
         # At this point we know the user has confirmed their email and set up an instance.
