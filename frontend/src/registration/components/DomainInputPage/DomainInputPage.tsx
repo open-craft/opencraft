@@ -1,12 +1,12 @@
-import { RegistrationSteps } from 'global/constants';
+import { RegistrationSteps, ROUTES } from 'global/constants';
 import { RootState } from 'global/state';
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import { WrappedMessage } from 'utils/intl';
 import { DomainInput, InstitutionalAccountHero } from 'ui/components';
 import { RedirectToCorrectStep } from 'registration/components';
 import { RegistrationStateModel } from 'registration/models';
-import { Nav } from 'react-bootstrap';
 import { performValidationAndStore, clearErrorMessage } from '../../actions';
 import { RegistrationPage } from '../RegistrationPage';
 import messages from './displayMessages';
@@ -58,16 +58,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleExternalDomainChange = (newDomain: string) => {
-    this.setState({
-      externalDomain: newDomain
-    });
-    // Clean up error feedback if any
-    if (this.props.registrationFeedback.subdomain) {
-      this.props.clearErrorMessage('externalDomain');
-    }
-  };
-
   private submitDomain = () => {
     if (this.state.domainIsExternal) {
       this.props.performValidationAndStore(
@@ -84,10 +74,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
         RegistrationSteps.INSTANCE
       );
     }
-  };
-
-  private handleSwitchPageToExternal = (domainIsExternal: boolean) => {
-    this.setState({ domainIsExternal });
   };
 
   private renderInternalDomain = () => {
@@ -111,49 +97,9 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
             handleSubmitDomain={this.submitDomain}
           />
           <div className="use-own">
-            <Nav.Link
-              onClick={() => {
-                this.handleSwitchPageToExternal(true);
-              }}
-            >
+            <NavLink to={ROUTES.Registration.CUSTOM_DOMAIN}>
               <WrappedMessage messages={messages} id="useOwnDomain" />
-            </Nav.Link>
-          </div>
-        </RegistrationPage>
-        <InstitutionalAccountHero />
-      </div>
-    );
-  };
-
-  private renderExternalDomain = () => {
-    return (
-      <div className="div-fill">
-        <RegistrationPage
-          title="Pro & Teacher Account"
-          subtitleBig="Register with your own domain"
-          subtitle="Cost: +€25/month"
-          currentStep={1}
-        >
-          <RedirectToCorrectStep
-            currentPageStep={0}
-            currentRegistrationStep={this.props.currentRegistrationStep}
-          />
-          <DomainInput
-            domainName={this.state.externalDomain}
-            error={this.props.registrationFeedback.externalDomain}
-            internalDomain={false}
-            loading={this.props.loading}
-            handleDomainChange={this.handleExternalDomainChange}
-            handleSubmitDomain={this.submitDomain}
-          />
-          <div className="use-own">
-            <Nav.Link
-              onClick={() => {
-                this.handleSwitchPageToExternal(false);
-              }}
-            >
-              <WrappedMessage messages={messages} id="useInternalDomain" />
-            </Nav.Link>
+            </NavLink>
           </div>
         </RegistrationPage>
         <InstitutionalAccountHero />
@@ -162,10 +108,6 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    if (this.state.domainIsExternal) {
-      return this.renderExternalDomain();
-    }
-
     return this.renderInternalDomain();
   }
 }
