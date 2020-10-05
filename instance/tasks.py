@@ -29,6 +29,7 @@ from typing import Optional, List
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import connection
+from django.db.models import Q
 from django.utils import timezone
 from huey.api import crontab
 from huey.contrib.djhuey import db_periodic_task, db_task, HUEY
@@ -282,7 +283,6 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
         Finds users that meet following conditions -
             - Associated with a betatest application
             - Not a staff or superuser
-            - Not a paid user
             - Associated instance doesn't exists or already deleted
             - Betatest application created at least ``INACTIVE_USER_DAYS`` days ago
             - Last logged in at least ``INACTIVE_USER_DAYS`` days ago
@@ -316,9 +316,6 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
             # don't belong to any organization (ex. opencraft)
             profile__organization=None,
 
-            # not paid user
-            profile__accept_paid_support=False,
-
             # instances doesn't exists or already deleted
             profile__instancereference__isnull=True,
             openedxinstance__isnull=True,
@@ -326,8 +323,10 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
             betatestapplication__instance__isnull=True,
 
             # at least specified days old
-            betatestapplication__created__lte=inactive_cutoff,
-            last_login__lte=inactive_cutoff
+            betatestapplication__created__lte=inactive_cutoff
+        ).filter(
+            # never logged in or logged in ``inactive_cutoff`` days ago
+            Q(last_login=None) | Q(last_login__lte=inactive_cutoff)
         )
 
         # mark user as inactive. Update ``Profile.modified`` to current time.
