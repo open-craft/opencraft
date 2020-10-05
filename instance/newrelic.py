@@ -184,7 +184,7 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                 'type': 'static',
                 'name': name,
                 'enabled': True,
-                'value_function': 'single_value',
+                'value_function': 'sum',
                 'terms': [{
                     'duration': settings.NEWRELIC_NRQL_ALERT_CONDITION_DURATION,
                     'threshold': '1',
