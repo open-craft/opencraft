@@ -886,6 +886,14 @@ TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS'
 # Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
 TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
 
+# User inactive and delete ####################################################
+
+CLEANUP_OLD_BETATEST_USERS = env('CLEANUP_OLD_BETATEST_USERS', default=True)
+
+INACTIVE_OLD_BETATEST_USER_DAYS = env('INACTIVE_OLD_BETATEST_USER_DAYS', default=90)
+
+DELETE_OLD_BETATEST_USER_DAYS = env('DELETE_OLD_BETATEST_USER_DAYS', default=30)
+
 # Instances ###################################################################
 
 # User Console - React SPA

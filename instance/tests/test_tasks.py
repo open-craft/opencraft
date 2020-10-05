@@ -31,6 +31,7 @@ import ddt
 from django.conf import settings
 from django.test import override_settings
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 import freezegun
 
 from instance import tasks
@@ -44,7 +45,8 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.models.factories.server import BootingOpenStackServerFactory, ReadyOpenStackServerFactory
 from pr_watch.tests.factories import make_watched_pr_and_instance
-
+from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 # Tests #######################################################################
 
@@ -717,3 +719,82 @@ class CreateNewDeploymentTestCase(TestCase):
         tasks.start_deployment(instance.ref.id, deployment_id).get()
         self.assertEqual(self.mock_spawn_appserver.call_count, 0)
         self.assertEqual(self.mock_make_appserver_active.s.call_count, 0)
+
+
+@ddt.ddt
+class CleanUpOldBetaTestUserTestCase(TestCase):
+    """
+    Test cases for tasks.cleanup_old_betatest_users.
+    """
+
+    def generate_betatest_user(self, username):
+        """
+        Helper that creates an user, user profile and beta test
+        application instance.
+        """
+
+        user = get_user_model().objects.create_user(
+            username,
+            email='%s@example.com' % username,
+            is_active=True
+        )
+        user_profile = UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+        application = BetaTestApplication.objects.create(
+            user=user,
+            subdomain=username,
+            instance=None,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+        )
+        return {
+            'user': user,
+            'profile': user_profile,
+            'application': application
+        }
+
+
+    def test_clean_up_betatest_user(self):
+        """
+        Test if clean up betatest tasks works as expected.
+        """
+
+        # generate dataset to test
+        data = {
+            iden: self.generate_betatest_user(iden)
+            for iden in ['user%s' % i for i in range(5)]
+        }
+
+        # running task should not delete anything
+        tasks.cleanup_old_betatest_users()
+        assert BetaTestApplication.objects.all().count() == 5
+
+        inactive_cutoff = timezone.now() - timedelta(
+            days=settings.INACTIVE_OLD_BETATEST_USER_DAYS
+        )
+
+        # manually change application created date to an old date
+        data['user1']['application'].created = inactive_cutoff
+        data['user1']['application'].save()
+
+        # user1 should get inactivated and but not deleted.
+        tasks.cleanup_old_betatest_users()
+        assert not get_user_model().objects.get(username='user1').is_active
+        assert BetaTestApplication.objects.all().count() == 5
+
+        # manually change profile modified date to an old date
+        delete_cutoff = timezone.now() - timedelta(
+            days=settings.DELETE_OLD_BETATEST_USER_DAYS
+        )
+        with patch('django.utils.timezone.now') as patched_time:
+            patched_time.return_value = delete_cutoff
+            data['user1']['profile'].modified = delete_cutoff
+            data['user1']['profile'].save()
+
+        # user1 should be deleted now
+        tasks.cleanup_old_betatest_users()
+        assert BetaTestApplication.objects.all().count() == 4
+        assert get_user_model().objects.filter(username='user1').count() == 0
