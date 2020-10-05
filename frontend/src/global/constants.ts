@@ -37,11 +37,10 @@ export interface StringIndexedArray {
 export enum RegistrationSteps {
   FIRST_STEP = 0,
   DOMAIN = 0,
-  CUSTOM_DOMAIN = 1,
-  INSTANCE = 2,
-  ACCOUNT = 3,
-  CONGRATS = 4,
-  LAST_STEP = 4
+  INSTANCE = 1,
+  ACCOUNT = 2,
+  CONGRATS = 3,
+  LAST_STEP = 3
 }
 
 export const ROUTES = {
