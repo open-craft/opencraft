@@ -10,10 +10,7 @@ import {
   PasswordResetPage,
   PrivateRoute
 } from 'auth/components';
-import {
-  RegistrationContainer,
-  CustomDomainContactPage
-} from 'registration/components';
+import { RegistrationContainer } from 'registration/components';
 import { ConsoleContainer } from 'console/components';
 import { ComponentsDemo } from 'ui/components/ComponentsDemo';
 import { ROUTES } from '../global/constants';
@@ -38,10 +35,6 @@ export const MainRoutes = () => (
     <Route
       path={ROUTES.Auth.EMAIL_VERIFICATION}
       component={EmailVerificationPage}
-    />
-    <Route
-      path={ROUTES.Registration.CUSTOM_DOMAIN}
-      component={CustomDomainContactPage}
     />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
