@@ -342,6 +342,7 @@ workflows:
             branches:
               only:
                 - master
+                - shimulch/se-3458
       # Deploy production
       - frontend-build:
           name: frontend-build-production
