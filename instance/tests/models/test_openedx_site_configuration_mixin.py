@@ -128,3 +128,109 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
             ]
         }
         self.assertEqual(yaml.safe_load(instance.get_site_configuration_settings()), expected_variables)
+
+    def test_app_server_site_configuration_override(self):
+        """
+        Test that when the static content overrides contain html elements and attributes, there are no errors and the
+        expected ansible SiteConfiguration variables are generated.
+        """
+        instance = OpenEdXInstanceFactory()
+        configuration_extra_settings = {
+            'EDXAPP_SITE_CONFIGURATION': [
+                {
+                    'values': {
+                        'override': True,
+                        'CONTACT_US_CUSTOM_LINK': '/random/place/'
+                    }
+                }
+            ]
+        }
+        instance.configuration_extra_settings = yaml.dump(
+            configuration_extra_settings,
+            default_flow_style=False,
+        )
+
+        static_content_overrides = {
+            'version': 0,
+            'static_template_about_content': 'static_template_about_content',
+            'homepage_overlay_html': 'homepage_overlay_html',
+        }
+        instance.static_content_overrides = static_content_overrides
+        app_server = instance._create_owned_appserver()
+
+        expected_variables = [
+            {
+                'values': {
+                    'override': True,
+                    'CONTACT_US_CUSTOM_LINK': '/random/place/',
+                    'static_template_about_content': 'static_template_about_content',
+                    'homepage_overlay_html': 'homepage_overlay_html',
+                }
+            }
+        ]
+
+        configuration_settings = yaml.load(app_server.configuration_settings, Loader=yaml.SafeLoader)
+        self.assertEqual(configuration_settings['EDXAPP_SITE_CONFIGURATION'], expected_variables)
+
+    def test_app_server_site_configuration_override_complex(self):
+        """
+        Test that when the static content overrides contain html elements and attributes, there are no errors and the
+        expected ansible SiteConfiguration variables are generated.
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.configuration_extra_settings = yaml.dump({
+            "EDXAPP_SITE_CONFIGURATION": [
+                {
+                    "values": {
+                        "SOME_SETTING": "some value"
+                    }
+                },
+                {
+                    "domain": "some-specific-site.com",
+                    "values": {
+                        "SPECIFIC_SETTING": "specific value"
+                    }
+                },
+                {
+                    "site_id": 3,
+                    "values": {
+                        "CONTACT_US_CUSTOM_LINK": "/custom-contact"
+                    }
+                }
+            ]
+        }, default_flow_style=False)
+        instance.static_content_overrides = {
+            'version': 0,
+            'static_template_about_content': 'TEST override!',
+            'homepage_overlay_html': 'Text override!',
+        }
+        app_server = instance._create_owned_appserver()
+        expected_variables = [
+            {
+                "values": {
+                    "SOME_SETTING": "some value",
+                    "CONTACT_US_CUSTOM_LINK": "/contact",
+                    'static_template_about_content': 'TEST override!',
+                    'homepage_overlay_html': 'Text override!',
+                }
+            },
+            {
+                "domain": "some-specific-site.com",
+                "values": {
+                    "SPECIFIC_SETTING": "specific value",
+                    "CONTACT_US_CUSTOM_LINK": "/contact",
+                    'static_template_about_content': 'TEST override!',
+                    'homepage_overlay_html': 'Text override!',
+                }
+            },
+            {
+                "site_id": 3,
+                "values": {
+                    "CONTACT_US_CUSTOM_LINK": "/custom-contact",
+                    'static_template_about_content': 'TEST override!',
+                    'homepage_overlay_html': 'Text override!',
+                }
+            }
+        ]
+        configuration_settings = yaml.load(app_server.configuration_settings, Loader=yaml.SafeLoader)
+        self.assertEqual(configuration_settings['EDXAPP_SITE_CONFIGURATION'], expected_variables)
