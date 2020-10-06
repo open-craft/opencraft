@@ -387,12 +387,18 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         default_site_values = default_site_configurations['EDXAPP_SITE_CONFIGURATION'][0]
         result = []
-        for site_settings in confvars.get('EDXAPP_SITE_CONFIGURATION', []):
+        existed_site_settings = confvars.get('EDXAPP_SITE_CONFIGURATION', [])
+        for site_settings in existed_site_settings:
             default_values_copy = copy.deepcopy(default_site_values)
             default_values_copy['values'].update(site_settings['values'])
 
             site_settings['values'] = default_values_copy['values']
             result.append(site_settings)
+
+        if not existed_site_settings:
+            default_values_copy = copy.deepcopy(default_site_values)
+            result.append({'values': default_values_copy['values']})
+
         confvars['EDXAPP_SITE_CONFIGURATION'] = result
         return confvars
 
