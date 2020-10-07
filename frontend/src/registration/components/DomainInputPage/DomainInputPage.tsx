@@ -111,13 +111,13 @@ export class DomainInputPage extends React.PureComponent<Props, State> {
             handleSubmitDomain={this.submitDomain}
           />
           <div className="use-own">
-            <Nav.Link
+            {/* <Nav.Link
               onClick={() => {
                 this.handleSwitchPageToExternal(true);
               }}
             >
               <WrappedMessage messages={messages} id="useOwnDomain" />
-            </Nav.Link>
+            </Nav.Link> */}
           </div>
         </RegistrationPage>
         <InstitutionalAccountHero />

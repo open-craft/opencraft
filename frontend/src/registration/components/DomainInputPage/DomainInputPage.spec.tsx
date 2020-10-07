@@ -55,13 +55,13 @@ describe("Domain Input Page", function() {
       expect(tree).toMatchSnapshot();
 
       // Click on custom domain page
-      component.root.findByType("a").props.onClick({preventDefault: () => {}});
-      tree = component.toJSON();
-      expect(tree).toMatchSnapshot();
+      // component.root.findByType("a").props.onClick({preventDefault: () => {}});
+      // tree = component.toJSON();
+      // expect(tree).toMatchSnapshot();
 
       // Click on opencraft domain page
-      component.root.findByType("a").props.onClick({preventDefault: () => {}});
-      tree = component.toJSON();
-      expect(tree).toMatchSnapshot();
+      // component.root.findByType("a").props.onClick({preventDefault: () => {}});
+      // tree = component.toJSON();
+      // expect(tree).toMatchSnapshot();
   });
 });
