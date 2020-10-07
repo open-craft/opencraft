@@ -254,7 +254,7 @@ class NewRelicTestCase(TestCase):
                 'type': 'static',
                 'name': condition_name,
                 'enabled': True,
-                'value_function': 'single_value',
+                'value_function': 'sum',
                 'terms': [{
                     'duration': '11',
                     'threshold': '1',
