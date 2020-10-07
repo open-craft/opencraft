@@ -140,10 +140,10 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'override': True,
-                        'CONTACT_US_CUSTOM_LINK': '/random/place/'
-                    }
-                }
-            ]
+                        'CONTACT_US_CUSTOM_LINK': '/random/place/',
+                    },
+                },
+            ],
         }
         instance.configuration_extra_settings = yaml.dump(
             configuration_extra_settings,
@@ -165,8 +165,8 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                     'CONTACT_US_CUSTOM_LINK': '/random/place/',
                     'static_template_about_content': 'static_template_about_content',
                     'homepage_overlay_html': 'homepage_overlay_html',
-                }
-            }
+                },
+            },
         ]
 
         configuration_settings = yaml.load(app_server.configuration_settings, Loader=yaml.SafeLoader)
@@ -182,22 +182,22 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
             "EDXAPP_SITE_CONFIGURATION": [
                 {
                     "values": {
-                        "SOME_SETTING": "some value"
-                    }
+                        "SOME_SETTING": "some value",
+                    },
                 },
                 {
                     "domain": "some-specific-site.com",
                     "values": {
-                        "SPECIFIC_SETTING": "specific value"
-                    }
+                        "SPECIFIC_SETTING": "specific value",
+                    },
                 },
                 {
                     "site_id": 3,
                     "values": {
-                        "CONTACT_US_CUSTOM_LINK": "/custom-contact"
-                    }
-                }
-            ]
+                        "CONTACT_US_CUSTOM_LINK": "/custom-contact",
+                    },
+                },
+            ],
         }, default_flow_style=False)
         instance.static_content_overrides = {
             'version': 0,
@@ -212,7 +212,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                     "CONTACT_US_CUSTOM_LINK": "/contact",
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
-                }
+                },
             },
             {
                 "domain": "some-specific-site.com",
@@ -221,7 +221,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                     "CONTACT_US_CUSTOM_LINK": "/contact",
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
-                }
+                },
             },
             {
                 "site_id": 3,
@@ -229,8 +229,8 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                     "CONTACT_US_CUSTOM_LINK": "/custom-contact",
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
-                }
-            }
+                },
+            },
         ]
         configuration_settings = yaml.load(app_server.configuration_settings, Loader=yaml.SafeLoader)
         self.assertEqual(configuration_settings['EDXAPP_SITE_CONFIGURATION'], expected_variables)
