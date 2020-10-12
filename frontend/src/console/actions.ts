@@ -7,7 +7,11 @@ import {
   DeploymentInfoModel,
   DeploymentNotificationModel
 } from 'console/models';
-import { ThemeSchema, StaticContentOverrides } from 'ocim-client';
+import {
+  ThemeSchema,
+  StaticContentOverrides,
+  ToggleStaticContentPages,
+} from 'ocim-client';
 import { NOTIFICATIONS_LIMIT, ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 
@@ -34,6 +38,8 @@ export enum Types {
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES',
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_SUCCESS',
   UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE = 'UPDATE_INSTANCE_STATIC_CONTENT_OVERRIDES_FAILURE',
+  // Static content visibility actions
+  UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY = 'UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY',
 
   // Notifications related actions
   GET_NOTIFICATIONS = 'GET_NOTIFICATIONS',
@@ -131,6 +137,11 @@ export interface UpdateInstanceStaticContentOverridesFailure extends Action {
   readonly data: Partial<StaticContentOverrides>;
 }
 
+export interface UpdateInstanceStaticContentVisibility extends Action {
+  readonly type: Types.UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY;
+  readonly data: Partial<ToggleStaticContentPages>;
+}
+
 export interface GetDeploymentsNotifications extends Action {
   readonly type: Types.GET_NOTIFICATIONS;
 }
@@ -208,6 +219,7 @@ export type ActionTypes =
   | UpdateInstanceStaticContentOverrides
   | UpdateInstanceStaticContentOverridesSuccess
   | UpdateInstanceStaticContentOverridesFailure
+  | UpdateInstanceStaticContentVisibility
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
@@ -406,6 +418,25 @@ export const updateStaticContentOverridesFieldValue = (
     });
   }
 };
+
+export const toggleStaticPageVisibility = (
+  instanceId: number,
+  pageName: string,
+  enabled: boolean
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  const response = await V2Api.instancesOpenedxConfigToggleStaticContentPage({
+    id: String(instanceId),
+    data: {
+      pageName,
+      enabled
+    }
+  })
+
+  dispatch({
+    type: Types.UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY,
+    data: response
+  })
+}
 
 export const getNotifications = (): OcimThunkAction<void> => async dispatch => {
   dispatch({

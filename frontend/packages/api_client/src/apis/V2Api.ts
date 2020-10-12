@@ -21,6 +21,9 @@ import {
     ApplicationImageUpload,
     ApplicationImageUploadFromJSON,
     ApplicationImageUploadToJSON,
+    DisplayStaticContentPages,
+    DisplayStaticContentPagesFromJSON,
+    DisplayStaticContentPagesToJSON,
     Email,
     EmailFromJSON,
     EmailToJSON,
@@ -57,6 +60,9 @@ import {
     ThemeSchema,
     ThemeSchemaFromJSON,
     ThemeSchemaToJSON,
+    ToggleStaticContentPages,
+    ToggleStaticContentPagesFromJSON,
+    ToggleStaticContentPagesToJSON,
     Token,
     TokenFromJSON,
     TokenToJSON,
@@ -128,6 +134,11 @@ export interface InstancesOpenedxConfigStaticContentOverridesRequest {
 export interface InstancesOpenedxConfigThemeConfigRequest {
     id: string;
     data: ThemeSchema;
+}
+
+export interface InstancesOpenedxConfigToggleStaticContentPageRequest {
+    id: string;
+    data: ToggleStaticContentPages;
 }
 
 export interface InstancesOpenedxConfigUpdateRequest {
@@ -794,6 +805,50 @@ export class V2Api extends runtime.BaseAPI {
      */
     async instancesOpenedxConfigThemeConfig(requestParameters: InstancesOpenedxConfigThemeConfigRequest): Promise<ThemeSchema> {
         const response = await this.instancesOpenedxConfigThemeConfigRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * Enable/Disable static page.
+     */
+    async instancesOpenedxConfigToggleStaticContentPageRaw(requestParameters: InstancesOpenedxConfigToggleStaticContentPageRequest): Promise<runtime.ApiResponse<DisplayStaticContentPages>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigToggleStaticContentPage.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigToggleStaticContentPage.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/instances/openedx_config/{id}/toggle_static_content_page/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ToggleStaticContentPagesToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DisplayStaticContentPagesFromJSON(jsonValue));
+    }
+
+    /**
+     * Enable/Disable static page.
+     */
+    async instancesOpenedxConfigToggleStaticContentPage(requestParameters: InstancesOpenedxConfigToggleStaticContentPageRequest): Promise<DisplayStaticContentPages> {
+        const response = await this.instancesOpenedxConfigToggleStaticContentPageRaw(requestParameters);
         return await response.value();
     }
 

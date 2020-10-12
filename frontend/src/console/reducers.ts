@@ -138,6 +138,15 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY:
+      console.log(`action.data ${JSON.stringify(action.data)}`);
+      return update(state, {
+        activeInstance: {
+          data: {
+            staticPagesEnabled: { $set: { ...action.data } }
+          }
+        }
+      });
     case Actions.Types.GET_NOTIFICATIONS:
       return update(state, {
         notificationsLoading: { $set: true }
