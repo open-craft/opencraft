@@ -19,6 +19,7 @@
 """
 Instance app models - Open EdX AppServer models
 """
+import copy
 import os
 import yaml
 
@@ -250,7 +251,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_database_settings',
         'configuration_storage_settings',
         'configuration_theme_settings',
-        'configuration_site_configuration_settings',
         'configuration_secret_keys',
         # The extra settings should stay at the end of this list to allow manual overrides of all settings.
         'configuration_extra_settings',
@@ -374,6 +374,35 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             playbooks.append(self.enable_bulk_emails_playbook())
         return playbooks + super().get_playbooks()
 
+    def merge_site_configuration_settings(self, confvars):
+        """
+        Merge default site_configuration_settings with extra configuration settings
+
+        configuration_settings - may override default values
+        """
+        default_site_configurations = yaml.load(
+            self.configuration_site_configuration_settings,
+            Loader=yaml.SafeLoader
+        )
+
+        default_site_values = default_site_configurations['EDXAPP_SITE_CONFIGURATION'][0]
+        result = []
+        existed_site_settings = confvars.get('EDXAPP_SITE_CONFIGURATION', [])
+        for site_settings in existed_site_settings:
+            default_values_copy = copy.deepcopy(default_site_values)
+            default_values_copy['values'].update(site_settings['values'])
+
+            site_settings['values'] = default_values_copy['values']
+            result.append(site_settings)
+
+        if not existed_site_settings:
+            default_values_copy = copy.deepcopy(default_site_values)
+            result.append({'values': default_values_copy['values']})
+
+        confvars['EDXAPP_SITE_CONFIGURATION'] = result
+        return confvars
+
+
     def create_configuration_settings(self):
         """
         Generate the configuration settings.
@@ -386,6 +415,8 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             additional_vars = getattr(self, attr_name)
             additional_vars = yaml.load(additional_vars, Loader=yaml.SafeLoader) if additional_vars else {}
             confvars = ansible.dict_merge(confvars, additional_vars)
+
+        confvars = self.merge_site_configuration_settings(confvars)
         vars_str = yaml.dump(confvars, default_flow_style=False)
         self.logger.debug('Vars.yml:\n%s', vars_str)
         return vars_str
