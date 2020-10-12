@@ -87,11 +87,9 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
 
   getPageVisibilitiyStatus = () => {
     const { pageName } = this.props.match.params;
-    console.log(pageName)
     let enabled = true;
     try {
       enabled = this.props.activeInstance.data!.staticPagesEnabled[pageName]
-      console.log(`staticPagesEnabled: ${JSON.stringify(this.props.activeInstance.data!.staticPagesEnabled)}`)
     } catch (error) {
       console.log(error);
     }
