@@ -139,7 +139,6 @@ export function consoleReducer(
         }
       });
     case Actions.Types.UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY:
-      console.log(`action.data ${JSON.stringify(action.data)}`);
       return update(state, {
         activeInstance: {
           data: {

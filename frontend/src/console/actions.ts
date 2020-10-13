@@ -10,7 +10,7 @@ import {
 import {
   ThemeSchema,
   StaticContentOverrides,
-  ToggleStaticContentPages,
+  ToggleStaticContentPages
 } from 'ocim-client';
 import { NOTIFICATIONS_LIMIT, ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
@@ -430,13 +430,13 @@ export const toggleStaticPageVisibility = (
       pageName,
       enabled
     }
-  })
+  });
 
   dispatch({
     type: Types.UPDATE_INSTANCE_STATIC_PAGE_VISIBILITY,
     data: response
-  })
-}
+  });
+};
 
 export const getNotifications = (): OcimThunkAction<void> => async dispatch => {
   dispatch({

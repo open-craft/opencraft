@@ -45,7 +45,7 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
 
     this.state = {
       pageContent: this.getPageContentFromState(),
-      enabled: true,
+      enabled: true
     };
   }
 
@@ -88,13 +88,12 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
   getPageVisibilitiyStatus = () => {
     const { pageName } = this.props.match.params;
     let enabled = true;
-    try {
-      enabled = this.props.activeInstance.data!.staticPagesEnabled[pageName]
-    } catch (error) {
-      console.log(error);
+    const { data } = this.props.activeInstance;
+    if (data && data.staticPagesEnabled) {
+      enabled = data?.staticPagesEnabled[pageName];
     }
     return enabled;
-  }
+  };
 
   getPageContentFromState = () => {
     let content = '';
@@ -152,20 +151,19 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
   };
 
   onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const field = e.target.name;
-    const value = e.target.checked;
-    this.setState({ enabled: value })
+    const pageName = e.target.name;
+    const enabled = e.target.checked;
+    this.setState({ enabled });
     try {
       await this.props.toggleStaticPageVisibility(
         this.props.activeInstance.data!.id,
-        field,
-        value
-      )
-    } catch(error) {
-      console.error(error);
-      this.setState({ enabled: !value })
+        pageName,
+        enabled
+      );
+    } catch (error) {
+      this.setState({ enabled: !enabled });
     }
-  }
+  };
 
   public render() {
     const instance = this.props.activeInstance;
