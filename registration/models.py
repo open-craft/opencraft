@@ -481,6 +481,9 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             raise ValidationError(errors)
 
     def default_configuration_display_static_pages(self):
+        """
+        All static pages enabled by default
+        """
         return {
             "about": True,
             "contact": True,
@@ -504,9 +507,10 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             "PRIVACY": "privacy",
         }
 
-        for page_name, enabled in self.configuration_display_static_pages.items():
-            if not enabled:
-                del mktg_url_link_map_config[page_name.upper()]
+        if self.configuration_display_static_pages:
+            for page_name, enabled in self.configuration_display_static_pages.items():
+                if not enabled:
+                    del mktg_url_link_map_config[page_name.upper()]
 
         return mktg_url_link_map_config
 

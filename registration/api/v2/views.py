@@ -518,7 +518,6 @@ class OpenEdXInstanceConfigViewSet(
 
             return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
 
-
     @swagger_auto_schema(
         request_body=ToggleStaticContentPagesSerializer,
         responses={**VALIDATION_RESPONSE, 200: DisplayStaticContentPagesSerializer},
@@ -544,7 +543,6 @@ class OpenEdXInstanceConfigViewSet(
             status=status.HTTP_200_OK,
             data=application.configuration_display_static_pages
         )
-
 
     def list(self, request, *args, **kwargs):
         """

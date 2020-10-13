@@ -278,7 +278,7 @@ class StaticContentOverridesSerializer(serializers.Serializer):
 
 class ToggleStaticContentPagesSerializer(serializers.Serializer):
     """
-    Toggle serializer
+    Serializer to enable/disable specific static page
     """
     page_name = serializers.CharField()
     enabled = serializers.BooleanField()
@@ -286,20 +286,17 @@ class ToggleStaticContentPagesSerializer(serializers.Serializer):
 
 class DisplayStaticContentPagesSerializer(DataSerializer):
     """
-    TODO: Describe details here
+    Serializer with configuration values for MKTG_URL_LINK_MAP
     """
     about = serializers.BooleanField()
     contact = serializers.BooleanField()
     donate = serializers.BooleanField()
     tos = serializers.BooleanField()
     honor = serializers.BooleanField()
-    privacy_policy = serializers.BooleanField()
+    privacy = serializers.BooleanField()
 
-    def to_representation(self, obj):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(obj.instance.get_mktg_url_link())
-        return obj.instance.get_mktg_url_link()
+    def to_representation(self, instance):
+        return instance.instance.get_mktg_url_link()
 
 
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
@@ -325,10 +322,14 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
     def get_static_pages_enabled(self, obj):
-        default = obj.default_configuration_display_static_pages()
+        """
+        Returns config with enabled static pages.
+
+        default - all pages enabled
+        """
         config = obj.configuration_display_static_pages
         if not config:
-            return default
+            return obj.default_configuration_display_static_pages()
         return config
 
     def get_lms_url(self, obj):
