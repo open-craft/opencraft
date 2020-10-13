@@ -130,8 +130,11 @@ everything is working correctly:
 
     make test.unit
 
-Migrations
-----------
+## Common Operations
+The following commands are meant to be run from within your `vagrant` box,
+after logging into them via `vagrant ssh`.
+
+### Migrations
 
 To run database migrations:
 
@@ -143,8 +146,7 @@ also check for pending migrations manually with:
 
     make migrations.check
 
-Run
----
+### Run
 
 To run the development server:
 
@@ -167,8 +169,7 @@ server:
 
     make run WORKERS=2
 
-Process description
--------------------
+### Process description
 
 This runs multiple processes via Honcho, which reads `Procfile` or `Procfile.dev`
 and loads the environment from the `.env` file:
@@ -178,8 +179,7 @@ and loads the environment from the `.env` file:
 * *worker\**: runs asynchronous jobs (Huey).
 * *periodic*: runs periodic, asynchronous jobs in production (Huey).
 
-Static assets collection
-------------------------
+### Static assets collection
 
 The web server started in the development environment also doesn't require
 collectstatic to run after each change.
@@ -189,8 +189,7 @@ can also run it manually:
 
     make static
 
-Running the tests
------------------
+### Running the tests
 
 To run the whole test suite (pylint, pyflakes, pep8, unit tests, etc.):
 
@@ -226,8 +225,7 @@ three days can be cleaned up by running the make target:
 
     make test.integration_cleanup
 
-Debug
------
+### Debugging
 
 To access the console, you can use `shell_plus`:
 
