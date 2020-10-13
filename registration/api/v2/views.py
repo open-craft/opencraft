@@ -538,7 +538,6 @@ class OpenEdXInstanceConfigViewSet(
 
         application.configuration_display_static_pages[page_name] = serializer.data['enabled']
         application.save()
-        logger.info(application.get_mktg_url_link())
         return Response(
             status=status.HTTP_200_OK,
             data=application.configuration_display_static_pages
