@@ -316,7 +316,7 @@ exports[`renders without crashing 1`] = `
         className="registration-nav"
       >
         <button
-          className="float-left btn btn-outline-primary btn-lg"
+          className="float-left increased-font-size btn btn-outline-primary btn-lg"
           disabled={false}
           onClick={[Function]}
           type="button"
@@ -324,8 +324,8 @@ exports[`renders without crashing 1`] = `
           Back
         </button>
         <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={false}
+          className="float-right loading increased-font-size btn btn-primary btn-lg"
+          disabled={true}
           onClick={[Function]}
           type="button"
         >

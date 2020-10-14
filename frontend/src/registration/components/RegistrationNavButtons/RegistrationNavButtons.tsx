@@ -18,7 +18,7 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
   return (
     <div className="registration-nav">
       <Button
-        className="float-left"
+        className="float-left increased-font-size"
         variant="outline-primary"
         size="lg"
         onClick={() => {
@@ -28,7 +28,7 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
         <WrappedMessage messages={messages} id="back" />
       </Button>
       <Button
-        className="float-right loading"
+        className="float-right loading increased-font-size"
         variant="primary"
         size="lg"
         disabled={props.disableNextButton || props.loading}
