@@ -143,7 +143,7 @@ exports[`renders without crashing 1`] = `
             <label
               className="form-label"
             >
-              Instance name
+              The name of your institution, company or site
             </label>
             <input
               className="form-control"
@@ -151,9 +151,6 @@ exports[`renders without crashing 1`] = `
               onChange={[Function]}
               value=""
             />
-            <p>
-              The name of your institution, company or project.
-            </p>
           </div>
         </div>
       </form>

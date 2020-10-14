@@ -4,12 +4,8 @@ const messages = {
     description: 'Page title for domain setup page'
   },
   instanceName: {
-    defaultMessage: 'Instance name',
+    defaultMessage: 'The name of your institution, company or site',
     description: 'Form label for instance name input'
-  },
-  instanceNameHelp: {
-    defaultMessage: 'The name of your institution, company or project.',
-    description: 'Help text for instance name input.'
   }
 };
 
