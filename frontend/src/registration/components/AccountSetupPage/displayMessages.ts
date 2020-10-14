@@ -8,7 +8,7 @@ const messages = {
     description: ''
   },
   fullNameHelp: {
-    defaultMessage: 'Name and surname.',
+    defaultMessage: 'First and last name.',
     description: ''
   },
   username: {

@@ -128,7 +128,7 @@ exports[`renders without crashing 1`] = `
               value=""
             />
             <p>
-              Name and surname.
+              First and last name.
             </p>
           </div>
         </div>
