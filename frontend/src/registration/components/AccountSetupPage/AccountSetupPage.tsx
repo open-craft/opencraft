@@ -66,7 +66,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       acceptTOS: this.props.registrationData.acceptTOS,
       acceptPaidSupport: this.props.registrationData.acceptPaidSupport,
       acceptDomainCondition: this.props.registrationData.acceptDomainCondition,
-      subscribeToUpdates: this.props.registrationData.subscribeToUpdates
+      subscribeToUpdates: this.props.registrationData.subscribeToUpdates,
     };
   }
 
@@ -83,7 +83,6 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
     this.setState({
       [field]: value
     });
-
     // Clear error message when the user changes field
     if (this.props.registrationFeedback[field]) {
       this.props.clearErrorMessage(field);
@@ -113,6 +112,15 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
   };
 
   render() {
+    const dirtyFields: boolean =
+      !this.state.fullName ||
+      !this.state.username ||
+      !this.state.email ||
+      !this.state.password ||
+      !this.state.passwordConfirm ||
+      !this.state.acceptDomainCondition ||
+      !this.state.acceptTOS;
+
     const checkboxLinks = {
       tos: (
         <a href={PRIVACY_POLICY_LINK} target="_blank" rel="noopener noreferrer">
@@ -247,7 +255,7 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         </Form>
         <RegistrationNavButtons
           loading={this.props.loading}
-          disableNextButton={false}
+          disableNextButton={Boolean(dirtyFields)}
           showBackButton
           showNextButton
           handleBackClick={() => {
