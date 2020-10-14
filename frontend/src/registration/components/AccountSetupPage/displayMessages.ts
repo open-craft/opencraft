@@ -17,7 +17,7 @@ const messages = {
   },
   usernameHelp: {
     defaultMessage:
-      'This would also be the username of the administrator account on the Open edX instance.',
+      'The username for all the services you will use to create your courses.',
     description: ''
   },
   email: {
