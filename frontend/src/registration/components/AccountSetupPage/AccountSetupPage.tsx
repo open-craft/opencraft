@@ -32,7 +32,6 @@ interface State {
   password: string;
   passwordConfirm: string;
   acceptTOS: boolean;
-  acceptPaidSupport: boolean;
   acceptDomainCondition: boolean;
   subscribeToUpdates: boolean;
 }
@@ -64,9 +63,8 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
       password: this.props.registrationData.password,
       passwordConfirm: this.props.registrationData.passwordConfirm,
       acceptTOS: this.props.registrationData.acceptTOS,
-      acceptPaidSupport: this.props.registrationData.acceptPaidSupport,
       acceptDomainCondition: this.props.registrationData.acceptDomainCondition,
-      subscribeToUpdates: this.props.registrationData.subscribeToUpdates,
+      subscribeToUpdates: this.props.registrationData.subscribeToUpdates
     };
   }
 
@@ -98,7 +96,6 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
         password: this.state.password,
         passwordConfirm: this.state.passwordConfirm,
         acceptTOS: this.state.acceptTOS,
-        acceptPaidSupport: this.state.acceptPaidSupport,
         acceptDomainCondition: this.state.acceptDomainCondition,
         subscribeToUpdates: this.state.subscribeToUpdates
       },
@@ -202,22 +199,6 @@ export class AccountSetupPage extends React.PureComponent<Props, State> {
           {this.props.registrationFeedback.acceptTOS && (
             <div className="invalid-feedback-checkbox">
               {this.props.registrationFeedback.acceptTOS}
-            </div>
-          )}
-          <Form.Check type="checkbox" id="acceptPaidSupport" custom>
-            <Form.Check.Input
-              type="checkbox"
-              name="acceptPaidSupport"
-              checked={this.state.acceptPaidSupport}
-              onChange={this.onChange}
-            />
-            <Form.Check.Label>
-              <WrappedMessage id="acceptPaidSupport" messages={messages} />
-            </Form.Check.Label>
-          </Form.Check>
-          {this.props.registrationFeedback.acceptPaidSupport && (
-            <div className="invalid-feedback-checkbox">
-              {this.props.registrationFeedback.acceptPaidSupport}
             </div>
           )}
           <Form.Check type="checkbox" id="acceptDomainCondition" custom>

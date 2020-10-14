@@ -263,24 +263,6 @@ exports[`renders without crashing 1`] = `
           <input
             checked={false}
             className="custom-control-input"
-            id="acceptPaidSupport"
-            name="acceptPaidSupport"
-            onChange={[Function]}
-            type="checkbox"
-          />
-          <label
-            className="custom-control-label"
-            htmlFor="acceptPaidSupport"
-          >
-            I understand that I can email OpenCraft with questions and that requests for support are subject to hourly fees.*
-          </label>
-        </div>
-        <div
-          className="custom-control custom-checkbox"
-        >
-          <input
-            checked={false}
-            className="custom-control-input"
             id="acceptDomainCondition"
             name="acceptDomainCondition"
             onChange={[Function]}

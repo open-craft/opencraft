@@ -189,14 +189,6 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("You must accept these terms to register.")
         return value
 
-    def validate_accept_paid_support(self, value):
-        """
-        Ensure that no account exists that hasn't accepted the support terms.
-        """
-        if not value:
-            raise ValidationError("You must accept these terms to register.")
-        return value
-
     class Meta:
         model = UserProfile
         fields = (
@@ -205,13 +197,11 @@ class AccountSerializer(serializers.ModelSerializer):
             "password",
             "email",
             "accepted_privacy_policy",
-            "accept_paid_support",
             "accept_domain_condition",
             "subscribe_to_updates",
         )
         extra_kwargs = {
             "accepted_privacy_policy": {"required": True},
-            "accept_paid_support": {"required": True},
             "accept_domain_condition": {"required": True},
         }
 

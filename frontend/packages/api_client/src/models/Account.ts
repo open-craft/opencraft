@@ -50,12 +50,6 @@ export interface Account {
      */
     acceptedPrivacyPolicy: Date;
     /**
-     * User understands that they may email OpenCraft for support, and that such emails are subject to hourly fees.
-     * @type {boolean}
-     * @memberof Account
-     */
-    acceptPaidSupport: boolean;
-    /**
      * User asserts that they have the rights to use to registered domain.
      * @type {boolean}
      * @memberof Account
@@ -84,7 +78,6 @@ export function AccountFromJSONTyped(json: any, ignoreDiscriminator: boolean): A
         'password': json['password'],
         'email': json['email'],
         'acceptedPrivacyPolicy': (new Date(json['accepted_privacy_policy'])),
-        'acceptPaidSupport': json['accept_paid_support'],
         'acceptDomainCondition': json['accept_domain_condition'],
         'subscribeToUpdates': !exists(json, 'subscribe_to_updates') ? undefined : json['subscribe_to_updates'],
     };
@@ -104,7 +97,6 @@ export function AccountToJSON(value?: Account | null): any {
         'password': value.password,
         'email': value.email,
         'accepted_privacy_policy': (value.acceptedPrivacyPolicy.toISOString()),
-        'accept_paid_support': value.acceptPaidSupport,
         'accept_domain_condition': value.acceptDomainCondition,
         'subscribe_to_updates': value.subscribeToUpdates,
     };

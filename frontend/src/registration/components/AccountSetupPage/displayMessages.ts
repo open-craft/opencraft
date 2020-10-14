@@ -52,12 +52,6 @@ const messages = {
       'provided without any guarantee. {tos} and {privacy_policy}.*',
     description: ''
   },
-  acceptPaidSupport: {
-    defaultMessage:
-      'I understand that I can email OpenCraft with questions ' +
-      'and that requests for support are subject to hourly fees.*',
-    description: ''
-  },
   acceptDomainCondition: {
     defaultMessage:
       'By submitting the registration form, I assert that I have ' +
