@@ -238,7 +238,7 @@ exports[`renders without crashing 1`] = `
             className="custom-control-label"
             htmlFor="acceptTOS"
           >
-            I accept that this is a free trial, and that the instance is provided without any guarantee. 
+            I accept that this is a free trial, and that the Open edX dedicated site is provided without any guarantee. 
             <a
               href="/#"
               rel="noopener noreferrer"

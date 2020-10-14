@@ -48,7 +48,7 @@ const messages = {
   },
   acceptTos: {
     defaultMessage:
-      'I accept that this is a free trial, and that the instance is ' +
+      'I accept that this is a free trial, and that the Open edX dedicated site is ' +
       'provided without any guarantee. {tos} and {privacy_policy}.*',
     description: ''
   },
