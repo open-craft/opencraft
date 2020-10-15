@@ -93,7 +93,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "WHAT_IS_VERIFIED_CERT": "verified-certificate",
                     # "BLOG": "blog",  not supported yet
                     **self.instance.get_mktg_url_link(),
-                }
+                },
             },
 
             "EDXAPP_LMS_NGINX_PORT": 80,

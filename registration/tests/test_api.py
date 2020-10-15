@@ -1091,7 +1091,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             'DONATE': 'donate',
             'HONOR': 'honor',
             'PRIVACY': 'privacy',
-            'TOS': 'tos'
+            'TOS': 'tos',
         }
         self.instance_config.refresh_from_db()
         # Check that static page about is disabled after API request
