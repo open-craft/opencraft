@@ -28,7 +28,9 @@ import sys
 import json
 from copy import deepcopy
 from typing import Any, List, Dict, Tuple, Optional, Union
+from pprint import pformat
 
+import yaml
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.mail import send_mail
@@ -274,11 +276,39 @@ def send_urgent_deployment_failure_email(recipients: List[str], instance_name: s
         fail_silently=False,
     )
 
-
-def send_periodic_deployment_failure_email(recipients: List[str], instance_name: str, openedx_release: str) -> None:
+def send_periodic_deployment_failure_email(recipients: List[str], instance) -> None:
     """
     Send notification email about failed periodic deployments.
+
+    The configuration details are retrieved from the app server, because the instance's
+    configuration may change between the deployment and sending the email, though the chance
+    for this is really small.
     """
+    instance_name = str(instance)
+
+    # Get the latest appserver
+    appserver = instance.appserver_set.first()
+
+    latest_successful_appserver = max(
+        filter(lambda i: i.status.is_healthy_state, instance.appserver_set.all()),
+        key=lambda i: i.created,
+        default=None
+    )
+
+    if latest_successful_appserver:
+        latest_deployment_success_date = latest_successful_appserver.log_entries_queryset.last().created
+    else:
+        latest_deployment_success_date = 'N/A'
+
+    with SensitiveDataFilter(yaml.load(appserver.configuration_settings, Loader=yaml.FullLoader)) as filtered_data:
+        filtered_configuration_settings = pformat(filtered_data)
+
+    # Reverse the log entries to start looking for failure from the latest log entry
+    ansible_task_name, raw_ansible_log_entry = get_ansible_failure_log_entry(appserver.log_entries_queryset)
+
+    with SensitiveDataFilter(raw_ansible_log_entry) as filtered_data:
+        relevant_log_entry = pformat(filtered_data)
+
     logger.warning(
         "Sending notification e-mail to %s after instance %s didn't provision",
         recipients,
@@ -287,8 +317,28 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance_name:
 
     send_mail(
         'Deployment failed at instance: {}'.format(instance_name),
-        'The periodic deployment of {} failed. '
-        'You can find the logs in the web interface.'.format(openedx_release),
+        'The periodic deployment of {edx_platform_release} failed. Please see the details below.\n\n'
+        'AppServer ID:\t{appserver_id}\n'
+        'Latest successful provision date: {latest_successful_provision_date}\n'
+        'Configuration source repo:\t{configuration_source_repo_url}\n'
+        'Configuration version:\t{configuration_version}\n'
+        'OpenEdX platform source repo:\t{edx_platform_repository_url}\n'
+        'OpenEdX platform release:\t{edx_platform_release}\n'
+        'OpenEdX platform commit:\t{edx_platform_commit}\n'
+        'Extra configuration settings:\n{extra_settings}\n'
+        'Ansible task name:\t{ansible_task_name}\n'
+        'Relevant log lines:\n{relevant_log_entry}'.format(
+            ansible_task_name=ansible_task_name,
+            appserver_id=appserver.id,
+            configuration_source_repo_url=appserver.configuration_source_repo_url,
+            configuration_version=appserver.configuration_version,
+            edx_platform_commit=appserver.edx_platform_commit,
+            edx_platform_release=appserver.openedx_release,
+            edx_platform_repository_url=appserver.edx_platform_repository_url,
+            extra_settings=filtered_configuration_settings,
+            latest_successful_provision_date=str(latest_deployment_success_date),
+            relevant_log_entry=relevant_log_entry,
+        ),
         settings.DEFAULT_FROM_EMAIL,
         recipients,
         fail_silently=False,
@@ -348,6 +398,5 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         if is_periodic_builds_enabled and periodic_build_failure_emails:
             send_periodic_deployment_failure_email(
                 periodic_build_failure_emails,
-                str(instance),
-                instance.openedx_release
+                instance
             )
