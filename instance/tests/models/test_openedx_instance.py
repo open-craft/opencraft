@@ -636,6 +636,55 @@ class OpenEdXInstanceTestCase(TestCase):
         )
 
     @patch_services
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    def test_spawn_appserver_again_successful_if_periodic(self, mocks, mock_provision, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts), then
+        the next deployment is successful.
+        """
+        mock_provision.side_effect = True
+        failure_emails = ['provisionfailed@localhost']
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        instance.periodic_builds_enabled = True
+        instance.periodic_build_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+
+        # Create the deployment, setting the deployment type
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=DeploymentType.periodic,
+        )
+
+        # Fail the appserver
+        instance.spawn_appserver(deployment_id=deployment.pk)
+        appserver = instance.appserver_set.first()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_error()
+        appserver.save()
+
+        # Provision a new appserver
+        instance.spawn_appserver(deployment_id=deployment.pk)
+
+        # Given these deployment types, at least one email should be sended
+        outbox = django_mail.outbox[0]
+        self.assertEqual(len(django_mail.outbox), 1)
+        self.assertEqual(outbox.subject, f'Deployment back to normal at instance: {str(instance)}')
+        self.assertEqual(outbox.to, failure_emails)
+        self.assertEqual(
+            outbox.body,
+            'The deployment of a new appserver was successful. You can consider any failure notification '
+            'related to {} as resolved. No further action needed.'.format(str(instance))
+        )
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Sending urgent alert e-mail to {recipients} after instance {instance_name} didn't provision.".format(
+                recipients=instance.provisioning_failure_notification_emails,
+                instance_name=instance.name
+            )
+        )
+
+
+    @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_databases(self, mocks, mock_provision, mock_consul):
         """

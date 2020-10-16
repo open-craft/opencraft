@@ -32,6 +32,7 @@ from pprint import pformat
 
 import yaml
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -257,6 +258,29 @@ def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
     return (task_name, log_entry)
 
 
+def send_periodic_deployment_success_email(recipients: List[str], instance_name: str) -> None:
+    """
+    Send notification email about successful periodic deployments.
+
+    This email sending should be called, when the previous deployment failed, but the
+    latest passed.
+    """
+    logger.warning(
+        "Sending acknowledgement e-mail to %s after instance %s didn provision",
+        recipients,
+        instance_name,
+    )
+
+    send_mail(
+        'Deployment back to normal at instance: {}'.format(instance_name),
+        'The deployment of a new appserver was successful. You can consider any failure notification '
+        'related to {} as resolved. No further action needed.'.format(instance_name),
+        settings.DEFAULT_FROM_EMAIL,
+        recipients,
+        fail_silently=False,
+    )
+
+
 def send_urgent_deployment_failure_email(recipients: List[str], instance_name: str) -> None:
     """
     Send urgent notification email about failed deployments.
@@ -400,3 +424,41 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
                 periodic_build_failure_emails,
                 instance
             )
+
+
+@receiver(appserver_spawned)
+def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
+    """
+    Send acknowledge emails for successful, but previously failed, periodic builds
+    where community is waiting for deployment notifications.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+    deployment_id = kwargs['deployment_id']
+
+    if deployment_id is None or appserver is None:
+        return
+
+    deployment = Deployment.objects.get(pk=deployment_id)
+    if deployment.type != DeploymentType.periodic.name:
+        return
+
+    is_appserver_healthy = appserver.status.is_healthy_state
+    is_periodic_builds_enabled = instance.periodic_builds_enabled
+    periodic_build_failure_emails = instance.periodic_build_failure_notification_emails
+
+    if not is_appserver_healthy or not is_periodic_builds_enabled or not periodic_build_failure_emails:
+        return
+
+    try:
+        previous_appserver = appserver.get_previous_by_created()
+    except ObjectDoesNotExist:  # Not using the strict exception to not cause circular dependencies
+        previous_appserver = None
+
+    if previous_appserver is None or previous_appserver.status.is_healthy_state:
+        return
+
+    send_periodic_deployment_success_email(
+        periodic_build_failure_emails,
+        str(instance)
+    )
