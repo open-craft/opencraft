@@ -65,6 +65,8 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer, OpenEdXInstanceDeploymentCreateSerializer,
     OpenEdXInstanceDeploymentNotificationSerializer, OpenEdXInstanceDeploymentStatusSerializer,
     StaticContentOverridesSerializer, ThemeSchemaSerializer,
+    ToggleStaticContentPagesSerializer,
+    DisplayStaticContentPagesSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -515,6 +517,31 @@ class OpenEdXInstanceConfigViewSet(
             application.save()
 
             return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
+
+    @swagger_auto_schema(
+        request_body=ToggleStaticContentPagesSerializer,
+        responses={**VALIDATION_RESPONSE, 200: DisplayStaticContentPagesSerializer},
+    )
+    @action(detail=True, methods=["post"])
+    def toggle_static_content_page(self, request, pk=None):
+        """
+        Enable/Disable static page.
+        """
+        application = BetaTestApplication.objects.get(id=pk)
+        serializer = ToggleStaticContentPagesSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        page_name = serializer.data['page_name']
+        if not application.configuration_display_static_pages:
+            application.configuration_display_static_pages = {}
+
+        application.configuration_display_static_pages[page_name] = serializer.data['enabled']
+        application.save()
+        return Response(
+            status=status.HTTP_200_OK,
+            data=application.configuration_display_static_pages
+        )
 
     def list(self, request, *args, **kwargs):
         """
