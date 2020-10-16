@@ -112,6 +112,12 @@ export interface OpenEdXInstanceConfigUpdate {
      * @memberof OpenEdXInstanceConfigUpdate
      */
     draftStaticContentOverrides?: StaticContentOverrides;
+    /**
+     * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly staticPagesEnabled?: string;
 }
 
 export function OpenEdXInstanceConfigUpdateFromJSON(json: any): OpenEdXInstanceConfigUpdate {
@@ -137,6 +143,7 @@ export function OpenEdXInstanceConfigUpdateFromJSONTyped(json: any, ignoreDiscri
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
+        'staticPagesEnabled': !exists(json, 'static_pages_enabled') ? undefined : json['static_pages_enabled'],
     };
 }
 

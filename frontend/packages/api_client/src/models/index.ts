@@ -1,5 +1,6 @@
 export * from './Account';
 export * from './ApplicationImageUpload';
+export * from './DisplayStaticContentPages';
 export * from './Email';
 export * from './GenericAPIError';
 export * from './GenericAPIErrorErrors';
@@ -18,6 +19,7 @@ export * from './PasswordToken';
 export * from './SpawnAppServer';
 export * from './StaticContentOverrides';
 export * from './ThemeSchema';
+export * from './ToggleStaticContentPages';
 export * from './Token';
 export * from './TokenObtainPair';
 export * from './TokenRefresh';
