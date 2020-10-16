@@ -22,9 +22,11 @@ Instance app model mixins - Utilities
 
 # Imports #####################################################################
 
+import re
 import logging
 import sys
-from typing import List, Optional
+from copy import deepcopy
+from typing import Any, List, Dict, Optional, Union
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
@@ -38,6 +40,93 @@ from instance.signals import appserver_spawned
 logger = logging.getLogger(__name__)
 
 # Classes #####################################################################
+
+
+class SensitiveDataFilter:
+    """
+    Filter and hide sensitive data in config and logs.
+    """
+
+    DictDataType = Dict[str, Any]
+    ListDataType = Union[List[str], List[Dict[str, Any]]]
+    DataType = Union[str, DictDataType, ListDataType]
+
+    FILTERED_TEXT = "[Filtered data]"
+
+    COMMON_PATTERNS: list = [
+        re.compile(r".*api(\-|\_)?.*"),
+        re.compile(r".*key(\-|\_)?.*"),
+        re.compile(r".*token(\-|\_)?.*"),
+    ]
+    
+    SENSITIVE_KEY_PATTERNS: list = COMMON_PATTERNS + [
+        re.compile(r".*pass(w(or)?d)?.*"),
+        re.compile(r".*secret.*"),
+        re.compile(r".*private.*"),
+        re.compile(r".*sensitive.*"),
+    ]
+
+    SENSITIVE_VALUE_PATTERNS: list = COMMON_PATTERNS + [
+        re.compile(r".*\:.*"),
+    ]
+
+    def __init__(self, data: DataType):
+        self.data: SensitiveDataFilter.DataType = deepcopy(data)
+
+    def __mask_data(self, index: Optional[Union[int, str]], value: DataType) -> None:
+        """
+        Based on the appropriate value 
+        """
+        if isinstance(value, list):
+            self.__mask_list_data(value)
+        elif isinstance(value, dict):
+            self.__mask_dict_value(value)
+
+    def __mask_text(self, text: str) -> str:
+        """
+        Replace text with the masked value if sensitive data found.
+        """
+        lowered_text = text.lower()
+        if any([p.match(lowered_text) for p in self.SENSITIVE_VALUE_PATTERNS]):
+            return self.FILTERED_TEXT
+
+        return text
+
+    def __mask_dict_value(self, data: DictDataType) -> None:
+        """
+        Replace the value of the dictionary, if the key seems to contain
+        sensitive data.
+        """
+        for key, value in data.items():
+            matching_key = any([p.match(key.lower()) for p in self.SENSITIVE_KEY_PATTERNS])
+            if matching_key and isinstance(value, str):
+                data[key] = self.FILTERED_TEXT
+            else:
+                self.__mask_data(key, value)
+
+    def __mask_list_data(self, data: ListDataType):
+        """
+        Replace the elements of the list based on its type.
+        """
+        for index, item in enumerate(data):
+            if isinstance(item, str):
+                data[index] = self.__mask_text(item)
+            else:
+                self.__mask_data(index, item)
+
+    def __enter__(self) -> DataType:
+        """
+        Handle entering the context manager.
+        """
+        if isinstance(self.data, str):
+            self.data = self.__mask_text(self.data)
+        else:
+            self.__mask_data(None, self.data)
+
+        return self.data
+
+    def __exit__(self, *args, **kwargs) -> None:
+        return
 
 
 class EmailMixin:
