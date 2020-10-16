@@ -1,7 +1,16 @@
-from unittest import TestCase
-import ddt
+"""
+Test model mixin utilities.
+"""
 
-from instance.models.mixins.utilities import SensitiveDataFilter
+import json
+from unittest import TestCase
+
+import ddt
+from django.test.utils import override_settings
+
+from instance.models.mixins.utilities import SensitiveDataFilter, get_ansible_failure_log_entry
+from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories.openedx_appserver import make_test_appserver
 
 
 @ddt.ddt
@@ -9,7 +18,7 @@ class SensitiveDataFilterTestCase(TestCase):
     """
     Test sensitive data filtering context manager.
     """
-    
+
     @ddt.data([
         list(),
         ["nothing", "to", "filter", "here"],
@@ -137,3 +146,91 @@ class SensitiveDataFilterTestCase(TestCase):
     def test_filter_dict_data(self, data, expected):
         with SensitiveDataFilter(data) as filtered_data:
             self.assertDictEqual(filtered_data, expected)
+
+
+class AnsibleLogExtractTestCase(TestCase):
+    """
+    Test extracting relevant failure ansible log entry from appserver logs.
+    """
+
+    def setUp(self):
+        self.instance = OpenEdXInstanceFactory(name='test instance')
+        self.appserver = make_test_appserver(
+            instance=self.instance.appserver_set.first()
+        )
+
+    def test_no_entries_found(self):
+        """
+        Test when no log entries found, we return default values, so processing
+        result can continue.
+        """
+        self.appserver.logger.info('Usual log message')
+        self.appserver.logger.warning('A warning message')
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, "")
+        self.assertDictEqual(log_entry, dict())
+
+    def test_entry_found_without_task_name(self):
+        """
+        Test when entry found without task, the entry returned, but task name remains
+        empty. This behaviour is expected, since the value is in the log entry not in the
+        ansible task name.
+        """
+        expected_log_entry = {"changed": False, "other": True, "std_out": []}
+
+        self.appserver.logger.info('Usual log message')
+        self.appserver.logger.warning('A warning message')
+
+        self.appserver.logger.info('fatal: [213.32.78.90]: FAILED! => {}'.format(
+            json.dumps(expected_log_entry)
+        ))
+
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, "")
+        self.assertDictEqual(log_entry, expected_log_entry)
+
+    def test_entry_and_task_name_found(self):
+        """
+        Test if we find both log entry and the belonging ansible task name, we return both.
+        """
+        expected_task_name = "task name"
+        expected_log_entry = {"changed": False, "other": True, "std_out": []}
+
+        self.appserver.logger.info('Usual log message')
+        self.appserver.logger.warning('A warning message')
+
+        self.appserver.logger.info(f'TASK [{expected_task_name}]')
+        self.appserver.logger.info(f'fatal: [213.32.78.90]: FAILED! => {json.dumps(expected_log_entry)}')
+
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, expected_task_name)
+        self.assertDictEqual(log_entry, expected_log_entry)
+
+    @override_settings(LOG_LIMIT=2)
+    def test_entry_and_task_name_not_found_within_the_log_limit(self):
+        """
+        Test even the log entries contains the information needed, the log limit would be violated
+        so not looking further for log entries.
+        """
+        self.appserver.logger.info('TASK [task name]')
+        self.appserver.logger.info('fatal: [213.32.78.90]: FAILED! => {"changed": true}')
+
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, "")
+        self.assertDictEqual(log_entry, dict())

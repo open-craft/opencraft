@@ -25,8 +25,9 @@ Instance app model mixins - Utilities
 import re
 import logging
 import sys
+import json
 from copy import deepcopy
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, List, Dict, Tuple, Optional, Union
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
@@ -58,7 +59,7 @@ class SensitiveDataFilter:
         re.compile(r".*key(\-|\_)?.*"),
         re.compile(r".*token(\-|\_)?.*"),
     ]
-    
+
     SENSITIVE_KEY_PATTERNS: list = COMMON_PATTERNS + [
         re.compile(r".*pass(w(or)?d)?.*"),
         re.compile(r".*secret.*"),
@@ -75,7 +76,7 @@ class SensitiveDataFilter:
 
     def __mask_data(self, index: Optional[Union[int, str]], value: DataType) -> None:
         """
-        Based on the appropriate value 
+        Based on the value type, route masking to the corresponding function.
         """
         if isinstance(value, list):
             self.__mask_list_data(value)
@@ -114,7 +115,7 @@ class SensitiveDataFilter:
             else:
                 self.__mask_data(index, item)
 
-    def __enter__(self) -> DataType:
+    def __enter__(self) -> "SensitiveDataFilter.DataType":
         """
         Handle entering the context manager.
         """
@@ -225,6 +226,34 @@ class EmailMixin:
 
 
 # Functions #####################################################################
+
+def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
+    """
+    Get the most relevant failure log entry related to Ansible run and the Ansible
+    task name.
+    """
+    task_name_pattern = re.compile(r"^TASK\s\[(?P<task>.*)\]")
+    relevant_log_pattern = re.compile(r"^(fatal|critical)\:.*\=\>\s+")
+
+    task_name: str = ""
+    log_entry: Dict[str, Any] = dict()
+
+    for entry in entries.order_by('-created')[:settings.LOG_LIMIT]:
+        if log_entry and task_name:
+            break
+
+        text = entry.text.split("|")[-1].strip()
+        task_name_match = task_name_pattern.match(text)
+
+        if task_name_match:
+            task_name = task_name_match.group("task")
+
+        if relevant_log_pattern.match(text):
+            log_entry = json.loads(relevant_log_pattern.sub("", text).strip())
+
+
+    return (task_name, log_entry)
+
 
 def send_urgent_deployment_failure_email(recipients: List[str], instance_name: str) -> None:
     """
