@@ -287,6 +287,13 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         return entries.order_by('created')
 
     @property
+    def log_entries_queryset(self):
+        """
+        Return the unlimited queryset of the related AppServer log entries.
+        """
+        return self._get_log_entries()
+
+    @property
     def log_entries(self):
         """
         Return the list of log entry instances for this AppServer and the server it manages
