@@ -185,7 +185,7 @@ class AnsibleLogExtractTestCase(TestCase):
         self.appserver.logger.info('Usual log message')
         self.appserver.logger.warning('A warning message')
 
-        self.appserver.logger.info('fatal: [213.32.78.90]: FAILED! => {}'.format(
+        self.appserver.logger.info('fatal: [1.2.3.4]: FAILED! => {}'.format(
             json.dumps(expected_log_entry)
         ))
 
@@ -208,7 +208,7 @@ class AnsibleLogExtractTestCase(TestCase):
         self.appserver.logger.warning('A warning message')
 
         self.appserver.logger.info(f'TASK [{expected_task_name}]')
-        self.appserver.logger.info(f'fatal: [213.32.78.90]: FAILED! => {json.dumps(expected_log_entry)}')
+        self.appserver.logger.info(f'fatal: [1.2.3.4]: FAILED! => {json.dumps(expected_log_entry)}')
 
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
@@ -225,7 +225,7 @@ class AnsibleLogExtractTestCase(TestCase):
         so not looking further for log entries.
         """
         self.appserver.logger.info('TASK [task name]')
-        self.appserver.logger.info('fatal: [213.32.78.90]: FAILED! => {"changed": true}')
+        self.appserver.logger.info('fatal: [1.2.3.4]: FAILED! => {"changed": true}')
 
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
