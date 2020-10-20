@@ -63,16 +63,16 @@ class SensitiveDataFilterTestCase(TestCase):
             [{"username": "test", "password": SensitiveDataFilter.FILTERED_TEXT}]
         ),
         (
-            [{"username": "test", "password": ["topsecret"]}],
-            [{"username": "test", "password": ["topsecret"]}]  # topsecret is not matching any plain text pattern
+            [{"username": "test", "password": ["this won't be filtered"]}],
+            [{"username": "test", "password": ["this won't be filtered"]}]  # not matching any plain text pattern
         ),
         (
             [{"data": {"password": "topsecret"}}],
             [{"data": {"password": SensitiveDataFilter.FILTERED_TEXT}}],
         ),
         (
-            [{"data": {"password": ["topsecret"]}}],
-            [{"data": {"password": ["topsecret"]}}],  # topsecret is not matching any plain text pattern
+            [{"data": {"password": ["this won't be filtered"]}}],
+            [{"data": {"password": ["this won't be filtered"]}}],  # not matching any plain text pattern
         ),
         (
             [{"data": {"password": ["api-abc"]}}],
@@ -97,6 +97,10 @@ class SensitiveDataFilterTestCase(TestCase):
         (
             [{"data": {"password": ["key_abc"]}}],
             [{"data": {"password": [SensitiveDataFilter.FILTERED_TEXT]}}],
+        ),
+        (
+            [{"data": {"password": ["user:pass", "some:pattern"]}}],
+            [{"data": {"password": [SensitiveDataFilter.FILTERED_TEXT, SensitiveDataFilter.FILTERED_TEXT]}}],
         ),
     )
     @ddt.unpack
@@ -141,9 +145,54 @@ class SensitiveDataFilterTestCase(TestCase):
             {"key_abc": "topsecret"},
             {"key_abc": SensitiveDataFilter.FILTERED_TEXT}
         ),
+        (
+            {"not_problematic": "topsecret"},
+            {"not_problematic": SensitiveDataFilter.FILTERED_TEXT}
+        ),
+        # Complex data which is like an ansible output. Although most of the data is
+        # filtered out, that's the behaviour what is expected. In case of a real ansible
+        # output, the error lines will verbose and not contain that much text to filter out.
+        (
+            {
+                "changed": False,
+                "cmd": "/usr/bin/git checkout --force 1821396aee788eabe2ec4cb00f60879a3fde7d01",
+                "msg": "Failed to checkout 1821396aee788eabe2ec4cb00f60879a3fde7d01",
+                "rc": 128,
+                "stderr": "fatal: tree: tree\npassword: abc\nmyuser:mypa$$word\naPiKey=123\n" \
+                    "not matching line is not an issue",
+                "stderr_lines": [
+                    "fatal: reference is not a tree: tree",
+                    "password: abc",
+                    "myuser:mypa$$word",
+                    "aPiKey=123",
+                    "not matching line is not an issue"
+                ],
+                "stdout": "",
+                "stdout_lines": []
+            },
+            {
+                "changed": False,
+                "cmd": "/usr/bin/git checkout --force 1821396aee788eabe2ec4cb00f60879a3fde7d01",
+                "msg": "Failed to checkout 1821396aee788eabe2ec4cb00f60879a3fde7d01",
+                "rc": 128,
+                # the following line is filtered completely, which is not an issue, since the error lines will
+                # be listed line-by-line below; there is no better/safer way to keep the sensitive data in safe
+                "stderr": SensitiveDataFilter.FILTERED_TEXT,
+                "stderr_lines": [
+                    SensitiveDataFilter.FILTERED_TEXT,
+                    SensitiveDataFilter.FILTERED_TEXT,
+                    SensitiveDataFilter.FILTERED_TEXT,
+                    SensitiveDataFilter.FILTERED_TEXT,
+                    "not matching line is not an issue",
+                ],
+                "stdout": "",
+                "stdout_lines": []
+            },
+        )
     )
     @ddt.unpack
     def test_filter_dict_data(self, data, expected):
+        self.maxDiff = None
         with SensitiveDataFilter(data) as filtered_data:
             self.assertDictEqual(filtered_data, expected)
 

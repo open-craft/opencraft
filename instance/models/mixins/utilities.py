@@ -59,32 +59,37 @@ class SensitiveDataFilter:
 
     COMMON_PATTERNS: list = [
         re.compile(r".*api(\-|\_)?.*"),
+        re.compile(r".*jwt(\-|\_)?.*"),
         re.compile(r".*key(\-|\_)?.*"),
+        re.compile(r".*pass(w(or)?d)?.*"),
+        re.compile(r".*private.*"),
+        re.compile(r".*secret.*"),
+        re.compile(r".*sensitive.*"),
         re.compile(r".*token(\-|\_)?.*"),
     ]
 
-    SENSITIVE_KEY_PATTERNS: list = COMMON_PATTERNS + [
-        re.compile(r".*pass(w(or)?d)?.*"),
-        re.compile(r".*secret.*"),
-        re.compile(r".*private.*"),
-        re.compile(r".*sensitive.*"),
-    ]
+    SENSITIVE_KEY_PATTERNS: list = COMMON_PATTERNS + []
 
     SENSITIVE_VALUE_PATTERNS: list = COMMON_PATTERNS + [
+        # This will match is extremely broad, but the safest
         re.compile(r".*\:.*"),
     ]
 
     def __init__(self, data: DataType):
         self.data: SensitiveDataFilter.DataType = deepcopy(data)
 
-    def __mask_data(self, index: Optional[Union[int, str]], value: DataType) -> None:
+    def __mask_data(self, value: DataType) -> Optional[str]:
         """
         Based on the value type, route masking to the corresponding function.
         """
         if isinstance(value, list):
             self.__mask_list_data(value)
+            return
         elif isinstance(value, dict):
             self.__mask_dict_value(value)
+            return
+        elif isinstance(value, str):
+            return self.__mask_text(value)
 
     def __mask_text(self, text: str) -> str:
         """
@@ -106,26 +111,26 @@ class SensitiveDataFilter:
             if matching_key and isinstance(value, str):
                 data[key] = self.FILTERED_TEXT
             else:
-                self.__mask_data(key, value)
+                masked_text = self.__mask_data(value)
+                if masked_text:
+                    data[key] = masked_text
 
     def __mask_list_data(self, data: ListDataType):
         """
         Replace the elements of the list based on its type.
         """
-        for index, item in enumerate(data):
-            if isinstance(item, str):
-                data[index] = self.__mask_text(item)
-            else:
-                self.__mask_data(index, item)
+        for index, value in enumerate(data):
+            masked_text = self.__mask_data(value)
+            if masked_text:
+                data[index] = masked_text
 
     def __enter__(self) -> "SensitiveDataFilter.DataType":
         """
         Handle entering the context manager.
         """
-        if isinstance(self.data, str):
-            self.data = self.__mask_text(self.data)
-        else:
-            self.__mask_data(None, self.data)
+        masked_text = self.__mask_data(self.data)
+        if masked_text:
+            self.data = masked_text
 
         return self.data
 
