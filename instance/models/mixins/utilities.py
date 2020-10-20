@@ -84,12 +84,12 @@ class SensitiveDataFilter:
         """
         if isinstance(value, list):
             self.__mask_list_data(value)
-            return None
         elif isinstance(value, dict):
             self.__mask_dict_value(value)
-            return None
         elif isinstance(value, str):
             return self.__mask_text(value)
+
+        return None
 
     def __mask_text(self, text: str) -> str:
         """
