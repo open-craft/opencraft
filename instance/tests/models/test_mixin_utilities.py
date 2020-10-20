@@ -50,6 +50,8 @@ class SensitiveDataFilterTestCase(TestCase):
         ("token_abc", SensitiveDataFilter.FILTERED_TEXT),
         ("key-abc", SensitiveDataFilter.FILTERED_TEXT),
         ("key_abc", SensitiveDataFilter.FILTERED_TEXT),
+        ("KeY_AbC_d", SensitiveDataFilter.FILTERED_TEXT),
+        ("UPPERCASE_KEY", SensitiveDataFilter.FILTERED_TEXT),
     )
     @ddt.unpack
     def test_filter_plain_text(self, data, expected):
@@ -281,8 +283,8 @@ class AnsibleLogExtractTestCase(TestCase):
     @override_settings(LOG_LIMIT=2)
     def test_entry_and_task_name_not_found_within_the_log_limit(self):
         """
-        Test even the log entries contains the information needed, the log limit would be violated
-        so not looking further for log entries.
+        Test that the log entries don't contain information past the cutoff point even if those
+        entries might have matched otherwise, and it would result in the log being empty.
         """
         self.appserver.logger.info('TASK [task name]')
         self.appserver.logger.info('fatal: [1.2.3.4]: FAILED! => {"changed": true}')
