@@ -751,38 +751,4 @@ export class V1Api extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * Not really a list view, but we have to use `list` to fit into ViewSet semantics so this can be part of the browsable api.
-     * Validate the given form input, and return any errors as json.
-     */
-    async registrationRegisterValidateCreateRaw(): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: runtime.HTTPQuery = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
-        }
-
-        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
-            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
-        }
-        const response = await this.request({
-            path: `/v1/registration/register/validate/`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        });
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Not really a list view, but we have to use `list` to fit into ViewSet semantics so this can be part of the browsable api.
-     * Validate the given form input, and return any errors as json.
-     */
-    async registrationRegisterValidateCreate(): Promise<void> {
-        await this.registrationRegisterValidateCreateRaw();
-    }
-
 }
