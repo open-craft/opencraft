@@ -265,6 +265,15 @@ class NewRelicTestCase(TestCase):
                 'nrql': {
                     'query': query,
                     'since_value': '3',
+                },
+                'signal': {
+                    'fill_option': 'static',
+                    'fill_value': '0'
+                },
+                'expiration': {
+                    'expiration_duration': '60',
+                    'open_violation_on_expiration': True,
+                    'close_violations_on_expiration': False,
                 }
             }
         })

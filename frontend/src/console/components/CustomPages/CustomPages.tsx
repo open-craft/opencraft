@@ -10,7 +10,10 @@ import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
-import { updateStaticContentOverridesFieldValue } from 'console/actions';
+import {
+  updateStaticContentOverridesFieldValue,
+  toggleStaticPageVisibility
+} from 'console/actions';
 import { capitalizeFirstLetter } from 'utils/string_utils';
 import { StaticContentOverrides } from 'ocim-client';
 import { Row, Col, Form } from 'react-bootstrap';
@@ -24,6 +27,7 @@ interface State {
 }
 interface ActionProps {
   updateStaticContentOverridesFieldValue: Function;
+  toggleStaticPageVisibility: Function;
 }
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {
@@ -40,7 +44,8 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      pageContent: this.getPageContentFromState()
+      pageContent: this.getPageContentFromState(),
+      enabled: true
     };
   }
 
@@ -55,7 +60,8 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
       // ignore the setState check inside componentDidUpdate for the next line
       // eslint-disable-next-line
       this.setState({
-        pageContent: this.getPageContentFromState()
+        pageContent: this.getPageContentFromState(),
+        enabled: this.getPageVisibilitiyStatus()
       });
     }
 
@@ -68,7 +74,8 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     ) {
       // eslint-disable-next-line
       this.setState({
-        pageContent: this.getPageContentFromState()
+        pageContent: this.getPageContentFromState(),
+        enabled: this.getPageVisibilitiyStatus()
       });
     }
   };
@@ -76,6 +83,16 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
   getApiPageName = () => {
     const pageName = capitalizeFirstLetter(this.props.match.params.pageName);
     return `staticTemplate${pageName}Content` as keyof StaticContentOverrides;
+  };
+
+  getPageVisibilitiyStatus = () => {
+    const { pageName } = this.props.match.params;
+    let enabled = true;
+    const { data } = this.props.activeInstance;
+    if (data && data.staticPagesEnabled) {
+      enabled = data?.staticPagesEnabled[pageName];
+    }
+    return enabled;
   };
 
   getPageContentFromState = () => {
@@ -133,13 +150,24 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
     }
   };
 
+  onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pageName = e.target.name;
+    const enabled = e.target.checked;
+    this.setState({ enabled });
+    try {
+      await this.props.toggleStaticPageVisibility(
+        this.props.activeInstance.data!.id,
+        pageName,
+        enabled
+      );
+    } catch (error) {
+      this.setState({ enabled: !enabled });
+    }
+  };
+
   public render() {
     const instance = this.props.activeInstance;
     const { pageName } = this.props.match.params;
-
-    // TODO: The hide/show switch is just a placeholder component
-    // We still need to add override capability to Ocim to disable
-    // custom pages and hide links.
 
     return (
       <ConsolePage contentLoading={this.props.loading}>
@@ -152,18 +180,17 @@ export class CustomPagesComponent extends React.PureComponent<Props, State> {
                 </h2>
               </Col>
               <Col className="page-switch-column">
-                {/* This is a placeholder switch! This should be enabled when we  */}
-                {/* implement the link overriding and page hiding features.  */}
                 <Form className="page-switch-form">
                   <Form.Label htmlFor="show-page-switch">
                     <WrappedMessage messages={messages} id="showPage" />
                   </Form.Label>
                   <Form.Check
-                    disabled
-                    checked
-                    type="switch"
                     label=""
+                    type="switch"
+                    name={pageName}
+                    checked={this.state.enabled}
                     id="show-page-switch"
+                    onChange={this.onChange}
                   />
                 </Form>
               </Col>
@@ -214,5 +241,6 @@ export const CustomPages = connect<
   Props,
   RootState
 >((state: RootState) => state.console, {
-  updateStaticContentOverridesFieldValue
+  updateStaticContentOverridesFieldValue,
+  toggleStaticPageVisibility
 })(CustomPagesComponent);
