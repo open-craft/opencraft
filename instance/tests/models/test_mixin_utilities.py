@@ -167,7 +167,7 @@ class SensitiveDataFilterTestCase(TestCase):
                 "cmd": "/usr/bin/git checkout --force 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "msg": "Failed to checkout 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "rc": 128,
-                "stderr": "fatal: tree: tree\password: abc\nmyuser:mypa$$word\naPiKey=123\nnot matching line",
+                "stderr": "fatal: tree: tree\npassword: abc\nmyuser:mypa$$word\naPiKey=123\nnot matching line",
                 "stderr_lines": [
                     "fatal: reference is not a tree: tree",
                     "password: abc",

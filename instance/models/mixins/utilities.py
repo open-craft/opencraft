@@ -84,10 +84,10 @@ class SensitiveDataFilter:
         """
         if isinstance(value, list):
             self.__mask_list_data(value)
-            return
+            return None
         elif isinstance(value, dict):
             self.__mask_dict_value(value)
-            return
+            return None
         elif isinstance(value, str):
             return self.__mask_text(value)
 
@@ -259,7 +259,6 @@ def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
         if relevant_log_pattern.match(text):
             log_entry = json.loads(relevant_log_pattern.sub("", text).strip())
 
-
     return (task_name, log_entry)
 
 
@@ -304,6 +303,7 @@ def send_urgent_deployment_failure_email(recipients: List[str], instance_name: s
         recipients,
         fail_silently=False,
     )
+
 
 def send_periodic_deployment_failure_email(recipients: List[str], instance) -> None:
     """
