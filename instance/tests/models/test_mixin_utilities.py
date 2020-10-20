@@ -36,6 +36,9 @@ class SensitiveDataFilterTestCase(TestCase):
         "nothing to filter here",
     ])
     def test_nothing_to_filter(self, data):
+        """
+        Test nothing is sensitive in the given data.
+        """
         with SensitiveDataFilter(data) as filtered_data:
             self.assertEqual(data, filtered_data)
 
@@ -50,6 +53,9 @@ class SensitiveDataFilterTestCase(TestCase):
     )
     @ddt.unpack
     def test_filter_plain_text(self, data, expected):
+        """
+        Test filtering for plain text data.
+        """
         with SensitiveDataFilter(data) as filtered_data:
             self.assertEqual(filtered_data, expected)
 
@@ -105,6 +111,9 @@ class SensitiveDataFilterTestCase(TestCase):
     )
     @ddt.unpack
     def test_filter_list_data(self, data, expected):
+        """
+        Test filtering for list data.
+        """
         with SensitiveDataFilter(data) as filtered_data:
             self.assertListEqual(filtered_data, expected)
 
@@ -158,14 +167,13 @@ class SensitiveDataFilterTestCase(TestCase):
                 "cmd": "/usr/bin/git checkout --force 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "msg": "Failed to checkout 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "rc": 128,
-                "stderr": "fatal: tree: tree\npassword: abc\nmyuser:mypa$$word\naPiKey=123\n" \
-                    "not matching line is not an issue",
+                "stderr": "fatal: tree: tree\password: abc\nmyuser:mypa$$word\naPiKey=123\nnot matching line",
                 "stderr_lines": [
                     "fatal: reference is not a tree: tree",
                     "password: abc",
                     "myuser:mypa$$word",
                     "aPiKey=123",
-                    "not matching line is not an issue"
+                    "not matching line"
                 ],
                 "stdout": "",
                 "stdout_lines": []
@@ -183,7 +191,7 @@ class SensitiveDataFilterTestCase(TestCase):
                     SensitiveDataFilter.FILTERED_TEXT,
                     SensitiveDataFilter.FILTERED_TEXT,
                     SensitiveDataFilter.FILTERED_TEXT,
-                    "not matching line is not an issue",
+                    "not matching line",
                 ],
                 "stdout": "",
                 "stdout_lines": []
@@ -192,6 +200,9 @@ class SensitiveDataFilterTestCase(TestCase):
     )
     @ddt.unpack
     def test_filter_dict_data(self, data, expected):
+        """
+        Test filtering for dictionaries for various values and nested dictionaries.
+        """
         self.maxDiff = None
         with SensitiveDataFilter(data) as filtered_data:
             self.assertDictEqual(filtered_data, expected)

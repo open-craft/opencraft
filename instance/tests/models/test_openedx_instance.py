@@ -683,7 +683,6 @@ class OpenEdXInstanceTestCase(TestCase):
             )
         )
 
-
     @patch_services
     @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision', return_value=True)
     def test_spawn_appserver_with_external_databases(self, mocks, mock_provision, mock_consul):
