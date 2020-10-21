@@ -22,11 +22,17 @@ Instance app model mixins - Utilities
 
 # Imports #####################################################################
 
+import re
 import logging
 import sys
-from typing import List, Optional
+import json
+from copy import deepcopy
+from typing import Any, List, Dict, Tuple, Optional, Union
+from pprint import pformat
 
+import yaml
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -38,6 +44,98 @@ from instance.signals import appserver_spawned
 logger = logging.getLogger(__name__)
 
 # Classes #####################################################################
+
+
+class SensitiveDataFilter:
+    """
+    Filter and hide sensitive data in config and logs.
+    """
+
+    DictDataType = Dict[str, Any]
+    ListDataType = Union[List[str], List[Dict[str, Any]]]
+    DataType = Union[str, DictDataType, ListDataType]
+
+    FILTERED_TEXT = "[Filtered data]"
+
+    COMMON_PATTERNS: list = [
+        re.compile(r".*api(\-|\_)?.*"),
+        re.compile(r".*jwt(\-|\_)?.*"),
+        re.compile(r".*key(\-|\_)?.*"),
+        re.compile(r".*pass(w(or)?d)?.*"),
+        re.compile(r".*private.*"),
+        re.compile(r".*secret.*"),
+        re.compile(r".*sensitive.*"),
+        re.compile(r".*token(\-|\_)?.*"),
+    ]
+
+    SENSITIVE_KEY_PATTERNS: list = COMMON_PATTERNS + []
+
+    SENSITIVE_VALUE_PATTERNS: list = COMMON_PATTERNS + [
+        # This will match is extremely broad, but the safest
+        re.compile(r".*\:.*"),
+    ]
+
+    def __init__(self, data: DataType):
+        self.data: SensitiveDataFilter.DataType = deepcopy(data)
+
+    def __mask_data(self, value: DataType) -> Optional[str]:
+        """
+        Based on the value type, route masking to the corresponding function.
+        """
+        if isinstance(value, list):
+            self.__mask_list_data(value)
+        elif isinstance(value, dict):
+            self.__mask_dict_value(value)
+        elif isinstance(value, str):
+            return self.__mask_text(value)
+
+        return None
+
+    def __mask_text(self, text: str) -> str:
+        """
+        Replace text with the masked value if sensitive data found.
+        """
+        lowered_text = text.lower()
+        if any([p.match(lowered_text) for p in self.SENSITIVE_VALUE_PATTERNS]):
+            return self.FILTERED_TEXT
+
+        return text
+
+    def __mask_dict_value(self, data: DictDataType) -> None:
+        """
+        Replace the value of the dictionary, if the key seems to contain
+        sensitive data.
+        """
+        for key, value in data.items():
+            matching_key = any([p.match(key.lower()) for p in self.SENSITIVE_KEY_PATTERNS])
+            if matching_key and isinstance(value, str):
+                data[key] = self.FILTERED_TEXT
+            else:
+                masked_text = self.__mask_data(value)
+                if masked_text:
+                    data[key] = masked_text
+
+    def __mask_list_data(self, data: ListDataType):
+        """
+        Replace the elements of the list based on its type.
+        """
+        for index, value in enumerate(data):
+            masked_text = self.__mask_data(value)
+            if masked_text:
+                data[index] = masked_text
+
+    def __enter__(self) -> "SensitiveDataFilter.DataType":
+        """
+        Handle entering the context manager.
+        """
+        masked_text = self.__mask_data(self.data)
+        if masked_text:
+            self.data = masked_text
+
+        return self.data
+
+    def __exit__(self, *args, **kwargs) -> None:
+        return
 
 
 class EmailMixin:
@@ -137,6 +235,56 @@ class EmailMixin:
 
 # Functions #####################################################################
 
+def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
+    """
+    Get the most relevant failure log entry related to Ansible run and the Ansible
+    task name.
+    """
+    task_name_pattern = re.compile(r"^TASK\s\[(?P<task>.*)\]")
+    relevant_log_pattern = re.compile(r"^(fatal|critical)\:.*\=\>\s+")
+
+    task_name: str = ""
+    log_entry: Dict[str, Any] = dict()
+
+    for entry in entries.order_by('-created')[:settings.LOG_LIMIT]:
+        if log_entry and task_name:
+            break
+
+        text = entry.text.split("|")[-1].strip()
+        task_name_match = task_name_pattern.match(text)
+
+        if task_name_match:
+            task_name = task_name_match.group("task")
+
+        if relevant_log_pattern.match(text):
+            log_entry = json.loads(relevant_log_pattern.sub("", text).strip())
+
+    return (task_name, log_entry)
+
+
+def send_periodic_deployment_success_email(recipients: List[str], instance_name: str) -> None:
+    """
+    Send notification email about successful periodic deployments.
+
+    This email sending should be called, when the previous deployment failed, but the
+    latest passed.
+    """
+    logger.warning(
+        "Sending acknowledgement e-mail to %s after instance %s didn provision",
+        recipients,
+        instance_name,
+    )
+
+    send_mail(
+        'Deployment back to normal at instance: {}'.format(instance_name),
+        'The deployment of a new appserver was successful. You can consider any failure notification '
+        'related to {} as resolved. No further action needed.'.format(instance_name),
+        settings.DEFAULT_FROM_EMAIL,
+        recipients,
+        fail_silently=False,
+    )
+
+
 def send_urgent_deployment_failure_email(recipients: List[str], instance_name: str) -> None:
     """
     Send urgent notification email about failed deployments.
@@ -157,10 +305,39 @@ def send_urgent_deployment_failure_email(recipients: List[str], instance_name: s
     )
 
 
-def send_periodic_deployment_failure_email(recipients: List[str], instance_name: str, openedx_release: str) -> None:
+def send_periodic_deployment_failure_email(recipients: List[str], instance) -> None:
     """
     Send notification email about failed periodic deployments.
+
+    The configuration details are retrieved from the app server, because the instance's
+    configuration may change between the deployment and sending the email, though the chance
+    for this is really small.
     """
+    instance_name = str(instance)
+
+    # Get the latest appserver
+    appserver = instance.appserver_set.first()
+
+    latest_successful_appserver = max(
+        filter(lambda i: i.status.is_healthy_state, instance.appserver_set.all()),
+        key=lambda i: i.created,
+        default=None
+    )
+
+    if latest_successful_appserver:
+        latest_deployment_success_date = latest_successful_appserver.log_entries_queryset.last().created
+    else:
+        latest_deployment_success_date = 'N/A'
+
+    with SensitiveDataFilter(yaml.load(appserver.configuration_settings, Loader=yaml.FullLoader)) as filtered_data:
+        filtered_configuration_settings = pformat(filtered_data)
+
+    # Reverse the log entries to start looking for failure from the latest log entry
+    ansible_task_name, raw_ansible_log_entry = get_ansible_failure_log_entry(appserver.log_entries_queryset)
+
+    with SensitiveDataFilter(raw_ansible_log_entry) as filtered_data:
+        relevant_log_entry = pformat(filtered_data)
+
     logger.warning(
         "Sending notification e-mail to %s after instance %s didn't provision",
         recipients,
@@ -169,8 +346,28 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance_name:
 
     send_mail(
         'Deployment failed at instance: {}'.format(instance_name),
-        'The periodic deployment of {} failed. '
-        'You can find the logs in the web interface.'.format(openedx_release),
+        'The periodic deployment of {edx_platform_release} failed. Please see the details below.\n\n'
+        'AppServer ID:\t{appserver_id}\n'
+        'Latest successful provision date: {latest_successful_provision_date}\n'
+        'Configuration source repo:\t{configuration_source_repo_url}\n'
+        'Configuration version:\t{configuration_version}\n'
+        'OpenEdX platform source repo:\t{edx_platform_repository_url}\n'
+        'OpenEdX platform release:\t{edx_platform_release}\n'
+        'OpenEdX platform commit:\t{edx_platform_commit}\n'
+        'Extra configuration settings:\n{extra_settings}\n'
+        'Ansible task name:\t{ansible_task_name}\n'
+        'Relevant log lines:\n{relevant_log_entry}'.format(
+            ansible_task_name=ansible_task_name,
+            appserver_id=appserver.id,
+            configuration_source_repo_url=appserver.configuration_source_repo_url,
+            configuration_version=appserver.configuration_version,
+            edx_platform_commit=appserver.edx_platform_commit,
+            edx_platform_release=appserver.openedx_release,
+            edx_platform_repository_url=appserver.edx_platform_repository_url,
+            extra_settings=filtered_configuration_settings,
+            latest_successful_provision_date=str(latest_deployment_success_date),
+            relevant_log_entry=relevant_log_entry,
+        ),
         settings.DEFAULT_FROM_EMAIL,
         recipients,
         fail_silently=False,
@@ -230,6 +427,43 @@ def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
         if is_periodic_builds_enabled and periodic_build_failure_emails:
             send_periodic_deployment_failure_email(
                 periodic_build_failure_emails,
-                str(instance),
-                instance.openedx_release
+                instance
             )
+
+
+@receiver(appserver_spawned)
+def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
+    """
+    Send acknowledge emails for successful, but previously failed, periodic builds
+    where community is waiting for deployment notifications.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+    deployment_id = kwargs['deployment_id']
+
+    if deployment_id is None or appserver is None:
+        return
+
+    deployment = Deployment.objects.get(pk=deployment_id)
+    if deployment.type != DeploymentType.periodic.name:
+        return
+
+    is_appserver_healthy = appserver.status.is_healthy_state
+    is_periodic_builds_enabled = instance.periodic_builds_enabled
+    periodic_build_failure_emails = instance.periodic_build_failure_notification_emails
+
+    if not is_appserver_healthy or not is_periodic_builds_enabled or not periodic_build_failure_emails:
+        return
+
+    try:
+        previous_appserver = appserver.get_previous_by_created()
+    except ObjectDoesNotExist:  # Not using the strict exception to not cause circular dependencies
+        previous_appserver = None
+
+    if previous_appserver is None or previous_appserver.status.is_healthy_state:
+        return
+
+    send_periodic_deployment_success_email(
+        periodic_build_failure_emails,
+        str(instance)
+    )
