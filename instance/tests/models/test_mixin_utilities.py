@@ -169,12 +169,14 @@ class SensitiveDataFilterTestCase(TestCase):
                 "cmd": "/usr/bin/git checkout --force 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "msg": "Failed to checkout 1821396aee788eabe2ec4cb00f60879a3fde7d01",
                 "rc": 128,
-                "stderr": "fatal: tree: tree\npassword: abc\nmyuser:mypa$$word\naPiKey=123\nnot matching line",
+                "stderr": r"fatal: tree: tree\npassword: abc\nmyuser:mypa$$word\naPiKey=123\nnot matching line",
                 "stderr_lines": [
                     "fatal: reference is not a tree: tree",
                     "password: abc",
                     "myuser:mypa$$word",
                     "aPiKey=123",
+                    "/edx/app/forum/cs_comments_service/lib/tasks/kpis.rake:7: ",
+                    "warning: already initialized constant ROOT",
                     "not matching line"
                 ],
                 "stdout": "",
@@ -189,10 +191,12 @@ class SensitiveDataFilterTestCase(TestCase):
                 # be listed line-by-line below; there is no better/safer way to keep the sensitive data in safe
                 "stderr": SensitiveDataFilter.FILTERED_TEXT,
                 "stderr_lines": [
+                    "fatal: reference is not a tree: tree",
                     SensitiveDataFilter.FILTERED_TEXT,
                     SensitiveDataFilter.FILTERED_TEXT,
                     SensitiveDataFilter.FILTERED_TEXT,
-                    SensitiveDataFilter.FILTERED_TEXT,
+                    "/edx/app/forum/cs_comments_service/lib/tasks/kpis.rake:7: ",
+                    "warning: already initialized constant ROOT",
                     "not matching line",
                 ],
                 "stdout": "",
@@ -210,6 +214,7 @@ class SensitiveDataFilterTestCase(TestCase):
             self.assertDictEqual(filtered_data, expected)
 
 
+@ddt.ddt
 class AnsibleLogExtractTestCase(TestCase):
     """
     Test extracting relevant failure ansible log entry from appserver logs.
@@ -231,7 +236,7 @@ class AnsibleLogExtractTestCase(TestCase):
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
 
-        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+        task_name, log_entry, _ = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
 
         self.assertEqual(task_name, "")
         self.assertDictEqual(log_entry, dict())
@@ -242,7 +247,7 @@ class AnsibleLogExtractTestCase(TestCase):
         empty. This behaviour is expected, since the value is in the log entry not in the
         ansible task name.
         """
-        expected_log_entry = {"changed": False, "other": True, "std_out": []}
+        expected_log_entry = {"changed": False, "other": True, "stdout_lines": []}
 
         self.appserver.logger.info('Usual log message')
         self.appserver.logger.warning('A warning message')
@@ -254,7 +259,7 @@ class AnsibleLogExtractTestCase(TestCase):
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
 
-        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+        task_name, log_entry, _ = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
 
         self.assertEqual(task_name, "")
         self.assertDictEqual(log_entry, expected_log_entry)
@@ -264,7 +269,7 @@ class AnsibleLogExtractTestCase(TestCase):
         Test if we find both log entry and the belonging ansible task name, we return both.
         """
         expected_task_name = "task name"
-        expected_log_entry = {"changed": False, "other": True, "std_out": []}
+        expected_log_entry = {"changed": False, "other": True, "stdout_lines": []}
 
         self.appserver.logger.info('Usual log message')
         self.appserver.logger.warning('A warning message')
@@ -275,7 +280,57 @@ class AnsibleLogExtractTestCase(TestCase):
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
 
-        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+        task_name, log_entry, _ = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, expected_task_name)
+        self.assertDictEqual(log_entry, expected_log_entry)
+
+    @ddt.data("fatal", "changed", "skipping", "warning")
+    def test_complex_entry_and_task_name_found(self, kind):
+        """
+        Test if we find both log entry and the belonging ansible task name, we return both.
+        """
+        expected_task_name = "task name"
+        expected_log_entry = {"changed": False, "other": True, "stdout_lines": [
+            "WARN -- : MONGODB | Unsupported client option 'max_retries'. It will be ignored.",
+            "/edx/app/forum/.gem/ruby/2.5.0/gems/rake-12.0.0/exe/rake:27:in `<top (required)>'"
+        ]}
+
+        self.appserver.logger.info('Usual log message')
+        self.appserver.logger.warning('A warning message')
+
+        self.appserver.logger.info(f'TASK [{expected_task_name}]')
+        self.appserver.logger.info(f'{kind}: [1.2.3.4]: FAILED! => {json.dumps(expected_log_entry)}')
+
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry, _ = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+
+        self.assertEqual(task_name, expected_task_name)
+        self.assertDictEqual(log_entry, expected_log_entry)
+
+    @ddt.data("fatal", "changed", "skipping", "warning")
+    def test_complex_entry_and_task_name_found_for_item_change(self, kind):
+        """
+        Test if we find both log entry and the belonging ansible task name, we return both.
+        """
+        expected_task_name = "task name"
+        expected_log_entry = {"changed": False, "other": True, "stdout_lines": [
+            "WARN -- : MONGODB | Unsupported client option 'max_retries'. It will be ignored.",
+            "/edx/app/forum/.gem/ruby/2.5.0/gems/rake-12.0.0/exe/rake:27:in `<top (required)>'"
+        ]}
+
+        self.appserver.logger.info('Usual log message')
+        self.appserver.logger.warning('A warning message')
+
+        self.appserver.logger.info(f'TASK [{expected_task_name}]')
+        self.appserver.logger.info(f'{kind}: [1.2.3.4]: FAILED! => (item={json.dumps(expected_log_entry)})')
+
+        self.appserver.logger.error("Some error happened, but that's not Ansible related")
+        self.appserver.logger.error("Other error message happened")
+
+        task_name, log_entry, _ = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
 
         self.assertEqual(task_name, expected_task_name)
         self.assertDictEqual(log_entry, expected_log_entry)
@@ -287,12 +342,15 @@ class AnsibleLogExtractTestCase(TestCase):
         entries might have matched otherwise, and it would result in the log being empty.
         """
         self.appserver.logger.info('TASK [task name]')
-        self.appserver.logger.info('fatal: [1.2.3.4]: FAILED! => {"changed": true}')
+        self.appserver.logger.info(
+            'fatal: [1.2.3.4]: FAILED! => {"changed": true, "stdout_lines": ["out"], "stderr_lines": ["err"]}'
+        )
 
         self.appserver.logger.error("Some error happened, but that's not Ansible related")
         self.appserver.logger.error("Other error message happened")
 
-        task_name, log_entry = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
+        task_name, log_entry, other_logs = get_ansible_failure_log_entry(self.appserver.log_entries_queryset)
 
         self.assertEqual(task_name, "")
         self.assertDictEqual(log_entry, dict())
+        self.assertListEqual(other_logs, ["out", "err"])
