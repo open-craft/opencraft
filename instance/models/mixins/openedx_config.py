@@ -222,6 +222,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
             "ECOMMERCE_VERSION": self.openedx_release,
+            "ECOMMERCE_WORKER_VERSION": self.openedx_release,
 
             # Theme
             # Enable comprehensive theming
