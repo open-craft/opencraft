@@ -18,7 +18,7 @@ export const RegistrationNavButtons: React.SFC<Props> = (props: Props) => {
   return (
     <div className="registration-nav">
       <Button
-        className="float-left increased-font-size"
+        className="float-left registration-nav-btn"
         variant="outline-primary"
         size="lg"
         onClick={() => {
