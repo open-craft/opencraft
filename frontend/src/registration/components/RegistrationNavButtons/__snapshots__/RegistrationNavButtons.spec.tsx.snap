@@ -13,7 +13,7 @@ exports[`renders loading button 1`] = `
     Back
   </button>
   <button
-    className="float-right loading increased-font-size btn btn-primary btn-lg"
+    className="float-right loading registration-nav-btn btn btn-primary btn-lg"
     disabled={true}
     onClick={[Function]}
     type="button"
