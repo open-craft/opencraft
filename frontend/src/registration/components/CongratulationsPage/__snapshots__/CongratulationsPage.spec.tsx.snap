@@ -116,23 +116,6 @@ exports[`renders without crashing 1`] = `
         <p>
           We have sent you an email to verify your OpenCraft account. Please follow the link in your email account to verify and complete your application process.
         </p>
-        <div
-          className="text-center"
-        >
-          <a
-            aria-current={null}
-            href="/console"
-            onClick={[Function]}
-          >
-            <button
-              className="btn btn-primary btn-lg"
-              disabled={false}
-              type="button"
-            >
-              Go To Console
-            </button>
-          </a>
-        </div>
       </div>
     </div>
   </div>
