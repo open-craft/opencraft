@@ -352,9 +352,9 @@ workflows:
           requires:
             - frontend-test
           filters:
-            branches:
+            tags:
               only:
-                - production
+                - /^release\-\w+\-\w+$/
       - frontend-deploy-approval:
           name: frontend-deploy-production-approval
           type: approval
@@ -366,9 +366,9 @@ workflows:
           requires:
             - frontend-deploy-production-approval
           filters:
-            branches:
+            tags:
               only:
-                - production
+                - /^release\-\w+\-\w+$/
   cleanup-workflow:
     triggers:
       - schedule:
