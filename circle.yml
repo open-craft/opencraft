@@ -355,16 +355,11 @@ workflows:
             tags:
               only:
                 - /^release\-\w+\-\w+$/
-      - frontend-deploy-approval:
-          name: frontend-deploy-production-approval
-          type: approval
-          requires:
-            - frontend-build-production
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
           requires:
-            - frontend-deploy-production-approval
+            - frontend-build-production
           filters:
             tags:
               only:
