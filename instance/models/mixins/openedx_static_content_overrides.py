@@ -47,3 +47,28 @@ class OpenEdXStaticContentOverridesMixin(models.Model):
         help_text=("The final static content overrides data committed by the user for deployment. This should be "
                    'picked up the appservers launched for this instance.')
     )
+
+    static_content_display = JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Configure `MKTG_URL_LINK_MAP` to display/hide static pages",
+    )
+
+    def get_mktg_url_link(self):
+        """
+        Build MKTG_URL_LINK_MAP config.
+        Allow to display/hide static content pages
+        """
+        mktg_url_link_map_config = {
+            "ABOUT": "about",
+            "CONTACT": "contact",
+            "DONATE": "donate",
+            "TOS": "tos",
+            "HONOR": "honor",
+            "PRIVACY": "privacy",
+        }
+        # It all pages were disabled - it will be empty dict, not None
+        if self.static_content_display is None:
+            return mktg_url_link_map_config
+        return self.static_content_display

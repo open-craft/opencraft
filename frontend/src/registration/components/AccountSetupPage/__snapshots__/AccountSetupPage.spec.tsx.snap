@@ -128,7 +128,7 @@ exports[`renders without crashing 1`] = `
               value=""
             />
             <p>
-              Name and surname.
+              First and last name.
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ exports[`renders without crashing 1`] = `
               value=""
             />
             <p>
-              This would also be the username of the administrator account on the Open edX instance.
+              The username for all the services you will use to create your courses.
             </p>
           </div>
         </div>
@@ -238,7 +238,7 @@ exports[`renders without crashing 1`] = `
             className="custom-control-label"
             htmlFor="acceptTOS"
           >
-            I accept that this is a free trial, and that the instance is provided without any guarantee. 
+            I accept that this is a free trial, and that the Open edX dedicated site is provided without any guarantee. 
             <a
               href="/#"
               rel="noopener noreferrer"
@@ -263,16 +263,16 @@ exports[`renders without crashing 1`] = `
           <input
             checked={false}
             className="custom-control-input"
-            id="acceptPaidSupport"
-            name="acceptPaidSupport"
+            id="acceptDomainCondition"
+            name="acceptDomainCondition"
             onChange={[Function]}
             type="checkbox"
           />
           <label
             className="custom-control-label"
-            htmlFor="acceptPaidSupport"
+            htmlFor="acceptDomainCondition"
           >
-            I understand that I can email OpenCraft with questions and that requests for support are subject to hourly fees.*
+            By submitting the registration form, I assert that I have rights to use the domain I provided.*
           </label>
         </div>
         <div
@@ -298,7 +298,7 @@ exports[`renders without crashing 1`] = `
         className="registration-nav"
       >
         <button
-          className="float-left btn btn-outline-primary btn-lg"
+          className="float-left registration-nav-btn btn btn-outline-primary btn-lg"
           disabled={false}
           onClick={[Function]}
           type="button"
@@ -306,8 +306,8 @@ exports[`renders without crashing 1`] = `
           Back
         </button>
         <button
-          className="float-right loading btn btn-primary btn-lg"
-          disabled={false}
+          className="float-right loading registration-nav-btn btn btn-primary btn-lg"
+          disabled={true}
           onClick={[Function]}
           type="button"
         >

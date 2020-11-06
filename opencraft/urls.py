@@ -27,8 +27,10 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
+from django.contrib.auth.views import LoginView, LogoutView
 
 import opencraft.views as views
+from registration.forms import LoginForm
 
 # URL Patterns ################################################################
 
@@ -38,9 +40,10 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls', namespace='api')),
     url(r'^instance/', include('instance.urls', namespace='instance')),
-    url(r'^registration/', include('registration.urls', namespace='registration')),
+    url(r'^login/$', LoginView.as_view(authentication_form=LoginForm), name='login'),
+    url(r'^logout/$', LogoutView.as_view(next_page='/'), name='logout'),
+    url(r'^registration/$', RedirectView.as_view(url=settings.USER_CONSOLE_FRONTEND_URL), name='registration'),
     url(r'^reports/', include('reports.urls', namespace='reports')),
-    url(r'^email-verification/', include('email_verification.urls', namespace='email-verification')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),
     url(r'^$', views.IndexView.as_view(), name='index'),
 ]

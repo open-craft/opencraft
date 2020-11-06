@@ -254,7 +254,7 @@ class NewRelicTestCase(TestCase):
                 'type': 'static',
                 'name': condition_name,
                 'enabled': True,
-                'value_function': 'single_value',
+                'value_function': 'sum',
                 'terms': [{
                     'duration': '11',
                     'threshold': '1',
@@ -265,6 +265,15 @@ class NewRelicTestCase(TestCase):
                 'nrql': {
                     'query': query,
                     'since_value': '3',
+                },
+                'signal': {
+                    'fill_option': 'static',
+                    'fill_value': '0'
+                },
+                'expiration': {
+                    'expiration_duration': '60',
+                    'open_violation_on_expiration': True,
+                    'close_violations_on_expiration': False,
                 }
             }
         })

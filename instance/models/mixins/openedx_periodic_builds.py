@@ -23,6 +23,7 @@ Instance app model mixins - Periodic builds
 # Imports #####################################################################
 import datetime
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -52,4 +53,10 @@ class OpenEdXPeriodicBuildsMixin(models.Model):
     )
     periodic_builds_retries = models.PositiveIntegerField(
         default=0, help_text="Number of times to retry spawning a new appserver if it fails (for periodic builds)."
+    )
+    periodic_build_failure_notification_emails = ArrayField(  # pylint: disable=invalid-name
+        models.EmailField(),
+        default=list,
+        blank=True,
+        help_text="Optional: Email address where notification must be sent if the build failed"
     )

@@ -404,8 +404,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "FORUM_MONGO_HOSTS": forum_mongo_hosts,
             "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
-            # HACK: This is a temporary change for BB-2558. It will be removed after upgrading MongoDB to SCRAM.
-            "FORUM_MONGO_AUTH_MECH": ":mongodb_cr",
             "FORUM_REBUILD_INDEX": True
         }
         settings.update(extra_settings)

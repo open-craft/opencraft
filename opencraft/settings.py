@@ -62,7 +62,7 @@ AUTHENTICATION_BACKENDS = (
     'registration.auth_backends.ModelBackend',
 )
 
-LOGIN_URL = 'registration:login'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -744,6 +744,10 @@ NUM_INITIAL_APPSERVERS_SHOWN = env('NUM_INITIAL_APPSERVERS_SHOWN', default=5)
 
 SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
+# External domain blacklist ###################################################
+
+EXTERNAL_DOMAIN_BLACKLIST = env.list('EXTERNAL_DOMAIN_BLACKLIST', default=[])
+
 # Email settings ####################################################
 
 EMAIL_SIGNATURE_TITLE = env('EMAIL_SIGNATURE_TITLE', default='Open edX Product Specialist')
@@ -882,6 +886,14 @@ TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS'
 # Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
 TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
 
+# User inactive and delete ####################################################
+
+CLEANUP_OLD_BETATEST_USERS = env('CLEANUP_OLD_BETATEST_USERS', default=True)
+
+INACTIVE_OLD_BETATEST_USER_DAYS = env('INACTIVE_OLD_BETATEST_USER_DAYS', default=90)
+
+DELETE_OLD_BETATEST_USER_DAYS = env('DELETE_OLD_BETATEST_USER_DAYS', default=30)
+
 # Instances ###################################################################
 
 # User Console - React SPA
@@ -890,8 +902,6 @@ USER_CONSOLE_FRONTEND_URL = env(
     'USER_CONSOLE_FRONTEND_URL',
     default='http://localhost:3000'
 )
-# Redirect from old registration form to new one
-NEW_USER_CONSOLE_REGISTRATION_ENABLED = env.bool('NEW_USER_CONSOLE_REGISTRATION_ENABLED', default=False)
 
 # CORS Settings - https://github.com/adamchainz/django-cors-headers
 CORS_ORIGIN_REGEX_WHITELIST = [

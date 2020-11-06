@@ -43,7 +43,7 @@ class InstanceManagerDecoratorTests(WithUserTestCase):
     """
     url = reverse('instance:index')
     login_url = reverse(settings.LOGIN_URL)
-    register_url = reverse('registration:register')
+    register_url = login_url
 
     """
     Tests for the permission_required decorator

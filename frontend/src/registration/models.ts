@@ -21,7 +21,7 @@ export interface AccountInfoModel {
   password: string;
   passwordConfirm: string;
   acceptTOS: boolean;
-  acceptPaidSupport: boolean;
+  acceptDomainCondition: boolean;
   subscribeToUpdates: boolean;
 }
 
@@ -44,7 +44,7 @@ export interface RegistrationModel
 export type RegistrationFields = keyof RegistrationModel;
 
 export const blankRegistration: Readonly<RegistrationModel> = {
-  acceptPaidSupport: false,
+  acceptDomainCondition: false,
   acceptTOS: false,
   subscribeToUpdates: false,
   subdomain: '',

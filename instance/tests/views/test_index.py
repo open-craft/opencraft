@@ -36,7 +36,7 @@ class IndexViewsTestCase(WithUserTestCase):
     """
     url = reverse('instance:index')
     login_url = reverse(settings.LOGIN_URL)
-    register_url = reverse('registration:register')
+    register_url = login_url
 
     def test_index_unauthenticated(self):
         """

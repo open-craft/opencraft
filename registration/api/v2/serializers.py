@@ -19,7 +19,6 @@
 """
 Serializers for registration API.
 """
-import logging
 from typing import Dict
 
 from django.contrib.auth.models import User
@@ -35,10 +34,8 @@ from instance.models.openedx_deployment import DeploymentState
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
-from registration.models import BetaTestApplication
+from registration.models import BetaTestApplication, validate_available_subdomain, validate_available_external_domain
 from userprofile.models import UserProfile
-
-logger = logging.getLogger(__name__)
 
 
 class DataSerializer(serializers.Serializer):
@@ -183,9 +180,10 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("Cannot accept policy for a future date.")
         return value
 
-    def validate_accept_paid_support(self, value):
+    def validate_accept_domain_condition(self, value):
         """
-        Ensure that no account exists that hasn't accepted the support terms.
+        Ensure that no account registers a domain without stating he/she has the rights
+        to use that domain.
         """
         if not value:
             raise ValidationError("You must accept these terms to register.")
@@ -199,12 +197,12 @@ class AccountSerializer(serializers.ModelSerializer):
             "password",
             "email",
             "accepted_privacy_policy",
-            "accept_paid_support",
+            "accept_domain_condition",
             "subscribe_to_updates",
         )
         extra_kwargs = {
             "accepted_privacy_policy": {"required": True},
-            "accept_paid_support": {"required": True},
+            "accept_domain_condition": {"required": True},
         }
 
 
@@ -268,6 +266,29 @@ class StaticContentOverridesSerializer(serializers.Serializer):
             self.fields[key] = field_type
 
 
+class ToggleStaticContentPagesSerializer(serializers.Serializer):
+    """
+    Serializer to enable/disable specific static page
+    """
+    page_name = serializers.CharField()
+    enabled = serializers.BooleanField()
+
+
+class DisplayStaticContentPagesSerializer(DataSerializer):
+    """
+    Serializer with configuration values for MKTG_URL_LINK_MAP
+    """
+    about = serializers.BooleanField()
+    contact = serializers.BooleanField()
+    donate = serializers.BooleanField()
+    tos = serializers.BooleanField()
+    honor = serializers.BooleanField()
+    privacy = serializers.BooleanField()
+
+    def to_representation(self, instance):
+        return instance.instance.get_mktg_url_link()
+
+
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
@@ -281,12 +302,25 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     draft_theme_config = ThemeSchemaSerializer(read_only=True)
     draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
 
+    static_pages_enabled = serializers.SerializerMethodField()
+
     # LMS and Studio URLs (if the instance is provisioned)
     lms_url = serializers.SerializerMethodField()
     studio_url = serializers.SerializerMethodField()
 
     public_contact_email = serializers.EmailField(required=False)
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
+
+    def get_static_pages_enabled(self, obj):
+        """
+        Returns config with enabled static pages.
+
+        default - all pages enabled
+        """
+        config = obj.configuration_display_static_pages
+        if not config:
+            return obj.default_configuration_display_static_pages()
+        return config
 
     def get_lms_url(self, obj):
         """
@@ -315,6 +349,30 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         else:
             return value
 
+    def validate_subdomain(self, value):
+        """
+        Prevent users from registering with a subdomain which is in use.
+        """
+        is_new_instance = self.instance is None
+        is_changed = not is_new_instance and self.instance.subdomain != self.initial_data.get("subdomain")
+
+        if is_new_instance or is_changed:
+            validate_available_subdomain(value)
+
+        return value
+
+    def validate_external_domain(self, value):
+        """
+        Prevent users from registering with an external domain which was or currently in use.
+        """
+        is_new_instance = self.instance is None
+        is_changed = not is_new_instance and self.instance.external_domain != self.initial_data.get("external_domain")
+
+        if is_new_instance or is_changed:
+            validate_available_external_domain(value)
+
+        return value
+
     class Meta:
         model = BetaTestApplication
         fields = (
@@ -333,6 +391,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "favicon",
             "hero_cover_image",
             "draft_static_content_overrides",
+            "static_pages_enabled",
             "is_email_verified"
         )
         read_only_fields = [

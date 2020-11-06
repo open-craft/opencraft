@@ -8,7 +8,7 @@ const messages = {
     description: ''
   },
   fullNameHelp: {
-    defaultMessage: 'Name and surname.',
+    defaultMessage: 'First and last name.',
     description: ''
   },
   username: {
@@ -17,7 +17,7 @@ const messages = {
   },
   usernameHelp: {
     defaultMessage:
-      'This would also be the username of the administrator account on the Open edX instance.',
+      'The username for all the services you will use to create your courses.',
     description: ''
   },
   email: {
@@ -48,14 +48,14 @@ const messages = {
   },
   acceptTos: {
     defaultMessage:
-      'I accept that this is a free trial, and that the instance is ' +
+      'I accept that this is a free trial, and that the Open edX dedicated site is ' +
       'provided without any guarantee. {tos} and {privacy_policy}.*',
     description: ''
   },
-  acceptPaidSupport: {
+  acceptDomainCondition: {
     defaultMessage:
-      'I understand that I can email OpenCraft with questions ' +
-      'and that requests for support are subject to hourly fees.*',
+      'By submitting the registration form, I assert that I have ' +
+      'rights to use the domain I provided.*',
     description: ''
   },
   subscribeToUpdates: {
