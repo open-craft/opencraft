@@ -67,7 +67,7 @@ The Deployment is done on automatically using CircleCI when any commit is added 
 branch (for details, check `frontend-deploy` job in [circle.yml](../circle.yml)). The bundle is
 hosted on S3 and is directly served from Cloudfront.
 
-In case of production, the build is started when a tag is added matching the `/^release\-\w+\-\w+$/` regexp.
+In case of production, the build is started when a tag is added matching the `^release\-\w+\-\w+$` regexp.
 
 ## Reuseable UI Components
 
