@@ -327,10 +327,16 @@ workflows:
 
   frontend-build-test-and-deploy:
     jobs:
-      - frontend-quality
+      - frontend-quality:
+          filters:
+            tags:
+              only: /^release\-\w+\-\w+$/
       - frontend-test:
           requires:
             - frontend-quality
+          filters:
+            tags:
+              only: /^release\-\w+\-\w+$/
       - frontend-build:
           context: ocim-frontend-stage
           requires:
@@ -355,8 +361,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only:
-                - /^release\-\w+\-\w+$/
+              only: /^release\-\w+\-\w+$/
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
@@ -366,8 +371,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only:
-                - /^release\-\w+\-\w+$/
+              only: /^release\-\w+\-\w+$/
   cleanup-workflow:
     triggers:
       - schedule:
