@@ -352,6 +352,8 @@ workflows:
           requires:
             - frontend-test
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only:
                 - /^release\-\w+\-\w+$/
@@ -361,6 +363,8 @@ workflows:
           requires:
             - frontend-build-production
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only:
                 - /^release\-\w+\-\w+$/
