@@ -540,7 +540,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Prefix for the associated server name.
         """
-        return ('edxapp-' + slugify(self.instance.domain))[:20]
+        return ('edxapp-' + slugify(self.instance.domain))[:30]
 
     @property
     def server_hostname(self):
