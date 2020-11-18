@@ -293,17 +293,7 @@ def _extract_other_build_logs(entries, log_pattern) -> List[str]:
         if not extracted_message:
             continue
 
-        command = extracted_message.get('cmd')
-        message = extracted_message.get('msg')
-
-        if command:
-            other_ansible_logs.append(command)
-
-        if message:
-            other_ansible_logs.append(message)
-
-        other_ansible_logs.extend(extracted_message.get('stdout_lines', []))
-        other_ansible_logs.extend(extracted_message.get('stderr_lines', []))
+        other_ansible_logs.append(extracted_message)
 
     return other_ansible_logs
 
@@ -401,7 +391,7 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
         relevant_log_entry = pformat(filtered_data)
 
     with SensitiveDataFilter(other_raw_logs) as filtered_data:
-        other_log_entries = pformat(filtered_data)
+        other_log_entries = json.dumps(filtered_data)
 
     logger.warning(
         "Sending notification e-mail to %s after instance %s didn't provision",
@@ -436,7 +426,7 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
     )
 
     # Attach logs and configuration settings as attachments to keep the email readable
-    email.attachments.append(("build_log.txt", other_log_entries, "text/plain"))
+    email.attachments.append(("build_log.json", other_log_entries, "application/json"))
     email.attachments.append(("configuration.json", filtered_configuration, "application/json"))
 
     email.send()
