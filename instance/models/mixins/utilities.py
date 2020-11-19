@@ -33,7 +33,6 @@ from pprint import pformat
 
 import yaml
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -514,8 +513,10 @@ def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
         return
 
     try:
-        previous_appserver = appserver.get_previous_by_created()
-    except ObjectDoesNotExist:  # Not using the strict exception to not cause circular dependencies
+        # Since the app servers are in reverse order, the element at index 1 will be
+        # the previous app server
+        previous_appserver = instance.appserver_set.all()[1]
+    except IndexError:  # Not using the strict exception to not cause circular dependencies
         previous_appserver = None
 
     if previous_appserver is None or previous_appserver.status.is_healthy_state:
