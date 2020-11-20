@@ -516,7 +516,7 @@ def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
         # Since the app servers are in reverse order, the element at index 1 will be
         # the previous app server
         previous_appserver = instance.appserver_set.all()[1]
-    except IndexError:  # Not using the strict exception to not cause circular dependencies
+    except IndexError:
         previous_appserver = None
 
     if previous_appserver is None or previous_appserver.status.is_healthy_state:
