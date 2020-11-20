@@ -603,7 +603,7 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(outbox.subject, f'Deployment failed at instance: {str(instance)}')
         self.assertEqual(outbox.to, failure_emails)
         self.assertEqual(len(outbox.attachments), 2)
-        self.assertEqual(outbox.attachments[0], ('build_log.txt', '[]', 'text/plain'))
+        self.assertEqual(outbox.attachments[0], ('build_log.json', '[]', 'application/json'))
         self.assertEqual(outbox.attachments[1], ('configuration.json', filtered_configuration, 'application/json'))
         self.assertEqual(
             outbox.body,

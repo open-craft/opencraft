@@ -343,6 +343,13 @@ class AnsibleLogExtractTestCase(TestCase):
         """
         self.appserver.logger.info('TASK [task name]')
         self.appserver.logger.info(
+            'failed: [1.2.3.4] (item={"state": "present", "password": "***", "name": "397bf39ead3d3751"}) => '
+            '{"ansible_loop_var": "item", "changed": false, "item": {"name": "397bf39ead3d3751", "password": "***",'
+            '"state": "present"}, "msg": "Failed to import the required Python library (passlib) on '
+            'edxapp-periodic-buil-appserver-1039\'s Python /usr/bin/python3. Please read module documentation and '
+            'install in the appropriate location"}',
+        )
+        self.appserver.logger.info(
             'fatal: [1.2.3.4]: FAILED! => {"changed": true, "stdout_lines": ["out"], "stderr_lines": ["err"]}'
         )
 
@@ -353,4 +360,21 @@ class AnsibleLogExtractTestCase(TestCase):
 
         self.assertEqual(task_name, "")
         self.assertDictEqual(log_entry, dict())
-        self.assertListEqual(other_logs, ["out", "err"])
+        self.assertListEqual(other_logs, [
+            {
+                'ansible_loop_var': 'item',
+                'changed': False,
+                'item': {'name': '397bf39ead3d3751', 'password': '***', 'state': 'present'},
+                'msg': (
+                    'Failed to import the required Python library (passlib) on '
+                    "edxapp-periodic-buil-appserver-1039's Python /usr/bin/python3. "
+                    'Please read module documentation and install in the appropriate '
+                    'location'
+                )
+            },
+            {
+                'changed': True,
+                'stderr_lines': ['err'],
+                'stdout_lines': ['out']
+            }
+        ])
