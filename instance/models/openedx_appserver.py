@@ -242,7 +242,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
-    INVENTORY_GROUP = 'openedx-app'
+    INVENTORY_GROUP = 'openedx_app'
 
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
 
