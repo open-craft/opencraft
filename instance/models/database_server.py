@@ -204,6 +204,21 @@ class MySQLServer(DatabaseServer):
     def default_port(self):
         return MYSQL_SERVER_DEFAULT_PORT
 
+    def get_admin_cursor(self):
+        """
+        Grabs a connection cursor for the admin user on the node. This is useful if you need to perform
+        meta operations like creating and dropping a database. If you need to run a command on data inside of an
+        instance's DB, use the instance's get_mysql_cursor_for_db method instead.
+        """
+        import MySQLdb as mysql
+        conn = mysql.connect(
+            host=self.hostname,
+            user=self.username,
+            passwd=self.password,
+            port=self.port,
+        )
+        return conn.cursor()
+
 
 class MongoDBReplicaSetManager(models.Manager):
     """
