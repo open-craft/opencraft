@@ -22,6 +22,7 @@ Open edX instance database mixin
 import hashlib
 import hmac
 
+import MySQLdb as mysql
 import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
@@ -182,6 +183,27 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert len(mysql_database_name) <= 64
         return mysql_database_name
 
+    def create_db(self, db_suffix):
+        """
+        The database is normally created via ansible playbooks. However if you need to create the database manually
+        for some reason, such as after dropping it in anticipation of restoring a backup or fixing a failed initial
+        provision, this method handles it for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            cursor.execute('CREATE DATABASE %s', [db_name])
+
+    def drop_db(self, db_suffix):
+        """
+        If you need to manually destroy the database for this instance, as you might when restoring from backup
+        or fixing a failed initial provision, this method will do so for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            cursor.execute('DROP DATABASE %s', [db_name])
+
     def get_mysql_cursor_for_db(self, db_suffix):
         """
         Get an adminstrative cursor with which to execute queries on the database
@@ -189,7 +211,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         if not self.mysql_server:
             return None
-        import MySQLdb as mysql
         db_name = self._get_mysql_database_name(db_suffix)
         conn = mysql.connect(
             host=self.mysql_server.hostname,
