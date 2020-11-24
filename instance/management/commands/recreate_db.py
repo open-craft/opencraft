@@ -36,7 +36,7 @@ class Command(BaseCommand):
     This management command will recreate the edxapp database for a specified instance.
     """
     help = (
-        'Drop and recreate a database for an instance. The instance must have failed provisioning.'
+        'Drop and recreate a database for an instance. The instance must have failed initial provisioning.'
     )
 
     def add_arguments(self, parser):
@@ -80,7 +80,8 @@ class Command(BaseCommand):
             raise CommandError(f'An instance with the domain name "{domain}" could not be found.')
         if instance.successfully_provisioned:
             raise CommandError(
-                f'Cowardly refusing to drop the database of "{domain}", which has already successfully provisioned.',
+                f'Cowardly refusing to drop the database of "{domain}", which has already '
+                'successfully provisioned at least once.',
             )
 
         self.confirm(instance.internal_lms_domain, options)

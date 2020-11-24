@@ -1307,7 +1307,7 @@ class OpenEdXInstanceTestCase(TestCase):
         mock_cursor = mock_cursor_context.return_value.__enter__.return_value
         instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='drop_test')
         instance.drop_db('edxapp')
-        mock_cursor.execute.assert_called_with('DROP DATABASE %s', ['drop_test_example_com_edxapp'])
+        mock_cursor.execute.assert_called_with('DROP DATABASE drop_test_example_com_edxapp')
 
     @patch('instance.models.database_server.MySQLServer.get_admin_cursor')
     def test_create_db(self, mock_cursor_context, _mock_consul):
@@ -1316,9 +1316,9 @@ class OpenEdXInstanceTestCase(TestCase):
         """
 
         mock_cursor = mock_cursor_context.return_value.__enter__.return_value
-        instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='drop_test')
+        instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='create_test')
         instance.create_db('edxapp')
-        mock_cursor.execute.assert_called_with('CREATE DATABASE %s', ['drop_test_example_com_edxapp'])
+        mock_cursor.execute.assert_called_with('CREATE DATABASE create_test_example_com_edxapp')
 
 
 @skip_unless_consul_running()

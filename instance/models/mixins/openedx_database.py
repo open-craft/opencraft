@@ -192,7 +192,9 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert db_suffix
         db_name = self._get_mysql_database_name(db_suffix)
         with self.mysql_server.get_admin_cursor() as cursor:
-            cursor.execute('CREATE DATABASE %s', [db_name])
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'CREATE DATABASE {db_name}')
 
     def drop_db(self, db_suffix):
         """
@@ -202,7 +204,9 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert db_suffix
         db_name = self._get_mysql_database_name(db_suffix)
         with self.mysql_server.get_admin_cursor() as cursor:
-            cursor.execute('DROP DATABASE %s', [db_name])
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'DROP DATABASE {db_name}')
 
     def get_mysql_cursor_for_db(self, db_suffix):
         """

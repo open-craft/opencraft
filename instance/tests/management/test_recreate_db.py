@@ -182,7 +182,8 @@ class RecreateDBTestCase(TestCase):
         mock_create.assert_not_called()
         self.assertEqual(
             str(context.exception),
-            'Cowardly refusing to drop the database of "beep.boop", which has already successfully provisioned.',
+            'Cowardly refusing to drop the database of "beep.boop", which has already successfully '
+            'provisioned at least once.',
         )
 
     @patch('instance.models.openedx_instance.OpenEdXInstance.create_db')
