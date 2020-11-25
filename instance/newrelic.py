@@ -201,7 +201,7 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                     'fill_value': '0'
                 },
                 'expiration': {
-                    'expiration_duration': '60',
+                    'expiration_duration': '600',
                     'open_violation_on_expiration': True,
                     'close_violations_on_expiration': False,
                 }
