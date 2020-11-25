@@ -695,6 +695,13 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
             raise ValidationError(
                 "Updated public email needs to be confirmed.", code="email-unverified"
             )
+
+        if not instance.successfully_provisioned:
+            raise ValidationError(
+                'You must wait for a successful deployment before attempting another one.',
+                code='no-successful-deployment',
+            )
+
         return instance_config
 
     def list(self, request, *args, **kwargs):
@@ -716,7 +723,10 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         deployed_changes = None
         deployment_type = None
 
-        if not instance or not instance.get_latest_deployment():
+        if (not instance or
+                not instance.get_latest_deployment() or
+                not instance.successfully_provisioned):
+            # Set to preparing if no existing deployments or provisioned appservers found
             deployment_status = DeploymentState.preparing
         else:
             deployment = instance.get_latest_deployment()
