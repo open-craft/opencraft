@@ -20,7 +20,6 @@
 Tests for the registration API
 """
 import json
-import yaml
 from typing import Optional, Union
 from unittest.mock import patch
 

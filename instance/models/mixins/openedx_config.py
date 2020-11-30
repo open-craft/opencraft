@@ -84,7 +84,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "CONTACT": "/contact",
                 },
             },
-            "EDXAPP_MKTG_URL_LINK_MAP":{
+            "EDXAPP_MKTG_URL_LINK_MAP": {
                 "FAQ": "help",
                 "PRESS": "press",
                 "SITEMAP.XML": "sitemap_xml",
