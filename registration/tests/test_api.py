@@ -1162,10 +1162,10 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         custom_pages = ['ABOUT', 'CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
 
         for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+            self.assertTrue(page in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
 
         # Test that BLOG static page is disabled
-        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
 
     def test_instance_appserver_configuration_reflect_on_disabled_pages(self):
         """
@@ -1190,12 +1190,12 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
 
         # This page was disabled
-        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
 
         base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
         custom_pages = ['CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
         for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+            self.assertTrue(page in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
 
     def test_check_config_urls(self):
         """
