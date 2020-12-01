@@ -109,7 +109,7 @@ export class InstanceSetupPage extends React.PureComponent<Props, State> {
         </Form>
         <RegistrationNavButtons
           loading={this.props.loading}
-          disableNextButton={false}
+          disableNextButton={!this.state.instanceName}
           showBackButton
           showNextButton
           handleBackClick={() => {

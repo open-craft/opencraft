@@ -24,6 +24,7 @@ from typing import Optional, Union
 from unittest.mock import patch
 
 import ddt
+import yaml
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -65,7 +66,6 @@ class AccountAPITestCase(APITestCase):
         self.profile_data = {
             "full_name": "Another User",
             "accepted_privacy_policy": self.reference_time,
-            "accept_paid_support": True,
             "accept_domain_condition": True,
             "subscribe_to_updates": True
         }
@@ -119,7 +119,6 @@ class AccountAPITestCase(APITestCase):
         ({"password": "MissingSp3ci4lChars"}),
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(days=2)}),
-        ({"accept_paid_support": False}),
         ({"accept_domain_condition": False}),
     )
     def test_account_creation_failure_invalid(self, override_data):
@@ -158,7 +157,6 @@ class AccountAPITestCase(APITestCase):
         "email",
         "password",
         "accepted_privacy_policy",
-        "accept_paid_support",
         "accept_domain_condition",
     )
     def test_account_creation_failure_missing(self, field_to_remove):
@@ -184,7 +182,6 @@ class AccountAPITestCase(APITestCase):
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(hours=2)}),
         ({"accepted_privacy_policy": timezone.now() - timezone.timedelta(hours=1)}),
-        ({"accept_paid_support": False}),
         ({"accept_domain_condition": False}),
     )
     def test_account_update_failure(self, data):
@@ -1069,6 +1066,137 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         for key, value in static_content_overrides_data.items():
             self.assertEqual(self.instance_config.draft_static_content_overrides[key], value)
 
+    def test_disabling_static_pages(self):
+        """
+        Test static content pages disabling
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        response = self.client.post(
+            reverse(
+                f"api:v2:openedx-instance-config-toggle-static-content-page",
+                args=(self.instance_config.pk, )
+            ),
+            data={"page_name": "about", "enabled": False},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+        expected_mktg_url_link_map = {
+            'CONTACT': 'contact',
+            'DONATE': 'donate',
+            'HONOR': 'honor',
+            'PRIVACY': 'privacy',
+            'TOS': 'tos',
+        }
+        self.instance_config.refresh_from_db()
+        # Check that static page about is disabled after API request
+        self.assertEqual(self.instance_config.configuration_display_static_pages, {'about': False})
+        # Check that about page doesn't exists for MKTG_URL_LINK_MAP config
+        self.assertEqual(self.instance_config.get_mktg_url_link(), expected_mktg_url_link_map)
+
+    def test_disabling_all_static_pages(self):
+        """
+        Test that empty dict {} will disable all static pages
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        static_pages_payload = [
+            {"page_name": "about", "enabled": False},
+            {"page_name": "contact", "enabled": False},
+            {"page_name": "donate", "enabled": False},
+            {"page_name": "tos", "enabled": False},
+            {"page_name": "honor", "enabled": False},
+            {"page_name": "privacy", "enabled": False},
+            {"page_name": "tos", "enabled": False},
+        ]
+
+        for payload in static_pages_payload:
+            self.client.post(
+                reverse(
+                    f"api:v2:openedx-instance-config-toggle-static-content-page",
+                    args=(self.instance_config.pk, )
+                ),
+                data=payload,
+                format='json'
+            )
+        self.instance_config.refresh_from_db()
+        # Check that all static pages are disabled after API request
+        self.assertEqual(self.instance_config.get_mktg_url_link(), {})
+
+    def test_disabling_static_pages_existing_instances(self):
+        """
+        Test that existing instnaces wont be affected
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        # Check that static page about is disabled after API request
+        self.assertEqual(self.instance_config.configuration_display_static_pages, None)
+        # Check that about page doesn't exists for MKTG_URL_LINK_MAP config
+        self.assertEqual(
+            self.instance_config.get_mktg_url_link(),
+            {
+                "ABOUT": "about",
+                "CONTACT": "contact",
+                "DONATE": "donate",
+                "TOS": "tos",
+                "HONOR": "honor",
+                "PRIVACY": "privacy",
+            }
+        )
+
+    def test_instance_appserver_configuration_disabled_static_pages(self):
+        """
+        Test appserver ansible configuration variabled
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        self.instance_config.commit_changes_to_instance()
+
+        appserver = self.instance_config.instance._create_owned_appserver()
+        configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
+
+        # This is the required custom pages
+        base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
+        # It is possible to enable/disable custom pages
+        custom_pages = ['ABOUT', 'CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
+
+        for page in custom_pages + base_custom_pages:
+            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+
+        # Test that BLOG static page is disabled
+        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+
+    def test_instance_appserver_configuration_reflect_on_disabled_pages(self):
+        """
+        Test appserver configuration settings variables after disabling static page
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+
+        response = self.client.post(
+            reverse(
+                f"api:v2:openedx-instance-config-toggle-static-content-page",
+                args=(self.instance_config.pk, )
+            ),
+            data={"page_name": "about", "enabled": False},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.instance_config.commit_changes_to_instance()
+
+        appserver = self.instance_config.instance._create_owned_appserver()
+        configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
+
+        # This page was disabled
+        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+
+        base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
+        custom_pages = ['CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
+        for page in custom_pages + base_custom_pages:
+            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+
     def test_check_config_urls(self):
         """
         Test if the LMS and Studio url variables behave correctly
@@ -1197,6 +1325,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         instance.privacy_policy_url = self.instance_config.privacy_policy_url
         instance.email = self.instance_config.public_contact_email
         instance.theme_config = self.instance_config.draft_theme_config
+        instance.successfully_provisioned = True
         instance.save()
 
         make_test_deployment(instance, appserver_states=[Status.Running], active=True)
@@ -1217,6 +1346,8 @@ class InstanceDeploymentAPITestCase(APITestCase):
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
+        instance.successfully_provisioned = True
+        instance.save()
         make_test_deployment(instance, active=True)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
@@ -1301,13 +1432,34 @@ class InstanceDeploymentAPITestCase(APITestCase):
         return_value=(1, True)
     )
     @patch('registration.models.create_new_deployment')
-    def test_commit_changes_fail_running_appserver(self, mock_create_deployment, mock_consul):
+    def test_commit_changes_fail_first_appserver_unsuccessful(self, mock_create_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that committing changes fails when the first appserver is being provisioned.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
 
+        make_test_deployment(instance, appserver_states=[Status.ConfigurationFailed])
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("You must wait for a successful deployment before attempting another one.",
+                      response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_fail_running_appserver(self, mock_create_deployment, mock_consul):
+        """
+        Test that committing changes fails when there are (non-first) appservers still being provisioned.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        make_test_deployment(instance, appserver_states=[Status.Running])
         make_test_deployment(instance, appserver_states=[Status.ConfiguringServer])
         response = self.client.post(
             reverse('api:v2:openedx-instance-deployment-list'),
@@ -1341,7 +1493,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     )
     def test_commit_changes_email_validation_fail(self, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that committing changes fails when the email isn't verified
         """
         self._setup_user_instance()
         EmailAddress.objects.get(
@@ -1363,13 +1515,15 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.create_new_deployment')
     def test_commit_changes_success(self, mock_create_new_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that setting up instance works as expected
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
         self.assertEqual(instance.privacy_policy_url, '')
         self.assertEqual(instance.email, 'contact@example.com')
         self.assertRegex(instance.name, r'Test Instance \d+')
+        instance.successfully_provisioned = True
+        instance.save()
         response = self.client.post(
             reverse('api:v2:openedx-instance-deployment-list'),
             data={"id": self.instance_config.id}
@@ -1388,12 +1542,16 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.create_new_deployment')
     def test_commit_changes_force_running_appserver(self, mock_create_new_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that forcing changes allows deploying changes even if some other changes are pending
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
+        instance.successfully_provisioned = True
+        instance.save()
         make_test_appserver(instance, status=Status.ConfiguringServer)
         url = reverse('api:v2:openedx-instance-deployment-list')
+        response = self.client.post(f"{url}", data={"id": self.instance_config.id})
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
         self.assertEqual(response.status_code, 200)
         mock_create_new_deployment.assert_called()

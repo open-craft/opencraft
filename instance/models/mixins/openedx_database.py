@@ -22,6 +22,7 @@ Open edX instance database mixin
 import hashlib
 import hmac
 
+import MySQLdb as mysql
 import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
@@ -182,6 +183,31 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert len(mysql_database_name) <= 64
         return mysql_database_name
 
+    def create_db(self, db_suffix):
+        """
+        The database is normally created via ansible playbooks. However if you need to create the database manually
+        for some reason, such as after dropping it in anticipation of restoring a backup or fixing a failed initial
+        provision, this method handles it for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'CREATE DATABASE {db_name}')
+
+    def drop_db(self, db_suffix):
+        """
+        If you need to manually destroy the database for this instance, as you might when restoring from backup
+        or fixing a failed initial provision, this method will do so for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'DROP DATABASE {db_name}')
+
     def get_mysql_cursor_for_db(self, db_suffix):
         """
         Get an adminstrative cursor with which to execute queries on the database
@@ -189,7 +215,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         if not self.mysql_server:
             return None
-        import MySQLdb as mysql
         db_name = self._get_mysql_database_name(db_suffix)
         conn = mysql.connect(
             host=self.mysql_server.hostname,
@@ -404,8 +429,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "FORUM_MONGO_HOSTS": forum_mongo_hosts,
             "FORUM_MONGO_PORT": primary_mongodb_server.port,
             "FORUM_MONGO_DATABASE": self.forum_database_name,
-            # HACK: This is a temporary change for BB-2558. It will be removed after upgrading MongoDB to SCRAM.
-            "FORUM_MONGO_AUTH_MECH": ":mongodb_cr",
             "FORUM_REBUILD_INDEX": True
         }
         settings.update(extra_settings)

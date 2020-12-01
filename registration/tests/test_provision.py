@@ -78,6 +78,7 @@ class ApprovalTestCase(TestCase):
         self.assertEqual(instance.email, application.public_contact_email)
         self.assertEqual(instance.lms_users.get(), user)
         self.assertEqual(instance.provisioning_failure_notification_emails, settings.PROD_APPSERVER_FAIL_EMAILS)
+        self.assertEqual(instance.additional_monitoring_emails, settings.PROD_APPSERVER_FAIL_EMAILS)
 
     def test_provision_instance_check_theme_deployed(self):
         """

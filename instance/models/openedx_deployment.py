@@ -67,6 +67,7 @@ class OpenEdXDeployment(Deployment):
     # Field which denotes if the deployment was cancelled by the user
     cancelled = models.BooleanField(default=False)
 
+     # pylint: disable=too-many-return-statements
     def status(self):
         """
         Current state of deployment.
@@ -122,6 +123,10 @@ class OpenEdXDeployment(Deployment):
         # There are some provisioning servers, so overall we are provisioning even if
         # there are some unhealthy servers.
         if appservers_provisioning > 0:
+            if not self.instance.deployment_set.exclude(id=self.id).exists():
+                # This is the VERY first time we've ever been set up, which is special and should not be treated as
+                # a simple provision.
+                return DeploymentState.preparing
             return DeploymentState.provisioning
 
         # At this point no AppSevers are provisioning, and there aren't enough healthy servers.

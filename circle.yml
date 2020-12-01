@@ -6,7 +6,7 @@ orbs:
 jobs:
   frontend-test:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:12
     working_directory: ~/project/frontend
     steps:
       - checkout:
@@ -34,7 +34,7 @@ jobs:
 
   frontend-quality:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:12
     working_directory: ~/project/frontend
     steps:
       - checkout:
@@ -62,7 +62,7 @@ jobs:
 
   frontend-build:
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:12
     working_directory: ~/project/frontend
     steps:
       - checkout:
@@ -82,6 +82,9 @@ jobs:
           paths:
             - node_modules
           key: frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run:
+          name: Rebuild node-sass to generate bindings
+          command: npm rebuild node-sass
       - run:
           name: Render environment variables to .env file
           command: |
@@ -324,15 +327,21 @@ workflows:
 
   frontend-build-test-and-deploy:
     jobs:
-      - frontend-quality
+      - frontend-quality:
+          filters:
+            tags:
+              only: /^release\-\w+\-\w+$/
       - frontend-test:
           requires:
             - frontend-quality
+          filters:
+            tags:
+              only: /^release\-\w+\-\w+$/
       - frontend-build:
           context: ocim-frontend-stage
           requires:
             - frontend-test
-      # Frontend deployment (only on master branch)
+      # Frontend deployment (only on stage branch)
       - frontend-deploy:
           name: frontend-deploy-stage
           context: ocim-frontend-stage
@@ -341,17 +350,18 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - stage
       # Deploy production
       - frontend-build:
           name: frontend-build-production
           context: ocim-frontend-production
           requires:
-            - frontend-deploy-stage
+            - frontend-test
           filters:
             branches:
-              only:
-                - master
+              ignore: /.*/
+            tags:
+              only: /^release\-\w+\-\w+$/
       - frontend-deploy:
           name: frontend-deploy-production
           context: ocim-frontend-production
@@ -359,8 +369,9 @@ workflows:
             - frontend-build-production
           filters:
             branches:
-              only:
-                - master
+              ignore: /.*/
+            tags:
+              only: /^release\-\w+\-\w+$/
   cleanup-workflow:
     triggers:
       - schedule:

@@ -33,5 +33,6 @@ You can use your GitHub username and key.
 To create a new instance, you use Django's admin and you need to fill in the domain name,
 the prefixed domain names (for Studio, e-commerce, etc.), the edx-platform/configuration branches to use,
 and extra ansible variables to pass to Open edX's playbook (if any).
+OCIM generates server hostnames from the domain name, [truncating it to a fixed-length](https://github.com/open-craft/opencraft/blob/8e84edf8621d76a7a379bb62bd3dd726b83fbd6e/instance/models/openedx_appserver.py#L543). This might cause unforseen issues if multiple instances share a sufficiently long prefix, due to duplicate hostnames. See [SE-3484](https://tasks.opencraft.com/browse/SE-3484) as an example of such an issue.
 The instance settings are used for new deployments only
 (changing the instance settings doesn't retroactively redeploy appservers).

@@ -13,10 +13,6 @@ const messages = {
       'Please follow the link in your email account to ' +
       'verify and complete your application process.',
     description: ''
-  },
-  consoleButton: {
-    defaultMessage: 'Go To Console',
-    description: ''
   }
 };
 

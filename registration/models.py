@@ -397,6 +397,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
                    'be copied over to the final static content overrides which will then be deployed to the '
                    'next appserver that is launched')
     )
+    configuration_display_static_pages = JSONField(  # pylint:disable=invalid-name
+        blank=True,
+        null=True,
+        default=None,
+        help_text="Configure `MKTG_URL_LINK_MAP` to display/hide static pages",
+    )
 
     def __str__(self):
         return self.domain
@@ -474,6 +480,40 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         if errors:
             raise ValidationError(errors)
 
+    def default_configuration_display_static_pages(self):
+        """
+        All static pages enabled by default
+        """
+        return {
+            "about": True,
+            "contact": True,
+            "donate": True,
+            "tos": True,
+            "honor": True,
+            "privacy": True,
+        }
+
+    def get_mktg_url_link(self):
+        """
+        Build MKTG_URL_LINK_MAP config.
+        Allow to display/hide static content pages
+        """
+        mktg_url_link_map_config = {
+            "ABOUT": "about",
+            "CONTACT": "contact",
+            "DONATE": "donate",
+            "TOS": "tos",
+            "HONOR": "honor",
+            "PRIVACY": "privacy",
+        }
+
+        if self.configuration_display_static_pages:
+            for page_name, enabled in self.configuration_display_static_pages.items():
+                if not enabled:
+                    del mktg_url_link_map_config[page_name.upper()]
+
+        return mktg_url_link_map_config
+
     def commit_changes_to_instance(
             self,
             deploy_on_commit=False,
@@ -497,6 +537,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
         instance.theme_config = self.draft_theme_config
         instance.static_content_overrides = self.draft_static_content_overrides
+        instance.static_content_display = self.get_mktg_url_link()
         instance.name = self.instance_name
         instance.privacy_policy_url = self.privacy_policy_url
         instance.email = self.public_contact_email
