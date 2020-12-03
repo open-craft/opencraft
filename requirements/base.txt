@@ -32,7 +32,7 @@ constantly==15.1.0        # via twisted
 cookies==2.2.1            # via -r requirements/base.in
 coreapi==2.3.3            # via drf-yasg
 coreschema==0.0.4         # via coreapi, drf-yasg
-cryptography==2.9.2       # via autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
+cryptography==3.2.1       # via -r requirements/base.in, autobahn, dns-lexicon, openstacksdk, pyopenssl, requests, service-identity
 cssutils==1.0.2           # via pynliner
 daphne==2.5.0             # via channels
 debtcollector==2.0.1      # via oslo.config, oslo.serialization, oslo.utils, python-keystoneclient
