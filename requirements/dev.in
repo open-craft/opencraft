@@ -1,6 +1,6 @@
 -r test.in
 
-cryptography>=3.2
+cryptography==3.2.1
 django-debug-toolbar==2.2
 ipdb==0.12
 ipython==7.5.0
