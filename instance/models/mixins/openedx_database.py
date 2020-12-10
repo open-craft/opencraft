@@ -438,6 +438,11 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         Return dictionary of RabbitMQ Settings
         """
+        rabbit_hostname = "{}:{}".format(
+            self.rabbitmq_server.instance_host,
+            self.rabbitmq_server.instance_port
+        )
+
         return {
             "XQUEUE_RABBITMQ_USER": self.rabbitmq_provider_user.username,
             "XQUEUE_RABBITMQ_PASS": self.rabbitmq_provider_user.password,
@@ -454,13 +459,12 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 },
             },
 
+            "EDXAPP_RABBIT_HOSTNAME": rabbit_hostname,
             "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
+            "EDXAPP_CELERY_BROKER_TRANSPORT": "amqp",
+            "EDXAPP_CELERY_BROKER_HOSTNAME": rabbit_hostname,
             "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
             "EDXAPP_CELERY_BROKER_VHOST": self.rabbitmq_vhost,
-            "EDXAPP_RABBIT_HOSTNAME": "{}:{}".format(
-                self.rabbitmq_server.instance_host,
-                self.rabbitmq_server.instance_port
-            ),
             "EDXAPP_CELERY_BROKER_USE_SSL": True
         }
 

@@ -804,6 +804,31 @@ class RabbitMQInstanceTestCase(TestCase):
         self.instance.deprovision_rabbitmq(ignore_errors=True)
         self.assertFalse(self.instance.rabbitmq_provisioned)
 
+    def test_ansible_settings_rabbitmq(self, mock_consul):
+        """
+        Test that rabbitmq related ansible variables are set correctly.
+        """
+        instance = OpenEdXInstanceFactory()
+        appserver = make_test_appserver(instance)
+        ansible_vars = appserver.configuration_settings
+        rabbit_hostname = '{}:{}'.format(
+            instance.rabbitmq_server.instance_host,
+            instance.rabbitmq_server.instance_port,
+        )
+        self.assertIn('EDXAPP_RABBIT_HOSTNAME: {}'.format(rabbit_hostname), ansible_vars)
+        self.assertIn('EDXAPP_CELERY_USER: {}'.format(instance.rabbitmq_provider_user.username), ansible_vars)
+        self.assertIn('EDXAPP_CELERY_BROKER_TRANSPORT: amqp', ansible_vars)
+        self.assertIn('EDXAPP_CELERY_BROKER_HOSTNAME: {}'.format(rabbit_hostname), ansible_vars)
+        self.assertIn('EDXAPP_CELERY_PASSWORD: {}'.format(instance.rabbitmq_provider_user.password), ansible_vars)
+        self.assertIn('EDXAPP_CELERY_BROKER_VHOST: {}'.format(instance.rabbitmq_vhost), ansible_vars)
+        self.assertIn('EDXAPP_CELERY_BROKER_USE_SSL: true', ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_USER: {}'.format(instance.rabbitmq_provider_user.username), ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_PASS: {}'.format(instance.rabbitmq_provider_user.password), ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_VHOST: {}'.format(instance.rabbitmq_vhost), ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_HOSTNAME: {}'.format(instance.rabbitmq_server.instance_host), ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_PORT: {}'.format(instance.rabbitmq_server.instance_port), ansible_vars)
+        self.assertIn('XQUEUE_RABBITMQ_TLS: true', ansible_vars)
+
 
 @patch(
     'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',

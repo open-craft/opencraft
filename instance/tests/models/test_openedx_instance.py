@@ -297,6 +297,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_RABBITMQ'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_REDIS'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_DISCOVERY'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_ECOMMERCE'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_ANALYTICS_API'], False)

@@ -317,6 +317,8 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # RabbitMQ disabled locally
             "SANDBOX_ENABLE_RABBITMQ": False,
+            # Redis disabled locally
+            "SANDBOX_ENABLE_REDIS": False,
 
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
