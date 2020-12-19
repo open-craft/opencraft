@@ -98,7 +98,7 @@ class AnsibleAppServerTestCase(TestCase):
             mock_run_playbook,
             mock_poll_streams,
             mock_consul
-    ):
+    ): # pylint: disable=too-many-locals
         """
         The appserver gets provisioned with the appropriate playbooks.
         Failure causes later playbooks to not run.
@@ -124,12 +124,18 @@ class AnsibleAppServerTestCase(TestCase):
         ), mock_run_playbook.mock_calls)
 
         assert_func = self.assertIn if playbook_returncode == 0 else self.assertNotIn
+
+        # Retrieving default playbook settings from instance
+        requirements_path = '{}/{}'.format(working_dir, instance.ansible_appserver_requirements_path)
+        playbook_path = '{}/{}'.format(working_dir, os.path.dirname(instance.ansible_appserver_playbook))
+        playbook_name = os.path.basename(instance.ansible_appserver_playbook)
+
         assert_func(call(
-            requirements_path='{}/requirements.txt'.format(working_dir),
+            requirements_path=requirements_path,
             inventory_str=mock_inventory,
             vars_str=appserver.create_common_configuration_settings(),
-            playbook_path='{}/playbooks'.format(working_dir),
-            playbook_name='appserver.yml',
+            playbook_path=playbook_path,
+            playbook_name=playbook_name,
             username='ubuntu',
         ), mock_run_playbook.mock_calls)
 

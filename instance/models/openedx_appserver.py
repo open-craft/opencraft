@@ -124,6 +124,33 @@ class OpenEdXAppConfiguration(models.Model):
         'which is equal to the value of "openedx_release".'
     ))
 
+    # Settings related to default ansible playbook
+    ansible_appserver_repo_url = models.URLField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_REPO'),
+        help_text=('The repository to pull the default Ansible playbook from.')
+    )
+    ansible_appserver_playbook = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_PLAYBOOK'),
+        help_text=('The path to the common appserver playbook to run on all appservers.')
+    )
+    # pylint: disable=invalid-name
+    ansible_appserver_requirements_path = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_REQUIREMENTS_PATH'),
+        help_text=('The path to the requirements file for the common appserver playbook.')
+    )
+    ansible_appserver_version = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_VERSION'),
+        help_text=('The version of the Ansible playbook repository to checkout.')
+    )
+
     # OpenStack VM settings
     openstack_server_flavor = JSONField(
         null=True,
