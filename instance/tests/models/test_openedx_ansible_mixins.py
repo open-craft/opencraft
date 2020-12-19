@@ -58,10 +58,10 @@ class AnsibleAppServerTestCase(TestCase):
         appserver.provision()  # This is when the server gets created
         self.assertEqual(
             appserver.inventory_str,
-            '[openedx-app]\n'
+            '[openedx_app]\n'
             '192.168.100.200\n'
             '[app:children]\n'
-            'openedx-app'
+            'openedx_app'
         )
 
     @patch_services
