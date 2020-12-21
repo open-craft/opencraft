@@ -141,6 +141,11 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'edx_platform_repository_url',
             'edx_platform_commit',
 
+            'ansible_appserver_repo_url',
+            'ansible_appserver_playbook',
+            'ansible_appserver_requirements_path',
+            'ansible_appserver_version',
+
             'openedx_release',
 
             'openstack_region',
