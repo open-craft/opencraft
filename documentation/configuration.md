@@ -87,15 +87,15 @@ You can check the images available with your host using:
     glance image-list
 
 For maximum compatibility we recommend the
-[official Ubuntu cloud image](https://cloud-images.ubuntu.com/xenial/current/).
+[official Ubuntu cloud image](https://cloud-images.ubuntu.com/focal/current/).
 If this image is not available with your host, you can fetch it and add to
 OpenStack using `glance`:
 
-    wget https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+    wget https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
     glance image-create \
       --disk-format=qcow2 \
       --container-format=bare \
-      --file xenial-server-cloudimg-amd64-disk1.img \
+      --file focal-server-cloudimg-amd64.img \
       --name IMAGE_NAME \
       --progress
 
@@ -262,7 +262,7 @@ Required settings:
 * `OPENSTACK_SANDBOX_FLAVOR`: A json string specifying the instance flavor to use
   (default: `{"ram": 4096, "disk": 40}`)
 * `OPENSTACK_SANDBOX_BASE_IMAGE`: A json string specifying the base image to use
-  (default: `{"name": "Ubuntu 16.04"}`)
+  (default: `{"name": "Ubuntu 20.04"}`)
 * `OPENSTACK_SANDBOX_SSH_KEYNAME`: The name of the default ssh key pair used to
   connect to sandbox instances (default: `opencraft`). This key pair should be
   [registered with OpenStack](http://docs.openstack.org/user-guide/cli_nova_configure_access_security_for_instances.html)
