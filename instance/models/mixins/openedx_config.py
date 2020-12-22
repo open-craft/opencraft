@@ -325,6 +325,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "ECOMMERCE_NGINX_PORT": 80,
             "ECOMMERCE_SSL_NGINX_PORT": 443,
             "ECOMMERCE_HOSTNAME": '~{}'.format(self.instance.ecommerce_domain_nginx_regex),
+            "COMMON_ECOMMERCE_BASE_URL": 'https://{}'.format(self.instance.ecommerce_domain),
             "ECOMMERCE_ECOMMERCE_URL_ROOT": 'https://{}'.format(self.instance.ecommerce_domain),
             "EDXAPP_ECOMMERCE_PUBLIC_URL_ROOT": 'https://{}'.format(self.instance.ecommerce_domain),
             "EDXAPP_ECOMMERCE_API_URL": 'https://{}/api/v2'.format(self.instance.ecommerce_domain),
