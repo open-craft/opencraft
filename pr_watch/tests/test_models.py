@@ -22,6 +22,7 @@ Tests for the WatchedPullRequest model and manager
 
 # Imports #####################################################################
 
+import json
 import textwrap
 from unittest.mock import call, patch
 
@@ -191,6 +192,11 @@ class WatchedPullRequestTestCase(TestCase):
         watched_fork = WatchedForkFactory(
             fork=pr.fork_name,
             organization=organization,
+            ansible_appserver_repo_url='https://github.com/open-craft/ansible-playbooks.git',
+            ansible_appserver_playbook='playbooks/appserver.yml',
+            ansible_appserver_requirements_path='requirements.txt',
+            ansible_appserver_version='ansible2.8.17',
+            openstack_server_base_image='{"name_or_id":"focal-20.04-unmodified"}',
             configuration_source_repo_url='https://github.com/open-craft/configuration-fromwatchedfork',
             configuration_version='named-release/elder-fromwatchedfork',
             configuration_extra_settings=textwrap.dedent("""\
@@ -204,6 +210,12 @@ class WatchedPullRequestTestCase(TestCase):
         ):
             instance, created = WatchedPullRequest.objects.get_or_create_from_pr(pr, watched_fork)
         self.assertTrue(created)
+
+        self.assertEqual(instance.ansible_appserver_repo_url, 'https://github.com/open-craft/ansible-playbooks.git')
+        self.assertEqual(instance.ansible_appserver_playbook, 'playbooks/appserver.yml')
+        self.assertEqual(instance.ansible_appserver_requirements_path, 'requirements.txt')
+        self.assertEqual(instance.ansible_appserver_version, 'ansible2.8.17')
+        self.assertEqual(json.loads(instance.openstack_server_base_image), {"name_or_id":"focal-20.04-unmodified"})
 
         self.assertEqual(instance.configuration_source_repo_url,
                          'https://github.com/open-craft/configuration-fromwatchedfork')
