@@ -1162,10 +1162,10 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         custom_pages = ['ABOUT', 'CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
 
         for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
+            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
 
         # Test that BLOG static page is disabled
-        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
+        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
 
     def test_instance_appserver_configuration_reflect_on_disabled_pages(self):
         """
@@ -1190,45 +1190,12 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
 
         # This page was disabled
-        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
+        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
 
         base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
         custom_pages = ['CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
         for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
-
-    def test_override_mktg_url_link_map(self):
-        """
-        Test MKTG_URL_LINK_MAP override via configuration_extra_settings
-        """
-        self.client.force_login(self.user_with_instance)
-        self._setup_user_instance()
-
-        extra_settings = yaml.dump({
-            'EDXAPP_MKTG_URL_LINK_MAP': {
-                'HONOR': None,
-                'BLOG': None,
-                'DONATE': None,
-            }
-        })
-
-        # Set extra setttings MKTG_URL_LINK_MAP
-        self.instance_config.instance.configuration_extra_settings = extra_settings
-        self.instance_config.instance.save()
-        self.instance_config.instance.refresh_from_db()
-
-        appserver = self.instance_config.instance._create_owned_appserver()
-        configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
-
-        # Verify that settings EDXAPP_MKTG_URL_LINK_MAP overrides defaults
-        self.assertEqual(configuration_settings['EDXAPP_MKTG_URL_LINK_MAP']['DONATE'], None)
-        self.assertEqual(configuration_settings['EDXAPP_MKTG_URL_LINK_MAP']['BLOG'], None)
-        self.assertEqual(configuration_settings['EDXAPP_MKTG_URL_LINK_MAP']['HONOR'], None)
-
-        # The rest pages should still exist
-        base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
-        for page in base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
+            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
 
     def test_check_config_urls(self):
         """
