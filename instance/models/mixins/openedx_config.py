@@ -83,17 +83,19 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     # use different contact page
                     "CONTACT": "/contact",
                 },
+                # default values
+                "MKTG_URL_LINK_MAP": {
+                    "FAQ": "help",
+                    "PRESS": "press",
+                    "SITEMAP.XML": "sitemap_xml",
+                    "COURSES": "courses",
+                    "ROOT": "root",
+                    "WHAT_IS_VERIFIED_CERT": "verified-certificate",
+                    # "BLOG": "blog",  not supported yet
+                    **self.instance.get_mktg_url_link(),
+                },
             },
-            "EDXAPP_MKTG_URL_LINK_MAP": {
-                "FAQ": "help",
-                "PRESS": "press",
-                "SITEMAP.XML": "sitemap_xml",
-                "COURSES": "courses",
-                "ROOT": "root",
-                "WHAT_IS_VERIFIED_CERT": "verified-certificate",
-                # "BLOG": "blog",  not supported yet
-                **self.instance.get_mktg_url_link(),
-            },
+
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
