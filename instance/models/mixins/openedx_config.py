@@ -254,6 +254,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                 "ENABLE_THIRD_PARTY_AUTH": True,
                 "ENABLE_XBLOCK_VIEW_ENDPOINT": True,
                 "ENABLE_SYSADMIN_DASHBOARD": True,
+                "ORGANIZATIONS_APP": True,
                 "PREVIEW_LMS_BASE": self.instance.lms_preview_domain,
                 "REQUIRE_COURSE_EMAIL_AUTH": False,
                 "USE_MICROSITES": False,
