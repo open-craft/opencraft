@@ -4,18 +4,18 @@ exports[`renders without crashing 1`] = `
 <div
   className="app-container container-fluid"
 >
-  <div
-    className="container"
+  <nav
+    className="navbar navbar-expand-md navbar-dark"
   >
-    <nav
-      className="navbar navbar-expand-md navbar-dark bg-transparent"
+    <div
+      className="nav-container"
     >
       <span
-        className="logo-container mx-auto navbar-brand"
+        className="logo-container mr-auto order-0 navbar-brand"
       >
         <a
           aria-current="page"
-          className="nav-link active"
+          className="navbar-brand-link active"
           href="/"
           onClick={[Function]}
           style={Object {}}
@@ -32,7 +32,7 @@ exports[`renders without crashing 1`] = `
       <button
         aria-controls="basic-navbar-nav"
         aria-label="Toggle navigation"
-        className="navbar-toggler collapsed"
+        className="order-1 navbar-toggler collapsed"
         onClick={[Function]}
         type="button"
       >
@@ -42,7 +42,7 @@ exports[`renders without crashing 1`] = `
       </button>
       <div
         aria-expanded={null}
-        className="navbar-collapse collapse"
+        className="order-3 order-md-2 navbar-collapse collapse"
         id="basic-navbar-nav"
       >
         <div
@@ -50,8 +50,12 @@ exports[`renders without crashing 1`] = `
           onKeyDown={[Function]}
         />
       </div>
-    </nav>
-  </div>
+      <div
+        className="accounts-dropdown-nav order-2 order-md-3 navbar-nav"
+        onKeyDown={[Function]}
+      />
+    </div>
+  </nav>
   <div
     className="app-main row"
   />
