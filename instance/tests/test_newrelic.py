@@ -221,7 +221,10 @@ class NewRelicTestCase(TestCase):
         self.assertEqual(request_body, None)
 
     @responses.activate
-    @override_settings(NEWRELIC_NRQL_ALERT_CONDITION_DURATION='11')
+    @override_settings(
+        NEWRELIC_NRQL_ALERT_CONDITION_DURATION='11',
+        NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION='660'
+    )
     def test_add_alert_nrql_condition(self):
         """
         Check that the add_alert_nrql_condition function adds an alert condition for the given URL to
@@ -246,7 +249,7 @@ class NewRelicTestCase(TestCase):
         request_json = json.loads(responses.calls[0].request.body.decode())
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
-        query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'SUCCESS'".format(
+        query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'FAILED'".format(
             monitor_url
         )
         self.assertEqual(request_json, {
@@ -257,8 +260,8 @@ class NewRelicTestCase(TestCase):
                 'value_function': 'sum',
                 'terms': [{
                     'duration': '11',
-                    'threshold': '1',
-                    'operator': 'below',
+                    'threshold': '2',
+                    'operator': 'above',
                     'priority': 'critical',
                     'time_function': 'all',
                 }],
@@ -271,9 +274,9 @@ class NewRelicTestCase(TestCase):
                     'fill_value': '0'
                 },
                 'expiration': {
-                    'expiration_duration': '600',
-                    'open_violation_on_expiration': True,
-                    'close_violations_on_expiration': False,
+                    'expiration_duration': '660',
+                    'open_violation_on_expiration': False,
+                    'close_violations_on_expiration': True,
                 }
             }
         })
