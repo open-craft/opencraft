@@ -714,7 +714,7 @@ class RabbitMQInstanceTestCase(TestCase):
         So, this test should pass if and only if all of the specifically mocked URLs are
         called during both provision and deprovision.
         """
-        rabbitmq_users = [self.instance.rabbitmq_provider_user, self.instance.rabbitmq_consumer_user]
+        rabbitmq_users = [self.instance.rabbitmq_provider_user, self.instance.rabbitmq_consumer_user, 'admin']
         rabbitmq_vhost = urllib.parse.quote(self.instance.rabbitmq_vhost, safe='')
 
         vhosts_calls = ['vhosts/{}'.format(rabbitmq_vhost)]

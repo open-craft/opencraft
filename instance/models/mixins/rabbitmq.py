@@ -182,11 +182,12 @@ class RabbitMQInstanceMixin(models.Model):
                     'write': '.*',
                     'read': '.*'
                 })
-            self._rabbitmq_request('put', 'permissions', self.rabbitmq_vhost, self.rabbitmq_server.admin_username, data={
-                'configure': '.*',
-                'write': '.*',
-                'read': '.*'
-            })
+            self._rabbitmq_request(
+                'put', 'permissions', self.rabbitmq_vhost, self.rabbitmq_server.admin_username, data={
+                    'configure': '.*',
+                    'write': '.*',
+                    'read': '.*'
+                })
         self.rabbitmq_provisioned = True
         self.save()
 
