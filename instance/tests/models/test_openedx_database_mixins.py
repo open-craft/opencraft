@@ -720,7 +720,7 @@ class RabbitMQInstanceTestCase(TestCase):
         vhosts_calls = ['vhosts/{}'.format(rabbitmq_vhost)]
         users_calls = ['users/{}'.format(user) for user in rabbitmq_users]
         permissions_calls = ['permissions/{}/{}'.format(rabbitmq_vhost, user) for user in rabbitmq_users]
-        permisisons_calls += ['permissions/{}/{}'.format(rabbitmq_vhost, 'admin')]
+        permissions_calls += ['permissions/{}/{}'.format(rabbitmq_vhost, 'admin')]
 
         provision_calls = [
             '{}/api/{}'.format(self.instance.rabbitmq_server.api_url, url)
