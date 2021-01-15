@@ -22,6 +22,7 @@ Open edX instance database mixin
 import hashlib
 import hmac
 
+import MySQLdb as mysql
 import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
@@ -182,6 +183,31 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         assert len(mysql_database_name) <= 64
         return mysql_database_name
 
+    def create_db(self, db_suffix):
+        """
+        The database is normally created via ansible playbooks. However if you need to create the database manually
+        for some reason, such as after dropping it in anticipation of restoring a backup or fixing a failed initial
+        provision, this method handles it for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'CREATE DATABASE {db_name}')
+
+    def drop_db(self, db_suffix):
+        """
+        If you need to manually destroy the database for this instance, as you might when restoring from backup
+        or fixing a failed initial provision, this method will do so for you.
+        """
+        assert db_suffix
+        db_name = self._get_mysql_database_name(db_suffix)
+        with self.mysql_server.get_admin_cursor() as cursor:
+            # We can't use prepared style queries here, because the database name can't be a string.
+            # We should never use this with user input anyway, so it should be OK.
+            cursor.execute(f'DROP DATABASE {db_name}')
+
     def get_mysql_cursor_for_db(self, db_suffix):
         """
         Get an adminstrative cursor with which to execute queries on the database
@@ -189,7 +215,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         if not self.mysql_server:
             return None
-        import MySQLdb as mysql
         db_name = self._get_mysql_database_name(db_suffix)
         conn = mysql.connect(
             host=self.mysql_server.hostname,
@@ -413,6 +438,11 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         """
         Return dictionary of RabbitMQ Settings
         """
+        rabbit_hostname = "{}:{}".format(
+            self.rabbitmq_server.instance_host,
+            self.rabbitmq_server.instance_port
+        )
+
         return {
             "XQUEUE_RABBITMQ_USER": self.rabbitmq_provider_user.username,
             "XQUEUE_RABBITMQ_PASS": self.rabbitmq_provider_user.password,
@@ -429,13 +459,12 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 },
             },
 
+            "EDXAPP_RABBIT_HOSTNAME": rabbit_hostname,
             "EDXAPP_CELERY_USER": self.rabbitmq_provider_user.username,
+            "EDXAPP_CELERY_BROKER_TRANSPORT": "amqp",
+            "EDXAPP_CELERY_BROKER_HOSTNAME": rabbit_hostname,
             "EDXAPP_CELERY_PASSWORD": self.rabbitmq_provider_user.password,
             "EDXAPP_CELERY_BROKER_VHOST": self.rabbitmq_vhost,
-            "EDXAPP_RABBIT_HOSTNAME": "{}:{}".format(
-                self.rabbitmq_server.instance_host,
-                self.rabbitmq_server.instance_port
-            ),
             "EDXAPP_CELERY_BROKER_USE_SSL": True
         }
 

@@ -87,10 +87,10 @@ class AnsibleAppServerMixin(models.Model):
         """
         return [
             Playbook(
-                source_repo=settings.ANSIBLE_APPSERVER_REPO,
-                requirements_path=settings.ANSIBLE_APPSERVER_REQUIREMENTS_PATH,
-                playbook_path=settings.ANSIBLE_APPSERVER_PLAYBOOK,
-                version=settings.ANSIBLE_APPSERVER_VERSION,
+                source_repo=self.instance.ansible_appserver_repo_url,
+                requirements_path=self.instance.ansible_appserver_requirements_path,
+                playbook_path=self.instance.ansible_appserver_playbook,
+                version=self.instance.ansible_appserver_version,
                 variables=self.create_common_configuration_settings(),
             ),
         ]

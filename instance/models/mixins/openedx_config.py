@@ -222,6 +222,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "ANALYTICS_API_VERSION": self.openedx_release,
             "INSIGHTS_VERSION": self.openedx_release,
             "ECOMMERCE_VERSION": self.openedx_release,
+            "ECOMMERCE_WORKER_VERSION": self.openedx_release,
 
             # Theme
             # Enable comprehensive theming
@@ -316,12 +317,15 @@ class OpenEdXConfigMixin(ConfigMixinBase):
 
             # RabbitMQ disabled locally
             "SANDBOX_ENABLE_RABBITMQ": False,
+            # Redis disabled locally
+            "SANDBOX_ENABLE_REDIS": False,
 
             # Ecommerce
             "SANDBOX_ENABLE_ECOMMERCE": False,  # set to true to enable ecommerce
             "ECOMMERCE_NGINX_PORT": 80,
             "ECOMMERCE_SSL_NGINX_PORT": 443,
             "ECOMMERCE_HOSTNAME": '~{}'.format(self.instance.ecommerce_domain_nginx_regex),
+            "COMMON_ECOMMERCE_BASE_URL": 'https://{}'.format(self.instance.ecommerce_domain),
             "ECOMMERCE_ECOMMERCE_URL_ROOT": 'https://{}'.format(self.instance.ecommerce_domain),
             "EDXAPP_ECOMMERCE_PUBLIC_URL_ROOT": 'https://{}'.format(self.instance.ecommerce_domain),
             "EDXAPP_ECOMMERCE_API_URL": 'https://{}/api/v2'.format(self.instance.ecommerce_domain),

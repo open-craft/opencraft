@@ -22,6 +22,7 @@ Instance app model mixins - Utilities
 
 # Imports #####################################################################
 
+import ast
 import re
 import logging
 import sys
@@ -32,7 +33,6 @@ from pprint import pformat
 
 import yaml
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -72,7 +72,7 @@ class SensitiveDataFilter:
 
     SENSITIVE_VALUE_PATTERNS: list = COMMON_PATTERNS + [
         # This will match is extremely broad, but the safest
-        re.compile(r".*\:.*"),
+        re.compile(r"^(?!/).*\w+\:[\w\#\=\_\-\*\!\+\$\@\&\%\^]+"),
     ]
 
     def __init__(self, data: DataType):
@@ -235,14 +235,25 @@ class EmailMixin:
 
 # Functions #####################################################################
 
-def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
+def _extract_message_from_ansible_log(match) -> Optional[dict]:
     """
-    Get the most relevant failure log entry related to Ansible run and the Ansible
-    task name.
+    Extract message match group from ansible log lines.
     """
-    task_name_pattern = re.compile(r"^TASK\s\[(?P<task>.*)\]")
-    relevant_log_pattern = re.compile(r"^(fatal|critical)\:.*\=\>\s+")
+    if match and match.group('message'):
+        try:
+            return json.loads(match.group('message'))
+        except json.decoder.JSONDecodeError:
+            # the message can be an explicitly printed dict which must be parsed
+            return ast.literal_eval(match.group('message'))
 
+    return None
+
+
+def _extract_most_relevant_log(entries, task_name_pattern, relevant_log_pattern) -> Tuple[str, Dict[str, Any]]:
+    """
+    Make sure we extract most relevant log from the logs to help communities by providing
+    meaningful build logs.
+    """
     task_name: str = ""
     log_entry: Dict[str, Any] = dict()
 
@@ -250,16 +261,54 @@ def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any]]:
         if log_entry and task_name:
             break
 
-        text = entry.text.split("|")[-1].strip()
+        text = entry.text.strip()
         task_name_match = task_name_pattern.match(text)
+        relevant_log_match = relevant_log_pattern.match(text)
 
         if task_name_match:
             task_name = task_name_match.group("task")
 
-        if relevant_log_pattern.match(text):
-            log_entry = json.loads(relevant_log_pattern.sub("", text).strip())
+        if relevant_log_match:
+            log_entry = _extract_message_from_ansible_log(relevant_log_match)
 
-    return (task_name, log_entry)
+    return task_name, log_entry
+
+
+def _extract_other_build_logs(entries, log_pattern) -> List[str]:
+    """
+    Make sure we extract other build logs from the provisioning logs, so we can attach more information
+    when we send a failure notification email.
+    """
+    other_ansible_logs: List[str] = list()
+
+    # To get the logs in order, we need to have a separate iteration, which
+    # cannot be combined with the previous one. Fortunately, under normal
+    # circumstances, the previous iteration will finish pretty fast.
+    for entry in entries:
+        text = entry.text.strip()
+        log_match = log_pattern.match(text)
+        extracted_message = _extract_message_from_ansible_log(log_match)
+
+        if not extracted_message:
+            continue
+
+        other_ansible_logs.append(extracted_message)
+
+    return other_ansible_logs
+
+
+def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any], List[str]]:
+    """
+    Get the most relevant failure log entry related to Ansible run and the Ansible
+    task name.
+    """
+    task_name_pattern = re.compile(r".*\|\s+TASK\s\[(?P<task>.*)\].*")
+    relevant_log_pattern = re.compile(r".*\|\s+(\w+)\:.*\=\>\s+(\(item\=)?(?P<message>\{.*\})\)?")
+
+    task_name, log_entry = _extract_most_relevant_log(entries, task_name_pattern, relevant_log_pattern)
+    other_ansible_logs = _extract_other_build_logs(entries, relevant_log_pattern)
+
+    return task_name, log_entry, other_ansible_logs
 
 
 def send_periodic_deployment_success_email(recipients: List[str], instance_name: str) -> None:
@@ -330,13 +379,18 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
         latest_deployment_success_date = 'N/A'
 
     with SensitiveDataFilter(yaml.load(appserver.configuration_settings, Loader=yaml.FullLoader)) as filtered_data:
-        filtered_configuration_settings = pformat(filtered_data)
+        filtered_configuration = json.dumps(filtered_data)
 
     # Reverse the log entries to start looking for failure from the latest log entry
-    ansible_task_name, raw_ansible_log_entry = get_ansible_failure_log_entry(appserver.log_entries_queryset)
+    ansible_task_name, raw_ansible_log_entry, other_raw_logs = get_ansible_failure_log_entry(
+        appserver.log_entries_queryset
+    )
 
     with SensitiveDataFilter(raw_ansible_log_entry) as filtered_data:
         relevant_log_entry = pformat(filtered_data)
+
+    with SensitiveDataFilter(other_raw_logs) as filtered_data:
+        other_log_entries = json.dumps(filtered_data)
 
     logger.warning(
         "Sending notification e-mail to %s after instance %s didn't provision",
@@ -344,19 +398,18 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
         instance_name,
     )
 
-    send_mail(
+    email = EmailMultiAlternatives(
         'Deployment failed at instance: {}'.format(instance_name),
         'The periodic deployment of {edx_platform_release} failed. Please see the details below.\n\n'
+        'Ansible task name:\t{ansible_task_name}\n'
+        'Relevant log lines:\n{relevant_log_entry}\n\n'
         'AppServer ID:\t{appserver_id}\n'
         'Latest successful provision date: {latest_successful_provision_date}\n'
         'Configuration source repo:\t{configuration_source_repo_url}\n'
         'Configuration version:\t{configuration_version}\n'
         'OpenEdX platform source repo:\t{edx_platform_repository_url}\n'
         'OpenEdX platform release:\t{edx_platform_release}\n'
-        'OpenEdX platform commit:\t{edx_platform_commit}\n'
-        'Extra configuration settings:\n{extra_settings}\n'
-        'Ansible task name:\t{ansible_task_name}\n'
-        'Relevant log lines:\n{relevant_log_entry}'.format(
+        'OpenEdX platform commit:\t{edx_platform_commit}'.format(
             ansible_task_name=ansible_task_name,
             appserver_id=appserver.id,
             configuration_source_repo_url=appserver.configuration_source_repo_url,
@@ -364,14 +417,18 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
             edx_platform_commit=appserver.edx_platform_commit,
             edx_platform_release=appserver.openedx_release,
             edx_platform_repository_url=appserver.edx_platform_repository_url,
-            extra_settings=filtered_configuration_settings,
             latest_successful_provision_date=str(latest_deployment_success_date),
             relevant_log_entry=relevant_log_entry,
         ),
         settings.DEFAULT_FROM_EMAIL,
-        recipients,
-        fail_silently=False,
+        recipients
     )
+
+    # Attach logs and configuration settings as attachments to keep the email readable
+    email.attachments.append(("build_log.json", other_log_entries, "application/json"))
+    email.attachments.append(("configuration.json", filtered_configuration, "application/json"))
+
+    email.send()
 
 
 @receiver(appserver_spawned)
@@ -456,8 +513,10 @@ def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
         return
 
     try:
-        previous_appserver = appserver.get_previous_by_created()
-    except ObjectDoesNotExist:  # Not using the strict exception to not cause circular dependencies
+        # Since the app servers are in reverse order, the element at index 1 will be
+        # the previous app server
+        previous_appserver = instance.appserver_set.all()[1]
+    except IndexError:
         previous_appserver = None
 
     if previous_appserver is None or previous_appserver.status.is_healthy_state:

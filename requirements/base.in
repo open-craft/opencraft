@@ -9,6 +9,7 @@ channels_redis==2.4.0
 CherryPy<18.2
 colour==0.1.5
 cookies<2.3
+cryptography==3.2.1
 dictdiffer<0.9
 Django<2.3,>=2.2
 # using the latest django-angular (2.2 or later) requires a heavy rewrite of the registration form, so we use the old 1.0.0 version patched to work under Django 2

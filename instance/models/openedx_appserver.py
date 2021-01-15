@@ -124,6 +124,33 @@ class OpenEdXAppConfiguration(models.Model):
         'which is equal to the value of "openedx_release".'
     ))
 
+    # Settings related to default ansible playbook
+    ansible_appserver_repo_url = models.URLField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_REPO'),
+        help_text=('The repository to pull the default Ansible playbook from.')
+    )
+    ansible_appserver_playbook = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_PLAYBOOK'),
+        help_text=('The path to the common appserver playbook to run on all appservers.')
+    )
+    # pylint: disable=invalid-name
+    ansible_appserver_requirements_path = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_REQUIREMENTS_PATH'),
+        help_text=('The path to the requirements file for the common appserver playbook.')
+    )
+    ansible_appserver_version = models.CharField(
+        max_length=256,
+        blank=False,
+        default=default_setting('ANSIBLE_APPSERVER_VERSION'),
+        help_text=('The version of the Ansible playbook repository to checkout.')
+    )
+
     # OpenStack VM settings
     openstack_server_flavor = JSONField(
         null=True,
@@ -242,7 +269,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
     ))
     lms_user_settings = models.TextField(blank=True, help_text='YAML variables for LMS user creation.')
 
-    INVENTORY_GROUP = 'openedx-app'
+    INVENTORY_GROUP = 'openedx_app'
 
     MANAGE_USERS_PLAYBOOK = 'playbooks/edx-east/manage_edxapp_users_and_groups.yml'
 
@@ -540,7 +567,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         """
         Prefix for the associated server name.
         """
-        return ('edxapp-' + slugify(self.instance.domain))[:20]
+        return ('edxapp-' + slugify(self.instance.domain))[:30]
 
     @property
     def server_hostname(self):

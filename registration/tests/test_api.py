@@ -66,7 +66,6 @@ class AccountAPITestCase(APITestCase):
         self.profile_data = {
             "full_name": "Another User",
             "accepted_privacy_policy": self.reference_time,
-            "accept_paid_support": True,
             "accept_domain_condition": True,
             "subscribe_to_updates": True
         }
@@ -120,7 +119,6 @@ class AccountAPITestCase(APITestCase):
         ({"password": "MissingSp3ci4lChars"}),
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(days=2)}),
-        ({"accept_paid_support": False}),
         ({"accept_domain_condition": False}),
     )
     def test_account_creation_failure_invalid(self, override_data):
@@ -159,7 +157,6 @@ class AccountAPITestCase(APITestCase):
         "email",
         "password",
         "accepted_privacy_policy",
-        "accept_paid_support",
         "accept_domain_condition",
     )
     def test_account_creation_failure_missing(self, field_to_remove):
@@ -185,7 +182,6 @@ class AccountAPITestCase(APITestCase):
         ({"accepted_privacy_policy": None}),
         ({"accepted_privacy_policy": timezone.now() + timezone.timedelta(hours=2)}),
         ({"accepted_privacy_policy": timezone.now() - timezone.timedelta(hours=1)}),
-        ({"accept_paid_support": False}),
         ({"accept_domain_condition": False}),
     )
     def test_account_update_failure(self, data):
@@ -1329,6 +1325,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
         instance.privacy_policy_url = self.instance_config.privacy_policy_url
         instance.email = self.instance_config.public_contact_email
         instance.theme_config = self.instance_config.draft_theme_config
+        instance.successfully_provisioned = True
         instance.save()
 
         make_test_deployment(instance, appserver_states=[Status.Running], active=True)
@@ -1349,6 +1346,8 @@ class InstanceDeploymentAPITestCase(APITestCase):
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
+        instance.successfully_provisioned = True
+        instance.save()
         make_test_deployment(instance, active=True)
 
         url = reverse('api:v2:openedx-instance-deployment-detail', args=(self.instance_config.pk,), )
@@ -1433,13 +1432,34 @@ class InstanceDeploymentAPITestCase(APITestCase):
         return_value=(1, True)
     )
     @patch('registration.models.create_new_deployment')
-    def test_commit_changes_fail_running_appserver(self, mock_create_deployment, mock_consul):
+    def test_commit_changes_fail_first_appserver_unsuccessful(self, mock_create_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that committing changes fails when the first appserver is being provisioned.
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
 
+        make_test_deployment(instance, appserver_states=[Status.ConfigurationFailed])
+        response = self.client.post(
+            reverse('api:v2:openedx-instance-deployment-list'),
+            data={"id": self.instance_config.id}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("You must wait for a successful deployment before attempting another one.",
+                      response.content.decode('utf-8'))
+
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.models.create_new_deployment')
+    def test_commit_changes_fail_running_appserver(self, mock_create_deployment, mock_consul):
+        """
+        Test that committing changes fails when there are (non-first) appservers still being provisioned.
+        """
+        self.client.force_login(self.user_with_instance)
+        instance = self._setup_user_instance()
+        make_test_deployment(instance, appserver_states=[Status.Running])
         make_test_deployment(instance, appserver_states=[Status.ConfiguringServer])
         response = self.client.post(
             reverse('api:v2:openedx-instance-deployment-list'),
@@ -1473,7 +1493,7 @@ class InstanceDeploymentAPITestCase(APITestCase):
     )
     def test_commit_changes_email_validation_fail(self, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that committing changes fails when the email isn't verified
         """
         self._setup_user_instance()
         EmailAddress.objects.get(
@@ -1495,13 +1515,15 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.create_new_deployment')
     def test_commit_changes_success(self, mock_create_new_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that setting up instance works as expected
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
         self.assertEqual(instance.privacy_policy_url, '')
         self.assertEqual(instance.email, 'contact@example.com')
         self.assertRegex(instance.name, r'Test Instance \d+')
+        instance.successfully_provisioned = True
+        instance.save()
         response = self.client.post(
             reverse('api:v2:openedx-instance-deployment-list'),
             data={"id": self.instance_config.id}
@@ -1520,12 +1542,16 @@ class InstanceDeploymentAPITestCase(APITestCase):
     @patch('registration.models.create_new_deployment')
     def test_commit_changes_force_running_appserver(self, mock_create_new_deployment, mock_consul):
         """
-        Test that committing changes fails when a user is new.
+        Test that forcing changes allows deploying changes even if some other changes are pending
         """
         self.client.force_login(self.user_with_instance)
         instance = self._setup_user_instance()
+        instance.successfully_provisioned = True
+        instance.save()
         make_test_appserver(instance, status=Status.ConfiguringServer)
         url = reverse('api:v2:openedx-instance-deployment-list')
+        response = self.client.post(f"{url}", data={"id": self.instance_config.id})
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
         self.assertEqual(response.status_code, 200)
         mock_create_new_deployment.assert_called()
