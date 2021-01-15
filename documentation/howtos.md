@@ -153,9 +153,11 @@ python manage.py create_or_update_partner \
   --site-domain 'discovery.external.lms.domain' \
   --code 'partn_id' \
   --name 'Client Name' \
+  --lms_url 'https://lms.external.domain' \
   --courses-api-url 'https://external.lms.domain/api/courses/v1/' \
   --ecommerce-api-url 'https://ecommerce.external.lms.domain/api/v2/' \
   --organizations-api-url 'https://external.lms.domain/api/organizations/v0/' \
+  --programs_api_url 'https://discovery.external.lms.domain/api/v1' \
   --oidc-url-root 'https://external.lms.domain/oauth2' \
   --oidc-key '{discovery oauth client id}' \
   --oidc-secret '{discovery oauth client secret}'
