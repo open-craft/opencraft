@@ -778,12 +778,15 @@ NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 # The basic auth password needed to access the node exporter.
 NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default=None)
 
-# Thresholds for NRQL alert conditions (minutes)
-NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='16')
+# Threhold for NRQL alert condition
+NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD = env('NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD', default='1')
+
+# Duration for NRQL alert conditions (minutes)
+NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='11')
 
 # Signal Expiration for NRQL loss of signal alert conditions (seconds)
 # Default is set to `NEWRELIC_NRQL_ALERT_CONDITION_DURATION` default
-NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION = env('NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION', default='960')
+NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION = env('NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION', default='660')
 
 # Load balancing ##############################################################
 

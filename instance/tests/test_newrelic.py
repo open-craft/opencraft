@@ -222,8 +222,9 @@ class NewRelicTestCase(TestCase):
 
     @responses.activate
     @override_settings(
-        NEWRELIC_NRQL_ALERT_CONDITION_DURATION='11',
-        NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION='660'
+        NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD='2',
+        NEWRELIC_NRQL_ALERT_CONDITION_DURATION='16',
+        NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION='960',
     )
     def test_add_alert_nrql_condition(self):
         """
@@ -259,7 +260,7 @@ class NewRelicTestCase(TestCase):
                 'enabled': True,
                 'value_function': 'sum',
                 'terms': [{
-                    'duration': '11',
+                    'duration': '16',
                     'threshold': '2',
                     'operator': 'above',
                     'priority': 'critical',
@@ -274,7 +275,7 @@ class NewRelicTestCase(TestCase):
                     'fill_value': '0'
                 },
                 'expiration': {
-                    'expiration_duration': '660',
+                    'expiration_duration': '960',
                     'open_violation_on_expiration': False,
                     'close_violations_on_expiration': True,
                 }
