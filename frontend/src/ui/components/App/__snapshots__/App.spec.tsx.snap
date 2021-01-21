@@ -56,17 +56,61 @@ exports[`renders without crashing 1`] = `
     className="app-main row"
   />
   <footer
-    className="app-footer align-items-center row"
+    className="app-footer align-items-center py-4 row"
+    fluid="true"
   >
     <div
-      className="col-auto mr-auto copyright col"
+      className="text-center mx-2 my-2  col-lg-auto col-sm-12"
     >
-      OpenCraft 2013-2020
+      <a
+        className="footer-link"
+        href="https://opencraft.com"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        How we work
+      </a>
     </div>
     <div
-      className="col-auto trademarks col"
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
     >
-      EdX and Open edX are registered trademarks of edX Inc. All rights reserved.
+      <a
+        className="footer-link"
+        href="https://opencraft.com/help"
+      >
+        Support
+      </a>
+    </div>
+    <div
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
+    >
+      <a
+        className="footer-link"
+        href="/#"
+      >
+        Contact
+      </a>
+    </div>
+    <div
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
+    >
+      <a
+        className="footer-link"
+        href="/#"
+      >
+        Privacy
+      </a>
+    </div>
+    <div
+      className="copyright-trademarks text-center text-lg-right ml-auto mt-5 mt-lg-0 col-lg-auto col-sm-12"
+    >
+      © Opencraft 2013 - 2021
+      <span
+        className="mx-2"
+      >
+        |
+      </span>
+      edX and Open edX are registered trademarks of edX Inc.
     </div>
   </footer>
 </div>
