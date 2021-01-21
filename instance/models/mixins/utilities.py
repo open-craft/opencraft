@@ -311,13 +311,14 @@ def get_ansible_failure_log_entry(entries) -> Tuple[str, Dict[str, Any], List[st
     return task_name, log_entry, other_ansible_logs
 
 
-def send_periodic_deployment_success_email(recipients: List[str], instance_name: str) -> None:
+def send_periodic_deployment_success_email(recipients: List[str], instance) -> None:
     """
     Send notification email about successful periodic deployments.
 
     This email sending should be called, when the previous deployment failed, but the
     latest passed.
     """
+    instance_name = str(instance)
     logger.warning(
         "Sending acknowledgement e-mail to %s after instance %s didn provision",
         recipients,
@@ -325,7 +326,7 @@ def send_periodic_deployment_success_email(recipients: List[str], instance_name:
     )
 
     send_mail(
-        'Deployment back to normal at instance: {}'.format(instance_name),
+        '{} CI: Passed'.format(instance.name),
         'The deployment of a new appserver was successful. You can consider any failure notification '
         'related to {} as resolved. No further action needed.'.format(instance_name),
         settings.DEFAULT_FROM_EMAIL,
@@ -346,8 +347,8 @@ def send_urgent_deployment_failure_email(recipients: List[str], instance_name: s
 
     send_mail(
         'Deployment failed at instance: {}'.format(instance_name),
-        'The deployment of a new appserver failed and needs manual intervention. '
-        'You can find the logs in the web interface.',
+        'The deployment of a new appserver "{}" failed and needs manual intervention. '
+        'You can find the logs in the web interface.'.format(instance_name),
         settings.DEFAULT_FROM_EMAIL,
         recipients,
         fail_silently=False,
@@ -399,7 +400,7 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
     )
 
     email = EmailMultiAlternatives(
-        'Deployment failed at instance: {}'.format(instance_name),
+        '{} CI: Failed'.format(instance.name),
         'The periodic deployment of {edx_platform_release} failed. Please see the details below.\n\n'
         'Ansible task name:\t{ansible_task_name}\n'
         'Relevant log lines:\n{relevant_log_entry}\n\n'
@@ -524,5 +525,5 @@ def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
 
     send_periodic_deployment_success_email(
         periodic_build_failure_emails,
-        str(instance)
+        instance
     )
