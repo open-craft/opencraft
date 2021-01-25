@@ -286,7 +286,7 @@ class DisplayStaticContentPagesSerializer(DataSerializer):
     privacy = serializers.BooleanField()
 
     def to_representation(self, instance):
-        return instance.instance.get_mktg_url_link()
+        return instance.static_content_display
 
 
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):

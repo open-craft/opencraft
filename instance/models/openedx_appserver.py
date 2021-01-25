@@ -279,12 +279,20 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_storage_settings',
         'configuration_theme_settings',
         'configuration_secret_keys',
+        'configuration_marketing_links',
         # The extra settings should stay at the end of this list to allow manual overrides of all settings.
         'configuration_extra_settings',
     ]
 
     class Meta(AppServer.Meta):
         verbose_name = 'Open edX App Server'
+
+    @property
+    def configuration_marketing_links(self):
+        """
+        Get `EDXAPP_MKTG_URL_LINK_MAP` values.
+        """
+        return self.instance.marketing_links()
 
     def make_active(self, active=True):
         """

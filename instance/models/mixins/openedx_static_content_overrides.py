@@ -21,6 +21,7 @@ Instance app model mixins -  custom pages
 """
 
 # Imports #####################################################################
+import yaml
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -55,20 +56,13 @@ class OpenEdXStaticContentOverridesMixin(models.Model):
         help_text="Configure `MKTG_URL_LINK_MAP` to display/hide static pages",
     )
 
-    def get_mktg_url_link(self):
+    def marketing_links(self):
         """
-        Build MKTG_URL_LINK_MAP config.
-        Allow to display/hide static content pages
+        Prepare `EDXAPP_MKTG_URL_LINK_MAP`.
+
+        Support disabling of static pages on UI.
         """
-        mktg_url_link_map_config = {
-            "ABOUT": "about",
-            "CONTACT": "contact",
-            "DONATE": "donate",
-            "TOS": "tos",
-            "HONOR": "honor",
-            "PRIVACY": "privacy",
-        }
-        # It all pages were disabled - it will be empty dict, not None
-        if self.static_content_display is None:
-            return mktg_url_link_map_config
-        return self.static_content_display
+        result = {}
+        if self.static_content_display:
+            result = {key.upper(): value for key, value in self.static_content_display.items()}
+        return yaml.dump({"EDXAPP_MKTG_URL_LINK_MAP": result}, default_flow_style=False)
