@@ -5,29 +5,6 @@ exports[`NoticeBoard tests Renders all notification types without crashing 1`] =
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
@@ -1412,29 +1389,6 @@ exports[`NoticeBoard tests Renders message about non-existent instance if email 
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
   <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >

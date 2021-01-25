@@ -5,15 +5,6 @@ exports[`Console Page Correctly renders loading page 1`] = `
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <i
-        className="fas fa-sync-alt fa-spin"
-      />
-    </h1>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
@@ -284,29 +275,6 @@ exports[`Console Page Correctly renders page with data 1`] = `
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
@@ -568,29 +536,6 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
   <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >

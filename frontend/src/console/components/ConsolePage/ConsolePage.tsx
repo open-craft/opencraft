@@ -3,7 +3,6 @@ import { CustomizationSideMenu, RedeploymentToolbar } from 'console/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container } from 'react-bootstrap';
-import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -76,38 +75,6 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     }
   }
 
-  private renderHeader() {
-    if (this.props.loading || this.props.activeInstance.data === null) {
-      return (
-        <div className="title-container">
-          <h1>
-            <i className="fas fa-sync-alt fa-spin" />
-          </h1>
-        </div>
-      );
-    }
-
-    const instanceData = this.props.activeInstance.data;
-    const instanceLink = instanceData.lmsUrl;
-    const studioLink = instanceData.studioUrl;
-
-    return (
-      <div className="title-container">
-        <h1>
-          <a className="header-link" href={instanceLink}>
-            {instanceData.instanceName}
-            <i className="instance-link fas fa-link fa-xs" />
-          </a>
-        </h1>
-        <h2>
-          <a className="header-link" href={studioLink}>
-            <WrappedMessage messages={messages} id="editCourses" />
-          </a>
-        </h2>
-      </div>
-    );
-  }
-
   public render() {
     const content = () => {
       let innerContent = this.props.children;
@@ -166,8 +133,6 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
     return (
       <div className="console-page">
-        {this.renderHeader()}
-
         {!isEmailVerified ? (
           <EmailActivationAlertMessage />
         ) : (
