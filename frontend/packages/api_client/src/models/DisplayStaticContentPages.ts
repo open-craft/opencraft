@@ -54,7 +54,7 @@ export interface DisplayStaticContentPages {
      * @type {boolean}
      * @memberof DisplayStaticContentPages
      */
-    privacyPolicy: boolean;
+    privacy: boolean;
 }
 
 export function DisplayStaticContentPagesFromJSON(json: any): DisplayStaticContentPages {
@@ -72,7 +72,7 @@ export function DisplayStaticContentPagesFromJSONTyped(json: any, ignoreDiscrimi
         'donate': json['donate'],
         'tos': json['tos'],
         'honor': json['honor'],
-        'privacyPolicy': json['privacy_policy'],
+        'privacy': json['privacy'],
     };
 }
 
@@ -90,7 +90,7 @@ export function DisplayStaticContentPagesToJSON(value?: DisplayStaticContentPage
         'donate': value.donate,
         'tos': value.tos,
         'honor': value.honor,
-        'privacy_policy': value.privacyPolicy,
+        'privacy': value.privacy,
     };
 }
 
