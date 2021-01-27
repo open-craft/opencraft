@@ -5,7 +5,7 @@ import {
 
 interface StatusContext {
   tooltipText: string;
-  dotColor: string;
+  pillColor: string;
   deploymentStatusText: string;
 }
 
@@ -22,19 +22,19 @@ export function buildStatusContext(
   deploymentType?: string | null
 ): StatusContext {
   const result: StatusContext = {
-    dotColor: 'grey',
+    pillColor: 'grey',
     deploymentStatusText: 'unavailable',
     tooltipText: 'unavailableTooltip'
   };
 
   switch (redeploymentStatus) {
     case DeploymentStatus.Healthy:
-      result.dotColor = '#1abb64';
+      result.pillColor = '#00a556';
       result.deploymentStatusText = 'updatedDeployment';
       result.tooltipText = 'updatedDeploymentTooltip';
       break;
     case DeploymentStatus.Provisioning:
-      result.dotColor = '#ff9b04';
+      result.pillColor = '#ff9b04';
       // If there's a deployment provisioning, but it's the
       // first on (from registration), show preparing instance
       // message.
@@ -51,12 +51,12 @@ export function buildStatusContext(
       }
       break;
     case DeploymentStatus.Preparing:
-      result.dotColor = '#ff9b04';
+      result.pillColor = '#ff9b04';
       result.deploymentStatusText = 'preparingInstance';
       result.tooltipText = 'preparingInstanceTooltip';
       break;
     case DeploymentStatus.ChangesPending:
-      result.dotColor = '#1abb64';
+      result.pillColor = '#00a556';
       result.deploymentStatusText = 'pendingChanges';
       result.tooltipText = 'pendingChangesTooltip';
       break;

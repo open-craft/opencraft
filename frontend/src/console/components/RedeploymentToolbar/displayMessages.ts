@@ -1,8 +1,4 @@
 const messages = {
-  deploy: {
-    defaultMessage: 'Deploy ({undeployedChanges} updates)',
-    description: 'Deployment button text.'
-  },
   cancelDeploymentConfirm: {
     defaultMessage: 'Are you sure you want to cancel this redeployment?',
     description: ''
@@ -21,6 +17,16 @@ const messages = {
   confirmCancelDeployment: {
     defaultMessage: 'Cancel redeployment',
     description: ''
+  },
+  notificationBody: {
+    defaultMessage:
+      'Your updates are being published to your live site (LMS) ' +
+      'This can take 2 - 3 hours.',
+    description: 'Text for the toast notification on clicking Publish'
+  },
+  notificationHelp: {
+    defaultMessage: 'Close notification.',
+    description: 'Helper text for closing the toast notification'
   }
 };
 
