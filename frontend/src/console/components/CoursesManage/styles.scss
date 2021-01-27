@@ -1,0 +1,51 @@
+@import "~styles/theme";
+
+.numberCircle {
+
+    border-radius: 50%;
+    width: 1.6em;
+    height: 1.6em;
+    padding: 0.20em;
+    background: #1e4c59;
+    color: #666;
+    text-align: center;
+}
+
+.numberCircle p {
+    font-size: 0.8em;
+    font-family: $chivo-font, sans-serif;
+    color: white;
+}
+
+.stepRow {
+	margin-top: 1.4em;
+}
+
+#manage_button {
+    padding-top: 0.6em;
+    margin-left: -2em;
+    display: inline-block;
+    text-align: center;
+    font-size: 0.8em;
+    height: 36px;
+}
+
+#manage_button i {
+    font-size: 1em;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#manage_button p {
+    font-size: 0.9em;
+    color: white;
+    font-family: $chivo-font, sans-serif;
+}
+
+#manage_button div {
+    margin-top: 0px;
+}
+.support_link {
+    padding: 0em;
+}
