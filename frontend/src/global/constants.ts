@@ -64,7 +64,8 @@ export const ROUTES = {
     THEME_NAVIGATION: '/console/theming/navigation',
     THEME_FOOTER: '/console/theming/footer',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general',
-    HERO: '/console/theming/hero'
+    HERO: '/console/theming/hero',
+    COURSES: '/console/courses/manage'
   },
   Registration: {
     HOME: '/registration',

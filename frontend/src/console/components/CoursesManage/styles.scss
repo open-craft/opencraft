@@ -1,0 +1,51 @@
+@import "~styles/theme";
+
+.courses-page {
+    // Only put this because the page didn't pick up the right font family.
+    font-family: $chivo-font;
+
+    p {
+        margin-top: 20px;
+    }
+
+    .row {
+        margin-bottom: 5px;
+    }
+
+    .number-circle {
+        border-radius: 50%;
+        width: 1.6em;
+        height: 1.6em;
+        padding: 0.20em;
+        background: #1e4c59;
+        color: #666;
+        text-align: center;
+
+        p {
+            margin-top: 0;
+            font-size: 0.8em;
+            color: white;
+        }
+    }
+
+    .list-items {
+        margin-top: 1.4em;
+    }
+
+    h6 {
+        display: inline;
+        color: $secondary-2;
+
+        .support-link {
+            margin-left: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    }
+
+    button {
+        .fas {
+            padding-left: 10px;
+        }
+    }
+}

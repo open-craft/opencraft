@@ -17,6 +17,8 @@ export const CustomizationSideMenu: React.FC = () => {
     activeKey = 1;
   } else if (currentLocation.includes('settings')) {
     activeKey = 2;
+  } else if (currentLocation.includes('courses')) {
+    activeKey = 3;
   }
 
   const customPageLink = (pageName: string) => {
@@ -106,6 +108,22 @@ export const CustomizationSideMenu: React.FC = () => {
                 }}
               >
                 <WrappedMessage messages={messages} id="linkDomain" />
+              </NavLink>
+            </Nav>
+          </Card.Body>
+        </Accordion.Collapse>
+      </Card>
+      <Card>
+        <Card.Header>
+          <Accordion.Toggle as={Card.Header} variant="link" eventKey="3">
+            <WrappedMessage messages={messages} id="accordionCourses" />
+          </Accordion.Toggle>
+        </Card.Header>
+        <Accordion.Collapse eventKey="3">
+          <Card.Body>
+            <Nav className="flex-column">
+              <NavLink exact to={ROUTES.Console.COURSES}>
+                <WrappedMessage messages={messages} id="linkManageCourses" />
               </NavLink>
             </Nav>
           </Card.Body>
