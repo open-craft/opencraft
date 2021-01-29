@@ -5,6 +5,7 @@ export const NOTIFICATIONS_LIMIT = process.env.REACT_APP_NOTIFICATIONS_LIMIT
 export const OCIM_API_BASE =
   process.env.REACT_APP_OCIM_API_BASE || 'http://localhost:5000';
 
+export const SUPPORT_LINK = process.env.REACT_APP_SUPPORT_LINK || '/#';
 export const CONTACT_US_LINK = process.env.REACT_APP_CONTACT_US_LINK || '/#';
 export const CONTACT_US_EMAIL =
   process.env.REACT_APP_CONTACT_US_EMAIL || 'contact@opencraft.com';
