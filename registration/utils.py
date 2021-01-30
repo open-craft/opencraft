@@ -19,6 +19,8 @@
 """
 Utility functions related to registration.
 """
+import logging
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from simple_email_confirmation.models import EmailAddress
@@ -26,6 +28,11 @@ from simple_email_confirmation.models import EmailAddress
 from email_verification import send_email_verification
 from opencraft.utils import html_email_helper
 from registration.models import BetaTestApplication
+
+
+logger = logging.getLogger(__name__)
+
+# Functions #####################################################################
 
 
 def verify_user_emails(user: User, *email_addresses: str):
@@ -79,4 +86,30 @@ def send_account_info_email(application: BetaTestApplication) -> None:
         context=context,
         subject=settings.ACCOUNT_INFO_EMAIL_SUBJECT,
         recipient_list=(user.email,)
+    )
+
+
+def send_changes_deployed_success_email(application: BetaTestApplication) -> None:
+    """
+    Send an email to user after successful redeployment of the application.
+    """
+    instance_name = application.instance.name
+    user = application.user
+    context = dict(
+        see_update_url=f"{settings.USER_CONSOLE_FRONTEND_URL}/console/notice"
+    )
+
+    recipients = [user.email]
+
+    logger.warning(
+        "Sending notification e-mail to %s after instance %s was redeployed",
+        recipients,
+        instance_name,
+    )
+
+    html_email_helper(
+        template_base_name='emails/redeployment_success_email',
+        context=context,
+        subject='Open edX instance deployment: Success',
+        recipient_list=recipients
     )
