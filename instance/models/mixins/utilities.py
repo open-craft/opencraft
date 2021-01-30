@@ -40,6 +40,7 @@ from django.views.debug import ExceptionReporter
 
 from instance.models.deployment import Deployment, DeploymentType
 from instance.signals import appserver_spawned
+from registration.models import BetaTestApplication
 
 logger = logging.getLogger(__name__)
 
@@ -431,6 +432,18 @@ def send_periodic_deployment_failure_email(recipients: List[str], instance) -> N
 
     email.send()
 
+def send_changes_deployed_sucess_email(application: BetaTestApplication) -> None:
+    """
+    Send an email to user after successful redeployment of the application.
+    """
+    user = application.user
+    context = dict()
+    html_email_helper(
+        template_base_name='emails/redeployment_success_email',
+        context=context,
+        subject="Open edX instance deployment: Success",
+        recipient_list=(user.email,)
+    )
 
 @receiver(appserver_spawned)
 def send_urgent_alert_on_permanent_deployment_failure(sender, **kwargs) -> None:
@@ -527,3 +540,35 @@ def send_acknowledgement_email_on_deployment_success(sender, **kwargs) -> None:
         periodic_build_failure_emails,
         instance
     )
+
+@reciever(appserver_spawned)
+def send_acknowledgement_email_on_instance_provisioning(sender, **kwargs):
+    """
+    Send acknowledgement email for successful instance provisioning, except
+    for periodic builds.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+    deployment_id = kwargs['deployment_id']
+
+    if deployment_id is None or appserver is None:
+        return
+
+    deployment = Deployment.objects.get(pk=deployment_id)
+
+    if deployment.type != DeploymentType.user.name:
+        return
+
+    application = instance.betatestapplication_set.first()  # There should only be one
+    is_appserver_healthy = appserver.status.is_healthy_state
+
+    # Send email for only for registered client application where application status is
+    # accepted
+    if not application or application.status != BetaTestApplication.ACCEPTED:
+        return
+
+    # Send the emails for registered client applications only for healthy AppServer state
+    if not is_appserver_healthy:
+        return
+
+    send_changes_deployed_sucess_email(application)
