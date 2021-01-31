@@ -87,7 +87,13 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       );
     }
 
-    const instanceData = this.props.activeInstance.data;
+    // const instanceData = this.props.activeInstance.data;
+
+    const instanceData = {
+      lmsUrl: 'lmsurl',
+      studioUrl: 'studiourl',
+      instanceName: 'instanceName'
+    };
     const instanceLink = instanceData.lmsUrl;
     const studioLink = instanceData.studioUrl;
 
