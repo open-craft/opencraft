@@ -120,6 +120,12 @@ export interface OpenEdXInstanceConfig {
     draftStaticContentOverrides?: StaticContentOverrides;
     /**
      * 
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly staticPagesEnabled?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof OpenEdXInstanceConfig
      */
@@ -150,6 +156,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
+        'staticPagesEnabled': !exists(json, 'static_pages_enabled') ? undefined : json['static_pages_enabled'],
         'isEmailVerified': !exists(json, 'is_email_verified') ? undefined : json['is_email_verified'],
     };
 }

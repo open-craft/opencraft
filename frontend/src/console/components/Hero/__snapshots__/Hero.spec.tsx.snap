@@ -5,27 +5,6 @@ exports[`Hero customization page renders the hero customization page when instan
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >
     <i
@@ -277,27 +256,6 @@ exports[`Hero customization page renders the hero customization page when instan
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
   <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >
@@ -551,27 +509,6 @@ exports[`Hero customization page renders the hero customization page when the in
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >
     <i
@@ -824,27 +761,6 @@ exports[`Hero customization page renders the hero customization page when the in
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >
     <i
@@ -1096,15 +1012,6 @@ exports[`Hero customization page renders without crashing 1`] = `
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <i
-        className="fas fa-sync-alt fa-spin"
-      />
-    </h1>
-  </div>
   <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >

@@ -153,9 +153,11 @@ python manage.py create_or_update_partner \
   --site-domain 'discovery.external.lms.domain' \
   --code 'partn_id' \
   --name 'Client Name' \
+  --lms_url 'https://lms.external.domain' \
   --courses-api-url 'https://external.lms.domain/api/courses/v1/' \
   --ecommerce-api-url 'https://ecommerce.external.lms.domain/api/v2/' \
   --organizations-api-url 'https://external.lms.domain/api/organizations/v0/' \
+  --programs_api_url 'https://discovery.external.lms.domain/api/v1' \
   --oidc-url-root 'https://external.lms.domain/oauth2' \
   --oidc-key '{discovery oauth client id}' \
   --oidc-secret '{discovery oauth client secret}'
@@ -285,3 +287,32 @@ We also use the `juniper2` tag as a way to mark instances that have been updated
 The command will give you a summary of what it intends to do, and then prompt you for confirmation. It is recommended you add 
 the `--show-instances` argument to do a dry run and see the specific instances that will be upgraded. Any failures will be logged 
 and tagged for further examination.
+
+## Handling a failed initial provision
+
+If you have the misfortune of a provisioning task failing and leaving the `edxapp` database in a corrupted state,
+you may be able to fix it by shelling into the app server and running management commands directly. However, in some
+cases, a working app server isn't available, and the broken database prevents one from provisioning. This is most likely
+to happen during the first provisioning of an instance.
+
+To make handling this case easier, a management command `recreate_db` exists. It will drop the `edxapp` database of an
+instance and create it again. **This will result in all data within the database being lost,** which shouldn't be a
+problem if the instance has never successfully provisioned.
+
+The following arguments are available:
+
+|     Name    |  Required?  | Description |
+| ----------- | ----------- | ----------- |
+|**--domain**| Yes | The internal LMS domain of the target instance. For instance, `hardknox.opencraft.hosting`|
+|**--admin**| Yes | Your name, for logging purposes. |
+|**--reason**| Yes | The reason for recreating the DB, also for logging purposes. |
+|**--yes**| No | Don't prompt for confirmation. Useful if this is being called as part of a script or if you're a maniac. |
+
+Example invocation:
+
+```
+honcho run python3 manage.py recreate_db\
+   --domain=hardknox.opencraft.hosting \
+   --admin="Jim Bob" \
+   --reason="Milk spilled on database tables."
+```

@@ -221,7 +221,11 @@ class NewRelicTestCase(TestCase):
         self.assertEqual(request_body, None)
 
     @responses.activate
-    @override_settings(NEWRELIC_NRQL_ALERT_CONDITION_DURATION='11')
+    @override_settings(
+        NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD='2',
+        NEWRELIC_NRQL_ALERT_CONDITION_DURATION='16',
+        NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION='960',
+    )
     def test_add_alert_nrql_condition(self):
         """
         Check that the add_alert_nrql_condition function adds an alert condition for the given URL to
@@ -246,7 +250,7 @@ class NewRelicTestCase(TestCase):
         request_json = json.loads(responses.calls[0].request.body.decode())
         request_headers = responses.calls[0].request.headers
         self.assertEqual(request_headers['x-api-key'], 'admin-api-key')
-        query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'SUCCESS'".format(
+        query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'FAILED'".format(
             monitor_url
         )
         self.assertEqual(request_json, {
@@ -256,15 +260,24 @@ class NewRelicTestCase(TestCase):
                 'enabled': True,
                 'value_function': 'sum',
                 'terms': [{
-                    'duration': '11',
-                    'threshold': '1',
-                    'operator': 'below',
+                    'duration': '16',
+                    'threshold': '2',
+                    'operator': 'above',
                     'priority': 'critical',
                     'time_function': 'all',
                 }],
                 'nrql': {
                     'query': query,
                     'since_value': '3',
+                },
+                'signal': {
+                    'fill_option': 'static',
+                    'fill_value': '0'
+                },
+                'expiration': {
+                    'expiration_duration': '960',
+                    'open_violation_on_expiration': False,
+                    'close_violations_on_expiration': True,
                 }
             }
         })

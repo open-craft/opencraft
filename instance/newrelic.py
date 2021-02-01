@@ -175,7 +175,7 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
     """
     url = '{}/policies/{}.json'.format(ALERTS_NRQL_CONDITIONS_API_URL, policy_id)
     logger.info('POST %s', url)
-    query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'SUCCESS'".format(monitor_url)
+    query = "SELECT count(*) FROM SyntheticCheck WHERE monitorName = '{}' AND result = 'FAILED'".format(monitor_url)
     r = requests.post(
         url,
         headers=_request_headers(),
@@ -187,14 +187,23 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                 'value_function': 'sum',
                 'terms': [{
                     'duration': settings.NEWRELIC_NRQL_ALERT_CONDITION_DURATION,
-                    'threshold': '1',
-                    'operator': 'below',
+                    'threshold': settings.NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD,
+                    'operator': 'above',
                     'priority': 'critical',
                     'time_function': 'all',
                 }],
                 'nrql': {
                     'query': query,
                     'since_value': '3',
+                },
+                'signal': {
+                    'fill_option': 'static',
+                    'fill_value': '0'
+                },
+                'expiration': {
+                    'expiration_duration': settings.NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION,
+                    'open_violation_on_expiration': False,
+                    'close_violations_on_expiration': True,
                 }
             }
         }

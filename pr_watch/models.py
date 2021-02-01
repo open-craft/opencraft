@@ -24,6 +24,7 @@ PR Watcher app models
 
 import logging
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 
@@ -71,6 +72,37 @@ class WatchedFork(models.Model):
         max_length=200,
         db_index=True,
         help_text='Github fork name that will be watched for PRs. E.g.: open-craft/edx-platform'
+    )
+    ansible_appserver_repo_url = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=('The repository to pull the default Ansible playbook from.')
+    )
+    ansible_appserver_playbook = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=('The path to the common appserver playbook to run on all appservers.')
+    )
+    # pylint: disable=invalid-name
+    ansible_appserver_requirements_path = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=('The path to the requirements file for the common appserver playbook.')
+    )
+    ansible_appserver_version = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text=('The version of the Ansible playbook repository to checkout.')
+    )
+    openstack_server_base_image = JSONField(
+        null=True,
+        blank=True,
+        help_text='JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"}'
+                  ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
     )
     # This is equivalent to the DEFAULT_CONFIGURATION_REPO_URL .env variable
     configuration_source_repo_url = models.URLField(
@@ -331,6 +363,36 @@ class WatchedPullRequest(models.Model):
                 pass
         # Configuration repo and version and edx release follow this precedence:
         # 1) PR settings. 2) WatchedFork settings. 3) instance model defaults
+        instance.ansible_appserver_repo_url = pr.get_extra_setting(
+            'ansible_appserver_repo_url', default=(
+                (self.watched_fork and self.watched_fork.ansible_appserver_repo_url) or
+                instance.ansible_appserver_repo_url
+            )
+        )
+        instance.ansible_appserver_playbook = pr.get_extra_setting(
+            'ansible_appserver_playbook', default=(
+                (self.watched_fork and self.watched_fork.ansible_appserver_playbook) or
+                instance.ansible_appserver_playbook
+            )
+        )
+        instance.ansible_appserver_requirements_path = pr.get_extra_setting(
+            'ansible_appserver_requirements_path', default=(
+                (self.watched_fork and self.watched_fork.ansible_appserver_requirements_path) or
+                instance.ansible_appserver_requirements_path
+            )
+        )
+        instance.ansible_appserver_version = pr.get_extra_setting(
+            'ansible_appserver_version', default=(
+                (self.watched_fork and self.watched_fork.ansible_appserver_version) or
+                instance.ansible_appserver_version
+            )
+        )
+        instance.openstack_server_base_image = pr.get_extra_setting(
+            'openstack_server_base_image', default=(
+                (self.watched_fork and self.watched_fork.openstack_server_base_image) or
+                instance.openstack_server_base_image
+            )
+        )
         instance.configuration_source_repo_url = pr.get_extra_setting(
             'edx_ansible_source_repo',
             default=(

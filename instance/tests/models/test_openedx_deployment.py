@@ -24,12 +24,17 @@ from django.test import TestCase
 
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.openedx_deployment import DeploymentState
-from instance.tests.models.factories.openedx_appserver import make_test_deployment
+from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 
 STATUS_SCENARIOS = (
     {
         'server_statuses': [],
+        'appserver_count': 1,
+        'status': DeploymentState.preparing,
+    },
+    {
+        'server_statuses': [AppServerStatus.ConfiguringServer],
         'appserver_count': 1,
         'status': DeploymentState.preparing,
     },
@@ -43,6 +48,7 @@ STATUS_SCENARIOS = (
         'server_statuses': [AppServerStatus.ConfiguringServer],
         'appserver_count': 1,
         'status': DeploymentState.provisioning,
+        'additional_deployment': True,
     },
     {
         'server_statuses': [AppServerStatus.Running],
@@ -75,9 +81,10 @@ class TestOpenEdXDeployment(TestCase):
         app servers.
         """
         instance = OpenEdXInstanceFactory()
-        deployment = make_test_deployment(instance, appserver_states=server_statuses)
         if additional_deployment:
-            make_test_deployment(instance)
+            deployment = make_test_deployment(instance)
+            make_test_appserver(deployment=deployment, instance=instance)
+        deployment = make_test_deployment(instance, appserver_states=server_statuses)
         deployment.instance.instance.openedx_appserver_count = appserver_count
         deployment.instance.instance.save()
         self.assertEqual(deployment.status(), status)

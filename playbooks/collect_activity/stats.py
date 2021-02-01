@@ -1,4 +1,4 @@
-#!/edx/bin/python.edxapp
+#!/edx/app/edxapp/venvs/edxapp/bin/python
 # pylint: skip-file
 
 from __future__ import print_function

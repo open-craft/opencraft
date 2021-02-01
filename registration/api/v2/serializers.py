@@ -189,14 +189,6 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("You must accept these terms to register.")
         return value
 
-    def validate_accept_paid_support(self, value):
-        """
-        Ensure that no account exists that hasn't accepted the support terms.
-        """
-        if not value:
-            raise ValidationError("You must accept these terms to register.")
-        return value
-
     class Meta:
         model = UserProfile
         fields = (
@@ -205,13 +197,11 @@ class AccountSerializer(serializers.ModelSerializer):
             "password",
             "email",
             "accepted_privacy_policy",
-            "accept_paid_support",
             "accept_domain_condition",
             "subscribe_to_updates",
         )
         extra_kwargs = {
             "accepted_privacy_policy": {"required": True},
-            "accept_paid_support": {"required": True},
             "accept_domain_condition": {"required": True},
         }
 
@@ -276,6 +266,29 @@ class StaticContentOverridesSerializer(serializers.Serializer):
             self.fields[key] = field_type
 
 
+class ToggleStaticContentPagesSerializer(serializers.Serializer):
+    """
+    Serializer to enable/disable specific static page
+    """
+    page_name = serializers.CharField()
+    enabled = serializers.BooleanField()
+
+
+class DisplayStaticContentPagesSerializer(DataSerializer):
+    """
+    Serializer with configuration values for MKTG_URL_LINK_MAP
+    """
+    about = serializers.BooleanField()
+    contact = serializers.BooleanField()
+    donate = serializers.BooleanField()
+    tos = serializers.BooleanField()
+    honor = serializers.BooleanField()
+    privacy = serializers.BooleanField()
+
+    def to_representation(self, instance):
+        return instance.instance.get_mktg_url_link()
+
+
 class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     """
     Serializer with configuration details about the user's Open edX instance.
@@ -289,12 +302,25 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     draft_theme_config = ThemeSchemaSerializer(read_only=True)
     draft_static_content_overrides = StaticContentOverridesSerializer(read_only=True)
 
+    static_pages_enabled = serializers.SerializerMethodField()
+
     # LMS and Studio URLs (if the instance is provisioned)
     lms_url = serializers.SerializerMethodField()
     studio_url = serializers.SerializerMethodField()
 
     public_contact_email = serializers.EmailField(required=False)
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
+
+    def get_static_pages_enabled(self, obj):
+        """
+        Returns config with enabled static pages.
+
+        default - all pages enabled
+        """
+        config = obj.configuration_display_static_pages
+        if not config:
+            return obj.default_configuration_display_static_pages()
+        return config
 
     def get_lms_url(self, obj):
         """
@@ -365,6 +391,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "favicon",
             "hero_cover_image",
             "draft_static_content_overrides",
+            "static_pages_enabled",
             "is_email_verified"
         )
         read_only_fields = [

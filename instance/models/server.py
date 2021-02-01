@@ -144,7 +144,7 @@ class Server(ValidateModelMixin, TimeStampedModel):
     """
     A single server VM
     """
-    name_prefix = models.SlugField(max_length=20, blank=False)
+    name_prefix = models.SlugField(max_length=30, blank=False)
 
     Status = Status
     status = ModelResourceStateDescriptor(

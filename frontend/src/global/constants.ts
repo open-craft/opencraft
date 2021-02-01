@@ -14,6 +14,8 @@ export const TOS_LINK = process.env.REACT_APP_TOS_LINK || '/#';
 export const PRIVACY_POLICY_LINK =
   process.env.REACT_APP_PRIVACY_POLICY_LINK || '/#';
 export const FAQ_PAGE_LINK = process.env.REACT_APP_FAQ_PAGE_LINK || '/#';
+export const OPENCRAFT_WEBSITE_LINK =
+  process.env.REACT_APP_OPENCRAFT_WEBSITE_LINK || 'https://opencraft.com';
 
 export const INTERNAL_DOMAIN_NAME =
   process.env.REACT_APP_INTERNAL_DOMAIN_NAME || '.opencraft.hosting';
@@ -99,7 +101,7 @@ export const AVAILABLE_CUSTOM_PAGES = [
 
 export const LMS_CUSTOM_PAGE_LINK_MAP: StringIndexedArray = {
   about: 'about',
-  contact: 'support/contact_us',
+  contact: 'contact',
   donate: 'donate',
   tos: 'tos',
   honor: 'honor',

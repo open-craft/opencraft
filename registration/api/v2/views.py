@@ -65,6 +65,8 @@ from registration.api.v2.serializers import (
     OpenEdXInstanceConfigUpdateSerializer, OpenEdXInstanceDeploymentCreateSerializer,
     OpenEdXInstanceDeploymentNotificationSerializer, OpenEdXInstanceDeploymentStatusSerializer,
     StaticContentOverridesSerializer, ThemeSchemaSerializer,
+    ToggleStaticContentPagesSerializer,
+    DisplayStaticContentPagesSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -516,6 +518,31 @@ class OpenEdXInstanceConfigViewSet(
 
             return Response(status=status.HTTP_200_OK, data=application.draft_static_content_overrides)
 
+    @swagger_auto_schema(
+        request_body=ToggleStaticContentPagesSerializer,
+        responses={**VALIDATION_RESPONSE, 200: DisplayStaticContentPagesSerializer},
+    )
+    @action(detail=True, methods=["post"])
+    def toggle_static_content_page(self, request, pk=None):
+        """
+        Enable/Disable static page.
+        """
+        application = BetaTestApplication.objects.get(id=pk)
+        serializer = ToggleStaticContentPagesSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        page_name = serializer.data['page_name']
+        if not application.configuration_display_static_pages:
+            application.configuration_display_static_pages = {}
+
+        application.configuration_display_static_pages[page_name] = serializer.data['enabled']
+        application.save()
+        return Response(
+            status=status.HTTP_200_OK,
+            data=application.configuration_display_static_pages
+        )
+
     def list(self, request, *args, **kwargs):
         """
         Endpoint for getting the list of instances owned by the current user.
@@ -668,6 +695,13 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
             raise ValidationError(
                 "Updated public email needs to be confirmed.", code="email-unverified"
             )
+
+        if not instance.successfully_provisioned:
+            raise ValidationError(
+                'You must wait for a successful deployment before attempting another one.',
+                code='no-successful-deployment',
+            )
+
         return instance_config
 
     def list(self, request, *args, **kwargs):
@@ -689,7 +723,10 @@ class OpenEdxInstanceDeploymentViewSet(GenericViewSet):
         deployed_changes = None
         deployment_type = None
 
-        if not instance or not instance.get_latest_deployment():
+        if (not instance or
+                not instance.get_latest_deployment() or
+                not instance.successfully_provisioned):
+            # Set to preparing if no existing deployments or provisioned appservers found
             deployment_status = DeploymentState.preparing
         else:
             deployment = instance.get_latest_deployment()

@@ -21,6 +21,7 @@ OpenEdXInstance model - Tests
 """
 
 # Imports #####################################################################
+import json
 import re
 from datetime import datetime, timedelta
 from unittest.mock import patch, Mock, PropertyMock
@@ -42,6 +43,7 @@ from instance.gandi import GandiV5API
 from instance.models.appserver import Status as AppServerStatus
 from instance.models.deployment import DeploymentType
 from instance.models.instance import InstanceReference
+from instance.models.mixins.utilities import SensitiveDataFilter
 from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
@@ -49,6 +51,7 @@ from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfigur
 from instance.models.server import OpenStackServer, Server, Status as ServerStatus
 from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
+from instance.tests.models.factories.database_server import MySQLServerFactory
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services, skip_unless_consul_running
@@ -294,6 +297,7 @@ class OpenEdXInstanceTestCase(TestCase):
         appserver = instance.appserver_set.get(pk=appserver_id)
         configuration_vars = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_RABBITMQ'], False)
+        self.assertIs(configuration_vars['SANDBOX_ENABLE_REDIS'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_DISCOVERY'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_ECOMMERCE'], False)
         self.assertIs(configuration_vars['SANDBOX_ENABLE_ANALYTICS_API'], False)
@@ -513,8 +517,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(outbox.to, failure_emails)
         self.assertEqual(
             outbox.body,
-            'The deployment of a new appserver failed and needs manual intervention. '
-            'You can find the logs in the web interface.',
+            f'The deployment of a new appserver "{str(instance)}" failed and needs manual intervention. '
+            f'You can find the logs in the web interface.',
         )
         self.assertLogs(
             "instance.models.mixins.utilities",
@@ -590,19 +594,94 @@ class OpenEdXInstanceTestCase(TestCase):
         )
         instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
 
-        outbox = django_mail.outbox[0]
+        outbox = django_mail.outbox[0] # Given these deployment types, at least one email should be sended
+        appserver = instance.appserver_set.first()
+
+        combined_settings = yaml.load(appserver.configuration_settings, Loader=yaml.FullLoader)
+        with SensitiveDataFilter(combined_settings) as filtered_data:
+            filtered_configuration = json.dumps(filtered_data)
+
         self.assertEqual(len(django_mail.outbox), 1)
-        self.assertEqual(outbox.subject, f'Deployment failed at instance: {str(instance)}')
+        self.assertEqual(outbox.subject, f'{instance.name} CI: Failed')
         self.assertEqual(outbox.to, failure_emails)
+        self.assertEqual(len(outbox.attachments), 2)
+        self.assertEqual(outbox.attachments[0], ('build_log.json', '[]', 'application/json'))
+        self.assertEqual(outbox.attachments[1], ('configuration.json', filtered_configuration, 'application/json'))
         self.assertEqual(
             outbox.body,
-            'The periodic deployment of {} failed. '
-            'You can find the logs in the web interface.'.format(instance.openedx_release),
+            'The periodic deployment of {edx_platform_release} failed. Please see the details below.\n\n'
+            'Ansible task name:\t{ansible_task_name}\n'
+            'Relevant log lines:\n{relevant_log_entry}\n\n'
+            'AppServer ID:\t{appserver_id}\n'
+            'Latest successful provision date: N/A\n'
+            'Configuration source repo:\t{configuration_source_repo_url}\n'
+            'Configuration version:\t{configuration_version}\n'
+            'OpenEdX platform source repo:\t{edx_platform_repository_url}\n'
+            'OpenEdX platform release:\t{edx_platform_release}\n'
+            'OpenEdX platform commit:\t{edx_platform_commit}'.format(
+                appserver_id=appserver.id,
+                configuration_source_repo_url=appserver.configuration_source_repo_url,
+                configuration_version=appserver.configuration_version,
+                edx_platform_commit=appserver.edx_platform_commit,
+                edx_platform_release=appserver.openedx_release,
+                edx_platform_repository_url=appserver.edx_platform_repository_url,
+                # Since we cannot mock logging at that place, we cannot mimic ansible failure
+                ansible_task_name="",
+                relevant_log_entry=dict(),
+            )
         )
         self.assertLogs(
             "instance.models.mixins.utilities",
             "Sending notification e-mail to {recipients} after instance {instance_name} didn't provision.".format(
                 recipients=instance.periodic_build_failure_notification_emails,
+                instance_name=instance.name
+            )
+        )
+
+    @patch_services
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    def test_spawn_appserver_again_successful_if_periodic(self, mocks, mock_provision, mock_consul):
+        """
+        Test what happens when spawning an AppServer fails repeatedly (5 out of 5 attempts), then
+        the next deployment is successful.
+        """
+        mock_provision.side_effect = True
+        failure_emails = ['provisionfailed@localhost']
+
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        instance.periodic_builds_enabled = True
+        instance.periodic_build_failure_notification_emails = failure_emails  # noqa pylint: disable=invalid-name
+
+        # Create the deployment, setting the deployment type
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=DeploymentType.periodic,
+        )
+
+        # Fail the appserver
+        instance.spawn_appserver(deployment_id=deployment.pk)
+        appserver = instance.appserver_set.first()
+        appserver._status_to_waiting_for_server()
+        appserver._status_to_error()
+        appserver.save()
+
+        # Provision a new appserver
+        instance.spawn_appserver(deployment_id=deployment.pk)
+
+        # Given these deployment types, at least one email should be sended
+        outbox = django_mail.outbox[0]
+        self.assertEqual(len(django_mail.outbox), 1)
+        self.assertEqual(outbox.subject, f'{instance.name} CI: Passed')
+        self.assertEqual(outbox.to, failure_emails)
+        self.assertEqual(
+            outbox.body,
+            'The deployment of a new appserver was successful. You can consider any failure notification '
+            'related to {} as resolved. No further action needed.'.format(str(instance))
+        )
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Sending urgent alert e-mail to {recipients} after instance {instance_name} didn't provision.".format(
+                recipients=instance.provisioning_failure_notification_emails,
                 instance_name=instance.name
             )
         )
@@ -1219,6 +1298,28 @@ class OpenEdXInstanceTestCase(TestCase):
         msg = r"Use archive\(\) to shut down all of an instances app servers and remove it from the instance list."
         with self.assertRaisesRegex(AttributeError, msg):
             instance.shut_down()
+
+    @patch('instance.models.database_server.MySQLServer.get_admin_cursor')
+    def test_drop_db(self, mock_cursor_context, _mock_consul):
+        """
+        Test that the correct command is generated by drop_db
+        """
+
+        mock_cursor = mock_cursor_context.return_value.__enter__.return_value
+        instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='drop_test')
+        instance.drop_db('edxapp')
+        mock_cursor.execute.assert_called_with('DROP DATABASE drop_test_example_com_edxapp')
+
+    @patch('instance.models.database_server.MySQLServer.get_admin_cursor')
+    def test_create_db(self, mock_cursor_context, _mock_consul):
+        """
+        Test that the correct command is generated by create_db
+        """
+
+        mock_cursor = mock_cursor_context.return_value.__enter__.return_value
+        instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='create_test')
+        instance.create_db('edxapp')
+        mock_cursor.execute.assert_called_with('CREATE DATABASE create_test_example_com_edxapp')
 
 
 @skip_unless_consul_running()
