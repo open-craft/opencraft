@@ -459,13 +459,11 @@ class S3BucketInstanceMixin(models.Model):
         response = self.s3.list_object_versions(Bucket=self.s3_bucket_name)
         return response.get('Versions', []) + response.get('DeleteMarkers', [])
 
-    def deprovision_s3(self):
+    def _delete_s3_bucket(self):
         """
-        Deprovision S3 by deleting S3 bucket and IAM user
+        Deletes the S3 bucket.
         """
-        self.logger.info('Deprovisioning S3 started.')
-        if (not self.storage_type == self.S3_STORAGE or
-                not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name)):
+        if not self.s3_bucket_name:
             return
 
         try:
@@ -481,26 +479,86 @@ class S3BucketInstanceMixin(models.Model):
             # Remove bucket
             self.s3.delete_bucket(Bucket=self.s3_bucket_name)
         except ClientError as e:
-            if e.response['Error']['Code'] != '404':
-                self.logger.exception(
-                    'There was an error trying to remove S3 bucket "%s".',
-                    self.s3_bucket_name
-                )
+            if e.response.get('Error', {}).get('Code') == 'NoSuchBucket':
+                self.logger.info('Could not delete S3 bucket; bucket not found')
+            else:
+                raise
+
+    def _delete_s3_access_key(self):
+        """
+        Deletes the S3 access key
+        """
+        if not self.s3_access_key:
+            return
+
+        try:
+            self.iam.delete_access_key(UserName=self.iam_username, AccessKeyId=self.s3_access_key)
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == 'NoSuchEntity':
+                self.logger.info('Could not delete S3 access key; access key not found')
+            else:
+                raise
+
+    def _delete_s3_user_policy(self):
+        """
+        Deletes the S3 IAM user policy
+        """
+        try:
+            self.iam.delete_user_policy(UserName=self.iam_username, PolicyName=USER_POLICY_NAME)
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == 'NoSuchEntity':
+                self.logger.info('Could not delete S3 user policy; user policy not found')
+            else:
+                raise
+
+    def _delete_s3_user(self):
+        """
+        Deletes the S3 IAM user
+        """
+        try:
+            self.iam.delete_user(UserName=self.iam_username)
+        except ClientError as e:
+            if e.response.get('Error', {}).get('Code') == 'NoSuchEntity':
+                self.logger.info('Could not delete S3 user; user not found')
+            else:
+                raise
+
+    def deprovision_s3(self):
+        """
+        Deprovision S3 by deleting S3 bucket and IAM user
+        """
+        self.logger.info('Deprovisioning S3 started.')
+        if (not self.storage_type == self.S3_STORAGE or
+                not (self.s3_access_key or self.s3_secret_access_key or self.s3_bucket_name)):
+            self.logger.info('Deprovisioning S3 finished (nothing to do).')
+            return
+
+        try:
+            self._delete_s3_bucket()
+        except Exception:
+            self.logger.exception(
+                'There was an error trying to remove S3 bucket "%s".',
+                self.s3_bucket_name
+            )
+            raise
         else:
             self.s3_bucket_name = ""
             self.save()
 
         try:
             # Access keys and policies need to be deleted before removing the user
-            self.iam.delete_access_key(UserName=self.iam_username, AccessKeyId=self.s3_access_key)
-            self.iam.delete_user_policy(UserName=self.iam_username, PolicyName=USER_POLICY_NAME)
-            self.iam.delete_user(UserName=self.iam_username)
-            self.s3_access_key = ""
-            self.s3_secret_access_key = ""
-            self.save()
-        except ClientError:
+            self._delete_s3_access_key()
+            self._delete_s3_user_policy()
+            self._delete_s3_user()
+        except Exception:
             self.logger.exception(
                 'There was an error trying to remove IAM user "%s".',
                 self.iam_username
             )
+            raise
+        else:
+            self.s3_access_key = ""
+            self.s3_secret_access_key = ""
+            self.save()
+
         self.logger.info('Deprovisioning S3 finished.')
