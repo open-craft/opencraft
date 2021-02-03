@@ -40,7 +40,7 @@ from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.utils import ValidateModelMixin
 from instance.schemas.static_content_overrides import static_content_overrides_schema_validate
 from instance.schemas.theming import theme_schema_validate
-from instance.utils import create_new_deployment
+from instance.utils import create_new_deployment, DjangoChoiceEnum
 
 logger = logging.getLogger(__name__)
 
@@ -186,6 +186,16 @@ def validate_logo_height(image):
         raise ValidationError("The logo image must be 48px tall to fit into the header.")
 
 
+class DNSConfigState(DjangoChoiceEnum):
+    """
+    Enumeration for states of DNS Config Verification
+    """
+    verified = 'External domain DNS configured'
+    pending = 'External domain config verification pending'
+    failed = 'External domain DNS not configured'
+    not_required = 'No external domain set'
+
+
 class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
     """
     An application to beta test the Instance Manager.
@@ -262,6 +272,12 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             'blacklisted': 'This domain name is not publicly available.',
             'reserved': 'Cannot register domain with this subdomain.',
         },
+    )
+    dns_configuration_state = models.CharField(
+        max_length=15,
+        choices=DNSConfigState.choices(),
+        default=DNSConfigState.not_required,
+        help_text=('State of DNS config verfication for external_domain')
     )
     instance_name = models.CharField(
         max_length=255,

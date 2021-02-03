@@ -45,7 +45,7 @@ from instance.tests.models.factories.openedx_appserver import make_test_appserve
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
 from instance.tests.utils import patch_services
 from instance.utils import build_instance_config_diff
-from registration.models import BetaTestApplication
+from registration.models import BetaTestApplication, DNSConfigState
 from userprofile.models import UserProfile
 
 from .utils import create_image
@@ -611,9 +611,10 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(response, {"subdomain": ["The domain cannot be validated."]})
         mock_gandi_api.filter_dns_records.assert_called_once_with("un.known")
 
+    @patch('registration.api.v2.serializers.verify_external_domain_configuration.schedule')
     @patch('registration.models.validate_available_external_domain')
     @patch('registration.api.v2.serializers.validate_available_external_domain')
-    def test_update_external_domain(self, mock_validate, mock_model_validate):
+    def test_update_external_domain(self, mock_validate, mock_model_validate, mock_dns_config_task):
         """
         Test that the update of instance without changing external domain is not
         triggering domain validation.
@@ -635,6 +636,12 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(validation_response.status_code, 200)
         self.assertTrue(mock_validate.called)
         self.assertTrue(mock_model_validate.called)
+        mock_dns_config_task.assert_called_once_with(
+            args=(self.instance_config.pk,),
+            delay=60
+        )
+        application = BetaTestApplication.objects.get(pk=self.instance_config.pk)
+        self.assertEqual(application.dns_configuration_state, DNSConfigState.pending.name)
 
     @patch('registration.models.validate_available_subdomain')
     @patch('registration.api.v2.serializers.validate_available_subdomain')
