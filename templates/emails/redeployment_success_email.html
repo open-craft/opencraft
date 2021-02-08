@@ -1,0 +1,20 @@
+{% extends "emails/email_base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>Your instance has been updated and ready to go!</h1>
+    <p>
+        The changes you have made earlier have been implemented and your
+        site has a new look.
+    </p>
+    <a class="verify-link" href="{{ see_update_url }}">
+        See Update
+    </a>
+    <p>
+        Happy teaching!
+    </p>
+    <div class="signature">
+        <img src="{{ base_url }}{% static 'img/png/signature.png' %}" alt="Signature">
+    </div>
+    
+{% endblock %}

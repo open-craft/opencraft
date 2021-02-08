@@ -25,7 +25,11 @@ from django_rest_passwordreset.models import ResetPasswordToken
 from django_rest_passwordreset.signals import reset_password_token_created
 from django_rest_passwordreset.views import ResetPasswordRequestToken
 
+from instance.models.deployment import Deployment, DeploymentType
+from instance.signals import appserver_spawned
 from opencraft.utils import html_email_helper
+from registration.models import BetaTestApplication
+from registration.utils import send_changes_deployed_success_email
 
 
 # noinspection PyUnusedLocal
@@ -54,3 +58,42 @@ def password_reset_token_created(
         subject=settings.RESET_PASSWORD_EMAIL_SUBJECT,
         recipient_list=(reset_password_token.user.email,)
     )
+
+
+@receiver(appserver_spawned)
+def send_acknowledgement_email_on_instance_provisioning(sender, **kwargs):
+    """
+    Send acknowledgement email for successful instance provisioning, except
+    for periodic builds.
+    """
+    instance = kwargs['instance']
+    appserver = kwargs['appserver']
+    deployment_id = kwargs['deployment_id']
+
+    if deployment_id is None or appserver is None:
+        return
+
+    deployment = Deployment.objects.get(pk=deployment_id)
+
+    # Send emails for only user triggered emails
+    # The deployments triggered on DeploymentType.registration are
+    # handled and send welcome email to user on success
+    if deployment.type != DeploymentType.user.name:
+        return
+
+    # The instance should be associate with at most one BetTestApplication
+    # by design, thus we can selected the first record.
+    application = instance.betatestapplication_set.first()
+    is_appserver_healthy = appserver.status.is_healthy_state
+
+    # Send email only for registered client application where application status is
+    # accepted. Applications with pending status will go through the approval signal
+    # and send welcome email.
+    if not application or application.status != BetaTestApplication.ACCEPTED:
+        return
+
+    # Send the emails for registered client applications only for healthy AppServer state
+    if not is_appserver_healthy:
+        return
+
+    send_changes_deployed_success_email(application)

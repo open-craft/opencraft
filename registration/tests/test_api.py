@@ -26,6 +26,7 @@ from unittest.mock import patch
 import ddt
 import yaml
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
@@ -37,12 +38,15 @@ from simple_email_confirmation.models import EmailAddress
 from instance.factories import instance_factory
 from instance.models.appserver import Status
 from instance.models.deployment import DeploymentType
+from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.schemas.theming import DEFAULT_THEME
 from instance.tests.base import create_user_and_profile
 from instance.tests.models.factories.openedx_appserver import make_test_appserver, make_test_deployment
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.utils import patch_services
 from instance.utils import build_instance_config_diff
 from registration.models import BetaTestApplication
+from userprofile.models import UserProfile
 
 from .utils import create_image
 
@@ -1555,6 +1559,65 @@ class InstanceDeploymentAPITestCase(APITestCase):
         response = self.client.post(f"{url}?force=true", data={"id": self.instance_config.id})
         self.assertEqual(response.status_code, 200)
         mock_create_new_deployment.assert_called()
+
+    @patch_services
+    @patch(
+        'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @patch('registration.utils.html_email_helper')
+    @patch('instance.models.openedx_appserver.OpenEdXAppServer.provision')
+    def test_send_email_on_application_redeployment(
+            self,
+            mocks,
+            mock_provision,
+            email_helper_mock,
+            mock_consul
+    ):
+        """
+        Test email is send on successful deployment.
+        """
+        # Create a user, BetaTestApplication, instance and deployment to mimic the
+        # deployment done on BetaTestApplication.commit_changes_to_instance after
+        # user redeploys his changes.
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        UserProfile.objects.create(
+            user=user,
+            full_name='test name',
+        )
+        instance = OpenEdXInstanceFactory(sub_domain='test.spawn')
+        # Create application with BetaTestApplication.ACCEPTED status
+        BetaTestApplication.objects.create(
+            user=user,
+            subdomain='test',
+            instance=instance,
+            instance_name='Test instance',
+            project_description='Test instance creation.',
+            public_contact_email=user.email,
+            status=BetaTestApplication.ACCEPTED
+        )
+        # Create the deployment, setting the deployment type to user DeploymentType.user
+        deployment = OpenEdXDeployment.objects.create(
+            instance_id=instance.ref.id,
+            type=DeploymentType.user,
+        )
+        # Provision a new appserver
+        instance.spawn_appserver(deployment_id=deployment.pk)
+
+        # Check that the html_email_helper is called with proper arguments
+        email_helper_mock.assert_called_once_with(
+            context={'see_update_url': f"{settings.USER_CONSOLE_FRONTEND_URL}/console/notice"},
+            recipient_list=[user.email],
+            subject='Open edX instance deployment: Success',
+            template_base_name='emails/redeployment_success_email'
+        )
+        self.assertLogs(
+            "instance.models.mixins.utilities",
+            "Sending notification e-mail to {} after instance {} was redeployed".format(
+                user.email,
+                instance.name
+            )
+        )
 
 
 class NotificationAPITestCase(APITestCase):
