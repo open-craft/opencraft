@@ -22,7 +22,7 @@
     - name: Run collect_activity script
       shell: >
         . /edx/app/edxapp/edxapp_env &&
-        python /tmp/collect_activity.py
+        /edx/bin/python.edxapp /tmp/collect_activity.py
         --config-section {{ config_section | default(inventory_hostname) }}
         --out {{ remote_output_filename }}
         {{ extra_script_arguments }}
