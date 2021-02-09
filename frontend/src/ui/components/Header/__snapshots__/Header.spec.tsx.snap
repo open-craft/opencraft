@@ -11,11 +11,10 @@ exports[`renders without crashing 1`] = `
       className="logo-container mr-auto order-0 navbar-brand"
     >
       <a
-        aria-current="page"
-        className="navbar-brand-link active"
-        href="/"
+        aria-current={null}
+        className="navbar-brand-link"
+        href="/console"
         onClick={[Function]}
-        style={Object {}}
       >
         <svg
           className="site-logo"

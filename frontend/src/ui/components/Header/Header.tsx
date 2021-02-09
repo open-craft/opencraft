@@ -15,6 +15,7 @@ interface StateProps extends InstancesModel {}
 
 interface Props extends StateProps {
   children: React.ReactNode;
+  access: string;
 }
 
 export const HeaderComponent: React.FC<Props> = (props: Props) => {
@@ -42,7 +43,7 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
     <Navbar expand="md" variant="dark">
       <div className="nav-container">
         <Navbar.Brand className="logo-container mr-auto order-0">
-          <NavLink className="navbar-brand-link" to="/">
+          <NavLink className="navbar-brand-link" to={ROUTES.Console.HOME}>
             <svg className="site-logo">
               <use xlinkHref={`${logo}#opencraft_logo`} />
             </svg>
@@ -59,9 +60,15 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
               >
                 <WrappedMessage messages={messages} id="faq" />
               </Nav.Link>
-              <NavLink className="nav-link" to={ROUTES.Auth.LOGIN}>
-                <WrappedMessage messages={messages} id="login" />
-              </NavLink>
+              {props.access !== '' ? (
+                <NavLink className="nav-link" to={ROUTES.Console.HOME}>
+                  <WrappedMessage messages={messages} id="goToConsole" />
+                </NavLink>
+              ) : (
+                <NavLink className="nav-link" to={ROUTES.Auth.LOGIN}>
+                  <WrappedMessage messages={messages} id="login" />
+                </NavLink>
+              )}
             </Route>
             <Route path={ROUTES.Auth.LOGIN}>
               <NavLink className="nav-link" to={ROUTES.Registration.HOME}>
@@ -148,5 +155,8 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
 };
 
 export const Header = connect<StateProps, {}, {}, Props, RootState>(
-  (state: RootState) => state.console
+  (state: RootState) => ({
+    ...state.loginState,
+    ...state.console
+  })
 )(HeaderComponent);
