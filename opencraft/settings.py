@@ -748,6 +748,13 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
 EXTERNAL_DOMAIN_BLACKLIST = env.list('EXTERNAL_DOMAIN_BLACKLIST', default=[])
 
+# External domain DNS CNAME value ############################################
+
+EXTERNAL_DOMAIN_CNAME_VALUE = env.list(
+    'EXTERNAL_DOMAIN_CNAME_VALUE',
+    default='haproxy.opencraft.hosting'
+)
+
 # Email settings ####################################################
 
 EMAIL_SIGNATURE_TITLE = env('EMAIL_SIGNATURE_TITLE', default='Open edX Product Specialist')
