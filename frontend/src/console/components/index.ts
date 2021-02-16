@@ -37,3 +37,5 @@ export * from './PreviewComponent';
 export * from './CoursesListingItem';
 
 export * from './CoursesManage';
+
+export * from './ThemeColors';
