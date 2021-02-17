@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { RedeploymentToolbar } from 'console/components';
-import { CustomizationSideMenu } from 'newConsole/components'
+import { CustomizationSideMenu, PreviewBox } from 'newConsole/components'
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container } from 'react-bootstrap';
@@ -96,7 +96,11 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
             <Col md="3">
               <CustomizationSideMenu />
             </Col>
-            <Col md="9">{innerContent}</Col>
+            <Col md="9">
+              <PreviewBox>
+                {innerContent}
+              </PreviewBox>
+            </Col>
           </Row>
         );
       }
