@@ -67,8 +67,9 @@ export const ROUTES = {
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general',
     HERO: '/console/theming/hero',
     COURSES: '/console/courses/manage',
-    NEWHOME: '/newconsole',
+    NEW_HOME: '/newconsole',
     NEW_LOGOS: '/newconsole/theming/logos',
+    NEW_LOGOS_SIDEBAR: '/newconsole/logos/sidebar'
   },
   Registration: {
     HOME: '/registration',

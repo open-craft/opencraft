@@ -38,7 +38,7 @@ export const MainRoutes = () => (
     />
     <Route path={ROUTES.Registration.HOME} component={RegistrationContainer} />
     <Route path={ROUTES.Console.HOME} component={ConsoleContainer} />
-    <Route path={ROUTES.Console.NEWHOME} component={ConsoleContainer} />
+    <Route path={ROUTES.Console.NEW_HOME} component={ConsoleContainer} />
     {process.env.NODE_ENV === 'development' && (
       <Route path={ROUTES.Demo.COMPONENTS_DEMO} component={ComponentsDemo} />
     )}
