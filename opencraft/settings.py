@@ -601,7 +601,9 @@ ANSIBLE_APPSERVER_REPO = env('ANSIBLE_APPSERVER_REPO', default='https://github.c
 ANSIBLE_APPSERVER_PLAYBOOK = env('ANSIBLE_APPSERVER_PLAYBOOK', default='playbooks/appserver.yml')
 
 # The path to the requirements file for the common appserver playbook.
-ANSIBLE_APPSERVER_REQUIREMENTS_PATH = env('ANSIBLE_APPSERVER_REQUIREMENTS_PATH', default='requirements.txt')
+ANSIBLE_APPSERVER_REQUIREMENTS_PATH = env(
+    'ANSIBLE_APPSERVER_REQUIREMENTS_PATH', default='requirements_ansible_2.8.17.txt'
+)
 
 # The version of the Ansible playbook repository to checkout.
 ANSIBLE_APPSERVER_VERSION = env('ANSIBLE_APPSERVER_VERSION', default='master')
