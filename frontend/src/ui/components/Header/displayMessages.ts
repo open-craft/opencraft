@@ -38,6 +38,10 @@ const messages = {
   logout: {
     defaultMessage: 'Logout',
     description: 'Navbar link for Logout'
+  },
+  goToConsole: {
+    defaultMessage: 'Go to console',
+    description: 'Console is available when logged in'
   }
 };
 
