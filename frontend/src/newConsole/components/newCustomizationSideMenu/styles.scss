@@ -1,0 +1,58 @@
+@import "~styles/theme";
+
+
+.new-customization-menu {
+  padding-bottom: 30px;
+
+  .card {
+    border: none;
+    background-color:rgba(109, 156, 174, 0.3);
+
+    .card-header {
+      background-color:rgba(109, 156, 174, 0.3) !important;
+      border: none;
+      padding: 5px 15px 5px;
+      font-family: PlayfairDisplay;
+      font-weight: bold;
+      font-size: 28px;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: normal;
+      letter-spacing: normal;
+      color: #0f1f24;
+
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    .card-body {
+      padding: 0 15px 0;
+      background-color:rgba(109, 156, 174, 0.3);
+
+      a {
+        padding: 10px 15px;
+        border-top: 1px solid rgba(109, 156, 174, 0.3);
+        font-family: $chivo-font;
+        font-size: 20px;
+        letter-spacing: 1px;
+        color: $secondary-1;
+
+        &:hover, &:focus {
+          text-decoration: underline;
+        }
+
+        &.disabled {
+          color: $secondary-2;
+          text-decoration: none;
+          cursor: default;
+        }
+
+        &.active {
+          background-color: $light-blue-2;
+        }
+      }
+    }
+  }
+}

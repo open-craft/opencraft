@@ -13,6 +13,7 @@ import {
   CustomPages,
   CoursesManage
 } from 'console/components';
+import { Logos as newLogos } from 'newConsole/components'
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
@@ -22,6 +23,9 @@ export const ConsoleRoutes = () => {
       // Redirect to main customization page
       <Route exact path={ROUTES.Console.HOME}>
         <Redirect to={ROUTES.Console.THEME_PREVIEW_AND_COLORS} />
+      </Route>
+      <Route exact path={ROUTES.Console.NEWHOME}>
+        <Redirect to={ROUTES.Console.NEW_LOGOS} />
       </Route>
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
@@ -54,6 +58,10 @@ export const ConsoleRoutes = () => {
         component={CustomPages}
       />
       <PrivateRoute path={ROUTES.Console.COURSES} component={CoursesManage} />
+      <PrivateRoute
+        path={ROUTES.Console.NEW_LOGOS}
+        component={newLogos}
+      />
     </Switch>
   );
 };
