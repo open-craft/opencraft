@@ -3,7 +3,7 @@ import { Card } from 'react-bootstrap';
 import './style.scss';
 
 interface PreviewBoxProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const PreviewBox: React.FC<PreviewBoxProps> = (
