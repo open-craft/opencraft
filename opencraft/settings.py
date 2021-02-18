@@ -51,6 +51,9 @@ ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 
 SITE_ID = 1
 
+# True if the application is running in e2e tests
+E2E_TESTS = env.bool('E2E_TESTS', default=False)
+
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
 OCIM_ID = env('OCIM_ID', default='ocim')
@@ -114,8 +117,13 @@ LOCAL_APPS = (
     'registration',
     'reports',
     'backup_swift',
-    'periodic_builds'
+    'periodic_builds',
 )
+
+if E2E_TESTS:
+    LOCAL_APPS += (
+        'e2e_tests',
+    )
 
 INSTALLED_APPS = (
     'grappelli',

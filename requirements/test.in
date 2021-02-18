@@ -16,5 +16,5 @@ pylint-common<0.3
 pylint-django<2.1
 pylint-plugin-utils<0.6
 pylint-django<2.1
-selenium<2.54
+selenium==3.141.0
 testfixtures<6.11
