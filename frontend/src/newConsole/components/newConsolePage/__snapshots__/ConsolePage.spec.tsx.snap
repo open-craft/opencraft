@@ -42,10 +42,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
     </div>
   </div>
   <div
-    className="console-page-container"
+    className="new-console-page-container"
   >
     <div
-      className="console-page-content row"
+      className="new-console-page-content row"
     >
       <div
         className="container-fluid"
@@ -57,7 +57,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
             className="col-md-3"
           >
             <div
-              className="customization-menu accordion"
+              className="new-customization-menu accordion"
             >
               <div
                 className="card"
@@ -93,7 +93,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/logos"
+                        href="/newconsole/theming/logos/sidebar"
                         onClick={[Function]}
                       >
                         Logos
@@ -312,10 +312,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
     </div>
   </div>
   <div
-    className="console-page-container"
+    className="new-console-page-container"
   >
     <div
-      className="console-page-content row"
+      className="new-console-page-content row"
     >
       <div
         className="container-fluid"
@@ -327,7 +327,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
             className="col-md-3"
           >
             <div
-              className="customization-menu accordion"
+              className="new-customization-menu accordion"
             >
               <div
                 className="card"
@@ -363,7 +363,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/logos"
+                        href="/newconsole/theming/logos/sidebar"
                         onClick={[Function]}
                       >
                         Logos
@@ -545,10 +545,10 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
     One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
   </div>
   <div
-    className="console-page-container"
+    className="new-console-page-container"
   >
     <div
-      className="console-page-content row"
+      className="new-console-page-content row"
     >
       <div
         className="container-fluid"
@@ -560,7 +560,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
             className="col-md-3"
           >
             <div
-              className="customization-menu accordion"
+              className="new-customization-menu accordion"
             >
               <div
                 className="card"
@@ -596,7 +596,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/logos"
+                        href="/newconsole/theming/logos/sidebar"
                         onClick={[Function]}
                       >
                         Logos

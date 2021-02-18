@@ -2,7 +2,7 @@
 
 exports[`Custom Side Menu Page Renders with correct accordion expanded, and with current page highlighted 1`] = `
 <div
-  className="customization-menu accordion"
+  className="new-customization-menu accordion"
 >
   <div
     className="card"
@@ -38,7 +38,7 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
           </a>
           <a
             aria-current={null}
-            href="/console/theming/logos"
+            href="/newconsole/theming/logos/sidebar"
             onClick={[Function]}
           >
             Logos

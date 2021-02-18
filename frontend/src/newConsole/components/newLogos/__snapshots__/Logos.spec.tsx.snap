@@ -42,10 +42,10 @@ exports[`renders without crashing 1`] = `
     </div>
   </div>
   <div
-    className="console-page-container"
+    className="new-console-page-container"
   >
     <div
-      className="console-page-content row"
+      className="new-console-page-content row"
     >
       <div
         className="container-fluid"
@@ -57,7 +57,7 @@ exports[`renders without crashing 1`] = `
             className="col-md-3"
           >
             <div
-              className="customization-menu accordion"
+              className="new-customization-menu accordion"
             >
               <div
                 className="card"
@@ -93,7 +93,7 @@ exports[`renders without crashing 1`] = `
                       </a>
                       <a
                         aria-current={null}
-                        href="/console/theming/logos"
+                        href="/newconsole/theming/logos/sidebar"
                         onClick={[Function]}
                       >
                         Logos
