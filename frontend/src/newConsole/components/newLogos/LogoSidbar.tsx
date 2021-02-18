@@ -17,7 +17,11 @@ interface ActionProps {
   updateImages: Function;
 }
 interface StateProps extends InstancesModel {}
-interface Props extends StateProps, ActionProps {}
+interface Props extends StateProps, ActionProps {
+  history: {
+    goBack: Function;
+  };
+}
 
 export class LogosSideBarComponent extends React.PureComponent<Props, State> {
   updateImage = (imageName: string, image: File) => {
@@ -33,7 +37,7 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
   public render() {
     const instance = this.props.activeInstance;
     return (
-      <CustomizedConsolePage contentLoading={this.props.loading}>
+      <CustomizedConsolePage contentLoading={this.props.loading} goBack={this.props.history.goBack}>
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
             <Row>

@@ -31,6 +31,7 @@ interface Props extends StateProps, ActionProps {
   showSidebar: boolean;
   sideBarComponent: React.ReactNode;
   previewComponent: React.ReactNode;
+  goBack: Function;
 }
 
 export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
@@ -86,9 +87,11 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
       }
 
       if (this.props.showSidebar) {
+        debugger;
         innerContent = (
           <Row>
             <Col md="3">
+              <button onClick={() => {this.props.goBack();} }>Back</button>
               {this.props.children}
             </Col>
             <Col md="9">
