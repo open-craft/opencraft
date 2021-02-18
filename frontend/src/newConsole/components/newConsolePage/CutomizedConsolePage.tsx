@@ -4,7 +4,7 @@ import { ConsolePageCustomizationContainer } from './ConsolePage'
 import { PreviewBox } from 'newConsole/components'
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
-import { Row, Col, Container } from 'react-bootstrap';
+import { Row, Col, Container, Button } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -16,6 +16,7 @@ import {
 } from 'console/actions';
 import messages from './displayMessages';
 import './styles.scss';
+import { WrappedMessage } from 'utils/intl';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -87,11 +88,13 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
       }
 
       if (this.props.showSidebar) {
-        debugger;
         innerContent = (
           <Row>
             <Col md="3">
-              <button onClick={() => {this.props.goBack();} }>Back</button>
+              <Button onClick={ () => {this.props.goBack();} } size="sm" variant="link" className="back-button">
+                <span ><i className="fa fa-angle-left sm" aria-hidden="true"></i></span>
+                <span ><WrappedMessage messages={messages} id="back"></WrappedMessage></span>
+              </Button>
               {this.props.children}
             </Col>
             <Col md="9">
