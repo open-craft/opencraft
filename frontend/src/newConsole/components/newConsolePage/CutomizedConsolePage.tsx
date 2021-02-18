@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { RedeploymentToolbar } from 'console/components';
-import { ConsolePageCustomizationContainer } from './ConsolePage'
-import { PreviewBox } from 'newConsole/components'
+import { PreviewBox } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container, Button } from 'react-bootstrap';
@@ -14,9 +13,10 @@ import {
   performDeployment,
   cancelDeployment
 } from 'console/actions';
+import { WrappedMessage } from 'utils/intl';
+import { ConsolePageCustomizationContainer } from './ConsolePage';
 import messages from './displayMessages';
 import './styles.scss';
-import { WrappedMessage } from 'utils/intl';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -91,14 +91,27 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
         innerContent = (
           <Row>
             <Col md="3">
-              <Button onClick={ () => {this.props.goBack();} } size="sm" variant="link" className="back-button">
-                <span ><i className="fa fa-angle-left sm" aria-hidden="true"></i></span>
-                <span ><WrappedMessage messages={messages} id="back"></WrappedMessage></span>
+              <Button
+                onClick={() => {
+                  this.props.goBack();
+                }}
+                size="sm"
+                variant="link"
+                className="back-button"
+              >
+                <span>
+                  <i className="fa fa-angle-left sm" aria-hidden="true" />
+                </span>
+                <span>
+                  <WrappedMessage messages={messages} id="back" />
+                </span>
               </Button>
               {this.props.children}
             </Col>
             <Col md="9">
-              <PreviewBox><div>The preview will render here</div></PreviewBox>
+              <PreviewBox>
+                <div>The preview will render here</div>
+              </PreviewBox>
             </Col>
           </Row>
         );

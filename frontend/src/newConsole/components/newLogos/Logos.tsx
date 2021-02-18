@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './styles.scss';
-import { ConsolePage, PreviewBox } from 'newConsole/components'
+import { ConsolePage, PreviewBox } from 'newConsole/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -17,13 +17,12 @@ export class LogosComponent extends React.PureComponent<Props, State> {
   public render() {
     return (
       <ConsolePage contentLoading={this.props.loading}>
-        <PreviewBox>
-        </PreviewBox>
+        <PreviewBox />
       </ConsolePage>
     );
   }
 }
 
 export const Logos = connect<StateProps, ActionProps, {}, Props, RootState>(
-  (state: RootState) => state.console,
+  (state: RootState) => state.console
 )(LogosComponent);

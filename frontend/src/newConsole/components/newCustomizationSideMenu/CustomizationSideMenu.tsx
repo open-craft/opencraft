@@ -34,7 +34,10 @@ export const CustomizationSideMenu: React.FC = () => {
   };
 
   return (
-    <Accordion defaultActiveKey={`${activeKey}`} className="new-customization-menu">
+    <Accordion
+      defaultActiveKey={`${activeKey}`}
+      className="new-customization-menu"
+    >
       <Card>
         <Card.Header>
           <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">

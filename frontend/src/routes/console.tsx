@@ -13,7 +13,7 @@ import {
   CustomPages,
   CoursesManage
 } from 'console/components';
-import { Logos as newLogos, LogosSideBar } from 'newConsole/components'
+import { Logos as newLogos, LogosSideBar } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
@@ -67,7 +67,7 @@ export const ConsoleRoutes = () => {
         exact
         path={ROUTES.Console.NEW_LOGOS_SIDEBAR}
         component={LogosSideBar}
-        />
+      />
     </Switch>
   );
 };
