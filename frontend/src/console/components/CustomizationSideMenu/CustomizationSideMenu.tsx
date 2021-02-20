@@ -122,7 +122,7 @@ export const CustomizationSideMenu: React.FC = () => {
         <Accordion.Collapse eventKey="3">
           <Card.Body>
             <Nav className="flex-column">
-              <NavLink exact to={ROUTES.Console.NEW_COURSES}>
+              <NavLink exact to={ROUTES.Console.COURSES}>
                 <WrappedMessage messages={messages} id="linkManageCourses" />
               </NavLink>
             </Nav>

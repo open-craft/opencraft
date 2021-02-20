@@ -11,11 +11,8 @@ import {
   ThemeFooter,
   ThemePreviewAndColors,
   CustomPages,
-  CoursesManage
 } from 'console/components';
 import {
-  Logos as newLogos,
-  LogosSideBar,
   CoursesManage as newCoursesManager
 } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
@@ -61,8 +58,8 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.CUSTOM_PAGES}
         component={CustomPages}
       />
-      <PrivateRoute path={ROUTES.Console.COURSES} component={CoursesManage} />
-      <PrivateRoute
+      {/* Below routes are for dummy implementation for Logo update component and they will be removed after implementation */}
+      {/* <PrivateRoute
         exact
         path={ROUTES.Console.NEW_LOGOS}
         component={newLogos}
@@ -71,10 +68,10 @@ export const ConsoleRoutes = () => {
         exact
         path={ROUTES.Console.NEW_LOGOS_SIDEBAR}
         component={LogosSideBar}
-      />
+      /> */}
       <PrivateRoute
         exact
-        path={ROUTES.Console.NEW_COURSES}
+        path={ROUTES.Console.COURSES}
         component={newCoursesManager}
       />
     </Switch>
