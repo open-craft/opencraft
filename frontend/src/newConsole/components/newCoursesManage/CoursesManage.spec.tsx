@@ -25,7 +25,7 @@ it('renders without crashing', () => {
 
 it('Correctly renders button with Studio link', () => {
     const tree = setupComponentForTesting(
-      <CoursesManage contentLoading={false} showSideBarEditComponent={false}>
+      <CoursesManage contentLoading={false}>
       </CoursesManage>,
       {
         console: {
@@ -40,7 +40,7 @@ it('Correctly renders button with Studio link', () => {
       }
     ).toJSON();
 
-    const manageCoursesBtn = getChild(tree, [1,0,0,0,1,0,0,3,0]);
+    const manageCoursesBtn = getChild(tree, [1,0,0,0,1,0,0,0,3,0]);
 
     expect(manageCoursesBtn.props.href).toEqual('test-url');
 });
