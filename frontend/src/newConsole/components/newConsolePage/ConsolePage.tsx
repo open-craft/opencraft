@@ -3,7 +3,7 @@ import { RedeploymentToolbar } from 'console/components';
 import { CustomizationSideMenu } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
-import { Row, Col, Container } from 'react-bootstrap';
+import { Row, Col, Container, Button } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -13,8 +13,10 @@ import {
   performDeployment,
   cancelDeployment
 } from 'console/actions';
+import { WrappedMessage } from 'utils/intl';
 import messages from './displayMessages';
 import './styles.scss';
+import { PreviewBox } from '../PreviewBox';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -28,6 +30,8 @@ interface Props extends StateProps, ActionProps {
   children: React.ReactNode;
   contentLoading: boolean;
   showSidebar: boolean;
+  goBack?: Function;
+  showSideBarEditComponent: boolean;
 }
 
 interface CustomizationContainerProps {
@@ -76,6 +80,24 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     }
   }
 
+  private renderBackButton(onClickFunction: Function) {
+    return (
+      <Button
+        onClick={() => { onClickFunction(); }}
+        size="sm"
+        variant="link"
+        className="back-button"
+      >
+      <span>
+        <i className="fa fa-angle-left sm" aria-hidden="true" />
+      </span>
+      <span>
+        <WrappedMessage messages={messages} id="back" />
+      </span>
+      </Button>
+    )
+  }
+
   public render() {
     const content = () => {
       let innerContent = this.props.children;
@@ -90,7 +112,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         );
       }
 
-      if (this.props.showSidebar) {
+      if (this.props.showSidebar && !this.props.showSideBarEditComponent) {
         innerContent = (
           <Row className="justify-content-center">
             <Col md="3">
@@ -98,6 +120,19 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
             </Col>
             <Col md="7">{innerContent}</Col>
           </Row>
+        );
+      }
+
+      if (this.props.showSidebar && this.props.showSideBarEditComponent) {
+        innerContent = (
+          <Row className="justify-content-center">
+          <Col md="3">
+            {this.renderBackButton(this.props.goBack!)}
+            {innerContent}
+          </Col>
+          {/* This is where the preview page component will be redered*/}
+          <Col md="7"><PreviewBox></PreviewBox></Col>
+        </Row>
         );
       }
 

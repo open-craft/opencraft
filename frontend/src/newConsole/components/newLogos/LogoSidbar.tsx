@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './styles.scss';
 import { ConsolePageCustomizationContainer } from 'console/components';
-import { CustomizedConsolePage } from 'newConsole/components';
+import { ConsolePage } from 'newConsole/components';
 import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { CollapseEditArea, ImageUploadField } from 'ui/components';
@@ -37,9 +37,10 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
   public render() {
     const instance = this.props.activeInstance;
     return (
-      <CustomizedConsolePage
+      <ConsolePage
         contentLoading={this.props.loading}
         goBack={this.props.history.goBack}
+        showSideBarEditComponent={true}
       >
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
@@ -111,7 +112,7 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
             </CollapseEditArea>
           </ConsolePageCustomizationContainer>
         </div>
-      </CustomizedConsolePage>
+      </ConsolePage>
     );
   }
 }
