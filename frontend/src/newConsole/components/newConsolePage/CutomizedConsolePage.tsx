@@ -89,7 +89,7 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
 
       if (this.props.showSidebar) {
         innerContent = (
-          <Row>
+          <Row className="justify-content-center-align">
             <Col md="3">
               <Button
                 onClick={() => {
@@ -108,7 +108,7 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
               </Button>
               {this.props.children}
             </Col>
-            <Col md="9">
+            <Col md="7">
               <PreviewBox>
                 <div>The preview will render here</div>
               </PreviewBox>

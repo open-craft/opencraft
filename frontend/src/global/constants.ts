@@ -69,7 +69,8 @@ export const ROUTES = {
     COURSES: '/console/courses/manage',
     NEW_HOME: '/newconsole',
     NEW_LOGOS: '/newconsole/theming/logos',
-    NEW_LOGOS_SIDEBAR: '/newconsole/theming/logos/sidebar'
+    NEW_LOGOS_SIDEBAR: '/newconsole/theming/logos/sidebar',
+    NEW_COURSES: '/newconsole/courses/manage'
   },
   Registration: {
     HOME: '/registration',

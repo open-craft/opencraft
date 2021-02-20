@@ -48,12 +48,20 @@ const messages = {
     defaultMessage: 'Instance Settings',
     description: 'The name of the custom page menu in the sidebar accordion.'
   },
+  accordionCourses: {
+    defaultMessage: 'Courses (Studio)',
+    description: 'The name of the custom page menu in the sidebar accordion.'
+  },
   linkGeneral: {
     defaultMessage: 'General',
     description: 'The name of the custom page menu in the sidebar accordion.'
   },
   linkDomain: {
     defaultMessage: 'Domain',
+    description: 'The name of the custom page menu in the sidebar accordion.'
+  },
+  linkManageCourses: {
+    defaultMessage: 'Manage',
     description: 'The name of the custom page menu in the sidebar accordion.'
   },
   customPageAbout: {
