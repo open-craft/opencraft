@@ -89,7 +89,7 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
 
       if (this.props.showSidebar) {
         innerContent = (
-          <Row className="justify-content-center-align">
+          <Row className="justify-content-center">
             <Col md="3">
               <Button
                 onClick={() => {

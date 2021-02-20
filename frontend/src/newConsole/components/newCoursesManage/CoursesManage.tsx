@@ -41,7 +41,7 @@ export class CoursesManageComponent extends React.PureComponent<Props, State> {
         <PreviewBox>
           <div className="courses-page">
             <div>
-              <h2>
+              <h2 className="course-page-title">
                 <WrappedMessage id="title" messages={messages} />
               </h2>
               <WrappedMessage id="explanation" messages={messages} />

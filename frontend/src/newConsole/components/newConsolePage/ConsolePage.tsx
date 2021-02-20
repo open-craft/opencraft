@@ -92,11 +92,11 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
       if (this.props.showSidebar) {
         innerContent = (
-          <Row>
+          <Row className="justify-content-center">
             <Col md="3">
               <CustomizationSideMenu />
             </Col>
-            <Col md="9">{innerContent}</Col>
+            <Col md="7">{innerContent}</Col>
           </Row>
         );
       }
