@@ -11,10 +11,8 @@ import {
   ThemeFooter,
   ThemePreviewAndColors,
   CustomPages,
+  CoursesManage
 } from 'console/components';
-import {
-  CoursesManage as newCoursesManager
-} from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
@@ -72,7 +70,7 @@ export const ConsoleRoutes = () => {
       <PrivateRoute
         exact
         path={ROUTES.Console.COURSES}
-        component={newCoursesManager}
+        component={CoursesManage}
       />
     </Switch>
   );
