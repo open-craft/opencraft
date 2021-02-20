@@ -14,7 +14,7 @@ import {
   cancelDeployment
 } from 'console/actions';
 import { WrappedMessage } from 'utils/intl';
-import { ConsolePageCustomizationContainer } from './ConsolePage';
+import { ConsolePageCustomizationContainer } from 'newConsole/components';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -110,6 +110,7 @@ export class CustomizedConsolePageComponent extends React.PureComponent<Props> {
             </Col>
             <Col md="7">
               <PreviewBox>
+                {/* This is where the preview page component will be redered*/}
                 <div>The preview will render here</div>
               </PreviewBox>
             </Col>
