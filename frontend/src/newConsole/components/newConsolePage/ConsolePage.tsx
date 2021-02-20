@@ -80,25 +80,27 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     }
   }
 
-  private renderBackButton(onClickFunction: Function) {
-    return (
-      <Button
-        onClick={() => { onClickFunction(); }}
-        size="sm"
-        variant="link"
-        className="back-button"
-      >
-      <span>
-        <i className="fa fa-angle-left sm" aria-hidden="true" />
-      </span>
-      <span>
-        <WrappedMessage messages={messages} id="back" />
-      </span>
-      </Button>
-    )
-  }
-
   public render() {
+    const renderBackButton = (onClickFunction: Function) => {
+      return (
+        <Button
+          onClick={() => {
+            onClickFunction();
+          }}
+          size="sm"
+          variant="link"
+          className="back-button"
+        >
+          <span>
+            <i className="fa fa-angle-left sm" aria-hidden="true" />
+          </span>
+          <span>
+            <WrappedMessage messages={messages} id="back" />
+          </span>
+        </Button>
+      );
+    };
+
     const content = () => {
       let innerContent = this.props.children;
 
@@ -126,13 +128,15 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       if (this.props.showSidebar && this.props.showSideBarEditComponent) {
         innerContent = (
           <Row className="justify-content-center">
-          <Col md="3">
-            {this.renderBackButton(this.props.goBack!)}
-            {innerContent}
-          </Col>
-          {/* This is where the preview page component will be redered*/}
-          <Col md="7"><PreviewBox></PreviewBox></Col>
-        </Row>
+            <Col md="3">
+              {renderBackButton(this.props.goBack!)}
+              {innerContent}
+            </Col>
+            {/* This is where the preview page component will be redered */}
+            <Col md="7">
+              <PreviewBox />
+            </Col>
+          </Row>
         );
       }
 

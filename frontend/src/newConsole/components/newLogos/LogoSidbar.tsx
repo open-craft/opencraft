@@ -40,7 +40,7 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
       <ConsolePage
         contentLoading={this.props.loading}
         goBack={this.props.history.goBack}
-        showSideBarEditComponent={true}
+        showSideBarEditComponent
       >
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
