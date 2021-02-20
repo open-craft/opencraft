@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { InstancesModel } from 'console/models';
-import { ConsolePage } from 'newConsole/components';
+import { ConsolePage, PreviewBox } from 'newConsole/components';
 import { CONTACT_US_LINK } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { Col, Button, Row } from 'react-bootstrap';
@@ -8,7 +8,6 @@ import { RootState } from 'global/state';
 import { connect } from 'react-redux';
 import messages from './displayMessages';
 import './styles.scss';
-import { PreviewBox } from '../PreviewBox';
 
 interface State {
   title: string;
@@ -37,7 +36,7 @@ export class CoursesManageComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage contentLoading={this.props.loading}>
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent={false}>
         <PreviewBox>
           <div className="courses-page">
             <div>

@@ -280,7 +280,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
                     >
                       <a
                         aria-current={null}
-                        href="/console/courses/manage"
+                        href="/newconsole/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -593,7 +593,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
                     >
                       <a
                         aria-current={null}
-                        href="/console/courses/manage"
+                        href="/newconsole/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -862,7 +862,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                     >
                       <a
                         aria-current={null}
-                        href="/console/courses/manage"
+                        href="/newconsole/courses/manage"
                         onClick={[Function]}
                       >
                         Manage

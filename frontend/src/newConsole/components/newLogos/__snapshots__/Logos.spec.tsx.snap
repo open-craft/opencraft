@@ -51,7 +51,7 @@ exports[`renders without crashing 1`] = `
         className="container-fluid"
       >
         <div
-          className="row"
+          className="justify-content-center row"
         >
           <div
             className="col-md-3"
@@ -246,10 +246,46 @@ exports[`renders without crashing 1`] = `
                   </div>
                 </div>
               </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/newconsole/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div
-            className="col-md-9"
+            className="col-md-7"
           >
             <div
               className="customization-form"

@@ -25,7 +25,7 @@ it('renders without crashing', () => {
 
 it('Correctly renders button with Studio link', () => {
     const tree = setupComponentForTesting(
-      <CoursesManage contentLoading={false}>
+      <CoursesManage contentLoading={false} showSideBarEditComponent={false}>
       </CoursesManage>,
       {
         console: {

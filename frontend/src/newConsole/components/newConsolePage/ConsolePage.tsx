@@ -30,8 +30,8 @@ interface Props extends StateProps, ActionProps {
   children: React.ReactNode;
   contentLoading: boolean;
   showSidebar: boolean;
-  goBack?: Function;
   showSideBarEditComponent: boolean;
+  goBack?: Function;
 }
 
 interface CustomizationContainerProps {

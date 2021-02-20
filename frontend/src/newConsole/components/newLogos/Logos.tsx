@@ -16,7 +16,7 @@ interface Props extends StateProps, ActionProps {}
 export class LogosComponent extends React.PureComponent<Props, State> {
   public render() {
     return (
-      <ConsolePage contentLoading={this.props.loading}>
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent={false}>
         <PreviewBox />
       </ConsolePage>
     );

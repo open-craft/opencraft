@@ -6,7 +6,7 @@ import { ConsolePage } from './ConsolePage';
 describe("Console Page", function() {
   it('Correctly renders loading page', () => {
       const tree = setupComponentForTesting(
-        <ConsolePage contentLoading={true}>
+        <ConsolePage contentLoading={true} showSideBarEditComponent={false}>
           <span> Test! </span>
         </ConsolePage>,
         {
@@ -18,9 +18,25 @@ describe("Console Page", function() {
       expect(tree).toMatchSnapshot();
   });
 
+  describe("Console Page with Edit component", function() {
+    it('Correctly renders loading page', () => {
+        const tree = setupComponentForTesting(
+          <ConsolePage contentLoading={true} showSideBarEditComponent={true}>
+            <span> Test! </span>
+          </ConsolePage>,
+          {
+            console: {
+              loading: true
+            }
+          }
+        ).toJSON();
+        expect(tree).toMatchSnapshot();
+  });
+});
+
   it('Correctly renders page with data', () => {
       const tree = setupComponentForTesting(
-        <ConsolePage contentLoading={false}>
+        <ConsolePage contentLoading={false} showSideBarEditComponent={false}>
           <span> Test! </span>
         </ConsolePage>,
         {
@@ -55,7 +71,7 @@ describe("Console Page", function() {
 
   it('Correctly renders page with email not verified alert', () => {
     const tree = setupComponentForTesting(
-      <ConsolePage contentLoading={false}>
+      <ConsolePage contentLoading={false} showSideBarEditComponent={false}>
         <span> Test! </span>
       </ConsolePage>,
       {
@@ -86,5 +102,5 @@ describe("Console Page", function() {
       }
     ).toJSON();
     expect(tree).toMatchSnapshot();
-});
+  });
 });
