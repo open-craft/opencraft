@@ -54,7 +54,7 @@ export class CoursesManageComponent extends React.PureComponent<Props, State> {
                       <p>1</p>
                     </div>
                   </Col>
-                  <Col>
+                  <Col className="studio-info">
                     <WrappedMessage
                       id="instructions_access"
                       messages={messages}
@@ -67,7 +67,7 @@ export class CoursesManageComponent extends React.PureComponent<Props, State> {
                       <p>2</p>
                     </div>
                   </Col>
-                  <Col>
+                  <Col className="studio-info">
                     <WrappedMessage
                       id="instructions_credentials"
                       messages={messages}
