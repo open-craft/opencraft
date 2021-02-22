@@ -37,7 +37,7 @@
  }
 
   .new-console-page-container {
-    background-color:rgba(109, 156, 174, 0.9);
+    background-color:rgba(109, 156, 174, 0.3);
     padding: 3rem 1rem;
     margin: 0 -15px;
     flex: 1;
@@ -95,4 +95,9 @@
   letter-spacing: normal;
   color: #0f1f24;
   padding: 0px;
+}
+
+.app-container {
+  background-image: none;
+  background-color: white;
 }
