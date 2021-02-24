@@ -42,7 +42,7 @@ def get_url_contents(url, auth=None, attempts=10, delay=60, verify_ssl=True):
     total_attempts = attempts
 
     while True:
-        # attempts -= 1
+        attempts -= 1
         try:
             if verify_ssl:
                 res = requests.get(url, auth=auth, verify=ca_path)
