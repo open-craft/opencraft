@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  SUPPORT_LINK,
   CONTACT_US_LINK,
   PRIVACY_POLICY_LINK,
   OPENCRAFT_WEBSITE_LINK
@@ -22,7 +23,7 @@ export const Footer: React.FC = () => (
       </a>
     </Col>
     <Col lg="auto" sm={{ span: 12 }} className="text-center mx-2 my-2">
-      <a className="footer-link" href="https://opencraft.com/help">
+      <a className="footer-link" href={SUPPORT_LINK}>
         Support
       </a>
     </Col>

@@ -79,7 +79,7 @@ exports[`renders without crashing 1`] = `
     >
       <a
         className="footer-link"
-        href="https://opencraft.com/help"
+        href="/#"
       >
         Support
       </a>
