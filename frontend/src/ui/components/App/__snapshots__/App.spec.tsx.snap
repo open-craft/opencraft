@@ -4,21 +4,20 @@ exports[`renders without crashing 1`] = `
 <div
   className="app-container container-fluid"
 >
-  <div
-    className="container"
+  <nav
+    className="navbar navbar-expand-md navbar-dark"
   >
-    <nav
-      className="navbar navbar-expand-md navbar-dark bg-transparent"
+    <div
+      className="nav-container"
     >
       <span
-        className="logo-container mx-auto navbar-brand"
+        className="logo-container mr-auto order-0 navbar-brand"
       >
         <a
-          aria-current="page"
-          className="nav-link active"
-          href="/"
+          aria-current={null}
+          className="navbar-brand-link"
+          href="/console"
           onClick={[Function]}
-          style={Object {}}
         >
           <svg
             className="site-logo"
@@ -32,7 +31,7 @@ exports[`renders without crashing 1`] = `
       <button
         aria-controls="basic-navbar-nav"
         aria-label="Toggle navigation"
-        className="navbar-toggler collapsed"
+        className="order-1 navbar-toggler collapsed"
         onClick={[Function]}
         type="button"
       >
@@ -42,7 +41,7 @@ exports[`renders without crashing 1`] = `
       </button>
       <div
         aria-expanded={null}
-        className="navbar-collapse collapse"
+        className="order-3 order-md-2 navbar-collapse collapse"
         id="basic-navbar-nav"
       >
         <div
@@ -50,23 +49,71 @@ exports[`renders without crashing 1`] = `
           onKeyDown={[Function]}
         />
       </div>
-    </nav>
-  </div>
+      <div
+        className="accounts-dropdown-nav order-2 order-md-3 navbar-nav"
+        onKeyDown={[Function]}
+      />
+    </div>
+  </nav>
   <div
     className="app-main row"
   />
   <footer
-    className="app-footer align-items-center row"
+    className="app-footer align-items-center py-4 row"
+    fluid="true"
   >
     <div
-      className="col-auto mr-auto copyright col"
+      className="text-center mx-2 my-2  col-lg-auto col-sm-12"
     >
-      OpenCraft 2013-2020
+      <a
+        className="footer-link"
+        href="https://opencraft.com"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        How we work
+      </a>
     </div>
     <div
-      className="col-auto trademarks col"
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
     >
-      EdX and Open edX are registered trademarks of edX Inc. All rights reserved.
+      <a
+        className="footer-link"
+        href="https://opencraft.com/help"
+      >
+        Support
+      </a>
+    </div>
+    <div
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
+    >
+      <a
+        className="footer-link"
+        href="/#"
+      >
+        Contact
+      </a>
+    </div>
+    <div
+      className="text-center mx-2 my-2 col-lg-auto col-sm-12"
+    >
+      <a
+        className="footer-link"
+        href="/#"
+      >
+        Privacy
+      </a>
+    </div>
+    <div
+      className="copyright-trademarks text-center text-lg-right ml-auto mt-5 mt-lg-0 col-lg-auto col-sm-12"
+    >
+      © Opencraft 2013 - 2021
+      <span
+        className="mx-2"
+      >
+        |
+      </span>
+      edX and Open edX are registered trademarks of edX Inc.
     </div>
   </footer>
 </div>

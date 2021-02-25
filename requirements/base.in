@@ -28,6 +28,7 @@ django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
 djangorestframework<3.10,>=3.9.4
+dnspython==2.1.0
 dns-lexicon==3.3.13
 djangorestframework-simplejwt==4.4.0
 docutils==0.14

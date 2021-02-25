@@ -34,7 +34,13 @@ from instance.models.openedx_deployment import DeploymentState
 from instance.schemas.static_content_overrides import static_content_overrides_v0_schema
 from instance.schemas.theming import theme_schema_v1
 from instance.schemas.utils import ref
-from registration.models import BetaTestApplication, validate_available_subdomain, validate_available_external_domain
+from registration.models import (
+    BetaTestApplication,
+    DNSConfigState,
+    validate_available_subdomain,
+    validate_available_external_domain
+)
+from registration.tasks import verify_external_domain_configuration
 from userprofile.models import UserProfile
 
 
@@ -373,6 +379,31 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
 
         return value
 
+    def save(self, **kwargs):
+        """
+        Override the save method to update the dns_configuration_state
+        if external_domain is present.
+        Also, trigger a dns config verification if there is a new external_domain.
+        """
+        is_new_instance = self.instance is None
+        is_external_domain_present = self.validated_data.get("external_domain") is not None
+        is_changed = not is_new_instance and self.instance.external_domain != self.validated_data.get("external_domain")
+        # If we have a new external_domain, set the dns_configuration_state to pending
+        if (is_new_instance and is_external_domain_present) or is_changed:
+            self.validated_data.update({
+                "dns_configuration_state": DNSConfigState.pending.name
+            })
+
+        instance = super().save(**kwargs)
+        # Schedule a dns config verification after saving because there won't be an
+        # instance in case of create().
+        if (is_new_instance and is_external_domain_present) or is_changed:
+            verify_external_domain_configuration.schedule(
+                args=(self.instance.pk,),
+                delay=60
+            )
+        return instance
+
     class Meta:
         model = BetaTestApplication
         fields = (
@@ -399,6 +430,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "favicon",
             "lms_url",
             "studio_url",
+            "dns_configuration_state"
         ]
 
 

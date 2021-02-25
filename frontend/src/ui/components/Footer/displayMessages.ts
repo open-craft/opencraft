@@ -1,11 +1,10 @@
 const messages = {
   copyright: {
-    defaultMessage: 'OpenCraft 2013-2020',
+    defaultMessage: '© Opencraft 2013 - 2021',
     description: 'OpenCraft copyright message in footer.'
   },
   trademarks: {
-    defaultMessage:
-      'EdX and Open edX are registered trademarks of edX Inc. All rights reserved.',
+    defaultMessage: 'edX and Open edX are registered trademarks of edX Inc.',
     description: 'Open edX and edX trademark message in footer.'
   }
 };

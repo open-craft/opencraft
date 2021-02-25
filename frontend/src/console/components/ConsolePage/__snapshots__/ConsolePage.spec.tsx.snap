@@ -5,15 +5,6 @@ exports[`Console Page Correctly renders loading page 1`] = `
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <i
-        className="fas fa-sync-alt fa-spin"
-      />
-    </h1>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
@@ -255,6 +246,42 @@ exports[`Console Page Correctly renders loading page 1`] = `
                   </div>
                 </div>
               </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -283,29 +310,6 @@ exports[`Console Page Correctly renders page with data 1`] = `
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
   <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
@@ -548,6 +552,42 @@ exports[`Console Page Correctly renders page with data 1`] = `
                   </div>
                 </div>
               </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -568,29 +608,6 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
 <div
   className="console-page"
 >
-  <div
-    className="title-container"
-  >
-    <h1>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        test
-        <i
-          className="instance-link fas fa-link fa-xs"
-        />
-      </a>
-    </h1>
-    <h2>
-      <a
-        className="header-link"
-        href="test-url"
-      >
-        Edit courses (Studio)
-      </a>
-    </h2>
-  </div>
   <div
     className="d-flex justify-content-center align-middle email-activation-alert"
   >
@@ -799,6 +816,42 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                         style={Object {}}
                       >
                         Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
                       </a>
                     </div>
                   </div>

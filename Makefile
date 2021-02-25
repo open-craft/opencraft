@@ -19,6 +19,7 @@
 
 # Any configuration variable can be overridden with `VARIABLE = VALUE` in a git-ignored `private.mk` file.
 
+API_CLIENT_PATH := frontend/packages/api_client
 .DEFAULT_GOAL := help
 HELP_SPACING ?= 30
 COVERAGE_THRESHOLD ?= 90
@@ -27,6 +28,7 @@ WORKERS_LOW_PRIORITY ?= 3
 SHELL ?= /bin/bash
 HONCHO_MANAGE := honcho run python3 manage.py
 HONCHO_MANAGE_TESTS := honcho -e .env.test run python3 manage.py
+HONCHO_MANAGE_E2E_TESTS := honcho -e .env.e2e run python3 manage.py e2e_test
 HONCHO_COVERAGE_TEST := honcho -e .env.test run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 HONCHO_COVERAGE_INTEGRATION := honcho -e .env.integration run coverage run --branch --parallel-mode ./manage.py test --noinput -v2
 COVERAGE := coverage run --branch --parallel-mode ./manage.py test --noinput -v2
@@ -167,6 +169,17 @@ test: clean test.quality test.unit test.migrations_missing test.js test.browser 
 
 test.one: clean
 	$(HONCHO_MANAGE_TESTS) test $(RUN_ARGS)
+
+frontend.build: install_frontend_dependencies
+	@echo "\nBuilding frontend application\n"
+	rm -rf frontend/build
+	rm -rf $(API_CLIENT_PATH)/dist
+	npm install --prefix=$(API_CLIENT_PATH)
+	npm run build --prefix=$(API_CLIENT_PATH)
+	npm run build --prefix frontend
+
+test.e2e: clean frontend.build
+	$(HONCHO_MANAGE_E2E_TESTS)
 
 docs:
 	mkdocs build -f mkdocs.yml

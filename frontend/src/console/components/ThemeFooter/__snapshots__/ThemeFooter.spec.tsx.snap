@@ -5,15 +5,6 @@ exports[`renders without crashing 1`] = `
   className="console-page"
 >
   <div
-    className="title-container"
-  >
-    <h1>
-      <i
-        className="fas fa-sync-alt fa-spin"
-      />
-    </h1>
-  </div>
-  <div
     className="d-flex justify-content-center align-middle redeployment-toolbar"
   >
     <div
@@ -250,6 +241,42 @@ exports[`renders without crashing 1`] = `
                         style={Object {}}
                       >
                         Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
                       </a>
                     </div>
                   </div>

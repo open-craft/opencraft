@@ -2,7 +2,7 @@
 
 set -e
 
-FIREFOX_RELEASE="47.0.2"
+FIREFOX_RELEASE="85.0"
 FIREFOX_BIN="/usr/local/bin/firefox"
 
 sudo curl -O "https://ftp.mozilla.org/pub/firefox/releases/$FIREFOX_RELEASE/linux-x86_64/en-US/firefox-$FIREFOX_RELEASE.tar.bz2"

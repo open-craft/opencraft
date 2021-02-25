@@ -3,16 +3,22 @@
 footer.app-footer {
     background-color: $secondary-1;
     color: #fff;
-    min-height: 105px;
 
-    .copyright {
-      height: 16px;
+    .copyright-trademarks {
       font-size: 14px;
-      text-transform: uppercase;
+      color: #919da0;
+      font-family: $chivo-font;
     }
+}
 
-    .trademarks {
-      height: 16px;
-      font-size: 14px;
-    }
+.footer-link {
+  font-weight: 500;
+  font-size: 18px;
+  font-family: $chivo-font;
+  color: #fff;
+
+  &:hover {
+    color: #919da0;
+    text-decoration: none;
+  }
 }

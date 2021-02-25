@@ -51,6 +51,9 @@ ENABLE_DEBUG_TOOLBAR = env.bool('ENABLE_DEBUG_TOOLBAR', default=False)
 
 SITE_ID = 1
 
+# True if the application is running in e2e tests
+E2E_TESTS = env.bool('E2E_TESTS', default=False)
+
 # Consul #########################################################################
 CONSUL_ENABLED = env.bool('CONSUL_ENABLED', default=False)
 OCIM_ID = env('OCIM_ID', default='ocim')
@@ -114,8 +117,13 @@ LOCAL_APPS = (
     'registration',
     'reports',
     'backup_swift',
-    'periodic_builds'
+    'periodic_builds',
 )
+
+if E2E_TESTS:
+    LOCAL_APPS += (
+        'e2e_tests',
+    )
 
 INSTALLED_APPS = (
     'grappelli',
@@ -748,6 +756,13 @@ SUBDOMAIN_BLACKLIST = env.list('SUBDOMAIN_BLACKLIST', default=[])
 
 EXTERNAL_DOMAIN_BLACKLIST = env.list('EXTERNAL_DOMAIN_BLACKLIST', default=[])
 
+# External domain DNS CNAME value ############################################
+
+EXTERNAL_DOMAIN_CNAME_VALUE = env.list(
+    'EXTERNAL_DOMAIN_CNAME_VALUE',
+    default='haproxy.opencraft.hosting'
+)
+
 # Email settings ####################################################
 
 EMAIL_SIGNATURE_TITLE = env('EMAIL_SIGNATURE_TITLE', default='Open edX Product Specialist')
@@ -778,8 +793,15 @@ NEWRELIC_ADMIN_USER_API_KEY = env('NEWRELIC_ADMIN_USER_API_KEY', default=None)
 # The basic auth password needed to access the node exporter.
 NODE_EXPORTER_PASSWORD = env('NODE_EXPORTER_PASSWORD', default=None)
 
-# Thresholds for NRQL alert conditions
-NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='16')
+# Threhold for NRQL alert condition
+NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD = env('NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD', default='1')
+
+# Duration for NRQL alert conditions (minutes)
+NEWRELIC_NRQL_ALERT_CONDITION_DURATION = env('NEWRELIC_NRQL_ALERT_CONDITION_DURATION', default='11')
+
+# Signal Expiration for NRQL loss of signal alert conditions (seconds)
+# Default is set to `NEWRELIC_NRQL_ALERT_CONDITION_DURATION` default
+NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION = env('NEWRELIC_NRQL_ALERT_SIGNAL_EXPIRATION', default='660')
 
 # Load balancing ##############################################################
 

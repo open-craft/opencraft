@@ -122,7 +122,6 @@ jobs:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
-          SIMPLE_THEME_SKELETON_THEME_VERSION: 'samuel/remove-v2'
       - image: redis
       - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
@@ -197,6 +196,90 @@ jobs:
             . venv/bin/activate
             mkdir -p /tmp/coverage
             make << parameters.tests_type >>
+            if [ -e .coverage.* ]; then
+                cp -v .coverage.* /tmp/coverage/.
+            fi
+            if [ -d coverage ]; then
+                cp -vR coverage/* /tmp/coverage/.
+            fi
+          no_output_timeout: 2h
+          environment:
+            ANSIBLE_HOST_KEY_CHECKING: False
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - coverage
+
+  e2e-tests:
+    docker:
+      - image: circleci/python:3.6-stretch-node-browsers
+        environment:
+          DEBUG: 'true'
+          DEFAULT_FORK: 'open-craft/edx-platform'
+          LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+      - image: redis
+      - image: mongo:3.2-jessie
+      - image: "circleci/mysql:5"
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: True
+      - image: circleci/postgres:10.1-alpine
+        environment:
+          PG_HOST: 127.0.0.1
+          POSTGRES_USER: circleci
+          POSTGRES_DB: circle_test
+    environment:
+        REACT_APP_OCIM_API_BASE: http://localhost:5000
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+      - run:
+          name: Wait for Redis
+          command: dockerize -wait tcp://localhost:6379 -timeout 10s
+      - run:
+          name: Wait for Postgres
+          command: dockerize -wait tcp://localhost:5432 -timeout 10s
+      - run:
+          name: Wait for MySQL
+          command: dockerize -wait tcp://localhost:3306 -timeout 10s
+      - run:
+          name: Wait for MongoDB
+          command: dockerize -wait tcp://localhost:27017 -timeout 10s
+      - run:
+          name: Install Dependencies
+          command: |
+            sed -i 's/libmysqlclient/default-libmysqlclient/' debian_packages.lst
+            make install_system_dependencies
+            sudo ln -s /usr/lib/x86_64-linux-gnu/libmysqlclient.so /usr/lib/x86_64-linux-gnu/libmysqlclient.so.18
+            bin/install-supported-firefox
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade virtualenv
+            pip install -r requirements.txt
+            pip install -r cleanup_utils/requirements.txt
+            npm install
+      - run:
+          name: Run Consul
+          command: |
+            sudo wget -P /tmp https://releases.hashicorp.com/consul/1.2.1/consul_1.2.1_linux_amd64.zip
+            sudo unzip /tmp/consul_1.2.1_linux_amd64.zip -d /usr/local/bin
+            mkdir -p /tmp/consul-data
+            consul agent -dev
+          background: true
+      - save_cache:
+          key: dependencies-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: Create Database
+          command: make create_db
+      - run:
+          name: Run Tests
+          command: |
+            . venv/bin/activate
+            mkdir -p /tmp/coverage
+            make test.e2e
             if [ -e .coverage.* ]; then
                 cp -v .coverage.* /tmp/coverage/.
             fi
@@ -298,6 +381,7 @@ workflows:
           name: browser_tests
           tests_group: 0
           tests_type: clean test.browser
+      - e2e-tests
       - build:
           name: js_tests
           tests_group: 0

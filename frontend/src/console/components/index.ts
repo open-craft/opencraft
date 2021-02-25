@@ -35,3 +35,5 @@ export * from './CustomPages';
 export * from './PreviewComponent';
 
 export * from './CoursesListingItem';
+
+export * from './CoursesManage';

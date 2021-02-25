@@ -19,6 +19,11 @@
 """
 Utility functions related to registration.
 """
+import binascii
+import logging
+import os
+
+import dns.resolver as dns_resolver
 from django.conf import settings
 from django.contrib.auth.models import User
 from simple_email_confirmation.models import EmailAddress
@@ -26,6 +31,17 @@ from simple_email_confirmation.models import EmailAddress
 from email_verification import send_email_verification
 from opencraft.utils import html_email_helper
 from registration.models import BetaTestApplication
+
+# Logger  ######################################################################
+
+logger = logging.getLogger(__name__)
+
+
+# Utilities ###################################################################
+
+logger = logging.getLogger(__name__)
+
+# Functions #####################################################################
 
 
 def verify_user_emails(user: User, *email_addresses: str):
@@ -80,3 +96,88 @@ def send_account_info_email(application: BetaTestApplication) -> None:
         subject=settings.ACCOUNT_INFO_EMAIL_SUBJECT,
         recipient_list=(user.email,)
     )
+
+
+def send_changes_deployed_success_email(application: BetaTestApplication) -> None:
+    """
+    Send an email to user after successful redeployment of the application.
+    """
+    instance_name = application.instance.name
+    user = application.user
+    context = dict(
+        see_update_url=f"{settings.USER_CONSOLE_FRONTEND_URL}/console/notice"
+    )
+
+    recipients = [user.email]
+
+    logger.warning(
+        "Sending notification e-mail to %s after instance %s was redeployed",
+        recipients,
+        instance_name,
+    )
+
+    html_email_helper(
+        template_base_name='emails/redeployment_success_email',
+        context=context,
+        subject='Open edX instance deployment: Success',
+        recipient_list=recipients
+    )
+
+
+def send_dns_not_configured_email(application: BetaTestApplication) -> None:
+    """
+    Send an email with DNS configuration details to the user after detecting
+    that the DNS is not configured properly
+    """
+    user = application.user
+    context = dict(
+        cname_value=settings.EXTERNAL_DOMAIN_CNAME_VALUE,
+        external_domain=application.external_domain
+    )
+    logger.info("Sending email to %s for DNS Configuration for external domain", user.email)
+    html_email_helper(
+        template_base_name='emails/dns_not_configured',
+        context=context,
+        subject="OpenCraft domain verification failed!",
+        recipient_list=(user.email,)
+    )
+
+
+def is_external_domain_dns_configured(domain: str) -> bool:
+    """
+    Checks that there is proper configuration for the external_domain.
+    This will check for both domain as well as for the widcard subdomain
+    """
+    return is_dns_configured(domain) and is_subdomain_dns_configured(domain)
+
+
+def is_subdomain_dns_configured(domain: str) -> bool:
+    """
+    Checks that the provided domain has a proper DNS configuration
+    for wildcard subdomain i.e. *.{domain}.
+    We can use a randomly generated long subdomain to confirm wildcard
+    configuration.
+    """
+    subdomain = '{}.{}'.format(
+        binascii.hexlify(os.urandom(20)).decode(),
+        domain
+    )
+    return is_dns_configured(subdomain)
+
+
+def is_dns_configured(domain: str) -> bool:
+    """
+    Checks that the provided domain has a proper DNS configuration.
+    There should be a CNAME record present with value haproxy.opencraft.hosting
+    """
+    try:
+        answers = dns_resolver.resolve(domain, 'CNAME')
+        cname_records = [str(rdata) for rdata in answers]  # There should only be one
+        is_configured_properly = [
+            record == settings.EXTERNAL_DOMAIN_CNAME_VALUE
+            for record in cname_records
+        ]
+        return any(is_configured_properly)
+    except (dns_resolver.NXDOMAIN, dns_resolver.NoAnswer, dns_resolver.NoNameservers):
+        logger.info("DNS not configured for external domain %s", domain)
+        return False

@@ -481,6 +481,7 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.s3_region = 'test'
+        instance.save()
 
         with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
             iamstubber.stub_put_user_policy(
@@ -550,6 +551,8 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_access_key = 'test_0123456789a'
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
+        instance.save()
+
         with self.assertLogs("instance.models.instance"):
             with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
                 iamstubber.stub_put_user_policy(
@@ -569,11 +572,54 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                 iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
                 iamstubber.stub_delete_user_policy(instance.iam_username)
                 iamstubber.add_client_error('delete_user')
-                instance.deprovision_s3()
-        # Since it failed deleting the user, access_keys should not be empty
+
+                with self.assertRaises(ClientError):
+                    instance.deprovision_s3()
+
+        # Since it failed deleting the user, access_keys should not be empty.
         instance.refresh_from_db()
         self.assertEqual(instance.s3_access_key, "test_0123456789a")
         self.assertEqual(instance.s3_secret_access_key, "test")
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    def test_deprovision_s3_user_does_not_exist(self, mock_consul):
+        """
+        Test s3 deprovisioning when AIM user does not exist
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.storage_type = StorageContainer.S3_STORAGE
+        instance.s3_access_key = 'test_0123456789a'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        instance.save()
+
+        with self.assertLogs("instance.models.instance"):
+            with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+                iamstubber.stub_put_user_policy(
+                    instance.iam_username,
+                    storage.USER_POLICY_NAME,
+                    instance.get_s3_policy()
+                )
+                stubber.stub_create_bucket(location='')
+                stubber.stub_put_cors()
+                stubber.stub_set_expiration()
+                stubber.stub_versioning()
+                instance.provision_s3()
+
+                stubber.stub_list_object_versions(result={})
+                stubber.stub_delete_bucket()
+
+                iamstubber.add_client_error('delete_access_key', service_error_code='NoSuchEntity')
+                iamstubber.add_client_error('delete_user_policy', service_error_code='NoSuchEntity')
+                iamstubber.add_client_error('delete_user', service_error_code='NoSuchEntity')
+                instance.deprovision_s3()
+
+        # Since the user and associated acess key and policy don't exist,
+        # the fields should be blanked out.
+        instance.refresh_from_db()
+        self.assertEqual(instance.s3_access_key, "")
+        self.assertEqual(instance.s3_secret_access_key, "")
 
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
     @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
@@ -587,6 +633,53 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
         instance.s3_secret_access_key = 'test'
         instance.s3_bucket_name = 'test'
         instance.s3_region = 'test'
+        instance.save()
+
+        with self.assertLogs("instance.models.instance"):
+            with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
+                iamstubber.stub_put_user_policy(
+                    instance.iam_username,
+                    storage.USER_POLICY_NAME,
+                    instance.get_s3_policy()
+                )
+                stubber.stub_create_bucket()
+                stubber.stub_put_cors()
+                stubber.stub_set_expiration()
+                stubber.stub_versioning()
+
+                instance.provision_s3()
+
+                stubber.stub_list_object_versions(result={})
+                stubber.add_client_error('delete_bucket')
+
+                iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
+                iamstubber.stub_delete_user_policy(instance.iam_username)
+                iamstubber.stub_delete_user(instance.iam_username)
+
+                with self.assertRaises(ClientError):
+                    instance.deprovision_s3()
+
+        instance.refresh_from_db()
+        # Since it failed deleting the bucket, all S3 related information should be left intact.
+        self.assertEqual(instance.s3_bucket_name, "test")
+        self.assertEqual(instance.s3_region, "test")
+        self.assertEqual(instance.s3_access_key, "test_0123456789a")
+        self.assertEqual(instance.s3_secret_access_key, "test")
+
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.iam', iam_client)
+    @patch('instance.models.mixins.storage.S3BucketInstanceMixin.s3', s3_client)
+    def test_deprovision_s3_bucket_does_not_exist(self, mock_consul):
+        """
+        Test s3 deprovisioning when s3 bucket does not exist
+        """
+        instance = OpenEdXInstanceFactory()
+        instance.storage_type = StorageContainer.S3_STORAGE
+        instance.s3_access_key = 'test_0123456789a'
+        instance.s3_secret_access_key = 'test'
+        instance.s3_bucket_name = 'test'
+        instance.s3_region = 'test'
+        instance.save()
+
         with self.assertLogs("instance.models.instance"):
             with S3Stubber(s3_client) as stubber, IAMStubber(iam_client) as iamstubber:
                 iamstubber.stub_put_user_policy(
@@ -601,19 +694,16 @@ class S3ContainerInstanceTestCase(ContainerTestCase):
                 instance.provision_s3()
 
                 stubber.stub_list_object_versions(result={})
-                stubber.add_client_error('delete_bucket')
+                stubber.add_client_error('delete_bucket', service_error_code='NoSuchBucket')
 
                 iamstubber.stub_delete_access_key(instance.iam_username, instance.s3_access_key)
                 iamstubber.stub_delete_user_policy(instance.iam_username)
                 iamstubber.stub_delete_user(instance.iam_username)
                 instance.deprovision_s3()
+
         instance.refresh_from_db()
-        # Since it failed deleting the bucket, s3_bucket_name should not be empty
-        self.assertEqual(instance.s3_bucket_name, "test")
-        # We always want to preserve information about a client's preferred region, so s3_region should not be empty.
-        self.assertEqual(instance.s3_region, "test")
-        self.assertEqual(instance.s3_secret_access_key, "")
-        self.assertEqual(instance.s3_access_key, "")
+        # Since the bucket does not exists, the s3_bucket_name field should be blanked out.
+        self.assertEqual(instance.s3_bucket_name, "")
 
     @override_settings(AWS_S3_DEFAULT_REGION='test')
     def test_provision_s3_swift(self, mock_consul):

@@ -517,8 +517,8 @@ class OpenEdXInstanceTestCase(TestCase):
         self.assertEqual(outbox.to, failure_emails)
         self.assertEqual(
             outbox.body,
-            'The deployment of a new appserver failed and needs manual intervention. '
-            'You can find the logs in the web interface.',
+            f'The deployment of a new appserver "{str(instance)}" failed and needs manual intervention. '
+            f'You can find the logs in the web interface.',
         )
         self.assertLogs(
             "instance.models.mixins.utilities",
@@ -602,7 +602,7 @@ class OpenEdXInstanceTestCase(TestCase):
             filtered_configuration = json.dumps(filtered_data)
 
         self.assertEqual(len(django_mail.outbox), 1)
-        self.assertEqual(outbox.subject, f'Deployment failed at instance: {str(instance)}')
+        self.assertEqual(outbox.subject, f'{instance.name} CI: Failed')
         self.assertEqual(outbox.to, failure_emails)
         self.assertEqual(len(outbox.attachments), 2)
         self.assertEqual(outbox.attachments[0], ('build_log.json', '[]', 'application/json'))
@@ -671,7 +671,7 @@ class OpenEdXInstanceTestCase(TestCase):
         # Given these deployment types, at least one email should be sended
         outbox = django_mail.outbox[0]
         self.assertEqual(len(django_mail.outbox), 1)
-        self.assertEqual(outbox.subject, f'Deployment back to normal at instance: {str(instance)}')
+        self.assertEqual(outbox.subject, f'{instance.name} CI: Passed')
         self.assertEqual(outbox.to, failure_emails)
         self.assertEqual(
             outbox.body,
