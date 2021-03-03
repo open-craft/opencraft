@@ -9,7 +9,7 @@ import {
   ThemeButtons,
   ThemeNavigation,
   ThemeFooter,
-  ThemePreviewAndColors,
+  ThemePreview,
   CustomPages,
   CoursesManage
 } from 'console/components';
@@ -36,7 +36,7 @@ export const ConsoleRoutes = () => {
       />
       <PrivateRoute
         path={ROUTES.Console.THEME_PREVIEW_AND_COLORS}
-        component={ThemePreviewAndColors}
+        component={ThemePreview}
       />
       <PrivateRoute
         path={ROUTES.Console.THEME_BUTTONS}

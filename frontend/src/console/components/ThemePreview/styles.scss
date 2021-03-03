@@ -1,0 +1,68 @@
+@import '~styles/theme';
+
+div.preview-header {
+  display: flex;
+  align-items:center;
+  position:relative;
+  height: 60px;
+  z-index: 2;
+
+  div.notice-container {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 80%;
+    height: 100%;
+    margin-bottom: 24px;
+
+    p {
+      color: $primary-1;
+      margin-top: 25px;
+      margin-bottom: auto;
+      font-size: 14px;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: $chivo-font;
+      line-height: normal;
+      letter-spacing: normal;
+      text-align: right;
+    }
+  }
+}
+
+.preview-box {
+  height: auto !important;
+  width: 100% !important;
+}
+
+.preview-container {
+  z-index: 1;
+  position: relative;
+  padding: 0;
+  .row {
+    padding: 0;
+
+    .side-buttons {
+      padding: 0 15px 0 0;
+
+      .row {
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+
+        .input-field-color.form-control[readonly] {
+          width: 75%;
+          background-color: white;
+        }
+
+        .input-field-color.form-control[disabled] {
+          background-color: #e9ecef !important;
+        }
+
+        .info-icon {
+          padding: 5px 10px;
+          color: $primary-1;
+        }
+      }
+    }
+  }
+}

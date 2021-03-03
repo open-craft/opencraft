@@ -6,7 +6,7 @@ export * from './RedeploymentToolbar';
 
 export * from './CustomizationSideMenu';
 
-export * from './ThemePreviewAndColors';
+export * from './ThemePreview';
 
 export * from './Logos';
 
