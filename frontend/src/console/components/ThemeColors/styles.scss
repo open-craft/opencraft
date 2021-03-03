@@ -1,0 +1,25 @@
+@import '~styles/theme';
+
+.side-buttons {
+  padding: 0 15px 0 0;
+
+  .row {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+
+    .input-field-color.form-control[readonly] {
+      width: 75%;
+      background-color: white;
+    }
+
+    .input-field-color.form-control[disabled] {
+      background-color: #e9ecef !important;
+    }
+
+    .info-icon {
+      padding: 5px 10px;
+      color: $primary-1;
+    }
+  }
+}

@@ -544,105 +544,113 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                   className="row"
                 >
                   <div
-                    className="side-buttons col"
+                    className="col"
                   >
                     <div
-                      className="color-input form-group"
+                      className="row"
                     >
-                      <label
-                        className="form-label"
-                      >
-                        Main Color
-                      </label>
                       <div
-                        className="row"
+                        className="side-buttons col"
                       >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={true}
-                          name="mainColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="#444444"
-                        />
                         <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": "#444444",
-                            }
-                          }
-                        />
-                        <div
-                          className="info-icon"
-                          onBlur={[Function]}
-                          onFocus={[Function]}
-                          onMouseOut={[Function]}
-                          onMouseOver={[Function]}
+                          className="color-input form-group"
                         >
-                          <i
-                            className="fas fa-info-circle"
-                          />
+                          <label
+                            className="form-label"
+                          >
+                            Main Color
+                          </label>
+                          <div
+                            className="row"
+                          >
+                            <input
+                              className="input-field-color form-control"
+                              disabled={true}
+                              name="mainColor"
+                              onClick={[Function]}
+                              readOnly={true}
+                              value="#444444"
+                            />
+                            <div
+                              className="input-field-preview"
+                              style={
+                                Object {
+                                  "backgroundColor": "#444444",
+                                }
+                              }
+                            />
+                            <div
+                              className="info-icon"
+                              onBlur={[Function]}
+                              onFocus={[Function]}
+                              onMouseOut={[Function]}
+                              onMouseOver={[Function]}
+                            >
+                              <i
+                                className="fas fa-info-circle"
+                              />
+                            </div>
+                          </div>
+                          <p>
+                            <button
+                              className="reset-value"
+                              onClick={[Function]}
+                              type="button"
+                            >
+                              Reset
+                            </button>
+                          </p>
+                        </div>
+                        <div
+                          className="color-input form-group"
+                        >
+                          <label
+                            className="form-label"
+                          >
+                            Link Color
+                          </label>
+                          <div
+                            className="row"
+                          >
+                            <input
+                              className="input-field-color form-control"
+                              disabled={true}
+                              name="linkColor"
+                              onClick={[Function]}
+                              readOnly={true}
+                              value="#FFAAFF"
+                            />
+                            <div
+                              className="input-field-preview"
+                              style={
+                                Object {
+                                  "backgroundColor": "#FFAAFF",
+                                }
+                              }
+                            />
+                            <div
+                              className="info-icon"
+                              onBlur={[Function]}
+                              onFocus={[Function]}
+                              onMouseOut={[Function]}
+                              onMouseOver={[Function]}
+                            >
+                              <i
+                                className="fas fa-info-circle"
+                              />
+                            </div>
+                          </div>
+                          <p>
+                            <button
+                              className="reset-value"
+                              onClick={[Function]}
+                              type="button"
+                            >
+                              Reset
+                            </button>
+                          </p>
                         </div>
                       </div>
-                      <p>
-                        <button
-                          className="reset-value"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </p>
-                    </div>
-                    <div
-                      className="color-input form-group"
-                    >
-                      <label
-                        className="form-label"
-                      >
-                        Link Color
-                      </label>
-                      <div
-                        className="row"
-                      >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={true}
-                          name="linkColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="#FFAAFF"
-                        />
-                        <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": "#FFAAFF",
-                            }
-                          }
-                        />
-                        <div
-                          className="info-icon"
-                          onBlur={[Function]}
-                          onFocus={[Function]}
-                          onMouseOut={[Function]}
-                          onMouseOver={[Function]}
-                        >
-                          <i
-                            className="fas fa-info-circle"
-                          />
-                        </div>
-                      </div>
-                      <p>
-                        <button
-                          className="reset-value"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </p>
                     </div>
                   </div>
                   <div
@@ -1342,105 +1350,113 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                   className="row"
                 >
                   <div
-                    className="side-buttons col"
+                    className="col"
                   >
                     <div
-                      className="color-input form-group"
+                      className="row"
                     >
-                      <label
-                        className="form-label"
-                      >
-                        Main Color
-                      </label>
                       <div
-                        className="row"
+                        className="side-buttons col"
                       >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="mainColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="#444444"
-                        />
                         <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": "#444444",
-                            }
-                          }
-                        />
-                        <div
-                          className="info-icon"
-                          onBlur={[Function]}
-                          onFocus={[Function]}
-                          onMouseOut={[Function]}
-                          onMouseOver={[Function]}
+                          className="color-input form-group"
                         >
-                          <i
-                            className="fas fa-info-circle"
-                          />
+                          <label
+                            className="form-label"
+                          >
+                            Main Color
+                          </label>
+                          <div
+                            className="row"
+                          >
+                            <input
+                              className="input-field-color form-control"
+                              disabled={false}
+                              name="mainColor"
+                              onClick={[Function]}
+                              readOnly={true}
+                              value="#444444"
+                            />
+                            <div
+                              className="input-field-preview"
+                              style={
+                                Object {
+                                  "backgroundColor": "#444444",
+                                }
+                              }
+                            />
+                            <div
+                              className="info-icon"
+                              onBlur={[Function]}
+                              onFocus={[Function]}
+                              onMouseOut={[Function]}
+                              onMouseOver={[Function]}
+                            >
+                              <i
+                                className="fas fa-info-circle"
+                              />
+                            </div>
+                          </div>
+                          <p>
+                            <button
+                              className="reset-value"
+                              onClick={[Function]}
+                              type="button"
+                            >
+                              Reset
+                            </button>
+                          </p>
+                        </div>
+                        <div
+                          className="color-input form-group"
+                        >
+                          <label
+                            className="form-label"
+                          >
+                            Link Color
+                          </label>
+                          <div
+                            className="row"
+                          >
+                            <input
+                              className="input-field-color form-control"
+                              disabled={false}
+                              name="linkColor"
+                              onClick={[Function]}
+                              readOnly={true}
+                              value="#FFAAFF"
+                            />
+                            <div
+                              className="input-field-preview"
+                              style={
+                                Object {
+                                  "backgroundColor": "#FFAAFF",
+                                }
+                              }
+                            />
+                            <div
+                              className="info-icon"
+                              onBlur={[Function]}
+                              onFocus={[Function]}
+                              onMouseOut={[Function]}
+                              onMouseOver={[Function]}
+                            >
+                              <i
+                                className="fas fa-info-circle"
+                              />
+                            </div>
+                          </div>
+                          <p>
+                            <button
+                              className="reset-value"
+                              onClick={[Function]}
+                              type="button"
+                            >
+                              Reset
+                            </button>
+                          </p>
                         </div>
                       </div>
-                      <p>
-                        <button
-                          className="reset-value"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </p>
-                    </div>
-                    <div
-                      className="color-input form-group"
-                    >
-                      <label
-                        className="form-label"
-                      >
-                        Link Color
-                      </label>
-                      <div
-                        className="row"
-                      >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="linkColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="#FFAAFF"
-                        />
-                        <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": "#FFAAFF",
-                            }
-                          }
-                        />
-                        <div
-                          className="info-icon"
-                          onBlur={[Function]}
-                          onFocus={[Function]}
-                          onMouseOut={[Function]}
-                          onMouseOver={[Function]}
-                        >
-                          <i
-                            className="fas fa-info-circle"
-                          />
-                        </div>
-                      </div>
-                      <p>
-                        <button
-                          className="reset-value"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </p>
                     </div>
                   </div>
                   <div
@@ -1881,34 +1897,41 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
     >
       <span
         className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
+        style={
+          Object {
+            "backgroundColor": "grey",
           }
-        />
+        }
+      >
         <div
           className="text"
         >
-          Status: loading
+          Loading
         </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
       </span>
       <button
-        className="float-right loading btn btn-primary btn-lg"
+        className="float-right btn-disabled btn btn-primary btn-lg"
         disabled={true}
         onClick={[Function]}
         type="button"
       >
-        Deploy (0 updates)
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
       </button>
     </div>
+    <div
+      className="toast-container"
+    />
   </div>
   <div
     className="console-page-container"

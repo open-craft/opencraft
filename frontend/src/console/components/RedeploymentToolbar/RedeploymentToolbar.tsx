@@ -2,7 +2,11 @@ import * as React from 'react';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { WrappedMessage } from 'utils/intl';
 import { Button, Modal } from 'react-bootstrap';
-import { CustomStatusPill } from 'ui/components';
+import {
+  CustomStatusPill,
+  NotificationToast,
+  PublishButton
+} from 'ui/components';
 import { DeploymentInfoModel } from 'console/models';
 import {
   OpenEdXInstanceDeploymentStatusStatusEnum as DeploymentStatus,
@@ -30,20 +34,29 @@ export const RedeploymentToolbar: React.FC<Props> = ({
   const handleShowModal = () => setShow(true);
   const { trackEvent } = useMatomo();
 
-  const performDeploymentHandler = () => {
-    trackEvent({
-      category: 'deployment',
-      action: 'click-deploy',
-      name: 'Deploy'
-    });
-    performDeployment();
-  };
+  // Deployment notification handler
+  const [notificationIsVisible, showNotification] = React.useState(false);
+  const toggleNotification = () => showNotification(!notificationIsVisible);
 
   let deploymentDisabled: boolean = true;
   let cancelDeploymentDisabled: boolean = true;
   let undeployedChanges: number = 0;
   let deploymentStatus: DeploymentStatus | null = null;
   let deploymentType: DeploymentType | null = null;
+
+  const performDeploymentHandler = () => {
+    if (!deploymentDisabled) {
+      trackEvent({
+        category: 'deployment',
+        action: 'click-deploy',
+        name: 'Deploy'
+      });
+      performDeployment();
+
+      // Show the deployment notification
+      toggleNotification();
+    }
+  };
 
   if (deployment) {
     deploymentStatus = deployment.status;
@@ -88,20 +101,11 @@ export const RedeploymentToolbar: React.FC<Props> = ({
           deploymentType={deploymentType}
           cancelRedeployment={cancelDeploymentHandler}
         />
-
-        <Button
-          className="float-right loading"
-          variant="primary"
-          size="lg"
-          onClick={performDeploymentHandler}
-          disabled={deploymentDisabled}
-        >
-          <WrappedMessage
-            id="deploy"
-            messages={messages}
-            values={{ undeployedChanges }}
-          />
-        </Button>
+        <PublishButton
+          deploymentHandler={performDeploymentHandler}
+          undeployedChanges={undeployedChanges}
+          deploymentDisabled={deploymentDisabled}
+        />
       </div>
 
       <Modal
@@ -146,6 +150,15 @@ export const RedeploymentToolbar: React.FC<Props> = ({
           </Button>
         </Modal.Footer>
       </Modal>
+      <NotificationToast
+        show={notificationIsVisible}
+        onClose={toggleNotification}
+        delay={4000}
+        autohide
+        bodyMessageId="notificationBody"
+        closeMessage={messages.notificationHelp.defaultMessage}
+        messages={messages}
+      />
     </div>
   );
 };
