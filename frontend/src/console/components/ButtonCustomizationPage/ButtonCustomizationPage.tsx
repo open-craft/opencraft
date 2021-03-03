@@ -1,19 +1,12 @@
 import * as React from 'react';
 import './styles.scss';
 import { CustomizableButton } from 'console/components';
-import { CollapseEditArea, ColorInputField } from 'ui/components';
 import { InstanceSettingsModel } from 'console/models';
-import {
-  Col,
-  Container,
-  Form,
-  OverlayTrigger,
-  Row,
-  Tooltip
-} from 'react-bootstrap';
+import { Col, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { ThemeSchema } from 'ocim-client';
 import messages from './displayMessages';
+import { ButtonStyles } from '../ButtonStyles';
 
 interface ButtonCustomizationPageProps {
   buttonName: string;
@@ -147,39 +140,13 @@ export const ButtonCustomizationPage: React.FC<ButtonCustomizationPageProps> = (
         </Col>
       </Row>
 
-      <CollapseEditArea initialExpanded={props.initialExpanded || false}>
-        <Container className="theme-button-customization-container">
-          {Object.entries(styles).map(([category, fields]) => (
-            <div key={category}>
-              <Row>
-                <p className="style-name">
-                  <WrappedMessage messages={messages} id={category} />
-                </p>
-              </Row>
-              <Row>
-                {fields.map(field => (
-                  <Col key={field}>
-                    <ColorInputField
-                      key={field}
-                      fieldName={field}
-                      genericFieldName={field.replace(props.buttonName, '')}
-                      initialValue={
-                        (themeData[
-                          field as keyof typeof themeData
-                        ] as string) || ''
-                      }
-                      onChange={props.onChangeColor}
-                      messages={messages}
-                      loading={loading.includes('draftThemeConfig')}
-                      hideTooltip
-                    />
-                  </Col>
-                ))}
-              </Row>
-            </div>
-          ))}
-        </Container>
-      </CollapseEditArea>
+      <ButtonStyles
+        buttonName={props.buttonName}
+        onChangeColor={props.onChangeColor}
+        themeData={themeData}
+        loading={loading}
+        initialExpanded={props.initialExpanded || false}
+      />
     </div>
   );
 };
