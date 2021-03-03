@@ -16,9 +16,6 @@
         color: #333333;
         margin-bottom: 5px;
     }
-    .error-box {
-        margin-top: 20px;
-    }
     .reset-image {
         font-size: 14px;
         letter-spacing: 0.14px;
@@ -31,6 +28,16 @@
             text-decoration: underline;
         }
     }
+    .alert {
+        padding: 0px;
+        min-height: 50px;
+        overflow:auto;
+
+        p {
+            color: white;
+            font-weight: bold;
+        }
+    }
 }
 
 .file-upload-modal {
@@ -40,21 +47,80 @@
         border-bottom: none;
         font-family: $playfair-font;
         font-size: 24px;
-        color: #0f1f24;
+        color: $secondary-1;
         margin-bottom: -15px
     }
 
     .modal-body {
-        background-color: #d3e1e7;
+        background-color: $light-blue;
         margin: 20px;
         font-family: $chivo-font;
         font-size: 16px;
-        color: #0f1f24;
+        color: $secondary-1;
     }
 
     .modal-footer {
         border: none;
         justify-content: center;
         margin-bottom: 15px;
+    }
+}
+
+.uploadButton {
+    border-style: dashed;
+    text-transform: none;
+    display: block;
+    width:100%;
+    margin-bottom: 5px;
+
+    .buttonContents {
+        display: flex;
+        margin-left: -15px;
+        margin-top: 1px;
+
+        .uploadIcon {
+            height: 25px;
+            width: 25px;
+        }
+        h4 {
+            margin-left: 10px;
+            margin-top: 1px;
+        }
+    }
+}
+
+.componentHeader {
+    margin-bottom: 10px;
+    display: flex;
+    i {
+        color: $secondary-1;
+        margin-top: 3px;
+        margin-left: 9.5px;
+    }
+}
+
+.tooltip {
+    padding-left: 130px;
+    .tooltip-inner{
+        background-color: $secondary-1;
+        text-align:justify;
+        max-width: 300px;
+    }
+
+    .arrow {
+        left: -200px;
+    }
+
+    p {
+        font-size: 13px;
+        margin-left:10px;
+        margin-right:10px;
+        color:white;
+        height: 100%;
+        margin-top: 0px;
+    }
+
+    img {
+        width: 100%;
     }
 }
