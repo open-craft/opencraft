@@ -6,6 +6,7 @@ import './styles.scss';
 interface PreviewComponentProps {
   children?: React.ReactNode;
   instanceData: InstanceSettingsModel;
+  currentPreview: string;
 }
 
 export const PreviewComponent: React.FC<PreviewComponentProps> = (

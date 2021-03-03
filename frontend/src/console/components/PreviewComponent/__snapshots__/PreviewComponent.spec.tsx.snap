@@ -125,12 +125,12 @@ exports[`renders without crashing 1`] = `
                 <h1
                   style={Object {}}
                 >
-                  
+
                 </h1>
                 <p
                   style={Object {}}
                 >
-                  
+
                 </p>
               </div>
             </div>
@@ -208,7 +208,7 @@ exports[`renders without crashing 1`] = `
               }
             }
           >
-            Starts: 
+            Starts:
             Feb 5, 2013
           </div>
         </div>
@@ -334,7 +334,7 @@ exports[`renders without crashing 1`] = `
               }
             }
           >
-            © test. 
+            © test.
             All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
           </div>
         </div>
