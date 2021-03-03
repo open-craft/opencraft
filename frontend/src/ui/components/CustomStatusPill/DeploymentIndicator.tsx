@@ -8,9 +8,9 @@ interface Props {
 
 export const DeploymentIndicator: React.FC<Props> = (props: Props) => {
   const { redeploymentStatus, deploymentType } = props;
-  const { dotColor } = buildStatusContext(redeploymentStatus, deploymentType);
+  const { pillColor } = buildStatusContext(redeploymentStatus, deploymentType);
   const style = {
-    color: dotColor,
+    color: pillColor,
     fontSize: '12px'
   };
   return <i className="fa fa-circle" style={style} />;

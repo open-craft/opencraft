@@ -649,6 +649,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
             }
           >
             <input
+              id="rc-editable-input-1"
               onBlur={[Function]}
               onChange={[Function]}
               onKeyDown={[Function]}
@@ -668,7 +669,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
               value="FFFFFF"
             />
-            <span
+            <label
+              htmlFor="rc-editable-input-1"
               onMouseDown={[Function]}
               style={
                 Object {
@@ -683,7 +685,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
             >
               hex
-            </span>
+            </label>
           </div>
         </div>
         <div
@@ -706,6 +708,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
             }
           >
             <input
+              id="rc-editable-input-2"
               onBlur={[Function]}
               onChange={[Function]}
               onKeyDown={[Function]}
@@ -725,7 +728,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
               value="255"
             />
-            <span
+            <label
+              htmlFor="rc-editable-input-2"
               onMouseDown={[Function]}
               style={
                 Object {
@@ -741,7 +745,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
             >
               r
-            </span>
+            </label>
           </div>
         </div>
         <div
@@ -764,6 +768,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
             }
           >
             <input
+              id="rc-editable-input-3"
               onBlur={[Function]}
               onChange={[Function]}
               onKeyDown={[Function]}
@@ -783,7 +788,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
               value="255"
             />
-            <span
+            <label
+              htmlFor="rc-editable-input-3"
               onMouseDown={[Function]}
               style={
                 Object {
@@ -799,7 +805,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
             >
               g
-            </span>
+            </label>
           </div>
         </div>
         <div
@@ -822,6 +828,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
             }
           >
             <input
+              id="rc-editable-input-4"
               onBlur={[Function]}
               onChange={[Function]}
               onKeyDown={[Function]}
@@ -841,7 +848,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
               value="255"
             />
-            <span
+            <label
+              htmlFor="rc-editable-input-4"
               onMouseDown={[Function]}
               style={
                 Object {
@@ -857,7 +865,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
             >
               b
-            </span>
+            </label>
           </div>
         </div>
         <div
@@ -880,6 +888,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
             }
           >
             <input
+              id="rc-editable-input-5"
               onBlur={[Function]}
               onChange={[Function]}
               onKeyDown={[Function]}
@@ -899,7 +908,8 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
               value="100"
             />
-            <span
+            <label
+              htmlFor="rc-editable-input-5"
               onMouseDown={[Function]}
               style={
                 Object {
@@ -915,7 +925,7 @@ exports[`ColorInputField Component Render component, check if color picker shows
               }
             >
               a
-            </span>
+            </label>
           </div>
         </div>
       </div>
@@ -1655,3 +1665,4 @@ exports[`ColorInputField Component Render with default value. 1`] = `
   </p>
 </div>
 `;
+
