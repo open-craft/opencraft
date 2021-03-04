@@ -4,7 +4,7 @@ const messages = {
     description: 'Cancel deployment button.'
   },
   unavailable: {
-    defaultMessage: 'Status: loading',
+    defaultMessage: 'Loading',
     description: 'Redeployment status.'
   },
   unavailableTooltip: {
@@ -13,7 +13,7 @@ const messages = {
     description: 'Redeployment status tooltip text.'
   },
   runningDeployment: {
-    defaultMessage: 'Status: deploying changes',
+    defaultMessage: 'Publishing',
     description: 'Redeployment status.'
   },
   runningDeploymentTooltip: {
@@ -24,7 +24,7 @@ const messages = {
     description: 'Redeployment status tooltip text.'
   },
   updatedDeployment: {
-    defaultMessage: 'Status: Up to date',
+    defaultMessage: 'Up to date',
     description: 'Redeployment status.'
   },
   updatedDeploymentTooltip: {
@@ -32,16 +32,16 @@ const messages = {
     description: 'Redeployment status tooltip text.'
   },
   preparingInstance: {
-    defaultMessage: "Status: We're preparing your instance ",
+    defaultMessage: 'Publishing',
     description: 'Redeployment status.'
   },
   preparingInstanceTooltip: {
     defaultMessage:
-      'Your instance is being set-up, come back in a few hours to customize it.',
+      'Your updates are publishing to your live site (LMS). This can take 2-3 hours',
     description: 'Redeployment status tooltip text.'
   },
   pendingChanges: {
-    defaultMessage: 'Status: Pending changes',
+    defaultMessage: 'Publishing',
     description: 'Redeployment status.'
   },
   pendingChangesTooltip: {
@@ -50,7 +50,7 @@ const messages = {
     description: 'Redeployment status tooltip text.'
   },
   failed: {
-    defaultMessage: 'Status: Deployment error',
+    defaultMessage: 'Deployment error',
     description: 'Redeployment status.'
   },
   failedTooltip: {

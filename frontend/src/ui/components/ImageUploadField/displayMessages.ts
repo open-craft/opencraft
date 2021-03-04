@@ -1,10 +1,6 @@
 const messages = {
-  recommendedSize: {
-    defaultMessage: 'Recommended size: ',
-    description: ''
-  },
   change: {
-    defaultMessage: 'Change',
+    defaultMessage: 'Upload file',
     description: ''
   },
   updateImage: {

@@ -19,11 +19,10 @@ export const CustomStatusPill: React.FC<Props> = ({
   deploymentType,
   cancelRedeployment
 }: Props) => {
-  const { tooltipText, dotColor, deploymentStatusText } = buildStatusContext(
+  const { tooltipText, pillColor, deploymentStatusText } = buildStatusContext(
     redeploymentStatus,
     deploymentType
   );
-
   const tooltip = (
     <Tooltip id="redeployment-status">
       <WrappedMessage messages={messages} id={tooltipText} />
@@ -31,26 +30,31 @@ export const CustomStatusPill: React.FC<Props> = ({
   );
 
   return (
-    <OverlayTrigger placement="right" overlay={tooltip}>
-      <Badge pill className="status-pill" variant="primary">
-        <span className="dot" style={{ backgroundColor: dotColor }} />
-        <div className="text">
-          <WrappedMessage id={deploymentStatusText} messages={messages} />
-        </div>
-        {cancelRedeployment !== undefined &&
-          redeploymentStatus === DeploymentStatus.Provisioning &&
-          !loading && (
-            <Nav
-              className="text cancel-deployment"
-              onClick={() => {
-                cancelRedeployment();
-              }}
-            >
-              <i className="fas fa-xs fa-times" />
-              <WrappedMessage id="cancelRedeployment" messages={messages} />
-            </Nav>
-          )}
-      </Badge>
-    </OverlayTrigger>
+    <Badge
+      pill
+      className="status-pill"
+      variant="primary"
+      style={{ backgroundColor: pillColor }}
+    >
+      <div className="text">
+        <WrappedMessage id={deploymentStatusText} messages={messages} />
+      </div>
+      {cancelRedeployment !== undefined &&
+        redeploymentStatus === DeploymentStatus.Provisioning &&
+        !loading && (
+          <Nav
+            className="text cancel-deployment"
+            onClick={() => {
+              cancelRedeployment();
+            }}
+          >
+            <i className="fas fa-xs fa-times" />
+            <WrappedMessage id="cancelRedeployment" messages={messages} />
+          </Nav>
+        )}
+      <OverlayTrigger placement="right" overlay={tooltip}>
+        <i className="fas fa-question-circle fa-lg" />
+      </OverlayTrigger>
+    </Badge>
   );
 };

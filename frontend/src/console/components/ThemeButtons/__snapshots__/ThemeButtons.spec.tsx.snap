@@ -12,34 +12,41 @@ exports[`renders without crashing 1`] = `
     >
       <span
         className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
+        style={
+          Object {
+            "backgroundColor": "grey",
           }
-        />
+        }
+      >
         <div
           className="text"
         >
-          Status: loading
+          Loading
         </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
       </span>
       <button
-        className="float-right loading btn btn-primary btn-lg"
+        className="float-right btn-disabled btn btn-primary btn-lg"
         disabled={true}
         onClick={[Function]}
         type="button"
       >
-        Deploy (0 updates)
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
       </button>
     </div>
+    <div
+      className="toast-container"
+    />
   </div>
   <div
     className="console-page-container"

@@ -3,26 +3,24 @@
 .status-pill {
   background-color: $primary-2;
   border-radius: 39px;
-  margin: 4px 2px;
-  padding: 8px 10px;
+  margin: 10px 8px;
+  padding: 6px 7px;
   display: inline-flex;
 
   .text {
-    font-family: $roboto-font;
+    font-family: $chivo-font;
     text-align: center;
-    font-weight: 500;
-    font-size: 16px;
-    margin-top: 6px;
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-
-  .dot {
-    height: 25px;
-    width: 25px;
-    border: solid 2px #1e4c59;
-    border-radius: 50%;
-    display: inline-block;
+    font-size: 14px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
+    margin: 1px 8px 2px 0;
+    margin-top:1.5px;
+    margin-left:8px;
+    text-transform: uppercase;
   }
 
   .cancel-deployment {
@@ -34,8 +32,15 @@
       cursor: pointer;
     }
 
-    i {
-      margin-right: 3px;
-    }
   }
+
+  .fa-lg {
+    line-height:20px;
+    font-size: 20px;
+  }
+
+}
+
+#redeployment-status{
+  margin-left:20px;
 }

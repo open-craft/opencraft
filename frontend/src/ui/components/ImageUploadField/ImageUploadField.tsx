@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Alert, Button, Modal } from 'react-bootstrap';
+import { Alert, Button, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
+import upArrowIcon from 'assets/uparrow.png';
 import messages from './displayMessages';
 import './styles.scss';
 
@@ -8,10 +9,17 @@ interface ImageUploadFieldProps {
   customUploadMessage: any;
   updateImage: Function;
   clearError: Function;
-  recommendedSize?: string;
+  parentMessages?: any;
+  recommendationTextId?: string;
   error?: string;
   loading?: boolean;
   reset?: Function;
+  tooltipTextId?: string;
+  tooltipImage?: string;
+}
+
+interface Image {
+  name?: string;
 }
 
 export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
@@ -19,6 +27,13 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
 ) => {
   const [show, setShow] = React.useState(false);
   const [image, setImage] = React.useState();
+
+  const filename = (file: Image | undefined) => {
+    if (file) {
+      return file.name;
+    }
+    return '';
+  };
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
@@ -32,30 +47,65 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
     setImage(files[0]);
   };
 
+  let tooltip = null;
+
+  if (props.parentMessages && props.tooltipTextId) {
+    tooltip = (
+      <Tooltip className="tooltip" id={props.tooltipTextId}>
+        <p>
+          <WrappedMessage
+            messages={props.parentMessages}
+            id={props.tooltipTextId}
+          />
+        </p>
+        {props.tooltipImage && (
+          <img
+            className="tooltipImage"
+            src={props.tooltipImage}
+            alt="tooltipImage"
+          />
+        )}
+      </Tooltip>
+    );
+  }
+
   return (
     <div className="image-upload-field">
-      <h4>{props.customUploadMessage}</h4>
-      {props.recommendedSize && (
-        <p>
-          <WrappedMessage messages={messages} id="recommendedSize" />
-          {props.recommendedSize}
-        </p>
-      )}
+      <div className="componentHeader">
+        <h4>{props.customUploadMessage}</h4>
+        {tooltip && (
+          <OverlayTrigger placement="top" overlay={tooltip}>
+            <i className="fas fa-info-circle" />
+          </OverlayTrigger>
+        )}
+      </div>
       <Button
         variant="outline-primary"
         size="lg"
         onClick={handleShow}
         disabled={props.loading}
+        className="uploadButton"
       >
-        <WrappedMessage messages={messages} id="change" />
+        <div className="buttonContents">
+          <img className="uploadIcon" src={upArrowIcon} alt="Upload icon" />
+          <h4>
+            <WrappedMessage messages={messages} id="change" />
+          </h4>
+        </div>
       </Button>
-
-      {props.error && (
+      {props.parentMessages && props.recommendationTextId && (
         <p>
-          <Alert className="error-box" variant="danger">
-            {props.error}
-          </Alert>
+          <WrappedMessage
+            messages={props.parentMessages}
+            id={props.recommendationTextId}
+          />
         </p>
+      )}
+      <h3>{filename(image)}</h3>
+      {props.error && (
+        <Alert className="error-box" variant="danger">
+          <p>{props.error}</p>
+        </Alert>
       )}
 
       {props.reset !== undefined && (

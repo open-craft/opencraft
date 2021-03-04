@@ -46,6 +46,10 @@ const messages = {
   homePageHeroSubtitleColorHelp: {
     defaultMessage: 'Color of the sub-heading',
     description: ''
+  },
+  heroRecommendation: {
+    defaultMessage: 'Recommended size: 1200x250px',
+    description: 'Recommendation for Hero image dimensions'
   }
 };
 
