@@ -4,7 +4,8 @@ import { ConsolePageCustomizationContainer } from 'console/components';
 import { ConsolePage } from 'newConsole/components';
 import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
-import { CollapseEditArea, ImageUploadField } from 'ui/components';
+import { ImageUploadField } from 'ui/components';
+import faviconTooltipImage from 'assets/faviconTooltipImage.png';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
@@ -44,15 +45,10 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
       >
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
+            <h2>
+              <WrappedMessage messages={messages} id="logos" />
+            </h2>
             <Row>
-              <Col md={9}>
-                <h2>
-                  <WrappedMessage messages={messages} id="logo" />
-                </h2>
-                <p>
-                  <WrappedMessage messages={messages} id="logoDescription" />
-                </p>
-              </Col>
               <Col md={3} className="image-container">
                 <div>
                   {instance.data && instance.data.logo && (
@@ -61,33 +57,22 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
                 </div>
               </Col>
             </Row>
-            <CollapseEditArea initialExpanded>
-              <ImageUploadField
-                customUploadMessage={
-                  <WrappedMessage messages={messages} id="uploadLogo" />
-                }
-                updateImage={(image: File) => {
-                  this.updateImage('logo', image);
-                }}
-                recommendedSize="48x48 px"
-                error={instance.feedback.logo}
-                clearError={() => {
-                  this.props.clearErrorMessage('logo');
-                }}
-              />
-            </CollapseEditArea>
-          </ConsolePageCustomizationContainer>
-
-          <ConsolePageCustomizationContainer>
+            <ImageUploadField
+              customUploadMessage={
+                <WrappedMessage messages={messages} id="siteLogo" />
+              }
+              updateImage={(image: File) => {
+                this.updateImage('logo', image);
+              }}
+              parentMessages={messages}
+              recommendationTextId="logoRecommendation"
+              error={instance.feedback.logo}
+              clearError={() => {
+                this.props.clearErrorMessage('logo');
+              }}
+              tooltipTextId="logoTooltip"
+            />
             <Row>
-              <Col md={9}>
-                <h2>
-                  <WrappedMessage messages={messages} id="favicon" />
-                </h2>
-                <p>
-                  <WrappedMessage messages={messages} id="faviconDescription" />
-                </p>
-              </Col>
               <Col md={3} className="image-container">
                 <div>
                   {instance.data && instance.data.favicon && (
@@ -96,20 +81,22 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
                 </div>
               </Col>
             </Row>
-            <CollapseEditArea>
-              <ImageUploadField
-                customUploadMessage={
-                  <WrappedMessage messages={messages} id="uploadFavicon" />
-                }
-                updateImage={(image: File) => {
-                  this.updateImage('favicon', image);
-                }}
-                error={instance.feedback.favicon}
-                clearError={() => {
-                  this.props.clearErrorMessage('favicon');
-                }}
-              />
-            </CollapseEditArea>
+            <ImageUploadField
+              customUploadMessage={
+                <WrappedMessage messages={messages} id="favicon" />
+              }
+              updateImage={(image: File) => {
+                this.updateImage('favicon', image);
+              }}
+              parentMessages={messages}
+              recommendationTextId="faviconRecommendation"
+              error={instance.feedback.favicon}
+              clearError={() => {
+                this.props.clearErrorMessage('favicon');
+              }}
+              tooltipTextId="faviconTooltip"
+              tooltipImage={faviconTooltipImage}
+            />
           </ConsolePageCustomizationContainer>
         </div>
       </ConsolePage>
