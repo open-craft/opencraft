@@ -1,6 +1,10 @@
 import * as React from 'react';
 import './styles.scss';
-import { ConsolePage, PreviewBox } from 'newConsole/components';
+import {
+  ConsolePage,
+  PreviewBox,
+  CourseOutlinePreview
+} from 'newConsole/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -20,7 +24,9 @@ export class LogosComponent extends React.PureComponent<Props, State> {
         contentLoading={this.props.loading}
         showSideBarEditComponent={false}
       >
-        <PreviewBox />
+        <PreviewBox>
+          <CourseOutlinePreview />
+        </PreviewBox>
       </ConsolePage>
     );
   }

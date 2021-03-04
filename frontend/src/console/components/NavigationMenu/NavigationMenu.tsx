@@ -13,6 +13,9 @@ interface NavigationMenuProps {
   instanceData: InstanceSettingsModel | null;
   themeData: ThemeSchema;
   loggedIn?: boolean;
+
+  // shows course header for pages like outline or unit pages.
+  coursePage?: boolean;
 }
 
 export const NavigationMenu: React.FC<NavigationMenuProps> = (
@@ -110,27 +113,35 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
     </Row>
   );
 
+  const courseHeader = (
+    <div className="course-header mr-4">
+      <span className="course-org">edX: Demox</span>
+      <span className="course-name">Demonstration Course</span>
+    </div>
+  );
+
   return (
     <Row
-      className="main-navigation-menu navigation-menu"
+      className="d-flex felx-row main-navigation-menu navigation-menu"
       style={{ background: themeData.headerBg }}
     >
-      <Col md={1} className="logo">
+      <div className="logo">
         {props.instanceData && props.instanceData.logo && (
           <img src={props.instanceData.logo} alt="Logo" />
         )}
-      </Col>
-      <Col md={1}>
-        <CustomizableLink
-          linkColor={themeData.mainNavLinkColor}
-          borderBottomColor={themeData.mainNavItemBorderBottomColor}
-          borderBottomHoverColor={themeData.mainNavItemHoverBorderBottomColor}
-          active={props.loggedIn}
-        >
-          Courses
-        </CustomizableLink>
-      </Col>
-      <Col md={3}>
+      </div>
+      <div className="flex-grow-1 d-flex flex-row ml-4 mr-4">
+        {props.coursePage && courseHeader}
+        {!props.coursePage && (
+          <CustomizableLink
+            linkColor={themeData.mainNavLinkColor}
+            borderBottomColor={themeData.mainNavItemBorderBottomColor}
+            borderBottomHoverColor={themeData.mainNavItemHoverBorderBottomColor}
+            active={props.loggedIn}
+          >
+            Courses
+          </CustomizableLink>
+        )}
         <CustomizableLink
           linkColor={themeData.mainNavLinkColor}
           borderBottomColor={themeData.mainNavItemBorderBottomColor}
@@ -138,8 +149,8 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = (
         >
           Discover New
         </CustomizableLink>
-      </Col>
-      <Col md={7}>{userMenu}</Col>
+      </div>
+      <div>{userMenu}</div>
     </Row>
   );
 };

@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders without crashing 1`] = `
-<div
-  className="theme-preview"
->
+Array [
   <div
     className="theme-preview-navigation row"
   >
@@ -95,7 +93,7 @@ exports[`renders without crashing 1`] = `
         </div>
       </div>
     </div>
-  </div>
+  </div>,
   <div
     className="theme-home"
   >
@@ -214,7 +212,7 @@ exports[`renders without crashing 1`] = `
         </div>
       </div>
     </div>
-  </div>
+  </div>,
   <div
     className="theme-footer row"
   >
@@ -408,6 +406,6 @@ exports[`renders without crashing 1`] = `
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </div>,
+]
 `;

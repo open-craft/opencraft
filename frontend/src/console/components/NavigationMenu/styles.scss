@@ -39,4 +39,19 @@
   img {
     max-width: 100%;
   }
+
+  .course-header {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: left;
+    justify-content: center;
+
+    .course-org {
+      font-size: 12px;
+    }
+    .course-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
 }

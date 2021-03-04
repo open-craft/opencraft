@@ -666,7 +666,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="theme-preview-navigation col"
                         >
                           <div
-                            className="main-navigation-menu navigation-menu row"
+                            className="d-flex felx-row main-navigation-menu navigation-menu row"
                             style={
                               Object {
                                 "background": undefined,
@@ -674,10 +674,10 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             }
                           >
                             <div
-                              className="logo col-md-1"
+                              className="logo"
                             />
                             <div
-                              className="col-md-1"
+                              className="flex-grow-1 d-flex flex-row ml-4 mr-4"
                             >
                               <button
                                 className="customizable-link"
@@ -693,10 +693,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                               >
                                 Courses
                               </button>
-                            </div>
-                            <div
-                              className="col-md-3"
-                            >
                               <button
                                 className="customizable-link"
                                 onMouseEnter={[Function]}
@@ -712,9 +708,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                                 Discover New
                               </button>
                             </div>
-                            <div
-                              className="col-md-7"
-                            >
+                            <div>
                               <div
                                 className="navigation-menu navigation-submenu row"
                               >
@@ -1472,7 +1466,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                           className="theme-preview-navigation col"
                         >
                           <div
-                            className="main-navigation-menu navigation-menu row"
+                            className="d-flex felx-row main-navigation-menu navigation-menu row"
                             style={
                               Object {
                                 "background": undefined,
@@ -1480,10 +1474,10 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             }
                           >
                             <div
-                              className="logo col-md-1"
+                              className="logo"
                             />
                             <div
-                              className="col-md-1"
+                              className="flex-grow-1 d-flex flex-row ml-4 mr-4"
                             >
                               <button
                                 className="customizable-link"
@@ -1499,10 +1493,6 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                               >
                                 Courses
                               </button>
-                            </div>
-                            <div
-                              className="col-md-3"
-                            >
                               <button
                                 className="customizable-link"
                                 onMouseEnter={[Function]}
@@ -1518,9 +1508,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                                 Discover New
                               </button>
                             </div>
-                            <div
-                              className="col-md-7"
-                            >
+                            <div>
                               <div
                                 className="navigation-menu navigation-submenu row"
                               >
