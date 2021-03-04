@@ -244,7 +244,7 @@ exports[`Theme preview and colors page Render theme settings page when instance 
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -517,7 +517,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -1323,7 +1323,7 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -2165,7 +2165,7 @@ exports[`Theme preview and colors page renders without crashing 1`] = `
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage

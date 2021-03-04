@@ -218,7 +218,7 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
         >
           <a
             aria-current={null}
-            href="/newconsole/courses/manage"
+            href="/console/courses/manage"
             onClick={[Function]}
           >
             Manage

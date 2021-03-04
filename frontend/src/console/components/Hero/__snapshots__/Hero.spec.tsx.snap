@@ -244,7 +244,7 @@ exports[`Hero customization page renders the hero customization page when instan
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -532,7 +532,7 @@ exports[`Hero customization page renders the hero customization page when instan
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -820,7 +820,7 @@ exports[`Hero customization page renders the hero customization page when the in
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -1108,7 +1108,7 @@ exports[`Hero customization page renders the hero customization page when the in
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
@@ -1432,7 +1432,7 @@ exports[`Hero customization page renders without crashing 1`] = `
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage

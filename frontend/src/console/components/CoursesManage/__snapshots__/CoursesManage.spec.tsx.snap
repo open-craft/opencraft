@@ -280,7 +280,7 @@ exports[`renders without crashing 1`] = `
                     >
                       <a
                         aria-current={null}
-                        href="/newconsole/courses/manage"
+                        href="/console/courses/manage"
                         onClick={[Function]}
                       >
                         Manage
