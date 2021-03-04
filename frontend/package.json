@@ -8,6 +8,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "test": "react-scripts test",
+    "coverage": "react-scripts test --ci --coverage --watchAll=false",
     "lint": "eslint src/ --ext .ts,.tsx",
     "lint-fix": "eslint src/ --ext .ts,.tsx --fix",
     "update-api-client": "./scripts/update-api-client.sh",
@@ -15,6 +16,24 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/**/components/**/*.tsx"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    },
+    "coverageReporters": [
+      "lcov",
+      "text",
+      "clover"
+    ]
   },
   "browserslist": {
     "production": [
@@ -51,6 +70,7 @@
     "classnames": "^2.2.6",
     "connected-react-router": "^6.8.0",
     "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.6",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.20.2",
@@ -78,5 +98,9 @@
     "redux-thunk": "^2.3.0",
     "tinymce": "^5.2.2",
     "typescript": "3.9.2"
+  },
+  "devDependencies": {
+    "@types/enzyme": "^3.10.8",
+    "@types/enzyme-adapter-react-16": "^1.0.6"
   }
 }
