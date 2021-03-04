@@ -51,7 +51,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
 
   if (props.parentMessages && props.tooltipTextId) {
     tooltip = (
-      <Tooltip className="tooltip" id={props.tooltipTextId}>
+      <Tooltip className="image-upload-tooltip" id={props.tooltipTextId}>
         <p>
           <WrappedMessage
             messages={props.parentMessages}
