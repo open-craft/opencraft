@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
 import { clearErrorMessage, updateImages } from 'console/actions';
-import messages from './displayMessages';
+import messages from 'console/components/Logos/displayMessages';
 
 interface State {}
 interface ActionProps {
