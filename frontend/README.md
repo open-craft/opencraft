@@ -53,17 +53,20 @@ npm run build-api-client
 - Running the tests and checks:
 
 ```bash
-npm run lint # for running the linting
+npm run lint # Run eslint
 
-# for fixing the linting(it usually runs `--fix` flag with eslint so it tries to correct as many issues as possible but still can fail)
-npm run lint-fix 
+npm run lint-fix # Apply eslint -- this may result in undesired changes
+                 # or lint that must be fixed manually
 
-npm run test # for running the tests
+npm run test <name> # Run tests. Restrict with optional <name> pattern
+
+npm run coverage <name> # Run tests + coverage report for optional <name> pattern.
+                        # This will render the report in frontend/coverage
 ```
 
 ## Deployment Process
 
-The Deployment is done on automatically using CircleCI when any commit is added in the `stage` 
+The Deployment is done on automatically using CircleCI when any commit is added in the `stage`
 branch (for details, check `frontend-deploy` job in [circle.yml](../circle.yml)). The bundle is
 hosted on S3 and is directly served from Cloudfront.
 
@@ -77,19 +80,19 @@ A partial list of reusable UI components is shown in the `/demo` route, accessib
 
 We use React, TypeScript, Bootstrap, and SCSS for the frontend.
 
-For global state shared among different parts of the application, we use Redux. 
-So things like the user's login/logout status, the user's details etc. should 
+For global state shared among different parts of the application, we use Redux.
+So things like the user's login/logout status, the user's details etc. should
 be kept in the Redux state and modified using actions.
 
-For all other state, such as data required just for a particular 
-widget/component/page, we just use "normal" React props/state; this is because 
-Redux imposes a lot of boilerplate code overhead and offers little value if the 
+For all other state, such as data required just for a particular
+widget/component/page, we just use "normal" React props/state; this is because
+Redux imposes a lot of boilerplate code overhead and offers little value if the
 state is not shared among diverse parts of the application.
 
 However, just because we use React and, when necessary, Redux, this doesn't mean
-all the code has to be inside React components or the Redux store; "regular" 
-JavaScript code launched from main.tsx that for example talks to the Redux 
-store is always an option. 
+all the code has to be inside React components or the Redux store; "regular"
+JavaScript code launched from main.tsx that for example talks to the Redux
+store is always an option.
 
 ## React Component Guidelines
 
@@ -99,7 +102,7 @@ When coding React components, please keep the following in mind:
 * All component props and redux state variables that are complex objects should be immutable (enforced via TypeScript by declaring them as `ReadOnlyArray<T>`, `ReadOnlySet<T>`, and `ReadOnly<T>`, mutated using [`immutability-helper`](https://github.com/kolodny/immutability-helper) or plain ES6).
 * Write sensible tests, including unit tests, [snapshot tests](https://jestjs.io/docs/en/snapshot-testing), and/or end-to-end tests.
     - When reviewing changes to snapshot tests, carefully review the HTML diff to ensure the changes are expected.
-    - Test files should be located alongside the component they test (so `Card.tsx` is tested in `Card.spec.tsx`)    
+    - Test files should be located alongside the component they test (so `Card.tsx` is tested in `Card.spec.tsx`)
     - Never import jest/test related code in `.ts` files that are part of the application (only in `.spec.tsx` files); this avoids adding several megabytes of test code to the app bundle.
     - When in doubt, end-to-end tests and Enzyme behavior tests are preferred. Snapshot tests are still useful, but not as important as an end to end test or even a regular React component test that simulates user interaction with the component and then make assertions about the result.
 * Prefer to split big components up into smaller components that get composed together.

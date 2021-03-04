@@ -1,6 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`renders without crashing 1`] = `
+exports[`Domain Input component renders with props without crashing 1`] = `ReactWrapper {}`;
+
+exports[`Domain Input component renders without crashing 1`] = `
 <div
   className="domain-input-container"
 >
