@@ -5,7 +5,7 @@ import { ROUTES, AVAILABLE_CUSTOM_PAGES } from 'global/constants';
 import './styles.scss';
 import { useLocation, NavLink } from 'react-router-dom';
 import { capitalizeFirstLetter } from 'utils/string_utils';
-import messages from './displayMessages';
+import messages from 'console/components/CustomizationSideMenu/displayMessages';
 
 export const CustomizationSideMenu: React.FC = () => {
   // Using react hooks to fetch full path and highlight currently active
