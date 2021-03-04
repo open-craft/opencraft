@@ -14,7 +14,7 @@ import {
   cancelDeployment
 } from 'console/actions';
 import { WrappedMessage } from 'utils/intl';
-import messages from './displayMessages';
+import messages from 'console/components/ConsolePage/displayMessages';
 import './styles.scss';
 import { PreviewBox } from '../PreviewBox';
 
