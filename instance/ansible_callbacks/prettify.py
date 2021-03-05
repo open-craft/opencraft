@@ -34,19 +34,8 @@ class CallbackModule(DefaultCallback):
 
     def _get_item_label(self, result):
         """
-        Overrides the DefaultCallback's `_get_item_label` method to returned a readable
-        json representation of the item instead of a raw python dump.
+        Overrides the DefaultCallback's `_get_item_label` method to return
+        a json representation of the item instead of a raw python dump.
         """
         item = super(CallbackModule, self)._get_item_label(result)
-        return json.dumps(item, indent=2, ensure_ascii=False)
-
-    def _dump_results(self, result, indent=2, sort_keys=False, keep_invocation=False):
-        """
-        Overrides the DefaultCallback's `_dump_results` to indent the json output by default.
-        """
-        return super(CallbackModule, self)._dump_results(
-            result,
-            indent=indent,
-            sort_keys=sort_keys,
-            keep_invocation=keep_invocation
-        )
+        return json.dumps(item, ensure_ascii=False)
