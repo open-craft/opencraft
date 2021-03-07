@@ -71,7 +71,7 @@ export class LogosComponent extends React.PureComponent<Props, State> {
               <Col md={3} className="image-container">
                 <div>
                   {instance.data && instance.data.favicon && (
-                    <img src={instance.data.favicon} alt="favicon" />
+                    <img src={instance.data.favicon} alt="Favicon" />
                   )}
                 </div>
               </Col>
