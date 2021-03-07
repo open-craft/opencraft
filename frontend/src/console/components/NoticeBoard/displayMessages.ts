@@ -25,9 +25,25 @@ const messages = {
     defaultMessage: 'Deployment offline.',
     description: 'Redeployment alert message.'
   },
+  explanation: {
+    defaultMessage:
+      'There are many factors that affect the speed at which updates will ' +
+      'reflect on your site. Please allow up to 2 hours for your site to be updated.',
+    description: 'Brief explanation on deployment duration.'
+  },
+  blogpost_text: {
+    defaultMessage:
+      'If you would like to learn more about the way we provision the sites, ' +
+      'please see our <link>blog post</link> explaining the deployment process.',
+    description: 'Text that links to the blog post.'
+  },
+  blogpost_link: {
+    defaultMessage: 'here ',
+    description: 'Link to the blog post.'
+  },
   noticeBoard: {
-    defaultMessage: 'Notice Board',
-    description: 'Notice board heading.'
+    defaultMessage: 'Status & Notifications',
+    description: 'Status & Notifications board heading.'
   },
   noActiveInstance: {
     defaultMessage:

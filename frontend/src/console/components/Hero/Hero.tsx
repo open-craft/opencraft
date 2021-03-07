@@ -359,7 +359,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
                         clearError={() => {
                           this.props.clearErrorMessage('heroCover');
                         }}
-                        recommendedSize="1200x250px"
+                        parentMessages={messages}
+                        recommendationTextId="heroRecommendation"
                         reset={() => {
                           if (
                             this.activeInstanceDataExists() &&

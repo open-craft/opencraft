@@ -22,8 +22,11 @@
 from collections import defaultdict
 from datetime import timedelta, datetime
 from unittest import mock
+from freezegun import freeze_time
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -45,7 +48,9 @@ from reports.helpers import (
     get_billing_period,
     get_instance_charges,
 )
+from registration.models import BetaTestApplication
 from userprofile.factories import OrganizationFactory
+from .tasks import send_trial_instances_report
 
 # Tests #####################################################################
 
@@ -528,3 +533,168 @@ class ReportsHelpersTestCase(TestCase):
             date = datetime(year, month, 1)
 
         return timezone.make_aware(date)
+
+
+class ReportTaskTestCase(TestCase):
+    """
+    Tests for reports tasks execution
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(ReportTaskTestCase, self).__init__(*args, **kwargs)
+        self.instance_counter = 0
+
+    def create_user_with_trial_instance(self):
+        """
+        Returns a trial instance for a user
+
+        :param key: String to append to properties.
+        :return: A trial instance
+        """
+        user, _ = get_user_model().objects.get_or_create(
+            username=str(self.instance_counter) + 'test',
+            email=str(self.instance_counter) + 'test@example.com'
+        )
+        instance = OpenEdXInstanceFactory(
+            successfully_provisioned=True, betatestapplication=BetaTestApplication()
+        )
+        make_test_appserver(instance=instance, is_active=True)
+        BetaTestApplication.objects.create(
+            user=user,
+            public_contact_email=str(self.instance_counter) + 'publicemail@example.com',
+            subdomain=str(self.instance_counter) + 'betatestdomain',
+            instance_name=instance.name,
+            status=BetaTestApplication.ACCEPTED,
+            instance=instance
+        )
+
+        self.instance_counter += 1
+
+        return instance
+
+    def test_send_trial_instances_report_failure(self):
+        """
+        Tests that if send_trial_instances_report fails because there are no matching instances
+        the recipient gets notified regardless.
+        """
+        send_trial_instances_report(recipients=['to@example.com'])
+        sent_mail = mail.outbox[0]
+        self.assertIn(
+            'Unable to generate a Trial Instances Report due to failure of `instance_statistics_csv`',
+            sent_mail.body
+        )
+        self.assertEqual(
+            [],
+            sent_mail.attachments
+        )
+        self.assertEqual(
+            ['to@example.com'],
+            sent_mail.to
+        )
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_send_trial_instances_report(self):
+        """
+        Tests that if send_trial_instances_report succeeds, the recipient receives
+        a correct report with only instances created last month.
+        """
+        date1 = "2020-01-01"
+        date2 = "2020-02-01"
+        date3 = "2020-03-01"
+
+        with freeze_time(date1):
+            instance1 = self.create_user_with_trial_instance()
+        with freeze_time(date2):
+            instance2 = self.create_user_with_trial_instance()
+        with freeze_time(date3):
+            instance3 = self.create_user_with_trial_instance()
+
+            send_trial_instances_report(recipients=['to@example.com'])
+            sent_mail = mail.outbox[0]
+
+            self.assertEqual(len(mail.outbox), 1)
+
+            self.assertIn(
+                'Please find attached a CSV with the statistics for February 2020',
+                sent_mail.body
+            )
+
+            self.assertNotIn(
+                instance1.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertIn(
+                instance2.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertNotIn(
+                instance3.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertEqual(
+                ['to@example.com'],
+                sent_mail.to
+            )
+
+    def test_send_trial_instances_report_corner_cases(self):
+        """
+        Tests that send_trial_instances_report succeeds handles date-based
+        corner cases well.
+        """
+        date1 = "2020-01-01 00:00:00"
+        date2 = "2020-01-31 23:59:59"
+        date3 = "2020-02-01 00:00:00"
+        date4 = "2020-02-29 23:59:59"
+        date5 = "2020-03-01 00:00:00"
+        date6 = "2020-03-31 23:59:59"
+
+        with freeze_time(date1):
+            instance1 = self.create_user_with_trial_instance()
+        with freeze_time(date2):
+            instance2 = self.create_user_with_trial_instance()
+        with freeze_time(date3):
+            instance3 = self.create_user_with_trial_instance()
+        with freeze_time(date4):
+            instance4 = self.create_user_with_trial_instance()
+        with freeze_time(date5):
+            instance5 = self.create_user_with_trial_instance()
+        with freeze_time(date6):
+            instance6 = self.create_user_with_trial_instance()
+
+            send_trial_instances_report(recipients=['to@example.com'])
+            sent_mail = mail.outbox[0]
+
+            self.assertEqual(len(mail.outbox), 1)
+
+            self.assertIn(
+                'Please find attached a CSV with the statistics for February 2020',
+                sent_mail.body
+            )
+            self.assertNotIn(
+                instance1.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertNotIn(
+                instance2.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertIn(
+                instance3.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertIn(
+                instance4.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertNotIn(
+                instance5.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertNotIn(
+                instance6.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertEqual(
+                ['to@example.com'],
+                sent_mail.to
+            )

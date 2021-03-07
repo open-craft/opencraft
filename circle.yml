@@ -60,6 +60,34 @@ jobs:
       - store_test_results:
           path: .
 
+  frontend-coverage:
+      docker:
+        - image: circleci/node:12
+      working_directory: ~/project/frontend
+      steps:
+        - checkout:
+            path: ~/project
+        - restore_cache:
+            keys:
+              - frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+              - frontend-deps-{{ .Branch }}-
+              - frontend-deps-
+        - run:
+            name: Build and install Ocim API client
+            command: ./scripts/build-api-client.sh
+        - run:
+            name: Installing frontend dependencies
+            command: npm install
+        - save_cache:
+            paths:
+              - node_modules
+            key: frontend-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+        - run:
+            name: Generate frontend coverage report
+            command: npm run coverage || true
+        - store_test_results:
+            path: ~/project/frontend/coverage/clover.xml
+
   frontend-build:
     docker:
       - image: circleci/node:12
@@ -413,6 +441,10 @@ workflows:
   frontend-build-test-and-deploy:
     jobs:
       - frontend-quality:
+          filters:
+            tags:
+              only: /^release\-\w+\-\w+$/
+      - frontend-coverage:
           filters:
             tags:
               only: /^release\-\w+\-\w+$/

@@ -61,13 +61,31 @@ exports[`NoticeBoard tests Renders all notification types without crashing 1`] =
           className="justify-content-center row"
         >
           <div
-            className="col-md-7"
+            className="col-md-8"
           >
             <div
               className="notice-board-heading"
             >
               <p>
-                Notice Board
+                Status & Notifications
+              </p>
+            </div>
+            <div
+              className="explanation-container"
+            >
+              <p>
+                There are many factors that affect the speed at which updates will reflect on your site. Please allow up to 2 hours for your site to be updated.
+              </p>
+              <p>
+                If you would like to learn more about the way we provision the sites, please see our 
+                <a
+                  href="https://opencraft.com/blog/how-we-deploy-the-open-edx-platform/"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  blog post
+                </a>
+                 explaining the deployment process.
               </p>
             </div>
             <div
@@ -1417,13 +1435,31 @@ exports[`NoticeBoard tests Renders message about non-existent instance if email 
           className="justify-content-center row"
         >
           <div
-            className="col-md-7"
+            className="col-md-8"
           >
             <div
               className="notice-board-heading"
             >
               <p>
-                Notice Board
+                Status & Notifications
+              </p>
+            </div>
+            <div
+              className="explanation-container"
+            >
+              <p>
+                There are many factors that affect the speed at which updates will reflect on your site. Please allow up to 2 hours for your site to be updated.
+              </p>
+              <p>
+                If you would like to learn more about the way we provision the sites, please see our 
+                <a
+                  href="https://opencraft.com/blog/how-we-deploy-the-open-edx-platform/"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  blog post
+                </a>
+                 explaining the deployment process.
               </p>
             </div>
             <p>
