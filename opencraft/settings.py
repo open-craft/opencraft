@@ -910,6 +910,12 @@ TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS'
 # Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
 TRIAL_INSTANCES_REPORT_SCHEDULE = env('TRIAL_INSTANCES_REPORT_SCHEDULE', default='0 2 1 * *')
 
+# Kill Zombies Periodic task #################################################
+
+KILL_ZOMBIES_ENABLED = env("KILL_ZOMBIES_ENABLED", default=False)
+KILL_ZOMBIES_SCHEDULE = env("KILL_ZOMBIES_SCHEDULE", default="0 0 * * *")
+KILL_ZOMBIES_WARNING_THRESHOLD = env("KILL_ZOMBIES_WARNING_THRESHOLD", default=10)
+
 # User inactive and delete ####################################################
 
 CLEANUP_OLD_BETATEST_USERS = env('CLEANUP_OLD_BETATEST_USERS', default=True)

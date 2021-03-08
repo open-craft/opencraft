@@ -71,16 +71,18 @@ class Command(BaseCommand):
 
         if not nova_servers:
             self.log('No servers found in region {}.'.format(self.region))
-            return
+            return None
         self.log('Found {} unterminated servers in region {}.'.format(len(nova_servers), self.region))
 
         # Scan each server for the zombieness.
         death_count = sum(1 for srv in nova_servers if self.not_zombie_or_die(srv))
 
         if self.dry_run:
-            self.log("Would have terminated {} zombies if this weren't a dry run.".format(death_count))
+            result = "Would have terminated {} zombies if this weren't a dry run.".format(death_count)
         else:
-            self.log("Terminated {} zombies.".format(death_count))
+            result = "Terminated {} zombies.".format(death_count)
+        self.log(result)
+        return result
 
     def not_zombie_or_die(self, nova_server):
         """

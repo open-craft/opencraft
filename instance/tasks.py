@@ -23,11 +23,13 @@ Worker tasks for instance hosting & management
 # Imports #####################################################################
 
 from datetime import datetime
-import logging
 from typing import Optional, List
+import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.management import call_command, CommandError
+from django.core.mail import EmailMessage
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
@@ -47,6 +49,9 @@ from pr_watch import github
 
 logger = logging.getLogger(__name__)
 
+# Constants  ##################################################################
+
+KILL_ZOMBIES_CRON_SCHEDULE = settings.KILL_ZOMBIES_SCHEDULE.split()
 
 # Tasks #######################################################################
 
@@ -339,3 +344,115 @@ if settings.CLEANUP_OLD_BETATEST_USERS:
         users_to_delete = queryset.filter(is_active=False, profile__modified__lte=delete_cutoff)
         logger.info('Deleting %s users.', users_to_delete.count())
         users_to_delete.delete()
+
+
+class KillZombiesRunner:
+    """
+    Helper class to run `kill_zombies_periodically`
+    """
+
+    def __init__(self):
+        self.region: str = settings.OPENSTACK_REGION
+        self.recipient: list = [email for _, email in settings.ADMINS]
+        self.threshold: int = settings.KILL_ZOMBIES_WARNING_THRESHOLD
+
+    def send_email(self, subject: str, body: str) -> int:
+        """
+        Utility method for sending emails
+        """
+        if self.recipient:
+            email = EmailMessage(
+                subject, body, settings.DEFAULT_FROM_EMAIL, self.recipient
+            )
+            email.send()
+        else:
+            logging.info("Email recipient is undefined. Skipping email.")
+
+    def trigger_warning(self, num_zombies):
+        """
+        Warns when more than `threshold` VMs will be terminated
+        """
+        subject = "Zombie instances are over the current threshold ({})".format(
+            self.threshold
+        )
+        body = (
+            "The number of zombie OpenStack VMs ({}) in the {} region "
+            "is over the KILL_ZOMBIES_WARNING_THRESHOLD ({}).\n"
+            "These instances will be terminated using the `kill_zombies` command."
+        ).format(num_zombies, self.region, self.threshold)
+        logging.info(
+            "%s\nSending an email notification to: %s",
+            body, self.recipient
+        )
+        self.send_email(subject, body)
+
+    def get_zombie_servers_count(self, stdout: str) -> int:
+        """
+        If there are servers to terminate, a `kill_zombies` dry run will warn:
+        "Would have terminated {} zombies" to stdout.
+        """
+        num_instances = 0
+        if "No servers found in region" in stdout:
+            return num_instances
+        try:
+            num_instances = int(stdout.split("Would have terminated")[1].split()[0])
+        except (IndexError, ValueError):
+            logger.info("Received unexpected input from dry run. Defaulting to zero")
+        return num_instances
+
+    def run(self):
+        """
+        Main method for running the task
+        """
+        try:
+            dry_run_output, output = "", ""
+            dry_run_output = call_command(
+                "kill_zombies",
+                region=self.region,
+                dry_run=True,
+            )
+            num_of_zombies = self.get_zombie_servers_count(dry_run_output)
+            if num_of_zombies > self.threshold:
+                self.trigger_warning(num_of_zombies)
+            if num_of_zombies != 0:
+                output = call_command("kill_zombies", region=self.region)
+                logging.info(
+                    "Task `kill_zombies_periodically` ran successfully "
+                    "and terminated %s zombies", num_of_zombies
+                )
+            else:
+                logging.info(
+                    "Found zero zombies to terminate. "
+                    "Task `kill_zombies_periodically` ran successfully."
+                )
+        except CommandError:
+            logger.error(
+                "Task `kill_zombies` command failed. Sending notification email"
+            )
+            subject = "Terminate zombie instances command failed"
+            body = (
+                "Scheduled execution of `kill_zombies` command failed. "
+                "Log entries are displayed below:"
+                "%s\n%s"
+            ) % (dry_run_output, output)
+            self.send_email(subject, body)
+            return False
+        return True
+
+
+if settings.KILL_ZOMBIES_ENABLED:
+    @db_periodic_task(crontab(
+        minute=KILL_ZOMBIES_CRON_SCHEDULE[0],
+        hour=KILL_ZOMBIES_CRON_SCHEDULE[1],
+        day=KILL_ZOMBIES_CRON_SCHEDULE[2],
+        month=KILL_ZOMBIES_CRON_SCHEDULE[3],
+        day_of_week=KILL_ZOMBIES_CRON_SCHEDULE[4],
+    ))
+    def kill_zombies_task():
+        """
+        A wrapper for `kill_zombies_periodically` so it only
+        exists when KILL_ZOMBIES_ENABLED is true
+        """
+        task_runner = KillZombiesRunner()
+        logging.info("Executing periodic task `kill_zombies_periodically`")
+        task_runner.run()
