@@ -12,34 +12,41 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
     >
       <span
         className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
+        style={
+          Object {
+            "backgroundColor": "grey",
           }
-        />
+        }
+      >
         <div
           className="text"
         >
-          Status: loading
+          Loading
         </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
       </span>
       <button
-        className="float-right loading btn btn-primary btn-lg"
+        className="float-right btn-disabled btn btn-primary btn-lg"
         disabled={true}
         onClick={[Function]}
         type="button"
       >
-        Deploy (0 updates)
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
       </button>
     </div>
+    <div
+      className="toast-container"
+    />
   </div>
   <div
     className="new-console-page-container"
@@ -110,34 +117,41 @@ exports[`Console Page Correctly renders loading page 1`] = `
     >
       <span
         className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "grey",
-            }
+        style={
+          Object {
+            "backgroundColor": "grey",
           }
-        />
+        }
+      >
         <div
           className="text"
         >
-          Status: loading
+          Loading
         </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
       </span>
       <button
-        className="float-right loading btn btn-primary btn-lg"
+        className="float-right btn-disabled btn btn-primary btn-lg"
         disabled={true}
         onClick={[Function]}
         type="button"
       >
-        Deploy (0 updates)
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
       </button>
     </div>
+    <div
+      className="toast-container"
+    />
   </div>
   <div
     className="new-console-page-container"
@@ -416,34 +430,41 @@ exports[`Console Page Correctly renders page with data 1`] = `
     >
       <span
         className="status-pill badge badge-pill badge-primary"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <span
-          className="dot"
-          style={
-            Object {
-              "backgroundColor": "#ff9b04",
-            }
+        style={
+          Object {
+            "backgroundColor": "#ff9b04",
           }
-        />
+        }
+      >
         <div
           className="text"
         >
-          Status: We're preparing your instance 
+          Publishing
         </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
       </span>
       <button
-        className="float-right loading btn btn-primary btn-lg"
+        className="float-right btn-disabled btn btn-primary btn-lg"
         disabled={true}
         onClick={[Function]}
         type="button"
       >
-        Deploy (0 updates)
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
       </button>
     </div>
+    <div
+      className="toast-container"
+    />
   </div>
   <div
     className="new-console-page-container"
