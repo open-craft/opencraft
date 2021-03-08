@@ -54,7 +54,7 @@ repository – most notably Ansible:
 
 Now you can run:
 
-    vagrant up
+    vagrant --provision up
 
 This will provision a virtual machine running Ubuntu 16.04, set up local
 Postgres, MySQL, MongoDB and Redis, and install the dependencies.
