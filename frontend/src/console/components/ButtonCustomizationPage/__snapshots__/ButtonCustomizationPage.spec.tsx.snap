@@ -83,10 +83,10 @@ exports[`renders without crashing 1`] = `
             </p>
           </div>
           <div
-            className="row"
+            className="color-picker-group row"
           >
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
@@ -126,7 +126,7 @@ exports[`renders without crashing 1`] = `
               </div>
             </div>
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
@@ -166,7 +166,7 @@ exports[`renders without crashing 1`] = `
               </div>
             </div>
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
@@ -218,10 +218,10 @@ exports[`renders without crashing 1`] = `
             </p>
           </div>
           <div
-            className="row"
+            className="color-picker-group row"
           >
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
@@ -261,7 +261,7 @@ exports[`renders without crashing 1`] = `
               </div>
             </div>
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
@@ -301,7 +301,7 @@ exports[`renders without crashing 1`] = `
               </div>
             </div>
             <div
-              className="col"
+              className="color-picker-item col-md-4 col-12"
             >
               <div
                 className="color-input form-group"
