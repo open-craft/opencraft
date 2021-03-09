@@ -155,7 +155,7 @@ class OpenEdXInstance(
 
         # The instance is newly created
         if not self.pk:
-            self.logger.info('Instance successfully created: %s', str(self))
+            self.logger.info('successful_instance_create: %s', str(self))
 
         super().save(**kwargs)
         self.update_consul_metadata()
