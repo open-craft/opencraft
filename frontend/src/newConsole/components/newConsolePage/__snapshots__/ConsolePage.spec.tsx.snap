@@ -1,0 +1,993 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Console Page Console Page with Edit component Correctly renders loading page 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
+      >
+        <div
+          className="text"
+        >
+          Loading
+        </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
+      </span>
+      <button
+        className="float-right btn-disabled btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
+      </button>
+    </div>
+    <div
+      className="toast-container"
+    />
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <button
+              className="back-button btn btn-link btn-sm"
+              disabled={false}
+              onClick={[Function]}
+              type="button"
+            >
+              <span>
+                <i
+                  aria-hidden="true"
+                  className="fa fa-angle-left sm"
+                />
+              </span>
+              <span>
+                Back
+              </span>
+            </button>
+            <div
+              className="customization-form"
+            >
+              <div
+                className="loading"
+              >
+                <i
+                  className="fas fa-2x fa-sync-alt fa-spin"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-7"
+          >
+            <div
+              className="preview-box card"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Console Page Correctly renders loading page 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
+      >
+        <div
+          className="text"
+        >
+          Loading
+        </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
+      </span>
+      <button
+        className="float-right btn-disabled btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
+      </button>
+    </div>
+    <div
+      className="toast-container"
+    />
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <div
+              className="new-customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-7"
+          >
+            <div
+              className="customization-form"
+            >
+              <div
+                className="loading"
+              >
+                <i
+                  className="fas fa-2x fa-sync-alt fa-spin"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Console Page Correctly renders page with data 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        style={
+          Object {
+            "backgroundColor": "#ff9b04",
+          }
+        }
+      >
+        <div
+          className="text"
+        >
+          Publishing
+        </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
+      </span>
+      <button
+        className="float-right btn-disabled btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
+      </button>
+    </div>
+    <div
+      className="toast-container"
+    />
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <div
+              className="new-customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-7"
+          >
+            <span>
+               Test! 
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Console Page Correctly renders page with email not verified alert 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <div
+              className="new-customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Theme
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Preview & colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Custom Pages
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Instance Settings
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current="page"
+                        className="disabled active"
+                        href="/"
+                        onClick={[Function]}
+                        style={Object {}}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                >
+                  <div
+                    className="card-header"
+                    onClick={[Function]}
+                    variant="link"
+                  >
+                    Courses (Studio)
+                  </div>
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-7"
+          >
+            <span>
+               Test! 
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

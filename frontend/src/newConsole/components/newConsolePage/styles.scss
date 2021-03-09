@@ -1,0 +1,54 @@
+@import "~styles/theme";
+@import "../../../console/components/ConsolePage/styles.scss";
+
+
+.console-page {
+  .new-console-page-container {
+    padding: 3rem 1rem;
+    margin: 0 -15px;
+    flex: 1;
+
+    .console-page-content {
+      margin: 0 auto;
+      max-width: 1100px;
+      justify-content: center;
+
+      .customization-form {
+        background-color: #f0f5f7;
+        padding: 32px;
+        margin-bottom: 16px;
+
+        .loading {
+          text-align: center;
+          margin-top: 80px;
+          margin-bottom: auto;
+        }
+
+        h2 {
+          font-family: $chivo-font;
+          font-size: 24px;
+          letter-spacing: 0.72px;
+          color: $secondary-1;
+          text-align: left;
+          margin-bottom: 32px;
+        }
+      }
+    }
+  }
+}
+
+.back-button {
+  font-family: $chivo-font;
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #0f1f24;
+  padding: 0px;
+}
+
+.console-container {
+  background-color:rgba(109, 156, 174, 0.3);
+}

@@ -3,13 +3,14 @@
 .courses-page {
     // Only put this because the page didn't pick up the right font family.
     font-family: $chivo-font;
+    padding: 5%;
 
     p {
         margin-top: 20px;
     }
 
     .row {
-        margin-bottom: 5px;
+        margin-bottom: 10px;
     }
 
     .number-circle {
@@ -48,4 +49,20 @@
             padding-left: 10px;
         }
     }
+
+    .course-page-title {
+        font-family: PlayfairDisplay;
+        font-size: 30px;
+        font-weight: bold;
+        color: #1e4c59;
+        text-align: left;
+    }
+}
+
+.studio-info {
+    margin-left: -2%;
+}
+
+.manageBtn {
+    font-size: 14px;
 }

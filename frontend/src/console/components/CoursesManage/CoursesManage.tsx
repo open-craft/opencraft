@@ -1,9 +1,6 @@
 import * as React from 'react';
 import { InstancesModel } from 'console/models';
-import {
-  ConsolePage,
-  ConsolePageCustomizationContainer
-} from 'console/components';
+import { ConsolePage, PreviewBox } from 'newConsole/components';
 import { CONTACT_US_LINK } from 'global/constants';
 import { WrappedMessage } from 'utils/intl';
 import { Col, Button, Row } from 'react-bootstrap';
@@ -39,68 +36,73 @@ export class CoursesManageComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage contentLoading={this.props.loading}>
-        <div className="courses-page">
-          <ConsolePageCustomizationContainer>
-            <h2>
-              <WrappedMessage id="title" messages={messages} />
-            </h2>
-            <WrappedMessage id="explanation" messages={messages} />
-            <div className="list-items">
-              <Row>
-                <Col xs={1}>
-                  <div className="number-circle">
-                    <p>1</p>
-                  </div>
-                </Col>
-                <Col>
-                  <WrappedMessage
-                    id="instructions_access"
-                    messages={messages}
-                  />
-                </Col>
-              </Row>
-              <Row>
-                <Col xs={1}>
-                  <div className="number-circle">
-                    <p>2</p>
-                  </div>
-                </Col>
-                <Col>
-                  <WrappedMessage
-                    id="instructions_credentials"
-                    messages={messages}
-                  />
-                </Col>
-              </Row>
-            </div>
+      <ConsolePage
+        contentLoading={this.props.loading}
+        showSideBarEditComponent={false}
+      >
+        <PreviewBox>
+          <div className="courses-page">
+            <div>
+              <h2 className="course-page-title">
+                <WrappedMessage id="title" messages={messages} />
+              </h2>
+              <WrappedMessage id="explanation" messages={messages} />
+              <div className="list-items">
+                <Row>
+                  <Col xs={1}>
+                    <div className="number-circle">
+                      <p>1</p>
+                    </div>
+                  </Col>
+                  <Col className="studio-info">
+                    <WrappedMessage
+                      id="instructions_access"
+                      messages={messages}
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col xs={1}>
+                    <div className="number-circle">
+                      <p>2</p>
+                    </div>
+                  </Col>
+                  <Col className="studio-info">
+                    <WrappedMessage
+                      id="instructions_credentials"
+                      messages={messages}
+                    />
+                  </Col>
+                </Row>
+              </div>
 
-            <p>
-              <a href={instanceLink}>
-                <Button
-                  className="manageBtn"
-                  disabled={instanceLink === ''}
-                  size="lg"
+              <p>
+                <a href={instanceLink}>
+                  <Button
+                    className="manageBtn"
+                    disabled={instanceLink === ''}
+                    size="lg"
+                  >
+                    <WrappedMessage messages={messages} id="button_text" />
+                    <i className="fas fa-external-link-alt fa-m" />
+                  </Button>
+                </a>
+              </p>
+
+              <h6>
+                <WrappedMessage id="help_text" messages={messages} />
+                <a
+                  className="support-link"
+                  href={CONTACT_US_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <WrappedMessage messages={messages} id="button_text" />
-                  <i className="fas fa-external-link-alt fa-m" />
-                </Button>
-              </a>
-            </p>
-
-            <h6>
-              <WrappedMessage id="help_text" messages={messages} />
-              <a
-                className="support-link"
-                href={CONTACT_US_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <WrappedMessage id="help_link" messages={messages} />
-              </a>
-            </h6>
-          </ConsolePageCustomizationContainer>
-        </div>
+                  <WrappedMessage id="help_link" messages={messages} />
+                </a>
+              </h6>
+            </div>
+          </div>
+        </PreviewBox>
       </ConsolePage>
     );
   }
