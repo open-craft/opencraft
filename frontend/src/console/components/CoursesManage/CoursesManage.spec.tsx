@@ -40,7 +40,7 @@ it('Correctly renders button with Studio link', () => {
       }
     ).toJSON();
 
-    const manageCoursesBtn = getChild(tree, [1,0,0,0,1,0,0,3,0]);
+    const manageCoursesBtn = getChild(tree, [1,0,0,0,1,0,0,0,3,0]);
 
     expect(manageCoursesBtn.props.href).toEqual('test-url');
 });

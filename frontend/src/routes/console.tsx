@@ -23,6 +23,9 @@ export const ConsoleRoutes = () => {
       <Route exact path={ROUTES.Console.HOME}>
         <Redirect to={ROUTES.Console.THEME_PREVIEW_AND_COLORS} />
       </Route>
+      <Route exact path={ROUTES.Console.NEW_HOME}>
+        <Redirect to={ROUTES.Console.NEW_LOGOS} />
+      </Route>
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
@@ -53,7 +56,22 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.CUSTOM_PAGES}
         component={CustomPages}
       />
-      <PrivateRoute path={ROUTES.Console.COURSES} component={CoursesManage} />
+      {/* Below routes are for dummy implementation for Logo update component and they will be removed after implementation */}
+      {/* <PrivateRoute
+        exact
+        path={ROUTES.Console.NEW_LOGOS}
+        component={newLogos}
+      />
+      <PrivateRoute
+        exact
+        path={ROUTES.Console.NEW_LOGOS_SIDEBAR}
+        component={LogosSideBar}
+      /> */}
+      <PrivateRoute
+        exact
+        path={ROUTES.Console.COURSES}
+        component={CoursesManage}
+      />
     </Switch>
   );
 };
