@@ -153,6 +153,10 @@ class OpenEdXInstance(
         if self.random_prefix is not None:
             self.mysql_user = self.random_prefix
 
+        # The instance is newly created
+        if not self.pk:
+            self.logger.info('successful_instance_create: %s', str(self))
+
         super().save(**kwargs)
         self.update_consul_metadata()
 
