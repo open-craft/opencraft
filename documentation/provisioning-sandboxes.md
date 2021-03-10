@@ -69,10 +69,7 @@ instance.save()
 ```
 
 If you pass custom `configuration_extra_settings` to `production_instance_factory`,
-they will be merged with the settings in [prod-vars.yml](https://github.com/open-craft/opencraft/blob/master/instance/templates/instance/ansible/prod-vars.yml).
-Settings that you pass in will take precedence over settings in prod-vars.yml,
-that is, if a variable is present in both `configuration_extra_settings` and prod-vars.yml,
-the instance manager will use the value from `configuration_extra_settings` for it.
+they will override the variables defined in `instance/models/mixins/openedx_config.py`.
 
 **Django API**
 
