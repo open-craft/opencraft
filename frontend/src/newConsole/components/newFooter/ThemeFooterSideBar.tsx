@@ -1,18 +1,16 @@
 import * as React from 'react';
 import './styles.scss';
-import {
-  ConsolePage,
-  ConsolePageCustomizationContainer,
-  FooterPreview
-} from 'console/components';
+import { ConsolePageCustomizationContainer } from 'console/components';
+import { ConsolePage } from 'newConsole/components';
+import { Col, Row } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
+
+import { ColorInputField } from 'ui/components/ColorInputField';
 import { updateThemeFieldValue } from 'console/actions';
-import { Col, Row } from 'react-bootstrap';
-import { ColorInputField } from '../../../ui/components/ColorInputField';
+import { WrappedMessage } from 'utils/intl';
 import messages from './displayMessages';
-import { WrappedMessage } from '../../../utils/intl';
 
 interface State {}
 
@@ -22,9 +20,16 @@ interface ActionProps {
 
 interface StateProps extends InstancesModel {}
 
-interface Props extends StateProps, ActionProps {}
+interface Props extends StateProps, ActionProps {
+  history: {
+    goBack: Function;
+  };
+}
 
-export class ThemeFooterComponent extends React.PureComponent<Props, State> {
+export class ThemeFooterSideBarComponent extends React.PureComponent<
+  Props,
+  State
+> {
   private onChangeColor = (fieldName: string, newColor: string) => {
     const instance = this.props.activeInstance;
 
@@ -42,25 +47,26 @@ export class ThemeFooterComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage contentLoading={this.props.loading}>
-        <ConsolePageCustomizationContainer>
-          <h2>
-            <WrappedMessage messages={messages} id="themeFooter" />
-          </h2>
-
-          {themeData && themeData.version === 1 && (
-            <div className="theme-footer-container">
-              <FooterPreview
-                instanceData={instance.data}
-                themeData={themeData}
-              />
+      <ConsolePage
+        contentLoading={this.props.loading}
+        goBack={this.props.history.goBack}
+        showSideBarEditComponent
+      >
+        {themeData && themeData.version === 1 && (
+          <div className="footer-settings">
+            <ConsolePageCustomizationContainer>
               <Row>
-                <p className="style-name">
-                  <WrappedMessage messages={messages} id="footerSettings" />
-                </p>
+                <Col>
+                  <h2>
+                    <WrappedMessage
+                      messages={messages}
+                      id="newFooterSettings"
+                    />
+                  </h2>
+                </Col>
               </Row>
               <Row>
-                <Col md={4}>
+                <Col>
                   <ColorInputField
                     fieldName="footerBg"
                     initialValue={themeData.footerBg}
@@ -70,7 +76,9 @@ export class ThemeFooterComponent extends React.PureComponent<Props, State> {
                     hideTooltip
                   />
                 </Col>
-                <Col md={4}>
+              </Row>
+              <Row>
+                <Col>
                   <ColorInputField
                     fieldName="footerColor"
                     initialValue={themeData.footerColor}
@@ -80,7 +88,9 @@ export class ThemeFooterComponent extends React.PureComponent<Props, State> {
                     hideTooltip
                   />
                 </Col>
-                <Col md={4}>
+              </Row>
+              <Row>
+                <Col>
                   <ColorInputField
                     fieldName="footerLinkColor"
                     initialValue={themeData.footerLinkColor}
@@ -91,15 +101,15 @@ export class ThemeFooterComponent extends React.PureComponent<Props, State> {
                   />
                 </Col>
               </Row>
-            </div>
-          )}
-        </ConsolePageCustomizationContainer>
+            </ConsolePageCustomizationContainer>
+          </div>
+        )}
       </ConsolePage>
     );
   }
 }
 
-export const ThemeFooter = connect<
+export const ThemeFooterSideBar = connect<
   StateProps,
   ActionProps,
   {},
@@ -107,4 +117,4 @@ export const ThemeFooter = connect<
   RootState
 >((state: RootState) => state.console, {
   updateThemeFieldValue
-})(ThemeFooterComponent);
+})(ThemeFooterSideBarComponent);
