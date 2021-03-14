@@ -684,7 +684,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
             className="pr-0 col-md-9"
           >
             <span>
-               Test! 
+               Test!
             </span>
           </div>
         </div>
@@ -937,7 +937,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
             className="pr-0 col-md-9"
           >
             <span>
-               Test! 
+               Test!
             </span>
           </div>
         </div>

@@ -16,6 +16,7 @@ interface ImageUploadFieldProps {
   reset?: Function;
   tooltipTextId?: string;
   tooltipImage?: string;
+  innerPreview?: string;
 }
 
 interface Image {
@@ -47,6 +48,29 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
     setImage(files[0]);
   };
 
+  const buttonContents = () => {
+    /* eslint-disable react/prop-types */
+    if (props.innerPreview) {
+      const img = new Image();
+      img.src = props.innerPreview;
+      if (img.height !== 0) {
+        return (
+          <div className="image-container">
+            <img src={props.innerPreview} alt="preview" />
+          </div>
+        );
+      }
+    }
+    return (
+      <div>
+        <img className="upload-icon" src={upArrowIcon} alt="Upload icon" />
+        <h4>
+          <WrappedMessage messages={messages} id="change" />
+        </h4>
+      </div>
+    );
+  };
+
   let tooltip = null;
 
   if (props.parentMessages && props.tooltipTextId) {
@@ -60,7 +84,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
         </p>
         {props.tooltipImage && (
           <img
-            className="tooltipImage"
+            className="tooltip-image"
             src={props.tooltipImage}
             alt="tooltipImage"
           />
@@ -71,8 +95,8 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
 
   return (
     <div className="image-upload-field">
-      <div className="componentHeader">
-        <h4>{props.customUploadMessage}</h4>
+      <div className="component-header">
+        <h4 className="upload-field-header">{props.customUploadMessage}</h4>
         {tooltip && (
           <OverlayTrigger placement="top" overlay={tooltip}>
             <i className="fas fa-info-circle" />
@@ -84,14 +108,9 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
         size="lg"
         onClick={handleShow}
         disabled={props.loading}
-        className="uploadButton"
+        className="upload-button"
       >
-        <div className="buttonContents">
-          <img className="uploadIcon" src={upArrowIcon} alt="Upload icon" />
-          <h4>
-            <WrappedMessage messages={messages} id="change" />
-          </h4>
-        </div>
+        <div className="button-contents">{buttonContents()}</div>
       </Button>
       {props.parentMessages && props.recommendationTextId && (
         <p>

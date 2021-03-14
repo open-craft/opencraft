@@ -14,7 +14,9 @@ import {
   ConsoleHome,
   Colors,
   ThemeFooterSideBar,
-  ThemeNavigationPage
+  ThemeNavigationPage,
+  LogosSideBar,
+  LogosSideBarComponent
 } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
@@ -53,6 +55,11 @@ export const ConsoleRoutes = () => {
         exact
         path={ROUTES.Console.THEME_FOOTER}
         component={ThemeFooterSideBar}
+      />
+      <PrivateRoute
+        exact
+        path={ROUTES.Console.NEW_LOGOS}
+        component={LogosSideBar}
       />
       <PrivateRoute
         exact

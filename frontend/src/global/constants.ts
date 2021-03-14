@@ -68,7 +68,6 @@ export const ROUTES = {
     HERO: '/console/theming/hero',
     NEW_HOME: '/newconsole',
     NEW_LOGOS: '/newconsole/theming/logos',
-    NEW_LOGOS_SIDEBAR: '/newconsole/theming/logos/sidebar',
     COURSES: '/console/courses/manage'
   },
   Registration: {

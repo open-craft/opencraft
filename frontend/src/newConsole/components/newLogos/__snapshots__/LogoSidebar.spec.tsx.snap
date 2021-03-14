@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Console Page Correctly renders LogosSideBar 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle redeployment-toolbar"
+  >
+    <div
+      className="redeployment-nav"
+    >
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
+      >
+        <div
+          className="text"
+        >
+          Loading
+        </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
+      </span>
+      <button
+        className="float-right btn-disabled btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
+      </button>
+    </div>
+    <div
+      className="toast-container"
+    />
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="justify-content-center row"
+        >
+          <div
+            className="col-md-3"
+          >
+            <button
+              className="back-button btn btn-link btn-sm"
+              disabled={false}
+              onClick={[Function]}
+              type="button"
+            >
+              <span
+                className="mr-2"
+              >
+                <i
+                  aria-hidden="true"
+                  className="fa fa-angle-left sm"
+                />
+              </span>
+              <span>
+                Back
+              </span>
+            </button>
+            <div
+              className="customization-form"
+            >
+              <div
+                className="loading"
+              >
+                <i
+                  className="fas fa-2x fa-sync-alt fa-spin"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            className="col-md-7"
+          >
+            <div
+              className="preview-box card"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,10 +1,9 @@
 import * as React from 'react';
 import './styles.scss';
 import { ConsolePageCustomizationContainer } from 'console/components';
-import { ConsolePage } from 'newConsole/components';
-import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { ImageUploadField } from 'ui/components';
+import { ConsolePage } from 'newConsole/components';
 import faviconTooltipImage from 'assets/faviconTooltipImage.png';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -37,6 +36,16 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
 
   public render() {
     const instance = this.props.activeInstance;
+    let logo;
+    let favicon;
+
+    if (instance.data && instance.data.logo) {
+      logo = instance.data.logo;
+    }
+    if (instance.data && instance.data.favicon) {
+      favicon = instance.data.favicon;
+    }
+
     return (
       <ConsolePage
         contentLoading={this.props.loading}
@@ -45,58 +54,48 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
       >
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
-            <h2>
-              <WrappedMessage messages={messages} id="logos" />
-            </h2>
-            <Row>
-              <Col md={3} className="image-container">
-                <div>
-                  {instance.data && instance.data.logo && (
-                    <img src={instance.data.logo} alt="Logo" />
-                  )}
-                </div>
-              </Col>
-            </Row>
-            <ImageUploadField
-              customUploadMessage={
-                <WrappedMessage messages={messages} id="siteLogo" />
-              }
-              updateImage={(image: File) => {
-                this.updateImage('logo', image);
-              }}
-              parentMessages={messages}
-              recommendationTextId="logoRecommendation"
-              error={instance.feedback.logo}
-              clearError={() => {
-                this.props.clearErrorMessage('logo');
-              }}
-              tooltipTextId="logoTooltip"
-            />
-            <Row>
-              <Col md={3} className="image-container">
-                <div>
-                  {instance.data && instance.data.favicon && (
-                    <img src={instance.data.favicon} alt="favicon" />
-                  )}
-                </div>
-              </Col>
-            </Row>
-            <ImageUploadField
-              customUploadMessage={
-                <WrappedMessage messages={messages} id="favicon" />
-              }
-              updateImage={(image: File) => {
-                this.updateImage('favicon', image);
-              }}
-              parentMessages={messages}
-              recommendationTextId="faviconRecommendation"
-              error={instance.feedback.favicon}
-              clearError={() => {
-                this.props.clearErrorMessage('favicon');
-              }}
-              tooltipTextId="faviconTooltip"
-              tooltipImage={faviconTooltipImage}
-            />
+            <div className="sidebar-item">
+              <h2 className="custom-logo-title">
+                <WrappedMessage messages={messages} id="logos" />
+              </h2>
+            </div>
+            <div className="logo-upload-field sidebar-item">
+              <ImageUploadField
+                customUploadMessage={
+                  <WrappedMessage messages={messages} id="siteLogo" />
+                }
+                updateImage={(image: File) => {
+                  this.updateImage('logo', image);
+                }}
+                parentMessages={messages}
+                recommendationTextId="logoRecommendation"
+                error={instance.feedback.logo}
+                clearError={() => {
+                  this.props.clearErrorMessage('logo');
+                }}
+                tooltipTextId="logoTooltip"
+                innerPreview={logo}
+              />
+            </div>
+            <div className="favicon-upload-field sidebar-item">
+              <ImageUploadField
+                customUploadMessage={
+                  <WrappedMessage messages={messages} id="favicon" />
+                }
+                updateImage={(image: File) => {
+                  this.updateImage('favicon', image);
+                }}
+                parentMessages={messages}
+                recommendationTextId="faviconRecommendation"
+                error={instance.feedback.favicon}
+                clearError={() => {
+                  this.props.clearErrorMessage('favicon');
+                }}
+                tooltipTextId="faviconTooltip"
+                tooltipImage={faviconTooltipImage}
+                innerPreview={favicon}
+              />
+            </div>
           </ConsolePageCustomizationContainer>
         </div>
       </ConsolePage>
