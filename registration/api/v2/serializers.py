@@ -211,7 +211,7 @@ class AccountSerializer(serializers.ModelSerializer):
         if self.instance and 'user' in attrs:
             user_data = attrs['user']
 
-            if 'password' in user_data and 'old_password' not in attrs:
+            if 'password' in user_data and not self.instance.user.password and 'old_password' not in attrs:
                 raise serializers.ValidationError({'old_password': 'This field is required'})
 
         # remove value since it is not part of UserProfile
