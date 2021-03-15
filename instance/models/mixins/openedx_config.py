@@ -483,12 +483,13 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["forum_version"] = "opencraft-release/ironwood.2"
         if self._is_openedx_release_in(['juniper']):
+            # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["forum_version"] = "opencraft-release/juniper.3"
             template["FORUM_VERSION"] = "opencraft-release/juniper.3"
         if self._is_openedx_release_in(['koa']):
+            # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
-            template["forum_version"] = "opencraft-release/koa.2a"
             template["FORUM_VERSION"] = "opencraft-release/koa.2a"
 
         return template
