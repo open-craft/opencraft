@@ -7,7 +7,6 @@ import {
   Logos,
   NoticeBoard,
   ThemeButtons,
-  ThemePreviewAndColors,
   CustomPages,
   CoursesManage
 } from 'console/components';
@@ -17,7 +16,7 @@ import {
   ThemeNavigationPage
 } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
-
+import { Colors } from 'newConsole/components/ColorsComponent';
 import { ROUTES } from '../global/constants';
 
 export const ConsoleRoutes = () => {
@@ -33,12 +32,8 @@ export const ConsoleRoutes = () => {
       />
       <PrivateRoute
         path={ROUTES.Console.THEME_PREVIEW_AND_COLORS}
-        component={ThemePreviewAndColors}
+        component={Colors}
       />
-      {/* <PrivateRoute
-        path={ROUTES.Console.NEW_THEME_PREVIEW_AND_COLORS}
-        component={ThemePreviewAndColors}
-      /> */}
       <PrivateRoute
         path={ROUTES.Console.THEME_BUTTONS}
         component={ThemeButtons}

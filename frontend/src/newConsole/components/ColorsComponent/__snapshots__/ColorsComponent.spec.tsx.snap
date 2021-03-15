@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Theme footer sidebar tests renders without crashing 1`] = `
+exports[`renders without crashing 1`] = `
 <div
   className="console-page"
 >
@@ -43,154 +43,114 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                 Back
               </span>
             </button>
+            <h1
+              className="edit-heading"
+            >
+              Colors
+            </h1>
             <div
-              className="footer-settings"
+              className="row"
             >
               <div
-                className="customization-form"
+                className="side-buttons col"
               >
                 <div
-                  className="row"
+                  className="color-input form-group"
                 >
-                  <div
-                    className="col"
+                  <label
+                    className="form-label"
                   >
-                    <h2>
-                      Footer
-                    </h2>
-                  </div>
-                </div>
-                <div
-                  className="row"
-                >
+                    Main Color
+                  </label>
                   <div
-                    className="col"
+                    className="row"
                   >
+                    <input
+                      className="input-field-color form-control"
+                      disabled={true}
+                      name="mainColor"
+                      onClick={[Function]}
+                      readOnly={true}
+                      value="#444444"
+                    />
                     <div
-                      className="color-input form-group"
+                      className="input-field-preview"
+                      style={
+                        Object {
+                          "backgroundColor": "#444444",
+                        }
+                      }
+                    />
+                    <div
+                      className="info-icon"
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
                     >
-                      <label
-                        className="form-label"
-                      >
-                        Footer background color
-                      </label>
-                      <div
-                        className="row"
-                      >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerBg"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
-                        <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
-                            }
-                          }
-                        />
-                        <button
-                          className="reset-value padded"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </div>
+                      <i
+                        className="fas fa-info-circle"
+                      />
                     </div>
                   </div>
+                  <p>
+                    <button
+                      className="reset-value"
+                      onClick={[Function]}
+                      type="button"
+                    >
+                      Reset
+                    </button>
+                  </p>
                 </div>
                 <div
-                  className="row"
+                  className="color-input form-group"
                 >
-                  <div
-                    className="col"
+                  <label
+                    className="form-label"
                   >
+                    Link Color
+                  </label>
+                  <div
+                    className="row"
+                  >
+                    <input
+                      className="input-field-color form-control"
+                      disabled={true}
+                      name="linkColor"
+                      onClick={[Function]}
+                      readOnly={true}
+                      value="#FFAAFF"
+                    />
                     <div
-                      className="color-input form-group"
+                      className="input-field-preview"
+                      style={
+                        Object {
+                          "backgroundColor": "#FFAAFF",
+                        }
+                      }
+                    />
+                    <div
+                      className="info-icon"
+                      onBlur={[Function]}
+                      onFocus={[Function]}
+                      onMouseOut={[Function]}
+                      onMouseOver={[Function]}
                     >
-                      <label
-                        className="form-label"
-                      >
-                        Footer text color
-                      </label>
-                      <div
-                        className="row"
-                      >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
-                        <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
-                            }
-                          }
-                        />
-                        <button
-                          className="reset-value padded"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </div>
+                      <i
+                        className="fas fa-info-circle"
+                      />
                     </div>
                   </div>
-                </div>
-                <div
-                  className="row"
-                >
-                  <div
-                    className="col"
-                  >
-                    <div
-                      className="color-input form-group"
+                  <p>
+                    <button
+                      className="reset-value"
+                      onClick={[Function]}
+                      type="button"
                     >
-                      <label
-                        className="form-label"
-                      >
-                        Footer link color
-                      </label>
-                      <div
-                        className="row"
-                      >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerLinkColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
-                        <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
-                            }
-                          }
-                        />
-                        <button
-                          className="reset-value padded"
-                          onClick={[Function]}
-                          type="button"
-                        >
-                          Reset
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                      Reset
+                    </button>
+                  </p>
                 </div>
               </div>
             </div>
@@ -323,8 +283,8 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                       onMouseLeave={[Function]}
                       style={
                         Object {
-                          "borderBottomColor": undefined,
-                          "color": undefined,
+                          "borderBottomColor": "#FFAAFF",
+                          "color": "#FFAAFF",
                         }
                       }
                       type="button"
@@ -475,7 +435,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               className="fa fa-chevron-right"
                               style={
                                 Object {
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                             />
@@ -495,7 +455,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -518,7 +478,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               className="fa fa-chevron-right"
                               style={
                                 Object {
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                             />
@@ -538,7 +498,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -552,7 +512,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -578,7 +538,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               className="fa fa-chevron-right"
                               style={
                                 Object {
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                             />
@@ -598,7 +558,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -612,7 +572,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -626,7 +586,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -649,7 +609,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               className="fa fa-chevron-right"
                               style={
                                 Object {
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                             />
@@ -669,7 +629,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -683,7 +643,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -697,7 +657,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -720,7 +680,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               className="fa fa-chevron-right"
                               style={
                                 Object {
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                             />
@@ -740,7 +700,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                                 style={
                                   Object {
                                     "borderBottomColor": undefined,
-                                    "color": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
                                 type="button"
@@ -774,7 +734,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               style={
                                 Object {
                                   "borderBottomColor": undefined,
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                               type="button"
@@ -804,7 +764,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                               style={
                                 Object {
                                   "borderBottomColor": undefined,
-                                  "color": undefined,
+                                  "color": "#FFAAFF",
                                 }
                               }
                               type="button"
@@ -937,7 +897,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                           }
                         }
                       >
-                        © undefined. 
+                        © test. 
                         All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
                       </div>
                     </div>

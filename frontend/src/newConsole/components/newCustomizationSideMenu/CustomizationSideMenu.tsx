@@ -50,7 +50,7 @@ export const CustomizationSideMenu: React.FC = () => {
           <Card.Body>
             <Nav className="flex-column">
               <NavLink exact to={ROUTES.Console.THEME_PREVIEW_AND_COLORS}>
-                <WrappedMessage messages={messages} id="linkPreviewColors" />
+                <WrappedMessage messages={messages} id="linkColors" />
               </NavLink>
               <NavLink exact to={ROUTES.Console.LOGOS}>
                 <WrappedMessage messages={messages} id="linkLogos" />

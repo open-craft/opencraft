@@ -6,3 +6,4 @@ export * from './CourseOutlinePreview';
 export * from './ConsoleHome';
 export * from './newFooter';
 export * from './ThemeNavigationPage';
+export * from './ColorsComponent';

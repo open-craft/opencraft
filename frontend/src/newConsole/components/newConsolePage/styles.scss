@@ -3,15 +3,26 @@
 
 
 .console-page {
+  flex-direction: column;
+  height: 100% ;
   .new-console-page-container {
     padding: 3rem 1rem;
     margin: 0 -15px;
     flex: 1;
 
+    .new-console-page-content {
+      height: 100%;
+
+      .console-page-inner-content {
+        height: 100%;
+      }
+    }
+
     .console-page-content {
       margin: 0 auto;
       max-width: 1100px;
       justify-content: center;
+      flex-grow: 1;
 
       .customization-form {
         background-color: #f0f5f7;
@@ -35,6 +46,16 @@
       }
     }
   }
+
+  .edit-heading {
+    text-align: left;
+    color: #0f1f24;
+    font-family: $playfair-font;
+    font-weight: bold;
+    font-size: 28px;
+    margin-top: 37px;
+    margin-bottom: 31.5px;
+}
 }
 
 .back-button {
