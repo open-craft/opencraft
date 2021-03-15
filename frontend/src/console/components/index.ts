@@ -41,3 +41,7 @@ export * from './CoursesManage';
 export * from './ThemeColors';
 
 export * from './ButtonStyles';
+
+export * from "./PreviewDashboard";
+
+export * from "./PreviewCourseware";
