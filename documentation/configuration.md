@@ -76,7 +76,7 @@ this name.
 
 ### OpenStack images
 
-Open edX is currently designed to run on Ubuntu 16.04. Your OpenStack host may
+Open edX is currently designed to run on Ubuntu 20.04. Your OpenStack host may
 already have an image available for this version of Ubuntu. You can manage
 OpenStack images using `glance`:
 
@@ -262,7 +262,7 @@ Required settings:
 * `OPENSTACK_SANDBOX_FLAVOR`: A json string specifying the instance flavor to use
   (default: `{"ram": 4096, "disk": 40}`)
 * `OPENSTACK_SANDBOX_BASE_IMAGE`: A json string specifying the base image to use
-  (default: `{"name": "Ubuntu 16.04"}`)
+  (default: `{"name": "Ubuntu 20.04"}`)
 * `OPENSTACK_SANDBOX_SSH_KEYNAME`: The name of the default ssh key pair used to
   connect to sandbox instances (default: `opencraft`). This key pair should be
   [registered with OpenStack](http://docs.openstack.org/user-guide/cli_nova_configure_access_security_for_instances.html)
