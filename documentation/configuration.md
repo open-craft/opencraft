@@ -76,9 +76,9 @@ this name.
 
 ### OpenStack images
 
-Open edX is currently designed to run on Ubuntu 20.04. Your OpenStack host may
-already have an image available for this version of Ubuntu. You can manage
-OpenStack images using `glance`:
+The latest release of Open edX (Koa) is currently designed to run on Ubuntu 20.04.
+Your OpenStack host may already have an image available for this version of Ubuntu.
+You can manage OpenStack images using `glance`:
 
     pip install python-glanceclient
 
