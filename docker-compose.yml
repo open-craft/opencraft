@@ -1,0 +1,59 @@
+# Docker Compose file for the services needed by Ocim, for easy local development setup
+
+version: "3.1"
+
+services:
+
+  mongo:
+    # This is similar to what the EdX devstack uses
+    # We use WiredTiger in all environments. In development environments we use small files
+    # to conserve disk space, and disable the journal for a minor performance gain.
+    # See https://docs.mongodb.com/v3.0/reference/program/mongod/#options for complete details.
+    command: mongod --smallfiles --nojournal --storageEngine wiredTiger
+    container_name: opencraft.mongo
+    hostname: mongo
+    image: mongo:4.0.22
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  mysql:
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    container_name: opencraft.mysql
+    hostname: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    image: mysql:5.6
+    ports:
+       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  postgresql:
+    image: postgres:12.6-alpine
+    container_name: opencraft.postgresql
+    hostname: postgresql
+    #env_file: .docker.pg.env
+    environment:
+      POSTGRES_USER: ${USER}
+      POSTGRES_DB: opencraft
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: --encoding utf-8
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    container_name: opencraft.redis
+    image: redis:4
+    ports:
+      - "6379:6379"
+
+volumes:
+  mongo_data:
+  mysql_data:
+  postgresql_data:
+  redis_data:
