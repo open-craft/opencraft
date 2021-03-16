@@ -41,6 +41,14 @@ export interface DeploymentInfoModel {
   > | null;
 }
 
+export interface UserAccountModel {
+  fullName: string;
+  email: string;
+  username: string;
+  oldPassword: string;
+  newPassword: string;
+}
+
 // The loading key is used to store field names that are being updated through
 // a request. This allows us to individually update fields.
 export interface InstancesModel {
@@ -55,6 +63,7 @@ export interface InstancesModel {
   instances: Array<InstanceSettingsModel>;
   notifications: Array<DeploymentNotificationModel>;
   notificationsLoading: boolean;
+  account: UserAccountModel;
 }
 
 export const initialConsoleState: Readonly<InstancesModel> = {
@@ -68,5 +77,12 @@ export const initialConsoleState: Readonly<InstancesModel> = {
   },
   instances: [],
   notifications: [],
-  notificationsLoading: false
+  notificationsLoading: false,
+  account: {
+    fullName: '',
+    email: '',
+    username: '',
+    oldPassword: '',
+    newPassword: ''
+  }
 };

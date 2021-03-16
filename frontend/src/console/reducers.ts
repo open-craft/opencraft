@@ -208,6 +208,14 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.UPDATE_ACCOUNT_INFO:
+      return update(state, {
+        account: { $set: action.data }
+      });
+    case Actions.Types.GET_ACCOUNT_INFO:
+      return update(state, {
+        account: { $set: action.data[0] }
+      });
     default:
       return state;
   }

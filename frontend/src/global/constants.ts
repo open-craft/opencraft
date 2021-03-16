@@ -58,6 +58,7 @@ export const ROUTES = {
   Console: {
     HOME: '/console',
     NOTICE_BOARD: '/console/notice',
+    ACCOUNT: '/console/account',
     CUSTOM_PAGES: '/console/custom-pages/:pageName',
     THEME_PREVIEW_AND_COLORS: '/console/theming/preview-and-colors',
     LOGOS: '/console/theming/logos',

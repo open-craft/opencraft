@@ -11,7 +11,8 @@ import {
   ThemeFooter,
   ThemePreviewAndColors,
   CustomPages,
-  CoursesManage
+  CoursesManage,
+  Account
 } from 'console/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
@@ -30,6 +31,7 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
       />
+      <PrivateRoute path={ROUTES.Console.ACCOUNT} component={Account} />
       <PrivateRoute
         path={ROUTES.Console.NOTICE_BOARD}
         component={NoticeBoard}

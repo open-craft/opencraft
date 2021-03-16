@@ -113,11 +113,8 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
             >
               <NavLink
                 exact
-                to=""
-                className="dropdown-item disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
+                to={ROUTES.Console.ACCOUNT}
+                className="dropdown-item"
               >
                 <WrappedMessage messages={messages} id="account" />
               </NavLink>

@@ -5,7 +5,8 @@ import { V2Api } from 'global/api';
 import {
   InstanceSettingsModel,
   DeploymentInfoModel,
-  DeploymentNotificationModel
+  DeploymentNotificationModel,
+  UserAccountModel
 } from 'console/models';
 import {
   ThemeSchema,
@@ -55,7 +56,30 @@ export enum Types {
   PERFORM_DEPLOYMENT_FAILURE = 'PERFORM_DEPLOYMENT_FAILURE',
   CANCEL_DEPLOYMENT = 'CANCEL_DEPLOYMENT',
   CANCEL_DEPLOYMENT_SUCCESS = 'CANCEL_DEPLOYMENT_SUCCESS',
-  CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE'
+  CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE',
+
+  // Update instance info
+  GET_ACCOUNT_INFO = 'GET_ACCOUNT_INFO',
+  GET_ACCOUNT_INFO_SUCCESS = 'GET_ACCOUNT_INFO_SUCCESS',
+  GET_ACCOUNT_INFO_FAILURE = 'GET_ACCOUNT_INFO_FAILURE',
+  UPDATE_ACCOUNT_INFO = 'UPDATE_ACCOUNT_INFO',
+  // UPDATE_ACCOUNT_INFO_SUCCESS = 'UPDATE_ACCOUNT_INFO_SUCCESS',
+  UPDATE_ACCOUNT_INFO_FAILURE = 'UPDATE_ACCOUNT_INFO_FAILURE'
+}
+
+export interface updateAccountDetails extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_INFO;
+  readonly data: UserAccountModel;
+}
+
+export interface updateAccountPassword extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_INFO;
+  readonly data: UserAccountModel;
+}
+
+export interface getAccountInfo extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO;
+  readonly data: Array<UserAccountModel>;
 }
 
 export interface ClearFeedbackMessage extends Action {
@@ -210,6 +234,8 @@ export type ActionTypes =
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
+  | updateAccountDetails
+  | updateAccountPassword
   | UpdateInstanceInfo
   | UpdateInstanceInfoSuccess
   | UpdateInstanceInfoFailure
@@ -223,6 +249,7 @@ export type ActionTypes =
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
+  | getAccountInfo
   | GetDeploymentsNotifications
   | GetDeploymentsNotificationsSuccess
   | GetDeploymentsNotificationsFailure
@@ -532,6 +559,51 @@ export const cancelDeployment = (
   } catch (e) {
     dispatch({
       type: Types.CANCEL_DEPLOYMENT_FAILURE,
+      error: e
+    });
+  }
+};
+
+export const getAccountDetails = (): OcimThunkAction<
+  void
+> => async dispatch => {
+  try {
+    const response = await V2Api.accountsList();
+
+    dispatch({
+      type: Types.GET_ACCOUNT_INFO,
+      data: response
+    });
+  } catch (e) {
+    console.debug(`error updating account details: ${e.Message}`);
+
+    dispatch({
+      type: Types.GET_ACCOUNT_INFO_FAILURE,
+      error: e
+    });
+  }
+};
+
+export const updateAccountDetails = (
+  data: any
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  try {
+    const { account } = getState().console;
+    console.debug(`updating account details ${JSON.stringify(data)}`);
+
+    const response = await V2Api.accountsPartialUpdate({
+      username: account.username,
+      data
+    });
+    dispatch({
+      type: Types.UPDATE_ACCOUNT_INFO,
+      data: response
+    });
+  } catch (e) {
+    console.debug(`error updating account details: ${e.Message}`);
+
+    dispatch({
+      type: Types.UPDATE_ACCOUNT_INFO_FAILURE,
       error: e
     });
   }
