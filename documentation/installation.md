@@ -1,6 +1,46 @@
 Installation
 ------------
 
+### Local installation with docker-compose on Ubuntu 20.04
+
+This quick setup uses Docker Compose to run the database services, while the Ocim instance runs in a regular virtualenv.
+
+Install the prerequisite packages:
+
+    sudo apt install make git libmysqlclient-dev mysql-client postgresql-client python3-dev python3-pip subversion unzip xvfb
+
+Get the [Ocim repository](https://github.com/open-craft/opencraft) if you have not already done it.
+
+    git clone https://github.com/open-craft/opencraft ocim
+    cd ocim
+
+Start PostgreSQL, Redis, MySQL, MongoDB as Docker Composer services. They will all listen on localhost and use no passwords!
+
+    docker-compose up -d
+
+Create a virtualenv and install the dependencies (the example uses virtualenvwrapper):
+
+    mkvirtualenv ocim
+    workon ocim
+    pip install -r requirements.txt
+
+Run the initial database migrations:
+
+    make migrate
+
+Next, create a superuser account which will be used to log in to Ocim:
+
+    make manage createsuperuser
+
+Run a Django shell
+
+    make shell
+
+You can run the unit tests, it will take a few minutes:
+
+    make test.unit
+
+
 ### Vagrant installation
 
 For development, we recommend using [Vagrant](https://www.vagrantup.com/)
