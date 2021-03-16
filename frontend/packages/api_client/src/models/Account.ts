@@ -38,6 +38,12 @@ export interface Account {
      */
     password: string;
     /**
+     * The old password for the OpenCraft account
+     * @type {string}
+     * @memberof Account
+     */
+    oldPassword?: string;
+    /**
      * This is also the account name, and where we will send important notices.
      * @type {string}
      * @memberof Account
@@ -76,6 +82,7 @@ export function AccountFromJSONTyped(json: any, ignoreDiscriminator: boolean): A
         'fullName': json['full_name'],
         'username': json['username'],
         'password': json['password'],
+        'oldPassword': !exists(json, 'old_password') ? undefined : json['old_password'],
         'email': json['email'],
         'acceptedPrivacyPolicy': (new Date(json['accepted_privacy_policy'])),
         'acceptDomainCondition': json['accept_domain_condition'],
@@ -95,6 +102,7 @@ export function AccountToJSON(value?: Account | null): any {
         'full_name': value.fullName,
         'username': value.username,
         'password': value.password,
+        'old_password': value.oldPassword,
         'email': value.email,
         'accepted_privacy_policy': (value.acceptedPrivacyPolicy.toISOString()),
         'accept_domain_condition': value.acceptDomainCondition,
