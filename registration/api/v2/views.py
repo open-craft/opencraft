@@ -151,6 +151,9 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     )
     @action(detail=True, methods=["patch"])
     def password_change(self, request, username=None):
+        """
+        Change the user password
+        """
         user = request.user
         serializer = self.get_serializer(instance=user, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -163,6 +166,9 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     )
     @action(detail=True, methods=["patch"])
     def update_details(self, request, username=None):
+        """
+        Get the user details from the request and update the profile accordingly
+        """
         profile = self.get_object()
         serializer = self.get_serializer(instance=profile, data=request.data)
         serializer.is_valid(raise_exception=True)

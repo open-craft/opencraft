@@ -233,6 +233,11 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
     )
 
     def validate_old_password(self, value):
+        """
+        Verify that the provided password is correct for this user
+
+        Uses django's password validation to check the password
+        """
         if not value:
             raise serializers.ValidationError({"old_password": "Invalid value"})
 
@@ -256,6 +261,9 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user's details: email and full name
+    """
     email = serializers.EmailField(
         source="user.email",
         validators=[
@@ -300,6 +308,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def _update_user_account(self, user: User, user_data: Dict):
         """
         Update user from validated data.
+
+        Only update the email if it has changed.
         """
         # Can't change username, so remove it if present
         user_data.pop("username", None)
@@ -307,7 +317,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         if "email" in user_data:
             email = user_data.pop("email")
             if email != user.email:
-                user.email =  email
+                user.email = email
                 user_updated = True
         if user_updated:
             user.save()
