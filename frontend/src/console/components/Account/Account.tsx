@@ -50,6 +50,23 @@ export class AccountComponent extends React.PureComponent<Props, State> {
     this.props.getAccountDetails();
   }
 
+  public componentDidUpdate(prevProps: Props, prevState: State) {
+    this.updateInitialState(prevState);
+  }
+
+  private updateInitialState = (prevState: State) => {
+    const { account } = this.props;
+
+    if (account && account.fullName && !prevState.fullName) {
+      this.setState({
+        fullName: account.fullName,
+        email: account.email,
+        oldPassword: '',
+        newPassword: ''
+      });
+    }
+  };
+
   private onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name;
     const { value } = e.target;
