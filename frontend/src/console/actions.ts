@@ -6,7 +6,8 @@ import {
   InstanceSettingsModel,
   DeploymentInfoModel,
   DeploymentNotificationModel,
-  UserAccountModel
+  UserAccountModel,
+  UserAccountDetailsModel
 } from 'console/models';
 import {
   ThemeSchema,
@@ -58,26 +59,47 @@ export enum Types {
   CANCEL_DEPLOYMENT_SUCCESS = 'CANCEL_DEPLOYMENT_SUCCESS',
   CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE',
 
-  // Update instance info
+  // Account details related actions
   GET_ACCOUNT_INFO = 'GET_ACCOUNT_INFO',
   GET_ACCOUNT_INFO_SUCCESS = 'GET_ACCOUNT_INFO_SUCCESS',
   GET_ACCOUNT_INFO_FAILURE = 'GET_ACCOUNT_INFO_FAILURE',
-  UPDATE_ACCOUNT_INFO = 'UPDATE_ACCOUNT_INFO',
-  // UPDATE_ACCOUNT_INFO_SUCCESS = 'UPDATE_ACCOUNT_INFO_SUCCESS',
-  UPDATE_ACCOUNT_INFO_FAILURE = 'UPDATE_ACCOUNT_INFO_FAILURE'
+  UPDATE_ACCOUNT_DETAILS = 'UPDATE_ACCOUNT_DETAILS',
+  UPDATE_ACCOUNT_DETAILS_SUCCESS = 'UPDATE_ACCOUNT_DETAILS_SUCCESS',
+  UPDATE_ACCOUNT_DETAILS_FAILURE = 'UPDATE_ACCOUNT_DETAILS_FAILURE',
+  CHANGE_PASSWORD = 'CHANGE_PASSWORD',
+  CHANGE_PASSWORD_SUCCESS = 'CHANGE_PASSWORD_SUCCESS',
+  CHANGE_PASSWORD_FAILURE = 'CHANGE_PASSWORD_FAILURE'
 }
 
-export interface updateAccountDetails extends Action {
-  readonly type: Types.UPDATE_ACCOUNT_INFO;
-  readonly data: UserAccountModel;
+export interface UpdateAccountDetails extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS;
+  readonly data: UserAccountDetailsModel;
 }
 
-export interface updateAccountPassword extends Action {
-  readonly type: Types.UPDATE_ACCOUNT_INFO;
-  readonly data: UserAccountModel;
+export interface UpdateAccountDetailsSuccess extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS_SUCCESS;
+  readonly data: UserAccountDetailsModel;
 }
 
-export interface getAccountInfo extends Action {
+export interface UpdateAccountDetailsFailure extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE;
+  readonly error: any;
+}
+
+export interface ChangePassword extends Action {
+  readonly type: Types.CHANGE_PASSWORD;
+}
+
+export interface ChangePasswordSuccess extends Action {
+  readonly type: Types.CHANGE_PASSWORD_SUCCESS;
+}
+
+export interface ChangePasswordFailure extends Action {
+  readonly type: Types.CHANGE_PASSWORD_FAILURE;
+  readonly error: any;
+}
+
+export interface GetAccountInfo extends Action {
   readonly type: Types.GET_ACCOUNT_INFO;
   readonly data: Array<UserAccountModel>;
 }
@@ -229,13 +251,17 @@ export interface ClearConsoleData extends Action {
 }
 
 export type ActionTypes =
+  | ChangePassword
+  | ChangePasswordSuccess
+  | ChangePasswordFailure
   | ClearFeedbackMessage
   | ClearConsoleData
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
-  | updateAccountDetails
-  | updateAccountPassword
+  | UpdateAccountDetails
+  | UpdateAccountDetailsFailure
+  | UpdateAccountDetailsSuccess
   | UpdateInstanceInfo
   | UpdateInstanceInfoSuccess
   | UpdateInstanceInfoFailure
@@ -249,7 +275,7 @@ export type ActionTypes =
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
-  | getAccountInfo
+  | GetAccountInfo
   | GetDeploymentsNotifications
   | GetDeploymentsNotificationsSuccess
   | GetDeploymentsNotificationsFailure
@@ -575,8 +601,6 @@ export const getAccountDetails = (): OcimThunkAction<
       data: response
     });
   } catch (e) {
-    console.debug(`error updating account details: ${e.Message}`);
-
     dispatch({
       type: Types.GET_ACCOUNT_INFO_FAILURE,
       error: e
@@ -587,23 +611,58 @@ export const getAccountDetails = (): OcimThunkAction<
 export const updateAccountDetails = (
   data: any
 ): OcimThunkAction<void> => async (dispatch, getState) => {
+  const { account } = getState().console;
+
+  // remove email from request if same as current
+  const currentEmail = account.email;
+  const requestData = { ...data };
+  if (requestData.email === currentEmail) {
+    delete requestData.email;
+  }
+
+  dispatch({
+    type: Types.UPDATE_ACCOUNT_DETAILS,
+    data
+  });
+
+  try {
+    const response = await V2Api.accountsUpdateDetails({
+      username: account.username,
+      data: requestData
+    });
+
+    dispatch({
+      type: Types.UPDATE_ACCOUNT_DETAILS_SUCCESS,
+      data: response
+    });
+  } catch (e) {
+    dispatch({
+      type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+      error: e
+    });
+  }
+};
+
+export const changePassword = (data: any): OcimThunkAction<void> => async (
+  dispatch,
+  getState
+) => {
+  dispatch({
+    type: Types.CHANGE_PASSWORD
+  });
+
   try {
     const { account } = getState().console;
-    console.debug(`updating account details ${JSON.stringify(data)}`);
-
-    const response = await V2Api.accountsPartialUpdate({
+    await V2Api.accountsPasswordChange({
       username: account.username,
       data
     });
     dispatch({
-      type: Types.UPDATE_ACCOUNT_INFO,
-      data: response
+      type: Types.CHANGE_PASSWORD_SUCCESS
     });
   } catch (e) {
-    console.debug(`error updating account details: ${e.Message}`);
-
     dispatch({
-      type: Types.UPDATE_ACCOUNT_INFO_FAILURE,
+      type: Types.CHANGE_PASSWORD_FAILURE,
       error: e
     });
   }

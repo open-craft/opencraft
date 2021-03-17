@@ -5,7 +5,11 @@ import { Col, Row, Form, Button, Spinner } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
 import { TextInputField } from 'ui/components';
-import { updateAccountDetails, getAccountDetails } from 'console/actions';
+import {
+  updateAccountDetails,
+  getAccountDetails,
+  changePassword
+} from 'console/actions';
 import messages from './displayMessages';
 import { ConsolePage } from '../ConsolePage';
 import './styles.scss';
@@ -13,6 +17,7 @@ import './styles.scss';
 interface ActionProps {
   updateAccountDetails: Function;
   getAccountDetails: Function;
+  changePassword: Function;
 }
 
 interface State {
@@ -56,13 +61,13 @@ export class AccountComponent extends React.PureComponent<Props, State> {
 
   private saveAccountDetails = () => {
     this.props.updateAccountDetails({
-      full_name: this.state.fullName,
+      fullName: this.state.fullName,
       email: this.state.email
     });
   };
 
   private saveNewPassword = () => {
-    this.props.updateAccountDetails({
+    this.props.changePassword({
       oldPassword: this.state.oldPassword,
       newPassword: this.state.newPassword
     });
@@ -164,6 +169,7 @@ export const Account = connect<{}, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.console,
   {
     updateAccountDetails,
-    getAccountDetails
+    getAccountDetails,
+    changePassword
   }
 )(AccountComponent);

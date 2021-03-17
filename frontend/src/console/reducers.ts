@@ -208,13 +208,67 @@ export function consoleReducer(
           }
         }
       });
-    case Actions.Types.UPDATE_ACCOUNT_INFO:
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS:
       return update(state, {
-        account: { $set: action.data }
+        loading: {
+          $set: true
+        },
+        account: {
+          fullName: {
+            $set: action.data.fullName
+          },
+          email: {
+            $set: action.data.email
+          }
+        }
       });
     case Actions.Types.GET_ACCOUNT_INFO:
       return update(state, {
         account: { $set: action.data[0] }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS_SUCCESS:
+      return update(state, {
+        loading: {
+          $set: false
+        },
+        account: {
+          fullName: {
+            $set: action.data.fullName
+          },
+          email: {
+            $set: action.data.email
+          }
+        }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS_FAILURE:
+      return update(state, {
+        loading: {
+          $set: false
+        },
+        error: {
+          $set: action.error
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD:
+      return update(state, {
+        loading: {
+          $set: true
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD_SUCCESS:
+      return update(state, {
+        loading: {
+          $set: false
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD_FAILURE:
+      return update(state, {
+        loading: {
+          $set: false
+        },
+        error: {
+          $set: true
+        }
       });
     default:
       return state;

@@ -49,6 +49,16 @@ export interface UserAccountModel {
   newPassword: string;
 }
 
+export interface UserAccountDetailsModel {
+  fullName: string;
+  email: string;
+}
+
+export interface ChangePasswordModel {
+  oldPassword: string;
+  newPassword: string;
+}
+
 // The loading key is used to store field names that are being updated through
 // a request. This allows us to individually update fields.
 export interface InstancesModel {
