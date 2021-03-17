@@ -501,6 +501,38 @@ describe('Instance app', function () {
             });
         });
     });
+
+    describe('prettifyJSON filter', function() {
+        var prettifyJSON;
+
+        beforeEach(inject(function($filter) {
+            prettifyJSON = $filter('prettifyJSON');
+        }));
+
+        it('prettifies JSON snippets from ansible output', function() {
+            expect(prettifyJSON('ok => not json')).toEqual('ok => not json');
+            expect(prettifyJSON('ok => {not: json either}')).toEqual('ok => {not: json either}');
+            expect(prettifyJSON('ok => {"result": "some json result", "value": 42}')).toEqual([
+              'ok => {',
+              '    "result": "some json result",',
+              '    "value": 42',
+              '}'
+            ].join('\n'));
+            expect(prettifyJSON('error => (item={"result": "item result"})')).toEqual([
+              'error => (item={',
+              '    "result": "item result"',
+              '})'
+            ].join('\n'));
+            expect(prettifyJSON('out => (item=["result", "is", "an", "array"])')).toEqual([
+              'out => (item=[',
+              '    "result",',
+              '    "is",',
+              '    "an",',
+              '    "array"',
+              '])'
+            ].join('\n'));
+        });
+    });
 });
 
 })();
