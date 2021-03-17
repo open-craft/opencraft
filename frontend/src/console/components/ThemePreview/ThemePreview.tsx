@@ -47,9 +47,9 @@ export class ThemePreviewComponent extends React.PureComponent<Props, State> {
 
     return (
       <ConsolePage contentLoading={this.props.loading}>
-        <div className="preview-header">
-          <PreviewDropdown initialExpanded handleChange={this.changePreview} />
-          <div className="notice-container">
+        <div className="preview-header d-flex align-items-center">
+          <PreviewDropdown handleChange={this.changePreview} />
+          <div className="notice-container d-flex flex-row-reverse">
             <p>
               <WrappedMessage messages={messages} id="previewNotice" />
             </p>

@@ -4,7 +4,7 @@ exports[`Preview dropdown renders messages as options 1`] = `ReactWrapper {}`;
 
 exports[`Preview dropdown renders without crashing 1`] = `
 <div
-  className="dropdown-container"
+  className="dropdown-container d-flex flex-column align-items-center"
 >
   <a
     className="nav-link"
@@ -22,10 +22,10 @@ exports[`Preview dropdown renders without crashing 1`] = `
     className="fill-line"
   />
   <div
-    className="dropdown-items"
+    className="dropdown-items align-items-center"
   >
     <div
-      className="content"
+      className="content d-flex flex-column"
     >
       <div
         aria-expanded={null}

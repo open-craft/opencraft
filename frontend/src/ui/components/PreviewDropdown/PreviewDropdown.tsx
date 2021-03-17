@@ -5,8 +5,6 @@ import messages from './displayMessages';
 import './styles.scss';
 
 interface PreviewDropdownProps {
-  children?: React.ReactNode;
-  initialExpanded?: boolean;
   handleChange: Function;
 }
 
@@ -37,7 +35,7 @@ export const PreviewDropdown: React.FC<PreviewDropdownProps> = (
   };
 
   return (
-    <div className="dropdown-container">
+    <div className="dropdown-container d-flex flex-column align-items-center">
       <Nav.Link onClick={() => setOpen(!open)}>
         <WrappedMessage messages={messages} id={selectedPreview} />
         {open ? (
@@ -47,8 +45,8 @@ export const PreviewDropdown: React.FC<PreviewDropdownProps> = (
         )}
       </Nav.Link>
       <span className="fill-line" />
-      <div className="dropdown-items">
-        <div className="content">
+      <div className="dropdown-items align-items-center">
+        <div className="content d-flex flex-column">
           <Collapse in={open}>{children()}</Collapse>
         </div>
       </div>
