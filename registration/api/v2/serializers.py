@@ -124,11 +124,6 @@ class AccountSerializer(serializers.ModelSerializer):
         validators=[validate_password],
         help_text="A password for the OpenCraft account.",
     )
-    old_password = serializers.CharField(
-        write_only=True,
-        required=False,
-        help_text='The old password for the OpenCraft account'
-    )
 
     def create(self, validated_data: Dict) -> UserProfile:
         """
@@ -202,32 +197,12 @@ class AccountSerializer(serializers.ModelSerializer):
             raise ValidationError("You must accept these terms to register.")
         return value
 
-    def validate_old_password(self, value):
-        if self.instance and not self.instance.user.check_password(value):
-            # TODO: Add throttling to prevent abuse
-            raise serializers.ValidationError('Invalid credentials')
-
-        return value
-
-    def validate(self, attrs):
-        if self.instance and 'user' in attrs:
-            user_data = attrs['user']
-
-            if 'password' in user_data and not self.instance.user.password and 'old_password' not in attrs:
-                raise serializers.ValidationError({'old_password': 'This field is required'})
-
-        # remove value since it is not part of UserProfile
-        attrs.pop('old_password', None)
-
-        return attrs
-
     class Meta:
         model = UserProfile
         fields = (
             "full_name",
             "username",
             "password",
-            "old_password",
             "email",
             "accepted_privacy_policy",
             "accept_domain_condition",
