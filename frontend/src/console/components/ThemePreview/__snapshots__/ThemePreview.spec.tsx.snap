@@ -290,6 +290,7 @@ exports[`Theme preview page Render theme settings page when instance has no them
                       className="collapse"
                     >
                       <button
+                        className="d-inline-block"
                         onClick={[Function]}
                         type="button"
                       >

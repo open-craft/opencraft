@@ -23,7 +23,12 @@ export const PreviewDropdown: React.FC<PreviewDropdownProps> = (
 
     Object.entries(messages).forEach(([key, _]) =>
       toRender.push(
-        <button onClick={() => updatePreview(key)} key={key} type="button">
+        <button
+          onClick={() => updatePreview(key)}
+          key={key}
+          type="button"
+          className="d-inline-block"
+        >
           <p>
             <WrappedMessage messages={messages} id={key} />
           </p>
