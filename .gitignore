@@ -107,3 +107,6 @@ media/
 
 # Generated scripts
 bin/archived_cleanup.sh
+
+# vscode
+.vscode/
