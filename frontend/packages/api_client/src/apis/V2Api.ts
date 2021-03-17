@@ -51,6 +51,9 @@ import {
     OpenEdXInstanceDeploymentStatus,
     OpenEdXInstanceDeploymentStatusFromJSON,
     OpenEdXInstanceDeploymentStatusToJSON,
+    PasswordChange,
+    PasswordChangeFromJSON,
+    PasswordChangeToJSON,
     PasswordToken,
     PasswordTokenFromJSON,
     PasswordTokenToJSON,
@@ -75,6 +78,9 @@ import {
     TokenVerify,
     TokenVerifyFromJSON,
     TokenVerifyToJSON,
+    UserDetail,
+    UserDetailFromJSON,
+    UserDetailToJSON,
     ValidationError,
     ValidationErrorFromJSON,
     ValidationErrorToJSON,
@@ -89,9 +95,19 @@ export interface AccountsPartialUpdateRequest {
     data: Account;
 }
 
+export interface AccountsPasswordChangeRequest {
+    username: string;
+    data: PasswordChange;
+}
+
 export interface AccountsUpdateRequest {
     username: string;
     data: Account;
+}
+
+export interface AccountsUpdateDetailsRequest {
+    username: string;
+    data: UserDetail;
 }
 
 export interface AuthRefreshCreateRequest {
@@ -314,6 +330,52 @@ export class V2Api extends runtime.BaseAPI {
     }
 
     /**
+     * This API can be used to register users, and to access user registration information for the current user.
+     * User account management API.
+     */
+    async accountsPasswordChangeRaw(requestParameters: AccountsPasswordChangeRequest): Promise<runtime.ApiResponse<PasswordChange>> {
+        if (requestParameters.username === null || requestParameters.username === undefined) {
+            throw new runtime.RequiredError('username','Required parameter requestParameters.username was null or undefined when calling accountsPasswordChange.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling accountsPasswordChange.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/accounts/{username}/password_change/`.replace(`{${"username"}}`, encodeURIComponent(String(requestParameters.username))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PasswordChangeToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PasswordChangeFromJSON(jsonValue));
+    }
+
+    /**
+     * This API can be used to register users, and to access user registration information for the current user.
+     * User account management API.
+     */
+    async accountsPasswordChange(requestParameters: AccountsPasswordChangeRequest): Promise<PasswordChange> {
+        const response = await this.accountsPasswordChangeRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
      * User account management API.  This API can be used to register users, and to access user registration information for the current user.
      * Update current user registration data
      */
@@ -356,6 +418,52 @@ export class V2Api extends runtime.BaseAPI {
      */
     async accountsUpdate(requestParameters: AccountsUpdateRequest): Promise<Account> {
         const response = await this.accountsUpdateRaw(requestParameters);
+        return await response.value();
+    }
+
+    /**
+     * This API can be used to register users, and to access user registration information for the current user.
+     * User account management API.
+     */
+    async accountsUpdateDetailsRaw(requestParameters: AccountsUpdateDetailsRequest): Promise<runtime.ApiResponse<UserDetail>> {
+        if (requestParameters.username === null || requestParameters.username === undefined) {
+            throw new runtime.RequiredError('username','Required parameter requestParameters.username was null or undefined when calling accountsUpdateDetails.');
+        }
+
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling accountsUpdateDetails.');
+        }
+
+        const queryParameters: runtime.HTTPQuery = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = this.configuration.apiKey("Authorization"); // api_key authentication
+        }
+
+        if (this.configuration && (this.configuration.username !== undefined || this.configuration.password !== undefined)) {
+            headerParameters["Authorization"] = "Basic " + btoa(this.configuration.username + ":" + this.configuration.password);
+        }
+        const response = await this.request({
+            path: `/v2/accounts/{username}/update_details/`.replace(`{${"username"}}`, encodeURIComponent(String(requestParameters.username))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UserDetailToJSON(requestParameters.data),
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * This API can be used to register users, and to access user registration information for the current user.
+     * User account management API.
+     */
+    async accountsUpdateDetails(requestParameters: AccountsUpdateDetailsRequest): Promise<UserDetail> {
+        const response = await this.accountsUpdateDetailsRaw(requestParameters);
         return await response.value();
     }
 
