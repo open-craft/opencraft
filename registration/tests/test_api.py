@@ -246,6 +246,76 @@ class AccountAPITestCase(APITestCase):
         # Should be able to log in with the new credentials
         self.assertTrue(self.client.login(username='test.user', password='NewV4l1dPw()'))
 
+    def test_account_change_password_success(self):
+        """
+        Ensure password change is successful
+        """
+        self.user.set_password('OldV4l1dPw()')
+        self.user.save()
+        self.client.force_login(self.user)
+        url = reverse("api:v2:accounts-password-change", kwargs={'username': self.user.username})
+        response = self.client.patch(
+            url,
+            data={
+                "old_password": "OldV4l1dPw()",
+                "new_password": "NewV4l1dPw()",
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        # Should be able to log in with the new credentials
+        self.assertTrue(self.client.login(username=self.user.username, password='NewV4l1dPw()'))
+
+    def test_account_change_password_failure_without_old_password(self):
+        """
+        Test password change fails when old password is not provided
+        """
+        self.client.force_login(self.user)
+        url = reverse("api:v2:accounts-password-change", kwargs={'username': self.user.username})
+        response = self.client.patch(
+            url,
+            data={
+                "new_password": "NewV4l1dPw()",
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_account_change_password_failure_with_simple_new_password(self):
+        """
+        Test password updates.
+        """
+        self.user.set_password('OldV4l1dPw()')
+        self.user.save()
+
+        self.client.force_login(self.user)
+        url = reverse("api:v2:accounts-password-change", kwargs={'username': self.user.username})
+        response = self.client.patch(
+            url,
+            data={
+                "new_password": "123456789",
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_account_change_user_detail(self):
+        """
+        Test password updates.
+        """
+        self.client.force_login(self.user)
+        url = reverse("api:v2:accounts-update-details", kwargs={'username': self.user.username})
+        response = self.client.patch(
+            url,
+            data={
+                "full_name": "Anon Y. Mous",
+                "email": "anon@ymous.com",
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 @ddt.ddt
 class OpenEdXInstanceConfigAPITestCase(APITestCase):
