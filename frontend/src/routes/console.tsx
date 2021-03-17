@@ -6,7 +6,8 @@ import {
   InstanceSettings,
   NoticeBoard,
   CustomPages,
-  CoursesManage
+  CoursesManage,
+  DomainSettings
 } from 'console/components';
 import {
   ButtonsCustomization,
@@ -25,6 +26,10 @@ export const ConsoleRoutes = () => {
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
+      />
+      <PrivateRoute
+        path={ROUTES.Console.INSTANCE_SETTINGS_DOMAIN}
+        component={DomainSettings}
       />
       <PrivateRoute
         path={ROUTES.Console.NOTICE_BOARD}

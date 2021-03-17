@@ -43,3 +43,9 @@ export * from './ButtonStyles';
 export * from './CourseOutlinePreview';
 
 export * from './CustomizableCourseTab';
+
+export * from './DomainSettings';
+
+export * from './DomainItem';
+
+export * from './AddDomainModalButton';
