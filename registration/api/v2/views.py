@@ -157,7 +157,9 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
         user = request.user
         serializer = self.get_serializer(instance=user, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        new_password = serializer.validated_data['user']['password']
+        user.set_password(new_password)
+        user.save()
         return Response({"ok": True})
 
     @swagger_auto_schema(

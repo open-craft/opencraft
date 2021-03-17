@@ -246,10 +246,6 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
 
         return value
 
-    def create(self, validated_data):
-        validated_data.pop('old_password', None)
-        return super().create(validated_data)
-
     class Meta:
         model = get_user_model()
         fields = ["username", "old_password", "new_password"]
