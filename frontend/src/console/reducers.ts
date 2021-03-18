@@ -208,20 +208,6 @@ export function consoleReducer(
           }
         }
       });
-    case Actions.Types.UPDATE_ACCOUNT_DETAILS:
-      return update(state, {
-        accountDetailsUpdating: {
-          $set: true
-        },
-        account: {
-          fullName: {
-            $set: action.data.fullName
-          },
-          email: {
-            $set: action.data.email
-          }
-        }
-      });
     case Actions.Types.GET_ACCOUNT_INFO:
       return update(state, {
         loading: {
@@ -241,6 +227,23 @@ export function consoleReducer(
       return update(state, {
         loading: {
           $set: false
+        }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS:
+      return update(state, {
+        accountDetailsUpdating: {
+          $set: true
+        },
+        account: {
+          fullName: {
+            $set: action.data.fullName
+          },
+          email: {
+            $set: action.data.email
+          },
+          accountDetailError: {
+            $set: ''
+          }
         }
       });
     case Actions.Types.UPDATE_ACCOUNT_DETAILS_SUCCESS:
