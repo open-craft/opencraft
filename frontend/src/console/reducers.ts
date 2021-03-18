@@ -262,8 +262,10 @@ export function consoleReducer(
         accountDetailsUpdating: {
           $set: false
         },
-        error: {
-          $set: action.error
+        account: {
+          accountDetailError: {
+            $set: action.error
+          }
         }
       });
     case Actions.Types.CHANGE_PASSWORD:
@@ -283,8 +285,10 @@ export function consoleReducer(
         passwordUpdating: {
           $set: false
         },
-        error: {
-          $set: action.error
+        account: {
+          passwordError: {
+            $set: action.error
+          }
         }
       });
     default:

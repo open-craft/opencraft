@@ -47,6 +47,8 @@ export interface UserAccountModel {
   username: string;
   oldPassword: string;
   newPassword: string;
+  accountDetailError: string;
+  passwordError: string;
 }
 
 export interface UserAccountDetailsModel {
@@ -95,7 +97,9 @@ export const initialConsoleState: Readonly<InstancesModel> = {
     email: '',
     username: '',
     oldPassword: '',
-    newPassword: ''
+    newPassword: '',
+    accountDetailError: '',
+    passwordError: ''
   },
   accountDetailsUpdating: false,
   passwordUpdating: false

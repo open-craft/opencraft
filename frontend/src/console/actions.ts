@@ -83,7 +83,7 @@ export interface UpdateAccountDetailsSuccess extends Action {
 
 export interface UpdateAccountDetailsFailure extends Action {
   readonly type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE;
-  readonly error: any;
+  readonly error: string;
 }
 
 export interface ChangePassword extends Action {
@@ -651,10 +651,36 @@ export const updateAccountDetails = (
       data: response
     });
   } catch (e) {
-    dispatch({
-      type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
-      error: e
-    });
+    try {
+      e.json().then((feedback: any) => {
+        // If validation fails, return error to form through state
+        const error: string[] = [];
+
+        if (feedback) {
+          if (feedback.full_name && feedback.full_name.length > 0) {
+            feedback.full_name.forEach((errorItem: string) => {
+              error.push(`Full name: ${errorItem}`);
+            });
+          }
+
+          if (feedback.email && feedback.email.length > 0) {
+            feedback.email.forEach((errorItem: string) => {
+              error.push(`Email address: ${errorItem}`);
+            });
+          }
+        }
+
+        dispatch({
+          type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+          error: error.join(' ')
+        });
+      });
+    } catch (jsonParseError) {
+      dispatch({
+        type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+        error: 'Unknown error'
+      });
+    }
   }
 };
 
@@ -672,13 +698,51 @@ export const changePassword = (data: any): OcimThunkAction<void> => async (
       username: account.username,
       data
     });
+
     dispatch({
       type: Types.CHANGE_PASSWORD_SUCCESS
     });
   } catch (e) {
-    dispatch({
-      type: Types.CHANGE_PASSWORD_FAILURE,
-      error: e
-    });
+    try {
+      e.json().then((feedback: any) => {
+        // If validation fails, return error to form through state
+        const error: string[] = [];
+
+        if (feedback) {
+          if (
+            feedback.non_field_errors &&
+            feedback.non_field_errors.length > 0
+          ) {
+            feedback.non_field_errors.forEach((errorItem: string) => {
+              error.push(errorItem);
+            });
+          }
+
+          if (feedback.new_password && feedback.new_password.length > 0) {
+            error.push(`New password: `);
+            feedback.new_password.forEach((errorItem: string) => {
+              error.push(errorItem);
+            });
+          }
+
+          if (feedback.old_password && feedback.old_password.length > 0) {
+            error.push(`Current password: `);
+            feedback.old_password.forEach((errorItem: string) => {
+              error.push(errorItem);
+            });
+          }
+        }
+
+        dispatch({
+          type: Types.CHANGE_PASSWORD_FAILURE,
+          error: error.join(' ')
+        });
+      });
+    } catch (jsonParseError) {
+      dispatch({
+        type: Types.CHANGE_PASSWORD_FAILURE,
+        error: 'Unknown error'
+      });
+    }
   }
 };

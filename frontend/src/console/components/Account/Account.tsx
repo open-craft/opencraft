@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
-import { Col, Row, Form, Button, Spinner } from 'react-bootstrap';
+import { Col, Row, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { WrappedMessage } from 'utils/intl';
 import { InstancesModel } from 'console/models';
 import { TextInputField } from 'ui/components';
@@ -122,6 +122,12 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                 autoComplete="email"
               />
 
+              {this.props.account.accountDetailError && (
+                <Alert variant="danger">
+                  {this.props.account.accountDetailError}
+                </Alert>
+              )}
+
               <Button
                 variant="primary"
                 onClick={() => {
@@ -162,6 +168,12 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                 type="password"
                 autoComplete="password"
               />
+
+              {this.props.account.passwordError && (
+                <Alert variant="danger">
+                  {this.props.account.passwordError}
+                </Alert>
+              )}
 
               <Button
                 variant="primary"
