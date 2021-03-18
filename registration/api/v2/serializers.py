@@ -423,7 +423,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "hero_cover_image",
             "draft_static_content_overrides",
             "static_pages_enabled",
-            "is_email_verified"
+            "is_email_verified",
+            "dns_configuration_state"
         )
         read_only_fields = [
             "logo",
