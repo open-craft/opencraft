@@ -74,6 +74,8 @@ export interface InstancesModel {
   notifications: Array<DeploymentNotificationModel>;
   notificationsLoading: boolean;
   account: UserAccountModel;
+  accountDetailsUpdating: boolean;
+  passwordUpdating: boolean;
 }
 
 export const initialConsoleState: Readonly<InstancesModel> = {
@@ -94,5 +96,7 @@ export const initialConsoleState: Readonly<InstancesModel> = {
     username: '',
     oldPassword: '',
     newPassword: ''
-  }
+  },
+  accountDetailsUpdating: false,
+  passwordUpdating: false
 };

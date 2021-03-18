@@ -124,12 +124,11 @@ export class AccountComponent extends React.PureComponent<Props, State> {
 
               <Button
                 variant="primary"
-                className="btn-lg"
                 onClick={() => {
                   this.saveAccountDetails();
                 }}
               >
-                {this.props.loading && (
+                {this.props.accountDetailsUpdating && (
                   <Spinner animation="border" size="sm" className="spinner" />
                 )}
                 <WrappedMessage messages={messages} id="saveAccountDetails" />
@@ -169,7 +168,7 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                   this.saveNewPassword();
                 }}
               >
-                {this.props.loading && (
+                {this.props.passwordUpdating && (
                   <Spinner animation="border" size="sm" className="spinner" />
                 )}
                 <WrappedMessage messages={messages} id="saveNewPassword" />

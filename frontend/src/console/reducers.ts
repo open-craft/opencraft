@@ -210,7 +210,7 @@ export function consoleReducer(
       });
     case Actions.Types.UPDATE_ACCOUNT_DETAILS:
       return update(state, {
-        loading: {
+        accountDetailsUpdating: {
           $set: true
         },
         account: {
@@ -224,11 +224,28 @@ export function consoleReducer(
       });
     case Actions.Types.GET_ACCOUNT_INFO:
       return update(state, {
-        account: { $set: action.data[0] }
+        loading: {
+          $set: true
+        }
+      });
+    case Actions.Types.GET_ACCOUNT_INFO_SUCCESS:
+      return update(state, {
+        loading: {
+          $set: false
+        },
+        account: {
+          $set: action.data[0]
+        }
+      });
+    case Actions.Types.GET_ACCOUNT_INFO_FAILURE:
+      return update(state, {
+        loading: {
+          $set: false
+        }
       });
     case Actions.Types.UPDATE_ACCOUNT_DETAILS_SUCCESS:
       return update(state, {
-        loading: {
+        accountDetailsUpdating: {
           $set: false
         },
         account: {
@@ -242,7 +259,7 @@ export function consoleReducer(
       });
     case Actions.Types.UPDATE_ACCOUNT_DETAILS_FAILURE:
       return update(state, {
-        loading: {
+        accountDetailsUpdating: {
           $set: false
         },
         error: {
@@ -251,23 +268,23 @@ export function consoleReducer(
       });
     case Actions.Types.CHANGE_PASSWORD:
       return update(state, {
-        loading: {
+        passwordUpdating: {
           $set: true
         }
       });
     case Actions.Types.CHANGE_PASSWORD_SUCCESS:
       return update(state, {
-        loading: {
+        passwordUpdating: {
           $set: false
         }
       });
     case Actions.Types.CHANGE_PASSWORD_FAILURE:
       return update(state, {
-        loading: {
+        passwordUpdating: {
           $set: false
         },
         error: {
-          $set: true
+          $set: action.error
         }
       });
     default:

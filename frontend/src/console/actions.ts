@@ -101,7 +101,16 @@ export interface ChangePasswordFailure extends Action {
 
 export interface GetAccountInfo extends Action {
   readonly type: Types.GET_ACCOUNT_INFO;
+}
+
+export interface GetAccountInfoSuccess extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO_SUCCESS;
   readonly data: Array<UserAccountModel>;
+}
+
+export interface GetAccountInfoFailure extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO_FAILURE;
+  readonly error: any;
 }
 
 export interface ClearFeedbackMessage extends Action {
@@ -276,6 +285,8 @@ export type ActionTypes =
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
   | GetAccountInfo
+  | GetAccountInfoSuccess
+  | GetAccountInfoFailure
   | GetDeploymentsNotifications
   | GetDeploymentsNotificationsSuccess
   | GetDeploymentsNotificationsFailure
@@ -593,11 +604,15 @@ export const cancelDeployment = (
 export const getAccountDetails = (): OcimThunkAction<
   void
 > => async dispatch => {
+  dispatch({
+    type: Types.GET_ACCOUNT_INFO
+  });
+
   try {
     const response = await V2Api.accountsList();
 
     dispatch({
-      type: Types.GET_ACCOUNT_INFO,
+      type: Types.GET_ACCOUNT_INFO_SUCCESS,
       data: response
     });
   } catch (e) {
