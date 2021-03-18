@@ -127,6 +127,7 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                 onClick={() => {
                   this.saveAccountDetails();
                 }}
+                disabled={this.props.passwordUpdating}
               >
                 {this.props.accountDetailsUpdating && (
                   <Spinner animation="border" size="sm" className="spinner" />
@@ -167,6 +168,7 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                 onClick={() => {
                   this.saveNewPassword();
                 }}
+                disabled={this.props.passwordUpdating}
               >
                 {this.props.passwordUpdating && (
                   <Spinner animation="border" size="sm" className="spinner" />
