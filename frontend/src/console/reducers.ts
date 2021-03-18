@@ -254,6 +254,9 @@ export function consoleReducer(
           },
           email: {
             $set: action.data.email
+          },
+          accountDetailError: {
+            $set: ''
           }
         }
       });
@@ -278,6 +281,11 @@ export function consoleReducer(
       return update(state, {
         passwordUpdating: {
           $set: false
+        },
+        account: {
+          passwordError: {
+            $set: ''
+          }
         }
       });
     case Actions.Types.CHANGE_PASSWORD_FAILURE:
