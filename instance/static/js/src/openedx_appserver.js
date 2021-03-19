@@ -159,6 +159,15 @@ app.filter('prettifyJSON', function() {
             if (match) {
                 try {
                     var json = JSON.parse(match[1]);
+                    // stdout and stdout_lines contain the same data, except that stdout_lines is nicely
+                    // broken by newlines while stdout is much less readable. Remove stdout if both are present.
+                    if (json.hasOwnProperty('stdout') && json.hasOwnProperty('stdout_lines')) {
+                        delete json.stdout;
+                    }
+                    // Do the same for stderr/stderr_lines
+                    if (json.hasOwnProperty('stderr') && json.hasOwnProperty('stderr_lines')) {
+                        delete json.stderr;
+                    }
                     var pretty_printed = JSON.stringify(json, null, 4);
                     // Replace the matched portion with pretty-printed JSON.
                     result = result.replace(match[1], pretty_printed);

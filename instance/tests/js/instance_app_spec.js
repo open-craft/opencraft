@@ -532,6 +532,23 @@ describe('Instance app', function () {
               '])'
             ].join('\n'));
         });
+
+        it('removes stdout/stderr entries from JSON snippets', function() {
+            expect(prettifyJSON('ok => {"stdout": "", "stdout_lines": [], "value": 42}')).toEqual([
+              'ok => {',
+              '    "stdout_lines": [],',
+              '    "value": 42',
+              '}'
+            ].join('\n'));
+            expect(prettifyJSON('ok => {"stderr": "Error!\\nAbort!", "stderr_lines": ["Error!","Abort!"]}')).toEqual([
+              'ok => {',
+              '    "stderr_lines": [',
+              '        "Error!",',
+              '        "Abort!"',
+              '    ]',
+              '}'
+            ].join('\n'));
+        });
     });
 });
 
