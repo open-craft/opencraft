@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# For linux systems with libvirt enabled -- does not require Virtualbox, nfs
+# mounts, firewall changes, etc.
+#
+# Usage:
+#
+#     export VAGRANT_VAGRANTFILE=Vagrantfile-libvirt 
+#     vagrant up
+#
+# `direnv` users may want to set the above environment variable in their
+# `.envrc` file.
+#
+# Requires two plugins that you may be able to build locally. 
+#
+# Fedora users should use the OS supplied plugins since these won't build
+# locally:
+#
+#   sudo dnf install libvirt vagrant-sshfs vagrant-libvirt
+#
+# Ubuntu users: TODO
+#
+# Also, make sure libvirtd is running:
+#
+#   sudo systemctl enable libvirtd --now
+
+unless Vagrant.has_plugin?("vagrant-sshfs")
+  raise "Please install the vagrant-sshfs plugin by running `vagrant plugin install vagrant-sshfs`"
+end
+
+unless Vagrant.has_plugin?("vagrant-libvirt")
+  raise "Please install the vagrant-libvirt plugin by running `vagrant plugin install vagrant-libvirt`"
+end
+
+Vagrant.configure(2) do |config|
+  config.vm.box = 'generic/ubuntu1604'
+  # config.vm.synced_folder '.', '/vagrant', disabled: true, type: 'sshfs'
+  config.vm.synced_folder '.', '/home/vagrant/opencraft', type:  'sshfs'
+
+  config.vm.network 'forwarded_port', guest: 2001, host: 2001
+  config.vm.network 'forwarded_port', guest: 5000, host: 5000
+  config.vm.network 'forwarded_port', guest: 8888, host: 8888
+
+  config.ssh.forward_x11 = true
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "deploy/playbooks/ocim-vagrant.yml"
+    private_vars_file = "private.yml"
+    if FileTest.exists?(private_vars_file)
+      ansible.raw_arguments = ["--extra-vars", "@" + private_vars_file]
+    end
+  end
+
+  config.vm.provider :libvirt do |lv|
+    lv.memory = 8192
+    lv.cpus = 4
+  end
+end
