@@ -85,6 +85,30 @@ export interface OpenEdXAppServer {
      */
     edxPlatformCommit: string;
     /**
+     * The repository to pull the default Ansible playbook from.
+     * @type {string}
+     * @memberof OpenEdXAppServer
+     */
+    ansibleAppserverRepoUrl?: string;
+    /**
+     * The path to the common appserver playbook to run on all appservers.
+     * @type {string}
+     * @memberof OpenEdXAppServer
+     */
+    ansibleAppserverPlaybook?: string;
+    /**
+     * The path to the requirements file for the common appserver playbook.
+     * @type {string}
+     * @memberof OpenEdXAppServer
+     */
+    ansibleAppserverRequirementsPath?: string;
+    /**
+     * The version of the Ansible playbook repository to checkout.
+     * @type {string}
+     * @memberof OpenEdXAppServer
+     */
+    ansibleAppserverVersion?: string;
+    /**
      * JSON openstack flavor selector, e.g. {"name": "vps-ssd-1"}. Defaults to settings.OPENSTACK_SANDBOX_FLAVOR on server creation.
      * @type {object}
      * @memberof OpenEdXAppServer
@@ -195,6 +219,10 @@ export function OpenEdXAppServerFromJSONTyped(json: any, ignoreDiscriminator: bo
         'configurationPlaybookName': !exists(json, 'configuration_playbook_name') ? undefined : json['configuration_playbook_name'],
         'edxPlatformRepositoryUrl': !exists(json, 'edx_platform_repository_url') ? undefined : json['edx_platform_repository_url'],
         'edxPlatformCommit': json['edx_platform_commit'],
+        'ansibleAppserverRepoUrl': !exists(json, 'ansible_appserver_repo_url') ? undefined : json['ansible_appserver_repo_url'],
+        'ansibleAppserverPlaybook': !exists(json, 'ansible_appserver_playbook') ? undefined : json['ansible_appserver_playbook'],
+        'ansibleAppserverRequirementsPath': !exists(json, 'ansible_appserver_requirements_path') ? undefined : json['ansible_appserver_requirements_path'],
+        'ansibleAppserverVersion': !exists(json, 'ansible_appserver_version') ? undefined : json['ansible_appserver_version'],
         'openstackServerFlavor': !exists(json, 'openstack_server_flavor') ? undefined : json['openstack_server_flavor'],
         'openstackServerBaseImage': !exists(json, 'openstack_server_base_image') ? undefined : json['openstack_server_base_image'],
         'openstackServerSshKeyname': !exists(json, 'openstack_server_ssh_keyname') ? undefined : json['openstack_server_ssh_keyname'],
@@ -231,6 +259,10 @@ export function OpenEdXAppServerToJSON(value?: OpenEdXAppServer | null): any {
         'configuration_playbook_name': value.configurationPlaybookName,
         'edx_platform_repository_url': value.edxPlatformRepositoryUrl,
         'edx_platform_commit': value.edxPlatformCommit,
+        'ansible_appserver_repo_url': value.ansibleAppserverRepoUrl,
+        'ansible_appserver_playbook': value.ansibleAppserverPlaybook,
+        'ansible_appserver_requirements_path': value.ansibleAppserverRequirementsPath,
+        'ansible_appserver_version': value.ansibleAppserverVersion,
         'openstack_server_flavor': value.openstackServerFlavor,
         'openstack_server_base_image': value.openstackServerBaseImage,
         'openstack_server_ssh_keyname': value.openstackServerSshKeyname,
