@@ -115,7 +115,7 @@ export interface OpenEdXAppServer {
      */
     openstackServerFlavor?: object | null;
     /**
-     * JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"} Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.
+     * JSON openstack base image selector, e.g. {"name": "focal-20.04-unmodified"} Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.
      * @type {object}
      * @memberof OpenEdXAppServer
      */
