@@ -67,7 +67,8 @@ from registration.api.v2.serializers import (
     StaticContentOverridesSerializer, ThemeSchemaSerializer,
     ToggleStaticContentPagesSerializer,
     DisplayStaticContentPagesSerializer,
-    PasswordChangeSerializer, UserDetailSerializer)
+    PasswordChangeSerializer, UserDetailSerializer,
+)
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
 from userprofile.models import UserProfile

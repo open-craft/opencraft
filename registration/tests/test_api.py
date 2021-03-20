@@ -294,6 +294,7 @@ class AccountAPITestCase(APITestCase):
         response = self.client.patch(
             url,
             data={
+                "old_password": "OldV4l1dPw()",
                 "new_password": "123456789",
             },
             format="json"
