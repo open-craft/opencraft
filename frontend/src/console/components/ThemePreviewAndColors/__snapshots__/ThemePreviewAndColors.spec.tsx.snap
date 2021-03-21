@@ -561,24 +561,28 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             Main Color
                           </label>
                           <div
-                            className="row"
+                            className="align-items-center row"
                           >
-                            <input
-                              className="input-field-color form-control"
-                              disabled={true}
-                              name="mainColor"
-                              onClick={[Function]}
-                              readOnly={true}
-                              value="#444444"
-                            />
                             <div
-                              className="input-field-preview"
-                              style={
-                                Object {
-                                  "backgroundColor": "#444444",
+                              className="d-flex align-items-center color-input-field"
+                            >
+                              <input
+                                className="input-field-color form-control"
+                                disabled={true}
+                                name="mainColor"
+                                onClick={[Function]}
+                                readOnly={true}
+                                value="#444444"
+                              />
+                              <div
+                                className="input-field-preview"
+                                style={
+                                  Object {
+                                    "backgroundColor": "#444444",
+                                  }
                                 }
-                              }
-                            />
+                              />
+                            </div>
                             <div
                               className="info-icon"
                               onBlur={[Function]}
@@ -610,24 +614,28 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             Link Color
                           </label>
                           <div
-                            className="row"
+                            className="align-items-center row"
                           >
-                            <input
-                              className="input-field-color form-control"
-                              disabled={true}
-                              name="linkColor"
-                              onClick={[Function]}
-                              readOnly={true}
-                              value="#FFAAFF"
-                            />
                             <div
-                              className="input-field-preview"
-                              style={
-                                Object {
-                                  "backgroundColor": "#FFAAFF",
+                              className="d-flex align-items-center color-input-field"
+                            >
+                              <input
+                                className="input-field-color form-control"
+                                disabled={true}
+                                name="linkColor"
+                                onClick={[Function]}
+                                readOnly={true}
+                                value="#FFAAFF"
+                              />
+                              <div
+                                className="input-field-preview"
+                                style={
+                                  Object {
+                                    "backgroundColor": "#FFAAFF",
+                                  }
                                 }
-                              }
-                            />
+                              />
+                            </div>
                             <div
                               className="info-icon"
                               onBlur={[Function]}
@@ -1361,24 +1369,28 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             Main Color
                           </label>
                           <div
-                            className="row"
+                            className="align-items-center row"
                           >
-                            <input
-                              className="input-field-color form-control"
-                              disabled={false}
-                              name="mainColor"
-                              onClick={[Function]}
-                              readOnly={true}
-                              value="#444444"
-                            />
                             <div
-                              className="input-field-preview"
-                              style={
-                                Object {
-                                  "backgroundColor": "#444444",
+                              className="d-flex align-items-center color-input-field"
+                            >
+                              <input
+                                className="input-field-color form-control"
+                                disabled={false}
+                                name="mainColor"
+                                onClick={[Function]}
+                                readOnly={true}
+                                value="#444444"
+                              />
+                              <div
+                                className="input-field-preview"
+                                style={
+                                  Object {
+                                    "backgroundColor": "#444444",
+                                  }
                                 }
-                              }
-                            />
+                              />
+                            </div>
                             <div
                               className="info-icon"
                               onBlur={[Function]}
@@ -1410,24 +1422,28 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                             Link Color
                           </label>
                           <div
-                            className="row"
+                            className="align-items-center row"
                           >
-                            <input
-                              className="input-field-color form-control"
-                              disabled={false}
-                              name="linkColor"
-                              onClick={[Function]}
-                              readOnly={true}
-                              value="#FFAAFF"
-                            />
                             <div
-                              className="input-field-preview"
-                              style={
-                                Object {
-                                  "backgroundColor": "#FFAAFF",
+                              className="d-flex align-items-center color-input-field"
+                            >
+                              <input
+                                className="input-field-color form-control"
+                                disabled={false}
+                                name="linkColor"
+                                onClick={[Function]}
+                                readOnly={true}
+                                value="#FFAAFF"
+                              />
+                              <div
+                                className="input-field-preview"
+                                style={
+                                  Object {
+                                    "backgroundColor": "#FFAAFF",
+                                  }
                                 }
-                              }
-                            />
+                              />
+                            </div>
                             <div
                               className="info-icon"
                               onBlur={[Function]}

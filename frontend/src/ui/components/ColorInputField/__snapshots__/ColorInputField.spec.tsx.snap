@@ -10,23 +10,27 @@ exports[`ColorInputField Component Correctly renders color input field. 1`] = `
     Test
   </label>
   <div
-    className="row"
+    className="align-items-center row"
   >
-    <input
-      className="input-field-color form-control"
-      name="test"
-      onClick={[Function]}
-      readOnly={true}
-      value="Not set"
-    />
     <div
-      className="input-field-preview"
-      style={
-        Object {
-          "backgroundColor": undefined,
+      className="d-flex align-items-center color-input-field"
+    >
+      <input
+        className="input-field-color form-control"
+        name="test"
+        onClick={[Function]}
+        readOnly={true}
+        value="Not set"
+      />
+      <div
+        className="input-field-preview"
+        style={
+          Object {
+            "backgroundColor": undefined,
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="info-icon"
       onBlur={[Function]}
@@ -61,23 +65,27 @@ exports[`ColorInputField Component Render component, check if color picker shows
     Test
   </label>
   <div
-    className="row"
+    className="align-items-center row"
   >
-    <input
-      className="input-field-color form-control"
-      name="test"
-      onClick={[Function]}
-      readOnly={true}
-      value="#FFFFFF"
-    />
     <div
-      className="input-field-preview"
-      style={
-        Object {
-          "backgroundColor": "#FFFFFF",
+      className="d-flex align-items-center color-input-field"
+    >
+      <input
+        className="input-field-color form-control"
+        name="test"
+        onClick={[Function]}
+        readOnly={true}
+        value="#FFFFFF"
+      />
+      <div
+        className="input-field-preview"
+        style={
+          Object {
+            "backgroundColor": "#FFFFFF",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="info-icon"
       onBlur={[Function]}
@@ -112,23 +120,27 @@ exports[`ColorInputField Component Render component, check if color picker shows
     Test
   </label>
   <div
-    className="row"
+    className="align-items-center row"
   >
-    <input
-      className="input-field-color form-control"
-      name="test"
-      onClick={[Function]}
-      readOnly={true}
-      value="#FFFFFF"
-    />
     <div
-      className="input-field-preview"
-      style={
-        Object {
-          "backgroundColor": "#FFFFFF",
+      className="d-flex align-items-center color-input-field"
+    >
+      <input
+        className="input-field-color form-control"
+        name="test"
+        onClick={[Function]}
+        readOnly={true}
+        value="#FFFFFF"
+      />
+      <div
+        className="input-field-preview"
+        style={
+          Object {
+            "backgroundColor": "#FFFFFF",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="info-icon"
       onBlur={[Function]}
@@ -1573,24 +1585,28 @@ exports[`ColorInputField Component Render loading. 1`] = `
     Test
   </label>
   <div
-    className="row"
+    className="align-items-center row"
   >
-    <input
-      className="input-field-color form-control"
-      disabled={true}
-      name="test"
-      onClick={[Function]}
-      readOnly={true}
-      value="#FFFFFF"
-    />
     <div
-      className="input-field-preview"
-      style={
-        Object {
-          "backgroundColor": "#FFFFFF",
+      className="d-flex align-items-center color-input-field"
+    >
+      <input
+        className="input-field-color form-control"
+        disabled={true}
+        name="test"
+        onClick={[Function]}
+        readOnly={true}
+        value="#FFFFFF"
+      />
+      <div
+        className="input-field-preview"
+        style={
+          Object {
+            "backgroundColor": "#FFFFFF",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="info-icon"
       onBlur={[Function]}
@@ -1625,23 +1641,27 @@ exports[`ColorInputField Component Render with default value. 1`] = `
     Test
   </label>
   <div
-    className="row"
+    className="align-items-center row"
   >
-    <input
-      className="input-field-color form-control"
-      name="test"
-      onClick={[Function]}
-      readOnly={true}
-      value="#FFFFFF"
-    />
     <div
-      className="input-field-preview"
-      style={
-        Object {
-          "backgroundColor": "#FFFFFF",
+      className="d-flex align-items-center color-input-field"
+    >
+      <input
+        className="input-field-color form-control"
+        name="test"
+        onClick={[Function]}
+        readOnly={true}
+        value="#FFFFFF"
+      />
+      <div
+        className="input-field-preview"
+        style={
+          Object {
+            "backgroundColor": "#FFFFFF",
+          }
         }
-      }
-    />
+      />
+    </div>
     <div
       className="info-icon"
       onBlur={[Function]}
@@ -1665,4 +1685,3 @@ exports[`ColorInputField Component Render with default value. 1`] = `
   </p>
 </div>
 `;
-
