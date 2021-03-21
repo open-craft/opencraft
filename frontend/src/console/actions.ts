@@ -652,30 +652,37 @@ export const updateAccountDetails = (
     });
   } catch (e) {
     try {
-      e.json().then((feedback: any) => {
-        // If validation fails, return error to form through state
-        const error: string[] = [];
+      e.json()
+        .then((feedback: any) => {
+          // If validation fails, return error to form through state
+          const error: string[] = [];
 
-        if (feedback) {
-          if (feedback.full_name && feedback.full_name.length > 0) {
-            feedback.full_name.forEach((errorItem: string) => {
-              error.push(`Full name: ${errorItem}`);
-            });
+          if (feedback) {
+            if (feedback.full_name && feedback.full_name.length > 0) {
+              feedback.full_name.forEach((errorItem: string) => {
+                error.push(`Full name: ${errorItem}`);
+              });
+            }
+
+            if (feedback.email && feedback.email.length > 0) {
+              feedback.email.forEach((errorItem: string) => {
+                error.push(`Email address: ${errorItem}`);
+              });
+            }
           }
 
-          if (feedback.email && feedback.email.length > 0) {
-            feedback.email.forEach((errorItem: string) => {
-              error.push(`Email address: ${errorItem}`);
-            });
-          }
-        }
-
-        dispatch({
-          type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
-          error: error.join(' ')
+          dispatch({
+            type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+            error: error.join(' ')
+          });
+        })
+        .catch(() => {
+          dispatch({
+            type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+            error: 'Unknown error'
+          });
         });
-      });
-    } catch (jsonParseError) {
+    } catch {
       dispatch({
         type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
         error: 'Unknown error'
@@ -704,40 +711,47 @@ export const changePassword = (data: any): OcimThunkAction<void> => async (
     });
   } catch (e) {
     try {
-      e.json().then((feedback: any) => {
-        // If validation fails, return error to form through state
-        const error: string[] = [];
+      e.json()
+        .then((feedback: any) => {
+          // If validation fails, return error to form through state
+          const error: string[] = [];
 
-        if (feedback) {
-          if (
-            feedback.non_field_errors &&
-            feedback.non_field_errors.length > 0
-          ) {
-            feedback.non_field_errors.forEach((errorItem: string) => {
-              error.push(errorItem);
-            });
+          if (feedback) {
+            if (
+              feedback.non_field_errors &&
+              feedback.non_field_errors.length > 0
+            ) {
+              feedback.non_field_errors.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
+
+            if (feedback.new_password && feedback.new_password.length > 0) {
+              error.push(`New password: `);
+              feedback.new_password.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
+
+            if (feedback.old_password && feedback.old_password.length > 0) {
+              error.push(`Current password: `);
+              feedback.old_password.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
           }
 
-          if (feedback.new_password && feedback.new_password.length > 0) {
-            error.push(`New password: `);
-            feedback.new_password.forEach((errorItem: string) => {
-              error.push(errorItem);
-            });
-          }
-
-          if (feedback.old_password && feedback.old_password.length > 0) {
-            error.push(`Current password: `);
-            feedback.old_password.forEach((errorItem: string) => {
-              error.push(errorItem);
-            });
-          }
-        }
-
-        dispatch({
-          type: Types.CHANGE_PASSWORD_FAILURE,
-          error: error.join(' ')
+          dispatch({
+            type: Types.CHANGE_PASSWORD_FAILURE,
+            error: error.join(' ')
+          });
+        })
+        .catch(() => {
+          dispatch({
+            type: Types.CHANGE_PASSWORD_FAILURE,
+            error: 'Unknown error'
+          });
         });
-      });
     } catch (jsonParseError) {
       dispatch({
         type: Types.CHANGE_PASSWORD_FAILURE,
