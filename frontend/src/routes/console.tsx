@@ -6,17 +6,17 @@ import {
   InstanceSettings,
   Logos,
   NoticeBoard,
-  ThemeButtons,
   CustomPages,
   CoursesManage
 } from 'console/components';
 import {
+  ButtonsCustomization,
   ConsoleHome,
+  Colors,
   ThemeFooterSideBar,
   ThemeNavigationPage
 } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
-import { Colors } from 'newConsole/components/ColorsComponent';
 import { ROUTES } from '../global/constants';
 
 export const ConsoleRoutes = () => {
@@ -36,7 +36,7 @@ export const ConsoleRoutes = () => {
       />
       <PrivateRoute
         path={ROUTES.Console.THEME_BUTTONS}
-        component={ThemeButtons}
+        component={ButtonsCustomization}
       />
       <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
       <PrivateRoute
@@ -54,12 +54,6 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_FOOTER}
         component={ThemeFooterSideBar}
       />
-      {/*
-      <PrivateRoute
-        exact
-        path={ROUTES.Console.NEW_LOGOS_SIDEBAR}
-        component={LogosSideBar}
-      /> */}
       <PrivateRoute
         exact
         path={ROUTES.Console.COURSES}
