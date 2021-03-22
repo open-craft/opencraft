@@ -205,7 +205,7 @@
            ng-repeat="line in appserverLogs.log_error_entries track by $index">
         <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
         <span class="log-level">{{ line.level }}</span>
-        <pre>{{ line.text | stripLogMeta }}</pre>
+        <pre>{{ line.text | stripLogMeta | prettifyJSON }}</pre>
       </div>
     </div>
     <div class="instance-log-section" ng-if="appserverLogs != null">
@@ -214,7 +214,7 @@
            ng-repeat="line in appserverLogs.log_entries track by $index">
         <span class="timestamp">{{ line.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</span>
         <span class="log-level">{{ line.level }}</span>
-        <pre>{{ line.text | stripLogMeta }}</pre>
+        <pre>{{ line.text | stripLogMeta | prettifyJSON }}</pre>
       </div>
     </div>
   </accordion-group>
