@@ -2,7 +2,6 @@ import * as React from 'react';
 import './styles.scss';
 import { ConsolePageCustomizationContainer } from 'console/components';
 import { ConsolePage } from 'newConsole/components';
-import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { ImageUploadField } from 'ui/components';
 import faviconTooltipImage from 'assets/faviconTooltipImage.png';
@@ -48,15 +47,6 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
             <h2>
               <WrappedMessage messages={messages} id="logos" />
             </h2>
-            <Row>
-              <Col md={3} className="image-container">
-                <div>
-                  {instance.data && instance.data.logo && (
-                    <img src={instance.data.logo} alt="Logo" />
-                  )}
-                </div>
-              </Col>
-            </Row>
             <ImageUploadField
               customUploadMessage={
                 <WrappedMessage messages={messages} id="siteLogo" />
@@ -71,16 +61,10 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
                 this.props.clearErrorMessage('logo');
               }}
               tooltipTextId="logoTooltip"
+              imageValue={(instance.data && instance.data.logo) || ''}
+              imageAltText="logo"
             />
-            <Row>
-              <Col md={3} className="image-container">
-                <div>
-                  {instance.data && instance.data.favicon && (
-                    <img src={instance.data.favicon} alt="favicon" />
-                  )}
-                </div>
-              </Col>
-            </Row>
+            <div className="my-4" />
             <ImageUploadField
               customUploadMessage={
                 <WrappedMessage messages={messages} id="favicon" />
@@ -96,6 +80,8 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
               }}
               tooltipTextId="faviconTooltip"
               tooltipImage={faviconTooltipImage}
+              imageValue={(instance.data && instance.data.favicon) || ''}
+              imageAltText="favicon"
             />
           </ConsolePageCustomizationContainer>
         </div>

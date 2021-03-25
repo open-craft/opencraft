@@ -124,3 +124,22 @@
         width: 100%;
     }
 }
+
+.changeFile {
+    button {
+        color: #0074B4;
+        padding: 0;
+        text-transform: initial;
+        font-size: 14px;
+        border-left-width: 0px;
+    }
+}
+
+.imagePreview {
+    min-width: 100%;
+    text-align: center;
+    border: solid 1px #636363;
+    border-style: dashed;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}

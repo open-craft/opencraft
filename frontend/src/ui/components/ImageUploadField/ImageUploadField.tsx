@@ -16,6 +16,8 @@ interface ImageUploadFieldProps {
   reset?: Function;
   tooltipTextId?: string;
   tooltipImage?: string;
+  imageValue?: string;
+  imageAltText?: string;
 }
 
 interface Image {
@@ -79,20 +81,38 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
           </OverlayTrigger>
         )}
       </div>
-      <Button
-        variant="outline-primary"
-        size="lg"
-        onClick={handleShow}
-        disabled={props.loading}
-        className="uploadButton"
-      >
-        <div className="buttonContents">
-          <img className="uploadIcon" src={upArrowIcon} alt="Upload icon" />
-          <h4>
-            <WrappedMessage messages={messages} id="change" />
-          </h4>
+      {props.imageValue ? (
+        <div className="imagePreview">
+          <img src={props.imageValue} alt={props.imageAltText} />
         </div>
-      </Button>
+      ) : (
+        <Button
+          variant="outline-primary"
+          size="lg"
+          onClick={handleShow}
+          disabled={props.loading}
+          className="uploadButton"
+        >
+          <div className="buttonContents">
+            <img className="uploadIcon" src={upArrowIcon} alt="Upload icon" />
+            <h4>
+              <WrappedMessage messages={messages} id="change" />
+            </h4>
+          </div>
+        </Button>
+      )}
+      {props.imageValue && (
+        <p className="changeFile my-2">
+          <Button
+            variant="link"
+            size="sm"
+            className="changeFileButton"
+            onClick={handleShow}
+          >
+            <WrappedMessage messages={messages} id="changeFile" />
+          </Button>
+        </p>
+      )}
       {props.parentMessages && props.recommendationTextId && (
         <p>
           <WrappedMessage
