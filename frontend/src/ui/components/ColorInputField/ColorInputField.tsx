@@ -8,7 +8,7 @@ import {
   OverlayTrigger
 } from 'react-bootstrap';
 
-import { SketchPicker } from 'react-color';
+import { PhotoshopPicker } from 'react-color';
 import { WrappedMessage } from 'utils/intl';
 import { messages as internalMessages } from './displayMessages';
 import './styles.scss';
@@ -38,11 +38,30 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
     setColorPicker(!colorPicker);
   };
 
+  const onKeyToggleColorPicker = (event: any) => {
+    if (event && event.type === 'keyup') {
+      toggleColorPicker();
+    }
+  };
+
   const resetColor = () => {
     // This will reset the field value to the default theme value
     // TODO: this will need to be updated when the Theme configuration endpoint
     // get updated to improve consistency
     props.onChange(props.fieldName, '');
+  };
+
+  const hideColorPicker = () => {
+    setColorPicker(false);
+  };
+
+  const hideColorPickerAndSubmit = () => {
+    hideColorPicker();
+
+    if (selectedColor !== props.initialValue) {
+      // Only trigger action if value changed
+      props.onChange(props.fieldName, selectedColor);
+    }
   };
 
   /**
@@ -51,14 +70,6 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
    * props.initialColor and never made the request.
    */
   React.useEffect(() => {
-    const hideColorPickerAndSubmit = () => {
-      setColorPicker(false);
-
-      if (selectedColor !== props.initialValue) {
-        // Only trigger action if value changed
-        props.onChange(props.fieldName, selectedColor);
-      }
-    };
     /**
      * Bind function to document to detect when
      * user clicks outside color picker.
@@ -68,7 +79,7 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
         pickerContainer.current &&
         !pickerContainer.current.contains(event.target)
       ) {
-        hideColorPickerAndSubmit();
+        hideColorPicker();
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -101,12 +112,16 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
           name={props.fieldName}
           value={fieldValue()}
           disabled={props.loading}
-          onClick={toggleColorPicker}
           readOnly
         />
 
         <div
           className="input-field-preview"
+          onClick={toggleColorPicker}
+          onKeyUp={onKeyToggleColorPicker}
+          role="button"
+          aria-label="Toggle color picker"
+          tabIndex={0}
           style={{
             backgroundColor: props.initialValue
           }}
@@ -139,10 +154,15 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
 
       {colorPicker ? (
         <div ref={pickerContainer} className="input-color-picker">
-          <SketchPicker
+          <PhotoshopPicker
             color={selectedColor}
             onChangeComplete={color => {
               setColor(color.hex);
+            }}
+            onAccept={hideColorPickerAndSubmit}
+            onCancel={() => {
+              setColor(props.initialValue);
+              hideColorPicker();
             }}
           />
         </div>
