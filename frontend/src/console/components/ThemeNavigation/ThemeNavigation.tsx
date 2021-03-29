@@ -99,6 +99,8 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip={false}
                   />
                 </Col>
+              </Row>
+              <Row>
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemBorderBottomColor"
@@ -109,8 +111,6 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip={false}
                   />
                 </Col>
-              </Row>
-              <Row>
                 <Col md={4}>
                   <ColorInputField
                     fieldName="mainNavItemHoverBorderBottomColor"
