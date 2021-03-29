@@ -86,7 +86,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
                 <Col md={4}>
@@ -96,7 +96,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
                 <Col md={4}>
@@ -106,7 +106,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
               </Row>
@@ -120,7 +120,7 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
+                    hideTooltip={false}
                   />
                 </Col>
               </Row>
