@@ -47,9 +47,25 @@ export class ThemeNavigationComponent extends React.PureComponent<
     return (
       <ConsolePage contentLoading={this.props.loading}>
         <ConsolePageCustomizationContainer>
-          <h2>
-            <WrappedMessage messages={messages} id="themeNavigation" />
-          </h2>
+          <div className="theme-navigation-header">
+            <Row>
+              <Col>
+                <h2>
+                  <WrappedMessage messages={messages} id="themeNavigation" />
+                </h2>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <p>
+                  <WrappedMessage
+                    messages={messages}
+                    id="navigationDescription"
+                  />
+                </p>
+              </Col>
+            </Row>
+          </div>
 
           {themeData && themeData.version === 1 && (
             <div className="theme-navigation-container">
@@ -62,11 +78,6 @@ export class ThemeNavigationComponent extends React.PureComponent<
                 themeData={themeData}
                 loggedIn
               />
-              <Row>
-                <p className="style-name">
-                  <WrappedMessage messages={messages} id="navigationLinks" />
-                </p>
-              </Row>
               <Row>
                 <Col md={4}>
                   <ColorInputField

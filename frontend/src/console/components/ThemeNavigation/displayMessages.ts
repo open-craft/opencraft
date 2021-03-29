@@ -1,6 +1,10 @@
 const messages = {
   themeNavigation: {
-    defaultMessage: 'Main navigation menu',
+    defaultMessage: 'Navigation',
+    description: ''
+  },
+  navigationDescription: {
+    defaultMessage: 'Customize the navigation bar of your instances',
     description: ''
   },
   navigationLinks: {
@@ -12,19 +16,19 @@ const messages = {
     description: ''
   },
   headerBg: {
-    defaultMessage: 'Header color',
+    defaultMessage: 'Background',
     description: ''
   },
   mainNavLinkColor: {
-    defaultMessage: 'Header link color',
+    defaultMessage: 'Links',
     description: ''
   },
   mainNavItemBorderBottomColor: {
-    defaultMessage: 'Header link border color',
+    defaultMessage: 'Active link',
     description: ''
   },
   mainNavItemHoverBorderBottomColor: {
-    defaultMessage: 'Header link border color on hover',
+    defaultMessage: 'Active link on hover',
     description: ''
   },
   userDropdownColor: {
