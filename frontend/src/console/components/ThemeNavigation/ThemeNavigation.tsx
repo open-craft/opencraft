@@ -123,16 +123,6 @@ export class ThemeNavigationComponent extends React.PureComponent<
                     hideTooltip
                   />
                 </Col>
-                <Col md={4}>
-                  <ColorInputField
-                    fieldName="userDropdownColor"
-                    initialValue={themeData.userDropdownColor || ''}
-                    onChange={this.onChangeColor}
-                    messages={messages}
-                    loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
-                  />
-                </Col>
               </Row>
             </div>
           )}
