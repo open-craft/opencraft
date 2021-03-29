@@ -8,7 +8,8 @@ import { TextInputField } from 'ui/components';
 import {
   updateAccountDetails,
   getAccountDetails,
-  changePassword
+  changePassword,
+  clearPasswordErrorMessage
 } from 'console/actions';
 import messages from './displayMessages';
 import { ConsolePage } from '../ConsolePage';
@@ -18,6 +19,7 @@ interface ActionProps {
   updateAccountDetails: Function;
   getAccountDetails: Function;
   changePassword: Function;
+  clearPasswordErrorMessage: Function;
 }
 
 interface State {
@@ -74,6 +76,13 @@ export class AccountComponent extends React.PureComponent<Props, State> {
     this.setState({
       [field]: value
     });
+
+    if (
+      (field === 'oldPassword' && value && this.state.newPassword) ||
+      (field === 'newPassword' && value && this.state.oldPassword)
+    ) {
+      this.props.clearPasswordErrorMessage();
+    }
   };
 
   private saveAccountDetails = () => {
@@ -91,6 +100,15 @@ export class AccountComponent extends React.PureComponent<Props, State> {
   };
 
   public render() {
+    const disablePasswordUpdate = () => {
+      return (
+        !this.state.oldPassword ||
+        !this.state.newPassword ||
+        this.props.passwordUpdating ||
+        !!this.props.account.passwordError
+      );
+    };
+
     return (
       <ConsolePage
         showSidebar={false}
@@ -180,7 +198,7 @@ export class AccountComponent extends React.PureComponent<Props, State> {
                 onClick={() => {
                   this.saveNewPassword();
                 }}
-                disabled={this.props.passwordUpdating}
+                disabled={disablePasswordUpdate()}
               >
                 {this.props.passwordUpdating && (
                   <Spinner animation="border" size="sm" className="spinner" />
@@ -200,6 +218,7 @@ export const Account = connect<{}, ActionProps, {}, Props, RootState>(
   {
     updateAccountDetails,
     getAccountDetails,
-    changePassword
+    changePassword,
+    clearPasswordErrorMessage
   }
 )(AccountComponent);

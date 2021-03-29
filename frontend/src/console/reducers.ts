@@ -302,6 +302,14 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.CLEAR_PASSWORD_ERROR_MESSAGE:
+      return update(state, {
+        account: {
+          passwordError: {
+            $set: ''
+          }
+        }
+      });
     default:
       return state;
   }

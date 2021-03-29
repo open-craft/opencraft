@@ -52,4 +52,8 @@
     font-size: 14px;
     font-family: Chivo;
   }
+
+  .alert-danger::before {
+    display: none;
+  }
 }

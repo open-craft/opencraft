@@ -68,7 +68,8 @@ export enum Types {
   UPDATE_ACCOUNT_DETAILS_FAILURE = 'UPDATE_ACCOUNT_DETAILS_FAILURE',
   CHANGE_PASSWORD = 'CHANGE_PASSWORD',
   CHANGE_PASSWORD_SUCCESS = 'CHANGE_PASSWORD_SUCCESS',
-  CHANGE_PASSWORD_FAILURE = 'CHANGE_PASSWORD_FAILURE'
+  CHANGE_PASSWORD_FAILURE = 'CHANGE_PASSWORD_FAILURE',
+  CLEAR_PASSWORD_ERROR_MESSAGE = 'CLEAR_PASSWORD_ERROR_MESSAGE'
 }
 
 export interface UpdateAccountDetails extends Action {
@@ -97,6 +98,10 @@ export interface ChangePasswordSuccess extends Action {
 export interface ChangePasswordFailure extends Action {
   readonly type: Types.CHANGE_PASSWORD_FAILURE;
   readonly error: any;
+}
+
+export interface ClearPasswordErrorMessage extends Action {
+  readonly type: Types.CLEAR_PASSWORD_ERROR_MESSAGE;
 }
 
 export interface GetAccountInfo extends Action {
@@ -263,6 +268,7 @@ export type ActionTypes =
   | ChangePassword
   | ChangePasswordSuccess
   | ChangePasswordFailure
+  | ClearPasswordErrorMessage
   | ClearFeedbackMessage
   | ClearConsoleData
   | UserInstanceList
@@ -759,4 +765,12 @@ export const changePassword = (data: any): OcimThunkAction<void> => async (
       });
     }
   }
+};
+
+export const clearPasswordErrorMessage = () => async (
+  dispatch: any
+) => {
+  dispatch({
+    type: Types.CLEAR_PASSWORD_ERROR_MESSAGE
+  });
 };
