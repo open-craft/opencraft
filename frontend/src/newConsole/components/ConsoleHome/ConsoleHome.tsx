@@ -1,5 +1,4 @@
 import * as React from 'react';
-import './styles.scss';
 import {
   ConsolePage,
   PreviewBox,
@@ -17,7 +16,7 @@ interface ActionProps {
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
 
-export class LogosComponent extends React.PureComponent<Props, State> {
+export class ConsoleHomeComponent extends React.PureComponent<Props, State> {
   public render() {
     return (
       <ConsolePage
@@ -32,6 +31,10 @@ export class LogosComponent extends React.PureComponent<Props, State> {
   }
 }
 
-export const Logos = connect<StateProps, ActionProps, {}, Props, RootState>(
-  (state: RootState) => state.console
-)(LogosComponent);
+export const ConsoleHome = connect<
+  StateProps,
+  ActionProps,
+  {},
+  Props,
+  RootState
+>((state: RootState) => state.console)(ConsoleHomeComponent);

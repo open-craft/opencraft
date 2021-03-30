@@ -13,7 +13,7 @@ import {
   CustomPages,
   CoursesManage
 } from 'console/components';
-import { Logos as newLogos } from 'newConsole/components';
+import { ConsoleHome } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
@@ -50,7 +50,7 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.CUSTOM_PAGES}
         component={CustomPages}
       />
-      <PrivateRoute exact path={ROUTES.Console.HOME} component={newLogos} />
+      <PrivateRoute exact path={ROUTES.Console.HOME} component={ConsoleHome} />
       {/*
       <PrivateRoute
         exact
