@@ -5,7 +5,9 @@ import { V2Api } from 'global/api';
 import {
   InstanceSettingsModel,
   DeploymentInfoModel,
-  DeploymentNotificationModel
+  DeploymentNotificationModel,
+  UserAccountModel,
+  UserAccountDetailsModel
 } from 'console/models';
 import {
   ThemeSchema,
@@ -55,7 +57,65 @@ export enum Types {
   PERFORM_DEPLOYMENT_FAILURE = 'PERFORM_DEPLOYMENT_FAILURE',
   CANCEL_DEPLOYMENT = 'CANCEL_DEPLOYMENT',
   CANCEL_DEPLOYMENT_SUCCESS = 'CANCEL_DEPLOYMENT_SUCCESS',
-  CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE'
+  CANCEL_DEPLOYMENT_FAILURE = 'CANCEL_DEPLOYMENT_FAILURE',
+
+  // Account details related actions
+  GET_ACCOUNT_INFO = 'GET_ACCOUNT_INFO',
+  GET_ACCOUNT_INFO_SUCCESS = 'GET_ACCOUNT_INFO_SUCCESS',
+  GET_ACCOUNT_INFO_FAILURE = 'GET_ACCOUNT_INFO_FAILURE',
+  UPDATE_ACCOUNT_DETAILS = 'UPDATE_ACCOUNT_DETAILS',
+  UPDATE_ACCOUNT_DETAILS_SUCCESS = 'UPDATE_ACCOUNT_DETAILS_SUCCESS',
+  UPDATE_ACCOUNT_DETAILS_FAILURE = 'UPDATE_ACCOUNT_DETAILS_FAILURE',
+  CHANGE_PASSWORD = 'CHANGE_PASSWORD',
+  CHANGE_PASSWORD_SUCCESS = 'CHANGE_PASSWORD_SUCCESS',
+  CHANGE_PASSWORD_FAILURE = 'CHANGE_PASSWORD_FAILURE',
+  CLEAR_PASSWORD_ERROR_MESSAGE = 'CLEAR_PASSWORD_ERROR_MESSAGE'
+}
+
+export interface UpdateAccountDetails extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS;
+  readonly data: UserAccountDetailsModel;
+}
+
+export interface UpdateAccountDetailsSuccess extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS_SUCCESS;
+  readonly data: UserAccountDetailsModel;
+}
+
+export interface UpdateAccountDetailsFailure extends Action {
+  readonly type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE;
+  readonly error: string;
+}
+
+export interface ChangePassword extends Action {
+  readonly type: Types.CHANGE_PASSWORD;
+}
+
+export interface ChangePasswordSuccess extends Action {
+  readonly type: Types.CHANGE_PASSWORD_SUCCESS;
+}
+
+export interface ChangePasswordFailure extends Action {
+  readonly type: Types.CHANGE_PASSWORD_FAILURE;
+  readonly error: any;
+}
+
+export interface ClearPasswordErrorMessage extends Action {
+  readonly type: Types.CLEAR_PASSWORD_ERROR_MESSAGE;
+}
+
+export interface GetAccountInfo extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO;
+}
+
+export interface GetAccountInfoSuccess extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO_SUCCESS;
+  readonly data: Array<UserAccountModel>;
+}
+
+export interface GetAccountInfoFailure extends Action {
+  readonly type: Types.GET_ACCOUNT_INFO_FAILURE;
+  readonly error: any;
 }
 
 export interface ClearFeedbackMessage extends Action {
@@ -205,11 +265,18 @@ export interface ClearConsoleData extends Action {
 }
 
 export type ActionTypes =
+  | ChangePassword
+  | ChangePasswordSuccess
+  | ChangePasswordFailure
+  | ClearPasswordErrorMessage
   | ClearFeedbackMessage
   | ClearConsoleData
   | UserInstanceList
   | UserInstanceListSuccess
   | UserInstanceListFailure
+  | UpdateAccountDetails
+  | UpdateAccountDetailsFailure
+  | UpdateAccountDetailsSuccess
   | UpdateInstanceInfo
   | UpdateInstanceInfoSuccess
   | UpdateInstanceInfoFailure
@@ -223,6 +290,9 @@ export type ActionTypes =
   | UpdateThemeConfig
   | UpdateThemeConfigSuccess
   | UpdateThemeConfigFailure
+  | GetAccountInfo
+  | GetAccountInfoSuccess
+  | GetAccountInfoFailure
   | GetDeploymentsNotifications
   | GetDeploymentsNotificationsSuccess
   | GetDeploymentsNotificationsFailure
@@ -535,4 +605,172 @@ export const cancelDeployment = (
       error: e
     });
   }
+};
+
+export const getAccountDetails = (): OcimThunkAction<
+  void
+> => async dispatch => {
+  dispatch({
+    type: Types.GET_ACCOUNT_INFO
+  });
+
+  try {
+    const response = await V2Api.accountsList();
+
+    dispatch({
+      type: Types.GET_ACCOUNT_INFO_SUCCESS,
+      data: response
+    });
+  } catch (e) {
+    dispatch({
+      type: Types.GET_ACCOUNT_INFO_FAILURE,
+      error: e
+    });
+  }
+};
+
+export const updateAccountDetails = (
+  data: any
+): OcimThunkAction<void> => async (dispatch, getState) => {
+  const { account } = getState().console;
+
+  // remove email from request if same as current
+  const currentEmail = account.email;
+  const requestData = { ...data };
+  if (requestData.email === currentEmail) {
+    delete requestData.email;
+  }
+
+  dispatch({
+    type: Types.UPDATE_ACCOUNT_DETAILS,
+    data
+  });
+
+  try {
+    const response = await V2Api.accountsUpdateDetails({
+      username: account.username,
+      data: requestData
+    });
+
+    dispatch({
+      type: Types.UPDATE_ACCOUNT_DETAILS_SUCCESS,
+      data: response
+    });
+  } catch (e) {
+    try {
+      e.json()
+        .then((feedback: any) => {
+          // If validation fails, return error to form through state
+          const error: string[] = [];
+
+          if (feedback) {
+            if (feedback.full_name && feedback.full_name.length > 0) {
+              feedback.full_name.forEach((errorItem: string) => {
+                error.push(`Full name: ${errorItem}`);
+              });
+            }
+
+            if (feedback.email && feedback.email.length > 0) {
+              feedback.email.forEach((errorItem: string) => {
+                error.push(`Email address: ${errorItem}`);
+              });
+            }
+          }
+
+          dispatch({
+            type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+            error: error.join(' ')
+          });
+        })
+        .catch(() => {
+          dispatch({
+            type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+            error: 'Unknown error'
+          });
+        });
+    } catch {
+      dispatch({
+        type: Types.UPDATE_ACCOUNT_DETAILS_FAILURE,
+        error: 'Unknown error'
+      });
+    }
+  }
+};
+
+export const changePassword = (data: any): OcimThunkAction<void> => async (
+  dispatch,
+  getState
+) => {
+  dispatch({
+    type: Types.CHANGE_PASSWORD
+  });
+
+  try {
+    const { account } = getState().console;
+    await V2Api.accountsPasswordChange({
+      username: account.username,
+      data
+    });
+
+    dispatch({
+      type: Types.CHANGE_PASSWORD_SUCCESS
+    });
+  } catch (e) {
+    try {
+      e.json()
+        .then((feedback: any) => {
+          // If validation fails, return error to form through state
+          const error: string[] = [];
+
+          if (feedback) {
+            if (
+              feedback.non_field_errors &&
+              feedback.non_field_errors.length > 0
+            ) {
+              feedback.non_field_errors.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
+
+            if (feedback.new_password && feedback.new_password.length > 0) {
+              error.push(`New password: `);
+              feedback.new_password.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
+
+            if (feedback.old_password && feedback.old_password.length > 0) {
+              error.push(`Current password: `);
+              feedback.old_password.forEach((errorItem: string) => {
+                error.push(errorItem);
+              });
+            }
+          }
+
+          dispatch({
+            type: Types.CHANGE_PASSWORD_FAILURE,
+            error: error.join(' ')
+          });
+        })
+        .catch(() => {
+          dispatch({
+            type: Types.CHANGE_PASSWORD_FAILURE,
+            error: 'Unknown error'
+          });
+        });
+    } catch (jsonParseError) {
+      dispatch({
+        type: Types.CHANGE_PASSWORD_FAILURE,
+        error: 'Unknown error'
+      });
+    }
+  }
+};
+
+export const clearPasswordErrorMessage = () => async (
+  dispatch: any
+) => {
+  dispatch({
+    type: Types.CLEAR_PASSWORD_ERROR_MESSAGE
+  });
 };

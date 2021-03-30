@@ -21,9 +21,11 @@ Serializers for registration API.
 """
 from typing import Dict
 
+import django
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, validate_email
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -209,6 +211,141 @@ class AccountSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "accepted_privacy_policy": {"required": True},
             "accept_domain_condition": {"required": True},
+        }
+
+
+class PasswordChangeSerializer(serializers.ModelSerializer):
+    """
+    Serializer for password changes
+    """
+    old_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        help_text="The current password for the OpenCraft account",
+    )
+    new_password = serializers.CharField(
+        source="user.password",
+        required=True,
+        write_only=True,
+        style={"input_type": "password"},
+        validators=[validate_password],
+        help_text="The new password for the OpenCraft account.",
+    )
+
+    def validate_old_password(self, value):
+        """
+        Verify that the provided password is correct for this user
+
+        Uses django's password validation to check the password
+        """
+        if not value:
+            raise serializers.ValidationError({"old_password": "Invalid value"})
+
+        if not self.instance.check_password(value):
+            raise serializers.ValidationError("Invalid credentials")
+
+        return value
+
+    class Meta:
+        model = get_user_model()
+        fields = ["username", "old_password", "new_password"]
+        extra_kwargs = {
+            "username": {
+                "read_only": True,
+            }
+        }
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user's details: email and full name
+    """
+    email = serializers.EmailField(
+        source="user.email",
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="This email is already registered with a different account.",
+            ),
+        ],
+        required=False,
+        help_text="This is also the account name, and where we will send important notices.",
+    )
+
+    def validate_first_name(self, value):
+        """
+        Check if first name is valid
+        """
+        if not value or not value.strip():
+            raise serializers.ValidationError('Invalid value')
+
+        return value
+
+    def validate_last_name(self, value):
+        """
+        Check if last name is valid
+        """
+        if not value or not value.strip():
+            raise serializers.ValidationError('Invalid value')
+
+        return value
+
+    def validate_email(self, value):
+        """
+        Check if email is valid
+        """
+        try:
+            validate_email(value)
+        except django.core.exceptions.ValidationError as err:
+            raise serializers.ValidationError(err)
+
+        return value
+
+    def _update_user_account(self, user: User, user_data: Dict):
+        """
+        Update user from validated data.
+
+        Only update the email if it has changed.
+        """
+        # Can't change username, so remove it if present
+        user_data.pop("username", None)
+        user_updated = False
+        if "email" in user_data:
+            email = user_data.pop("email")
+            if email != user.email:
+                user.email = email
+                user_updated = True
+        if user_updated:
+            user.save()
+
+    def _update_user_profile(self, user_profile: UserProfile, profile_data: Dict):
+        """
+        Update user profile from validated data.
+        """
+        profile_updated = False
+        for key, new_val in profile_data.items():
+            current_val = getattr(user_profile, key)
+            if new_val != current_val:
+                setattr(user_profile, key, new_val)
+                profile_updated = True
+        if profile_updated:
+            user_profile.save()
+
+    def update(self, instance, validated_data):
+        """
+        Update existing user profile model and user.
+        """
+        self._update_user_account(instance.user, validated_data.pop("user", {}))
+        self._update_user_profile(instance, validated_data)
+        return instance
+
+    class Meta:
+        model = UserProfile
+        fields = ['full_name', 'email']
+        extra_kwargs = {
+            'username': {
+                'read_only': True,
+            }
         }
 
 

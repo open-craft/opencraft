@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Account tests Correctly renders page with data 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="customization-form"
+        >
+          <div
+            className="loading"
+          >
+            <i
+              className="fas fa-2x fa-sync-alt fa-spin"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Account tests Correctly renders page without data 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="console-page-container"
+  >
+    <div
+      className="console-page-content row"
+    >
+      <div
+        className="container-fluid"
+      >
+        <div
+          className="customization-form"
+        >
+          <div
+            className="loading"
+          >
+            <i
+              className="fas fa-2x fa-sync-alt fa-spin"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

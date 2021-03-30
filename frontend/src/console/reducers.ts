@@ -208,6 +208,108 @@ export function consoleReducer(
           }
         }
       });
+    case Actions.Types.GET_ACCOUNT_INFO:
+      return update(state, {
+        loading: {
+          $set: true
+        }
+      });
+    case Actions.Types.GET_ACCOUNT_INFO_SUCCESS:
+      return update(state, {
+        loading: {
+          $set: false
+        },
+        account: {
+          $set: action.data[0]
+        }
+      });
+    case Actions.Types.GET_ACCOUNT_INFO_FAILURE:
+      return update(state, {
+        loading: {
+          $set: false
+        }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS:
+      return update(state, {
+        accountDetailsUpdating: {
+          $set: true
+        },
+        account: {
+          fullName: {
+            $set: action.data.fullName
+          },
+          email: {
+            $set: action.data.email
+          },
+          accountDetailError: {
+            $set: ''
+          }
+        }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS_SUCCESS:
+      return update(state, {
+        accountDetailsUpdating: {
+          $set: false
+        },
+        account: {
+          fullName: {
+            $set: action.data.fullName
+          },
+          email: {
+            $set: action.data.email
+          },
+          accountDetailError: {
+            $set: ''
+          }
+        }
+      });
+    case Actions.Types.UPDATE_ACCOUNT_DETAILS_FAILURE:
+      return update(state, {
+        accountDetailsUpdating: {
+          $set: false
+        },
+        account: {
+          accountDetailError: {
+            $set: action.error
+          }
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD:
+      return update(state, {
+        passwordUpdating: {
+          $set: true
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD_SUCCESS:
+      return update(state, {
+        passwordUpdating: {
+          $set: false
+        },
+        account: {
+          passwordError: {
+            $set: ''
+          }
+        }
+      });
+    case Actions.Types.CHANGE_PASSWORD_FAILURE:
+      return update(state, {
+        passwordUpdating: {
+          $set: false
+        },
+        account: {
+          passwordError: {
+            $set: action.error
+          }
+        }
+      });
+    case Actions.Types.CLEAR_PASSWORD_ERROR_MESSAGE:
+      return update(state, {
+        account: {
+          passwordError: {
+            $set: ''
+          }
+        }
+      });
     default:
       return state;
   }

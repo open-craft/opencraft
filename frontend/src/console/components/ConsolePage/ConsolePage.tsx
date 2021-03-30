@@ -27,6 +27,7 @@ interface Props extends StateProps, ActionProps {
   children: React.ReactNode;
   contentLoading: boolean;
   showSidebar: boolean;
+  showToolbar: boolean;
 }
 
 interface CustomizationContainerProps {
@@ -42,7 +43,8 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
   // eslint-disable-next-line react/static-property-placement
   public static defaultProps: Partial<Props> = {
-    showSidebar: true
+    showSidebar: true,
+    showToolbar: true
   };
 
   public componentDidMount() {
@@ -127,30 +129,34 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     }
 
     let isEmailVerified = true;
+    let toolbarSection;
     if (this.props.activeInstance && this.props.activeInstance.data) {
       isEmailVerified = this.props.activeInstance.data.isEmailVerified;
+    }
+    if (!isEmailVerified) {
+      toolbarSection = <EmailActivationAlertMessage />;
+    } else {
+      toolbarSection = (
+        <RedeploymentToolbar
+          deployment={
+            this.props.activeInstance
+              ? this.props.activeInstance.deployment
+              : undefined
+          }
+          cancelRedeployment={() => {
+            this.cancelDeployment();
+          }}
+          performDeployment={() => {
+            this.performDeployment();
+          }}
+          loading={deploymentLoading}
+        />
+      );
     }
 
     return (
       <div className="console-page">
-        {!isEmailVerified ? (
-          <EmailActivationAlertMessage />
-        ) : (
-          <RedeploymentToolbar
-            deployment={
-              this.props.activeInstance
-                ? this.props.activeInstance.deployment
-                : undefined
-            }
-            cancelRedeployment={() => {
-              this.cancelDeployment();
-            }}
-            performDeployment={() => {
-              this.performDeployment();
-            }}
-            loading={deploymentLoading}
-          />
-        )}
+        {this.props.showToolbar && toolbarSection}
 
         <div className="console-page-container">
           <Row className="console-page-content">

@@ -67,6 +67,7 @@ from registration.api.v2.serializers import (
     StaticContentOverridesSerializer, ThemeSchemaSerializer,
     ToggleStaticContentPagesSerializer,
     DisplayStaticContentPagesSerializer,
+    PasswordChangeSerializer, UserDetailSerializer,
 )
 from registration.models import BetaTestApplication
 from registration.utils import verify_user_emails
@@ -94,6 +95,10 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
     lookup_field = "user__username"
     lookup_url_kwarg = "username"
     lookup_value_regex = "[^/]+"
+    extra_serializer_classes = {
+        "password_change": PasswordChangeSerializer,
+        "update_details": UserDetailSerializer,
+    }
 
     def perform_update(self, serializer):
         """
@@ -133,6 +138,45 @@ class AccountViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Generic
             return UserProfile.objects.all()
         else:
             return UserProfile.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        serializer_class = self.extra_serializer_classes.get(self.action)
+        if serializer_class is None:
+            serializer_class = super().get_serializer_class()
+
+        return serializer_class
+
+    @swagger_auto_schema(
+        request_body=PasswordChangeSerializer,
+        responses={**VALIDATION_RESPONSE, 200: PasswordChangeSerializer, },
+    )
+    @action(detail=True, methods=["patch"])
+    def password_change(self, request, username=None):
+        """
+        Change the user password
+        """
+        user = request.user
+        serializer = self.get_serializer(instance=user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_password = serializer.validated_data['user']['password']
+        user.set_password(new_password)
+        user.save()
+        return Response({"ok": True})
+
+    @swagger_auto_schema(
+        request_body=UserDetailSerializer,
+        responses={**VALIDATION_RESPONSE, 200: UserDetailSerializer, },
+    )
+    @action(detail=True, methods=["patch"])
+    def update_details(self, request, username=None):
+        """
+        Get the user details from the request and update the profile accordingly
+        """
+        profile = self.get_object()
+        serializer = self.get_serializer(instance=profile, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class NotificationsViewSet(GenericViewSet):
