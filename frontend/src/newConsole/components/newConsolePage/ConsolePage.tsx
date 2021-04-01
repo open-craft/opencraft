@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { RedeploymentToolbar } from 'console/components';
-import { CustomizationSideMenu } from 'newConsole/components';
+import {
+  CustomizationSideMenu,
+  CourseOutlinePreview
+} from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container, Button } from 'react-bootstrap';
@@ -134,7 +137,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
             </Col>
             {/* This is where the preview page component will be redered */}
             <Col md="7">
-              <PreviewBox />
+              <PreviewBox>
+                <CourseOutlinePreview />
+              </PreviewBox>
             </Col>
           </Row>
         );

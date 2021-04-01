@@ -82,8 +82,8 @@ class LoginTestCase(BrowserLiveServerTestCase):
             EC.url_changes("http://localhost:3000/login")
         )
 
-        # Test we move to theming page
-        self.assertEqual(self.browser.current_url, "http://localhost:3000/console/theming/preview-and-colors")
+        # Test we move to console home page
+        self.assertEqual(self.browser.current_url, "http://localhost:3000/console")
 
         # Log out user
         self.browser.get('http://localhost:3000/logout')

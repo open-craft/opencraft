@@ -1,6 +1,6 @@
 import React from 'react';
 import { setupComponentForTesting } from "utils/testing";
-import { PreviewComponent } from './PreviewComponent';
+import { CourseOutlinePreview } from './CourseOutlinePreview';
 
 it('renders without crashing', () => {
     const instanceData = {
@@ -15,6 +15,6 @@ it('renders without crashing', () => {
         },
         heroCoverImage: "test",
     }
-    const tree = setupComponentForTesting(<PreviewComponent instanceData={instanceData} />).toJSON();
+    const tree = setupComponentForTesting(<CourseOutlinePreview instanceData={instanceData} />).toJSON();
     expect(tree).toMatchSnapshot();
 });
