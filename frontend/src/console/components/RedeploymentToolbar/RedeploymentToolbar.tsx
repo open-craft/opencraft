@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { WrappedMessage } from 'utils/intl';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Container, Modal } from 'react-bootstrap';
 import {
   CustomStatusPill,
   NotificationToast,
@@ -93,8 +93,8 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     : handleShowModal;
 
   return (
-    <div className="d-flex justify-content-center align-middle redeployment-toolbar">
-      <div className="redeployment-nav">
+    <Container fluid className="d-flex justify-content-between redeployment-toolbar px-4 py-3">
+      <div className="d-flex flex-row justify-content-between w-100">
         <CustomStatusPill
           loading={loading}
           redeploymentStatus={deploymentStatus}
@@ -159,6 +159,6 @@ export const RedeploymentToolbar: React.FC<Props> = ({
         closeMessage={messages.notificationHelp.defaultMessage}
         messages={messages}
       />
-    </div>
+    </Container>
   );
 };

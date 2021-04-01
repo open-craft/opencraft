@@ -5,10 +5,10 @@ exports[`renders without crashing 1`] = `
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
