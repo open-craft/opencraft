@@ -41,11 +41,9 @@ export const CustomizationSideMenu: React.FC = () => {
       className="new-customization-menu"
     >
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
-            <WrappedMessage messages={messages} id="accordionTheme" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
+          <WrappedMessage messages={messages} id="accordionTheme" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
@@ -72,11 +70,9 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="1">
-            <WrappedMessage messages={messages} id="accordionCustomPages" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="1">
+          <WrappedMessage messages={messages} id="accordionCustomPages" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
@@ -88,14 +84,12 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
-            <WrappedMessage
-              messages={messages}
-              id="accordionInstanceSettings"
-            />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
+          <WrappedMessage
+            messages={messages}
+            id="accordionInstanceSettings"
+          />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="2">
           <Card.Body>
             <Nav defaultActiveKey="/home" className="flex-column">
@@ -117,11 +111,9 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="3">
-            <WrappedMessage messages={messages} id="accordionCourses" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="3">
+          <WrappedMessage messages={messages} id="accordionCourses" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="3">
           <Card.Body>
             <Nav className="flex-column">

@@ -11,7 +11,7 @@
     .card-header {
       background-color: transparent;
       border: none;
-      padding: 5px 15px 5px;
+      padding: 5px 1.25rem;
       font-family: PlayfairDisplay;
       font-weight: bold;
       font-size: 28px;
@@ -28,11 +28,11 @@
     }
 
     .card-body {
-      padding: 0 15px 0;
+      padding: 0 0px 0;
       background-color: transparent;
 
       a {
-        padding: 10px 15px;
+        padding: 10px 1.25rem;
         border-top: none;
         font-family: $chivo-font;
         font-size: 20px;
