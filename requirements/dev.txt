@@ -157,7 +157,7 @@ django-storages==1.7.1
     # via -r requirements/base.in
 django-zurb-foundation==5.5.0
     # via -r requirements/base.in
-django==2.2.12
+django==2.2.19
     # via
     #   -r requirements/base.in
     #   channels
@@ -403,7 +403,7 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pillow==7.1.2
+pillow==8.1.2
     # via -r requirements/base.in
 pip-tools==5.1.2
     # via -r requirements/base.in
