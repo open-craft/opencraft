@@ -203,7 +203,7 @@ class ResetPasswordConfirmTestCase(BrowserLiveServerTestCase):
         self.reset_password_token = ResetPasswordToken.objects.create(user=self.user_with_app)
         self.confirm_token_page_url = f"{settings.USER_CONSOLE_FRONTEND_URL}/password-reset/" + "{token}"
         self.login_page_url = f"{settings.USER_CONSOLE_FRONTEND_URL}/login"
-        self.theme_preview_url = f"{settings.USER_CONSOLE_FRONTEND_URL}/console/theming/preview-and-colors"
+        self.console_home_url = f"{settings.USER_CONSOLE_FRONTEND_URL}/console"
         self.strong_password = "Tom&Jerry2021"
 
     @property
@@ -372,4 +372,4 @@ class ResetPasswordConfirmTestCase(BrowserLiveServerTestCase):
             EC.url_changes((By.CLASS_NAME, self.login_page_url))
         )
 
-        self.assertEqual(self.browser.current_url, self.theme_preview_url)
+        self.assertEqual(self.browser.current_url, self.console_home_url)

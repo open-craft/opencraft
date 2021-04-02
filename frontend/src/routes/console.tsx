@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Switch, Route, Redirect } from 'react-router';
+import { Switch } from 'react-router';
 import {
   Hero,
   InstanceSettings,
@@ -13,19 +13,13 @@ import {
   CustomPages,
   CoursesManage
 } from 'console/components';
+import { ConsoleHome } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
 
 export const ConsoleRoutes = () => {
   return (
     <Switch>
-      // Redirect to main customization page
-      <Route exact path={ROUTES.Console.HOME}>
-        <Redirect to={ROUTES.Console.THEME_PREVIEW_AND_COLORS} />
-      </Route>
-      <Route exact path={ROUTES.Console.NEW_HOME}>
-        <Redirect to={ROUTES.Console.NEW_LOGOS} />
-      </Route>
       <PrivateRoute
         path={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}
         component={InstanceSettings}
@@ -56,12 +50,8 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.CUSTOM_PAGES}
         component={CustomPages}
       />
-      {/* Below routes are for dummy implementation for Logo update component and they will be removed after implementation */}
-      {/* <PrivateRoute
-        exact
-        path={ROUTES.Console.NEW_LOGOS}
-        component={newLogos}
-      />
+      <PrivateRoute exact path={ROUTES.Console.HOME} component={ConsoleHome} />
+      {/*
       <PrivateRoute
         exact
         path={ROUTES.Console.NEW_LOGOS_SIDEBAR}
