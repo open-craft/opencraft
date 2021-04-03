@@ -59,6 +59,8 @@ ECOMMERCE_REPOS:
     SSH_KEY: '{{ ECOMMERCE_GIT_IDENTITY }}'
 
 # Append to any existing EDXAPP_LMS_ENV_EXTRA:
+# Without this, LMS will error out as the default value
+# doesn't have this currency.
 EDXAPP_LMS_ENV_EXTRA:
   COURSE_MODE_DEFAULTS:
     bulk_sku: !!null
@@ -66,9 +68,9 @@ EDXAPP_LMS_ENV_EXTRA:
     description: !!null
     expiration_datetime: !!null
     min_price: 0
-    name: Honor
+    name: Audit
     sku: !!null
-    slug: honor
+    slug: audit
     suggested_prices: ''
 ```
 
@@ -207,7 +209,7 @@ Useful references when configuring or troubleshooting issues with ecommerce and 
 
 To enable expedient upgrades across instances when there is a major update to the OpenEdX platform, the `instance_redeploy` management command is available.
 
-The `instance_redeploy` command requires several options to know which servers to upgrade and how to update them. Note that major platform updates are not the 
+The `instance_redeploy` command requires several options to know which servers to upgrade and how to update them. Note that major platform updates are not the
 only use for this command-- it can be used to fan out improvements to configuration as well.
 
 The following arguments are available:
@@ -284,8 +286,8 @@ HUEY_QUEUE_NAME=opencraft_low_priority honcho run python3 manage.py instance_red
 Note the `HUEY_QUEUE_NAME` environment variable-- we set it here to use our alternative, low-priority queue so that we don't tie up workers dedicated to OCIM's normal customer-facing functions.
 We also use the `juniper2` tag as a way to mark instances that have been updated as we go along (see the documentation on the `--tag` argument above.)
 
-The command will give you a summary of what it intends to do, and then prompt you for confirmation. It is recommended you add 
-the `--show-instances` argument to do a dry run and see the specific instances that will be upgraded. Any failures will be logged 
+The command will give you a summary of what it intends to do, and then prompt you for confirmation. It is recommended you add
+the `--show-instances` argument to do a dry run and see the specific instances that will be upgraded. Any failures will be logged
 and tagged for further examination.
 
 ## Handling a failed initial provision
