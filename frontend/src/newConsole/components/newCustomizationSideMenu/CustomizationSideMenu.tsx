@@ -85,10 +85,7 @@ export const CustomizationSideMenu: React.FC = () => {
       </Card>
       <Card>
         <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
-          <WrappedMessage
-            messages={messages}
-            id="accordionInstanceSettings"
-          />
+          <WrappedMessage messages={messages} id="accordionInstanceSettings" />
         </Accordion.Toggle>
         <Accordion.Collapse eventKey="2">
           <Card.Body>

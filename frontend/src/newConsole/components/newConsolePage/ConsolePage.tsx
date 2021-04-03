@@ -123,7 +123,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
             <Col md="3" className="p-0 m-0">
               <CustomizationSideMenu />
             </Col>
-            <Col md="9" className="pr-0">{innerContent}</Col>
+            <Col md="9" className="pr-0">
+              {innerContent}
+            </Col>
           </Row>
         );
       }
@@ -199,7 +201,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
         <div className="new-console-page-container">
           <Row className="new-console-page-content">
-            <Container fluid className="pr-4 pl-0">{content()}</Container>
+            <Container fluid className="pr-4 pl-0">
+              {content()}
+            </Container>
           </Row>
         </div>
       </div>

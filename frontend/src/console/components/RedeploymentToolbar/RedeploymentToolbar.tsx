@@ -93,7 +93,10 @@ export const RedeploymentToolbar: React.FC<Props> = ({
     : handleShowModal;
 
   return (
-    <Container fluid className="d-flex justify-content-between redeployment-toolbar px-4 py-3">
+    <Container
+      fluid
+      className="d-flex justify-content-between redeployment-toolbar px-4 py-3"
+    >
       <div className="d-flex flex-row justify-content-between w-100">
         <CustomStatusPill
           loading={loading}
