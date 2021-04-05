@@ -25,22 +25,4 @@
     font-family: $playfair-font;
     font-weight: bold;
   }
-
-  .color-input {
-    margin: auto;
-
-    .row {
-      width: 100%;
-      padding: 15px;
-      box-sizing: border-box;
-      padding-top: 0;
-    }
-
-    .form-label {
-      font-size: 20px !important;
-      font-family: $playfair-font !important;
-      font-weight: bold;
-      color: #0f1f24;
-    }
-  }
 }
