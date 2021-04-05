@@ -73,7 +73,6 @@ export class ThemeFooterSideBarComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
                   />
                 </Col>
               </Row>
@@ -85,7 +84,6 @@ export class ThemeFooterSideBarComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
                   />
                 </Col>
               </Row>
@@ -97,7 +95,6 @@ export class ThemeFooterSideBarComponent extends React.PureComponent<
                     onChange={this.onChangeColor}
                     messages={messages}
                     loading={instance.loading.includes('draftThemeConfig')}
-                    hideTooltip
                   />
                 </Col>
               </Row>

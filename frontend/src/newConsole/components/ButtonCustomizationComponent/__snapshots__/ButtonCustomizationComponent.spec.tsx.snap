@@ -2,92 +2,65 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="button-customization-page"
+  className="button-customization-container"
 >
   <div
-    className="row"
+    className="button-customization-name"
   >
-    <div
-      className="button-name col-md-10"
+    Primary button
+    <span
+      className="info-icon"
+      onBlur={[Function]}
+      onFocus={[Function]}
+      onMouseOut={[Function]}
+      onMouseOver={[Function]}
     >
-      Primary button
-      <span
-        className="info-icon"
-        onBlur={[Function]}
-        onFocus={[Function]}
-        onMouseOut={[Function]}
-        onMouseOver={[Function]}
-      >
-        <i
-          className="fas fa-info-circle"
-        />
-      </span>
-    </div>
-    <div
-      className="col-md-2"
-    >
-      <button
-        className="customizable-button"
-        onMouseEnter={[Function]}
-        onMouseLeave={[Function]}
-        style={
-          Object {
-            "background": undefined,
-            "borderColor": undefined,
-            "color": undefined,
-          }
-        }
-        type="button"
-      >
-        Example
-      </button>
-    </div>
+      <i
+        className="fas fa-info-circle"
+      />
+    </span>
   </div>
   <div
-    className="collapsible-edit-area"
+    className="button-customization-color-container"
   >
     <div
-      className="edit-collapse"
-    >
-      <a
-        className="nav-link"
-        href="#"
-        onClick={[Function]}
-        onKeyDown={[Function]}
-        role="button"
-      >
-        Edit
-        <i
-          className="fas xs fa-chevron-down"
-        />
-      </a>
-      <span
-        className="fill-line"
-      />
-    </div>
-    <div
-      aria-expanded={null}
-      className="content collapse"
+      className="collapsible-edit-area"
     >
       <div
-        className="theme-button-customization-container container"
+        className="edit-collapse"
       >
-        <div>
-          <div
-            className="row"
-          >
+        <a
+          className="nav-link"
+          href="#"
+          onClick={[Function]}
+          onKeyDown={[Function]}
+          role="button"
+        >
+          Edit
+          <i
+            className="fas xs fa-chevron-down"
+          />
+        </a>
+        <span
+          className="fill-line"
+        />
+      </div>
+      <div
+        aria-expanded={null}
+        className="content collapse"
+      >
+        <div
+          className="button-category"
+        >
+          <div>
             <p
-              className="style-name"
+              className="button-state-name"
             >
               Active styles
             </p>
           </div>
-          <div
-            className="color-picker-group d-flex flex-row flex-wrap justify-content-between row"
-          >
-            <div
-              className="color-picker-item"
-            >
+          <div>
+            <div>
               <div
                 className="color-input form-group"
               >
@@ -129,9 +102,7 @@ exports[`renders without crashing 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              className="color-picker-item"
-            >
+            <div>
               <div
                 className="color-input form-group"
               >
@@ -173,9 +144,7 @@ exports[`renders without crashing 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              className="color-picker-item"
-            >
+            <div>
               <div
                 className="color-input form-group"
               >
@@ -219,29 +188,25 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
         </div>
-        <div>
-          <div
-            className="row"
-          >
+        <div
+          className="button-category"
+        >
+          <div>
             <p
-              className="style-name"
+              className="button-state-name"
             >
-              Hover state styles
+              Hover styles
             </p>
           </div>
-          <div
-            className="color-picker-group d-flex flex-row flex-wrap justify-content-between row"
-          >
-            <div
-              className="color-picker-item"
-            >
+          <div>
+            <div>
               <div
                 className="color-input form-group"
               >
                 <label
                   className="form-label"
                 >
-                  Button color on hover
+                  Button color
                 </label>
                 <div
                   className="align-items-center row"
@@ -276,16 +241,14 @@ exports[`renders without crashing 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              className="color-picker-item"
-            >
+            <div>
               <div
                 className="color-input form-group"
               >
                 <label
                   className="form-label"
                 >
-                  Button text color on hover
+                  Button text color
                 </label>
                 <div
                   className="align-items-center row"
@@ -320,16 +283,14 @@ exports[`renders without crashing 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              className="color-picker-item"
-            >
+            <div>
               <div
                 className="color-input form-group"
               >
                 <label
                   className="form-label"
                 >
-                  Button border color on hover
+                  Button border color
                 </label>
                 <div
                   className="align-items-center row"

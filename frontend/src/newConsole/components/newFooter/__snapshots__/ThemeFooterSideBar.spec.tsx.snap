@@ -75,32 +75,49 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                         Footer background color
                       </label>
                       <div
-                        className="row"
+                        className="align-items-center row"
                       >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerBg"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
                         <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
+                          className="d-flex align-items-center color-input-field"
+                        >
+                          <input
+                            className="input-field-color form-control"
+                            disabled={false}
+                            name="footerBg"
+                            onClick={[Function]}
+                            readOnly={true}
+                            value="Not set"
+                          />
+                          <div
+                            className="input-field-preview"
+                            style={
+                              Object {
+                                "backgroundColor": undefined,
+                              }
                             }
-                          }
-                        />
+                          />
+                        </div>
+                        <div
+                          className="info-icon"
+                          onBlur={[Function]}
+                          onFocus={[Function]}
+                          onMouseOut={[Function]}
+                          onMouseOver={[Function]}
+                        >
+                          <i
+                            className="fas fa-info-circle"
+                          />
+                        </div>
+                      </div>
+                      <p>
                         <button
-                          className="reset-value padded"
+                          className="reset-value"
                           onClick={[Function]}
                           type="button"
                         >
                           Reset
                         </button>
-                      </div>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -119,32 +136,49 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                         Footer text color
                       </label>
                       <div
-                        className="row"
+                        className="align-items-center row"
                       >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
                         <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
+                          className="d-flex align-items-center color-input-field"
+                        >
+                          <input
+                            className="input-field-color form-control"
+                            disabled={false}
+                            name="footerColor"
+                            onClick={[Function]}
+                            readOnly={true}
+                            value="Not set"
+                          />
+                          <div
+                            className="input-field-preview"
+                            style={
+                              Object {
+                                "backgroundColor": undefined,
+                              }
                             }
-                          }
-                        />
+                          />
+                        </div>
+                        <div
+                          className="info-icon"
+                          onBlur={[Function]}
+                          onFocus={[Function]}
+                          onMouseOut={[Function]}
+                          onMouseOver={[Function]}
+                        >
+                          <i
+                            className="fas fa-info-circle"
+                          />
+                        </div>
+                      </div>
+                      <p>
                         <button
-                          className="reset-value padded"
+                          className="reset-value"
                           onClick={[Function]}
                           type="button"
                         >
                           Reset
                         </button>
-                      </div>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -163,32 +197,49 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                         Footer link color
                       </label>
                       <div
-                        className="row"
+                        className="align-items-center row"
                       >
-                        <input
-                          className="input-field-color form-control"
-                          disabled={false}
-                          name="footerLinkColor"
-                          onClick={[Function]}
-                          readOnly={true}
-                          value="Not set"
-                        />
                         <div
-                          className="input-field-preview"
-                          style={
-                            Object {
-                              "backgroundColor": undefined,
+                          className="d-flex align-items-center color-input-field"
+                        >
+                          <input
+                            className="input-field-color form-control"
+                            disabled={false}
+                            name="footerLinkColor"
+                            onClick={[Function]}
+                            readOnly={true}
+                            value="Not set"
+                          />
+                          <div
+                            className="input-field-preview"
+                            style={
+                              Object {
+                                "backgroundColor": undefined,
+                              }
                             }
-                          }
-                        />
+                          />
+                        </div>
+                        <div
+                          className="info-icon"
+                          onBlur={[Function]}
+                          onFocus={[Function]}
+                          onMouseOut={[Function]}
+                          onMouseOver={[Function]}
+                        >
+                          <i
+                            className="fas fa-info-circle"
+                          />
+                        </div>
+                      </div>
+                      <p>
                         <button
-                          className="reset-value padded"
+                          className="reset-value"
                           onClick={[Function]}
                           type="button"
                         >
                           Reset
                         </button>
-                      </div>
+                      </p>
                     </div>
                   </div>
                 </div>

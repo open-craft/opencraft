@@ -36,6 +36,14 @@
   }
 
   .hero-customizations {
+    div {
+      .row {
+        display: flex;
+        align-items: center;
+        padding: 0;
+      }
+    }
+
     .image-upload-field {
       padding-top: 0;
 
@@ -54,7 +62,6 @@
     font-size: 15px;
 
     .form-control {
-      width: 75%;
       background-color: white;
     }
 

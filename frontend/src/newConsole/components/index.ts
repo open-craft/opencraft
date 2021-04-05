@@ -7,3 +7,6 @@ export * from './ConsoleHome';
 export * from './newFooter';
 export * from './ThemeNavigationPage';
 export * from './ColorsComponent';
+export * from './ButtonsCustomizationPage';
+export * from './ButtonCustomizationComponent';
+export * from './ButtonStyles';

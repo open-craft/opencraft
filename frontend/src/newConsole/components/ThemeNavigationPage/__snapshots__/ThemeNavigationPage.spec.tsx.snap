@@ -62,24 +62,28 @@ exports[`renders without crashing 1`] = `
                       Background
                     </label>
                     <div
-                      className="row"
+                      className="align-items-center row"
                     >
-                      <input
-                        className="input-field-color form-control"
-                        disabled={true}
-                        name="headerBg"
-                        onClick={[Function]}
-                        readOnly={true}
-                        value=""
-                      />
                       <div
-                        className="input-field-preview"
-                        style={
-                          Object {
-                            "backgroundColor": "",
+                        className="d-flex align-items-center color-input-field"
+                      >
+                        <input
+                          className="input-field-color form-control"
+                          disabled={true}
+                          name="headerBg"
+                          onClick={[Function]}
+                          readOnly={true}
+                          value=""
+                        />
+                        <div
+                          className="input-field-preview"
+                          style={
+                            Object {
+                              "backgroundColor": "",
+                            }
                           }
-                        }
-                      />
+                        />
+                      </div>
                       <div
                         className="info-icon"
                         onBlur={[Function]}
@@ -111,24 +115,28 @@ exports[`renders without crashing 1`] = `
                       Links
                     </label>
                     <div
-                      className="row"
+                      className="align-items-center row"
                     >
-                      <input
-                        className="input-field-color form-control"
-                        disabled={true}
-                        name="mainNavLinkColor"
-                        onClick={[Function]}
-                        readOnly={true}
-                        value=""
-                      />
                       <div
-                        className="input-field-preview"
-                        style={
-                          Object {
-                            "backgroundColor": "",
+                        className="d-flex align-items-center color-input-field"
+                      >
+                        <input
+                          className="input-field-color form-control"
+                          disabled={true}
+                          name="mainNavLinkColor"
+                          onClick={[Function]}
+                          readOnly={true}
+                          value=""
+                        />
+                        <div
+                          className="input-field-preview"
+                          style={
+                            Object {
+                              "backgroundColor": "",
+                            }
                           }
-                        }
-                      />
+                        />
+                      </div>
                       <div
                         className="info-icon"
                         onBlur={[Function]}
@@ -160,24 +168,28 @@ exports[`renders without crashing 1`] = `
                       Active links
                     </label>
                     <div
-                      className="row"
+                      className="align-items-center row"
                     >
-                      <input
-                        className="input-field-color form-control"
-                        disabled={true}
-                        name="mainNavItemBorderBottomColor"
-                        onClick={[Function]}
-                        readOnly={true}
-                        value=""
-                      />
                       <div
-                        className="input-field-preview"
-                        style={
-                          Object {
-                            "backgroundColor": "",
+                        className="d-flex align-items-center color-input-field"
+                      >
+                        <input
+                          className="input-field-color form-control"
+                          disabled={true}
+                          name="mainNavItemBorderBottomColor"
+                          onClick={[Function]}
+                          readOnly={true}
+                          value=""
+                        />
+                        <div
+                          className="input-field-preview"
+                          style={
+                            Object {
+                              "backgroundColor": "",
+                            }
                           }
-                        }
-                      />
+                        />
+                      </div>
                       <div
                         className="info-icon"
                         onBlur={[Function]}
@@ -209,24 +221,28 @@ exports[`renders without crashing 1`] = `
                       Active link on hover
                     </label>
                     <div
-                      className="row"
+                      className="align-items-center row"
                     >
-                      <input
-                        className="input-field-color form-control"
-                        disabled={true}
-                        name="mainNavItemHoverBorderBottomColor"
-                        onClick={[Function]}
-                        readOnly={true}
-                        value=""
-                      />
                       <div
-                        className="input-field-preview"
-                        style={
-                          Object {
-                            "backgroundColor": "",
+                        className="d-flex align-items-center color-input-field"
+                      >
+                        <input
+                          className="input-field-color form-control"
+                          disabled={true}
+                          name="mainNavItemHoverBorderBottomColor"
+                          onClick={[Function]}
+                          readOnly={true}
+                          value=""
+                        />
+                        <div
+                          className="input-field-preview"
+                          style={
+                            Object {
+                              "backgroundColor": "",
+                            }
                           }
-                        }
-                      />
+                        />
+                      </div>
                       <div
                         className="info-icon"
                         onBlur={[Function]}
@@ -258,24 +274,28 @@ exports[`renders without crashing 1`] = `
                       Dropdown arrow
                     </label>
                     <div
-                      className="row"
+                      className="align-items-center row"
                     >
-                      <input
-                        className="input-field-color form-control"
-                        disabled={true}
-                        name="userDropdownColor"
-                        onClick={[Function]}
-                        readOnly={true}
-                        value=""
-                      />
                       <div
-                        className="input-field-preview"
-                        style={
-                          Object {
-                            "backgroundColor": "",
+                        className="d-flex align-items-center color-input-field"
+                      >
+                        <input
+                          className="input-field-color form-control"
+                          disabled={true}
+                          name="userDropdownColor"
+                          onClick={[Function]}
+                          readOnly={true}
+                          value=""
+                        />
+                        <div
+                          className="input-field-preview"
+                          style={
+                            Object {
+                              "backgroundColor": "",
+                            }
                           }
-                        }
-                      />
+                        />
+                      </div>
                       <div
                         className="info-icon"
                         onBlur={[Function]}

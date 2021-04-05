@@ -38,27 +38,5 @@
       font-weight: bold;
       color: #0f1f24;
     }
-
-    .input-field-preview {
-      position: relative;
-      top: 50%;
-      -webkit-transform: translateY(-150%);
-      -ms-transform: translateY(-150%);
-      transform: translateY(-150%);
-    }
-
-    .reset-value {
-      margin-top: 2px;
-      font-size: 14px;
-      font-family: $chivo-font;
-      min-width: 100%;
-      text-align: left;
-      margin-left: 0;
-      position: relative;
-      top: 50%;
-      -webkit-transform: translateY(-100%);
-      -ms-transform: translateY(-100%);
-      transform: translateY(-100%);
-    }
   }
 }

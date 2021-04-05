@@ -22,6 +22,18 @@ const messages = {
   footerLinkColor: {
     defaultMessage: 'Footer link color',
     description: ''
+  },
+  footerBgHelp: {
+    defaultMessage: 'The footer background will be of this color.',
+    description: ''
+  },
+  footerColorHelp: {
+    defaultMessage: 'The copyright text in footer will be of this color.',
+    description: ''
+  },
+  footerLinkColorHelp: {
+    defaultMessage: 'The links in footer will be of this color.',
+    description: ''
   }
 };
 

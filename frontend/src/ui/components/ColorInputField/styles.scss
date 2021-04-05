@@ -1,7 +1,14 @@
 .color-input {
+  min-width: 150px;
+
   .row {
     display: flex;
     align-items: center;
+    padding: 0 15px;
+  }
+
+  .color-input-field {
+    width: 75%;
   }
 
   .input-color-picker {
@@ -37,5 +44,17 @@
 
   .padded {
     margin-left: 7px;
+  }
+
+  .input-field-color.form-control[readonly] {
+    background-color: white;
+  }
+
+  .input-field-color.form-control[disabled] {
+    background-color: #e9ecef !important;
+  }
+
+  .info-icon {
+    padding: 5px 10px;
   }
 }
