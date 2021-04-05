@@ -19,13 +19,13 @@ exports[`renders without crashing 1`] = `
       className="new-console-page-content row"
     >
       <div
-        className="container-fluid"
+        className="pr-4 pl-0 container-fluid"
       >
         <div
-          className="justify-content-center console-page-inner-content row"
+          className="justify-content-center m-0 row"
         >
           <div
-            className="col-md-3"
+            className="p-0 m-0 col-md-3"
           >
             <button
               className="back-button btn btn-link btn-sm"
@@ -323,7 +323,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="col-md-7"
+            className="pr-0 col-md-9"
           >
             <div
               className="preview-box card"
