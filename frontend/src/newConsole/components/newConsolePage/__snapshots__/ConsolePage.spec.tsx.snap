@@ -58,7 +58,7 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
         className="container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center console-page-inner-content row"
         >
           <div
             className="col-md-3"
@@ -163,7 +163,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
         className="container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center console-page-inner-content row"
         >
           <div
             className="col-md-3"
@@ -201,7 +201,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
@@ -476,7 +476,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
         className="container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center console-page-inner-content row"
         >
           <div
             className="col-md-3"
@@ -514,7 +514,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
@@ -745,7 +745,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
         className="container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center console-page-inner-content row"
         >
           <div
             className="col-md-3"
@@ -783,7 +783,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
