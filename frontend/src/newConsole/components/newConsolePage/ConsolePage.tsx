@@ -119,24 +119,26 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
       if (this.props.showSidebar && !this.props.showSideBarEditComponent) {
         innerContent = (
-          <Row className="justify-content-center console-page-inner-content">
-            <Col md="3">
+          <Row className="justify-content-center m-0">
+            <Col md="3" className="p-0 m-0">
               <CustomizationSideMenu />
             </Col>
-            <Col md="7">{innerContent}</Col>
+            <Col md="9" className="pr-0">
+              {innerContent}
+            </Col>
           </Row>
         );
       }
 
       if (this.props.showSidebar && this.props.showSideBarEditComponent) {
         innerContent = (
-          <Row className="justify-content-center console-page-inner-content">
-            <Col md="3">
+          <Row className="justify-content-center m-0">
+            <Col md="3" className="p-0 m-0 pl-4">
               {renderBackButton(this.props.goBack!)}
               {innerContent}
             </Col>
             {/* This is where the preview page component will be redered */}
-            <Col md="7">
+            <Col md="9" className="pr-0">
               <PreviewBox>
                 <CourseOutlinePreview />
               </PreviewBox>
@@ -199,7 +201,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
         <div className="new-console-page-container">
           <Row className="new-console-page-content">
-            <Container fluid>{content()}</Container>
+            <Container fluid className="pr-4 pl-0">
+              {content()}
+            </Container>
           </Row>
         </div>
       </div>

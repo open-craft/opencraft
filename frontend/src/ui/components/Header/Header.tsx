@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { FAQ_PAGE_LINK, ROUTES } from 'global/constants';
 import { NavLink, Route } from 'react-router-dom';
 import { InstancesModel } from 'console/models';
@@ -41,7 +41,10 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
 
   return (
     <Navbar expand="md" variant="dark">
-      <div className="nav-container">
+      <Container
+        fluid
+        className="d-flex flex-wrap align-items-center justify-content-between px-4 py-3"
+      >
         <Navbar.Brand className="logo-container mr-auto order-0">
           <NavLink className="navbar-brand-link" to={ROUTES.Console.HOME}>
             <svg className="site-logo">
@@ -149,7 +152,7 @@ export const HeaderComponent: React.FC<Props> = (props: Props) => {
             </NavDropdown>
           </Route>
         </Nav>
-      </div>
+      </Container>
     </Navbar>
   );
 };
