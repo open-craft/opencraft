@@ -5,3 +5,4 @@ export * from './PreviewBox';
 export * from './CourseOutlinePreview';
 export * from './ConsoleHome';
 export * from './newFooter';
+export * from './ThemeNavigationPage';

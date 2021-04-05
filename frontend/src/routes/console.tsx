@@ -7,13 +7,17 @@ import {
   Logos,
   NoticeBoard,
   ThemeButtons,
-  ThemeNavigation,
   ThemePreviewAndColors,
   CustomPages,
   CoursesManage
 } from 'console/components';
-import { ConsoleHome, ThemeFooterSideBar } from 'newConsole/components';
+import {
+  ConsoleHome,
+  ThemeFooterSideBar,
+  ThemeNavigationPage
+} from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
+
 import { ROUTES } from '../global/constants';
 
 export const ConsoleRoutes = () => {
@@ -42,7 +46,7 @@ export const ConsoleRoutes = () => {
       <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
       <PrivateRoute
         path={ROUTES.Console.THEME_NAVIGATION}
-        component={ThemeNavigation}
+        component={ThemeNavigationPage}
       />
       <PrivateRoute path={ROUTES.Console.HERO} component={Hero} />
       <PrivateRoute
