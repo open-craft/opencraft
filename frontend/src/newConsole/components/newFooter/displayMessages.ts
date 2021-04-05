@@ -7,6 +7,10 @@ const messages = {
     defaultMessage: 'Footer settings',
     description: ''
   },
+  newFooterSettings: {
+    defaultMessage: 'Footer',
+    description: ''
+  },
   footerBg: {
     defaultMessage: 'Footer background color',
     description: ''
