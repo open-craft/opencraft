@@ -61,7 +61,7 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
           className="justify-content-center m-0 row"
         >
           <div
-            className="p-0 m-0 col-md-3"
+            className="p-0 m-0 pl-4 col-md-3"
           >
             <button
               className="back-button btn btn-link btn-sm"

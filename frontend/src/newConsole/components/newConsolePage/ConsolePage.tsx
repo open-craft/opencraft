@@ -133,7 +133,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       if (this.props.showSidebar && this.props.showSideBarEditComponent) {
         innerContent = (
           <Row className="justify-content-center m-0">
-            <Col md="3" className="p-0 m-0">
+            <Col md="3" className="p-0 m-0 pl-4">
               {renderBackButton(this.props.goBack!)}
               {innerContent}
             </Col>
