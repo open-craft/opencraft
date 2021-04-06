@@ -58,8 +58,8 @@ ECOMMERCE_REPOS:
     DESTINATION: "{{ ecommerce_code_dir }}"
     SSH_KEY: '{{ ECOMMERCE_GIT_IDENTITY }}'
 
-# Append to any existing EDXAPP_LMS_ENV_EXTRA:
-# Without this, LMS will error out as the default value
+# Append to any existing EDXAPP_LMS_ENV_EXTRA. Without this,
+# LMS will error out as the default value for 'COURSE_MODE_DEFAULTS'
 # doesn't have this currency.
 EDXAPP_LMS_ENV_EXTRA:
   COURSE_MODE_DEFAULTS:
