@@ -31,28 +31,18 @@ exports[`renders without crashing 1`] = `
               className="ml-auto nav"
               onKeyDown={[Function]}
             >
-              <div
-                className="nav-item"
+              <span
+                className="mr-2"
               >
-                <a
-                  className="nav-link"
-                  href="/console"
-                  onClick={[Function]}
-                >
-                  <span>
-                    <i
-                      aria-hidden="true"
-                      className="fa fa-angle-left sm"
-                    />
-                  </span>
-                  <span
-                    className="back-button"
-                  >
-                    Back
-                  </span>
-                </a>
-              </div>
-            </div>
+                <i
+                  aria-hidden="true"
+                  className="fa fa-angle-left sm"
+                />
+              </span>
+              <span>
+                Back
+              </span>
+            </button>
             <h1
               className="edit-heading"
             >
@@ -762,7 +752,7 @@ exports[`renders without crashing 1`] = `
                         htmlFor="toggle-Register"
                         title=""
                       >
-                        
+
                       </label>
                     </div>
                   </span>
@@ -1119,7 +1109,7 @@ exports[`renders without crashing 1`] = `
                         htmlFor="toggle-SignIn"
                         title=""
                       >
-                        
+
                       </label>
                     </div>
                   </span>
@@ -1476,7 +1466,7 @@ exports[`renders without crashing 1`] = `
                         htmlFor="toggle-Logistration"
                         title=""
                       >
-                        
+
                       </label>
                     </div>
                   </span>
@@ -1983,12 +1973,12 @@ exports[`renders without crashing 1`] = `
                               <h1
                                 style={Object {}}
                               >
-                                
+
                               </h1>
                               <p
                                 style={Object {}}
                               >
-                                
+
                               </p>
                             </div>
                           </div>
@@ -2066,7 +2056,7 @@ exports[`renders without crashing 1`] = `
                             }
                           }
                         >
-                          Starts: 
+                          Starts:
                           Feb 5, 2013
                         </div>
                       </div>
@@ -2192,7 +2182,7 @@ exports[`renders without crashing 1`] = `
                             }
                           }
                         >
-                          © test. 
+                          © test.
                           All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
                         </div>
                       </div>
