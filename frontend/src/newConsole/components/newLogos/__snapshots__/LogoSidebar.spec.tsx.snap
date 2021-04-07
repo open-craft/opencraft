@@ -71,7 +71,7 @@ exports[`Console Page Correctly renders LogosSideBar 1`] = `
                 className="nav-item"
               >
                 <a
-                  className="nav-link"
+                  className="nav-link px-0"
                   href="/console"
                   onClick={[Function]}
                 >

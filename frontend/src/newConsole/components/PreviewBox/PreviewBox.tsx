@@ -9,5 +9,5 @@ interface PreviewBoxProps {
 export const PreviewBox: React.FC<PreviewBoxProps> = (
   props: PreviewBoxProps
 ) => {
-  return <Card className="preview-box">{props.children}</Card>;
+  return <Card className="w-100 preview-box">{props.children}</Card>;
 };

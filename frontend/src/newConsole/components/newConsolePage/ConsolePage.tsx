@@ -84,7 +84,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
       return (
         <Nav className="ml-auto">
           <NavItem>
-            <Link className="nav-link" to={ROUTES.Console.HOME}>
+            <Link className="nav-link px-0" to={ROUTES.Console.HOME}>
               <span>
                 <i className="fa fa-angle-left sm" aria-hidden="true" />
               </span>

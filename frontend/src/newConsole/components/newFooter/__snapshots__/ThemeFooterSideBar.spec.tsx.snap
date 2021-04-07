@@ -35,7 +35,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                 className="nav-item"
               >
                 <a
-                  className="nav-link"
+                  className="nav-link px-0"
                   href="/console"
                   onClick={[Function]}
                 >
@@ -260,10 +260,10 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
             className="pr-0 col-md-9"
           >
             <div
-              className="row"
+              className="m-0 row"
             >
               <div
-                className="pr-0 col-md-4"
+                className="p-0 col-md-4"
               >
                 <div
                   className="preview-header d-flex justify-content-start"
@@ -321,7 +321,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                 </div>
               </div>
               <div
-                className="pr-0 align-items-start col-md-7"
+                className="p-0 align-items-start col-md-8"
               >
                 <div
                   className="notice-container d-flex justify-content-end"
@@ -330,7 +330,7 @@ exports[`Theme footer sidebar tests renders without crashing 1`] = `
                 </div>
               </div>
               <div
-                className="preview-box card"
+                className="w-100 preview-box card"
               >
                 <div
                   className="container-fluid"
