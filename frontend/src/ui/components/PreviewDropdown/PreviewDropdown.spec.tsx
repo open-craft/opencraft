@@ -16,8 +16,8 @@ describe("Preview dropdown", function() {
         messages['somepage'] = {defaultMessage: 'A new page', description: ''};
         const tree = mountComponentForTesting(<PreviewDropdown />);
         const mountedComponent = tree.find('.dropdown-items').find('FormattedMessage');
-        expect(mountedComponent.length).toBe(2)
-        expect(mountedComponent.children().debug()).toBe('Dashboard\n\n\nA new page')
+        expect(mountedComponent.length).toBe(3)
+        expect(mountedComponent.children().debug()).toBe('Dashboard\n\n\nCourse Outline\n\n\nA new page')
         expect(tree).toMatchSnapshot();
     });
 });

@@ -40,6 +40,15 @@ exports[`Preview dropdown renders without crashing 1`] = `
             Dashboard
           </p>
         </button>
+        <button
+          className="d-inline-block"
+          onClick={[Function]}
+          type="button"
+        >
+          <p>
+            Course Outline
+          </p>
+        </button>
       </div>
     </div>
   </div>

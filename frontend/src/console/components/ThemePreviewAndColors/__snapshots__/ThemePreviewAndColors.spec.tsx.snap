@@ -665,94 +665,125 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     className="col-9"
                   >
                     <div
-                      className="theme-preview"
+                      className="container-fluid"
                     >
                       <div
-                        className="theme-preview-navigation row"
+                        className="d-flex felx-row main-navigation-menu navigation-menu row"
+                        style={
+                          Object {
+                            "background": undefined,
+                          }
+                        }
                       >
                         <div
-                          className="theme-preview-navigation col"
+                          className="logo"
+                        />
+                        <div
+                          className="flex-grow-1 d-flex flex-row ml-4 mr-4"
                         >
-                          <div
-                            className="d-flex felx-row main-navigation-menu navigation-menu row"
+                          <button
+                            className="customizable-link"
+                            onMouseEnter={[Function]}
+                            onMouseLeave={[Function]}
                             style={
                               Object {
-                                "background": undefined,
+                                "borderBottomColor": undefined,
+                                "color": undefined,
                               }
                             }
+                            type="button"
+                          >
+                            Courses
+                          </button>
+                          <button
+                            className="customizable-link"
+                            onMouseEnter={[Function]}
+                            onMouseLeave={[Function]}
+                            style={
+                              Object {
+                                "borderBottomColor": undefined,
+                                "color": undefined,
+                              }
+                            }
+                            type="button"
+                          >
+                            Discover New
+                          </button>
+                        </div>
+                        <div>
+                          <div
+                            className="navigation-menu navigation-submenu row"
                           >
                             <div
-                              className="logo"
-                            />
-                            <div
-                              className="flex-grow-1 d-flex flex-row ml-4 mr-4"
+                              className="col"
                             >
                               <button
-                                className="customizable-link"
+                                className="customizable-button"
                                 onMouseEnter={[Function]}
                                 onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "borderBottomColor": undefined,
+                                    "background": undefined,
+                                    "borderColor": undefined,
                                     "color": undefined,
                                   }
                                 }
                                 type="button"
                               >
-                                Courses
+                                Register
                               </button>
                               <button
-                                className="customizable-link"
+                                className="customizable-button"
                                 onMouseEnter={[Function]}
                                 onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "borderBottomColor": undefined,
+                                    "background": undefined,
+                                    "borderColor": undefined,
                                     "color": undefined,
                                   }
                                 }
                                 type="button"
                               >
-                                Discover New
+                                Sign in
                               </button>
                             </div>
-                            <div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="theme-home"
+                    >
+                      <div
+                        className="theme-hero-container row"
+                      >
+                        <div
+                          className="col"
+                        >
+                          <div
+                            className="hero-preview"
+                          >
+                            <div
+                              className="outer-wrapper"
+                              style={Object {}}
+                            >
                               <div
-                                className="navigation-menu navigation-submenu row"
+                                className="title"
                               >
                                 <div
-                                  className="col"
+                                  className="heading-group"
                                 >
-                                  <button
-                                    className="customizable-button"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "background": undefined,
-                                        "borderColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
+                                  <h1
+                                    style={Object {}}
                                   >
-                                    Register
-                                  </button>
-                                  <button
-                                    className="customizable-button"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "background": undefined,
-                                        "borderColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
+                                    
+                                  </h1>
+                                  <p
+                                    style={Object {}}
                                   >
-                                    Sign in
-                                  </button>
+                                    
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -760,87 +791,104 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         </div>
                       </div>
                       <div
-                        className="theme-home"
+                        className="theme-courses-container row"
                       >
                         <div
-                          className="theme-hero-container row"
+                          className="theme-courses-item col-md-3"
                         >
                           <div
-                            className="col"
+                            className="courses-listing-item row"
+                            style={
+                              Object {
+                                "borderBottomColor": "#FFAAFF",
+                              }
+                            }
                           >
                             <div
-                              className="hero-preview"
+                              className="course-image col"
                             >
-                              <div
-                                className="outer-wrapper"
-                                style={Object {}}
-                              >
-                                <div
-                                  className="title"
-                                >
-                                  <div
-                                    className="heading-group"
-                                  >
-                                    <h1
-                                      style={Object {}}
-                                    >
-                                      
-                                    </h1>
-                                    <p
-                                      style={Object {}}
-                                    >
-                                      
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
+                              <img
+                                alt="course"
+                                src="course_image.jpg"
+                              />
                             </div>
-                          </div>
-                        </div>
-                        <div
-                          className="theme-courses-container row"
-                        >
-                          <div
-                            className="theme-courses-item col-md-3"
-                          >
                             <div
-                              className="courses-listing-item row"
+                              className="organization col"
                               style={
                                 Object {
-                                  "borderBottomColor": "#FFAAFF",
+                                  "color": "#444444",
                                 }
                               }
                             >
-                              <div
-                                className="course-image col"
-                              >
-                                <img
-                                  alt="course"
-                                  src="course_image.jpg"
-                                />
-                              </div>
-                              <div
-                                className="organization col"
+                              edX
+                            </div>
+                            <div
+                              className="course-number col"
+                              style={
+                                Object {
+                                  "color": "#444444",
+                                }
+                              }
+                            >
+                              DemoX
+                            </div>
+                            <div
+                              className="course-name col"
+                            >
+                              <button
+                                className="customizable-link noHover"
+                                onMouseEnter={[Function]}
+                                onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "color": "#444444",
+                                    "borderBottomColor": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
+                                type="button"
                               >
-                                edX
-                              </div>
-                              <div
-                                className="course-number col"
-                                style={
-                                  Object {
-                                    "color": "#444444",
-                                  }
+                                <span>
+                                  Demonstration Course
+                                </span>
+                              </button>
+                            </div>
+                            <div
+                              className="course-start col"
+                              style={
+                                Object {
+                                  "color": "#444444",
                                 }
-                              >
-                                DemoX
-                              </div>
+                              }
+                            >
+                              Starts: 
+                              Feb 5, 2013
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="theme-footer row"
+                    >
+                      <div
+                        className="col"
+                      >
+                        <div
+                          className="custom-footer"
+                          style={
+                            Object {
+                              "background": undefined,
+                            }
+                          }
+                        >
+                          <div
+                            className="row"
+                          >
+                            <div
+                              className="col-md-4"
+                            >
                               <div
-                                className="course-name col"
+                                className="footer-top-links row"
                               >
                                 <button
                                   className="customizable-link noHover"
@@ -849,222 +897,166 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                                   style={
                                     Object {
                                       "borderBottomColor": undefined,
-                                      "color": "#FFAAFF",
+                                      "color": undefined,
                                     }
                                   }
                                   type="button"
                                 >
                                   <span>
-                                    Demonstration Course
+                                    About
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Blog
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Contact
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Donate
                                   </span>
                                 </button>
                               </div>
-                              <div
-                                className="course-start col"
-                                style={
-                                  Object {
-                                    "color": "#444444",
-                                  }
-                                }
-                              >
-                                Starts: 
-                                Feb 5, 2013
-                              </div>
+                            </div>
+                            <div
+                              className="col-md-5"
+                            />
+                            <div
+                              className="openedx-logo col-md-3"
+                            >
+                              <img
+                                alt="Open edX logo"
+                                src="openedx-logo-footer.png"
+                              />
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      <div
-                        className="theme-footer row"
-                      >
-                        <div
-                          className="col"
-                        >
                           <div
-                            className="custom-footer"
-                            style={
-                              Object {
-                                "background": undefined,
-                              }
-                            }
+                            className="row"
                           >
                             <div
-                              className="row"
-                            >
-                              <div
-                                className="col-md-4"
-                              >
-                                <div
-                                  className="footer-top-links row"
-                                >
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      About
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Blog
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Contact
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Donate
-                                    </span>
-                                  </button>
-                                </div>
-                              </div>
-                              <div
-                                className="col-md-5"
-                              />
-                              <div
-                                className="openedx-logo col-md-3"
-                              >
-                                <img
-                                  alt="Open edX logo"
-                                  src="openedx-logo-footer.png"
-                                />
-                              </div>
-                            </div>
+                              className="logo col-md-1"
+                            />
+                          </div>
+                          <div
+                            className="row"
+                          >
                             <div
-                              className="row"
+                              className="copyright"
+                              style={
+                                Object {
+                                  "color": undefined,
+                                }
+                              }
                             >
-                              <div
-                                className="logo col-md-1"
-                              />
+                              © test. 
+                              All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
                             </div>
-                            <div
-                              className="row"
+                          </div>
+                          <div
+                            className="legal row"
+                          >
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
+                                }
+                              }
+                              type="button"
                             >
-                              <div
-                                className="copyright"
-                                style={
-                                  Object {
-                                    "color": undefined,
-                                  }
+                              <span>
+                                Privacy Policy
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                              >
-                                © test. 
-                                All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
-                              </div>
-                            </div>
-                            <div
-                              className="legal row"
+                              }
+                              type="button"
                             >
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
+                              <span>
+                                Terms of Service
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                                type="button"
-                              >
-                                <span>
-                                  Privacy Policy
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
+                              }
+                              type="button"
+                            >
+                              <span>
+                                Honor Code
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                                type="button"
-                              >
-                                <span>
-                                  Terms of Service
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
-                                }
-                                type="button"
-                              >
-                                <span>
-                                  Honor Code
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
-                                }
-                                type="button"
-                              >
-                                <span>
-                                  Take free online courses at edX.org
-                                </span>
-                              </button>
-                            </div>
+                              }
+                              type="button"
+                            >
+                              <span>
+                                Take free online courses at edX.org
+                              </span>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1473,94 +1465,125 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                     className="col-9"
                   >
                     <div
-                      className="theme-preview"
+                      className="container-fluid"
                     >
                       <div
-                        className="theme-preview-navigation row"
+                        className="d-flex felx-row main-navigation-menu navigation-menu row"
+                        style={
+                          Object {
+                            "background": undefined,
+                          }
+                        }
                       >
                         <div
-                          className="theme-preview-navigation col"
+                          className="logo"
+                        />
+                        <div
+                          className="flex-grow-1 d-flex flex-row ml-4 mr-4"
                         >
-                          <div
-                            className="d-flex felx-row main-navigation-menu navigation-menu row"
+                          <button
+                            className="customizable-link"
+                            onMouseEnter={[Function]}
+                            onMouseLeave={[Function]}
                             style={
                               Object {
-                                "background": undefined,
+                                "borderBottomColor": undefined,
+                                "color": undefined,
                               }
                             }
+                            type="button"
+                          >
+                            Courses
+                          </button>
+                          <button
+                            className="customizable-link"
+                            onMouseEnter={[Function]}
+                            onMouseLeave={[Function]}
+                            style={
+                              Object {
+                                "borderBottomColor": undefined,
+                                "color": undefined,
+                              }
+                            }
+                            type="button"
+                          >
+                            Discover New
+                          </button>
+                        </div>
+                        <div>
+                          <div
+                            className="navigation-menu navigation-submenu row"
                           >
                             <div
-                              className="logo"
-                            />
-                            <div
-                              className="flex-grow-1 d-flex flex-row ml-4 mr-4"
+                              className="col"
                             >
                               <button
-                                className="customizable-link"
+                                className="customizable-button"
                                 onMouseEnter={[Function]}
                                 onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "borderBottomColor": undefined,
+                                    "background": undefined,
+                                    "borderColor": undefined,
                                     "color": undefined,
                                   }
                                 }
                                 type="button"
                               >
-                                Courses
+                                Register
                               </button>
                               <button
-                                className="customizable-link"
+                                className="customizable-button"
                                 onMouseEnter={[Function]}
                                 onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "borderBottomColor": undefined,
+                                    "background": undefined,
+                                    "borderColor": undefined,
                                     "color": undefined,
                                   }
                                 }
                                 type="button"
                               >
-                                Discover New
+                                Sign in
                               </button>
                             </div>
-                            <div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="theme-home"
+                    >
+                      <div
+                        className="theme-hero-container row"
+                      >
+                        <div
+                          className="col"
+                        >
+                          <div
+                            className="hero-preview"
+                          >
+                            <div
+                              className="outer-wrapper"
+                              style={Object {}}
+                            >
                               <div
-                                className="navigation-menu navigation-submenu row"
+                                className="title"
                               >
                                 <div
-                                  className="col"
+                                  className="heading-group"
                                 >
-                                  <button
-                                    className="customizable-button"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "background": undefined,
-                                        "borderColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
+                                  <h1
+                                    style={Object {}}
                                   >
-                                    Register
-                                  </button>
-                                  <button
-                                    className="customizable-button"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "background": undefined,
-                                        "borderColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
+                                    
+                                  </h1>
+                                  <p
+                                    style={Object {}}
                                   >
-                                    Sign in
-                                  </button>
+                                    
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -1568,87 +1591,104 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                         </div>
                       </div>
                       <div
-                        className="theme-home"
+                        className="theme-courses-container row"
                       >
                         <div
-                          className="theme-hero-container row"
+                          className="theme-courses-item col-md-3"
                         >
                           <div
-                            className="col"
+                            className="courses-listing-item row"
+                            style={
+                              Object {
+                                "borderBottomColor": "#FFAAFF",
+                              }
+                            }
                           >
                             <div
-                              className="hero-preview"
+                              className="course-image col"
                             >
-                              <div
-                                className="outer-wrapper"
-                                style={Object {}}
-                              >
-                                <div
-                                  className="title"
-                                >
-                                  <div
-                                    className="heading-group"
-                                  >
-                                    <h1
-                                      style={Object {}}
-                                    >
-                                      
-                                    </h1>
-                                    <p
-                                      style={Object {}}
-                                    >
-                                      
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
+                              <img
+                                alt="course"
+                                src="course_image.jpg"
+                              />
                             </div>
-                          </div>
-                        </div>
-                        <div
-                          className="theme-courses-container row"
-                        >
-                          <div
-                            className="theme-courses-item col-md-3"
-                          >
                             <div
-                              className="courses-listing-item row"
+                              className="organization col"
                               style={
                                 Object {
-                                  "borderBottomColor": "#FFAAFF",
+                                  "color": "#444444",
                                 }
                               }
                             >
-                              <div
-                                className="course-image col"
-                              >
-                                <img
-                                  alt="course"
-                                  src="course_image.jpg"
-                                />
-                              </div>
-                              <div
-                                className="organization col"
+                              edX
+                            </div>
+                            <div
+                              className="course-number col"
+                              style={
+                                Object {
+                                  "color": "#444444",
+                                }
+                              }
+                            >
+                              DemoX
+                            </div>
+                            <div
+                              className="course-name col"
+                            >
+                              <button
+                                className="customizable-link noHover"
+                                onMouseEnter={[Function]}
+                                onMouseLeave={[Function]}
                                 style={
                                   Object {
-                                    "color": "#444444",
+                                    "borderBottomColor": undefined,
+                                    "color": "#FFAAFF",
                                   }
                                 }
+                                type="button"
                               >
-                                edX
-                              </div>
-                              <div
-                                className="course-number col"
-                                style={
-                                  Object {
-                                    "color": "#444444",
-                                  }
+                                <span>
+                                  Demonstration Course
+                                </span>
+                              </button>
+                            </div>
+                            <div
+                              className="course-start col"
+                              style={
+                                Object {
+                                  "color": "#444444",
                                 }
-                              >
-                                DemoX
-                              </div>
+                              }
+                            >
+                              Starts: 
+                              Feb 5, 2013
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="theme-footer row"
+                    >
+                      <div
+                        className="col"
+                      >
+                        <div
+                          className="custom-footer"
+                          style={
+                            Object {
+                              "background": undefined,
+                            }
+                          }
+                        >
+                          <div
+                            className="row"
+                          >
+                            <div
+                              className="col-md-4"
+                            >
                               <div
-                                className="course-name col"
+                                className="footer-top-links row"
                               >
                                 <button
                                   className="customizable-link noHover"
@@ -1657,222 +1697,166 @@ exports[`Theme preview and colors page Render theme settings page with theme set
                                   style={
                                     Object {
                                       "borderBottomColor": undefined,
-                                      "color": "#FFAAFF",
+                                      "color": undefined,
                                     }
                                   }
                                   type="button"
                                 >
                                   <span>
-                                    Demonstration Course
+                                    About
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Blog
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Contact
+                                  </span>
+                                </button>
+                                <button
+                                  className="customizable-link noHover"
+                                  onMouseEnter={[Function]}
+                                  onMouseLeave={[Function]}
+                                  style={
+                                    Object {
+                                      "borderBottomColor": undefined,
+                                      "color": undefined,
+                                    }
+                                  }
+                                  type="button"
+                                >
+                                  <span>
+                                    Donate
                                   </span>
                                 </button>
                               </div>
-                              <div
-                                className="course-start col"
-                                style={
-                                  Object {
-                                    "color": "#444444",
-                                  }
-                                }
-                              >
-                                Starts: 
-                                Feb 5, 2013
-                              </div>
+                            </div>
+                            <div
+                              className="col-md-5"
+                            />
+                            <div
+                              className="openedx-logo col-md-3"
+                            >
+                              <img
+                                alt="Open edX logo"
+                                src="openedx-logo-footer.png"
+                              />
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      <div
-                        className="theme-footer row"
-                      >
-                        <div
-                          className="col"
-                        >
                           <div
-                            className="custom-footer"
-                            style={
-                              Object {
-                                "background": undefined,
-                              }
-                            }
+                            className="row"
                           >
                             <div
-                              className="row"
-                            >
-                              <div
-                                className="col-md-4"
-                              >
-                                <div
-                                  className="footer-top-links row"
-                                >
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      About
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Blog
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Contact
-                                    </span>
-                                  </button>
-                                  <button
-                                    className="customizable-link noHover"
-                                    onMouseEnter={[Function]}
-                                    onMouseLeave={[Function]}
-                                    style={
-                                      Object {
-                                        "borderBottomColor": undefined,
-                                        "color": undefined,
-                                      }
-                                    }
-                                    type="button"
-                                  >
-                                    <span>
-                                      Donate
-                                    </span>
-                                  </button>
-                                </div>
-                              </div>
-                              <div
-                                className="col-md-5"
-                              />
-                              <div
-                                className="openedx-logo col-md-3"
-                              >
-                                <img
-                                  alt="Open edX logo"
-                                  src="openedx-logo-footer.png"
-                                />
-                              </div>
-                            </div>
+                              className="logo col-md-1"
+                            />
+                          </div>
+                          <div
+                            className="row"
+                          >
                             <div
-                              className="row"
+                              className="copyright"
+                              style={
+                                Object {
+                                  "color": undefined,
+                                }
+                              }
                             >
-                              <div
-                                className="logo col-md-1"
-                              />
+                              © test. 
+                              All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
                             </div>
-                            <div
-                              className="row"
+                          </div>
+                          <div
+                            className="legal row"
+                          >
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
+                                }
+                              }
+                              type="button"
                             >
-                              <div
-                                className="copyright"
-                                style={
-                                  Object {
-                                    "color": undefined,
-                                  }
+                              <span>
+                                Privacy Policy
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                              >
-                                © test. 
-                                All rights reserved except where noted. edX, Open edX and their respective logos are registered trademarks of edX Inc.
-                              </div>
-                            </div>
-                            <div
-                              className="legal row"
+                              }
+                              type="button"
                             >
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
+                              <span>
+                                Terms of Service
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                                type="button"
-                              >
-                                <span>
-                                  Privacy Policy
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
+                              }
+                              type="button"
+                            >
+                              <span>
+                                Honor Code
+                              </span>
+                            </button>
+                            <button
+                              className="customizable-link noHover"
+                              onMouseEnter={[Function]}
+                              onMouseLeave={[Function]}
+                              style={
+                                Object {
+                                  "borderBottomColor": undefined,
+                                  "color": undefined,
                                 }
-                                type="button"
-                              >
-                                <span>
-                                  Terms of Service
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
-                                }
-                                type="button"
-                              >
-                                <span>
-                                  Honor Code
-                                </span>
-                              </button>
-                              <button
-                                className="customizable-link noHover"
-                                onMouseEnter={[Function]}
-                                onMouseLeave={[Function]}
-                                style={
-                                  Object {
-                                    "borderBottomColor": undefined,
-                                    "color": undefined,
-                                  }
-                                }
-                                type="button"
-                              >
-                                <span>
-                                  Take free online courses at edX.org
-                                </span>
-                              </button>
-                            </div>
+                              }
+                              type="button"
+                            >
+                              <span>
+                                Take free online courses at edX.org
+                              </span>
+                            </button>
                           </div>
                         </div>
                       </div>

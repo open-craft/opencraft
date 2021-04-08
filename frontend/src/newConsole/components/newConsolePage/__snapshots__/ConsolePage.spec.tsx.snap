@@ -91,13 +91,6 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
               </div>
             </div>
           </div>
-          <div
-            className="pr-0 col-md-9"
-          >
-            <div
-              className="preview-box card"
-            />
-          </div>
         </div>
       </div>
     </div>

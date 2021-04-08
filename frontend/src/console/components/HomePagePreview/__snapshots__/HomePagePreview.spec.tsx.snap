@@ -3,92 +3,88 @@
 exports[`renders without crashing 1`] = `
 Array [
   <div
-    className="theme-preview-navigation row"
+    className="container-fluid"
   >
     <div
-      className="theme-preview-navigation col"
+      className="d-flex felx-row main-navigation-menu navigation-menu row"
+      style={
+        Object {
+          "background": undefined,
+        }
+      }
     >
       <div
-        className="d-flex felx-row main-navigation-menu navigation-menu row"
-        style={
-          Object {
-            "background": undefined,
-          }
-        }
+        className="logo"
+      />
+      <div
+        className="flex-grow-1 d-flex flex-row ml-4 mr-4"
       >
-        <div
-          className="logo"
-        />
-        <div
-          className="flex-grow-1 d-flex flex-row ml-4 mr-4"
+        <button
+          className="customizable-link"
+          onMouseEnter={[Function]}
+          onMouseLeave={[Function]}
+          style={
+            Object {
+              "borderBottomColor": undefined,
+              "color": undefined,
+            }
+          }
+          type="button"
         >
-          <button
-            className="customizable-link"
-            onMouseEnter={[Function]}
-            onMouseLeave={[Function]}
-            style={
-              Object {
-                "borderBottomColor": undefined,
-                "color": undefined,
-              }
+          Courses
+        </button>
+        <button
+          className="customizable-link"
+          onMouseEnter={[Function]}
+          onMouseLeave={[Function]}
+          style={
+            Object {
+              "borderBottomColor": undefined,
+              "color": undefined,
             }
-            type="button"
-          >
-            Courses
-          </button>
-          <button
-            className="customizable-link"
-            onMouseEnter={[Function]}
-            onMouseLeave={[Function]}
-            style={
-              Object {
-                "borderBottomColor": undefined,
-                "color": undefined,
-              }
-            }
-            type="button"
-          >
-            Discover New
-          </button>
-        </div>
-        <div>
+          }
+          type="button"
+        >
+          Discover New
+        </button>
+      </div>
+      <div>
+        <div
+          className="navigation-menu navigation-submenu row"
+        >
           <div
-            className="navigation-menu navigation-submenu row"
+            className="col"
           >
-            <div
-              className="col"
+            <button
+              className="customizable-button"
+              onMouseEnter={[Function]}
+              onMouseLeave={[Function]}
+              style={
+                Object {
+                  "background": undefined,
+                  "borderColor": undefined,
+                  "color": undefined,
+                }
+              }
+              type="button"
             >
-              <button
-                className="customizable-button"
-                onMouseEnter={[Function]}
-                onMouseLeave={[Function]}
-                style={
-                  Object {
-                    "background": undefined,
-                    "borderColor": undefined,
-                    "color": undefined,
-                  }
+              Register
+            </button>
+            <button
+              className="customizable-button"
+              onMouseEnter={[Function]}
+              onMouseLeave={[Function]}
+              style={
+                Object {
+                  "background": undefined,
+                  "borderColor": undefined,
+                  "color": undefined,
                 }
-                type="button"
-              >
-                Register
-              </button>
-              <button
-                className="customizable-button"
-                onMouseEnter={[Function]}
-                onMouseLeave={[Function]}
-                style={
-                  Object {
-                    "background": undefined,
-                    "borderColor": undefined,
-                    "color": undefined,
-                  }
-                }
-                type="button"
-              >
-                Sign in
-              </button>
-            </div>
+              }
+              type="button"
+            >
+              Sign in
+            </button>
           </div>
         </div>
       </div>

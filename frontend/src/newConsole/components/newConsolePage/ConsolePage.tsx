@@ -135,9 +135,11 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
               {renderBackButton(this.props.goBack!)}
               {innerContent}
             </Col>
-            <Col md="9" className="pr-0">
-              <ThemePreview/>
-            </Col>
+            { !this.props.contentLoading &&
+              (<Col md="9" className="pr-0">
+                <ThemePreview/>
+              </Col>)
+            }
           </Row>
         );
       }
