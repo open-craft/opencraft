@@ -1,13 +1,12 @@
 import * as React from 'react';
 import './styles.scss';
 import {
-  ConsolePageCustomizationContainer,
   PreviewComponent
 } from 'console/components';
-import { ConsolePage, PreviewBox } from 'newConsole/components';
+import { PreviewBox } from 'newConsole/components';
 import { PreviewDropdown } from 'ui/components';
 import { InstancesModel } from 'console/models';
-import { Container, Col, Row } from 'react-bootstrap';
+import {Col} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
@@ -46,32 +45,23 @@ export class ThemePreviewComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage contentLoading={this.props.loading}>
-        <div className="preview-header d-flex align-items-center">
-          <PreviewDropdown handleChange={this.changePreview} />
-          <div className="notice-container d-flex flex-row-reverse">
-            <p>
-              <WrappedMessage messages={messages} id="previewNotice" />
-            </p>
+      <>
+        <Col md="9" className="pr-0">
+          <div className="preview-header d-flex align-items-center">
+            <PreviewDropdown handleChange={this.changePreview} />
+            <div className="notice-container d-flex flex-row-reverse">
+              <p>
+                <WrappedMessage messages={messages} id="previewNotice" />
+              </p>
+            </div>
           </div>
-        </div>
+        </Col>
         <PreviewBox>
-          <ConsolePageCustomizationContainer>
-            {themeData && themeData.version === 1 && (
-              <Container className="preview-container">
-                <Row>
-                  <Col>
-                    <PreviewComponent
-                      instanceData={instance.data!}
-                      currentPreview={this.state.currentPreview}
-                    />
-                  </Col>
-                </Row>
-              </Container>
-            )}
-          </ConsolePageCustomizationContainer>
+          {themeData && themeData.version === 1 && (
+            <PreviewComponent instanceData={instance.data!} currentPreview={this.state.currentPreview}/>
+          )}
         </PreviewBox>
-      </ConsolePage>
+      </>
     );
   }
 }

@@ -14,7 +14,10 @@ describe('PreviewComponent', function() {
           draftStaticContentOverrides: {
             homepageOverlayHtml: "",
           },
-          heroCoverImage: "test"
+          heroCoverImage: "test",
+          staticPagesEnabled: {
+            "Dummy": "value"
+          }
       }
       const tree = setupComponentForTesting(
         <PreviewComponent
@@ -34,19 +37,16 @@ describe('PreviewComponent', function() {
         draftStaticContentOverrides: {
           homepageOverlayHtml: "",
         },
-<<<<<<< HEAD
         heroCoverImage: "test",
-    }
-    const tree = setupComponentForTesting(<PreviewComponent instanceData={instanceData} />).toJSON();
-=======
-        heroCoverImage: "test"
+        staticPagesEnabled: {
+          "Dummy": "value"
+        }
     };
     const tree = setupComponentForTesting(
     <PreviewComponent
       instanceData={instanceData}
       currentPreview={'dashboard'}
     />).toJSON();
->>>>>>> Address PR comments
     expect(tree).toMatchSnapshot();
   });
 

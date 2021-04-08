@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { RedeploymentToolbar } from 'console/components';
+import { RedeploymentToolbar, ThemePreview} from 'console/components';
 import {
   CustomizationSideMenu,
-  CourseOutlinePreview
 } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
@@ -19,7 +18,6 @@ import {
 import { WrappedMessage } from 'utils/intl';
 import messages from 'console/components/ConsolePage/displayMessages';
 import './styles.scss';
-import { PreviewBox } from '../PreviewBox';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -137,11 +135,8 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
               {renderBackButton(this.props.goBack!)}
               {innerContent}
             </Col>
-            {/* This is where the preview page component will be redered */}
             <Col md="9" className="pr-0">
-              <PreviewBox>
-                <CourseOutlinePreview />
-              </PreviewBox>
+              <ThemePreview/>
             </Col>
           </Row>
         );

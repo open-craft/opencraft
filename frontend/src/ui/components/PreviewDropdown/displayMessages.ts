@@ -2,8 +2,11 @@ const messages = {
   dashboard: {
     defaultMessage: 'Dashboard',
     description: 'Dashboard dropdown item'
+  },
+  courseoutline: {
+    defaultMessage: 'Course Outline',
+    description: 'Course Outline Page'
   }
-  // Add other preview pages here
 };
 
 export default messages;

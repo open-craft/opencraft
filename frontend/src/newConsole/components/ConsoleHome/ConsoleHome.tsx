@@ -1,12 +1,11 @@
 import * as React from 'react';
 import {
   ConsolePage,
-  PreviewBox,
-  CourseOutlinePreview
 } from 'newConsole/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
+import { ThemePreview } from 'console/components';
 
 interface State {}
 interface ActionProps {
@@ -21,11 +20,8 @@ export class ConsoleHomeComponent extends React.PureComponent<Props, State> {
     return (
       <ConsolePage
         contentLoading={this.props.loading}
-        showSideBarEditComponent={false}
-      >
-        <PreviewBox>
-          <CourseOutlinePreview />
-        </PreviewBox>
+        showSideBarEditComponent={false}>
+        <ThemePreview/>
       </ConsolePage>
     );
   }
