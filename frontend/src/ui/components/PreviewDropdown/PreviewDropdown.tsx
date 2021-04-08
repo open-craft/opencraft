@@ -12,12 +12,13 @@ export const PreviewDropdown: React.FC<PreviewDropdownProps> = (
   props: PreviewDropdownProps
 ) => {
   const [open, setOpen] = React.useState(false);
-  const [selectedPreview, changePreview] = React.useState('dashboard');
+  const [selectedPreview, setSelectedPreview] = React.useState('dashboard');
   const updatePreview = (key: string) => {
-    changePreview(key);
+    setSelectedPreview(key);
     setOpen(!open);
     props.handleChange(key);
   };
+  const iconName = open ? "fa-chevron-up" : "fa-chevron-down";
   const children = () => {
     const toRender: JSX.Element[] = [];
 
@@ -43,11 +44,7 @@ export const PreviewDropdown: React.FC<PreviewDropdownProps> = (
     <div className="dropdown-container d-flex flex-column align-items-center">
       <Nav.Link onClick={() => setOpen(!open)}>
         <WrappedMessage messages={messages} id={selectedPreview} />
-        {open ? (
-          <i className="fas xs fa-chevron-up" />
-        ) : (
-          <i className="fas xs fa-chevron-down" />
-        )}
+          <i className={`fas xs ${iconName}`} />
       </Nav.Link>
       <span className="fill-line" />
       <div className="dropdown-items align-items-center">
