@@ -4,30 +4,21 @@
   position:relative;
   height: 60px;
   z-index: 2;
-
-  .notice-container {
-    width: 80%;
-    height: 100%;
-    margin-bottom: 24px;
-
-    p {
-      color: $primary-1;
-      margin-top: 25px;
-      margin-bottom: auto;
-      font-size: 14px;
-      font-weight: normal;
-      font-stretch: normal;
-      font-style: $chivo-font;
-      line-height: normal;
-      letter-spacing: normal;
-      text-align: right;
-    }
-  }
 }
 
-.preview-box {
-  height: auto !important;
-  width: 100% !important;
+.notice-container {
+  height: 100%;
+
+  color: $primary-1;
+  margin-top: 20px;
+  margin-bottom: auto;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: $chivo-font;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: right;
 }
 
 .preview-container {
