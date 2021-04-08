@@ -47,10 +47,7 @@ export class ThemePreviewAndColorsComponent extends React.PureComponent<
                   <ThemeColors />
                 </Col>
                 <Col xs={9}>
-                  <PreviewComponent
-                    instanceData={instance.data!}
-                    currentPreview="dashboard"
-                  />
+                  <PreviewComponent instanceData={instance.data!} />
                 </Col>
               </Row>
             </Container>
