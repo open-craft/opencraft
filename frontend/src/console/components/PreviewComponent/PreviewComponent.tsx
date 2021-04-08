@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { HomePagePreview } from '../HomePagePreview';
-import { InstanceSettingsModel } from '../../models';
-import './styles.scss';
+import { HomePagePreview } from 'console/components/HomePagePreview';
+import { InstanceSettingsModel } from 'console/models';
 import { CourseOutlinePreview } from 'newConsole/components';
+import './styles.scss';
 
 interface PreviewComponentProps {
   children?: React.ReactNode;
@@ -15,7 +15,7 @@ export const PreviewComponent: React.FC<PreviewComponentProps> = (
 ) => {
   const { instanceData, currentPreview } = props;
 
-  switch(currentPreview) {
+  switch (currentPreview) {
     case 'dasboard':
       return (
         <div className="theme-preview">
@@ -23,14 +23,8 @@ export const PreviewComponent: React.FC<PreviewComponentProps> = (
         </div>
       );
     case 'courseoutline':
-      return (
-          <CourseOutlinePreview />
-      );
+      return <CourseOutlinePreview />;
     default:
-      return (
-          <HomePagePreview instanceData={instanceData} />
-      );
+      return <HomePagePreview instanceData={instanceData} />;
   }
-
-
 };

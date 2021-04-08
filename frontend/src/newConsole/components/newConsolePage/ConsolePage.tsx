@@ -1,8 +1,6 @@
 import * as React from 'react';
-import { RedeploymentToolbar, ThemePreview} from 'console/components';
-import {
-  CustomizationSideMenu,
-} from 'newConsole/components';
+import { RedeploymentToolbar, ThemePreview } from 'console/components';
+import { CustomizationSideMenu } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
 import { OCIM_API_BASE } from 'global/constants';
 import { Row, Col, Container, Button } from 'react-bootstrap';
@@ -135,11 +133,11 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
               {renderBackButton(this.props.goBack!)}
               {innerContent}
             </Col>
-            { !this.props.contentLoading &&
-              (<Col md="9" className="pr-0">
-                <ThemePreview/>
-              </Col>)
-            }
+            {!this.props.contentLoading && (
+              <Col md="9" className="pr-0">
+                <ThemePreview />
+              </Col>
+            )}
           </Row>
         );
       }

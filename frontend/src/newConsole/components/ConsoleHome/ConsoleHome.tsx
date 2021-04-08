@@ -1,7 +1,5 @@
 import * as React from 'react';
-import {
-  ConsolePage,
-} from 'newConsole/components';
+import { ConsolePage } from 'newConsole/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
@@ -20,8 +18,9 @@ export class ConsoleHomeComponent extends React.PureComponent<Props, State> {
     return (
       <ConsolePage
         contentLoading={this.props.loading}
-        showSideBarEditComponent={false}>
-        <ThemePreview/>
+        showSideBarEditComponent={false}
+      >
+        <ThemePreview />
       </ConsolePage>
     );
   }
