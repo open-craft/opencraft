@@ -76,6 +76,12 @@ class Command(BaseCommand):
             required=True
         )
         parser.add_argument(
+            '--users',
+            '-u',
+            action='store_true',
+            help='Gather active user statistics for all instances',
+        )
+        parser.add_argument(
             '--start-date',
             default=(
                 datetime.utcnow().date() - timedelta(days=self.DEFAULT_NUM_DAYS)
@@ -131,7 +137,10 @@ class Command(BaseCommand):
             ))
             sys.exit(1)
 
-        self.collect_instance_statistics(out, domains, start_date, end_date)
+        if options['users']:
+            self.collect_active_users(out, domains, start_date, end_date)
+        else:
+            self.collect_instance_statistics(out, domains, start_date, end_date)
 
     def get_instances_from_domain_names(self, domain_names):
         """ Get an instance object for a given domain name """
@@ -275,6 +284,38 @@ class Command(BaseCommand):
             username=settings.INSTANCE_LOGS_SERVER_SSH_USERNAME,
             logger_=log_line,
         )
+
+    def collect_active_users(
+            self,
+            out,
+            domain_names,
+            start_date,
+            end_date
+    ):
+        """Generate the active user statistics CSV."""
+        instances = self.get_instances_from_domain_names(domain_names)
+
+        query = 'SELECT COUNT(*) FROM auth_user where last_login between "{}" and "{}"'.format(start_date, end_date)
+
+        csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
+        csv_writer.writerow([
+                'Fully Qualified Domain Name',
+                'Active Users'])
+
+        for instance in instances:
+            cursor = instance.get_mysql_cursor_for_db('edxapp')
+            if cursor is not None:
+                res = cursor.execute(query)
+                if res == 1:
+                    f = cursor.fetchone()
+                    user_count = f[0]
+                    csv_writer.writerow([instance.domain, user_count])
+                else:
+                    self.stderr.write("Error running query")
+
+                cursor.close()
+            else:
+                self.stderr.write("Could not connect to the database of instance {}".format(instance.domain))
 
     def collect_instance_statistics(
             self,
