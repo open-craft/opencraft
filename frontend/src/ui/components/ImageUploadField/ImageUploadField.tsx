@@ -112,6 +112,20 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
       >
         <div className="button-contents">{buttonContents()}</div>
       </Button>
+      {props.innerPreview && (
+        <Button
+          variant="link"
+          color="link"
+          size="sm"
+          onClick={handleShow}
+          disabled={props.loading}
+          className="link-button"
+        >
+          <p>
+            <WrappedMessage messages={messages} id="changeLink" />
+          </p>
+        </Button>
+      )}
       {props.parentMessages && props.recommendationTextId && (
         <p>
           <WrappedMessage
