@@ -127,3 +127,86 @@ def send_trial_instances_report(recipients=settings.TRIAL_INSTANCES_REPORT_RECIP
     email.attach_file(csv_filename)
 
     return email.send()
+
+# Run on the 1st of every month
+@db_periodic_task(
+    crontab(
+        minute=TRIAL_INSTANCES_REPORT_SCHEDULE_MINUTE,
+        hour=TRIAL_INSTANCES_REPORT_SCHEDULE_HOUR,
+        day=TRIAL_INSTANCES_REPORT_SCHEDULE_DAY,
+        month=TRIAL_INSTANCES_REPORT_SCHEDULE_MONTH,
+        day_of_week=TRIAL_INSTANCES_REPORT_SCHEDULE_DAY_OF_WEEK
+    )
+)
+def send_instances_active_users_report(recipients=settings.TRIAL_INSTANCES_REPORT_RECIPIENTS):
+    """
+    Generate and send a report for all instances the past month
+
+    This task runs on the first of every month at 2AM
+    """
+
+    if not recipients:
+        logger.warning('No recipients listed for Active Instances Report. It will not be generated.')
+        return True
+
+    # Start with the beginning of this month
+    beginning_of_this_month = datetime.utcnow().date().replace(day=1)
+
+    # Get last month by subtracting one day from the beginning of
+    # this month to get the last day of last month
+    # Finally, replace the day with 1, to get the first day of last month
+    end_of_last_month = (beginning_of_this_month - timedelta(days=1))
+    beginning_of_last_month = end_of_last_month.replace(day=1)
+
+    # Get all instances whose InstanceReference has an active OpenEdXAppServer
+    instances = OpenEdXInstance.objects.filter(
+        ref_set__openedxappserver_set___is_active=True
+    )
+    domains = [
+        instance.external_lms_domain or instance.internal_lms_domain for instance in instances
+    ]
+    csv_filename = '/tmp/active_instances_report.csv'
+
+    email_subject = "{month_and_year} Active Users for Instances".format(
+        month_and_year=end_of_last_month.strftime("%B %Y")
+    )
+
+    try:
+        call_command(
+            'instance_statistics_csv',
+            out=csv_filename,
+            users=True,
+            domains=','.join(domains),
+            start_date=beginning_of_last_month.strftime("%Y-%m-%d"),
+            end_date=end_of_last_month.strftime("%Y-%m-%d")
+        )
+    except SystemExit:
+        # The command exited prematurely. Send failure email to recipients
+        logger.error('`instance_statistics_csv` command failed. Sending notification email')
+        email_subject += ' Failure'
+        email = EmailMessage(
+            email_subject,
+            'Unable to generate a Active Instances Report due to failure of `instance_statistics_csv` command',
+            settings.DEFAULT_FROM_EMAIL,
+            recipients
+        )
+        email.send()
+        return False
+
+    text_message = (
+        'Please find attached a CSV with the active user statistics for '
+        '{month_and_year} for all instances'.format(
+            month_and_year=end_of_last_month.strftime("%B %Y")
+        )
+    )
+
+    email = EmailMessage(
+        email_subject,
+        text_message,
+        settings.DEFAULT_FROM_EMAIL,
+        recipients
+    )
+
+    email.attach_file(csv_filename)
+
+    return email.send()
