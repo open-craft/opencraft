@@ -299,8 +299,8 @@ class Command(BaseCommand):
 
         csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
         csv_writer.writerow([
-                'Fully Qualified Domain Name',
-                'Active Users'])
+            'Fully Qualified Domain Name',
+            'Active Users'])
 
         for instance in instances:
             cursor = instance.get_mysql_cursor_for_db('edxapp')

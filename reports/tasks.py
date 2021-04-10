@@ -128,6 +128,7 @@ def send_trial_instances_report(recipients=settings.TRIAL_INSTANCES_REPORT_RECIP
 
     return email.send()
 
+
 # Run on the 1st of every month
 @db_periodic_task(
     crontab(
