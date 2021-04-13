@@ -43,10 +43,7 @@ export class ThemeFooterSideBarComponent extends React.PureComponent<
     }
 
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         {themeData && themeData.version === 1 && (
           <div className="footer-settings">
             <ConsolePageCustomizationContainer>

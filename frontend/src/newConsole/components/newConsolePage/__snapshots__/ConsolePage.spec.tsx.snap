@@ -63,22 +63,32 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
           <div
             className="p-0 m-0 pl-4 col-md-3"
           >
-            <button
-              className="back-button btn btn-link btn-sm"
-              disabled={false}
-              onClick={[Function]}
-              type="button"
+            <div
+              className="ml-auto nav"
+              onKeyDown={[Function]}
             >
-              <span>
-                <i
-                  aria-hidden="true"
-                  className="fa fa-angle-left sm"
-                />
-              </span>
-              <span>
-                Back
-              </span>
-            </button>
+              <div
+                className="nav-item"
+              >
+                <a
+                  className="nav-link"
+                  href="/console"
+                  onClick={[Function]}
+                >
+                  <span>
+                    <i
+                      aria-hidden="true"
+                      className="fa fa-angle-left sm"
+                    />
+                  </span>
+                  <span
+                    className="back-button"
+                  >
+                    Back
+                  </span>
+                </a>
+              </div>
+            </div>
             <div
               className="customization-form"
             >

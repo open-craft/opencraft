@@ -83,18 +83,15 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
     const renderBackButton = () => {
       return (
         <Nav className="ml-auto">
-         <NavItem>
-          <Link
-            className="nav-link"
-            to={ROUTES.Console.HOME}
-          >
-          <span>
-            <i className="fa fa-angle-left sm" aria-hidden="true" />
-          </span>
-          <span className="back-button">
-            <WrappedMessage messages={messages} id="back" />
-          </span>
-          </Link>
+          <NavItem>
+            <Link className="nav-link" to={ROUTES.Console.HOME}>
+              <span>
+                <i className="fa fa-angle-left sm" aria-hidden="true" />
+              </span>
+              <span className="back-button">
+                <WrappedMessage messages={messages} id="back" />
+              </span>
+            </Link>
           </NavItem>
         </Nav>
       );

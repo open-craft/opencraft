@@ -37,10 +37,7 @@ class ButtonsCustomizationPage extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         <h1 className="edit-heading">
           <WrappedMessage messages={messages} id="buttons" />
         </h1>

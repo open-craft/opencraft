@@ -19,10 +19,7 @@ interface Props extends StateProps {}
 class ColorsComponent extends React.PureComponent<Props, State> {
   public render() {
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         <h1 className="edit-heading">
           <WrappedMessage messages={messages} id="colors" />
         </h1>
