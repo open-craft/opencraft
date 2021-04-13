@@ -2,8 +2,9 @@ import * as React from 'react';
 import { RedeploymentToolbar, ThemePreview } from 'console/components';
 import { CustomizationSideMenu } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
-import { OCIM_API_BASE } from 'global/constants';
-import { Row, Col, Container, Button } from 'react-bootstrap';
+import { OCIM_API_BASE, ROUTES } from 'global/constants';
+import { Link } from 'react-router-dom';
+import { Row, Col, Container, Nav, NavItem } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -30,7 +31,6 @@ interface Props extends StateProps, ActionProps {
   contentLoading: boolean;
   showSidebar: boolean;
   showSideBarEditComponent: boolean;
-  goBack?: Function;
 }
 
 interface CustomizationContainerProps {
@@ -80,23 +80,23 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
   }
 
   public render() {
-    const renderBackButton = (onClickFunction: Function) => {
+    const renderBackButton = () => {
       return (
-        <Button
-          onClick={() => {
-            onClickFunction();
-          }}
-          size="sm"
-          variant="link"
-          className="back-button"
-        >
+        <Nav className="ml-auto">
+         <NavItem>
+          <Link
+            className="nav-link"
+            to={ROUTES.Console.HOME}
+          >
           <span>
             <i className="fa fa-angle-left sm" aria-hidden="true" />
           </span>
-          <span>
+          <span className="back-button">
             <WrappedMessage messages={messages} id="back" />
           </span>
-        </Button>
+          </Link>
+          </NavItem>
+        </Nav>
       );
     };
 
@@ -130,7 +130,7 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
         innerContent = (
           <Row className="justify-content-center m-0">
             <Col md="3" className="p-0 m-0 pl-4">
-              {renderBackButton(this.props.goBack!)}
+              {renderBackButton()}
               {innerContent}
             </Col>
             {!this.props.contentLoading && (

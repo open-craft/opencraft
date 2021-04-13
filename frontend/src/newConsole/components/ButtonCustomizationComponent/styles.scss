@@ -1,3 +1,5 @@
+@import "~styles/theme";
+
 .button-customization-container {
   margin-bottom: 3rem;
 }
@@ -5,7 +7,7 @@
 .button-customization-name {
   width: 100%;
   height: 29px;
-  font-family: Chivo;
+  font-family: $playfair-font;
   font-size: 24px;
   font-weight: normal;
   font-stretch: normal;

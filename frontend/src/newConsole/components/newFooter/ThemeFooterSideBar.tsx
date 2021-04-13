@@ -20,11 +20,7 @@ interface ActionProps {
 
 interface StateProps extends InstancesModel {}
 
-interface Props extends StateProps, ActionProps {
-  history: {
-    goBack: Function;
-  };
-}
+interface Props extends StateProps, ActionProps {}
 
 export class ThemeFooterSideBarComponent extends React.PureComponent<
   Props,
@@ -49,7 +45,6 @@ export class ThemeFooterSideBarComponent extends React.PureComponent<
     return (
       <ConsolePage
         contentLoading={this.props.loading}
-        goBack={this.props.history.goBack}
         showSideBarEditComponent
       >
         {themeData && themeData.version === 1 && (
