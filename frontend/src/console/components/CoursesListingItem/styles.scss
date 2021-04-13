@@ -2,8 +2,8 @@
   border: 1px solid #bebebe;
   border-bottom: 1.5px solid #126f9a;
   flex-direction: column;
-  height: 140px;
-  max-width: 100px;
+  height: 211px;
+  max-width: 159px;
   margin: 10px 10px 10px 10px;
   .col {
     height: auto;
@@ -23,7 +23,7 @@
   }
 
   .organization, .course-number {
-    font-size: 6px;
+    font-size: 16px;
   }
 
   .course-name {
@@ -33,7 +33,7 @@
       padding: 0;
       color: #0075b4;
       span {
-        font-size: 7px;
+        font-size: 14px;
       }
     }
   }
@@ -43,6 +43,6 @@
     flex-grow: 1;
     display: inline-flex;
     align-items: flex-end;
-    font-size: 6px;
+    font-size: 16px;
   }
 }
