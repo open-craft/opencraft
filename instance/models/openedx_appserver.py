@@ -395,7 +395,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/enable_bulk_emails'),
             requirements_path='requirements.txt',
             playbook_path='enable_bulk_emails.yml',
-            variables='{}',
+            variables=self.configuration_settings,
         )
 
     def get_playbooks(self):
