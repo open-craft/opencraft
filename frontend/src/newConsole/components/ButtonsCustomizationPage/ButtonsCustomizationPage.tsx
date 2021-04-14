@@ -17,11 +17,7 @@ interface ActionProps {
   updateThemeFieldValue: Function;
 }
 interface StateProps extends InstancesModel {}
-interface Props extends StateProps, ActionProps {
-  history: {
-    goBack: Function;
-  };
-}
+interface Props extends StateProps, ActionProps {}
 
 class ButtonsCustomizationPage extends React.PureComponent<Props, State> {
   private onChangeColor = (fieldName: string, newColor: string) => {
@@ -41,11 +37,7 @@ class ButtonsCustomizationPage extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        goBack={this.props.history.goBack}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         <h1 className="edit-heading">
           <WrappedMessage messages={messages} id="buttons" />
         </h1>

@@ -14,20 +14,12 @@ interface ActionProps {
   updateThemeFieldValue: Function;
 }
 interface StateProps extends InstancesModel {}
-interface Props extends StateProps {
-  history: {
-    goBack: Function;
-  };
-}
+interface Props extends StateProps {}
 
 class ColorsComponent extends React.PureComponent<Props, State> {
   public render() {
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        goBack={this.props.history.goBack}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         <h1 className="edit-heading">
           <WrappedMessage messages={messages} id="colors" />
         </h1>

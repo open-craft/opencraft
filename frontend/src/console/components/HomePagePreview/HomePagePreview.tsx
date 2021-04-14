@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 import {
   NavigationMenu,
   FooterPreview,
@@ -20,11 +20,9 @@ export const HomePagePreview: React.FC<HomePagePreviewProps> = (
   const themeData = instanceData.draftThemeConfig!;
   return (
     <>
-      <Row className="theme-preview-navigation">
-        <Col className="theme-preview-navigation">
-          <NavigationMenu instanceData={instanceData} themeData={themeData} />
-        </Col>
-      </Row>
+      <Container fluid>
+        <NavigationMenu instanceData={instanceData} themeData={themeData} />
+      </Container>
       <div className="theme-home">
         <Row className="theme-hero-container">
           <Col>
