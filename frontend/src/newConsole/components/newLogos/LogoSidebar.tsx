@@ -43,10 +43,7 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ConsolePage
-        contentLoading={this.props.loading}
-        showSideBarEditComponent
-      >
+      <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
         <div className="custom-logo-pages">
           <ConsolePageCustomizationContainer>
             <div className="sidebar-item">
