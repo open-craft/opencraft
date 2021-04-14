@@ -17,11 +17,7 @@ interface ActionProps {
   updateImages: Function;
 }
 interface StateProps extends InstancesModel {}
-interface Props extends StateProps, ActionProps {
-  history: {
-    goBack: Function;
-  };
-}
+interface Props extends StateProps, ActionProps {}
 
 export class LogosSideBarComponent extends React.PureComponent<Props, State> {
   updateImage = (imageName: string, image: File) => {
@@ -49,7 +45,6 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
     return (
       <ConsolePage
         contentLoading={this.props.loading}
-        goBack={this.props.history.goBack}
         showSideBarEditComponent
       >
         <div className="custom-logo-pages">
