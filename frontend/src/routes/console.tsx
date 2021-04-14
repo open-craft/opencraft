@@ -4,7 +4,6 @@ import { Switch } from 'react-router';
 import {
   Hero,
   InstanceSettings,
-  Logos,
   NoticeBoard,
   CustomPages,
   CoursesManage
@@ -14,7 +13,8 @@ import {
   ConsoleHome,
   Colors,
   ThemeFooterSideBar,
-  ThemeNavigationPage
+  ThemeNavigationPage,
+  LogosSideBar
 } from 'newConsole/components';
 import { PrivateRoute } from 'auth/components';
 import { ROUTES } from '../global/constants';
@@ -38,7 +38,6 @@ export const ConsoleRoutes = () => {
         path={ROUTES.Console.THEME_BUTTONS}
         component={ButtonsCustomization}
       />
-      <PrivateRoute path={ROUTES.Console.LOGOS} component={Logos} />
       <PrivateRoute
         path={ROUTES.Console.THEME_NAVIGATION}
         component={ThemeNavigationPage}
@@ -53,6 +52,11 @@ export const ConsoleRoutes = () => {
         exact
         path={ROUTES.Console.THEME_FOOTER}
         component={ThemeFooterSideBar}
+      />
+      <PrivateRoute
+        exact
+        path={ROUTES.Console.LOGOS}
+        component={LogosSideBar}
       />
       <PrivateRoute
         exact

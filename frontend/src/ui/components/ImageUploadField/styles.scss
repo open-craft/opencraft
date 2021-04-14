@@ -1,7 +1,15 @@
 @import '~styles/theme';
 
 .image-upload-field {
-    padding-top: 20px;
+    padding-top: 0px;
+
+    h4.upload-field-header {
+        font-family: PlayfairDisplay;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 3px;
+        color: $secondary-1
+    }
 
     h4 {
         font-family: $chivo-font;
@@ -29,11 +37,10 @@
         }
     }
     .alert {
-        padding: 0px;
-        min-height: 50px;
-        overflow:auto;
-
+        height: 100%;
+        overflow: visible;
         p {
+            height: auto;
             color: white;
             font-weight: bold;
         }
@@ -66,19 +73,24 @@
     }
 }
 
-.uploadButton {
+.upload-button {
     border-style: dashed;
     text-transform: none;
     display: block;
     width:100%;
+    height: 100%;
     margin-bottom: 5px;
 
-    .buttonContents {
-        display: flex;
+    .button-contents {
         margin-left: -15px;
         margin-top: 1px;
 
-        .uploadIcon {
+        div {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .upload-icon {
             height: 25px;
             width: 25px;
         }
@@ -86,15 +98,19 @@
             margin-left: 10px;
             margin-top: 1px;
         }
+        img {
+            max-height: 48px;
+            max-width: 48px;
+        }
     }
 }
 
-.componentHeader {
+.component-header {
     margin-bottom: 10px;
     display: flex;
     i {
         color: $secondary-1;
-        margin-top: 3px;
+        margin-top: 5px;
         margin-left: 9.5px;
     }
 }
@@ -105,6 +121,7 @@
         background-color: $secondary-1;
         text-align:justify;
         max-width: 300px;
+        padding-bottom: 1px;
     }
 
     .arrow {
@@ -122,5 +139,18 @@
 
     img {
         width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+.link-button {
+    p {
+        font-family: $chivo-font;
+        font-size: 14px;
+        letter-spacing: 0.14px;
+        color: #0074B4;
+        margin-bottom: 5px;
+        margin-left: -32px;
+        text-transform: none;
     }
 }

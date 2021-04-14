@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Console Page Correctly renders LogosSideBar 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
+  >
+    <div
+      className="d-flex flex-row justify-content-between w-100"
+    >
+      <span
+        className="status-pill badge badge-pill badge-primary"
+        style={
+          Object {
+            "backgroundColor": "grey",
+          }
+        }
+      >
+        <div
+          className="text"
+        >
+          Loading
+        </div>
+        <i
+          className="fas fa-question-circle fa-lg"
+          onBlur={[Function]}
+          onFocus={[Function]}
+          onMouseOut={[Function]}
+          onMouseOver={[Function]}
+        />
+      </span>
+      <button
+        className="float-right btn-disabled btn btn-primary btn-lg"
+        disabled={true}
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="button-text-layer"
+        >
+          Publish changes
+        </div>
+      </button>
+    </div>
+    <div
+      className="toast-container"
+    />
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="pr-4 pl-0 container-fluid"
+      >
+        <div
+          className="justify-content-center m-0 row"
+        >
+          <div
+            className="p-0 m-0 pl-4 col-md-3"
+          >
+            <div
+              className="ml-auto nav"
+              onKeyDown={[Function]}
+            >
+              <div
+                className="nav-item"
+              >
+                <a
+                  className="nav-link"
+                  href="/console"
+                  onClick={[Function]}
+                >
+                  <span>
+                    <i
+                      aria-hidden="true"
+                      className="fa fa-angle-left sm"
+                    />
+                  </span>
+                  <span
+                    className="back-button"
+                  >
+                    Back
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div
+              className="customization-form"
+            >
+              <div
+                className="loading"
+              >
+                <i
+                  className="fas fa-2x fa-sync-alt fa-spin"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
