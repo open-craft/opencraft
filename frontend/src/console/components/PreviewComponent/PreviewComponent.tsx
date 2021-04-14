@@ -16,7 +16,7 @@ export const PreviewComponent: React.FC<PreviewComponentProps> = (
   const { instanceData, currentPreview } = props;
 
   switch (currentPreview) {
-    case 'dasboard':
+    case 'dashboard':
       return (
         <div className="theme-preview">
           <HomePagePreview instanceData={instanceData} />
