@@ -369,7 +369,7 @@ class ResetPasswordConfirmTestCase(BrowserLiveServerTestCase):
         password_field.send_keys(self.strong_password)
         submit_btn.click()
         self.wait.until(
-            EC.url_changes((By.CLASS_NAME, self.login_page_url))
+            EC.url_changes(self.login_page_url)
         )
 
         self.assertEqual(self.browser.current_url, self.console_home_url)
