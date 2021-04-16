@@ -71,7 +71,7 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
                 className="nav-item"
               >
                 <a
-                  className="nav-link"
+                  className="nav-link px-0"
                   href="/console"
                   onClick={[Function]}
                 >

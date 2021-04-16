@@ -43,13 +43,13 @@ export class ThemePreviewComponent extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Row>
-        <Col md="4" className="pr-0">
+      <Row className="m-0">
+        <Col md="4" className="p-0">
           <div className="preview-header d-flex justify-content-start">
             <PreviewDropdown handleChange={this.changePreview} />
           </div>
         </Col>
-        <Col md="7" className="pr-0 align-items-start">
+        <Col md="8" className="p-0 align-items-start">
           <div className="notice-container d-flex justify-content-end">
             <WrappedMessage messages={messages} id="previewNotice" />
           </div>

@@ -5,7 +5,17 @@ import {Hero} from './Hero';
 
 describe('Hero customization page', function () {
   it('renders without crashing', () => {
-    const tree = setupComponentForTesting(<Hero/>).toJSON();
+    const tree = setupComponentForTesting(
+      <Hero/>,
+      {
+        console: {
+          activeInstance: {},
+          history: {
+            goBack: () => { }
+          }
+        }
+      }
+    ).toJSON();
     expect(tree).toMatchSnapshot();
   });
 
@@ -35,8 +45,11 @@ describe('Hero customization page', function () {
             id: 1,
             instanceName: "test",
             subdomain: "test"
-          }]
-        }
+          }],
+          history: {
+            goBack: () => { }
+          }
+        },
       }
     ).toJSON();
     expect(tree).toMatchSnapshot();
@@ -61,7 +74,10 @@ describe('Hero customization page', function () {
             id: 1,
             instanceName: "test",
             subdomain: "test"
-          }]
+          }],
+          history: {
+            goBack: () => { }
+          }
         }
       }
     ).toJSON();
@@ -95,7 +111,10 @@ describe('Hero customization page', function () {
               id: 1,
               instanceName: "test",
               subdomain: "test"
-            }]
+            }],
+            history: {
+              goBack: () => { }
+            }
           }
         }
       ).toJSON();
@@ -129,7 +148,10 @@ describe('Hero customization page', function () {
               id: 1,
               instanceName: "test",
               subdomain: "test"
-            }]
+            }],
+            history: {
+              goBack: () => { }
+            }
           }
         }
       ).toJSON();

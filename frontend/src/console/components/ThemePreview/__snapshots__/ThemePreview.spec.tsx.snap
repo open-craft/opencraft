@@ -2,10 +2,10 @@
 
 exports[`Theme preview page Render theme settings page when instance has no theme set up. 1`] = `
 <div
-  className="row"
+  className="m-0 row"
 >
   <div
-    className="pr-0 col-md-4"
+    className="p-0 col-md-4"
   >
     <div
       className="preview-header d-flex justify-content-start"
@@ -63,7 +63,7 @@ exports[`Theme preview page Render theme settings page when instance has no them
     </div>
   </div>
   <div
-    className="pr-0 align-items-start col-md-7"
+    className="p-0 align-items-start col-md-8"
   >
     <div
       className="notice-container d-flex justify-content-end"
@@ -72,17 +72,17 @@ exports[`Theme preview page Render theme settings page when instance has no them
     </div>
   </div>
   <div
-    className="preview-box card"
+    className="w-100 preview-box card"
   />
 </div>
 `;
 
 exports[`Theme preview page renders without crashing 1`] = `
 <div
-  className="row"
+  className="m-0 row"
 >
   <div
-    className="pr-0 col-md-4"
+    className="p-0 col-md-4"
   >
     <div
       className="preview-header d-flex justify-content-start"
@@ -140,7 +140,7 @@ exports[`Theme preview page renders without crashing 1`] = `
     </div>
   </div>
   <div
-    className="pr-0 align-items-start col-md-7"
+    className="p-0 align-items-start col-md-8"
   >
     <div
       className="notice-container d-flex justify-content-end"
@@ -149,7 +149,7 @@ exports[`Theme preview page renders without crashing 1`] = `
     </div>
   </div>
   <div
-    className="preview-box card"
+    className="w-100 preview-box card"
   />
 </div>
 `;

@@ -13,6 +13,25 @@
     color: $secondary-4;
   }
 
+  .text-input-container {
+    .form-label {
+      font-size: 20px !important;
+      font-family: $playfair-font !important;
+      font-weight: bold;
+    }
+  }
+
+  .image-upload-field {
+    padding-top: 0;
+    .componentHeader {
+      h4 {
+        font-size: 20px !important;
+        font-family: $playfair-font !important;
+        font-weight: bold;
+      }
+    }
+  }
+
   .content {
     padding-top: 20px;
 
@@ -40,7 +59,6 @@
       .row {
         display: flex;
         align-items: center;
-        padding: 0;
       }
     }
 
@@ -63,11 +81,6 @@
 
     .form-control {
       background-color: white;
-    }
-
-    .row {
-      margin-left: 0;
-      margin-right: 0;
     }
   }
 
