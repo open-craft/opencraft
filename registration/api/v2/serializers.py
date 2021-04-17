@@ -371,10 +371,11 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         Prevent users from registering with an external domain which was or currently in use.
         """
+        initial_domain = self.initial_data.get("external_domain")
         is_new_instance = self.instance is None
-        is_changed = not is_new_instance and self.instance.external_domain != self.initial_data.get("external_domain")
+        is_changed = not is_new_instance and self.instance.external_domain != initial_domain
 
-        if is_new_instance or is_changed:
+        if (is_new_instance or is_changed) and initial_domain is not None:
             validate_available_external_domain(value)
 
         return value
@@ -423,7 +424,8 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "hero_cover_image",
             "draft_static_content_overrides",
             "static_pages_enabled",
-            "is_email_verified"
+            "is_email_verified",
+            "dns_configuration_state"
         )
         read_only_fields = [
             "logo",
