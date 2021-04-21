@@ -460,7 +460,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         if self._is_openedx_release_in(['koa']):
             # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
-            template["FORUM_VERSION"] = "opencraft-release/koa.2a"
+            template["FORUM_VERSION"] = "opencraft-release/koa.3"
 
         return template
 
