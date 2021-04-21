@@ -497,7 +497,7 @@ pytz==2019.1
     #   oslo.serialization
     #   oslo.utils
     #   tempora
-pyyaml==5.1.2
+pyyaml==5.4.1
     # via
     #   -r requirements/base.in
     #   cliff

@@ -59,7 +59,7 @@ python-novaclient==14.1.0
 python-openstackclient==3.19.0
 python-swiftclient==3.7.0
 pytz==2019.1
-PyYAML<5.2,>=5.1.2
+PyYAML<5.5,>=5.4.1
 redis==3.2.1
 requests
 requests-file==1.4.3
