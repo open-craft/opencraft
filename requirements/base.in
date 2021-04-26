@@ -48,7 +48,7 @@ mysqlclient==1.4.2.post1
 openstacksdk==0.31.1
 os-client-config==1.32.0
 Pillow
-pip-tools
+pip-tools==5.5.0
 psycopg2-binary==2.8.3
 pyjwkest==1.4.0
 pymongo==3.8.0
@@ -59,7 +59,7 @@ python-novaclient==14.1.0
 python-openstackclient==3.19.0
 python-swiftclient==3.7.0
 pytz==2019.1
-PyYAML<5.2,>=5.1.2
+PyYAML<5.5,>=5.4.1
 redis==3.2.1
 requests
 requests-file==1.4.3

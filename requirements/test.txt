@@ -379,7 +379,7 @@ pep8-naming==0.4.1
     # via prospector
 pillow==8.1.2
     # via -r requirements/base.in
-pip-tools==5.1.2
+pip-tools==5.5.0
     # via -r requirements/base.in
 portend==2.6
     # via cherrypy
@@ -497,7 +497,7 @@ pytz==2019.1
     #   oslo.serialization
     #   oslo.utils
     #   tempora
-pyyaml==5.1.2
+pyyaml==5.4.1
     # via
     #   -r requirements/base.in
     #   cliff
@@ -585,7 +585,6 @@ six==1.14.0
     #   oslo.i18n
     #   oslo.utils
     #   packaging
-    #   pip-tools
     #   pyjwkest
     #   pyopenssl
     #   pyrsistent
