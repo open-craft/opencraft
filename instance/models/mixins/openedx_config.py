@@ -415,6 +415,16 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "FUNCTION": "retirement_lms_retire",
                 },
             ],
+
+            # Self-hosted OracleJDK settings
+            "USE_PRIVATE_ORACLEJDK": settings.USE_PRIVATE_ORACLEJDK,
+            "oraclejdk_s3": {
+                "region": settings.AWS_S3_ORACLEJDK_REGION,
+                "access_key": settings.AWS_S3_ORACLEJDK_ACCESS_KEY_ID,
+                "secret_key": settings.AWS_S3_ORACLEJDK_ACCESS_SECRET_KEY,
+                "bucket_name": settings.AWS_S3_ORACLEJDK_BUCKET,
+                "filename": settings.AWS_S3_ORACLEJDK_FILE,
+            }
         }
 
         if self.smtp_relay_settings:

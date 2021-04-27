@@ -956,3 +956,19 @@ MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', def
 # Batched updates are maximum 500 members at a time, as per
 # https://github.com/VingtCinq/python-mailchimp/blob/ad09dee/mailchimp3/entities/lists.py#L146
 MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)
+
+# Self hosted OracleJDK settings
+USE_PRIVATE_ORACLEJDK = env.bool("USE_PRIVATE_ORACLEJDK", False)
+
+# Must be set to access the Oracle JDK file when provisioning Appserver
+#
+# Minimum permissions required for this IAM user
+#
+# iam:AmazonS3ReadOnlyAccess
+#
+
+AWS_S3_ORACLEJDK_ACCESS_KEY_ID = env("AWS_S3_ORACLEJDK_ACCESS_KEY_ID", default="")
+AWS_S3_ORACLEJDK_ACCESS_SECRET_KEY = env("AWS_S3_ORACLEJDK_ACCESS_SECRET_KEY", default="")
+AWS_S3_ORACLEJDK_REGION = env("AWS_S3_ORACLEJDK_REGION", default="")
+AWS_S3_ORACLEJDK_BUCKET = env("AWS_S3_ORACLEJDK_BUCKET", default="")
+AWS_S3_ORACLEJDK_FILE = env("AWS_S3_ORACLEJDK_FILE", default="")
