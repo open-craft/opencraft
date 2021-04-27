@@ -86,6 +86,11 @@ def _provision_instance(sender, **kwargs):
             application.instance.deploy_simpletheme = True
             application.instance.save()
 
+        # Add static content overrides to the instance
+        if application.draft_static_content_overrides:
+            application.instance.static_content_overrides = application.draft_static_content_overrides
+            application.instance.save()
+
         # If using external domain, set it up
         if application.external_domain:
             application.instance.external_lms_domain = application.external_domain
