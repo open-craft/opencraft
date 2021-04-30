@@ -101,7 +101,7 @@ class WatchedFork(models.Model):
     openstack_server_base_image = JSONField(
         null=True,
         blank=True,
-        help_text='JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"}'
+        help_text='JSON openstack base image selector, e.g. {"name": "focal-20.04-unmodified"}'
                   ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
     )
     # This is equivalent to the DEFAULT_CONFIGURATION_REPO_URL .env variable

@@ -20,8 +20,29 @@ familiarize with Open edX, and can provide technical support if needed.
 
 All product documentation for Open edX can be found at https://docs.edx.org/.
 
-The "Pro & Teacher" hosting plan offers you a stable and powerful dedicated Open edX instance. If you would like to customize your site, or have access to great features like more data storage, guaranteed availability, paid courses, mobile apps or access to the Insights course analytics engine, please ask us about our institutional offering. Your questions are most welcome.
+The "Pro & Teacher" paid hosting plan offers you a stable and powerful
+dedicated Open edX instance. You might also be interested in our Institutional
+hosting plan. The institutional plan gives you access to features and services
+like...
 
+* Deeper theme customization
+* Custom software modifications and features
+* Integrations with external software
+* Instance scaling for higher traffic (>1000 users)
+* E-commerce service
+* Course certificates
+* edX Insights analytics
+* Single sign-on
+* Mobile apps
+* ...and more!
+
+
+Interested? Reply to this email to tell us more about your project,
+and we'll provide you with a quote!
+
+You can also read more about our hosting plans here:
+
+https://opencraft.com/hosting?mtm_campaign=ocim&mtm_source=instancereadyemail
 
 Happy teaching!
 

@@ -4,6 +4,7 @@
   border: 1px solid #c4c4c4;
   border-bottom: 1px solid #1a6ebb;
   padding-left: 10px;
+  padding-right: 10px;
 
   .col-md-1 {
     padding: 0;
@@ -38,5 +39,20 @@
 
   img {
     max-width: 100%;
+  }
+
+  .course-header {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: left;
+    justify-content: center;
+
+    .course-org {
+      font-size: 12px;
+    }
+    .course-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
   }
 }

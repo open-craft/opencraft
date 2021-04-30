@@ -2,7 +2,7 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="main-navigation-menu navigation-menu row"
+  className="d-flex felx-row main-navigation-menu navigation-menu row"
   style={
     Object {
       "background": undefined,
@@ -10,10 +10,10 @@ exports[`renders without crashing 1`] = `
   }
 >
   <div
-    className="logo col-md-1"
+    className="logo"
   />
   <div
-    className="col-md-1"
+    className="flex-grow-1 d-flex flex-row ml-4 mr-4"
   >
     <button
       className="customizable-link"
@@ -29,10 +29,6 @@ exports[`renders without crashing 1`] = `
     >
       Courses
     </button>
-  </div>
-  <div
-    className="col-md-3"
-  >
     <button
       className="customizable-link"
       onMouseEnter={[Function]}
@@ -48,9 +44,7 @@ exports[`renders without crashing 1`] = `
       Discover New
     </button>
   </div>
-  <div
-    className="col-md-7"
-  >
+  <div>
     <div
       className="navigation-menu navigation-submenu row"
     >

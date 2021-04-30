@@ -5,27 +5,31 @@ exports[`renders without crashing 1`] = `
   className="image-upload-field"
 >
   <div
-    className="componentHeader"
+    className="component-header"
   >
-    <h4 />
+    <h4
+      className="upload-field-header"
+    />
   </div>
   <button
-    className="uploadButton btn btn-outline-primary btn-lg"
+    className="upload-button btn btn-outline-primary btn-lg"
     disabled={false}
     onClick={[Function]}
     type="button"
   >
     <div
-      className="buttonContents"
+      className="button-contents"
     >
-      <img
-        alt="Upload icon"
-        className="uploadIcon"
-        src="uparrow.png"
-      />
-      <h4>
-        Upload file
-      </h4>
+      <div>
+        <img
+          alt="Upload icon"
+          className="upload-icon"
+          src="uparrow.png"
+        />
+        <h4>
+          Upload file
+        </h4>
+      </div>
     </div>
   </button>
   <h3>

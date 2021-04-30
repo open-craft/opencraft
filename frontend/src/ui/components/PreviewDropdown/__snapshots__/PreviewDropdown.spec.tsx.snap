@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Preview dropdown renders messages as options 1`] = `ReactWrapper {}`;
+
+exports[`Preview dropdown renders without crashing 1`] = `
+<div
+  className="dropdown-container d-flex flex-column align-items-center"
+>
+  <a
+    className="nav-link"
+    href="#"
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    role="button"
+  >
+    Dashboard
+    <i
+      className="fas xs fa-chevron-down"
+    />
+  </a>
+  <span
+    className="fill-line"
+  />
+  <div
+    className="dropdown-items align-items-center"
+  >
+    <div
+      className="content d-flex flex-column"
+    >
+      <div
+        aria-expanded={null}
+        className="collapse"
+      >
+        <button
+          className="d-inline-block"
+          onClick={[Function]}
+          type="button"
+        >
+          <p>
+            Dashboard
+          </p>
+        </button>
+        <button
+          className="d-inline-block"
+          onClick={[Function]}
+          type="button"
+        >
+          <p>
+            Course Outline
+          </p>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

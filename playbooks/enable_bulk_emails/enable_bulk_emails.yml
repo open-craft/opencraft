@@ -5,6 +5,9 @@
 
 - hosts: all
   become: yes
+  vars:
+    ENABLE_BULK_EMAILS: True
   tasks:
     - name: Create BulkEmailFlag object with enabled field set to true.
-      shell: "echo 'from bulk_email.models import BulkEmailFlag; BulkEmailFlag.objects.create(enabled=True, require_course_email_auth=False)' | /edx/bin/edxapp-shell-lms"
+      shell: "echo 'from lms.djangoapps.bulk_email.models import BulkEmailFlag; BulkEmailFlag.objects.create(enabled=True, require_course_email_auth=False)' | /edx/bin/edxapp-shell-lms"
+      when: ENABLE_BULK_EMAILS

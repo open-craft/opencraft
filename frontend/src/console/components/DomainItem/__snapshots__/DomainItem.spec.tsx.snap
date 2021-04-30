@@ -1,0 +1,132 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly for subdomains 1`] = `
+<ul
+  className="domain-list"
+>
+  <li
+    className="list-item color-green"
+  >
+    <div
+      className="d-flex flex-wrap justify-content-between"
+    >
+      <div>
+        <div>
+          test.opencraft.hosting
+        </div>
+        <div
+          className="domain-type"
+        >
+          Default Subdomain
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`renders correctly for unverified external domains 1`] = `
+<ul
+  className="domain-list"
+>
+  <li
+    className="list-item "
+  >
+    <div
+      className="d-flex flex-wrap justify-content-between"
+    >
+      <div>
+        <div>
+          example.com
+        </div>
+        <div
+          className="domain-type"
+        >
+          Primary Domain
+        </div>
+      </div>
+      <button
+        className="d-flex flex-column justify-content-center align-items-center check-dns-btn"
+        onClick={[Function]}
+        type="button"
+      >
+        <div
+          className="d-flex flex-row"
+        >
+          <div
+            className="dns-config-icon"
+          >
+            <i
+              className="fas fa-exclamation-triangle"
+            />
+          </div>
+          <div
+            className="dns-config"
+          >
+            Check DNS Configuration
+          </div>
+        </div>
+      </button>
+      <div
+        className="d-flex flex-column align-items-center justify-content-center dropdown"
+        onKeyDown={[Function]}
+      >
+        <button
+          className="options-dropdown-toggle d-flex flex-row"
+          onClick={[Function]}
+          type="button"
+        >
+          <span>
+            Options
+          </span>
+          <i
+            className="dropdown-toggle-caret fas fa-angle-down"
+          />
+        </button>
+      </div>
+    </div>
+  </li>
+</ul>
+`;
+
+exports[`renders correctly for verified external domains 1`] = `
+<ul
+  className="domain-list"
+>
+  <li
+    className="list-item color-green"
+  >
+    <div
+      className="d-flex flex-wrap justify-content-between"
+    >
+      <div>
+        <div>
+          example.com
+        </div>
+        <div
+          className="domain-type"
+        >
+          Primary Domain
+        </div>
+      </div>
+      <div
+        className="d-flex flex-column align-items-center justify-content-center dropdown"
+        onKeyDown={[Function]}
+      >
+        <button
+          className="options-dropdown-toggle d-flex flex-row"
+          onClick={[Function]}
+          type="button"
+        >
+          <span>
+            Options
+          </span>
+          <i
+            className="dropdown-toggle-caret fas fa-angle-down"
+          />
+        </button>
+      </div>
+    </div>
+  </li>
+</ul>
+`;

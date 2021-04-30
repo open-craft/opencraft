@@ -68,6 +68,9 @@ target/
 # PyCharm
 .idea/
 
+# VSCode
+.vscode/
+
 # Local configuration
 .env
 .env.integration
@@ -107,3 +110,4 @@ media/
 
 # Generated scripts
 bin/archived_cleanup.sh
+

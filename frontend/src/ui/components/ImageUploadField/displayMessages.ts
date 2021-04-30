@@ -10,6 +10,10 @@ const messages = {
   cancel: {
     defaultMessage: 'Cancel',
     description: ''
+  },
+  changeLink: {
+    defaultMessage: 'Change file',
+    description: ''
   }
 };
 

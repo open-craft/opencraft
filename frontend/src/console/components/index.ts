@@ -6,7 +6,7 @@ export * from './RedeploymentToolbar';
 
 export * from './CustomizationSideMenu';
 
-export * from './ThemePreviewAndColors';
+export * from './ThemePreview';
 
 export * from './Logos';
 
@@ -24,8 +24,6 @@ export * from './NavigationMenu';
 
 export * from './CustomizableLink';
 
-export * from './ThemeFooter';
-
 export * from './FooterPreview';
 
 export * from './Hero';
@@ -41,3 +39,13 @@ export * from './CoursesManage';
 export * from './ThemeColors';
 
 export * from './ButtonStyles';
+
+export * from './CourseOutlinePreview';
+
+export * from './CustomizableCourseTab';
+
+export * from './DomainSettings';
+
+export * from './DomainItem';
+
+export * from './AddDomainModalButton';

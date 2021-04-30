@@ -25,6 +25,22 @@
     }
   }
 
+  /** Scale course outline page to fit in the preview box **/
+  .theme-outline {
+    .customizable-button {
+      width: auto;
+      height: 18px;
+      font-size: 9px;
+    }
+    h2 {
+      font-size: 12px !important;
+    }
+    .form-control {
+      font-size: 9px;
+      height: 18px;
+    }
+  }
+
   .theme-home {
     .theme-hero-container {
       margin-top: 10px;

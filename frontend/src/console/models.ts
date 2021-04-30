@@ -2,7 +2,8 @@ import {
   OpenEdXInstanceDeploymentStatusStatusEnum,
   OpenEdXInstanceDeploymentStatusDeploymentTypeEnum,
   StaticContentOverrides,
-  ThemeSchema
+  ThemeSchema,
+  OpenEdXInstanceConfigUpdateDnsConfigurationStateEnum
 } from 'ocim-client';
 
 export interface InstanceSettingsModel {
@@ -20,6 +21,8 @@ export interface InstanceSettingsModel {
   logo?: string;
   favicon?: string;
   heroCoverImage: null | string;
+  externalDomain?: string;
+  dnsConfigurationState?: OpenEdXInstanceConfigUpdateDnsConfigurationStateEnum;
 }
 
 export interface DeploymentNotificationModel {

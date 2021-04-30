@@ -137,6 +137,9 @@ class AnsibleTestCase(TestCase):
             call_kwargs = mock_popen.mock_calls[0][2]
             self.assertIn('env', call_kwargs)
             self.assertEqual(call_kwargs['env']['TMPDIR'], '/tmp/tempdir')
+            self.assertEqual(call_kwargs['env']['ANSIBLE_STDOUT_CALLBACK'], 'prettify')
+            callbacks_dir = os.path.dirname(__file__).replace('/instance/tests', '/instance/ansible_callbacks')
+            self.assertEqual(call_kwargs['env']['ANSIBLE_CALLBACK_PLUGINS'], callbacks_dir)
 
     def test_render_command(self):
         """
