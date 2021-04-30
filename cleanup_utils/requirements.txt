@@ -5,5 +5,5 @@ django-environ==0.4.5
 mysqlclient==1.4.2.post1
 python-consul==1.1.0
 python-novaclient==14.1.0
-PyYAML==5.1.2
+PyYAML==5.4
 virtualenv==16.6.1
