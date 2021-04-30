@@ -1093,18 +1093,21 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             format='json'
         )
         self.assertEqual(response.status_code, 200)
-        expected_mktg_url_link_map = {
-            'CONTACT': 'contact',
-            'DONATE': 'donate',
-            'HONOR': 'honor',
-            'PRIVACY': 'privacy',
-            'TOS': 'tos',
-        }
         self.instance_config.refresh_from_db()
         # Check that static page about is disabled after API request
         self.assertEqual(self.instance_config.configuration_display_static_pages, {'about': False})
         # Check that about page doesn't exists for MKTG_URL_LINK_MAP config
-        self.assertEqual(self.instance_config.get_mktg_url_link(), expected_mktg_url_link_map)
+        self.instance_config.commit_changes_to_instance()
+        self.instance_config.refresh_from_db()
+        marketing_links = yaml.load(
+            self.instance_config.instance.marketing_links(),
+            Loader=yaml.SafeLoader
+        )
+
+        self.assertEqual(
+            marketing_links['EDXAPP_MKTG_URL_LINK_MAP'],
+            {'ABOUT': None}
+        )
 
     def test_disabling_all_static_pages(self):
         """
@@ -1119,7 +1122,6 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
             {"page_name": "tos", "enabled": False},
             {"page_name": "honor", "enabled": False},
             {"page_name": "privacy", "enabled": False},
-            {"page_name": "tos", "enabled": False},
         ]
 
         for payload in static_pages_payload:
@@ -1132,8 +1134,24 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
                 format='json'
             )
         self.instance_config.refresh_from_db()
+        self.instance_config.commit_changes_to_instance()
+
+        marketing_links = yaml.load(
+            self.instance_config.instance.marketing_links(),
+            Loader=yaml.SafeLoader
+        )
         # Check that all static pages are disabled after API request
-        self.assertEqual(self.instance_config.get_mktg_url_link(), {})
+        self.assertEqual(
+            marketing_links['EDXAPP_MKTG_URL_LINK_MAP'],
+            {
+                'ABOUT': None,
+                'CONTACT': None,
+                'DONATE': None,
+                'HONOR': None,
+                'PRIVACY': None,
+                'TOS': None,
+            }
+        )
 
     def test_disabling_static_pages_existing_instances(self):
         """
@@ -1144,39 +1162,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         # Check that static page about is disabled after API request
         self.assertEqual(self.instance_config.configuration_display_static_pages, None)
         # Check that about page doesn't exists for MKTG_URL_LINK_MAP config
-        self.assertEqual(
-            self.instance_config.get_mktg_url_link(),
-            {
-                "ABOUT": "about",
-                "CONTACT": "contact",
-                "DONATE": "donate",
-                "TOS": "tos",
-                "HONOR": "honor",
-                "PRIVACY": "privacy",
-            }
-        )
-
-    def test_instance_appserver_configuration_disabled_static_pages(self):
-        """
-        Test appserver ansible configuration variabled
-        """
-        self.client.force_login(self.user_with_instance)
-        self._setup_user_instance()
-        self.instance_config.commit_changes_to_instance()
-
-        appserver = self.instance_config.instance._create_owned_appserver()
-        configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
-
-        # This is the required custom pages
-        base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
-        # It is possible to enable/disable custom pages
-        custom_pages = ['ABOUT', 'CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
-
-        for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
-
-        # Test that BLOG static page is disabled
-        self.assertTrue('BLOG' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+        self.assertEqual(self.instance_config.get_disabled_mktg_links(), {})
 
     def test_instance_appserver_configuration_reflect_on_disabled_pages(self):
         """
@@ -1201,12 +1187,8 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         configuration_settings = yaml.load(appserver.configuration_settings, Loader=yaml.SafeLoader)
 
         # This page was disabled
-        self.assertTrue('ABOUT' not in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
-
-        base_custom_pages = ['FAQ', 'PRESS', 'SITEMAP.XML', 'COURSES', 'ROOT', 'WHAT_IS_VERIFIED_CERT']
-        custom_pages = ['CONTACT', 'DONATE', 'TOS', 'HONOR', 'PRIVACY']
-        for page in custom_pages + base_custom_pages:
-            self.assertTrue(page in configuration_settings['EDXAPP_LMS_ENV_EXTRA']['MKTG_URL_LINK_MAP'])
+        self.assertTrue('ABOUT' in configuration_settings['EDXAPP_MKTG_URL_LINK_MAP'])
+        self.assertFalse(configuration_settings['EDXAPP_MKTG_URL_LINK_MAP']['ABOUT'])
 
     def test_check_config_urls(self):
         """

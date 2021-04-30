@@ -163,7 +163,7 @@ class OpenEdXAppConfiguration(models.Model):
         null=True,
         blank=True,
         default=default_setting('OPENSTACK_SANDBOX_BASE_IMAGE'),
-        help_text='JSON openstack base image selector, e.g. {"name": "xenial-16.04-unmodified"}'
+        help_text='JSON openstack base image selector, e.g. {"name": "focal-20.04-unmodified"}'
                   ' Defaults to settings.OPENSTACK_SANDBOX_BASE_IMAGE on server creation.',
     )
     openstack_server_ssh_keyname = models.CharField(
@@ -279,12 +279,20 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         'configuration_storage_settings',
         'configuration_theme_settings',
         'configuration_secret_keys',
+        'configuration_marketing_links',
         # The extra settings should stay at the end of this list to allow manual overrides of all settings.
         'configuration_extra_settings',
     ]
 
     class Meta(AppServer.Meta):
         verbose_name = 'Open edX App Server'
+
+    @property
+    def configuration_marketing_links(self):
+        """
+        Get `EDXAPP_MKTG_URL_LINK_MAP` values.
+        """
+        return self.instance.marketing_links()
 
     def make_active(self, active=True):
         """
@@ -387,7 +395,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/enable_bulk_emails'),
             requirements_path='requirements.txt',
             playbook_path='enable_bulk_emails.yml',
-            variables='{}',
+            variables=self.configuration_settings,
         )
 
     def get_playbooks(self):

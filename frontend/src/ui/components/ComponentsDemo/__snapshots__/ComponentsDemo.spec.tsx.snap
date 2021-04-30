@@ -104,25 +104,29 @@ exports[`renders without crashing 1`] = `
                 DemoExampleColor
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  name="DemoExampleColor"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value="#000"
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "#000",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    name="DemoExampleColor"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value="#000"
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "#000",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >

@@ -3,9 +3,9 @@ import {
   FormControl,
   FormGroup,
   FormLabel,
-  Row,
   Tooltip,
-  OverlayTrigger
+  OverlayTrigger,
+  Row
 } from 'react-bootstrap';
 
 import { SketchPicker } from 'react-color';
@@ -95,22 +95,24 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
       <FormLabel>
         <WrappedMessage id={genericFieldName} messages={props.messages} />
       </FormLabel>
-      <Row>
-        <FormControl
-          className="input-field-color"
-          name={props.fieldName}
-          value={fieldValue()}
-          disabled={props.loading}
-          onClick={toggleColorPicker}
-          readOnly
-        />
+      <Row className="align-items-center">
+        <div className="d-flex align-items-center color-input-field">
+          <FormControl
+            className="input-field-color"
+            name={props.fieldName}
+            value={fieldValue()}
+            disabled={props.loading}
+            onClick={toggleColorPicker}
+            readOnly
+          />
 
-        <div
-          className="input-field-preview"
-          style={{
-            backgroundColor: props.initialValue
-          }}
-        />
+          <div
+            className="input-field-preview"
+            style={{
+              backgroundColor: props.initialValue
+            }}
+          />
+        </div>
 
         {tooltip ? (
           <OverlayTrigger placement="right" overlay={tooltip}>
@@ -120,7 +122,7 @@ export const ColorInputField: React.FC<ColorInputFieldProps> = (
           </OverlayTrigger>
         ) : (
           <button
-            className="reset-value padded"
+            className="reset-value padded flex-grow"
             type="button"
             onClick={resetColor}
           >

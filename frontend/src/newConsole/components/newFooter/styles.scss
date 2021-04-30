@@ -1,0 +1,28 @@
+@import "~styles/theme";
+
+.back-button {
+  span:not(:first-child) {
+    margin-left: 5.1px;
+    font-family: $chivo-font;
+    font-size: 16px;
+    text-transform: capitalize;
+  }
+}
+
+.footer-settings {
+
+  .customization-form{
+    color: transparent;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    margin-left: 0%;
+    text-align: left;
+    color: #0f1f24;
+    font-size: 28px;
+    font-family: $playfair-font;
+    font-weight: bold;
+  }
+}

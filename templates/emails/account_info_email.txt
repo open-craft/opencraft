@@ -2,11 +2,19 @@
 
 Welcome {{ user_name }}!
 
+Your Open edX instance is almost here!
+You should receive an email when it’s ready within the next 2 hours.
+
 Thank you for signing up with OpenCraft!
 We are very excited to have you onboard.
 
-Your instance is almost ready. You will receive another email when your instance
-is ready which should be in the next 2 hours.
+If you need anything, or have any questions or suggestions,
+don’t hesitate to reply to this email.
+
+And if you’re interested in how we at OpenCraft help you get the most
+out of Open edX, please visit:
+
+https://opencraft.com/about-us/?mtm_campaign=ocim&mtm_source=accountinfoemail
 
 Your account details are as follows:
 

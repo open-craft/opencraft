@@ -33,9 +33,16 @@ from django.conf import settings
 
 from instance.utils import poll_streams, create_temp_dir
 
+
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
+
+
+# Custom ansible plugins ######################################################
+
+ANSIBLE_CALLBACKS_DIR = os.path.join(os.path.dirname(__file__), 'ansible_callbacks')
+ANSIBLE_STDOUT_CALLBACK = 'prettify'
 
 
 # Functions ###################################################################
@@ -154,6 +161,10 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
         # Disable SSH host key checking by Ansible – since IP addresses are constantly reused,
         # changing host keys are expected.
         env['ANSIBLE_HOST_KEY_CHECKING'] = 'false'
+
+        # Use a custom output callback to make ansible logs more readable.
+        env['ANSIBLE_CALLBACK_PLUGINS'] = ANSIBLE_CALLBACKS_DIR
+        env['ANSIBLE_STDOUT_CALLBACK'] = ANSIBLE_STDOUT_CALLBACK
 
         yield subprocess.Popen(
             cmd,

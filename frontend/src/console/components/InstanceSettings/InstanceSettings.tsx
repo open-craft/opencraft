@@ -3,7 +3,7 @@ import './styles.scss';
 import {
   ConsolePage,
   ConsolePageCustomizationContainer
-} from 'console/components';
+} from 'newConsole/components';
 import { TextInputField } from 'ui/components';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';

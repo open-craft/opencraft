@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { InstanceSettingsModel } from 'console/models';
 import { ThemeSchema } from 'ocim-client';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Container, Row } from 'react-bootstrap';
 import { CollapseEditArea, ColorInputField } from 'ui/components';
 import { WrappedMessage } from 'utils/intl';
 import messages from './displayMessages';
@@ -44,9 +44,9 @@ export const ButtonStyles: React.FC<ButtonStylesProp> = (
                 <WrappedMessage messages={messages} id={category} />
               </p>
             </Row>
-            <Row className="color-picker-group">
+            <Row className="color-picker-group d-flex flex-row flex-wrap justify-content-between">
               {fields.map(field => (
-                <Col md={4} xs={12} key={field} className="color-picker-item">
+                <div key={field} className="color-picker-item">
                   <ColorInputField
                     key={field}
                     fieldName={field}
@@ -60,7 +60,7 @@ export const ButtonStyles: React.FC<ButtonStylesProp> = (
                     loading={loading.includes('draftThemeConfig')}
                     hideTooltip
                   />
-                </Col>
+                </div>
               ))}
             </Row>
           </div>

@@ -139,7 +139,45 @@ app.controller("OpenEdXAppServerDetails", ['$scope', '$state', '$stateParams', '
 // "instance.models.appserver | instance=60 (Instance),app_server=12 (AppServer 1) | "
 app.filter('stripLogMeta', function() {
     return function(input) {
-      return input.split(' | ').slice(2).join(' | ');
+        return input.split(' | ').slice(2).join(' | ');
+    };
+});
+
+// This custom filter pretty prints JSON structures from ansible output log.
+app.filter('prettifyJSON', function() {
+    return function(input) {
+        var result = input;
+        var trimmed = input.trim();
+        // Checks for common ansible output patterns that may contain JSON data.
+        var patterns = [
+            / => ({[\s\S]*})$/,            // task result as an object
+            / => \(item=({[\s\S]*})\)$/,   // item result as an object
+            / => \(item=(\[[\s\S]*\])\)$/  // item result as an array
+        ];
+        for (var i = 0; i < patterns.length; i++) {
+            var match = trimmed.match(patterns[i]);
+            if (match) {
+                try {
+                    var json = JSON.parse(match[1]);
+                    // stdout and stdout_lines contain the same data, except that stdout_lines is nicely
+                    // broken by newlines while stdout is much less readable. Remove stdout if both are present.
+                    if (json.hasOwnProperty('stdout') && json.hasOwnProperty('stdout_lines')) {
+                        delete json.stdout;
+                    }
+                    // Do the same for stderr/stderr_lines
+                    if (json.hasOwnProperty('stderr') && json.hasOwnProperty('stderr_lines')) {
+                        delete json.stderr;
+                    }
+                    var pretty_printed = JSON.stringify(json, null, 4);
+                    // Replace the matched portion with pretty-printed JSON.
+                    result = result.replace(match[1], pretty_printed);
+                    break;
+                } catch (err) {
+                    // ignore
+                }
+            }
+        }
+        return result;
     };
 });
 

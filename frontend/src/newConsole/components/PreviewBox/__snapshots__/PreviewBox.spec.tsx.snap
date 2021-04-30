@@ -2,6 +2,6 @@
 
 exports[`renders without crashing 1`] = `
 <div
-  className="preview-box card"
+  className="w-100 preview-box card"
 />
 `;

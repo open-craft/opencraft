@@ -5,10 +5,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
@@ -241,11 +241,9 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>
@@ -318,10 +316,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
@@ -554,11 +552,9 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>
@@ -823,11 +819,9 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>

@@ -33,6 +33,9 @@ export const MATOMO_MY_DOMAIN = process.env.REACT_APP_MATOMO_MY_DOMAIN || '';
 export const MATOMO_ALIAS_DOMAIN =
   process.env.REACT_APP_MATOMO_ALIAS_DOMAIN || '';
 
+export const EXTERNAL_DOMAIN_CNAME_VALUE =
+  process.env.EXTERNAL_DOMAIN_CNAME_VALUE || 'haproxy.net.opencraft.hosting';
+
 export interface StringIndexedArray {
   [key: string]: any;
 }
@@ -65,10 +68,8 @@ export const ROUTES = {
     THEME_NAVIGATION: '/console/theming/navigation',
     THEME_FOOTER: '/console/theming/footer',
     INSTANCE_SETTINGS_GENERAL: '/console/settings/general',
+    INSTANCE_SETTINGS_DOMAIN: '/console/settings/domain',
     HERO: '/console/theming/hero',
-    NEW_HOME: '/newconsole',
-    NEW_LOGOS: '/newconsole/theming/logos',
-    NEW_LOGOS_SIDEBAR: '/newconsole/theming/logos/sidebar',
     COURSES: '/console/courses/manage'
   },
   Registration: {

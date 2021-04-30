@@ -41,16 +41,14 @@ export const CustomizationSideMenu: React.FC = () => {
       className="new-customization-menu"
     >
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
-            <WrappedMessage messages={messages} id="accordionTheme" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="0">
+          <WrappedMessage messages={messages} id="accordionTheme" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Nav className="flex-column">
               <NavLink exact to={ROUTES.Console.THEME_PREVIEW_AND_COLORS}>
-                <WrappedMessage messages={messages} id="linkPreviewColors" />
+                <WrappedMessage messages={messages} id="linkColors" />
               </NavLink>
               <NavLink exact to={ROUTES.Console.LOGOS}>
                 <WrappedMessage messages={messages} id="linkLogos" />
@@ -72,11 +70,9 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="1">
-            <WrappedMessage messages={messages} id="accordionCustomPages" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="1">
+          <WrappedMessage messages={messages} id="accordionCustomPages" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="1">
           <Card.Body>
             <Nav className="flex-column">
@@ -88,28 +84,16 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
-            <WrappedMessage
-              messages={messages}
-              id="accordionInstanceSettings"
-            />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="2">
+          <WrappedMessage messages={messages} id="accordionInstanceSettings" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="2">
           <Card.Body>
             <Nav defaultActiveKey="/home" className="flex-column">
               <NavLink exact to={ROUTES.Console.INSTANCE_SETTINGS_GENERAL}>
                 <WrappedMessage messages={messages} id="linkGeneral" />
               </NavLink>
-              <NavLink
-                exact
-                to=""
-                className="disabled"
-                onClick={e => {
-                  e.preventDefault();
-                }}
-              >
+              <NavLink exact to={ROUTES.Console.INSTANCE_SETTINGS_DOMAIN}>
                 <WrappedMessage messages={messages} id="linkDomain" />
               </NavLink>
             </Nav>
@@ -117,11 +101,9 @@ export const CustomizationSideMenu: React.FC = () => {
         </Accordion.Collapse>
       </Card>
       <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Card.Header} variant="link" eventKey="3">
-            <WrappedMessage messages={messages} id="accordionCourses" />
-          </Accordion.Toggle>
-        </Card.Header>
+        <Accordion.Toggle as={Card.Header} variant="link" eventKey="3">
+          <WrappedMessage messages={messages} id="accordionCourses" />
+        </Accordion.Toggle>
         <Accordion.Collapse eventKey="3">
           <Card.Body>
             <Nav className="flex-column">

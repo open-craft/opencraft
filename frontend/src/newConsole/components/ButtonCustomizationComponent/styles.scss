@@ -1,0 +1,34 @@
+@import "~styles/theme";
+
+.button-customization-container {
+  margin-bottom: 3rem;
+}
+
+.button-customization-name {
+  width: 100%;
+  height: 29px;
+  font-family: $playfair-font;
+  font-size: 24px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: 0.72px;
+  color: #0f1f24;
+  display: inline-flex;
+  align-items: center;
+
+  .custom-switch {
+    margin-left: 10px;
+    display: inline-flex;
+  }
+
+  span.info-icon {
+    margin-left: 10px;
+    display: inline-flex;
+
+    .custom-switch {
+      margin-left: 0;
+    }
+  }
+}

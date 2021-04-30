@@ -5,6 +5,7 @@ import './styles.scss';
 interface CustomizableLinkProps {
   children?: React.ReactNode;
   linkColor?: string;
+  linkHoverColor?: string;
   borderBottomColor?: string;
   borderBottomHoverColor?: string;
   active?: boolean;
@@ -20,7 +21,7 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
     borderBottomColor: props.active ? props.borderBottomColor : undefined
   });
   const [hoverStyle, setHoverStyle] = React.useState({
-    color: props.linkColor,
+    color: props.linkHoverColor ? props.linkHoverColor : props.linkColor,
     borderBottomColor: props.borderBottomHoverColor
       ? props.borderBottomHoverColor
       : undefined
@@ -40,12 +41,12 @@ export const CustomizableLink: React.FC<CustomizableLinkProps> = (
   }, [props.linkColor, props.borderBottomColor, props.active]);
   React.useEffect(() => {
     setHoverStyle({
-      color: props.linkColor,
+      color: props.linkHoverColor ? props.linkHoverColor : props.linkColor,
       borderBottomColor: props.borderBottomHoverColor
         ? props.borderBottomHoverColor
         : undefined
     });
-  }, [props.linkColor, props.borderBottomHoverColor]);
+  }, [props.linkColor, props.borderBottomHoverColor, props.linkHoverColor]);
 
   const className =
     `customizable-link` +

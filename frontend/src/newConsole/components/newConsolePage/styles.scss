@@ -3,20 +3,18 @@
 
 
 .console-page {
+  flex-direction: column;
+  height: 100% ;
   .new-console-page-container {
-    padding: 3rem 1rem;
-    margin: 0 -15px;
+    padding: 3rem 0;
     flex: 1;
 
-    .console-page-content {
+    .new-console-page-content {
       margin: 0 auto;
-      max-width: 1100px;
       justify-content: center;
+      flex-grow: 1;
 
       .customization-form {
-        background-color: #f0f5f7;
-        padding: 32px;
-        margin-bottom: 16px;
 
         .loading {
           text-align: center;
@@ -25,7 +23,7 @@
         }
 
         h2 {
-          font-family: $chivo-font;
+          font-family: $playfair-font;
           font-size: 24px;
           letter-spacing: 0.72px;
           color: $secondary-1;
@@ -35,6 +33,16 @@
       }
     }
   }
+
+  .edit-heading {
+    text-align: left;
+    color: #0f1f24;
+    font-family: $playfair-font;
+    font-weight: bold;
+    font-size: 28px;
+    margin-top: 37px;
+    margin-bottom: 31.5px;
+}
 }
 
 .back-button {
@@ -46,7 +54,7 @@
   line-height: normal;
   letter-spacing: normal;
   color: #0f1f24;
-  padding: 0px;
+  padding: 10px;
 }
 
 .console-container {

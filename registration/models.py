@@ -509,26 +509,17 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
             "privacy": True,
         }
 
-    def get_mktg_url_link(self):
+    def get_disabled_mktg_links(self):
         """
-        Build MKTG_URL_LINK_MAP config.
-        Allow to display/hide static content pages
+        Get disabled MKTG links.
         """
-        mktg_url_link_map_config = {
-            "ABOUT": "about",
-            "CONTACT": "contact",
-            "DONATE": "donate",
-            "TOS": "tos",
-            "HONOR": "honor",
-            "PRIVACY": "privacy",
-        }
-
+        result = []
         if self.configuration_display_static_pages:
             for page_name, enabled in self.configuration_display_static_pages.items():
                 if not enabled:
-                    del mktg_url_link_map_config[page_name.upper()]
-
-        return mktg_url_link_map_config
+                    result.append(page_name)
+            return {page_name: None for page_name in result}
+        return {}
 
     def commit_changes_to_instance(
             self,
@@ -553,7 +544,7 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
 
         instance.theme_config = self.draft_theme_config
         instance.static_content_overrides = self.draft_static_content_overrides
-        instance.static_content_display = self.get_mktg_url_link()
+        instance.static_content_display = self.get_disabled_mktg_links()
         instance.name = self.instance_name
         instance.privacy_policy_url = self.privacy_policy_url
         instance.email = self.public_contact_email

@@ -340,13 +340,16 @@ export const updateFieldValue = (
         }
       });
     }
-  } catch {
-    dispatch({
-      type: Types.UPDATE_INSTANCE_INFO_FAILURE,
-      data: {
-        [fieldName]: value
-      }
-    });
+  } catch (e) {
+    try {
+      const error = await e.json();
+      dispatch({
+        type: Types.UPDATE_INSTANCE_INFO_FAILURE,
+        data: sanitizeErrorFeedback(error)
+      });
+    } catch {
+      dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
+    }
   }
 };
 

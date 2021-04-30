@@ -130,6 +130,12 @@ export interface OpenEdXInstanceConfig {
      * @memberof OpenEdXInstanceConfig
      */
     readonly isEmailVerified?: boolean;
+    /**
+     * State of DNS config verfication for external_domain
+     * @type {string}
+     * @memberof OpenEdXInstanceConfig
+     */
+    readonly dnsConfigurationState?: OpenEdXInstanceConfigDnsConfigurationStateEnum;
 }
 
 export function OpenEdXInstanceConfigFromJSON(json: any): OpenEdXInstanceConfig {
@@ -158,6 +164,7 @@ export function OpenEdXInstanceConfigFromJSONTyped(json: any, ignoreDiscriminato
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
         'staticPagesEnabled': !exists(json, 'static_pages_enabled') ? undefined : json['static_pages_enabled'],
         'isEmailVerified': !exists(json, 'is_email_verified') ? undefined : json['is_email_verified'],
+        'dnsConfigurationState': !exists(json, 'dns_configuration_state') ? undefined : json['dns_configuration_state'],
     };
 }
 
@@ -179,6 +186,17 @@ export function OpenEdXInstanceConfigToJSON(value?: OpenEdXInstanceConfig | null
         'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
         'draft_static_content_overrides': StaticContentOverridesToJSON(value.draftStaticContentOverrides),
     };
+}
+
+/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceConfigDnsConfigurationStateEnum {
+    Verified = 'verified',
+    Pending = 'pending',
+    Failed = 'failed',
+    NotRequired = 'not_required'
 }
 
 

@@ -150,6 +150,7 @@ jobs:
           DEBUG: 'true'
           DEFAULT_FORK: 'open-craft/edx-platform'
           LOAD_BALANCER_FRAGMENT_NAME_PREFIX: 'integration-'
+          SIMPLE_THEME_SKELETON_THEME_VERSION: 'master'
       - image: redis
       - image: mongo:3.2-jessie
       - image: "circleci/mysql:5"
