@@ -81,3 +81,10 @@ body {
     color: $secondary-1;
   }
 }
+
+@mixin add-background-image {
+  background-image: url("~assets/header-background.jpg");
+  background-color: $primary-1;
+  background-size: 100% 350px;
+  background-repeat: no-repeat;
+}
