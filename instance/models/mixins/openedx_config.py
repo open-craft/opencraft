@@ -415,6 +415,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "FUNCTION": "retirement_lms_retire",
                 },
             ],
+
+            # Install OpenJDK instead of OracleJDK
+            "USE_OPENJDK": True,
         }
 
         if self.smtp_relay_settings:
