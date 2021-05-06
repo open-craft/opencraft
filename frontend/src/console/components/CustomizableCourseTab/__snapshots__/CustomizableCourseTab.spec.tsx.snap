@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<nav
+  className="theme-course-tabs navbar navbar-expand navbar-light bg-transparent"
+>
+  <div
+    className="mr-auto navbar-nav"
+    onKeyDown={[Function]}
+  >
+    <button
+      className="customizable-link active"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottomColor": "#f30000",
+          "color": "#f30000",
+        }
+      }
+      type="button"
+    >
+      <span>
+        Course
+      </span>
+    </button>
+    <button
+      className="customizable-link"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottomColor": undefined,
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      <span>
+        Progress
+      </span>
+    </button>
+    <button
+      className="customizable-link"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottomColor": undefined,
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      <span>
+        Discussion
+      </span>
+    </button>
+    <button
+      className="customizable-link"
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      style={
+        Object {
+          "borderBottomColor": undefined,
+          "color": undefined,
+        }
+      }
+      type="button"
+    >
+      <span>
+        Wiki
+      </span>
+    </button>
+  </div>
+</nav>
+`;

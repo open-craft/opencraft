@@ -9,14 +9,10 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
   >
     <div
       className="card-header"
+      onClick={[Function]}
+      variant="link"
     >
-      <div
-        className="card-header"
-        onClick={[Function]}
-        variant="link"
-      >
-        Theme
-      </div>
+      Theme
     </div>
     <div
       aria-expanded={null}
@@ -34,7 +30,7 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
             href="/console/theming/preview-and-colors"
             onClick={[Function]}
           >
-            Preview & colors
+            Colors
           </a>
           <a
             aria-current={null}
@@ -80,14 +76,10 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
   >
     <div
       className="card-header"
+      onClick={[Function]}
+      variant="link"
     >
-      <div
-        className="card-header"
-        onClick={[Function]}
-        variant="link"
-      >
-        Custom Pages
-      </div>
+      Custom Pages
     </div>
     <div
       aria-expanded={null}
@@ -151,14 +143,10 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
   >
     <div
       className="card-header"
+      onClick={[Function]}
+      variant="link"
     >
-      <div
-        className="card-header"
-        onClick={[Function]}
-        variant="link"
-      >
-        Instance Settings
-      </div>
+      Instance Settings
     </div>
     <div
       aria-expanded={null}
@@ -179,11 +167,9 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
             General
           </a>
           <a
-            aria-current="page"
-            className="disabled active"
-            href="/"
+            aria-current={null}
+            href="/console/settings/domain"
             onClick={[Function]}
-            style={Object {}}
           >
             Domain
           </a>
@@ -196,14 +182,10 @@ exports[`Custom Side Menu Page Renders with correct accordion expanded, and with
   >
     <div
       className="card-header"
+      onClick={[Function]}
+      variant="link"
     >
-      <div
-        className="card-header"
-        onClick={[Function]}
-        variant="link"
-      >
-        Courses (Studio)
-      </div>
+      Courses (Studio)
     </div>
     <div
       aria-expanded={null}

@@ -83,19 +83,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     # use different contact page
                     "CONTACT": "/contact",
                 },
-                # default values
-                "MKTG_URL_LINK_MAP": {
-                    "FAQ": "help",
-                    "PRESS": "press",
-                    "SITEMAP.XML": "sitemap_xml",
-                    "COURSES": "courses",
-                    "ROOT": "root",
-                    "WHAT_IS_VERIFIED_CERT": "verified-certificate",
-                    # "BLOG": "blog",  not supported yet
-                    **self.instance.get_mktg_url_link(),
-                },
             },
-
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
             "EDXAPP_LMS_BASE_SCHEME": 'https',
@@ -461,31 +449,18 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Custom Privacy Policy
             template["EDXAPP_LMS_ENV_EXTRA"]["MKTG_URL_OVERRIDES"]["PRIVACY"] = self.privacy_policy_url
 
-        # The dotted import path to the forum heartbeat function has changed in Juniper.
-        # So use the old path only for the older releases.
-        if self._is_openedx_release_in(['ironwood', 'hawthorn', 'ginkgo']):
-            forum_hb_path = "lms.lib.comment_client.utils.check_forum_heartbeat"
-        else:
-            forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
+        forum_hb_path = "openedx.core.djangoapps.django_comment_common.comment_client.utils.check_forum_heartbeat"
         template["EDXAPP_LMS_ENV_EXTRA"]["HEARTBEAT_EXTENDED_CHECKS"].append(forum_hb_path)
 
-        # master and juniper release onwards has djangoapps.heartbeat installed by default
-        # openedx <= ironwood requires this if celery check is included in
-        # heartbeat extended checks (which we add by default above)
-        if self._is_openedx_release_in(['ironwood', 'hawthorn', 'ginkgo']):
-            hb_app = "openedx.core.djangoapps.heartbeat"
-            template["EDXAPP_CMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
-            template["EDXAPP_LMS_ENV_EXTRA"]["ADDL_INSTALLED_APPS"].append(hb_app)
-
-        # See https://github.com/edx/cs_comments_service/pull/323
-        if self._is_openedx_release_in(['ironwood']):
-            # See https://github.com/open-craft/cs_comments_service/pull/5
-            template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
-            template["forum_version"] = "opencraft-release/ironwood.2"
         if self._is_openedx_release_in(['juniper']):
+            # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["forum_version"] = "opencraft-release/juniper.3"
             template["FORUM_VERSION"] = "opencraft-release/juniper.3"
+        if self._is_openedx_release_in(['koa']):
+            # See https://github.com/open-craft/cs_comments_service/pull/10
+            template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
+            template["FORUM_VERSION"] = "opencraft-release/koa.3"
 
         return template
 

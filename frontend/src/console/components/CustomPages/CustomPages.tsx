@@ -4,7 +4,7 @@ import './styles.scss';
 import {
   ConsolePage,
   ConsolePageCustomizationContainer
-} from 'console/components';
+} from 'newConsole/components';
 import { LMS_CUSTOM_PAGE_LINK_MAP } from 'global/constants';
 import { InstancesModel } from 'console/models';
 import { connect } from 'react-redux';

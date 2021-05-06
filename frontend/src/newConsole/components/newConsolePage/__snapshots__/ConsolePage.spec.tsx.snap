@@ -5,10 +5,10 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
@@ -55,30 +55,40 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
       className="new-console-page-content row"
     >
       <div
-        className="container-fluid"
+        className="pr-4 pl-0 container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center m-0 row"
         >
           <div
-            className="col-md-3"
+            className="p-0 m-0 pl-4 col-md-3"
           >
-            <button
-              className="back-button btn btn-link btn-sm"
-              disabled={false}
-              onClick={[Function]}
-              type="button"
+            <div
+              className="ml-auto nav"
+              onKeyDown={[Function]}
             >
-              <span>
-                <i
-                  aria-hidden="true"
-                  className="fa fa-angle-left sm"
-                />
-              </span>
-              <span>
-                Back
-              </span>
-            </button>
+              <div
+                className="nav-item"
+              >
+                <a
+                  className="nav-link px-0"
+                  href="/console"
+                  onClick={[Function]}
+                >
+                  <span>
+                    <i
+                      aria-hidden="true"
+                      className="fa fa-angle-left sm"
+                    />
+                  </span>
+                  <span
+                    className="back-button"
+                  >
+                    Back
+                  </span>
+                </a>
+              </div>
+            </div>
             <div
               className="customization-form"
             >
@@ -90,13 +100,6 @@ exports[`Console Page Console Page with Edit component Correctly renders loading
                 />
               </div>
             </div>
-          </div>
-          <div
-            className="col-md-7"
-          >
-            <div
-              className="preview-box card"
-            />
           </div>
         </div>
       </div>
@@ -110,10 +113,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
@@ -160,13 +163,13 @@ exports[`Console Page Correctly renders loading page 1`] = `
       className="new-console-page-content row"
     >
       <div
-        className="container-fluid"
+        className="pr-4 pl-0 container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center m-0 row"
         >
           <div
-            className="col-md-3"
+            className="p-0 m-0 col-md-3"
           >
             <div
               className="new-customization-menu accordion"
@@ -176,14 +179,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Theme
-                  </div>
+                  Theme
                 </div>
                 <div
                   aria-expanded={null}
@@ -201,7 +200,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
@@ -247,14 +246,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Custom Pages
-                  </div>
+                  Custom Pages
                 </div>
                 <div
                   aria-expanded={null}
@@ -318,14 +313,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Instance Settings
-                  </div>
+                  Instance Settings
                 </div>
                 <div
                   aria-expanded={null}
@@ -346,11 +337,9 @@ exports[`Console Page Correctly renders loading page 1`] = `
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>
@@ -363,14 +352,10 @@ exports[`Console Page Correctly renders loading page 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Courses (Studio)
-                  </div>
+                  Courses (Studio)
                 </div>
                 <div
                   aria-expanded={null}
@@ -397,7 +382,7 @@ exports[`Console Page Correctly renders loading page 1`] = `
             </div>
           </div>
           <div
-            className="col-md-7"
+            className="pr-0 col-md-9"
           >
             <div
               className="customization-form"
@@ -423,10 +408,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
   className="console-page"
 >
   <div
-    className="d-flex justify-content-center align-middle redeployment-toolbar"
+    className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
   >
     <div
-      className="redeployment-nav"
+      className="d-flex flex-row justify-content-between w-100"
     >
       <span
         className="status-pill badge badge-pill badge-primary"
@@ -473,13 +458,13 @@ exports[`Console Page Correctly renders page with data 1`] = `
       className="new-console-page-content row"
     >
       <div
-        className="container-fluid"
+        className="pr-4 pl-0 container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center m-0 row"
         >
           <div
-            className="col-md-3"
+            className="p-0 m-0 col-md-3"
           >
             <div
               className="new-customization-menu accordion"
@@ -489,14 +474,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Theme
-                  </div>
+                  Theme
                 </div>
                 <div
                   aria-expanded={null}
@@ -514,7 +495,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
@@ -560,14 +541,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Custom Pages
-                  </div>
+                  Custom Pages
                 </div>
                 <div
                   aria-expanded={null}
@@ -631,14 +608,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Instance Settings
-                  </div>
+                  Instance Settings
                 </div>
                 <div
                   aria-expanded={null}
@@ -659,11 +632,9 @@ exports[`Console Page Correctly renders page with data 1`] = `
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>
@@ -676,14 +647,10 @@ exports[`Console Page Correctly renders page with data 1`] = `
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Courses (Studio)
-                  </div>
+                  Courses (Studio)
                 </div>
                 <div
                   aria-expanded={null}
@@ -710,7 +677,7 @@ exports[`Console Page Correctly renders page with data 1`] = `
             </div>
           </div>
           <div
-            className="col-md-7"
+            className="pr-0 col-md-9"
           >
             <span>
                Test! 
@@ -742,13 +709,13 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
       className="new-console-page-content row"
     >
       <div
-        className="container-fluid"
+        className="pr-4 pl-0 container-fluid"
       >
         <div
-          className="justify-content-center row"
+          className="justify-content-center m-0 row"
         >
           <div
-            className="col-md-3"
+            className="p-0 m-0 col-md-3"
           >
             <div
               className="new-customization-menu accordion"
@@ -758,14 +725,10 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Theme
-                  </div>
+                  Theme
                 </div>
                 <div
                   aria-expanded={null}
@@ -783,7 +746,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                         href="/console/theming/preview-and-colors"
                         onClick={[Function]}
                       >
-                        Preview & colors
+                        Colors
                       </a>
                       <a
                         aria-current={null}
@@ -829,14 +792,10 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Custom Pages
-                  </div>
+                  Custom Pages
                 </div>
                 <div
                   aria-expanded={null}
@@ -900,14 +859,10 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Instance Settings
-                  </div>
+                  Instance Settings
                 </div>
                 <div
                   aria-expanded={null}
@@ -928,11 +883,9 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
                         General
                       </a>
                       <a
-                        aria-current="page"
-                        className="disabled active"
-                        href="/"
+                        aria-current={null}
+                        href="/console/settings/domain"
                         onClick={[Function]}
-                        style={Object {}}
                       >
                         Domain
                       </a>
@@ -945,14 +898,10 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
               >
                 <div
                   className="card-header"
+                  onClick={[Function]}
+                  variant="link"
                 >
-                  <div
-                    className="card-header"
-                    onClick={[Function]}
-                    variant="link"
-                  >
-                    Courses (Studio)
-                  </div>
+                  Courses (Studio)
                 </div>
                 <div
                   aria-expanded={null}
@@ -979,7 +928,7 @@ exports[`Console Page Correctly renders page with email not verified alert 1`] =
             </div>
           </div>
           <div
-            className="col-md-7"
+            className="pr-0 col-md-9"
           >
             <span>
                Test! 

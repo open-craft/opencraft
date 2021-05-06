@@ -1319,7 +1319,9 @@ class OpenEdXInstanceTestCase(TestCase):
         mock_cursor = mock_cursor_context.return_value.__enter__.return_value
         instance = OpenEdXInstanceFactory(mysql_server=MySQLServerFactory(), sub_domain='create_test')
         instance.create_db('edxapp')
-        mock_cursor.execute.assert_called_with('CREATE DATABASE create_test_example_com_edxapp')
+        mock_cursor.execute.assert_called_with(
+            'CREATE DATABASE create_test_example_com_edxapp DEFAULT CHARACTER SET utf8'
+        )
 
 
 @skip_unless_consul_running()

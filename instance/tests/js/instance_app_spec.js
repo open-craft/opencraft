@@ -501,6 +501,55 @@ describe('Instance app', function () {
             });
         });
     });
+
+    describe('prettifyJSON filter', function() {
+        var prettifyJSON;
+
+        beforeEach(inject(function($filter) {
+            prettifyJSON = $filter('prettifyJSON');
+        }));
+
+        it('prettifies JSON snippets from ansible output', function() {
+            expect(prettifyJSON('ok => not json')).toEqual('ok => not json');
+            expect(prettifyJSON('ok => {not: json either}')).toEqual('ok => {not: json either}');
+            expect(prettifyJSON('ok => {"result": "some json result", "value": 42}')).toEqual([
+              'ok => {',
+              '    "result": "some json result",',
+              '    "value": 42',
+              '}'
+            ].join('\n'));
+            expect(prettifyJSON('error => (item={"result": "item result"})')).toEqual([
+              'error => (item={',
+              '    "result": "item result"',
+              '})'
+            ].join('\n'));
+            expect(prettifyJSON('out => (item=["result", "is", "an", "array"])')).toEqual([
+              'out => (item=[',
+              '    "result",',
+              '    "is",',
+              '    "an",',
+              '    "array"',
+              '])'
+            ].join('\n'));
+        });
+
+        it('removes stdout/stderr entries from JSON snippets', function() {
+            expect(prettifyJSON('ok => {"stdout": "", "stdout_lines": [], "value": 42}')).toEqual([
+              'ok => {',
+              '    "stdout_lines": [],',
+              '    "value": 42',
+              '}'
+            ].join('\n'));
+            expect(prettifyJSON('ok => {"stderr": "Error!\\nAbort!", "stderr_lines": ["Error!","Abort!"]}')).toEqual([
+              'ok => {',
+              '    "stderr_lines": [',
+              '        "Error!",',
+              '        "Abort!"',
+              '    ]',
+              '}'
+            ].join('\n'));
+        });
+    });
 });
 
 })();

@@ -4,7 +4,7 @@ import { ConsoleRoutes } from 'routes/console';
 import './styles.scss';
 
 export const ConsoleContainer: React.FC = () => (
-  <Col className="console-container">
+  <Col className="console-container p-0">
     <ConsoleRoutes />
   </Col>
 );

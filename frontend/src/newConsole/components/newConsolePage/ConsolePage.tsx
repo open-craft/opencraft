@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { RedeploymentToolbar } from 'console/components';
+import { RedeploymentToolbar, ThemePreview } from 'console/components';
 import { CustomizationSideMenu } from 'newConsole/components';
 import { EmailActivationAlertMessage, ErrorPage } from 'ui/components';
-import { OCIM_API_BASE } from 'global/constants';
-import { Row, Col, Container, Button } from 'react-bootstrap';
+import { OCIM_API_BASE, ROUTES } from 'global/constants';
+import { Link } from 'react-router-dom';
+import { Row, Col, Container, Nav, NavItem } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { RootState } from 'global/state';
 import { connect } from 'react-redux';
@@ -16,7 +17,6 @@ import {
 import { WrappedMessage } from 'utils/intl';
 import messages from 'console/components/ConsolePage/displayMessages';
 import './styles.scss';
-import { PreviewBox } from '../PreviewBox';
 
 interface ActionProps {
   cancelDeployment: Function;
@@ -31,7 +31,6 @@ interface Props extends StateProps, ActionProps {
   contentLoading: boolean;
   showSidebar: boolean;
   showSideBarEditComponent: boolean;
-  goBack?: Function;
 }
 
 interface CustomizationContainerProps {
@@ -81,23 +80,20 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
   }
 
   public render() {
-    const renderBackButton = (onClickFunction: Function) => {
+    const renderBackButton = () => {
       return (
-        <Button
-          onClick={() => {
-            onClickFunction();
-          }}
-          size="sm"
-          variant="link"
-          className="back-button"
-        >
-          <span>
-            <i className="fa fa-angle-left sm" aria-hidden="true" />
-          </span>
-          <span>
-            <WrappedMessage messages={messages} id="back" />
-          </span>
-        </Button>
+        <Nav className="ml-auto">
+          <NavItem>
+            <Link className="nav-link px-0" to={ROUTES.Console.HOME}>
+              <span>
+                <i className="fa fa-angle-left sm" aria-hidden="true" />
+              </span>
+              <span className="back-button">
+                <WrappedMessage messages={messages} id="back" />
+              </span>
+            </Link>
+          </NavItem>
+        </Nav>
       );
     };
 
@@ -116,26 +112,29 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
       if (this.props.showSidebar && !this.props.showSideBarEditComponent) {
         innerContent = (
-          <Row className="justify-content-center">
-            <Col md="3">
+          <Row className="justify-content-center m-0">
+            <Col md="3" className="p-0 m-0">
               <CustomizationSideMenu />
             </Col>
-            <Col md="7">{innerContent}</Col>
+            <Col md="9" className="pr-0">
+              {innerContent}
+            </Col>
           </Row>
         );
       }
 
       if (this.props.showSidebar && this.props.showSideBarEditComponent) {
         innerContent = (
-          <Row className="justify-content-center">
-            <Col md="3">
-              {renderBackButton(this.props.goBack!)}
+          <Row className="justify-content-center m-0">
+            <Col md="3" className="p-0 m-0 pl-4">
+              {renderBackButton()}
               {innerContent}
             </Col>
-            {/* This is where the preview page component will be redered */}
-            <Col md="7">
-              <PreviewBox />
-            </Col>
+            {!this.props.contentLoading && (
+              <Col md="9" className="pr-0">
+                <ThemePreview />
+              </Col>
+            )}
           </Row>
         );
       }
@@ -194,7 +193,9 @@ export class ConsolePageComponent extends React.PureComponent<Props> {
 
         <div className="new-console-page-container">
           <Row className="new-console-page-content">
-            <Container fluid>{content()}</Container>
+            <Container fluid className="pr-4 pl-0">
+              {content()}
+            </Container>
           </Row>
         </div>
       </div>

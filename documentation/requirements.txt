@@ -28,7 +28,7 @@ mkdocs==1.1.2
     # via -r requirements.in
 nltk==3.5
     # via lunr
-pygments==2.7.3
+pygments==2.7.4
     # via -r requirements.in
 pyyaml==5.1.2
     # via mkdocs

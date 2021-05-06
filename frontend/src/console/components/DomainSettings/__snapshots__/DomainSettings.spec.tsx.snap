@@ -1,0 +1,639 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly for no externalDomain 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="pr-4 pl-0 container-fluid"
+      >
+        <div
+          className="justify-content-center m-0 row"
+        >
+          <div
+            className="p-0 m-0 col-md-3"
+          >
+            <div
+              className="new-customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Theme
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Custom Pages
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Instance Settings
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/settings/domain"
+                        onClick={[Function]}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Courses (Studio)
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="pr-0 col-md-9"
+          >
+            <div
+              className="w-100 preview-box card"
+            >
+              <div
+                className="domain-settings-container container"
+              >
+                <h2>
+                  Domain Settings
+                </h2>
+                <div
+                  className="row"
+                >
+                  <div
+                    className="domain-settings-description col"
+                  >
+                    <p>
+                      By default, your site is always accessible via an OpenCraft subdomain. Custom domains allow users to access your site via non-OpenCraft domain names. A custom domain increase your monthly OpenCraft bill by €25.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <ul
+                    className="domain-list"
+                  >
+                    <li
+                      className="list-item color-green"
+                    >
+                      <div
+                        className="d-flex flex-wrap justify-content-between"
+                      >
+                        <div>
+                          <div>
+                            test.opencraft.hosting
+                          </div>
+                          <div
+                            className="domain-type"
+                          >
+                            Default Subdomain
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <div>
+                    <button
+                      className="addBtn btn btn-primary btn-lg"
+                      disabled={false}
+                      onClick={[Function]}
+                      type="button"
+                    >
+                      Add custom domain (€25/month)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`renders correctly if external domain is present 1`] = `
+<div
+  className="console-page"
+>
+  <div
+    className="d-flex justify-content-center align-middle email-activation-alert"
+  >
+    <i
+      className="alert-icon fas fa-exclamation-triangle fa-xs"
+    />
+    One of your email addresses is pending confirmation. Please confirm it to begin managing your Open edX instance.
+  </div>
+  <div
+    className="new-console-page-container"
+  >
+    <div
+      className="new-console-page-content row"
+    >
+      <div
+        className="pr-4 pl-0 container-fluid"
+      >
+        <div
+          className="justify-content-center m-0 row"
+        >
+          <div
+            className="p-0 m-0 col-md-3"
+          >
+            <div
+              className="new-customization-menu accordion"
+            >
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Theme
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse show"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/theming/preview-and-colors"
+                        onClick={[Function]}
+                      >
+                        Colors
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/logos"
+                        onClick={[Function]}
+                      >
+                        Logos
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/buttons"
+                        onClick={[Function]}
+                      >
+                        Buttons
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/navigation"
+                        onClick={[Function]}
+                      >
+                        Navigation
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/footer"
+                        onClick={[Function]}
+                      >
+                        Footer
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/theming/hero"
+                        onClick={[Function]}
+                      >
+                        Hero
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Custom Pages
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/about"
+                        onClick={[Function]}
+                      >
+                        About
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/contact"
+                        onClick={[Function]}
+                      >
+                        Contact
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/donate"
+                        onClick={[Function]}
+                      >
+                        Donate
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/tos"
+                        onClick={[Function]}
+                      >
+                        Terms of Service
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/honor"
+                        onClick={[Function]}
+                      >
+                        Honor Code
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/custom-pages/privacy"
+                        onClick={[Function]}
+                      >
+                        Privacy Policy
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Instance Settings
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/settings/general"
+                        onClick={[Function]}
+                      >
+                        General
+                      </a>
+                      <a
+                        aria-current={null}
+                        href="/console/settings/domain"
+                        onClick={[Function]}
+                      >
+                        Domain
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="card"
+              >
+                <div
+                  className="card-header"
+                  onClick={[Function]}
+                  variant="link"
+                >
+                  Courses (Studio)
+                </div>
+                <div
+                  aria-expanded={null}
+                  className="collapse"
+                >
+                  <div
+                    className="card-body"
+                  >
+                    <div
+                      className="flex-column nav card-header-undefined"
+                      onKeyDown={[Function]}
+                    >
+                      <a
+                        aria-current={null}
+                        href="/console/courses/manage"
+                        onClick={[Function]}
+                      >
+                        Manage
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="pr-0 col-md-9"
+          >
+            <div
+              className="w-100 preview-box card"
+            >
+              <div
+                className="domain-settings-container container"
+              >
+                <h2>
+                  Domain Settings
+                </h2>
+                <div
+                  className="row"
+                >
+                  <div
+                    className="domain-settings-description col"
+                  >
+                    <p>
+                      By default, your site is always accessible via an OpenCraft subdomain. Custom domains allow users to access your site via non-OpenCraft domain names. A custom domain increase your monthly OpenCraft bill by €25.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <ul
+                    className="domain-list"
+                  >
+                    <li
+                      className="list-item color-green"
+                    >
+                      <div
+                        className="d-flex flex-wrap justify-content-between"
+                      >
+                        <div>
+                          <div>
+                            test.opencraft.hosting
+                          </div>
+                          <div
+                            className="domain-type"
+                          >
+                            Default Subdomain
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <hr />
+                  <ul
+                    className="domain-list"
+                  >
+                    <li
+                      className="list-item color-green"
+                    >
+                      <div
+                        className="d-flex flex-wrap justify-content-between"
+                      >
+                        <div>
+                          <div>
+                            example.com
+                          </div>
+                          <div
+                            className="domain-type"
+                          >
+                            Primary Domain
+                          </div>
+                        </div>
+                        <div
+                          className="d-flex flex-column align-items-center justify-content-center dropdown"
+                          onKeyDown={[Function]}
+                        >
+                          <button
+                            className="options-dropdown-toggle d-flex flex-row"
+                            onClick={[Function]}
+                            type="button"
+                          >
+                            <span>
+                              Options
+                            </span>
+                            <i
+                              className="dropdown-toggle-caret fas fa-angle-down"
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

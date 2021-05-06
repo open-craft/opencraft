@@ -41,10 +41,10 @@ exports[`renders without crashing 1`] = `
           </p>
         </div>
         <div
-          className="color-picker-group row"
+          className="color-picker-group d-flex flex-row flex-wrap justify-content-between row"
         >
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -55,26 +55,30 @@ exports[`renders without crashing 1`] = `
                 Button color
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryBg"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryBg"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >
@@ -84,7 +88,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -95,26 +99,30 @@ exports[`renders without crashing 1`] = `
                 Button text color
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryColor"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryColor"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >
@@ -124,7 +132,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -135,26 +143,30 @@ exports[`renders without crashing 1`] = `
                 Button border color
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryBorderColor"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryBorderColor"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >
@@ -176,10 +188,10 @@ exports[`renders without crashing 1`] = `
           </p>
         </div>
         <div
-          className="color-picker-group row"
+          className="color-picker-group d-flex flex-row flex-wrap justify-content-between row"
         >
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -190,26 +202,30 @@ exports[`renders without crashing 1`] = `
                 Button color on hover
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryHoverBg"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverBg"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >
@@ -219,7 +235,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -230,26 +246,30 @@ exports[`renders without crashing 1`] = `
                 Button text color on hover
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryHoverColor"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverColor"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >
@@ -259,7 +279,7 @@ exports[`renders without crashing 1`] = `
             </div>
           </div>
           <div
-            className="color-picker-item col-md-4 col-12"
+            className="color-picker-item"
           >
             <div
               className="color-input form-group"
@@ -270,26 +290,30 @@ exports[`renders without crashing 1`] = `
                 Button border color on hover
               </label>
               <div
-                className="row"
+                className="align-items-center row"
               >
-                <input
-                  className="input-field-color form-control"
-                  disabled={true}
-                  name="btnPrimaryHoverBorderColor"
-                  onClick={[Function]}
-                  readOnly={true}
-                  value=""
-                />
                 <div
-                  className="input-field-preview"
-                  style={
-                    Object {
-                      "backgroundColor": "",
+                  className="d-flex align-items-center color-input-field"
+                >
+                  <input
+                    className="input-field-color form-control"
+                    disabled={true}
+                    name="btnPrimaryHoverBorderColor"
+                    onClick={[Function]}
+                    readOnly={true}
+                    value=""
+                  />
+                  <div
+                    className="input-field-preview"
+                    style={
+                      Object {
+                        "backgroundColor": "",
+                      }
                     }
-                  }
-                />
+                  />
+                </div>
                 <button
-                  className="reset-value padded"
+                  className="reset-value padded flex-grow"
                   onClick={[Function]}
                   type="button"
                 >

@@ -3,6 +3,10 @@ const messages = {
     defaultMessage: 'Theme',
     description: 'The name of the theme menu in the sidebar accordion.'
   },
+  linkColors: {
+    defaultMessage: 'Colors',
+    description: 'Edit Colors'
+  },
   linkPreviewColors: {
     defaultMessage: 'Preview & colors',
     description: 'Menu name.'

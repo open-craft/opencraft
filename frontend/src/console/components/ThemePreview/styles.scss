@@ -1,0 +1,37 @@
+@import '~styles/theme';
+
+.preview-header {
+  position:relative;
+  height: 60px;
+  z-index: 2;
+}
+
+.notice-container {
+  height: 100%;
+
+  color: $primary-1;
+  margin-top: 20px;
+  margin-bottom: auto;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: $chivo-font;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: right;
+}
+
+.preview-container {
+  z-index: 1;
+  position: relative;
+  padding: 0;
+
+  .row {
+    padding: 0;
+
+    .side-buttons {
+      padding: 0 15px 0 0;
+
+    }
+  }
+}

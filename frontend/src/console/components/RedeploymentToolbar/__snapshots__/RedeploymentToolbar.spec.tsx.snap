@@ -2,10 +2,10 @@
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when deployment info isn't there 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"
@@ -49,10 +49,10 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when deployment is by admin 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"
@@ -103,10 +103,10 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when d
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance has pending changes 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"
@@ -157,10 +157,10 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being deployed by user 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"
@@ -204,10 +204,10 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is being prepared 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"
@@ -251,10 +251,10 @@ exports[`RedeploymentToolbar Component Correctly renders redeployment bar when i
 
 exports[`RedeploymentToolbar Component Correctly renders redeployment bar when instance is up-to-date 1`] = `
 <div
-  className="d-flex justify-content-center align-middle redeployment-toolbar"
+  className="d-flex justify-content-between redeployment-toolbar px-4 py-3 container-fluid"
 >
   <div
-    className="redeployment-nav"
+    className="d-flex flex-row justify-content-between w-100"
   >
     <span
       className="status-pill badge badge-pill badge-primary"

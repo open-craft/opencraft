@@ -194,7 +194,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         with self.mysql_server.get_admin_cursor() as cursor:
             # We can't use prepared style queries here, because the database name can't be a string.
             # We should never use this with user input anyway, so it should be OK.
-            cursor.execute(f'CREATE DATABASE {db_name}')
+            cursor.execute(f'CREATE DATABASE {db_name} DEFAULT CHARACTER SET utf8')
 
     def drop_db(self, db_suffix):
         """

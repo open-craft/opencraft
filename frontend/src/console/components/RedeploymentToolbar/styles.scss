@@ -2,18 +2,8 @@
 
 
 .redeployment-toolbar {
-  background-color: $light-blue;
-  padding: 15px;
-  margin: 0 -15px;
-
-  display: flex;
-  align-items: center;
-
-  .redeployment-nav {
-    display: inline-block;
-    width: 100%;
-    max-width: 1100px;
-  }
+  background-color: white;
+  box-shadow: 0 2px 8px 0 rgba(15, 31, 36, 0.3);
 }
 
 .tooltip {
