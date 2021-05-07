@@ -959,9 +959,17 @@ MAILCHIMP_LIST_ID_FOR_TRIAL_USERS = env('MAILCHIMP_LIST_ID_FOR_TRIAL_USERS', def
 MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)
 
 
-# Marketing app settings
+# Marketing app settings ######################################################
+
+# The number of days after which a sent email record will be deleted from the database.
 MARKETING_DELETE_FOLLOWUP_EMAILS_AFTER_DAYS = env.int('MARKETING_DELETE_FOLLOWUP_EMAILS_AFTER_DAYS', default=30)
+# The sender email address for marketing emails.
 MARKETING_EMAIL_SENDER = env('MARKETING_EMAIL_SENDER', default=DEFAULT_FROM_EMAIL)
+# Setting for list of recipients for the marketing report emails.
+MARKETING_EMAIL_REPORT_RECIPIENTS = env.json(
+    "MARKETING_EMAIL_REPORT_RECIPIENT",
+    default=TRIAL_INSTANCES_REPORT_RECIPIENTS
+)
 
 # The download url for Oracle JDK to use when provisioning Appserver.
 # This will be passed to ansible playbook variable `oraclejdk_url`.

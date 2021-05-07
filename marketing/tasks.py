@@ -23,13 +23,18 @@ Worker tasks for marketing features
 # Imports #####################################################################
 
 import logging
+import smtplib
 from datetime import timedelta
+from collections import defaultdict
+from typing import Dict, Set
 
 from django.conf import settings
 from django.utils.timezone import now
 from django.db.models import Prefetch
+from django.template.loader import get_template
+from django.core.mail import send_mail
 from huey import crontab
-from huey.contrib.djhuey import db_periodic_task
+from huey.contrib.djhuey import db_periodic_task, db_task
 
 from marketing.models import Subscriber, EmailTemplate, SentEmail
 from marketing.utils import render_and_dispatch_email
@@ -78,6 +83,7 @@ def send_followup_emails():
     """
     Sends all the configured followup emails.
     """
+    sent_emails = defaultdict(set)
     mails_to_send = []
     active_templates = EmailTemplate.objects.filter(is_active=True)
     # Collect all the emails to send
@@ -91,8 +97,51 @@ def send_followup_emails():
                 )
 
     # Try sending all the followup emails
-    for args in mails_to_send:
-        render_and_dispatch_email(*args)
+    try:
+        for args in mails_to_send:
+            template, subscriber = args
+            render_and_dispatch_email(template, subscriber)
+            sent_emails[template.name].add(subscriber.user.email)
+    finally:
+        send_report(sent_emails)
+
+
+@db_task(retry=3, retry_delay=10)
+def send_report(sent_emails: Dict[str, Set]):
+    """
+    Render and send the report email.
+
+    This task has to be called from send_followup_emails.
+
+    The report email will not be sent if either the sent_emails is an
+    empty dictionary or settings.MARKETING_EMAIL_REPORT_RECIPIENTS is
+    not set.
+    """
+    recipients = settings.MARKETING_EMAIL_REPORT_RECIPIENTS
+    if not sent_emails:
+        logger.info("No marketing emails were sent. Skipping report email.")
+        return
+    if not recipients:
+        logger.info("MARKETING_EMAIL_REPORT_RECIPIENTS setting not set. Skipping report email.")
+        return
+    context = {
+        'sent_emails': dict(sent_emails)
+    }
+    plaintext_body_template = get_template('email_report.txt')
+    html_body_template = get_template('email_report.html')
+    plaintext_body = plaintext_body_template.render(context)
+    html_body = html_body_template.render(context)
+
+    try:
+        send_mail(
+            subject="Daily report for marketing emails",
+            message=plaintext_body,
+            html_message=html_body,
+            from_email=settings.MARKETING_EMAIL_SENDER,
+            recipient_list=recipients
+        )
+    except smtplib.SMTPException as err:
+        logger.error("Failed to send the report for marketing emails!\nReason: %s", err)
 
 
 @db_periodic_task(crontab(day_of_week="1", hour="1", minute="0"))

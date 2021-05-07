@@ -24,9 +24,10 @@ from unittest.mock import patch, call
 
 from django.test import TestCase, override_settings
 from django.utils.timezone import now
+from django.core import mail
 
 from marketing.models import SentEmail, EmailTemplate, Subscriber
-from marketing.tasks import prune_emails, send_followup_emails
+from marketing.tasks import prune_emails, send_followup_emails, send_report
 from instance.tests.base import create_user_and_profile
 from registration.models import BetaTestApplication
 
@@ -168,8 +169,9 @@ class SendFollowupTestCase(TestCase):
     def tearDown(self):
         SentEmail.objects.all().delete()
 
+    @patch('marketing.tasks.send_report')
     @patch('marketing.tasks.render_and_dispatch_email')
-    def test_email_is_sent_to_subscribed_users(self, mock_dispatch):
+    def test_email_is_sent_to_subscribed_users(self, mock_dispatch, mock_report):
         """
         Test that email will be sent to subscribers with receive_followup
         set to true.
@@ -191,9 +193,11 @@ class SendFollowupTestCase(TestCase):
             call(self.active_email_template, self.inactive_subscriber_1)
         ]
         mock_dispatch.assert_has_calls(expected_calls, any_order=True)
+        mock_report.assert_called()
 
+    @patch('marketing.tasks.send_report')
     @patch('marketing.tasks.render_and_dispatch_email')
-    def test_email_is_not_sent_if_already_in_sent_emails(self, mock_dispatch):
+    def test_email_is_not_sent_if_already_in_sent_emails(self, mock_dispatch, mock_report):
         """
         Tests that email is only sent if user does not have a SentEmail
         with active template.
@@ -205,9 +209,11 @@ class SendFollowupTestCase(TestCase):
         )
         send_followup_emails()
         mock_dispatch.assert_not_called()
+        mock_report.assert_called()
 
+    @patch('marketing.tasks.send_report')
     @patch('marketing.tasks.render_and_dispatch_email')
-    def test_email_is_not_sent_to_users_unsubscribed(self, mock_dispatch):
+    def test_email_is_not_sent_to_users_unsubscribed(self, mock_dispatch, mock_report):
         """
         Test that the email is not sent for subscribers with
         receive_followup set to false.
@@ -219,9 +225,11 @@ class SendFollowupTestCase(TestCase):
         ]
         all_calls = mock_dispatch.call_args_list
         assert not any([not_expected in all_calls for not_expected in not_expected_calls])
+        mock_report.assert_called()
 
+    @patch('marketing.tasks.send_report')
     @patch('marketing.tasks.render_and_dispatch_email')
-    def test_email_is_sent_for_active_templates_only(self, mock_dispatch):
+    def test_email_is_sent_for_active_templates_only(self, mock_dispatch, mock_report):
         """
         Test that email is sent for all active email templates
         """
@@ -247,3 +255,45 @@ class SendFollowupTestCase(TestCase):
         mock_dispatch.assert_has_calls(expected_calls, any_order=True)
         all_calls = mock_dispatch.call_args_list
         assert not any([not_expected in all_calls for not_expected in not_expected_calls])
+        mock_report.assert_called()
+
+
+class SendReportTestCase(TestCase):
+    """
+    Tests for send_report task
+    """
+    def setUp(self):
+        self.sent_emails = {
+            "Template 1": ["user1@example.com", "user_2@example.com"],
+            "Template 2": ["user3@example.com", "user4@example.com"]
+        }
+
+    def test_report_email_is_sent(self):
+        """
+        Tests that an email is sent using correct templates.
+        """
+        send_report(self.sent_emails)
+        self.assertTemplateUsed("email_report.html")
+        self.assertTemplateUsed("email_report.txt")
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_email_is_not_sent_if_no_followup(self):
+        """
+        Tests that email report is not sent if there are no
+        sent_emails.
+        """
+        send_report({})
+        self.assertTemplateNotUsed("email_report.html")
+        self.assertTemplateNotUsed("email_report.txt")
+        self.assertEqual(len(mail.outbox), 0)
+
+    @override_settings(MARKETING_EMAIL_REPORT_RECIPIENTS=None)
+    def test_report_email_not_sent_if_no_recipients(self):
+        """
+        Tests that the report email is not sent if MARKETING_EMAIL_REPORT_RECIPIENTS
+        setting is not set.
+        """
+        send_report(self.sent_emails)
+        self.assertTemplateNotUsed("email_report.html")
+        self.assertTemplateNotUsed("email_report.txt")
+        self.assertEqual(len(mail.outbox), 0)
