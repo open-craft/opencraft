@@ -82,7 +82,7 @@ body {
   }
 }
 
-@mixin add-background-image {
+@mixin set-header-background {
   background-image: url("~assets/header-background.jpg");
   background-color: $primary-1;
   background-size: 100% 350px;

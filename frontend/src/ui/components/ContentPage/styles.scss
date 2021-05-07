@@ -6,7 +6,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  @include add-background-image;
+  @include set-header-background;
 
   .title-container {
     margin: 60px;
