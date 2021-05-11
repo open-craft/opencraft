@@ -1,0 +1,58 @@
+# Docker Compose file for the services needed by Ocim, for easy local development setup
+
+version: "3.6"
+
+services:
+
+  postgresql:
+    image: postgres:12.6-alpine
+    environment:
+      POSTGRES_USER: opencraft
+      POSTGRES_DB: opencraft
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: --encoding utf-8
+    volumes:
+      - /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: postgres:12.6-alpine
+    image: redis:4
+    ports:
+      - "6379:6379"
+    
+  ocim:
+    build:
+      context: .
+      dockerfile: Dockerfile.ocim
+    depends_on: 
+      - postgresql
+      - redis
+    env_file: .env
+    environment: 
+      ALLOWED_HOSTS: '["*"]'
+      DATABASE_URL: '${DATABASE_URL:-postgres://opencraft@postgresql/opencraft}'
+      REDIS_URL: '${REDIS_URL:-redis://redis:6379}'
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./:/usr/src/ocim/
+    
+  ocim-frontend:
+    build:
+      context: frontend/
+    depends_on: 
+      - ocim
+    environment: {} 
+    ports:
+      - "127.0.0.1:3000:3000"
+    tty: true
+    volumes:
+      - ./frontend:/usr/src/ocim-frontend/
+      - ./static:/usr/src/static
+
+volumes: {}
+
+networks:
+  default:

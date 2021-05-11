@@ -1,0 +1,15 @@
+FROM python:3.6
+
+WORKDIR /usr/src/ocim
+
+COPY requirements.txt ./
+COPY requirements/ requirements/
+RUN pip install -r requirements.txt
+
+COPY Makefile \
+    package.json \
+    ./
+COPY frontend/ frontend/
+COPY static/ static/
+
+CMD ["make", "run.dev"]
