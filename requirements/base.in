@@ -27,10 +27,12 @@ django-simple-email-confirmation==0.60
 django-storage-swift==1.2.19
 django-storages==1.7.1
 django-zurb-foundation==5.5.0
-djangorestframework<3.10,>=3.9.4
+djangorestframework
 dnspython==2.1.0
 dns-lexicon==3.3.13
-djangorestframework-simplejwt==4.4.0
+djangorestframework-simplejwt
+# Pinned version since this causes issues with DRF-JWT package when using older python versions (3.8 and below)
+pyjwt==1.7.1
 docutils==0.14
 drf-yasg
 entrypoints==0.3
@@ -40,8 +42,10 @@ GitPython==2.1.15
 gunicorn==19.9.0
 honcho==1.0.1
 huey==2.1.0
+# Pinning Jedi otherwise IPython shell freezes when autocompleting.
+jedi==0.17.2
 jsonschema==3.2.0
-keystoneauth1==3.14.0
+keystoneauth1<4
 mailchimp3==3.0.13
 mccabe==0.6.1
 mysqlclient==1.4.2.post1
@@ -58,6 +62,7 @@ python-keystoneclient==3.19.0
 python-novaclient==14.1.0
 python-openstackclient==3.19.0
 python-swiftclient==3.7.0
+python-cinderclient==7.0.0
 pytz==2019.1
 PyYAML<5.5,>=5.4.1
 redis==3.2.1
