@@ -23,7 +23,7 @@ Instance API
 # Imports #####################################################################
 from django.db.models import Prefetch
 from rest_framework import viewsets, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from instance.models.instance import InstanceReference
@@ -105,21 +105,21 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = InstanceReferenceBasicSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def logs(self, request, pk):
         """
         Get this Instance's log entries
         """
         return Response(InstanceLogSerializer(self.get_object()).data)
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def app_servers(self, request, pk):
         """
         Get this Instance's entire list of AppServers
         """
         return Response(InstanceAppServerSerializer(self.get_object(), context={'request': request}).data)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def set_notes(self, request, pk):
         """
         Update notes attribute of selected instance.

@@ -24,7 +24,7 @@ Open edX AppServer API
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
@@ -103,14 +103,14 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response({'status': 'Instance provisioning started'})
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def logs(self, request, pk):
         """
         Get this AppServer's log entries
         """
         return Response(OpenEdXAppServerLogSerializer(self.get_object()).data)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def make_active(self, request, pk):
         """
         Add this AppServer to the list of active app server for the instance.
@@ -123,7 +123,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({'status': 'App server activation initiated.'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def make_inactive(self, request, pk):
         """
         Remove this AppServer from the list of active app server for the instance.
@@ -132,7 +132,7 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
         make_appserver_active(app_server.pk, active=False)
         return Response({'status': 'App server deactivation initiated.'})
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def terminate(self, request, pk):
         """
         Terminate the VM running the provided AppServer.
