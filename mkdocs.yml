@@ -21,3 +21,5 @@ nav:
   - infrastructure.md
   - "Development":
       - "Docker": development/docker.md
+  - "Operations":
+      - "Management Tasks": operations/management-tasks.md
