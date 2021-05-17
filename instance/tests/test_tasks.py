@@ -379,7 +379,7 @@ class CleanUpTestCase(TestCase):
 
         self.assertEqual(mock_terminate_appservers.call_count, 5)
         self.assertEqual(mock_logger.call_count, 10)
-        mock_logger.assert_called_with("Terminating obsolete appservers for instance", {})
+        mock_logger.assert_called_with("Terminating obsolete appservers for instance %s", {})
 
     @ddt.data(
         {'pr_state': 'closed', 'pr_days_since_closed': 4, 'instance_is_archived': False},
