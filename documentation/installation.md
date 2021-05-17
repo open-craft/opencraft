@@ -1,7 +1,6 @@
-Installation
-------------
+# Installation
 
-### Vagrant installation
+## Vagrant installation
 
 For development, we recommend using [Vagrant](https://www.vagrantup.com/)
 to automatically provision a development environment in a virtual machine. This
