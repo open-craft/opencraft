@@ -397,7 +397,7 @@ class OpenStackServer(Server):
                 key_name=key_name,
                 **kwargs
             )
-        except (novaclient.exceptions.ClientException, novaclient.exceptions.EndpointNotFound) as exc:
+        except Exception as exc: # pylint: disable=broad-except
             self.logger.error('Failed to start server: %s', exc)
             self._status_to_build_failed()
         else:
