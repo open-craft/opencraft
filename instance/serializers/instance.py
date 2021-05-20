@@ -38,7 +38,8 @@ class InstanceReferenceMinimalSerializer(serializers.ModelSerializer):
     """
     Serializer for InstanceReference that includes only the ID and URL.
     """
-    api_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-detail')
+    api_url = serializers.HyperlinkedIdentityField(
+        view_name='api:v1:instance-detail')
 
     class Meta:
         model = InstanceReference
@@ -60,8 +61,10 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
     # summary_only: Uses less detailed serializers for related instances
     summary_only = True
 
-    logs_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-logs')
-    appservers_full_list_url = serializers.HyperlinkedIdentityField(view_name='api:v1:instance-app-servers')
+    logs_url = serializers.HyperlinkedIdentityField(
+        view_name='api:v1:instance-logs')
+    appservers_full_list_url = serializers.HyperlinkedIdentityField(
+        view_name='api:v1:instance-app-servers')
 
     class Meta:
         model = InstanceReference
@@ -73,6 +76,7 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
             'created',
             'modified',
             'is_archived',
+            'instance_purpose'
             'logs_url',
             'appservers_full_list_url',
         )
@@ -82,13 +86,15 @@ class InstanceReferenceBasicSerializer(InstanceReferenceMinimalSerializer):
         Given an object that is a subclass of Instance, serialize it.
         """
         if not isinstance(instance, Instance):
-            raise TypeError("InstanceReference.instance should return a subclass of Instance")
+            raise TypeError(
+                "InstanceReference.instance should return a subclass of Instance")
 
         # Use the correct serializer for this type of Instance:
         if isinstance(instance, OpenEdXInstance):
             serializer = OpenEdXInstanceSerializer
         else:
-            raise NotImplementedError("No serializer enabled for that Instance type.")
+            raise NotImplementedError(
+                "No serializer enabled for that Instance type.")
 
         if self.summary_only and hasattr(serializer, 'basic_serializer'):
             serializer = serializer.basic_serializer
@@ -116,7 +122,8 @@ class InstanceReferenceDetailedSerializer(InstanceReferenceBasicSerializer):
     summary_only = False
 
     def __init__(self, *args, **kwargs):
-        super(InstanceReferenceDetailedSerializer, self).__init__(*args, **kwargs)
+        super(InstanceReferenceDetailedSerializer,
+              self).__init__(*args, **kwargs)
 
         if 'context' in kwargs:
             if 'request' in kwargs['context']:

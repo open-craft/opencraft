@@ -52,14 +52,25 @@ class InstanceReference(TimeStampedModel):
     """
     InstanceReference: Holds common fields and provides a list of all Instances
 
-    Has name, created, and modified fields for each Instance.
+    Has name, created, instance_type_id, and modified fields for each Instance.
 
     Instance is an abstract class, so having this common InstanceReference class gives us a
     fully generic way to iterate through all instances and allow instances to be implemented
     using a variety of different python classes and database tables.
     """
+    INSTITUTIONAL = "0"
+    PROTEACHER = "1"
+    SANDBOX = "2"
+    DEVELOPMENT = "3"
+
     name = models.CharField(max_length=250, blank=False, default='Instance')
     instance_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    instance_purpose = models.CharField(max_length=20,
+                                        default=DEVELOPMENT,
+                                        choices=((INSTITUTIONAL, "institutional"),
+                                                 (PROTEACHER, "proteacher"),
+                                                 (SANDBOX, "sandbox"),
+                                                 (DEVELOPMENT, "development")))
     instance_id = models.PositiveIntegerField()
     instance = GenericForeignKey('instance_type', 'instance_id')
     is_archived = models.BooleanField(default=False, help_text=(
@@ -70,8 +81,10 @@ class InstanceReference(TimeStampedModel):
         "however un-archive an instance that was already archived.</strong>"
     ))
     notes = models.TextField(blank=True)
-    creator = models.ForeignKey(UserProfile, null=True, blank=True, on_delete=models.CASCADE)
-    owner = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
+    creator = models.ForeignKey(
+        UserProfile, null=True, blank=True, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Organization, null=True,
+                              blank=True, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-created']
@@ -144,7 +157,8 @@ class Instance(ValidateModelMixin, models.Model):
     # Reverse accessor to get the 'InstanceReference' set. This is a 1:1 relation, so use the
     # 'ref' property instead of accessing this directly. The only time to use this directly is
     # in a query, e.g. to do .select_related('ref_set')
-    ref_set = GenericRelation(InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
+    ref_set = GenericRelation(
+        InstanceReference, content_type_field='instance_type', object_id_field='instance_id')
     openstack_region = models.CharField(
         max_length=16,
         blank=False,
@@ -211,6 +225,11 @@ class Instance(ValidateModelMixin, models.Model):
         return self.ref.modified
 
     @property
+    def instance_purpose(self):
+        """ Get this instance's purpose, which is stored in the InstanceReference"""
+        return self.ref.get_instance_purpose_display()
+
+    @property
     def creator_username(self):
         """Get the username of the Ocim user who created the instance."""
         if self.ref.creator:
@@ -232,7 +251,8 @@ class Instance(ValidateModelMixin, models.Model):
         super().save(*args, **kwargs)
         # Ensure an InstanceReference exists, and update its 'modified' field:
         if self.ref.instance_id is None:
-            self.ref.instance_id = self.pk  # <- Fix needed when self.ref is accessed before the first self.save()
+            # <- Fix needed when self.ref is accessed before the first self.save()
+            self.ref.instance_id = self.pk
         self.ref.save()
 
     def refresh_from_db(self, using=None, fields=None):
@@ -270,7 +290,8 @@ class Instance(ValidateModelMixin, models.Model):
         limit = settings.LOG_LIMIT
 
         instance_type = ContentType.objects.get_for_model(self)
-        entries = LogEntry.objects.filter(content_type=instance_type, object_id=self.pk)
+        entries = LogEntry.objects.filter(
+            content_type=instance_type, object_id=self.pk)
         # TODO: Filter out log entries for which the user doesn't have view rights
         return reversed(list(entries[:limit]))
 
