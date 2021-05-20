@@ -469,6 +469,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["FORUM_VERSION"] = "opencraft-release/koa.3"
 
+        if settings.OPENEDX_ORACLEJDK_URL:
+            template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
+
         return template
 
     def _get_prometheus_variables(self):

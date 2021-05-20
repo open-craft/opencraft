@@ -962,3 +962,7 @@ MAILCHIMP_BATCH_SIZE = env.int('MAILCHIMP_BATCH_SIZE', default=500)
 # Marketing app settings
 MARKETING_DELETE_FOLLOWUP_EMAILS_AFTER_DAYS = env.int('MARKETING_DELETE_FOLLOWUP_EMAILS_AFTER_DAYS', default=30)
 MARKETING_EMAIL_SENDER = env('MARKETING_EMAIL_SENDER', default=DEFAULT_FROM_EMAIL)
+
+# The download url for Oracle JDK to use when provisioning Appserver.
+# This will be passed to ansible playbook variable `oraclejdk_url`.
+OPENEDX_ORACLEJDK_URL = env.str('OPENEDX_ORACLEJDK_URL', default='')
