@@ -395,7 +395,6 @@ class OpenStackServerTestCase(TestCase):
     @data(
         requests.RequestException('Error'),
         novaclient.exceptions.ClientException('Error'),
-        novaclient.exceptions.EndpointNotFound('Error'),
     )
     def test_terminate_server_openstack_api_error(self, exception):
         """
