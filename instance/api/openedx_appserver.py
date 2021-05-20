@@ -37,7 +37,7 @@ from instance.serializers.openedx_appserver import (
     OpenEdXAppServerSerializer,
     SpawnAppServerSerializer,
 )
-from instance.tasks import make_appserver_active
+from instance.tasks import make_appserver_active, terminate_appserver
 from instance.utils import create_new_deployment
 from .filters import IsOrganizationOwnerFilterBackendAppServer, IsOrganizationOwnerFilterBackendInstance
 from ..models.deployment import DeploymentType
@@ -135,12 +135,15 @@ class OpenEdXAppServerViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post'])
     def terminate(self, request, pk):
         """
-        Terminate the VM running the provided AppServer.
+        Trigger worker task to terminate the VM running the provided AppServer.
+
+        Note that this might fail silently without any errors appearing on the Ocim UI,
+        but it's acceptable given the current use case.
         """
         app_server = self.get_object()
         if app_server.is_active:
             return Response({
                 'error': 'Cannot terminate an active app server.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        app_server.terminate_vm()
+        terminate_appserver(app_server.id)
         return Response({'status': 'App server termination initiated.'})

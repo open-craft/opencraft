@@ -798,3 +798,56 @@ class CleanUpOldBetaTestUserTestCase(TestCase):
         tasks.cleanup_old_betatest_users()
         assert BetaTestApplication.objects.all().count() == 4
         assert get_user_model().objects.filter(username='user1').count() == 0
+
+
+class TerminateAppserverTestCase(TestCase):
+    """
+    Test cases for tasks.terminate_appserver, which wraps tasks.terminate_vm.
+    """
+    def setUp(self):
+        consul_patcher = patch(
+            'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul'
+        )
+        self.mock_consul = consul_patcher.start()
+        self.mock_consul.return_value = (1, True)
+        self.addCleanup(consul_patcher.stop)
+
+        terminate_appserver_patcher = patch(
+            'instance.models.openedx_appserver.OpenEdXAppServer.terminate_vm'
+        )
+        self.mock_terminate_appserver = terminate_appserver_patcher.start()
+        self.addCleanup(terminate_appserver_patcher.stop)
+
+        self.instance = OpenEdXInstanceFactory()
+        server = ReadyOpenStackServerFactory()
+        self.appserver = make_test_appserver(instance=self.instance, server=server)
+
+    def test_terminate_appserver(self):
+        """
+        Test that `terminate_appserver` calls `appserver.terminate_vm`.
+        """
+        with self.assertLogs(level='INFO') as logs:
+            tasks.terminate_appserver(self.appserver.id)
+            self.assertIn('INFO:instance.tasks:Terminating appserver', logs.output[0])
+
+        self.assertEqual(self.mock_terminate_appserver.call_count, 1)
+
+    def test_terminate_appserver_fails_no_id(self):
+        """
+        Test that `terminate_appserver` fails an invalid `appserver_id` is passed.
+        """
+        with self.assertLogs(level='ERROR') as logs:
+            tasks.terminate_appserver(3000)
+            self.assertIn('OpenEdXAppServer.DoesNotExist', logs.output[0])
+            self.assertEqual(self.mock_terminate_appserver.call_count, 0)
+
+    def test_terminate_appserver_logs_failure(self):
+        """
+        Test that `terminate_appserver` logs when any exception happens.
+        """
+        self.mock_terminate_appserver.side_effect = Exception('Some random generic error.')
+
+        with self.assertLogs(level='ERROR') as logs:
+            tasks.terminate_appserver(self.appserver.id)
+            self.assertIn('Exception: Some random generic error.', logs.output[0])
+            self.assertEqual(self.mock_terminate_appserver.call_count, 1)

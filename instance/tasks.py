@@ -248,6 +248,19 @@ def terminate_obsolete_appservers_all_instances():
             instance.logger.exception('Error deleting the obsolete appservers for instance %s', instance.domain)
 
 
+@db_task()
+def terminate_appserver(appserver_id):
+    """
+    Terminate a appserver on the background (in worker thread).
+    """
+    logger.info("Terminating appserver %s.", appserver_id)
+    try:
+        app_server = OpenEdXAppServer.objects.get(id=appserver_id)
+        app_server.terminate_vm()
+    except Exception as exc:  # pylint:disable=broad-except
+        logger.exception('Error terminating appserver %s: %s', appserver_id, exc)
+
+
 @db_periodic_task(crontab(day='*/1', hour='1', minute='0'))
 def clean_up():
     """
