@@ -23,7 +23,7 @@ PR Watcher API
 # Imports #####################################################################
 
 from rest_framework import viewsets, serializers, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from pr_watch import github
@@ -43,7 +43,7 @@ class WatchedPullRequestViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = WatchedPullRequestSerializer
     filter_backends = (IsOrganizationOwnerFilterBackendWatchedPR,)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def update_instance(self, request, pk):
         """
         Update the instance associated with this PR, creating it if necessary.
