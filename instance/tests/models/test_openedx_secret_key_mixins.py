@@ -56,6 +56,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
     """
     Test cases for SecretKeyInstanceMixin models
     """
+
     def test_secret_key_creation(self, mock_consul):
         """
         Test that we can reliably produce derived secret keys for an instance with a particular

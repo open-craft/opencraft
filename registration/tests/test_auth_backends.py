@@ -34,6 +34,7 @@ class ModelBackendTestCase(UserMixin, TestCase):
     """
     Tests for the custom ModelBackend.
     """
+
     def test_username_login(self):
         """
         Test that users can login with their username and password.

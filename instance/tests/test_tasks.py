@@ -50,6 +50,7 @@ from userprofile.models import UserProfile
 
 # Tests #######################################################################
 
+
 @ddt.ddt
 class SpawnAppServerTestCase(TestCase):
     """
@@ -755,7 +756,6 @@ class CleanUpOldBetaTestUserTestCase(TestCase):
             'profile': user_profile,
             'application': application
         }
-
 
     def test_clean_up_betatest_user(self):
         """

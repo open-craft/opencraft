@@ -44,6 +44,7 @@ class MySQLServerTest(TestCase):
     """
     Test cases for the MySQLServer model.
     """
+
     def setUp(self):
         self.mysql_server = MySQLServerFactory()
 
@@ -136,6 +137,7 @@ class MongoDBServerTest(TestCase):
     """
     Test cases for the MongoDBServer model.
     """
+
     def setUp(self):
         self.mongodb_server = MongoDBServerFactory()
 
@@ -271,6 +273,7 @@ class DatabaseServerManagerTest(TestCase):
     """
     Test cases for DatabaseServerManager.
     """
+
     def _assert_settings(self, database_server, **expected_settings):
         """
         Assert that `database_server` settings match `expected_settings`.

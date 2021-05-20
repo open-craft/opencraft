@@ -33,6 +33,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
     """
     Tests for the Open edX SiteConfiguration mixin.
     """
+
     def test_static_content_overrides_unset(self):
         """
         Test that when the static content overrides are unset, there is no SiteConfiguration ansible

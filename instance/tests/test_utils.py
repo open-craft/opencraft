@@ -37,6 +37,7 @@ class UtilsTestCase(TestCase):
     """
     Test cases for functions in the utils module
     """
+
     def test_poll_streams(self):
         """
         Ensure that the lines read are in the order they were written in each stream.
@@ -112,6 +113,7 @@ class UtilsTestCase(TestCase):
             """
             A test class with a toJSON() method.
             """
+
             def toJSON(self):  # nopep8 pylint: disable=invalid-name
                 """
                 Fake JSON serialization.

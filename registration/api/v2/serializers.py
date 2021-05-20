@@ -62,6 +62,7 @@ class GenericObjectSerializer(DataSerializer):
     Serializer for any response that returns a JSON dict, without specifying
     the fields of that dict in detail.
     """
+
     def to_representation(self, instance):
         return instance
 
@@ -221,6 +222,7 @@ class ThemeSchemaSerializer(serializers.Serializer):
     schema model in the frontend without requiring to duplicate the schema
     there.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Start with empty serializer and add fields from both theme schemas
@@ -255,6 +257,7 @@ class StaticContentOverridesSerializer(serializers.Serializer):
     This is needed to make the Swagger code generator correctly generate the schema model in the frontend
     without having to duplicate teh schema there.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Add fields dynamically from the schema.

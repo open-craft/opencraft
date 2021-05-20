@@ -437,7 +437,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         confvars['EDXAPP_SITE_CONFIGURATION'] = result
         return confvars
 
-
     def create_configuration_settings(self):
         """
         Generate the configuration settings.
@@ -565,7 +564,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         # For any additional security groups, just verify that the group exists:
         groups = self.security_groups
-        groups.remove(main_security_group.name) # We already checked this group
+        groups.remove(main_security_group.name)  # We already checked this group
         for group_name in groups:
             if network.find_security_group(group_name) is None:
                 raise Exception("Unable to find the OpenStack network security group called '{}'.".format(group_name))

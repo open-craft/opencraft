@@ -67,6 +67,7 @@ DEFAULT_STATIC_CONTENT_OVERRIDES = {
     "homepage_overlay_html": "<h1>{}</h1><p>{}</p>".format(DEFAULT_HERO_TITLE_TEXT, DEFAULT_HERO_SUBTITLE_TEXT)
 }
 
+
 def fill_default_hero_text(text=None):
     """
     Fill in the default hero title and subtitle text in the 'homepage_overlay_html' value if either or both are missing.

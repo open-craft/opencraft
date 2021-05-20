@@ -43,6 +43,7 @@ class DNSCleanupInstance:
     """
     Clean up the DNS records.
     """
+
     def __init__(self, api_key, base_domain, dry_run=False):
         self.client = GandiV5API(api_key=api_key)
         self.base_domain = base_domain

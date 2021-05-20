@@ -43,6 +43,7 @@ class WatchedPullRequestTestCase(TestCase):
     """
     Test cases for WatchedPullRequest model and manager
     """
+
     def setUp(self):
         """
         Mock the 'get_commit_id_from_ref' method so it doesn't make a GitHub API call
@@ -215,7 +216,7 @@ class WatchedPullRequestTestCase(TestCase):
         self.assertEqual(instance.ansible_appserver_playbook, 'playbooks/appserver.yml')
         self.assertEqual(instance.ansible_appserver_requirements_path, 'requirements.txt')
         self.assertEqual(instance.ansible_appserver_version, 'ansible2.8.17')
-        self.assertEqual(json.loads(instance.openstack_server_base_image), {"name_or_id":"focal-20.04-unmodified"})
+        self.assertEqual(json.loads(instance.openstack_server_base_image), {"name_or_id": "focal-20.04-unmodified"})
 
         self.assertEqual(instance.configuration_source_repo_url,
                          'https://github.com/open-craft/configuration-fromwatchedfork')

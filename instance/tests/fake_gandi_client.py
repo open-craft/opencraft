@@ -20,10 +20,12 @@
 Fake implementation of the XML RPC client for the Gandi API.
 """
 
+
 class FakeGandiV5APIClient:
     """
     Fake implementation of the Gandi V5 API client.
     """
+
     def __init__(self):
         self._domains = {
             "test.com": [],

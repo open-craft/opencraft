@@ -53,7 +53,6 @@ class DomainUtilsTestCase(TestCase):
         resolver_mock.assert_called_with('example.com', 'CNAME')
         self.assertTrue(is_passed)
 
-
     @patch('dns.resolver.resolve')
     def test_dns_not_configured(self, resolver_mock):
         """
@@ -77,7 +76,6 @@ class DomainUtilsTestCase(TestCase):
         self.assertFalse(is_dns_configured('example3.com'))
         self.assertFalse(is_dns_configured('example4.com'))
 
-
     @patch('registration.utils.is_dns_configured')
     def test_subdomain_configured(self, mock):
         """
@@ -98,7 +96,6 @@ class DomainUtilsTestCase(TestCase):
         self.assertGreater(len(subdomain_2), len('example.com'))
 
         self.assertNotEqual(subdomain_1, subdomain_2)
-
 
     @patch('registration.utils.is_dns_configured')
     @patch('registration.utils.is_subdomain_dns_configured')

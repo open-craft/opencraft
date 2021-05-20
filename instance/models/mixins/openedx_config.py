@@ -302,7 +302,7 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "NEWRELIC_LICENSE_KEY": settings.NEWRELIC_LICENSE_KEY or "",
 
             # Discovery
-            "SANDBOX_ENABLE_DISCOVERY": False, # set to true to enable discovery
+            "SANDBOX_ENABLE_DISCOVERY": False,  # set to true to enable discovery
             "DISCOVERY_ELASTICSEARCH_URL": 'http://localhost:9200',
             "DISCOVERY_URL_ROOT": 'https://{}'.format(self.instance.discovery_domain),
             "DISCOVERY_HOSTNAME": '~{}'.format(self.instance.discovery_domain_nginx_regex),
@@ -354,8 +354,8 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "CERTS_QUEUE_POLL_FREQUENCY": 60,
 
             # Insights and analytics_api
-            "SANDBOX_ENABLE_ANALYTICS_API": False, # set to true to enable analytics_api
-            "SANDBOX_ENABLE_INSIGHTS": False, # set to true to enable insights
+            "SANDBOX_ENABLE_ANALYTICS_API": False,  # set to true to enable analytics_api
+            "SANDBOX_ENABLE_INSIGHTS": False,  # set to true to enable insights
 
             # Disable celery heartbeats
             # The current default setup of Celery in Open edX uses something called

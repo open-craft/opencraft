@@ -95,6 +95,7 @@ class AnyStringMatching(str):
 
     Can be used to do partial argument matching in mock calls
     """
+
     def __eq__(self, other):
         return re.search(str(self), other)
 
@@ -105,6 +106,7 @@ class TestCase(DjangoTestCase):
     """
     Base class for instance tests
     """
+
     def setUp(self):
         super().setUp()
         self.maxDiff = None

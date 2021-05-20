@@ -49,6 +49,7 @@ class InstanceRedeployTestCase(TestCase):
     """
     Test cases for the `instance_redeploy` management command.
     """
+
     def setUp(self):
         """
         Set up properties used to verify captured logs

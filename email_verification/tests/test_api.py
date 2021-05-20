@@ -37,6 +37,7 @@ class VerifyEmailAPITestCase(TestCase):
     """
     Tests for the VerifyEmailViewset.
     """
+
     def setUp(self):
         self.user = User.objects.create(username='ThePurpleOne')
         self.email = EmailAddress.objects.create_unconfirmed(

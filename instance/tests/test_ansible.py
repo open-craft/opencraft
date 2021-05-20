@@ -38,6 +38,7 @@ class YAMLTestCase(TestCase):
     """
     Test cases for YAML helper functions
     """
+
     def setUp(self):
         super().setUp()
 
@@ -97,6 +98,7 @@ class AnsibleTestCase(TestCase):
     """
     Test cases for ansible helper functions & wrappers
     """
+
     def test_run_playbook(self):
         """
         Run the ansible-playbook command

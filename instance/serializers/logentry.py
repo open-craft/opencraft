@@ -27,7 +27,7 @@ from rest_framework import serializers
 
 # Serializers #################################################################
 
-class LogEntrySerializer(serializers.Serializer): #pylint: disable=abstract-method
+class LogEntrySerializer(serializers.Serializer):  # pylint: disable=abstract-method
     """
     Log entries API serializer
     """

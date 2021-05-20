@@ -26,6 +26,7 @@ class UppercaseValidator:
     """
     Uppercase password validator
     """
+
     def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall('[A-Z]', password):
             raise ValidationError(
@@ -41,6 +42,7 @@ class LowercaseValidator:
     """
     Lowercase password validator
     """
+
     def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall('[a-z]', password):
             raise ValidationError(
@@ -56,6 +58,7 @@ class SymbolValidator:
     """
     Symbol password validator
     """
+
     def validate(self, password, user=None):  # pylint: disable=missing-docstring
         if not re.findall(r'[,.\\!~`<>\/!?:;"+=\-%\'$&@#{}()_]', password):
             raise ValidationError(

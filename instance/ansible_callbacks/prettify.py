@@ -23,6 +23,7 @@ from __future__ import absolute_import
 import json
 from ansible.plugins.callback.default import CallbackModule as DefaultCallback
 
+
 class CallbackModule(DefaultCallback):
     """
     Ansible callback module which tweaks the default ansible output to make it more reable.

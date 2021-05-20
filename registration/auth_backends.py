@@ -34,6 +34,7 @@ class ModelBackend(backends.ModelBackend):
     Extends the default ModelBackend to fetch users by email address as well as
     by username.
     """
+
     def authenticate(self, request, username=None, password=None, **kwargs):
         """
         This is mostly copied from the default ModelBackend. Attempts to fetch

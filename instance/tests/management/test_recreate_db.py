@@ -37,6 +37,7 @@ class RecreateDBTestCase(TestCase):
     """
     Tests the recreate_db command.
     """
+
     def setUp(self):
         """
         Set up our test buffers.
