@@ -27,7 +27,6 @@ import json
 import re
 from unittest.mock import patch
 import yaml
-import six
 from Cryptodome.PublicKey import RSA
 
 from instance.models.mixins.secret_keys import OPENEDX_SECRET_KEYS, OPENEDX_SHARED_KEYS
@@ -141,9 +140,7 @@ class OpenEdXSecretKeyInstanceMixinTestCase(TestCase):
             'Attempted to create secret key for instance {}, but no master key present.'.format(instance)
         )
 
-        # Six provides a compatibility method for assertRaisesRegex, since the method
-        # is named differently between Py2k and Py3k.
-        with six.assertRaisesRegex(self, ValueError, expected_error_string):
+        with self.assertRaisesRegex(ValueError, expected_error_string):
             instance.spawn_appserver()
 
     def test_rsa_key_creation(self, mock_consul):
