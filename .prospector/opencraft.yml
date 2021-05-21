@@ -21,7 +21,7 @@ pep257:
   options: {}
   run: false
 pep8:
-  disable: [E261, E262, E265]
+  disable: [E261, E262, E265, N813]
   enable: []
   options: {max-line-length: 120, single-line-if-stmt: n}
   run: null
