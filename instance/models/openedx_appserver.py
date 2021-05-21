@@ -605,7 +605,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # Check firewall rules:
         try:
             self.check_security_groups()
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             message = "Unable to check/update the network security groups for the new VM"
             self.logger.exception(message)
             self.provision_failed_email(message)
@@ -632,7 +632,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)
             self.server.sleep_until(accepts_ssh_commands)
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             self._status_to_error()
             message = 'Unable to start an OpenStack server'
             self.logger.exception(message)
@@ -672,7 +672,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self._status_to_running()
 
             return True
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             self._status_to_configuration_failed()
             message = "AppServer deploy failed: unhandled exception"
             self.logger.exception(message)
