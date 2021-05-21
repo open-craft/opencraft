@@ -6,10 +6,7 @@
   flex-direction: column;
   align-items: stretch;
   width: 100%;
-  background-image: url("~assets/header-background.jpg");
-  background-color: $primary-1;
-  background-size: 100% 350px;
-  background-repeat: no-repeat;
+  @include set-header-background;
 
   .title-container {
     margin: 60px;

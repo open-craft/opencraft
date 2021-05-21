@@ -114,3 +114,41 @@ class ApprovalTestCase(TestCase):
         instance = application.instance
         self.assertEqual(instance.theme_config, DEFAULT_THEME)
         self.assertTrue(instance.deploy_simpletheme)
+
+    def test_provision_instance_check_static_overrides_set_up(self):
+        """
+        Test if static overrides are correctly passed over to the instance model when provisioning.
+        """
+        static_overrides = {
+            'version': 0,
+            'homepage_overlay_html': '<h1>Static</h1><p>Test Case</p>',
+        }
+        user = get_user_model().objects.create_user(username='test', email='test@example.com')
+        with freeze_time('2019-01-02 09:30:00') as frozen_time:
+            accepted_time = utc.localize(frozen_time())
+            accepted_time = accepted_time.strftime('%Y-%m-%d %H:%M:%S%z')
+            UserProfile.objects.create(
+                user=user,
+                full_name='test name',
+                accepted_privacy_policy=accepted_time,
+            )
+            application = BetaTestApplication.objects.create(
+                user=user,
+                subdomain='test',
+                instance_name='Test instance',
+                project_description='Test instance creation.',
+                public_contact_email=user.email,
+                draft_static_content_overrides=static_overrides
+            )
+        EmailAddress.objects.create_unconfirmed(user.email, user)
+        with mock.patch('registration.provision.create_new_deployment') as mock_create_new_deployment, \
+            mock.patch(
+                    'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+                    return_value=(1, True)
+            ):
+            # Confirm email address.  This triggers provisioning the instance.
+            EmailAddress.objects.confirm(user.email_address_set.get().key)
+            self.assertTrue(mock_create_new_deployment.called)
+        application.refresh_from_db()
+        instance = application.instance
+        self.assertEqual(instance.static_content_overrides, static_overrides)

@@ -1,7 +1,6 @@
 ---
-# A simple one-off playbook that allows starting and stopping instance services.
-# This is used by Ocim to stop celery workers from inactive appservers to pick
-# up tasks.
+# This playbook creates a BulkEmailFlag to automatically enable bulk email for new instances.
+# It is run when provisioning the first appserver for the instance.
 
 - hosts: all
   become: yes

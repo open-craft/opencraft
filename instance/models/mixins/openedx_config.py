@@ -34,6 +34,17 @@ class OpenEdXConfigMixin(ConfigMixinBase):
         """
         Creates and returns a dictionary of ansible configuration variables for the instance
         """
+        # Vars that need to be set in both EDXAPP_LMS_ENV_EXTRA and EDXAPP_CMS_ENV_EXTRA:
+        extra_config = {
+            "BROKER_HEARTBEAT": 0,
+            "ADDL_INSTALLED_APPS": [],
+            # Stay logged in for one year, not two weeks
+            "SESSION_COOKIE_AGE": 31536000,
+            # Use database-backed sessions to stay logged in across appserver deploys.
+            # (We have EDXAPP_CLEARSESSIONS_CRON_ENABLED to clean up old data.)
+            "SESSION_ENGINE": "django.contrib.sessions.backends.cached_db",
+        }
+
         template = {
             # System
             "COMMON_HOSTNAME": self.server_hostname,
@@ -63,14 +74,10 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # Note: use EDXAPP_CMS_ENV_EXTRA and/or EDXAPP_LMS_ENV_EXTRA; don't use
             # EDXAPP_ENV_EXTRA as the other two overwrite this.
             "EDXAPP_CMS_ENV_EXTRA": {
-                "BROKER_HEARTBEAT": 0,
-                "ADDL_INSTALLED_APPS": [
-                ],
+                **extra_config,
             },
             "EDXAPP_LMS_ENV_EXTRA": {
-                "BROKER_HEARTBEAT": 0,
-                "ADDL_INSTALLED_APPS": [
-                ],
+                **extra_config,
                 "HEARTBEAT_EXTENDED_CHECKS": [
                     # celery check is default, but we need to include it here
                     # because we also add other extended checks
@@ -461,6 +468,9 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             # See https://github.com/open-craft/cs_comments_service/pull/10
             template["forum_source_repo"] = "https://github.com/open-craft/cs_comments_service.git"
             template["FORUM_VERSION"] = "opencraft-release/koa.3"
+
+        if settings.OPENEDX_ORACLEJDK_URL:
+            template["oraclejdk_url"] = settings.OPENEDX_ORACLEJDK_URL
 
         return template
 

@@ -40,22 +40,22 @@ from registration.api.v2.views import (
 
 v1_router = routers.DefaultRouter()
 
-v1_router.register(r'instance', InstanceViewSet, base_name='instance')
+v1_router.register(r'instance', InstanceViewSet, basename='instance')
 v1_router.register(r'openedx_appserver', OpenEdXAppServerViewSet)
 v1_router.register(r'openstackserver', OpenStackServerViewSet)
-v1_router.register(r'pr_watch', WatchedPullRequestViewSet, base_name='pr_watch')
+v1_router.register(r'pr_watch', WatchedPullRequestViewSet, basename='pr_watch')
 
 v2_router = routers.DefaultRouter()
-v2_router.register(r'accounts', AccountViewSet, base_name='accounts')
-v2_router.register(r'instances/openedx_config', OpenEdXInstanceConfigViewSet, base_name='openedx-instance-config')
+v2_router.register(r'accounts', AccountViewSet, basename='accounts')
+v2_router.register(r'instances/openedx_config', OpenEdXInstanceConfigViewSet, basename='openedx-instance-config')
 v2_router.register(
     r'instances/openedx_deployment',
     OpenEdxInstanceDeploymentViewSet,
-    base_name='openedx-instance-deployment'
+    basename='openedx-instance-deployment'
 )
 v2_router.register(
     r'notifications',
     NotificationsViewSet,
-    base_name='notifications'
+    basename='notifications'
 )
-v2_router.register(r'verify_email', VerifyEmailViewset, base_name='verify-email-api')
+v2_router.register(r'verify_email', VerifyEmailViewset, basename='verify-email-api')
