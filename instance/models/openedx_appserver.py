@@ -592,7 +592,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
     @log_exception  # noqa: MC0001
     @AppServer.status.only_for(AppServer.Status.New)
-    def provision(self):
+    def provision(self): # noqa: MC0001
         """
         Provision this AppServer.
 
