@@ -355,8 +355,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         """
         if BetaTestApplication.objects.filter(user=value).exists():
             raise ValidationError("User has reached limit of allowed Open edX instances.")
-        else:
-            return value
+        return value
 
     def validate_subdomain(self, value):
         """
