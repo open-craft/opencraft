@@ -102,6 +102,16 @@ class FactoriesTestCase(TestCase):
         custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
         self._assert_field_values(custom_instance, sub_domain, **self.PRODUCTION_DEFAULTS)
 
+        # Create instance with underscore in domain name
+        sub_domain = "bad_domain_name"
+        with self.assertRaises(AssertionError):
+            instance_factory(sub_domain=sub_domain)
+
+        # Create instance with not all lowercase domain name
+        sub_domain = "Bad-Domain"
+        with self.assertRaises(AssertionError):
+            instance_factory(sub_domain=sub_domain)
+
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
             instance_factory()

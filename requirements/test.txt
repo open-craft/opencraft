@@ -12,7 +12,7 @@ appdirs==1.4.4
     # via
     #   openstacksdk
     #   virtualenv
-asgiref==3.2.7
+asgiref==3.3.4
     # via
     #   channels
     #   channels-redis
@@ -24,22 +24,16 @@ astroid==2.1.0
     #   requirements-detector
 async-timeout==3.0.1
     # via aioredis
-attrs==19.3.0
+attrs==21.2.0
     # via
+    #   cmd2
     #   jsonschema
     #   service-identity
     #   twisted
-autobahn==20.4.3
+autobahn==21.2.1
     # via daphne
 automat==20.2.0
     # via twisted
-babel==2.8.0
-    # via
-    #   osc-lib
-    #   oslo.i18n
-    #   python-cinderclient
-    #   python-novaclient
-    #   python-openstackclient
 beautifulsoup4==4.7.1
     # via
     #   -r requirements/base.in
@@ -52,9 +46,9 @@ botocore==1.12.253
     # via
     #   boto3
     #   s3transfer
-certifi==2020.4.5.1
+certifi==2020.12.5
     # via requests
-cffi==1.14.0
+cffi==1.14.5
     # via cryptography
 channels==2.3.0
     # via
@@ -62,20 +56,22 @@ channels==2.3.0
     #   channels-redis
 channels_redis==2.4.0
     # via -r requirements/base.in
-chardet==3.0.4
+chardet==4.0.0
     # via requests
-cheroot==8.3.0
+cheroot==8.5.2
     # via cherrypy
 cherrypy==18.1.2
     # via -r requirements/base.in
-click==7.1.2
+click==8.0.0
     # via pip-tools
-cliff==3.1.0
+cliff==3.7.0
     # via
     #   osc-lib
     #   python-openstackclient
-cmd2==0.8.9
+cmd2==1.5.0
     # via cliff
+colorama==0.4.4
+    # via cmd2
 colour==0.1.5
     # via -r requirements/base.in
 constantly==15.1.0
@@ -100,25 +96,24 @@ cryptography==3.2.1
     #   pyopenssl
     #   requests
     #   service-identity
-cssutils==1.0.2
+cssutils==2.2.0
     # via pynliner
 daphne==2.5.0
     # via channels
-ddt==1.4.1
+ddt==1.4.2
     # via -r requirements/test.in
-debtcollector==2.0.1
+debtcollector==2.2.0
     # via
     #   oslo.config
-    #   oslo.serialization
     #   oslo.utils
     #   python-keystoneclient
-decorator==4.4.2
+decorator==5.0.9
     # via
     #   dogpile.cache
     #   openstacksdk
 dictdiffer==0.8.1
     # via -r requirements/base.in
-distlib==0.3.0
+distlib==0.3.1
     # via virtualenv
 django-appconf==1.0.4
     # via django-compressor
@@ -150,7 +145,7 @@ django-storages==1.7.1
     # via -r requirements/base.in
 django-zurb-foundation==5.5.0
     # via -r requirements/base.in
-django==2.2.19
+django==2.2.23
     # via
     #   -r requirements/base.in
     #   channels
@@ -160,11 +155,12 @@ django==2.2.19
     #   django-redis
     #   django-simple-email-confirmation
     #   django-storages
+    #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-yasg
 djangorestframework-simplejwt==4.4.0
     # via -r requirements/base.in
-djangorestframework==3.9.4
+djangorestframework==3.12.4
     # via
     #   -r requirements/base.in
     #   djangorestframework-simplejwt
@@ -179,15 +175,15 @@ docutils==0.14
     #   botocore
 dodgy==0.2.1
     # via prospector
-dogpile.cache==0.9.2
+dogpile.cache==1.1.2
     # via openstacksdk
-drf-yasg==1.17.1
+drf-yasg==1.20.0
     # via -r requirements/base.in
 entrypoints==0.3
     # via -r requirements/base.in
 factory-boy==2.12.0
     # via -r requirements/test.in
-faker==4.1.0
+faker==8.1.4
     # via
     #   -r requirements/test.in
     #   factory-boy
@@ -215,62 +211,73 @@ gitpython==2.1.15
     # via -r requirements/base.in
 gunicorn==19.9.0
     # via -r requirements/base.in
-hiredis==1.0.1
+hiredis==2.0.0
     # via aioredis
 honcho==1.0.1
     # via -r requirements/base.in
 huey==2.1.0
     # via -r requirements/base.in
-hyperlink==19.0.0
-    # via twisted
-idna==2.9
+hyperlink==21.0.0
+    # via
+    #   autobahn
+    #   twisted
+idna==2.10
     # via
     #   requests
     #   tldextract
     #   twisted
-importlib-metadata==1.6.0
+importlib-metadata==4.0.1
     # via
-    #   importlib-resources
+    #   cmd2
+    #   cssutils
     #   jsonschema
+    #   openstacksdk
+    #   oslo.config
+    #   stevedore
     #   virtualenv
-importlib-resources==1.5.0
-    # via virtualenv
-incremental==17.5.0
+importlib-resources==5.1.3
+    # via
+    #   netaddr
+    #   virtualenv
+incremental==21.3.0
     # via twisted
-inflection==0.4.0
+inflection==0.5.1
     # via drf-yasg
-iso8601==0.1.12
+iso8601==0.1.14
     # via
     #   keystoneauth1
     #   openstacksdk
     #   oslo.utils
     #   python-novaclient
-isort==4.3.21
+    #   python-openstackclient
+isort==5.8.0
     # via pylint
 itypes==1.2.0
     # via coreapi
-jaraco.functools==3.0.1
+jaraco.functools==3.3.0
     # via
     #   cheroot
     #   tempora
-jinja2==2.11.2
+jedi==0.17.2
+    # via -r requirements/base.in
+jinja2==3.0.0
     # via coreschema
 jmespath==0.10.0
     # via
     #   boto3
     #   botocore
     #   openstacksdk
-jsonpatch==1.25
+jsonpatch==1.32
     # via
     #   openstacksdk
     #   warlock
-jsonpointer==2.0
+jsonpointer==2.1
     # via jsonpatch
 jsonschema==3.2.0
     # via
     #   -r requirements/base.in
     #   warlock
-keystoneauth1==3.14.0
+keystoneauth1==4.3.1
     # via
     #   -r requirements/base.in
     #   openstacksdk
@@ -279,14 +286,13 @@ keystoneauth1==3.14.0
     #   python-glanceclient
     #   python-keystoneclient
     #   python-novaclient
-    #   python-openstackclient
-lazy-object-proxy==1.4.3
+lazy-object-proxy==1.6.0
     # via astroid
-libsass==0.20.0
+libsass==0.20.1
     # via django-libsass
 mailchimp3==3.0.13
     # via -r requirements/base.in
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via jinja2
 mccabe==0.6.1
     # via
@@ -294,7 +300,7 @@ mccabe==0.6.1
     #   flake8
     #   prospector
     #   pylint
-more-itertools==8.2.0
+more-itertools==8.7.0
     # via
     #   cheroot
     #   cherrypy
@@ -307,7 +313,7 @@ munch==2.5.0
     # via openstacksdk
 mysqlclient==1.4.2.post1
     # via -r requirements/base.in
-netaddr==0.7.19
+netaddr==0.8.0
     # via
     #   oslo.config
     #   oslo.utils
@@ -317,7 +323,7 @@ netifaces==0.10.9
     #   oslo.utils
 nose==1.3.7
     # via -r requirements/test.in
-openstacksdk==0.31.1
+openstacksdk==0.56.0
     # via
     #   -r requirements/base.in
     #   os-client-config
@@ -329,11 +335,11 @@ os-service-types==1.7.0
     # via
     #   keystoneauth1
     #   openstacksdk
-osc-lib==2.0.0
+osc-lib==2.4.0
     # via python-openstackclient
-oslo.config==8.0.2
+oslo.config==8.7.0
     # via python-keystoneclient
-oslo.i18n==4.0.1
+oslo.i18n==5.0.1
     # via
     #   osc-lib
     #   oslo.config
@@ -343,11 +349,11 @@ oslo.i18n==4.0.1
     #   python-keystoneclient
     #   python-novaclient
     #   python-openstackclient
-oslo.serialization==3.1.1
+oslo.serialization==4.1.0
     # via
     #   python-keystoneclient
     #   python-novaclient
-oslo.utils==4.1.1
+oslo.utils==4.9.0
     # via
     #   osc-lib
     #   oslo.serialization
@@ -356,9 +362,13 @@ oslo.utils==4.1.1
     #   python-keystoneclient
     #   python-novaclient
     #   python-openstackclient
-packaging==20.3
-    # via drf-yasg
-pbr==5.4.5
+packaging==20.9
+    # via
+    #   drf-yasg
+    #   oslo.utils
+parso==0.7.1
+    # via jedi
+pbr==5.6.0
     # via
     #   cliff
     #   debtcollector
@@ -377,11 +387,11 @@ pbr==5.4.5
     #   stevedore
 pep8-naming==0.4.1
     # via prospector
-pillow==8.1.2
+pillow==8.2.0
     # via -r requirements/base.in
 pip-tools==5.5.0
     # via -r requirements/base.in
-portend==2.6
+portend==2.7.1
     # via cherrypy
 prettytable==0.7.2
     # via
@@ -405,20 +415,20 @@ pycodestyle==2.3.1
     #   prospector
 pycparser==2.20
     # via cffi
-pycryptodomex==3.9.7
+pycryptodomex==3.10.1
     # via pyjwkest
-pydocstyle==5.0.2
+pydocstyle==6.0.0
     # via prospector
 pyflakes==1.6.0
     # via
     #   flake8
     #   prospector
-pyhamcrest==2.0.2
-    # via twisted
 pyjwkest==1.4.0
     # via -r requirements/base.in
 pyjwt==1.7.1
-    # via djangorestframework-simplejwt
+    # via
+    #   -r requirements/base.in
+    #   djangorestframework-simplejwt
 pylint-celery==0.3
     # via -r requirements/test.in
 pylint-common==0.2.5
@@ -444,7 +454,7 @@ pymongo==3.8.0
     # via -r requirements/base.in
 pynliner==0.8.0
     # via django-inlinecss
-pyopenssl==19.1.0
+pyopenssl==20.0.1
     # via
     #   python-glanceclient
     #   requests
@@ -452,14 +462,13 @@ pyopenssl==19.1.0
 pyparsing==2.4.7
     # via
     #   cliff
-    #   cmd2
     #   oslo.utils
     #   packaging
-pyperclip==1.8.0
+pyperclip==1.8.2
     # via cmd2
-pyrsistent==0.16.0
+pyrsistent==0.17.3
     # via jsonschema
-python-cinderclient==7.0.0
+python-cinderclient==7.4.0
     # via python-openstackclient
 python-consul==1.1.0
     # via -r requirements/base.in
@@ -468,31 +477,28 @@ python-dateutil==2.8.1
     #   botocore
     #   faker
     #   freezegun
-python-glanceclient==2.16.0
-    # via
-    #   -r requirements/base.in
-    #   python-openstackclient
-python-keystoneclient==3.19.0
+python-glanceclient==3.3.0
+    # via -r requirements/base.in
+python-keystoneclient==4.2.0
     # via
     #   -r requirements/base.in
     #   django-storage-swift
     #   python-openstackclient
-python-magic==0.4.18
+python-magic==0.4.22
     # via django-storage-swift
-python-novaclient==14.1.0
+python-novaclient==17.4.0
     # via
     #   -r requirements/base.in
     #   python-openstackclient
-python-openstackclient==3.19.0
+python-openstackclient==5.5.0
     # via -r requirements/base.in
-python-swiftclient==3.7.0
+python-swiftclient==3.11.1
     # via
     #   -r requirements/base.in
     #   django-storage-swift
 pytz==2019.1
     # via
     #   -r requirements/base.in
-    #   babel
     #   django
     #   oslo.serialization
     #   oslo.utils
@@ -504,7 +510,6 @@ pyyaml==5.4.1
     #   dns-lexicon
     #   openstacksdk
     #   oslo.config
-    #   oslo.serialization
     #   prospector
 rcssmin==1.0.6
     # via django-compressor
@@ -516,7 +521,7 @@ requests-file==1.4.3
     # via
     #   -r requirements/base.in
     #   tldextract
-requests[security]==2.23.0
+requests[security]==2.25.1
     # via
     #   -r requirements/base.in
     #   coreapi
@@ -535,17 +540,17 @@ requests[security]==2.23.0
     #   tldextract
 requestsexceptions==1.4.0
     # via openstacksdk
-requirements-detector==0.6
+requirements-detector==0.7
     # via prospector
 responses==0.10.6
     # via -r requirements/base.in
-rfc3986==1.4.0
+rfc3986==1.5.0
     # via oslo.config
 rjsmin==1.1.0
     # via django-compressor
-ruamel.yaml.clib==0.2.0
+ruamel.yaml.clib==0.2.2
     # via ruamel.yaml
-ruamel.yaml==0.16.10
+ruamel.yaml==0.17.4
     # via drf-yasg
 s3transfer==0.2.1
     # via boto3
@@ -557,68 +562,58 @@ service-identity==18.1.0
     #   twisted
 setoptconf==0.2.0
     # via prospector
-simplejson==3.17.0
+simplejson==3.17.2
     # via
     #   osc-lib
     #   python-cinderclient
-    #   python-novaclient
-six==1.14.0
+six==1.16.0
     # via
     #   -r requirements/base.in
     #   astroid
     #   cheroot
-    #   cliff
-    #   cmd2
     #   cryptography
     #   debtcollector
     #   django-compressor
     #   django-extensions
     #   django-storage-swift
-    #   drf-yasg
     #   freezegun
     #   jsonschema
     #   keystoneauth1
     #   libsass
     #   munch
-    #   openstacksdk
-    #   osc-lib
     #   oslo.i18n
-    #   oslo.utils
-    #   packaging
     #   pyjwkest
     #   pyopenssl
-    #   pyrsistent
-    #   python-cinderclient
     #   python-consul
     #   python-dateutil
-    #   python-glanceclient
     #   python-keystoneclient
-    #   python-novaclient
-    #   python-openstackclient
     #   python-swiftclient
     #   requests-file
     #   responses
-    #   stevedore
     #   virtualenv
     #   warlock
 smmap2==3.0.1
     # via gitdb2
-smmap==3.0.4
+smmap==4.0.0
     # via smmap2
-snowballstemmer==2.0.0
+snowballstemmer==2.1.0
     # via pydocstyle
-soupsieve==2.0
+soupsieve==2.2.1
     # via beautifulsoup4
-sqlparse==0.3.1
+sqlparse==0.4.1
     # via django
-stevedore==1.32.0
+stevedore==3.3.0
     # via
     #   cliff
+    #   dogpile.cache
     #   keystoneauth1
     #   osc-lib
     #   oslo.config
+    #   python-cinderclient
     #   python-keystoneclient
-tempora==3.0.0
+    #   python-novaclient
+    #   python-openstackclient
+tempora==4.0.2
     # via portend
 testfixtures==6.10.3
     # via -r requirements/test.in
@@ -628,12 +623,16 @@ tldextract==2.2.3
     # via
     #   -r requirements/base.in
     #   dns-lexicon
-twisted[tls]==20.3.0
+twisted[tls]==21.2.0
     # via daphne
-txaio==20.4.1
+txaio==21.2.1
     # via autobahn
-typed-ast==1.4.1
+typed-ast==1.4.3
     # via astroid
+typing-extensions==3.10.0.0
+    # via
+    #   asgiref
+    #   importlib-metadata
 uritemplate==3.0.1
     # via
     #   coreapi
@@ -644,11 +643,11 @@ urllib3==1.25.3
     #   botocore
     #   requests
     #   selenium
-virtualenv==20.0.20
+virtualenv==20.4.6
     # via -r requirements/base.in
 warlock==1.3.3
     # via python-glanceclient
-wcwidth==0.1.9
+wcwidth==0.2.5
     # via cmd2
 werkzeug==0.15.4
     # via -r requirements/base.in
@@ -659,11 +658,11 @@ wrapt==1.12.1
     #   python-glanceclient
 zc.lockfile==2.0
     # via cherrypy
-zipp==3.1.0
+zipp==3.4.1
     # via
     #   importlib-metadata
     #   importlib-resources
-zope.interface==5.1.0
+zope.interface==5.4.0
     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:

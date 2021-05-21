@@ -147,6 +147,7 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver = make_test_appserver()
         self.assertEqual(appserver.status, AppServerStatus.New)
         self.assertEqual(appserver.server.status, Server.Status.Pending)
+        appserver.manage_instance_services = Mock()
         result = appserver.provision()
         self.assertFalse(result)
         self.assertEqual(appserver.status, AppServerStatus.ConfigurationFailed)
@@ -154,6 +155,7 @@ class OpenEdXAppServerTestCase(TestCase):
         mocks.mock_provision_failed_email.assert_called_once_with(
             "AppServer deploy failed: Ansible play exited with non-zero exit code", log_lines
         )
+        appserver.manage_instance_services.assert_called_once_with(active=False)
 
     @patch_services
     def test_provision_unhandled_exception(self, mocks, mock_consul):
@@ -163,9 +165,11 @@ class OpenEdXAppServerTestCase(TestCase):
         """
         mocks.mock_run_ansible_playbooks.side_effect = Exception('Something went catastrophically wrong')
         appserver = make_test_appserver()
+        appserver.manage_instance_services = Mock()
         result = appserver.provision()
         self.assertFalse(result)
         mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
+        appserver.manage_instance_services.assert_called_once_with(active=False)
 
     def test_admin_users(self, mock_consul):
         """

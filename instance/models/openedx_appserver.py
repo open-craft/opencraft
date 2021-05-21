@@ -660,6 +660,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
                 self.logger.info('Provisioning failed')
                 self._status_to_configuration_failed()
                 self.provision_failed_email("AppServer deploy failed: Ansible play exited with non-zero exit code", log)
+                self.manage_instance_services(active=False)
                 return False
 
             # Reboot
@@ -677,6 +678,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             message = "AppServer deploy failed: unhandled exception"
             self.logger.exception(message)
             self.provision_failed_email(message)
+            self.manage_instance_services(active=False)
             return False
 
     def manage_instance_services(self, active):
