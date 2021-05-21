@@ -103,7 +103,8 @@ disable=
     unused-argument,
     no-else-return,
     bad-continuation,
-    useless-suppression
+    useless-suppression,
+    import-outside-toplevel,
 
 [SPELLING]
 
