@@ -17,10 +17,12 @@ asgiref==3.3.4
     #   channels
     #   channels-redis
     #   daphne
-astroid==2.1.0
+astroid==2.4.1
     # via
+    #   prospector
     #   pylint
     #   pylint-celery
+    #   pylint-flask
     #   requirements-detector
 async-timeout==3.0.1
     # via aioredis
@@ -191,7 +193,7 @@ filelock==3.0.12
     # via virtualenv
 flake8-polyfill==1.0.2
     # via -r requirements/test.in
-flake8==3.5.0
+flake8==3.8
     # via
     #   -r requirements/test.in
     #   flake8-polyfill
@@ -230,6 +232,7 @@ importlib-metadata==4.0.1
     # via
     #   cmd2
     #   cssutils
+    #   flake8
     #   jsonschema
     #   openstacksdk
     #   oslo.config
@@ -250,7 +253,7 @@ iso8601==0.1.14
     #   oslo.utils
     #   python-novaclient
     #   python-openstackclient
-isort==5.8.0
+isort==4.3.21
     # via pylint
 itypes==1.2.0
     # via coreapi
@@ -286,7 +289,7 @@ keystoneauth1==4.3.1
     #   python-glanceclient
     #   python-keystoneclient
     #   python-novaclient
-lazy-object-proxy==1.6.0
+lazy-object-proxy==1.4.3
     # via astroid
 libsass==0.20.1
     # via django-libsass
@@ -399,7 +402,7 @@ prettytable==0.7.2
     #   python-cinderclient
     #   python-glanceclient
     #   python-novaclient
-prospector==1.1.4
+prospector==1.3.1
     # via -r requirements/test.in
 psycopg2-binary==2.8.3
     # via -r requirements/base.in
@@ -409,7 +412,7 @@ pyasn1==0.4.8
     # via
     #   pyasn1-modules
     #   service-identity
-pycodestyle==2.3.1
+pycodestyle==2.6.0
     # via
     #   flake8
     #   prospector
@@ -419,7 +422,7 @@ pycryptodomex==3.10.1
     # via pyjwkest
 pydocstyle==6.0.0
     # via prospector
-pyflakes==1.6.0
+pyflakes==2.2.0
     # via
     #   flake8
     #   prospector
@@ -430,25 +433,33 @@ pyjwt==1.7.1
     #   -r requirements/base.in
     #   djangorestframework-simplejwt
 pylint-celery==0.3
-    # via -r requirements/test.in
+    # via
+    #   -r requirements/test.in
+    #   prospector
 pylint-common==0.2.5
     # via -r requirements/test.in
 pylint-django==2.0.15
-    # via -r requirements/test.in
-pylint-plugin-utils==0.5
+    # via
+    #   -r requirements/test.in
+    #   prospector
+pylint-flask==0.6
+    # via prospector
+pylint-plugin-utils==0.6
     # via
     #   -r requirements/test.in
     #   prospector
     #   pylint-celery
     #   pylint-common
     #   pylint-django
-pylint==2.2.3
+    #   pylint-flask
+pylint==2.5.3
     # via
     #   -r requirements/test.in
     #   prospector
     #   pylint-celery
     #   pylint-common
     #   pylint-django
+    #   pylint-flask
     #   pylint-plugin-utils
 pymongo==3.8.0
     # via -r requirements/base.in
@@ -623,6 +634,8 @@ tldextract==2.2.3
     # via
     #   -r requirements/base.in
     #   dns-lexicon
+toml==0.10.2
+    # via pylint
 twisted[tls]==21.2.0
     # via daphne
 txaio==21.2.1
