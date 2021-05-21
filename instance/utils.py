@@ -207,7 +207,7 @@ def create_temp_dir():
 class DjangoChoiceEnum(Enum):
     """Enumeration that provides convenient methods for Django"""
 
-    def __str__(self):
+    def __str__(self):  # pylint:disable=invalid-str-returned
         return self.name
 
     @classmethod
