@@ -101,6 +101,7 @@ def instance_factory(**kwargs):
     assert is_valid_domain_name(kwargs.get('sub_domain'))
 
     # Create instance
+    # n = OpenEdXInstance.objects.create(instance_purpose="3")
     instance = OpenEdXInstance.objects.create(**kwargs)
     return instance
 
@@ -135,7 +136,8 @@ def production_instance_factory(**kwargs):
     environment_ready = _check_environment()
 
     if not environment_ready:
-        logger.warning("Environment not ready. Please fix the problems above, then try again. Aborting.")
+        logger.warning(
+            "Environment not ready. Please fix the problems above, then try again. Aborting.")
         return None
 
     # Gather settings
@@ -146,9 +148,11 @@ def production_instance_factory(**kwargs):
         # Disable certificates process to reduce load on RabbitMQ and MySQL
         "SANDBOX_ENABLE_CERTIFICATES": False,
     }
-    configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
+    configuration_extra_settings = kwargs.pop(
+        "configuration_extra_settings", "")
     if configuration_extra_settings:
-        configuration_extra_settings = yaml.load(configuration_extra_settings, Loader=yaml.SafeLoader)
+        configuration_extra_settings = yaml.load(
+            configuration_extra_settings, Loader=yaml.SafeLoader)
     else:
         configuration_extra_settings = {}
     extra_settings = yaml.dump(
