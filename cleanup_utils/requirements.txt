@@ -1,9 +1,9 @@
-boto3==1.9.171
+boto3==1.9.253
 dns-lexicon==3.3.13
-Django==2.2.20
+Django==2.2.23
 django-environ==0.4.5
 mysqlclient==1.4.2.post1
 python-consul==1.1.0
-python-novaclient==14.1.0
-PyYAML==5.4
-virtualenv==16.6.1
+python-novaclient==17.4.0
+PyYAML==5.4.1
+virtualenv==20.4.6
