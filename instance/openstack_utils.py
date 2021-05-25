@@ -181,7 +181,21 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
         # 'name', since it's written in our .env and stored in DB fields
         image_selector['name_or_id'] = image_selector['name']
         del image_selector['name']
-    image = nova.glance.find_image(**image_selector)
+
+    # This is the failing line:
+    # image = nova.glance.find_image(**image_selector)
+    # Changed to:
+    logger.info("Hello there. Trying to reproduce the keystoneauth1 error")
+    logger.info("Parameters: %s", image_selector)
+    for i in range(1, 20):
+        logger.info("Attempt number %i", i)
+        try:
+            image = nova.glance.find_image(**image_selector)
+            logger.info("Didn't seeee openstack errors. Result was: %s", image)
+        except Exception as e:
+            logger.warn("Found openstack error:")
+            logger.warn(e)
+    logger.info("Continuing with image: %s", image)
 
     logger.info('Creating OpenStack server: name=%s image=%s flavor=%s', server_name, image, flavor)
     return nova.servers.create(server_name, image, flavor, key_name=key_name, security_groups=security_groups)
