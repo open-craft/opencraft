@@ -186,7 +186,7 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     # image = nova.glance.find_image(**image_selector)
     # Changed to:
     logger.info("Hello there. Trying to reproduce the keystoneauth1 error")
-    logger.info("Parameters: %s", image_selector)
+    logger.info("Parameters: %s", (image_selector, server_name, flavor_selector, nova))
     for i in range(1, 20):
         logger.info("Attempt number %i", i)
         try:
