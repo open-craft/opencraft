@@ -175,7 +175,16 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     """
     Create a VM via nova
     """
-    flavor = nova.flavors.find(**flavor_selector)
+    logger.info("Hello there. Trying to reproduce the keystoneauth1 error")
+    logger.info("Now doing nova.flavors.find")
+    for i in range(1, 20):
+        logger.info("Attempt number %i", i)
+        try:
+            flavor = nova.flavors.find(**flavor_selector)
+        except Exception as e:
+            logger.warn("Found openstack error:")
+            logger.warn(e)
+    logger.info("Continuing with flavor: %s", flavor)
     if 'name' in image_selector and 'name_or_id' not in image_selector:
         # Newer novaclient versions use 'name_or_id' but we still support
         # 'name', since it's written in our .env and stored in DB fields
@@ -185,7 +194,7 @@ def create_server(nova, server_name, flavor_selector, image_selector, key_name=N
     # This is the failing line:
     # image = nova.glance.find_image(**image_selector)
     # Changed to:
-    logger.info("Hello there. Trying to reproduce the keystoneauth1 error")
+    logger.info("Now trying find_image")
     logger.info("Parameters: %s", (image_selector, server_name, flavor_selector, nova))
     for i in range(1, 20):
         logger.info("Attempt number %i", i)
