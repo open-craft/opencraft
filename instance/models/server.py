@@ -295,7 +295,16 @@ class OpenStackServer(Server):
         if not self.openstack_id:
             assert self.status == Status.Pending
             self.start()
-        return self.nova.servers.get(self.openstack_id)
+        logger.info("At os_server, attempting to get server")
+        for i in range(1, 20):
+            logger.info("Attempt number %i", i)
+            try:
+                server = self.nova.servers.get(self.openstack_id)
+            except Exception as e:
+                logger.warn("Found openstack error:")
+                logger.warn(e)
+        logger.info("Continuing with server: %s", server)
+        return server
 
     @property
     def public_ip(self):
