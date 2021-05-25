@@ -398,41 +398,41 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - build:
-          name: quality_migrations_tests
-          tests_group: 0
-          tests_type: clean test.quality test.migrations_missing
-      - build:
-          name: python_unit_tests
-          tests_group: 0
-          tests_type: clean test.unit
-      - build:
-          name: browser_tests
-          tests_group: 0
-          tests_type: clean test.browser
-      - e2e-tests
-      - build:
-          name: js_tests
-          tests_group: 0
-          tests_type: clean test.js
+      # - build:
+      #     name: quality_migrations_tests
+      #     tests_group: 0
+      #     tests_type: clean test.quality test.migrations_missing
+      # - build:
+      #     name: python_unit_tests
+      #     tests_group: 0
+      #     tests_type: clean test.unit
+      # - build:
+      #     name: browser_tests
+      #     tests_group: 0
+      #     tests_type: clean test.browser
+      # - e2e-tests
+      # - build:
+      #     name: js_tests
+      #     tests_group: 0
+      #     tests_type: clean test.js
       - build:
           name: integration_tests_group_1
           tests_group: 1
           tests_type: test.integration
-          requires:
-            - quality_migrations_tests
-            - python_unit_tests
-            - browser_tests
-            - js_tests
+          # requires:
+          #   - quality_migrations_tests
+          #   - python_unit_tests
+          #   - browser_tests
+          #   - js_tests
       - build:
           name: integration_tests_group_2
           tests_group: 2
           tests_type: test.integration
-          requires:
-            - quality_migrations_tests
-            - python_unit_tests
-            - browser_tests
-            - js_tests
+          # requires:
+          #   - quality_migrations_tests
+          #   - python_unit_tests
+          #   - browser_tests
+          #   - js_tests
       - coverage:
           name: coverage
           requires:
