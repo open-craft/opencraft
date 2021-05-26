@@ -58,7 +58,8 @@ export function consoleReducer(
           data: { $merge: action.data },
           loading: {
             $set: state.activeInstance.loading.filter(x => !keys.includes(x))
-          }
+          },
+          feedback: { $unset: keys }
         }
       });
     case Actions.Types.UPDATE_INSTANCE_INFO_FAILURE:

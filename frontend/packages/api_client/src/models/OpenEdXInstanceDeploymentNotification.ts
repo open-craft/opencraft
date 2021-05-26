@@ -39,6 +39,19 @@ export interface OpenEdXInstanceDeploymentNotification {
     date: Date;
 }
 
+/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceDeploymentNotificationStatusEnum {
+    Healthy = 'healthy',
+    Unhealthy = 'unhealthy',
+    Offline = 'offline',
+    Provisioning = 'provisioning',
+    Preparing = 'preparing',
+    ChangesPending = 'changes_pending'
+}
+
 export function OpenEdXInstanceDeploymentNotificationFromJSON(json: any): OpenEdXInstanceDeploymentNotification {
     return OpenEdXInstanceDeploymentNotificationFromJSONTyped(json, false);
 }
@@ -68,19 +81,6 @@ export function OpenEdXInstanceDeploymentNotificationToJSON(value?: OpenEdXInsta
         'deployed_changes': value.deployedChanges,
         'date': (value.date.toISOString()),
     };
-}
-
-/**
-* @export
-* @enum {string}
-*/
-export enum OpenEdXInstanceDeploymentNotificationStatusEnum {
-    Healthy = 'healthy',
-    Unhealthy = 'unhealthy',
-    Offline = 'offline',
-    Provisioning = 'provisioning',
-    Preparing = 'preparing',
-    ChangesPending = 'changes_pending'
 }
 
 

@@ -115,6 +115,7 @@ export interface InstancesOpenedxConfigImageRequest {
     logo?: Blob;
     favicon?: Blob;
     heroCoverImage?: Blob;
+    footerLogoImage?: Blob;
 }
 
 export interface InstancesOpenedxConfigPartialUpdateRequest {
@@ -199,7 +200,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling accountsCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -237,7 +238,7 @@ export class V2Api extends runtime.BaseAPI {
      * Get current user registration data
      */
     async accountsListRaw(): Promise<runtime.ApiResponse<Array<Account>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -280,7 +281,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling accountsPartialUpdate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -326,7 +327,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling accountsUpdate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -368,7 +369,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authRefreshCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -410,7 +411,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authTokenCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -452,7 +453,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling authVerifyCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -493,7 +494,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -535,7 +536,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigImage.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -560,6 +561,8 @@ export class V2Api extends runtime.BaseAPI {
         useForm = canConsumeForm;
         // use FormData to transmit files using content-type "multipart/form-data"
         useForm = canConsumeForm;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
         if (useForm) {
             formParams = new FormData();
         } else {
@@ -576,6 +579,10 @@ export class V2Api extends runtime.BaseAPI {
 
         if (requestParameters.heroCoverImage !== undefined) {
             formParams.append('hero_cover_image', requestParameters.heroCoverImage as any);
+        }
+
+        if (requestParameters.footerLogoImage !== undefined) {
+            formParams.append('footer_logo_image', requestParameters.footerLogoImage as any);
         }
 
         const response = await this.request({
@@ -603,7 +610,7 @@ export class V2Api extends runtime.BaseAPI {
      * Get all instances owned by user
      */
     async instancesOpenedxConfigListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceConfig>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -646,7 +653,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigPartialUpdate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -688,7 +695,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxConfigRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -730,7 +737,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigStaticContentOverrides.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -775,7 +782,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigThemeConfig.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -820,7 +827,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigToggleStaticContentPage.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -865,7 +872,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigUpdate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -907,7 +914,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxConfigValidate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -948,7 +955,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instancesOpenedxDeploymentCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         if (requestParameters.cancelPendingDeployments !== undefined) {
             queryParameters['cancel_pending_deployments'] = requestParameters.cancelPendingDeployments;
@@ -1001,7 +1008,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxDeploymentDelete.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1034,7 +1041,7 @@ export class V2Api extends runtime.BaseAPI {
      * List method not allowed.
      */
     async instancesOpenedxDeploymentListRaw(): Promise<runtime.ApiResponse<Array<OpenEdXInstanceDeploymentStatus>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1072,7 +1079,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instancesOpenedxDeploymentRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1107,7 +1114,7 @@ export class V2Api extends runtime.BaseAPI {
      * Returns Open edX deployments information in form of status notifications.
      */
     async notificationsListRaw(requestParameters: NotificationsListRequest): Promise<runtime.ApiResponse<Array<OpenEdXInstanceDeploymentNotification>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         if (requestParameters.limit !== undefined) {
             queryParameters['limit'] = requestParameters.limit;
@@ -1149,7 +1156,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetConfirmCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1190,7 +1197,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1231,7 +1238,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling passwordResetValidateTokenCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -1272,7 +1279,7 @@ export class V2Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling verifyEmailRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 

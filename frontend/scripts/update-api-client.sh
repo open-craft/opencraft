@@ -5,7 +5,7 @@ rm -f packages/api_client/src/apis/*.ts
 rm -f packages/api_client/src/models/*.ts
 
 docker run --rm --network="host" -v ${PWD}:/local \
-    openapitools/openapi-generator-cli:v4.3.1 generate \
+    openapitools/openapi-generator-cli:v5.1.1 generate \
     -i http://localhost:5000/api/swagger/?format=openapi \
     -g typescript-fetch \
     --remove-operation-id-prefix \

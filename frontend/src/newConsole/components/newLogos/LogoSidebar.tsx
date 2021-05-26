@@ -2,19 +2,26 @@ import * as React from 'react';
 import './styles.scss';
 import { ConsolePageCustomizationContainer } from 'console/components';
 import { InstancesModel } from 'console/models';
-import { ImageUploadField } from 'ui/components';
+import { ImageUploadField, TextInputField } from 'ui/components';
 import { ConsolePage } from 'newConsole/components';
 import faviconTooltipImage from 'assets/faviconTooltipImage.png';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
-import { clearErrorMessage, updateImages } from 'console/actions';
+import {
+  clearErrorMessage,
+  updateActiveInstanceField,
+  updateImages,
+  syncActiveInstanceField
+} from 'console/actions';
 import messages from 'console/components/Logos/displayMessages';
 
 interface State {}
 interface ActionProps {
-  clearErrorMessage: Function;
-  updateImages: Function;
+  clearErrorMessage: typeof clearErrorMessage;
+  updateImages: typeof updateImages;
+  updateFieldValue: typeof updateActiveInstanceField;
+  syncFieldValue: typeof syncActiveInstanceField;
 }
 interface StateProps extends InstancesModel {}
 interface Props extends StateProps, ActionProps {}
@@ -41,6 +48,54 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
     if (instance.data && instance.data.favicon) {
       favicon = instance.data.favicon;
     }
+    const footerLogoImageSourceInput = (
+      <ImageUploadField
+        customUploadMessage={
+          <WrappedMessage messages={messages} id="footerLogoImage" />
+        }
+        updateImage={(image: File) => {
+          this.updateImage('footerLogoImage', image);
+        }}
+        parentMessages={messages}
+        error={instance.feedback.footerLogoImage}
+        clearError={() => {
+          this.props.clearErrorMessage('footerLogoImage');
+        }}
+        tooltipTextId="footerLogoImageTooltip"
+        innerPreview={instance.data?.footerLogoImage}
+      >
+        <p>
+          <WrappedMessage messages={messages} id="footerLogoImageAdvice" />
+        </p>
+        <p>
+          <a
+            href="https://www.edx.org/trademarks"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <WrappedMessage
+              messages={messages}
+              id="footerOpenedxTrademarkLink"
+            />
+          </a>
+        </p>
+      </ImageUploadField>
+    );
+    const footerLogoUrlInput = (
+      <TextInputField
+        error={instance.feedback.footerLogoUrl}
+        fieldName="footerLogoUrl"
+        helpMessageId="footerLogoUrlHelp"
+        loading={instance.loading.includes('footerLogoUrl')}
+        messages={messages}
+        onBlur={() => this.props.syncFieldValue('footerLogoUrl')}
+        onChange={e => {
+          this.props.updateFieldValue('footerLogoUrl', e.target.value);
+        }}
+        type="url"
+        value={instance.data?.footerLogoUrl}
+      />
+    );
 
     return (
       <ConsolePage contentLoading={this.props.loading} showSideBarEditComponent>
@@ -88,6 +143,10 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
                 innerPreview={favicon}
               />
             </div>
+            <div className="favicon-upload-field sidebar-item">
+              {footerLogoImageSourceInput}
+              {footerLogoUrlInput}
+            </div>
           </ConsolePageCustomizationContainer>
         </div>
       </ConsolePage>
@@ -103,5 +162,7 @@ export const LogosSideBar = connect<
   RootState
 >((state: RootState) => state.console, {
   clearErrorMessage,
-  updateImages
+  updateFieldValue: updateActiveInstanceField,
+  updateImages,
+  syncFieldValue: syncActiveInstanceField
 })(LogosSideBarComponent);

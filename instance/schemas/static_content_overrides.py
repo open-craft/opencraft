@@ -28,7 +28,7 @@ from .utils import nullable_schema, ref
 # pylint: disable=invalid-name
 static_content_overrides_v0_schema = {
     "definitions": {
-        "string": {"type": "string"}
+        "string": {"type": "string"},
     },
     "type": "object",
     "properties": {

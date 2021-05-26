@@ -40,7 +40,10 @@ export const FooterPreview: React.FC<FooterPreviewProps> = (
         </Col>
         <Col md={5} />
         <Col md={3} className="openedx-logo">
-          <img src={edxLogo} alt="Open edX logo" />
+          <img
+            src={props.instanceData?.footerLogoImage || edxLogo}
+            alt="Open edX logo"
+          />
         </Col>
       </Row>
       <Row>

@@ -32,8 +32,11 @@ from instance.schemas.theming import theme_schema_validate
 
 class OpenEdXThemeMixin(models.Model):
     """
-    Mixin that provides functionality to generate variables for simple_theme,
-    e.g. to change logo/favicon and colors.
+    Mixin that provides functionality to customize the look & feel of the UI.
+
+    This:
+    1. generates variables for simple_theme, e.g. to change logo/favicon and colors;
+    2. customizes the footer logo and link.
     """
     # TODO: Deprecate once new registration flow is in place.
     deploy_simpletheme = models.BooleanField(
@@ -168,7 +171,21 @@ class OpenEdXThemeMixin(models.Model):
         return {
             "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
             "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
-            'SIMPLETHEME_SASS_OVERRIDES': sass_overrides
+            'SIMPLETHEME_SASS_OVERRIDES': sass_overrides,
+        }
+
+    def get_footer_logo_customizations(self, application):
+        """
+        Return settings for customizing footer logos.
+        """
+        footer_logo_customization = {}
+        if application.footer_logo_image:
+            footer_logo_customization["FOOTER_OPENEDX_LOGO_IMAGE"] = application.footer_logo_image.url
+        if application.footer_logo_url:
+            footer_logo_customization["FOOTER_OPENEDX_URL"] = application.footer_logo_url
+        return {
+            "EDXAPP_LMS_ENV_EXTRA": footer_logo_customization,
+            "EDXAPP_CMS_ENV_EXTRA": footer_logo_customization
         }
 
     def get_theme_settings(self):
@@ -199,6 +216,7 @@ class OpenEdXThemeMixin(models.Model):
             sass_customizations = self.get_v0_theme_settings(application)
 
         theme_settings.update(sass_customizations)
+        theme_settings.update(self.get_footer_logo_customizations(application))
         return yaml.dump(theme_settings, default_flow_style=False)
 
     @staticmethod

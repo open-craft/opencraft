@@ -82,6 +82,7 @@ class ApplicationImageUploadSerializer(DataSerializer):
     logo = serializers.ImageField(required=False, use_url=True)
     favicon = serializers.ImageField(required=False, use_url=True)
     hero_cover_image = serializers.ImageField(required=False, use_url=True)
+    footer_logo_image = serializers.ImageField(required=False, use_url=True)
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -425,11 +426,14 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
             "draft_static_content_overrides",
             "static_pages_enabled",
             "is_email_verified",
-            "dns_configuration_state"
+            "dns_configuration_state",
+            "footer_logo_image",
+            "footer_logo_url",
         )
         read_only_fields = [
             "logo",
             "favicon",
+            "footer_logo_image",
             "lms_url",
             "studio_url",
             "dns_configuration_state"

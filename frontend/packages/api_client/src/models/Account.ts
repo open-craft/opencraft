@@ -48,7 +48,7 @@ export interface Account {
      * @type {Date}
      * @memberof Account
      */
-    acceptedPrivacyPolicy: Date;
+    acceptedPrivacyPolicy: Date | null;
     /**
      * User asserts that they have the rights to use to registered domain.
      * @type {boolean}
@@ -77,7 +77,7 @@ export function AccountFromJSONTyped(json: any, ignoreDiscriminator: boolean): A
         'username': json['username'],
         'password': json['password'],
         'email': json['email'],
-        'acceptedPrivacyPolicy': (new Date(json['accepted_privacy_policy'])),
+        'acceptedPrivacyPolicy': (json['accepted_privacy_policy'] === null ? null : new Date(json['accepted_privacy_policy'])),
         'acceptDomainCondition': json['accept_domain_condition'],
         'subscribeToUpdates': !exists(json, 'subscribe_to_updates') ? undefined : json['subscribe_to_updates'],
     };
@@ -96,7 +96,7 @@ export function AccountToJSON(value?: Account | null): any {
         'username': value.username,
         'password': value.password,
         'email': value.email,
-        'accepted_privacy_policy': (value.acceptedPrivacyPolicy.toISOString()),
+        'accepted_privacy_policy': (value.acceptedPrivacyPolicy === null ? null : value.acceptedPrivacyPolicy.toISOString()),
         'accept_domain_condition': value.acceptDomainCondition,
         'subscribe_to_updates': value.subscribeToUpdates,
     };
