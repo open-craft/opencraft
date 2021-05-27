@@ -1012,6 +1012,7 @@ class SiteConfigurationSettingsTestCase(TestCase):
     """
     Tests for configuration_site_configuration_setings.
     """
+
     def test_configuration_site_configuration_settings(self):
         """
         Test that the 'configuration_site_configuration_settings' field has the correct value set when

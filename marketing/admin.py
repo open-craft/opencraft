@@ -30,7 +30,7 @@ from marketing import models
 from registration.models import BetaTestApplication
 
 
-class EmailTemplateAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class EmailTemplateAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ("id", "name", "subject", "is_active")
 
     actions = ['send_sample_emails']
@@ -71,12 +71,12 @@ class EmailTemplateAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
     send_sample_emails.short_description = "Send sample emails for selected email templates"
 
 
-class SubscriberAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class SubscriberAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ("user", "receive_followup", "trial_started_at")
     list_filter = ("receive_followup", )
 
 
-class SentEmailAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class SentEmailAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ("id", "user", "template", "sent_at")
     # Don't Allow Email modification after sent
     readonly_fields = [field.name for field in models.SentEmail._meta.get_fields(include_parents=True)]

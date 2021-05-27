@@ -25,7 +25,7 @@ from django.conf import settings
 from django.core import mail as django_mail
 from django_rest_passwordreset.models import ResetPasswordToken
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as EC  # nopep8
 from selenium.common.exceptions import NoSuchElementException
 from simple_email_confirmation.models import EmailAddress
 

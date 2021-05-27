@@ -775,7 +775,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self._setup_user_instance()
 
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data={
                 "version": 1
             },
@@ -801,7 +801,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request changes
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data=theme_data,
             format="json",
         )
@@ -825,7 +825,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.instance_config.save()
 
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data={
                 "main-color": "",
                 "main-nav-color": ""
@@ -864,7 +864,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Check that it's not possible to enable button customization with "hover border color" missing.
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data={
                 "customize-sign-in-btn": True,
             },
@@ -875,7 +875,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Add missing property and enable customization.
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data={
                 "btn-sign-in-hover-border-color": "#fafafa",
                 "customize-sign-in-btn": True,
@@ -890,7 +890,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Disable customization.
         response = self.client.patch(
-            reverse(f"api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-theme-config", args=(self.instance_config.pk,)),
             data={
                 "customize-sign-in-btn": False,
             },
@@ -916,7 +916,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'logo': logo_file},
             format='multipart',
         )
@@ -936,7 +936,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'hero_cover_image': cover_image_file},
             format='multipart',
         )
@@ -958,7 +958,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'hero_cover_image': cover_image_file},
             format='multipart',
         )
@@ -968,7 +968,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Deletion request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'hero_cover_image': ''},
             format='multipart',
         )
@@ -989,7 +989,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'logo': logo_file},
             format='multipart',
         )
@@ -1014,7 +1014,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         # Request
         response = self.client.post(
-            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            reverse("api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
             data={'favicon': logo_file},
             format='multipart',
         )
@@ -1029,7 +1029,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         response = self.client.patch(
             reverse(
-                f"api:v2:openedx-instance-config-static-content-overrides",
+                "api:v2:openedx-instance-config-static-content-overrides",
                 args=(self.instance_config.pk, )
             ),
             data={'static_template_about_content': 'Hello world!'},
@@ -1065,7 +1065,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         response = self.client.patch(
             reverse(
-                f"api:v2:openedx-instance-config-static-content-overrides",
+                "api:v2:openedx-instance-config-static-content-overrides",
                 args=(self.instance_config.pk, )
             ),
             data=static_content_overrides_data,
@@ -1086,7 +1086,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         response = self.client.post(
             reverse(
-                f"api:v2:openedx-instance-config-toggle-static-content-page",
+                "api:v2:openedx-instance-config-toggle-static-content-page",
                 args=(self.instance_config.pk, )
             ),
             data={"page_name": "about", "enabled": False},
@@ -1127,7 +1127,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         for payload in static_pages_payload:
             self.client.post(
                 reverse(
-                    f"api:v2:openedx-instance-config-toggle-static-content-page",
+                    "api:v2:openedx-instance-config-toggle-static-content-page",
                     args=(self.instance_config.pk, )
                 ),
                 data=payload,
@@ -1173,7 +1173,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
 
         response = self.client.post(
             reverse(
-                f"api:v2:openedx-instance-config-toggle-static-content-page",
+                "api:v2:openedx-instance-config-toggle-static-content-page",
                 args=(self.instance_config.pk, )
             ),
             data={"page_name": "about", "enabled": False},
@@ -1197,7 +1197,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.client.force_login(self.user_with_instance)
         self._setup_user_instance()
 
-        response = self.client.get(reverse(f"api:v2:openedx-instance-config-list"))
+        response = self.client.get(reverse("api:v2:openedx-instance-config-list"))
 
         # Retrieve instance data and check that instance urls are present and not empty
         instance_data = dict(response.data[0])
@@ -1211,7 +1211,7 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.instance_config.instance = None
         self.instance_config.save()
 
-        response = self.client.get(reverse(f"api:v2:openedx-instance-config-list"))
+        response = self.client.get(reverse("api:v2:openedx-instance-config-list"))
 
         # Retrieve instance data and check that instance urls are present and empty
         instance_data = dict(response.data[0])

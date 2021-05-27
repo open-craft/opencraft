@@ -33,6 +33,7 @@ class APITestCase(WithUserTestCase):
     """
     Base class for API tests
     """
+
     def setUp(self):
         super().setUp()
 

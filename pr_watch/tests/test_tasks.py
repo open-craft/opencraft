@@ -238,7 +238,7 @@ class TasksTestCase(TestCase):
             pr = test_data[pr_number - 1]
 
             instance = mock_create_new_deployment.mock_calls[pr_number - 1][1][0]
-            subdomain_part = 'pr2300{}'.format(pr_number) # e.g. pr23001, pr23002, etc.
+            subdomain_part = 'pr2300{}'.format(pr_number)  # e.g. pr23001, pr23002, etc.
             self.assertEqual(instance.internal_lms_domain, '{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.internal_lms_preview_domain,
                              'preview.{}.sandbox.awesome.hosting.org'.format(subdomain_part))
@@ -246,7 +246,7 @@ class TasksTestCase(TestCase):
                              'studio.{}.sandbox.awesome.hosting.org'.format(subdomain_part))
             self.assertEqual(instance.edx_platform_repository_url, 'https://github.com/fork/repo.git')
             self.assertEqual(instance.edx_platform_commit, '7' * 40)
-            self.assertEqual(instance.openedx_release, 'ginkgo.8') # from WatchedFork
+            self.assertEqual(instance.openedx_release, 'ginkgo.8')  # from WatchedFork
             self.assertEqual(
                 yaml.load(instance.configuration_extra_settings, Loader=yaml.SafeLoader),
                 pr['expected_settings'])

@@ -180,7 +180,7 @@ class NotificationsViewSet(GenericViewSet):
 
         return queryset
 
-    def get_queryset(self, application=None): # pylint: disable=arguments-differ
+    def get_queryset(self, application=None):  # pylint: disable=arguments-differ
         if application is None:
             application = self.get_application()
 
@@ -489,7 +489,7 @@ class OpenEdXInstanceConfigViewSet(
                 application.draft_static_content_overrides = DEFAULT_STATIC_CONTENT_OVERRIDES
 
             merged_values = {
-                key: value for key, value in {
+                key: value for key, value in {  # pylint:disable=unnecessary-comprehension
                     **application.draft_static_content_overrides, **serializer.validated_data
                 }.items()}
 

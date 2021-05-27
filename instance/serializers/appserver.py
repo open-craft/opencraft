@@ -36,6 +36,7 @@ class AppServerBasicSerializer(serializers.BaseSerializer):
     """
     Simple high-level serializer for AppServer
     """
+
     def to_representation(self, instance):
         """
         Serialize AppServer object summary.

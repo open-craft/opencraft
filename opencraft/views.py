@@ -62,6 +62,7 @@ class HealthCheckView(View):
     """
     Health Check view
     """
+
     def get(self, request):
         """
         GET method which returns 503 status if any required services are unreachable.

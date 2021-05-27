@@ -46,6 +46,7 @@ class LoggingTestCase(TestCase):
     """
     Test cases for logging
     """
+
     def setUp(self):
         """
         Set up an instance and server to use for testing.

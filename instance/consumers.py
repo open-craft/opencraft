@@ -32,6 +32,7 @@ class WebSocketListener(WebsocketConsumer):
     """
     A websocket consumer for sending notifications.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.channel_group_name = 'ws'

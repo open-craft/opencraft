@@ -48,6 +48,7 @@ class InstanceManagerDecoratorTests(WithUserTestCase):
     """
     Tests for the permission_required decorator
     """
+
     def setUp(self):
         """Create the request factory"""
         super(InstanceManagerDecoratorTests, self).setUp()

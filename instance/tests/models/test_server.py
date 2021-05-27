@@ -52,6 +52,7 @@ class OpenStackServerTestCase(TestCase):
     """
     Test cases for OpenStackServer models
     """
+
     def test_new_server(self):
         """
         New OpenStackServer object
@@ -197,7 +198,7 @@ class OpenStackServerTestCase(TestCase):
             server._status_to_booting,
             server._status_to_ready,
         ]
-        status_queue.reverse() # To be able to use pop()
+        status_queue.reverse()  # To be able to use pop()
 
         def update_status():
             """ Simulate status progression """
@@ -445,6 +446,7 @@ class OpenStackServerStatusTestCase(TestCase):
     """
     Test cases for status switching in OpenStackServer models
     """
+
     def _assert_status_conditions(self, server, is_steady_state=False, accepts_ssh_commands=False, vm_available=False):
         """
         Assert that status conditions for server hold as specified
@@ -557,7 +559,7 @@ class OpenStackServerStatusTestCase(TestCase):
         Test that invalid status transitions raise exception
         """
         # pylint incorrectly concludes states is not iterable
-        invalid_from_states = (state for state in ServerStatus.states #pylint: disable=not-an-iterable
+        invalid_from_states = (state for state in ServerStatus.states  # pylint: disable=not-an-iterable
                                if state not in transition['from_states'])
         for invalid_from_state in invalid_from_states:
             instance = OpenStackServerFactory(status=invalid_from_state)

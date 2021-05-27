@@ -83,6 +83,7 @@ class MySqlCleanupInstance:
         ... )
         >>> mysql_cleanup.drop_integration_dbs_and_users()
     """
+
     def __init__(self, age_limit, url, domain, drop_dbs_and_users, dry_run):
         """
         Set up variables needed for cleanup

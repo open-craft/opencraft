@@ -46,7 +46,7 @@ class ReprovisionBucketsTestCase(TestCase):
         # Verify the logs
         self.assertIn(
             'Found "0" active instances',
-            [l[2] for l in captured_logs.actual()])
+            [la[2] for la in captured_logs.actual()])
 
     @patch(
         'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
@@ -79,7 +79,7 @@ class ReprovisionBucketsTestCase(TestCase):
             # Verify the logs
         self.assertIn(
             'Found "1" active instances',
-            set(l[2] for l in captured_logs.actual()))
+            set(la[2] for la in captured_logs.actual()))
 
         mock_update_iam.assert_called_once_with()
         mock_update_cors.assert_called_once_with()

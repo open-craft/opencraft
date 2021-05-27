@@ -67,7 +67,7 @@ class OpenEdXDeployment(Deployment):
     # Field which denotes if the deployment was cancelled by the user
     cancelled = models.BooleanField(default=False)
 
-     # pylint: disable=too-many-return-statements
+    # pylint: disable=too-many-return-statements
     def status(self):
         """
         Current state of deployment.

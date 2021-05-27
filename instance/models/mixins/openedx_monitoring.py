@@ -211,7 +211,7 @@ class NewRelicAvailabilityMonitor(models.Model):
     def __str__(self):
         return self.pk
 
-    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ,signature-differs
         """
         Disable this availability monitor on delete.
         """
@@ -234,7 +234,7 @@ class NewRelicAlertPolicy(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ,signature-differs
         """
         Delete this alert policy.
         """
@@ -253,7 +253,7 @@ class NewRelicEmailNotificationChannel(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ
+    def delete(self, *args, **kwargs):  # pylint: disable=arguments-differ,signature-differs
         """
         Delete this email notification channel.
         """

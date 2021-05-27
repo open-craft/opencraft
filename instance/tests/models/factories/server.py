@@ -67,6 +67,7 @@ class OSServerMockManager:
 
     Defaults to standard MagicMock if no attribute of fixture has been loaded for a given `openstack_id`
     """
+
     def __init__(self):
         self._os_server_dict = {}
 

@@ -105,4 +105,5 @@ class LogEntry(ValidateModelMixin, TimeStampedModel):
                 num_deleted, content_type.name, instance.pk
             )
 
+
 post_delete.connect(LogEntry.on_post_delete)

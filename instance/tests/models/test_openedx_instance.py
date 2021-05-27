@@ -594,7 +594,7 @@ class OpenEdXInstanceTestCase(TestCase):
         )
         instance.spawn_appserver(num_attempts=5, deployment_id=deployment.pk)
 
-        outbox = django_mail.outbox[0] # Given these deployment types, at least one email should be sended
+        outbox = django_mail.outbox[0]  # Given these deployment types, at least one email should be sended
         appserver = instance.appserver_set.first()
 
         combined_settings = yaml.load(appserver.configuration_settings, Loader=yaml.FullLoader)
@@ -1330,6 +1330,7 @@ class OpenEdXInstanceConsulTestCase(TestCase):
     Test cases for all Consul-related functionalities that resides in
     OpenEdXInstance model
     """
+
     def setUp(self):
         agent = consul.Consul()
         if agent.kv.get('', recurse=True)[1]:
@@ -1524,6 +1525,7 @@ class OpenEdXInstanceDNSTestCase(TestCase):
     """
     DNS-related test cases for OpenEdXInstance models
     """
+
     def _verify_vm_dns_records(self, domain, active_vm_ips):
         """
         Helper function to verify a set of DNS records for active VMs.

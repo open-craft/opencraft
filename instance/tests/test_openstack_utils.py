@@ -84,6 +84,7 @@ class OpenStackTestCase(TestCase):
     """
     Test cases for OpenStack helper functions
     """
+
     def setUp(self):
         super().setUp()
 
@@ -375,7 +376,7 @@ class SwiftTestCase(TestCase):
     )
     def test_delete_swift_containerr(self, auth):
         """Test for delete_swift_container function."""
-        self.service.delete.return_value = [None] * 10 # Response contents are ignored
+        self.service.delete.return_value = [None] * 10  # Response contents are ignored
         openstack_utils.delete_swift_container(CONTAINER_NAME, **auth)
         self.service.delete.assert_called_once_with(CONTAINER_NAME)
         self.basic_checks(auth)
@@ -487,7 +488,7 @@ class ServicePassesAuthTestCase(TestCase):
                 'auth_version': '3',
                 'os_username': 'user',
                 'os_password': 'password',
-                'os_tenant_name':  'tenant',
+                'os_tenant_name': 'tenant',
                 'os_auth_url': 'http://example.com/auth',
                 'os_region_name': 'Region'
             }

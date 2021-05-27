@@ -43,6 +43,7 @@ class AwsCleanupInstance:
     """
     Handles the cleanup of IAM users, Policies and Buckets related to CircleCI
     """
+
     def __init__(self, age_limit, aws_access_key_id, aws_secret_access_key, dry_run=False):
         """
         Set's up AWS connections and clients

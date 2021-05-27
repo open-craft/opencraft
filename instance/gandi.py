@@ -45,6 +45,7 @@ class GandiV5API:
     """
     Gandi v5 LiveDNS API client
     """
+
     def __init__(self, api_key, api_base='https://dns.api.gandi.net/api/v5'):
         self.api_base = api_base
         self.api_key = api_key

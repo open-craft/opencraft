@@ -224,6 +224,7 @@ class MongoDBReplicaSetManager(models.Manager):
     """
     Custom manager for the DatabaseServer model.
     """
+
     def extra_args(self, host, primary, replica_set):
         """
         Return extra attributes needed for database creation
@@ -344,6 +345,7 @@ class MongoDBServerManager(DatabaseServerManager):
     """
     MongoDB Server Manager
     """
+
     def extra_args(self, host, primary, replica_set):
         """
         Return extra attributes needed for database creation

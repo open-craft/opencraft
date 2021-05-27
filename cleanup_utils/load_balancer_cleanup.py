@@ -42,6 +42,7 @@ class LoadBalancerCleanup:
     """
     Searches and removes all the stale load balancer configuration fragments.
     """
+
     def __init__(self, load_balancer_address, fragment_prefix, age_limit, dry_run):
         """Sets up the variables needed for the cleanup"""
         self.load_balancer_address = load_balancer_address

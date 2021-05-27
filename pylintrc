@@ -101,7 +101,10 @@ disable=
     protected-access,
     unidiomatic-typecheck,
     unused-argument,
-    no-else-return
+    no-else-return,
+    bad-continuation,
+    useless-suppression,
+    import-outside-toplevel,
 
 [SPELLING]
 

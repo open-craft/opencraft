@@ -83,7 +83,7 @@ def create_synthetics_monitor(uri, name=None, monitor_type='SIMPLE',
         'frequency': frequency,
         'locations': locations,
         'status': 'ENABLED',
-        'options': {'verifySSL': True}, # SSL valid only for SIMPLE and BROWSER
+        'options': {'verifySSL': True},  # SSL valid only for SIMPLE and BROWSER
     })
     r.raise_for_status()
     return r.headers['location'].rsplit('/', 1)[-1]

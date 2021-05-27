@@ -66,6 +66,7 @@ class EmailInput(InputStyleMixin, forms.widgets.EmailInput):
     """
     Adds styles to email input fields, and enables email validation.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.attrs['validate-email'] = True

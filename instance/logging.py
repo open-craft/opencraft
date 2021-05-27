@@ -49,7 +49,7 @@ def log_exception(method):
         try:
             return method(self, *args, **kwds)
         except Exception as e:
-            self.logger.critical(traceback.format_exc()) # TODO: Restrict traceback view to administrators
+            self.logger.critical(traceback.format_exc())  # TODO: Restrict traceback view to administrators
             raise e
     return wrapper
 
@@ -60,6 +60,7 @@ class DBHandler(logging.Handler):
     """
     Records log messages in database models
     """
+
     def emit(self, record):
         """
         Handles an emitted log entry and stores it in the database, optionally linking it to the
@@ -104,6 +105,7 @@ class ModelLoggerAdapter(logging.LoggerAdapter):
     adpater.  The adapter includes information on the associated model instance by calling
     the format_log_message() method on the instance.
     """
+
     def process(self, msg, kwargs):
         msg, kwargs = super().process(msg, kwargs)
         annotation = self.extra['obj'].get_log_message_annotation()

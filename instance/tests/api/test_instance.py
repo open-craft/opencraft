@@ -48,6 +48,7 @@ class InstanceAPITestCase(APITestCase):
     This only checks the data related to InstanceReference
     (i.e. ID, name, created, modified, and instance_type)
     """
+
     def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated

@@ -45,6 +45,7 @@ class LoadBalancingServerManager(SharedServerManager):
     """
     Custom manager for the LoadBalancingServer model.
     """
+
     def _create_default(self):
         """
         Create the default load balancing server configured in the Django settings, if any.

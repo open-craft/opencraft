@@ -29,11 +29,11 @@ from .models import WatchedFork, WatchedPullRequest
 
 # ModelAdmins #################################################################
 
-class WatchedPullRequestAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class WatchedPullRequestAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('reference_name', 'instance')
 
 
-class WatchedForkAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
+class WatchedForkAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('enabled', 'organization', 'fork')
 
 

@@ -60,7 +60,6 @@ class BrowserLiveServerTestCase(LiveServerTestCase):
             self.browser = webdriver.Firefox(capabilities=cap, firefox_options=options, firefox_binary=firefox_binary)
         self.wait = WebDriverWait(self.browser, 10)
 
-
     def tearDown(self):
         """
         Close the browser at the end of test.

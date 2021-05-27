@@ -32,6 +32,7 @@ class VerifyExternalDomainTestCase(TestCase):
     """
     Test cases for tasks.verify_external_domain_configuration
     """
+
     def setUp(self):
         self.user1 = create_user_and_profile("instance.user1", "instance.user@example.com")
         self.user2 = create_user_and_profile("instance.user2", "instance.user@example.com")

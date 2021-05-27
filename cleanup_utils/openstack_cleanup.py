@@ -39,6 +39,7 @@ class OpenStackCleanupInstance:
     Handles the search and cleanup of all unused OpenStack resources used
     by CircleCI
     """
+
     def __init__(self, age_limit, openstack_settings, dry_run=False):
         """
         Set's up Nova client
@@ -140,7 +141,7 @@ class OpenStackCleanupInstance:
                 if not self.dry_run:
                     try:
                         instance.delete()
-                    except Exception as e: # pylint: disable=broad-except
+                    except Exception as e:  # pylint: disable=broad-except
                         logger.warning(
                             "    * WARNING: Unable to delete instance. Error: %s.",
                             e,

@@ -532,6 +532,7 @@ class ConsulAgentTest(TestCase):
     A Test Case for ConsulAgent class that acts as a helper between this
     code base and consul client'
     """
+
     def setUp(self):
         self.prefix = 'this/dummy/prefix/'
         self.client = consul.Consul()

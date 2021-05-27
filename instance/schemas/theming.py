@@ -176,6 +176,7 @@ DEFAULT_THEME = {
     "home-page-hero-subtitle-color": "#646464",
 }
 
+
 def theme_schema_validate(value, schema=None):
     """
     Validate the given value against the given schema or the theme_schema.

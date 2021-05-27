@@ -437,7 +437,6 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         confvars['EDXAPP_SITE_CONFIGURATION'] = result
         return confvars
 
-
     def create_configuration_settings(self):
         """
         Generate the configuration settings.
@@ -565,7 +564,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         # For any additional security groups, just verify that the group exists:
         groups = self.security_groups
-        groups.remove(main_security_group.name) # We already checked this group
+        groups.remove(main_security_group.name)  # We already checked this group
         for group_name in groups:
             if network.find_security_group(group_name) is None:
                 raise Exception("Unable to find the OpenStack network security group called '{}'.".format(group_name))
@@ -593,7 +592,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
     @log_exception  # noqa: MC0001
     @AppServer.status.only_for(AppServer.Status.New)
-    def provision(self):
+    def provision(self): # noqa: MC0001
         """
         Provision this AppServer.
 
@@ -606,7 +605,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         # Check firewall rules:
         try:
             self.check_security_groups()
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             message = "Unable to check/update the network security groups for the new VM"
             self.logger.exception(message)
             self.provision_failed_email(message)
@@ -633,7 +632,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self.server.sleep_until(lambda: self.server.status.vm_available)
             self.logger.info('Waiting for server %s to finish booting...', self.server)
             self.server.sleep_until(accepts_ssh_commands)
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             self._status_to_error()
             message = 'Unable to start an OpenStack server'
             self.logger.exception(message)
@@ -673,7 +672,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             self._status_to_running()
 
             return True
-        except:  # pylint: disable=bare-except
+        except:  # nopep8 pylint: disable=bare-except
             self._status_to_configuration_failed()
             message = "AppServer deploy failed: unhandled exception"
             self.logger.exception(message)
