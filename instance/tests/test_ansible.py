@@ -155,7 +155,7 @@ class AnsibleTestCase(TestCase):
             venv_path='/tmp/venv'
         )
         expected = (
-            'virtualenv -p /usr/bin/python /tmp/venv && '
+            f"virtualenv -p {ansible.ANSIBLE_PYTHON_PATH} /tmp/venv && "
             '/tmp/venv/bin/python -u /tmp/venv/bin/pip install -r /requirements/path.txt && '
             '/tmp/venv/bin/python -u /tmp/venv/bin/ansible-playbook -i /tmp/inventory/path '
             '-e @/tmp/vars/path -u root playbook_name'

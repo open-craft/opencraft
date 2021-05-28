@@ -600,8 +600,8 @@ GANDI_DEFAULT_BASE_DOMAIN = env('GANDI_DEFAULT_BASE_DOMAIN', default=DEFAULT_INS
 
 # Ansible #####################################################################
 
-# Ansible requires a Python 2 interpreter
-ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default='/usr/bin/python')
+# The Python binary to use for running ansible.
+ANSIBLE_PYTHON_PATH = env('ANSIBLE_PYTHON_PATH', default=None)
 
 # Time in seconds to wait for the next log line when running an Ansible playbook.
 ANSIBLE_LINE_TIMEOUT = env.int('ANSIBLE_LINE_TIMEOUT', default=7200)  # 2 hours
