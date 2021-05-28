@@ -20,7 +20,7 @@ For example:
 
     **Settings**
     ```yaml
-    EDXAPP_FEATURES:
+    EDXAPP_FEATURES_EXTRA:
       ALLOW_HIDING_DISCUSSION_TAB: true
     ```
 

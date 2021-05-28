@@ -231,42 +231,29 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "EDXAPP_LANG": 'en_US.UTF-8',
             "EDXAPP_TIME_ZONE": 'UTC',
 
-            # Features
-            "EDXAPP_FEATURES": {
-                "ALLOW_ALL_ADVANCED_COMPONENTS": True,
+            # The ansible playbooks in 'configuration' use 3 different variables
+            # (see https://github.com/edx/configuration/pull/5992);
+            # to preserve that behavior but still provide "OpenCraft defaults"
+            # we set EDXAPP_FEATURES_EXTRA, which may be overridden by user-provided
+            # values.
+            # If there is a EDXAPP_ENABLE_* flag for setting the defaults, we use it
+            # instead to allow the user to override it as well; if we didn't,
+            # an OCIM default like EDXAPP_FEATURES_EXTRA.ENABLE_INSTRUCTOR_ANALYTICS
+            # would take precedence over EDXAPP_ENABLE_INSTRUCTOR_ANALYTICS.
+            "EDXAPP_ENABLE_INSTRUCTOR_ANALYTICS": True,
+            "EDXAPP_ENABLE_OAUTH2_PROVIDER": True,
+            "EDXAPP_ENABLE_SYSADMIN_DASHBOARD": True,
+            "EDXAPP_FEATURES_EXTRA": {
                 "AUTH_USE_OPENID": False,
-                "CERTIFICATES_ENABLED": True,
                 "CERTIFICATES_HTML_VIEW": True,
                 "CUSTOM_CERTIFICATE_TEMPLATES_ENABLED": True,
-                "ENABLE_COMBINED_LOGIN_REGISTRATION": True,
-                "ENABLE_DISCUSSION_SERVICE": True,
-                "ENABLE_DISCUSSION_HOME_PANEL": True,
                 "ENABLE_DISCUSSION_EMAIL_DIGEST": True,
-                "ENABLE_DJANGO_ADMIN_SITE": True,
-                "ENABLE_INSTRUCTOR_ANALYTICS": True,
-                "ENABLE_INSTRUCTOR_EMAIL": True,
-                "ENABLE_OAUTH2_PROVIDER": True,
-                "ENABLE_PEARSON_HACK_TEST": False,
-                "ENABLE_GRADE_DOWNLOADS": True,
-                "ENABLE_THIRD_PARTY_AUTH": True,
                 "ENABLE_XBLOCK_VIEW_ENDPOINT": True,
-                "ENABLE_SYSADMIN_DASHBOARD": True,
                 "PREVIEW_LMS_BASE": self.instance.lms_preview_domain,
                 "REQUIRE_COURSE_EMAIL_AUTH": False,
-                "USE_MICROSITES": False,
                 "PREVENT_CONCURRENT_LOGINS": False,
-                "ENABLE_ACCOUNT_DELETION": True,
-                # Enable the unified login from Studio
-                # Supported in Ironwood, option to disable removed in Juniper.
-                "DISABLE_STUDIO_SSO_OVER_LMS": False,
-                # Enable prerequisite subsections feature
                 "ENABLE_PREREQUISITE_COURSES": True,
                 "MILESTONES_APP": True,
-                # These are not part of the standard install:
-                # "CUSTOM_COURSES_EDX": True,
-                # "ENABLE_LTI_PROVIDER": True,
-                # "ENABLE_PROCTORED_EXAMS": True,
-                # "INDIVIDUAL_DUE_DATES": True,
             },
 
             # Gunicorn workers - safe defaults for a 1 CPU, 4GB RAM instance.
