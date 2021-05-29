@@ -133,7 +133,8 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
     """
     Runs ansible-playbook in a dedicated venv
 
-    Ansible only supports Python 2 - so we have to run it as a separate command, in its own venv
+    Ansible used to only support Python 2 - so we had to run it as a separate command, in its own venv
+    This could be fixed now that it works with Python 3.
     """
 
     with create_temp_dir() as ansible_tmp_dir:
