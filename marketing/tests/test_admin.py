@@ -31,6 +31,7 @@ class SampleEmailActionTestCase(TestCase):
     """
     Tests for send send_sample_email action
     """
+
     def setUp(self):
         self.email_templates = [
             EmailTemplate.objects.create(

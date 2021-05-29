@@ -47,6 +47,7 @@ class ArchiveInstancesTestCase(TestCase):
     """
     Test cases for the `archive_instances` management command.
     """
+
     def setUp(self):
         """
         Set up properties used to verify captured logs

@@ -48,6 +48,7 @@ class OpenEdXAppServerAPIAcessTestCase(APITestCase):
     """
     Test cases for OpenEdXAppServer API calls related to getting server information.
     """
+
     def test_get_unauthenticated(self, mock_consul):
         """
         GET - Require to be authenticated

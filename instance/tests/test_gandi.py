@@ -166,7 +166,6 @@ class GandiV5TestCase(TestCase):
         assert mocked_delete_method.call_args_list == [call(expected_call_args)]
         assert mocked_add_method.call_args_list == [call(expected_call_args)]
 
-
     @patch.object(GandiV5API, 'add_dns_record')
     @patch.object(GandiV5API, 'delete_dns_record')
     @patch('time.sleep')

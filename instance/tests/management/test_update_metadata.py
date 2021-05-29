@@ -42,6 +42,7 @@ class UpdateMetadataTestCase(TestCase):
     """
     Test cases for the `update_metadata` management command.
     """
+
     def setUp(self):
         self.client = consul.Consul()
         if self.client.kv.get('', recurse=True)[1]:

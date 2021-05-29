@@ -170,7 +170,7 @@ def run_playbook(requirements_path, inventory_str, vars_str, playbook_path, play
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            bufsize=1, # Buffer one line at a time
+            bufsize=1,  # Buffer one line at a time
             cwd=playbook_path,
             shell=True,
             env=env,

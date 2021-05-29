@@ -39,6 +39,7 @@ class StaticContentOverridesV0SchemaTestCase(TestCase):
     """
     Tests for the static content overrides schema.
     """
+
     def validate(self, value):
         """
         Validate the given value with the v0 static content overrides schema.
@@ -143,6 +144,7 @@ class FillDefaultHeroTextTestCase(TestCase):
     """
     Tests for the fill_default_hero_text() function.
     """
+
     def setUp(self):
         super().setUp()
         self.default_value = DEFAULT_STATIC_CONTENT_OVERRIDES['homepage_overlay_html']

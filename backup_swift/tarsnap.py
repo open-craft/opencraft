@@ -51,7 +51,7 @@ def run_tarsnap_command(command):
     :raises TarsnapFsckException: If tarsnap suggests running ``--fsck``
     :raises TarsnapException: In case of any other error.
     """
-    called_process = subprocess.run(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    called_process = subprocess.run(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)  # noqa:subprocess-run-check
     if called_process.returncode == 0:
         return
     # tarsnap returns the same exit-code irregardless of what went wrong, but if problem can be solved

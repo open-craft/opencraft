@@ -206,6 +206,7 @@ class ContainerTestCase(TestCase):
     """
     Tests for provisioning settings
     """
+
     def check_ansible_settings(self, appserver, expected=True, s3=False):
         """
         Verify the Ansible settings.

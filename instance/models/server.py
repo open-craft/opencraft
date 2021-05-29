@@ -124,6 +124,7 @@ class ServerQuerySet(models.QuerySet):
     Additional methods for server querysets
     Also used as the standard manager for the Server model (`Server.objects`)
     """
+
     def terminate(self, *args, **kwargs):
         """
         Terminate the servers from the queryset

@@ -46,6 +46,7 @@ class APITestCase(WithUserTestCase):
     """
     Tests of the Pull Request Watcher API
     """
+
     def setUp(self):
         super().setUp()
 

@@ -98,7 +98,7 @@ class AnsibleAppServerTestCase(TestCase):
             mock_run_playbook,
             mock_poll_streams,
             mock_consul
-    ): # pylint: disable=too-many-locals
+    ):  # pylint: disable=too-many-locals
         """
         The appserver gets provisioned with the appropriate playbooks.
         Failure causes later playbooks to not run.

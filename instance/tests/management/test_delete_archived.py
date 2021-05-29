@@ -37,6 +37,7 @@ class DeleteArchivedTestCase(TestCase):
     """
     Test cases for the `delete_archived` management command.
     """
+
     def setUp(self):
         """
         Set up properties used to verify captured logs

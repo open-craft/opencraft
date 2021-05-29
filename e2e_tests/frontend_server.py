@@ -71,12 +71,12 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
     INDEXFILE = "index.html"
 
-    def log_message(self, format, *args): # pylint: disable=redefined-builtin
+    def log_message(self, format, *args):  # pylint: disable=redefined-builtin
         """
         Override to supress logs of accessed paths.
         """
 
-    def do_GET(self): # noqa
+    def do_GET(self):  # noqa
         """
         Override get method to send the INDEXFILE when the requested file is not found.
         """

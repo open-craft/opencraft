@@ -20,7 +20,7 @@
 Test login to the OCIM console
 """
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as EC  # nopep8
 from simple_email_confirmation.models import EmailAddress
 
 from e2e_tests.tests.utils import BrowserLiveServerTestCase

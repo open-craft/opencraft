@@ -85,7 +85,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         When local has members and the MailChimp list is empty, test if all
         opted-in local members are transferred to MailChimp (as 'subscribed').
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
                 'local1@subscribed.com',
                 'local3@subscribed.com',
@@ -109,7 +109,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         When local is empty and the MailChimp list has members, test if all
         existing MailChimp members are updated to 'unsubscribed'.
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
             ],
             emails_mailchimp=[
@@ -132,7 +132,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         members (irregardless of how they're ordered), test if no updates are
         performed.
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
                 'local2@unsubscribed.com',
                 'both1@subscribed.com',
@@ -158,7 +158,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         - opted-out members present on both services are updated to 'unsubscribed'
         - MailChimp-only members are updated to 'unsubscribed'
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
                 'local2@unsubscribed.com',
                 'both2@unsubscribed.com',
@@ -185,7 +185,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         """
         When MailChimp has been disabled, test if no updates are performed.
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
                 'local2@unsubscribed.com',
                 'both2@unsubscribed.com',
@@ -209,7 +209,7 @@ class AddTrialUsersToMailchimpListTestCase(TestCase):
         the MailChimp list is empty, test if all opted-in local members are
         transferred in small batches to MailChimp (as 'subscribed').
         """
-        self._check( # pylint: disable=no-value-for-parameter
+        self._check(  # pylint: disable=no-value-for-parameter
             emails_local=[
                 'local7@subscribed.com',
                 'local1@subscribed.com',

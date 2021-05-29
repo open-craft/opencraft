@@ -147,6 +147,7 @@ class WatchedPullRequestQuerySet(models.QuerySet):
     Additional methods for WatchedPullRequest querysets
     Also used as the standard manager for the WatchedPullRequest model
     """
+
     def get_or_create_from_pr(self, pr, watched_fork=None):
         """
         Get or create an instance for the given pull request

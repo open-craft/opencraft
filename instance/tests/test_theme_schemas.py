@@ -35,6 +35,7 @@ class ThemeV0SchemaTestCase(TestCase):
     """
     Tests for the v0 theme schema.
     """
+
     def setUp(self):
         super().setUp()
         self.test_data = {
@@ -122,6 +123,7 @@ class ThemeV1SchemaTestCase(TestCase):
     """
     Tests for the theme_config v1 schema.
     """
+
     def setUp(self):
         super().setUp()
         self.schema = copy.deepcopy(theme_schema_v1)

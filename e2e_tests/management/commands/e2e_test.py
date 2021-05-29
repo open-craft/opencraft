@@ -31,6 +31,7 @@ class Command(test.Command):
 
     Start the frontend server and run the tests in e2e application.
     """
+
     def handle(self, *args, **options):
         httpd, _ = start_react_server()
         args = (*args, 'e2e_tests')

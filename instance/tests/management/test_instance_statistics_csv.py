@@ -77,6 +77,7 @@ class InstanceStatisticsCSVTestCase(TestCase):
     """
     Test cases for the `instance_statistics_csv` management command.
     """
+
     def test_no_qualified_domain(self):
         """
         Verify that the command correctly notifies the user that the domain is required
