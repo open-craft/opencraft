@@ -44,6 +44,7 @@ from dictdiffer import diff
 if TYPE_CHECKING:
     from registration.models import BetaTestApplication  # pylint: disable=cyclic-import, useless-suppression
 
+
 # Logging #####################################################################
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,8 @@ def to_json(obj):
 
 
 def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_factor=0,
-                       status_forcelist=range(500, 600)):
+                       status_forcelist=settings.OPENSTACK_RETRYABLE_STATUS_CODES,
+                       method_whitelist=settings.OPENSTACK_RETRYABLE_METHOD_WHITELIST):
     """
     Returns a urllib3 `Retry` object, with the default requests retry policy
     """
@@ -92,6 +94,7 @@ def get_requests_retry(total=10, connect=10, read=10, redirect=10, backoff_facto
         redirect=redirect,
         backoff_factor=backoff_factor,
         status_forcelist=status_forcelist,
+        method_whitelist=method_whitelist,
     )
 
 
