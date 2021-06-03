@@ -39,6 +39,8 @@ class OpenEdXSiteConfigurationMixin(models.Model):
         site_configuration_settings = {
             # default site configuration
             'CONTACT_US_CUSTOM_LINK': '/contact',
+            # Learner records depends on the credentials service, that isn't set up by default.
+            'ENABLE_LEARNER_RECORDS': False,
         }
 
         if self.static_content_overrides:

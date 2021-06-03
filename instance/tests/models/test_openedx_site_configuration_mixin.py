@@ -45,6 +45,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'CONTACT_US_CUSTOM_LINK': '/contact',
+                        'ENABLE_LEARNER_RECORDS': False,
                     }
                 }
             ]
@@ -70,6 +71,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'CONTACT_US_CUSTOM_LINK': '/contact',
+                        'ENABLE_LEARNER_RECORDS': False,
                         'static_template_about_content': 'Hello world!',
                         'static_template_contact_content': 'Email: nobody@example.com',
                         'homepage_overlay_html': 'Welcome to the LMS!',
@@ -96,6 +98,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'CONTACT_US_CUSTOM_LINK': '/contact',
+                        'ENABLE_LEARNER_RECORDS': False,
                         'static_template_about_content': 'வணக்கம்!',
                         'homepage_overlay_html': 'வணக்கம்',
                     }
@@ -121,6 +124,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 {
                     'values': {
                         'CONTACT_US_CUSTOM_LINK': '/contact',
+                        'ENABLE_LEARNER_RECORDS': False,
                         'static_template_about_content': '<p class="paragraph" id=\'hello\'>Hello world!</p>',
                         'homepage_overlay_html': '<h1>Welcome to the LMS!</h1>',
                     }
@@ -163,6 +167,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 'values': {
                     'override': True,
                     'CONTACT_US_CUSTOM_LINK': '/random/place/',
+                    'ENABLE_LEARNER_RECORDS': False,
                     'static_template_about_content': 'static_template_about_content',
                     'homepage_overlay_html': 'homepage_overlay_html',
                 },
@@ -210,6 +215,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 "values": {
                     "SOME_SETTING": "some value",
                     "CONTACT_US_CUSTOM_LINK": "/contact",
+                    "ENABLE_LEARNER_RECORDS": False,
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
                 },
@@ -219,6 +225,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 "values": {
                     "SPECIFIC_SETTING": "specific value",
                     "CONTACT_US_CUSTOM_LINK": "/contact",
+                    "ENABLE_LEARNER_RECORDS": False,
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
                 },
@@ -227,6 +234,7 @@ class OpenEdXSiteConfigurationMixinsTestCase(TestCase):
                 "site_id": 3,
                 "values": {
                     "CONTACT_US_CUSTOM_LINK": "/custom-contact",
+                    "ENABLE_LEARNER_RECORDS": False,
                     'static_template_about_content': 'TEST override!',
                     'homepage_overlay_html': 'Text override!',
                 },

@@ -1030,6 +1030,7 @@ class SiteConfigurationSettingsTestCase(TestCase):
                 {
                     'values': {
                         'CONTACT_US_CUSTOM_LINK': '/contact',
+                        'ENABLE_LEARNER_RECORDS': False,
                         'static_template_about_content': 'Hello world!',
                         'homepage_overlay_html': 'Welcome to the LMS!',
                     }
