@@ -364,9 +364,7 @@ class OpenStackServer(Server):
                 # server must have been terminated.
                 self.logger.debug('Server does not exist anymore: %s', self)
                 self._status_to_terminated()
-            except (requests.RequestException,
-                    novaclient.exceptions.ClientException,
-                    novaclient.exceptions.EndpointNotFound) as exc:
+            except (requests.RequestException, novaclient.exceptions.ClientException) as exc:
                 self.logger.debug('Could not reach the OpenStack API due to %s', exc)
                 if self.status != Status.Unknown:
                     self._status_to_unknown()
@@ -397,7 +395,7 @@ class OpenStackServer(Server):
                 key_name=key_name,
                 **kwargs
             )
-        except (novaclient.exceptions.ClientException, novaclient.exceptions.EndpointNotFound) as exc:
+        except novaclient.exceptions.ClientException as exc:
             self.logger.error('Failed to start server: %s', exc)
             self._status_to_build_failed()
         else:
@@ -456,9 +454,7 @@ class OpenStackServer(Server):
         except novaclient.exceptions.NotFound:
             self.logger.error('Error while attempting to terminate server: could not find OS server')
             self._status_to_terminated()
-        except (requests.RequestException,
-                novaclient.exceptions.ClientException,
-                novaclient.exceptions.EndpointNotFound) as exc:
+        except (requests.RequestException, novaclient.exceptions.ClientException) as exc:
             self.logger.error('Unable to reach the OpenStack API due to %s', exc)
             if self.status != Status.Unknown:
                 self._status_to_unknown()
