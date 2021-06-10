@@ -331,6 +331,20 @@ OPENSTACK_PRODUCTION_INSTANCE_FLAVOR = env.json(
     default={"ram": 8192, "disk": 80}
 )
 
+# Openstack fails to connect randomly, thus we retry on certain status codes.
+# for example Openstack throws 400, and it will work if we keep retrying,
+# more on https://github.com/open-craft/opencraft/pull/805
+OPENSTACK_RETRYABLE_STATUS_CODES = env.list(
+    'OPENSTACK_RETRYABLE_STATUS_CODES',
+    default=list(range(500, 600))
+)
+
+# Set of uppercased HTTP method verbs that we should retry on.
+OPENSTACK_RETRYABLE_METHOD_WHITELIST = env.list(
+    'OPENSTACK_RETRYABLE_METHOD_WHITELIST',
+    default=frozenset(["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"])
+)
+
 # Separate credentials for Swift.  These credentials are currently passed on to each instance
 # when Swift is enabled.
 
