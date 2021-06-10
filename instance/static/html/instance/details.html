@@ -96,6 +96,7 @@
         <tr><td>Created</td><td>{{ instance.created | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
         <tr><td>Modified</td><td>{{ instance.modified | date:'yyyy-MM-dd HH:mm:ssZ' }}</td></tr>
         <tr><td>Type</td><td>{{ instance.instance_type }}</td></tr>
+        <tr><td>Purpose</td><td>{{ instance.instance_purpose }}</td></tr>
         <!-- The following are all specific to Open edX instances: -->
         <tr><td>LMS URL</td><td><a href="{{ instance.url}}">{{ instance.url}}</a></td></tr>
         <tr><td>Studio URL</td><td><a href="{{ instance.studio_url}}">{{ instance.studio_url}}</a></td></tr>

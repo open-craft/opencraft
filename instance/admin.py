@@ -38,17 +38,18 @@ from instance.models.server import OpenStackServer
 
 # ModelAdmins #################################################################
 
-class LogEntryAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class LogEntryAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('created', 'level', 'text', 'modified')
 
 
-class OpenStackServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class OpenStackServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('openstack_id', 'status', 'created', 'modified')
     # TODO: Is there a way to link back to the owning AppServer? (efficiently)
 
 
-class InstanceReferenceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('id', 'instance', 'created', 'modified')
+class InstanceReferenceAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+    list_display = ('id', 'name', 'created', 'modified',
+                    'instance_type', 'instance_purpose')
 
 
 class InlineInstanceReferenceAdmin(GenericStackedInline):  # pylint: disable=missing-docstring
@@ -60,11 +61,11 @@ class InlineInstanceReferenceAdmin(GenericStackedInline):  # pylint: disable=mis
     inline_classes = ('collapse open',)
 
 
-class InstanceTagAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class InstanceTagAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('id', 'name', 'description')
 
 
-class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class OpenEdXInstanceAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('internal_lms_domain', 'name', 'created', 'modified',
                     'successfully_provisioned')
     search_fields = ('internal_lms_domain',)
@@ -83,33 +84,36 @@ class OpenEdXInstanceAdmin(admin.ModelAdmin): # pylint: disable=missing-docstrin
         return super().get_inline_instances(request, obj)
 
 
-class OpenEdXAppServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class OpenEdXAppServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('id', 'owner', 'name', 'created', 'modified')
 
     # Don't allow modifying an AppServer once created:
-    readonly_fields = [field.name for field in OpenEdXAppServer._meta.get_fields(include_parents=True)]
+    readonly_fields = [
+        field.name for field in OpenEdXAppServer._meta.get_fields(include_parents=True)]
 
 
-class MySQLServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('name', 'description', 'hostname', 'port', 'username', 'password')
+class MySQLServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+    list_display = ('name', 'description', 'hostname',
+                    'port', 'username', 'password')
 
 
-class MongoDBServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class MongoDBServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = (
         'name', 'description', 'hostname',
         'port', 'username', 'password', 'primary'
     )
 
 
-class MongoDBReplicaSetAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class MongoDBReplicaSetAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('name',)
 
 
-class RabbitMQServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
-    list_display = ('name', 'description', 'api_url', 'instance_host', 'instance_port')
+class RabbitMQServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
+    list_display = ('name', 'description', 'api_url',
+                    'instance_host', 'instance_port')
 
 
-class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+class LoadBalancingServerAdmin(admin.ModelAdmin):  # pylint: disable=missing-docstring
     list_display = ('domain', 'ssh_username')
 
 

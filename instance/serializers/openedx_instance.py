@@ -64,13 +64,15 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         output['is_healthy'] = True
         output['is_steady'] = True
         for appserver in instance.get_active_appservers():
-            serialized_appserver = AppServerBasicSerializer(appserver, context=self.context).data
+            serialized_appserver = AppServerBasicSerializer(
+                appserver, context=self.context).data
             if not serialized_appserver['is_healthy']:
                 output['is_healthy'] = False
             if not serialized_appserver['is_steady']:
                 output['is_steady'] = False
             output['active_appservers'].append(serialized_appserver)
-            output['status_description'].append(serialized_appserver['status_description'])
+            output['status_description'].append(
+                serialized_appserver['status_description'])
 
         output['status_description'] = '\n'.join(output['status_description'])
         if not output['active_appservers']:
@@ -86,7 +88,8 @@ class OpenEdXInstanceBasicSerializer(serializers.ModelSerializer):
         except IndexError:
             output['newest_appserver'] = None
         else:
-            output['newest_appserver'] = AppServerBasicSerializer(newest_appserver, context=self.context).data
+            output['newest_appserver'] = AppServerBasicSerializer(
+                newest_appserver, context=self.context).data
         return output
 
 
@@ -166,13 +169,15 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
         """
         output = super().to_representation(instance)
 
-        filtered_appservers = instance.appserver_set.all()[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
+        filtered_appservers = instance.appserver_set.all(
+        )[:settings.NUM_INITIAL_APPSERVERS_SHOWN]
         output['appservers'] = [
             AppServerBasicSerializer(appserver, context=self.context).data for appserver in filtered_appservers
         ]
 
         try:
-            output['source_pr'] = WatchedPullRequestSerializer(instance.watchedpullrequest).data
+            output['source_pr'] = WatchedPullRequestSerializer(
+                instance.watchedpullrequest).data
         except WatchedPullRequest.DoesNotExist:
             output['source_pr'] = None
 

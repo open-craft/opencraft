@@ -59,6 +59,7 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
     * `created`
     * `modified`
     * `instance_type`
+    * `instance_purpose`
     * `is_archived`
 
     Note that IDs used for instances are always the ID of the InstanceReference object, which
@@ -102,7 +103,8 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
         if 'include_archived' not in request.query_params:
             # By default, exclude archived instances from the list:
             queryset = queryset.filter(is_archived=False)
-        serializer = InstanceReferenceBasicSerializer(queryset, many=True, context={'request': request})
+        serializer = InstanceReferenceBasicSerializer(
+            queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
@@ -133,8 +135,10 @@ class InstanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'status': 'No notes value provided.'})
 
         instance = InstanceReferenceBasicSerializer(self.get_object(),
-                                                    context={'request': request},
-                                                    data={'notes': request.data['notes']},
+                                                    context={
+                                                        'request': request},
+                                                    data={
+                                                        'notes': request.data['notes']},
                                                     partial=True)
         if instance.is_valid():
             instance.save()

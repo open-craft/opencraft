@@ -148,7 +148,8 @@ class OpenEdXInstance(
         # If left blank, the base playbook name will be automatically selected
         # based on the openedx release
         if not self.configuration_playbook_name:
-            self.configuration_playbook_name = get_base_playbook_name(self.openedx_release)
+            self.configuration_playbook_name = get_base_playbook_name(
+                self.openedx_release)
 
         if self.random_prefix is not None:
             self.mysql_user = self.random_prefix
@@ -192,7 +193,8 @@ class OpenEdXInstance(
                     raise WrongStateException("Public IP still not available for active appserver. "
                                               "Canceling reconfiguration process.")
 
-            appserver_vars.append(dict(ip_address=appserver.server.public_ip, name=server_name))
+            appserver_vars.append(
+                dict(ip_address=appserver.server.public_ip, name=server_name))
 
         if not appserver_vars:
             self.logger.error(
@@ -209,16 +211,19 @@ class OpenEdXInstance(
             appservers=appserver_vars,
             health_check=len(appserver_vars) > 1,
         ))
-        backend_map = [(domain, backend_name) for domain in self.get_load_balanced_domains()]
+        backend_map = [(domain, backend_name)
+                       for domain in self.get_load_balanced_domains()]
         backend_conf = [(backend_name, config)]
 
         if self.enable_prefix_domains_redirect:
             redirect_backend_name = "be-redirect-{}".format(self.domain_slug)
-            redirect_template = loader.get_template('instance/haproxy/redirect.conf')
+            redirect_template = loader.get_template(
+                'instance/haproxy/redirect.conf')
             redirect_config = redirect_template.render(dict(
                 domain=self.internal_lms_domain
             ))
-            backend_map += [(domain, redirect_backend_name) for domain in self.get_prefix_domain_names()]
+            backend_map += [(domain, redirect_backend_name)
+                            for domain in self.get_prefix_domain_names()]
             backend_conf += [(redirect_backend_name, redirect_config)]
 
         if triggered_by_instance:
@@ -240,12 +245,14 @@ class OpenEdXInstance(
                 ip_addr = appserver.server.public_ip
 
                 if ip_addr:
-                    domain = "vm{index}.{base_domain}".format(index=i, base_domain=self.internal_lms_domain)
+                    domain = "vm{index}.{base_domain}".format(
+                        index=i, base_domain=self.internal_lms_domain)
                     gandi.api.set_dns_record(domain, type="A", value=ip_addr)
 
             if deactivate_appserver:
                 unused_dns_index = active_appservers.count() + 1
-                domain = "vm{index}.{base_domain}".format(index=unused_dns_index, base_domain=self.internal_lms_domain)
+                domain = "vm{index}.{base_domain}".format(
+                    index=unused_dns_index, base_domain=self.internal_lms_domain)
                 gandi.api.remove_dns_record(domain, type="A")
 
     def clean_up_appserver_dns_records(self):
@@ -255,7 +262,8 @@ class OpenEdXInstance(
         self.logger.info("Cleaning up DNS records for app servers...")
         with cache.lock('appserver_dns_record_update_{}'.format(self.ref.instance_id)):
             for i, _ in enumerate(self.get_active_appservers(), 1):
-                domain = "vm{index}.{base_domain}".format(index=i, base_domain=self.internal_lms_domain)
+                domain = "vm{index}.{base_domain}".format(
+                    index=i, base_domain=self.internal_lms_domain)
                 gandi.api.remove_dns_record(domain, type="A")
 
     @property
@@ -264,6 +272,10 @@ class OpenEdXInstance(
         Get the set of OpenEdxAppServers owned by this instance.
         """
         return self.ref.openedxappserver_set
+
+    @property
+    def instance_purpose(self):
+        return self.ref.instance_purpose
 
     @property
     def first_activated(self):
@@ -338,7 +350,8 @@ class OpenEdXInstance(
         from instance.models.openedx_deployment import OpenEdXDeployment
 
         for attempt in range(num_attempts):
-            self.logger.info("Spawning new AppServer, attempt {} of {}".format(attempt + 1, num_attempts))
+            self.logger.info("Spawning new AppServer, attempt {} of {}".format(
+                attempt + 1, num_attempts))
             app_server = self._spawn_appserver(deployment_id=deployment_id)
 
             if app_server and app_server.provision():
@@ -348,20 +361,23 @@ class OpenEdXInstance(
             if deployment_id:
                 deployment = OpenEdXDeployment.objects.get(pk=deployment_id)
                 if deployment.cancelled:
-                    self.logger.info('Deployment %s was cancelled, returning.', deployment_id)
+                    self.logger.info(
+                        'Deployment %s was cancelled, returning.', deployment_id)
                     return None
 
             self.logger.error('Failed to provision new app server')
 
         else:
-            self.logger.error('Failed to provision new app server after {} attempts'.format(num_attempts))
+            self.logger.error(
+                'Failed to provision new app server after {} attempts'.format(num_attempts))
             if failure_tag:
                 self.tags.add(failure_tag)
             if success_tag:
                 self.tags.remove(success_tag)
 
             # Warn spawn failed after given attempts
-            appserver_spawned.send(sender=self.__class__, instance=self, appserver=None, deployment_id=deployment_id)
+            appserver_spawned.send(
+                sender=self.__class__, instance=self, appserver=None, deployment_id=deployment_id)
             return None
 
         self.logger.info('Provisioned new app server, %s', app_server.name)
@@ -377,7 +393,8 @@ class OpenEdXInstance(
             # use task.make_appserver_active to allow disabling others
             app_server.make_active()
 
-        appserver_spawned.send(sender=self.__class__, instance=self, appserver=app_server, deployment_id=deployment_id)
+        appserver_spawned.send(sender=self.__class__, instance=self,
+                               appserver=app_server, deployment_id=deployment_id)
 
         return app_server.pk
 
@@ -392,7 +409,8 @@ class OpenEdXInstance(
         Use spawn_appserver() instead.
         """
         config_fields = OpenEdXAppConfiguration.get_config_fields()
-        instance_config = {field_name: getattr(self, field_name) for field_name in config_fields}
+        instance_config = {field_name: getattr(
+            self, field_name) for field_name in config_fields}
 
         with transaction.atomic():
             app_server = self.appserver_set.create(
@@ -521,12 +539,16 @@ class OpenEdXInstance(
 
         ignore_errors = kwargs.pop('ignore_errors', False)
 
-        self.archive(ignore_errors=kwargs.pop('ignore_archive_errors', ignore_errors))
-        self.deprovision_mysql(ignore_errors=kwargs.pop('ignore_mysql_errors', ignore_errors))
-        self.deprovision_mongo(ignore_errors=kwargs.pop('ignore_mongo_errors', ignore_errors))
+        self.archive(ignore_errors=kwargs.pop(
+            'ignore_archive_errors', ignore_errors))
+        self.deprovision_mysql(ignore_errors=kwargs.pop(
+            'ignore_mysql_errors', ignore_errors))
+        self.deprovision_mongo(ignore_errors=kwargs.pop(
+            'ignore_mongo_errors', ignore_errors))
         self.deprovision_swift()
         self.deprovision_s3()
-        self.deprovision_rabbitmq(ignore_errors=kwargs.pop('ignore_rabbitmq_errors', ignore_errors))
+        self.deprovision_rabbitmq(ignore_errors=kwargs.pop(
+            'ignore_rabbitmq_errors', ignore_errors))
 
         super().delete(*args, **kwargs)
 
@@ -549,11 +571,13 @@ class OpenEdXInstance(
 
         :return: A dict of the configurations.
         """
-        dns_records_updated = self.dns_records_updated.timestamp() if self.dns_records_updated else None
+        dns_records_updated = self.dns_records_updated.timestamp(
+        ) if self.dns_records_updated else None
         active_servers = self.get_active_appservers()
         basic_auth = self.http_auth_info_base64()
         enable_health_checks = active_servers.count() > 1
-        active_servers_data = list(active_servers.annotate(public_ip=F('server___public_ip')).values('id', 'public_ip'))
+        active_servers_data = list(active_servers.annotate(
+            public_ip=F('server___public_ip')).values('id', 'public_ip'))
         return {
             'domain_slug': self.domain_slug,
             'domain': self.domain,
@@ -605,7 +629,8 @@ class OpenEdXInstance(
         if not settings.CONSUL_ENABLED:
             return
 
-        self.logger.info('Purging consul metadata with prefix: %s.', self.consul_prefix)
+        self.logger.info(
+            'Purging consul metadata with prefix: %s.', self.consul_prefix)
         agent = ConsulAgent(prefix=self.consul_prefix)
         agent.purge()
 
@@ -613,5 +638,6 @@ class OpenEdXInstance(
         """
         Returns a list of AppServers that are currently in the process of being launched.
         """
-        in_progress_statuses = AppServerStatus.states_with(ids_only=True, is_configuration_state=True)
+        in_progress_statuses = AppServerStatus.states_with(
+            ids_only=True, is_configuration_state=True)
         return self.appserver_set.filter(_status__in=in_progress_statuses)

@@ -47,6 +47,14 @@ OpenCraft IM provides two factory methods for creating instances (the
 following lines should run via `make shell`):
 
 ```python
+import os, django
+
+# configure django settings
+os.environ["DJANGO_SETTINGS_MODULE"] = "opencraft.settings"
+
+# load django apps to registry
+django.setup()
+
 from instance.factories import instance_factory, production_instance_factory
 
 # Creating an instance with defaults appropriate for sandboxes:

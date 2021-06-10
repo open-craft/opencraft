@@ -1,0 +1,24 @@
+FROM python:3.6
+
+WORKDIR /usr/src/ocim
+# https://github.com/Automattic/node-canvas#compiling
+RUN apt-get update \
+    && apt-get install -y \
+        build-essential \
+        libcairo2-dev \
+        libpango1.0-dev \
+        libjpeg-dev \
+        libgif-dev \
+        librsvg2-dev
+
+COPY requirements.txt ./
+COPY requirements/ requirements/
+RUN pip install -r requirements.txt
+
+COPY Makefile \
+    package.json \
+    ./
+COPY frontend/ frontend/
+COPY static/ static/
+
+CMD ["make", "run.dev"]
