@@ -230,7 +230,7 @@ class Command(BaseCommand):
             logger_=log_line,
         )
 
-    def get_instance_usage_data(self, playbook_output_dir, instance_metadata):
+    def get_instance_usage_data(self, playbook_output_dir, instance_metadata, start_date, end_date):
         """ Execute the collect_activity playbook to gather statistics """
         inventory = '[apps]'
         for name_prefix, metadata in instance_metadata.items():
@@ -257,6 +257,7 @@ class Command(BaseCommand):
         log_line.error = log_line
 
         playbook_extra_script_arguments = '--skip-hit-statistics' if settings.INSTANCE_LOGS_SERVER_HOST else ''
+        playbook_extra_script_arguments += f'--start-date {start_date} --end-date {end_date}'
 
         # Launch the collect_activity playbook, which places a file into the `playbook_output_dir`
         # on this host.
@@ -266,7 +267,7 @@ class Command(BaseCommand):
             vars_str=(
                 'local_output_dir: {output_dir}\n'
                 'remote_output_filename: /tmp/activity_report\n'
-                'extra_script_arguments: {extra_script_arguments}'
+                'extra_script_arguments: {extra_script_arguments}\n'
             ).format(
                 output_dir=playbook_output_dir,
                 extra_script_arguments=playbook_extra_script_arguments
@@ -298,7 +299,9 @@ class Command(BaseCommand):
             )
             self.get_instance_usage_data(
                 playbook_output_dir,
-                instance_metadata
+                instance_metadata,
+                start_date,
+                end_date
             )
 
             csv_writer = csv.writer(out, quoting=csv.QUOTE_NONNUMERIC)
@@ -311,6 +314,7 @@ class Command(BaseCommand):
                 'Total Hits',
                 'Total Courses',
                 'Total Users',
+                'Active Users',
                 'Age (Days)'
             ])
 
@@ -334,6 +338,7 @@ class Command(BaseCommand):
                     section.get('total_hits', 'N/A'),
                     section.get('courses', 'N/A'),
                     section.get('users', 'N/A'),
+                    section.get('active_users', 'N/A'),
                     metadata['instance_age']
                 ])
 

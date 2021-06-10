@@ -23,7 +23,7 @@ Instance - Logs Activity CSV unit tests
 
 from argparse import ArgumentTypeError
 from datetime import datetime, date, timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, ANY
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -234,6 +234,41 @@ class InstanceStatisticsCSVTestCase(TestCase):
         mock_collect_statistics.assert_called_with(
             mock_file,
             [domain1, domain2],
+            expected_start_date,
+            expected_end_date
+        )
+
+    @freezegun.freeze_time('2020-01-01')
+    @patch('instance.management.commands.instance_statistics_csv.Command.get_instances_from_domain_names')
+    @patch('instance.management.commands.instance_statistics_csv.Command.get_instance_usage_data')
+    @patch('instance.management.commands.instance_statistics_csv.open')
+    def test_custom_dates_for_get_instance_usage_data(self, mock_open, mock_get_instance_usage_data, mock_unused):
+        """
+        Verify that the custom dates are passed to get_instance_usage_data
+        """
+        outfile = 'somefile.txt'
+        domain = 'test.opencraft.hosting'
+
+        custom_end_date = '2019-05-01'
+        custom_start_date = '2019-01-01'
+
+        mock_file = Mock()
+        mock_open.return_value = mock_file
+
+        call_command(
+            'instance_statistics_csv',
+            domains=domain,
+            end_date=custom_end_date,
+            start_date=custom_start_date,
+            out=outfile
+        )
+
+        expected_end_date = date(2019, 5, 1)
+        expected_start_date = date(2019, 1, 1)
+
+        mock_get_instance_usage_data.assert_called_with(
+            ANY,
+            ANY,
             expected_start_date,
             expected_end_date
         )

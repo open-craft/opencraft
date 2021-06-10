@@ -3,12 +3,14 @@
 
 from __future__ import print_function
 from argparse import ArgumentParser
+from datetime import datetime, timedelta
 import gzip
 import os
 import re
 import sys
 
 import django
+from django.utils import timezone
 
 from six.moves.configparser import ConfigParser
 
@@ -16,6 +18,16 @@ from six.moves.configparser import ConfigParser
 # This regex pattern is used to extract the IPv4 address from the beginning of each line in the Nginx access logs.
 NGINX_ACCESS_PATTERN = re.compile(r'- - (?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 LOG_PATH = '/edx/var/log/nginx'
+
+def valid_date(s):
+    """
+    Verify that the string passed in is a date
+    """
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except ValueError:
+        msg = "Not a valid date: '{0}'.".format(s)
+        raise argparse.ArgumentTypeError(msg)
 
 
 if __name__ == '__main__':
@@ -38,6 +50,18 @@ if __name__ == '__main__':
         action='store_true',
         help='Whether to skip the hit statistics'
     )
+    parser.add_argument(
+        '--start-date',
+        default=None,
+        type=valid_date,
+        help='The first day on which statistics should be gathered. FORMAT: YYYY-MM-DD'
+    )
+    parser.add_argument(
+        '--end-date',
+        default=None,
+        type=valid_date,
+        help='The last day on which statistics should be gathered.'
+    )
     args = parser.parse_args()
 
     # Set up the environment so that edX can be initialized as the LMS with the correct settings.
@@ -52,8 +76,22 @@ if __name__ == '__main__':
 
     ms = modulestore()
 
+    start_date = args.start_date
+    end_date = args.end_date
+
+    if start_date is None or end_date is None:
+        # If a time interval is not passed as arguments
+        # get the active users for the last full month.
+        beginning_of_this_month = datetime.now(tz=timezone.utc).replace(day=1)
+        end_of_last_month = beginning_of_this_month - timedelta(days=1)
+        beginning_of_last_month = end_of_last_month.replace(day=1)
+
+        start_date = beginning_of_last_month
+        end_date = end_of_last_month
+
     stats = {
         'users': User.objects.count(),
+        'active_users': User.objects.filter(last_login__range=(start_date, end_date)).count(),
         'courses': len(ms.get_courses()),
     }
 
