@@ -23,5 +23,6 @@ nav:
   - "Using the Marketing app": marketing_usage.md
   - "Development":
       - "Docker": development/docker.md
+      - "Continuous Integration": development/ci.md
   - "Operations":
       - "Management Tasks": operations/management-tasks.md

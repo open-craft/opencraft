@@ -34,7 +34,7 @@ DEFAULT_POLICY_NAME = "allow_access_s3_bucket"
 
 # Logging #####################################################################
 
-logger = logging.getLogger('integration_cleanup')
+logger = logging.getLogger(__name__)
 
 
 # Classes #####################################################################
@@ -186,7 +186,7 @@ class AwsCleanupInstance:
         """
         Runs the cleanup of the AWS buckets, IAM users and their policies
         """
-        logger.info("\n --- Starting AWS Cleanup ---")
+        logger.info("--- Starting AWS Cleanup ---")
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
 
