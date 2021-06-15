@@ -125,6 +125,29 @@ class MySqlCleanupInstance:
             return []
         return self.cursor.fetchall()
 
+    def _get_empty_databases(self):
+        """
+        Returns a list of empty databases that can be deleted.
+        """
+        if not self.cursor:
+            logger.error('ERROR: Not connected to the database')
+            return []
+
+        query = """SELECT schema_name
+            FROM information_schema.schemata s LEFT JOIN information_schema.tables t
+            ON s.schema_name = t.table_schema
+            WHERE s.schema_name LIKE %(domain_filter)s AND
+            t.table_name IS NULL"""
+        params = {
+            'domain_filter': '%_{}_%'.format(self.domain_suffix)
+        }
+        try:
+            self.cursor.execute(query, params)
+        except MySQLError as exc:
+            logger.exception('Unable to retrieve empty databases: %s', exc)
+            return []
+        return self.cursor.fetchall()
+
     def _get_integration_databases(self):
         """
         List of integration databases.
@@ -235,6 +258,7 @@ class MySqlCleanupInstance:
         if self.dry_run:
             logger.info("Running in DRY_RUN mode, no actions will be taken.")
         self.drop_old_dbs()
+        self.drop_empty_dbs()
         if self.drop_dbs_and_users:
             self.drop_integration_dbs_and_users()
 
@@ -265,6 +289,35 @@ class MySqlCleanupInstance:
                 '    * Dropping MySQL DB %s created at %s', database,
                 datetime.strftime(create_date, '%Y-%m-%dT%H:%M:%SZ')
             )
+            self._drop_db(database)
+            self.cleaned_up_hashes.append(db_hash)
+            self.drop_db_users(db_hash)
+
+    def drop_empty_dbs(self):
+        """
+        Drop databases older than `age_limit`.
+        """
+        databases = self._get_empty_databases()
+        logger.info('Found %d empty databases', len(databases))
+
+        for (database, ) in databases:
+            # The regex match here serves a dual purpose: firstly, it acts as
+            # an additional precaution against removing databases not related
+            # to CI. Secondly, it allows us to gather the hashes of the removed
+            # databases so they can be returned to the calling script and used
+            # in DNS cleanup.
+            logger.info('  > Considering database %s', database)
+            instance_database_re = r'^([0-9a-f]{6,8})([_0-9a-z]+)?_%s_[a-z0-9\_]+' % (self.domain_suffix,)
+            match = re.match(instance_database_re, database)
+            if not match:
+                logger.info(
+                    '    * SKIPPING: Did not match expected format %r.',
+                    instance_database_re
+                )
+                continue
+            logger.info('    * Dropping empty MySQL DB %s created at unknown time', database)
+
+            db_hash = match.groups()[0]
             self._drop_db(database)
             self.cleaned_up_hashes.append(db_hash)
             self.drop_db_users(db_hash)
