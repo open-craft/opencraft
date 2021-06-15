@@ -498,5 +498,6 @@ workflows:
             branches:
               only:
                 - master
+                - guruprasad/BB-4378-fix-CI-cleanup-issues
     jobs:
       - cleanup
