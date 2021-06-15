@@ -50,7 +50,7 @@ from reports.helpers import (
 )
 from registration.models import BetaTestApplication
 from userprofile.factories import OrganizationFactory
-from .tasks import send_trial_instances_report
+from .tasks import send_trial_instances_report, send_all_instances_report
 
 # Tests #####################################################################
 
@@ -580,7 +580,28 @@ class ReportTaskTestCase(TestCase):
         send_trial_instances_report(recipients=['to@example.com'])
         sent_mail = mail.outbox[0]
         self.assertIn(
-            'Unable to generate a Trial Instances Report due to failure of `instance_statistics_csv`',
+            'Unable to generate the Trial Instances Report due to failure of `instance_statistics_csv`',
+            sent_mail.body
+        )
+        self.assertEqual(
+            [],
+            sent_mail.attachments
+        )
+        self.assertEqual(
+            ['to@example.com'],
+            sent_mail.to
+        )
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_send_all_instances_report_failure(self):
+        """
+        Tests that if send_all_instances_report fails because there are no matching instances
+        the recipient gets notified regardless.
+        """
+        send_all_instances_report(recipients=['to@example.com'])
+        sent_mail = mail.outbox[0]
+        self.assertIn(
+            'Unable to generate the All Instances Report due to failure of `instance_statistics_csv`',
             sent_mail.body
         )
         self.assertEqual(
@@ -628,6 +649,49 @@ class ReportTaskTestCase(TestCase):
                 sent_mail.attachments[0][1]
             )
             self.assertNotIn(
+                instance3.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertEqual(
+                ['to@example.com'],
+                sent_mail.to
+            )
+
+    def test_send_all_instances_report(self):
+        """
+        Tests that if send_all_instances_report succeeds, the recipient receives
+        a correct report with all instances included.
+        """
+        date1 = "2020-01-01"
+        date2 = "2020-02-01"
+        date3 = "2020-03-01"
+
+        with freeze_time(date1):
+            instance1 = self.create_user_with_trial_instance()
+        with freeze_time(date2):
+            instance2 = self.create_user_with_trial_instance()
+        with freeze_time(date3):
+            instance3 = self.create_user_with_trial_instance()
+
+            send_all_instances_report(recipients=['to@example.com'])
+            sent_mail = mail.outbox[0]
+
+            self.assertEqual(len(mail.outbox), 1)
+
+            self.assertIn(
+                'Please find attached a CSV with the statistics for February 2020',
+                sent_mail.body
+            )
+
+            self.assertIn(
+                instance1.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertIn(
+                instance2.domain,
+                sent_mail.attachments[0][1]
+            )
+            self.assertIn(
                 instance3.domain,
                 sent_mail.attachments[0][1]
             )
