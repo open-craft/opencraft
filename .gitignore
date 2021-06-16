@@ -111,3 +111,5 @@ media/
 # Generated scripts
 bin/archived_cleanup.sh
 
+# used for customizing docker compose
+docker-compose.override.yml
