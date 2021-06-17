@@ -48,12 +48,16 @@ from instance.models.load_balancer import LoadBalancingServer
 from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance, OpenEdXAppConfiguration
+from instance.models.rabbitmq_server import RabbitMQServer
 from instance.models.server import OpenStackServer, Server, Status as ServerStatus
 from instance.models.utils import WrongStateException
 from instance.tests.base import TestCase
-from instance.tests.models.factories.database_server import MySQLServerFactory
-from instance.tests.models.factories.openedx_appserver import make_test_appserver
-from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
+from instance.tests.models.factories import (
+    make_test_appserver,
+    MySQLServerFactory,
+    OpenEdXInstanceFactory,
+    RabbitMQServerFactory
+)
 from instance.tests.utils import patch_services, skip_unless_consul_running
 from registration.models import BetaTestApplication
 from registration.approval import ApplicationNotReady
@@ -1602,3 +1606,40 @@ class OpenEdXInstanceDNSTestCase(TestCase):
         # archive instance and verify no dns records
         instance.archive()
         self._verify_vm_dns_records('test.com', [])
+
+
+@ddt.ddt
+# prevent default rabbitmq server from being created
+@override_settings(DEFAULT_RABBITMQ_API_URL=None)
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
+class OpenEDXInstanceRabbitMQTestCase(TestCase):
+    """
+    Tests RabbitMQ related features in OpenEDXInstance
+    """
+
+    def setUp(self):
+        """
+        Remove all rabbitmq servers to ensure test isolation
+        """
+        RabbitMQServer.objects.filter(accepts_new_clients=True).delete()
+
+    def test_assign_rabbitmq_fails_when_no_available_servers(self, mock_consul):
+        """
+        Test that creating a new OpenEdXInstance fails when there are suitable RabbitMQServer instances.
+        """
+        with self.assertRaises(RabbitMQServer.DoesNotExist):
+            OpenEdXInstanceFactory()
+
+    def test_assigns_available_server(self, mock_consul):
+        """
+        Test that creating a new OpenEdXInstance only assigns valid RabbitMQServer instances.
+        """
+        for _ in range(5):
+            RabbitMQServerFactory(accepts_new_clients=False)
+        server = RabbitMQServerFactory(accepts_new_clients=True)
+
+        instance = OpenEdXInstanceFactory()
+        assert instance.rabbitmq_server == server
