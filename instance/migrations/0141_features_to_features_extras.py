@@ -11,7 +11,7 @@ def forward(apps, schema_editor):
         model = apps.get_model('instance', model_name)
         for config in model.objects.all():
             settings = (
-                yaml.yaml.safe_load(config.configuration_extra_settings)
+                yaml.safe_load(config.configuration_extra_settings)
                 if config.configuration_extra_settings
                 else {}
             )
@@ -31,7 +31,7 @@ def backward(apps, schema_editor):
         model = apps.get_model('instance', model_name)
         for config in model.objects.all():
             settings = (
-                yaml.yaml.safe_load(config.configuration_extra_settings)
+                yaml.safe_load(config.configuration_extra_settings)
                 if config.configuration_extra_settings
                 else {}
             )
