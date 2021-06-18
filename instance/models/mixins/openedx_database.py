@@ -59,6 +59,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         return self.database_name
 
     @property
+    def mysql_database_names(self):
+        """
+        The set of mysql databases for this instances.
+        """
+        return {db["name"] for db in self.mysql_databases}
+
+    @property
     def mysql_databases(self):
         """
         List of mysql databases
