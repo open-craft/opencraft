@@ -10,11 +10,13 @@ def forward(apps, schema_editor):
     for model_name in {'OpenEdXInstance', 'OpenEdXAppServer'}:
         model = apps.get_model('instance', model_name)
         for config in model.objects.all():
+            # some entries have configuration_extra_settings with
+            # only blank spaces, which is parsed as YAML to None
             settings = (
                 yaml.safe_load(config.configuration_extra_settings)
                 if config.configuration_extra_settings
                 else {}
-            )
+            ) or {}
             if "EDXAPP_FEATURES" in settings and "EDXAPP_FEATURES_EXTRA" not in settings:
                 settings["EDXAPP_FEATURES_EXTRA"] = settings.pop("EDXAPP_FEATURES")
                 settings["EDXAPP_FEATURES_MIGRATED"] = (
@@ -34,7 +36,7 @@ def backward(apps, schema_editor):
                 yaml.safe_load(config.configuration_extra_settings)
                 if config.configuration_extra_settings
                 else {}
-            )
+            ) or {}
             if (
                 "EDXAPP_FEATURES_EXTRA" in settings
                 and "EDXAPP_FEATURES" not in settings
