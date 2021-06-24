@@ -337,15 +337,21 @@ class OpenStackServerTestCase(TestCase):
         ('ready-server-id', ServerStatus.Ready),
     )
     @unpack
-    def test_terminate_server_vm_created(self, openstack_id, server_status):
+    @patch('instance.ssh.remove_known_host_key')
+    def test_terminate_server_vm_created(self, openstack_id, server_status, remove_key):
         """
         Terminate a server with a VM
         """
-        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        server = OpenStackServerFactory(
+            openstack_id=openstack_id,
+            status=server_status,
+            # fake a public ip so SSH key can be removed
+            _public_ip='127.0.0.1'
+        )
         server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
-        server._delete_ssh_key.assert_called_once()
+        remove_key.assert_called_once()
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -354,18 +360,23 @@ class OpenStackServerTestCase(TestCase):
         ServerStatus.BuildFailed,
         ServerStatus.Terminated,
     )
-    def test_terminate_server_vm_unavailable(self, server_status):
+    @patch('instance.ssh.remove_known_host_key')
+    def test_terminate_server_vm_unavailable(self, server_status, remove_known_host_key):
         """
         Terminate a server without a VM
         """
-        server = OpenStackServerFactory(status=server_status)
+        server = OpenStackServerFactory(
+            status=server_status,
+            # fake ip to make SSH key removal succeeds
+            _public_ip='127.0.0.1'
+        )
         try:
             server.terminate()
         except AssertionError:
             self.fail('Termination logic tried to operate on non-existent VM.')
         else:
             self.assertEqual(server.status, ServerStatus.Terminated)
-            server._delete_ssh_key.assert_called_once()
+            remove_known_host_key.assert_called_once()
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
@@ -373,39 +384,64 @@ class OpenStackServerTestCase(TestCase):
         ('ready-server-id', ServerStatus.Ready),
     )
     @unpack
-    def test_terminate_server_not_found(self, openstack_id, server_status):
+    @patch('instance.ssh.remove_known_host_key')
+    def test_terminate_server_not_found(self, openstack_id, server_status, remove_known_host_key):
         """
         Terminate a server for which the corresponding VM doesn't exist anymore
         """
-        server = OpenStackServerFactory(openstack_id=openstack_id, status=server_status)
+        server = OpenStackServerFactory(
+            openstack_id=openstack_id,
+            status=server_status,
+            # fake ip to make SSH key removal succeeds
+            _public_ip='127.0.0.1'
+        )
 
-        def raise_not_found():
-            raise novaclient.exceptions.NotFound('not-found')
-        server.os_server.delete.side_effect = raise_not_found
-        server.logger = Mock()
-        mock_logger = server.logger
-
-        server.terminate()
+        server.os_server.delete = Mock(
+            side_effect=novaclient.exceptions.NotFound('not-found')
+        )
+        with self.assertLogs(logger=server.logger.name, level='WARNING') as logger:
+            server.terminate()
         self.assertEqual(server.status, ServerStatus.Terminated)
         server.os_server.delete.assert_called_once_with()
-        mock_logger.error.assert_called_once_with(AnyStringMatching('Error while attempting to terminate server'))
-        server._delete_ssh_key.assert_called_once()
+        self.assertTrue(
+            record for record in logger.records
+            if 'Error while attempting to terminate server:' in record.msg
+        )
+        remove_known_host_key.assert_called_once()
+
+    @override_settings(SHUTDOWN_TIMEOUT=0)
+    def test_ignores_failure_to_delete_ssh_key(self):
+        """
+        Terminate a server even if it fails to delete the SSH key
+        """
+        server = ReadyOpenStackServerFactory()
+
+        with self.assertLogs(logger=server.logger.name, level='WARNING') as logger:
+            with patch('instance.openstack_utils.get_server_public_address') as get_server_public_address:
+                # simulate an OpenStack API failure
+                get_server_public_address.side_effect = novaclient.exceptions.NotFound('not-found')
+                server.terminate()
+        self.assertEqual(server.status, ServerStatus.Terminated)
+        server.os_server.delete.assert_called_once_with()
+        self.assertTrue(
+            record for record in logger.records
+            if 'Failed to get IP for server' in record.msg
+        )
 
     @override_settings(SHUTDOWN_TIMEOUT=0)
     @data(
         requests.RequestException('Error'),
         novaclient.exceptions.ClientException('Error'),
     )
-    def test_terminate_server_openstack_api_error(self, exception):
+    @patch('instance.ssh.remove_known_host_key')
+    def test_terminate_server_openstack_api_error(self, exception, remove_known_host_key):
         """
         Terminate a server when there are errors connecting to the OpenStack API
         """
-        server = OpenStackServerFactory()
+        # fake ip to make SSH key removal succeeds
+        server = OpenStackServerFactory(_public_ip='127.0.0.1')
 
-        def raise_openstack_api_error():
-            raise exception
-
-        server.os_server.delete.side_effect = raise_openstack_api_error
+        server.os_server.delete = Mock(side_effect=exception)
 
         server.logger = Mock()
         mock_logger = server.logger
@@ -416,7 +452,7 @@ class OpenStackServerTestCase(TestCase):
         mock_logger.error.assert_called_once_with(
             AnyStringMatching('Unable to reach the OpenStack API due to'), exception
         )
-        server._delete_ssh_key.assert_called_once()
+        remove_known_host_key.assert_called_once()
 
     def test_public_ip_new_server(self):
         """

@@ -108,9 +108,6 @@ class OpenStackServerFactory(DjangoModelFactory):
         # This isn't a model field, so it needs to be set separately, not passed to the model `__init__`
         server.nova = Mock()
 
-        # Mock method for deleting SSH key to assert it's called.
-        server._delete_ssh_key = Mock()
-
         # Allow to set OpenStack API data for the current `self.os_server`, using fixtures
         if os_server_fixture is not None:
             add_fixture_to_object(server.nova.servers.get.return_value, os_server_fixture)
