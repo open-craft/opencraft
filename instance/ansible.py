@@ -30,6 +30,8 @@ from tempfile import NamedTemporaryFile
 import yaml
 
 from django.conf import settings
+from django.core.checks import Warning as DjangoWarning, register
+from django.core.checks.registry import Tags
 
 from instance.utils import poll_streams, create_temp_dir
 
@@ -43,9 +45,27 @@ logger = logging.getLogger(__name__)
 
 ANSIBLE_CALLBACKS_DIR = os.path.join(os.path.dirname(__file__), 'ansible_callbacks')
 ANSIBLE_STDOUT_CALLBACK = 'prettify'
-
+ANSIBLE_PYTHON_PATH = getattr(settings, 'ANSIBLE_PYTHON_PATH', None) or "python"
 
 # Functions ###################################################################
+
+
+@register(Tags.security, deploy=True)
+def check_python_path_defined(app_configs, **kwargs):
+    """
+    Check if ANSIBLE_PYTHON_PATH is defined in production environments.
+    """
+    if getattr(settings, 'ANSIBLE_PYTHON_PATH', None) is None:
+        return [
+            DjangoWarning(
+                "ANSIBLE_PYTHON_PATH is not set"
+                " and will default to the 'python' binary in the PATH",
+                hint="Use a specific binary"
+                     " (e.g. /usr/bin/python)."
+            )
+        ]
+    return []
+
 
 def load_yaml(string):
     """
@@ -106,7 +126,8 @@ def render_sandbox_creation_command(
 
     venv_python_path = os.path.join(venv_path, 'bin/python')
     create_venv_cmd = 'virtualenv -p {python_path} {venv_path}'.format(
-        python_path=settings.ANSIBLE_PYTHON_PATH,
+        # default to the python binary in the PATH
+        python_path=ANSIBLE_PYTHON_PATH,
         venv_path=venv_path,
     )
 
