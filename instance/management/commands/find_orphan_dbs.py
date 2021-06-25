@@ -183,7 +183,7 @@ class Command(BaseCommand):
                 orphans = self._find_mysql_orphans(eligible_db_names)
                 for db in orphans:
                     if kwargs['rm'] and self.confirm(f"Are you sure you want to drop {db}"):
-                        cursor.execute(f"drop database db")
+                        cursor.execute(f"drop database {db}")
                 self._print_orphans(
                     "mysql",
                     f"{mysql_server.hostname}:{mysql_server.port}",
