@@ -45,6 +45,31 @@ export interface OpenEdXInstanceDeploymentStatus {
     deploymentType: OpenEdXInstanceDeploymentStatusDeploymentTypeEnum;
 }
 
+/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceDeploymentStatusStatusEnum {
+    Healthy = 'healthy',
+    Unhealthy = 'unhealthy',
+    Offline = 'offline',
+    Provisioning = 'provisioning',
+    Preparing = 'preparing',
+    ChangesPending = 'changes_pending'
+}/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceDeploymentStatusDeploymentTypeEnum {
+    User = 'user',
+    Batch = 'batch',
+    Admin = 'admin',
+    Pr = 'pr',
+    Periodic = 'periodic',
+    Registration = 'registration',
+    Unknown = 'unknown'
+}
+
 export function OpenEdXInstanceDeploymentStatusFromJSON(json: any): OpenEdXInstanceDeploymentStatus {
     return OpenEdXInstanceDeploymentStatusFromJSONTyped(json, false);
 }
@@ -76,32 +101,6 @@ export function OpenEdXInstanceDeploymentStatusToJSON(value?: OpenEdXInstanceDep
         'deployed_changes': value.deployedChanges,
         'deployment_type': value.deploymentType,
     };
-}
-
-/**
-* @export
-* @enum {string}
-*/
-export enum OpenEdXInstanceDeploymentStatusStatusEnum {
-    Healthy = 'healthy',
-    Unhealthy = 'unhealthy',
-    Offline = 'offline',
-    Provisioning = 'provisioning',
-    Preparing = 'preparing',
-    ChangesPending = 'changes_pending'
-}
-/**
-* @export
-* @enum {string}
-*/
-export enum OpenEdXInstanceDeploymentStatusDeploymentTypeEnum {
-    User = 'user',
-    Batch = 'batch',
-    Admin = 'admin',
-    Pr = 'pr',
-    Periodic = 'periodic',
-    Registration = 'registration',
-    Unknown = 'unknown'
 }
 
 

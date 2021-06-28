@@ -337,6 +337,18 @@ export interface ThemeSchema {
      * @memberof ThemeSchema
      */
     accountSettingsNavHoverBorderBottomColor?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ThemeSchema
+     */
+    staticTemplateFooterUrl?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ThemeSchema
+     */
+    staticTemplateFooterImageSrc?: string;
 }
 
 export function ThemeSchemaFromJSON(json: any): ThemeSchema {
@@ -402,6 +414,8 @@ export function ThemeSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'courseNavMenuBorderBottomColor': !exists(json, 'course-nav-menu-border-bottom-color') ? undefined : json['course-nav-menu-border-bottom-color'],
         'accountSettingsNavBorderBottomColor': !exists(json, 'account-settings-nav-border-bottom-color') ? undefined : json['account-settings-nav-border-bottom-color'],
         'accountSettingsNavHoverBorderBottomColor': !exists(json, 'account-settings-nav-hover-border-bottom-color') ? undefined : json['account-settings-nav-hover-border-bottom-color'],
+        'staticTemplateFooterUrl': !exists(json, 'static_template_footer_url') ? undefined : json['static_template_footer_url'],
+        'staticTemplateFooterImageSrc': !exists(json, 'static_template_footer_image_src') ? undefined : json['static_template_footer_image_src'],
     };
 }
 
@@ -467,6 +481,8 @@ export function ThemeSchemaToJSON(value?: ThemeSchema | null): any {
         'course-nav-menu-border-bottom-color': value.courseNavMenuBorderBottomColor,
         'account-settings-nav-border-bottom-color': value.accountSettingsNavBorderBottomColor,
         'account-settings-nav-hover-border-bottom-color': value.accountSettingsNavHoverBorderBottomColor,
+        'static_template_footer_url': value.staticTemplateFooterUrl,
+        'static_template_footer_image_src': value.staticTemplateFooterImageSrc,
     };
 }
 

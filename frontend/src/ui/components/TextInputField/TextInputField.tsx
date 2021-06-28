@@ -5,9 +5,10 @@ import './styles.scss';
 
 interface InputFieldProps {
   fieldName: string;
+  helpMessageId?: string;
   value?: string;
-  onChange?: any;
-  onBlur?: any;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
   error?: string;
   messages: any;
   type?: string;
@@ -20,7 +21,8 @@ interface InputFieldProps {
 export const TextInputField: React.FC<InputFieldProps> = (
   props: InputFieldProps
 ) => {
-  const hasHelpMessage = `${props.fieldName}Help` in props.messages;
+  const helpMessageId = props.helpMessageId || `${props.fieldName}Help`;
+  const hasHelpMessage = helpMessageId in props.messages;
 
   return (
     <div className="text-input-container">
@@ -46,10 +48,7 @@ export const TextInputField: React.FC<InputFieldProps> = (
         )}
         {hasHelpMessage && (
           <p>
-            <WrappedMessage
-              id={`${props.fieldName}Help`}
-              messages={props.messages}
-            />
+            <WrappedMessage id={helpMessageId} messages={props.messages} />
           </p>
         )}
       </FormGroup>

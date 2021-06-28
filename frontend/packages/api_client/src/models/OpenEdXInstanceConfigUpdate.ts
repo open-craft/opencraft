@@ -124,6 +124,29 @@ export interface OpenEdXInstanceConfigUpdate {
      * @memberof OpenEdXInstanceConfigUpdate
      */
     readonly dnsConfigurationState?: OpenEdXInstanceConfigUpdateDnsConfigurationStateEnum;
+    /**
+     * If set, it overrides the source for the footer logo image. By default, the 'Powered by OpenEdX' logo is used.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    readonly footerLogoImage?: string;
+    /**
+     * If set, overrides the link destination for the footer logo. By default, it links to the OpenEdX website.
+     * @type {string}
+     * @memberof OpenEdXInstanceConfigUpdate
+     */
+    footerLogoUrl?: string;
+}
+
+/**
+* @export
+* @enum {string}
+*/
+export enum OpenEdXInstanceConfigUpdateDnsConfigurationStateEnum {
+    Verified = 'verified',
+    Pending = 'pending',
+    Failed = 'failed',
+    NotRequired = 'not_required'
 }
 
 export function OpenEdXInstanceConfigUpdateFromJSON(json: any): OpenEdXInstanceConfigUpdate {
@@ -151,6 +174,8 @@ export function OpenEdXInstanceConfigUpdateFromJSONTyped(json: any, ignoreDiscri
         'draftStaticContentOverrides': !exists(json, 'draft_static_content_overrides') ? undefined : StaticContentOverridesFromJSON(json['draft_static_content_overrides']),
         'staticPagesEnabled': !exists(json, 'static_pages_enabled') ? undefined : json['static_pages_enabled'],
         'dnsConfigurationState': !exists(json, 'dns_configuration_state') ? undefined : json['dns_configuration_state'],
+        'footerLogoImage': !exists(json, 'footer_logo_image') ? undefined : json['footer_logo_image'],
+        'footerLogoUrl': !exists(json, 'footer_logo_url') ? undefined : json['footer_logo_url'],
     };
 }
 
@@ -171,18 +196,8 @@ export function OpenEdXInstanceConfigUpdateToJSON(value?: OpenEdXInstanceConfigU
         'use_advanced_theme': value.useAdvancedTheme,
         'draft_theme_config': ThemeSchemaToJSON(value.draftThemeConfig),
         'draft_static_content_overrides': StaticContentOverridesToJSON(value.draftStaticContentOverrides),
+        'footer_logo_url': value.footerLogoUrl,
     };
-}
-
-/**
-* @export
-* @enum {string}
-*/
-export enum OpenEdXInstanceConfigUpdateDnsConfigurationStateEnum {
-    Verified = 'verified',
-    Pending = 'pending',
-    Failed = 'failed',
-    NotRequired = 'not_required'
 }
 
 

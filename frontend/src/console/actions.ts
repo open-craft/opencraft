@@ -10,7 +10,8 @@ import {
 import {
   ThemeSchema,
   StaticContentOverrides,
-  ToggleStaticContentPages
+  ToggleStaticContentPages,
+  OpenEdXInstanceConfig
 } from 'ocim-client';
 import { NOTIFICATIONS_LIMIT, ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
@@ -275,7 +276,7 @@ export const listUserInstances = (): OcimThunkAction<
 export const updateImages = (
   instanceId: number,
   imageFieldName: string,
-  file: null | string
+  file: Blob | null
 ): OcimThunkAction<void> => async (dispatch, getState) => {
   // Dispatch variable lock to avoid sending a second image
   // while the first one is still being transmitted
@@ -315,10 +316,27 @@ export const updateImages = (
   }
 };
 
-export const updateFieldValue = (
+/**
+ * Create an action for updating the given field in the store's active instance.
+ * @param field name of field to update
+ * @param value value to set field to
+ */
+export const updateActiveInstanceField = <
+  T extends keyof OpenEdXInstanceConfig
+>(
+  field: T,
+  value: OpenEdXInstanceConfig[T]
+) => ({
+  type: Types.UPDATE_INSTANCE_INFO_SUCCESS,
+  data: {
+    [field]: value
+  }
+});
+
+export const updateFieldValue = <T extends keyof OpenEdXInstanceConfig>(
   instanceId: number,
-  fieldName: string,
-  value: string
+  fieldName: T,
+  value: OpenEdXInstanceConfig[T]
 ): OcimThunkAction<void> => async (dispatch, getState) => {
   dispatch({
     type: Types.UPDATE_INSTANCE_INFO,
@@ -351,6 +369,28 @@ export const updateFieldValue = (
       dispatch(push(ROUTES.Error.UNKNOWN_ERROR));
     }
   }
+};
+
+/**
+ * Updates the backend state of the given field with the current state of the store.
+ * @param field the name of the field to synchronize
+ */
+export const syncActiveInstanceField = (
+  field: keyof OpenEdXInstanceConfig
+): OcimThunkAction<void> => {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.console.activeInstance.data) {
+      const activeInstanceData = state.console.activeInstance.data;
+      dispatch(
+        updateFieldValue(
+          activeInstanceData.id,
+          field,
+          activeInstanceData[field]
+        )
+      );
+    }
+  };
 };
 
 export const updateThemeFieldValue = (

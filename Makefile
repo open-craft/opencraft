@@ -51,7 +51,7 @@ all: run.dev
 
 clean: cov.clean ## Remove all temporary files.
 	find -name '*.pyc' -delete
-	find -name '*~' -delete
+	find -name '*~' -type f -delete
 	find -name '__pycache__' -type d -delete
 	rm -rf .coverage build
 	find static/external -type f -not -name 'Makefile' -not -name '.gitignore' -delete

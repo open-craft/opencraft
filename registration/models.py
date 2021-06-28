@@ -336,6 +336,22 @@ class BetaTestApplication(ValidateModelMixin, TimeStampedModel):
         default='#ffffff',
         validators=[validate_color],
     )
+
+    footer_logo_image = models.ImageField(
+        verbose_name='Footer Logo Image',
+        help_text="If set, it overrides the source for the footer logo image."
+                  " By default, the 'Powered by OpenEdX' logo is used.",
+        blank=True,
+        default='',
+        null=True,
+    )
+    footer_logo_url = models.URLField(
+        verbose_name='Footer Logo Link',
+        help_text="If set, overrides the link destination for the footer logo."
+                  " By default, it links to the OpenEdX website.",
+        blank=True,
+        default=''
+    )
     # If you're using SWIFT (OpenStack) to store files (this is enabled through
     # the MEDIAFILES_SWIFT_ENABLE environment variable) then you'll need to
     # upload these default images (logo and favicon) to your container. To do so,

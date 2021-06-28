@@ -102,7 +102,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instanceAppServers.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -135,7 +135,7 @@ export class V1Api extends runtime.BaseAPI {
      * List all instances. No App server list is returned in the list view, only the newest app server information.
      */
     async instanceListRaw(): Promise<runtime.ApiResponse<Array<InstanceReferenceDetailed>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -172,7 +172,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instanceLogs.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -210,7 +210,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling instanceRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -252,7 +252,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling instanceSetNotes.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -293,7 +293,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling openedxAppserverCreate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -330,7 +330,7 @@ export class V1Api extends runtime.BaseAPI {
      * API to list and manipulate Open edX AppServers.
      */
     async openedxAppserverListRaw(): Promise<runtime.ApiResponse<Array<string>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -367,7 +367,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling openedxAppserverLogs.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -408,7 +408,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling openedxAppserverMakeActive.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -452,7 +452,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling openedxAppserverMakeInactive.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -492,7 +492,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling openedxAppserverRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -522,7 +522,8 @@ export class V1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Terminate the VM running the provided AppServer.
+     * Note that this might fail silently without any errors appearing on the Ocim UI, but it\'s acceptable given the current use case.
+     * Trigger worker task to terminate the VM running the provided AppServer.
      */
     async openedxAppserverTerminateRaw(requestParameters: OpenedxAppserverTerminateRequest): Promise<runtime.ApiResponse<OpenEdXAppServer>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -533,7 +534,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling openedxAppserverTerminate.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -558,7 +559,8 @@ export class V1Api extends runtime.BaseAPI {
     }
 
     /**
-     * Terminate the VM running the provided AppServer.
+     * Note that this might fail silently without any errors appearing on the Ocim UI, but it\'s acceptable given the current use case.
+     * Trigger worker task to terminate the VM running the provided AppServer.
      */
     async openedxAppserverTerminate(requestParameters: OpenedxAppserverTerminateRequest): Promise<OpenEdXAppServer> {
         const response = await this.openedxAppserverTerminateRaw(requestParameters);
@@ -569,7 +571,7 @@ export class V1Api extends runtime.BaseAPI {
      * This API allows you retrieve information about OpenStackServer objects (OpenStack VMs). It is visible only to superusers because if we open it to instance managers we need to filter VMs by organization. Since this API isn\'t used by the UI, for now we keep it internal and superuser only.
      */
     async openstackserverListRaw(): Promise<runtime.ApiResponse<Array<OpenStackServer>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -606,7 +608,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling openstackserverRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -639,7 +641,7 @@ export class V1Api extends runtime.BaseAPI {
      * API to update instances from their PR
      */
     async prWatchListRaw(): Promise<runtime.ApiResponse<Array<WatchedPullRequest>>> {
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -676,7 +678,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling prWatchRead.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -718,7 +720,7 @@ export class V1Api extends runtime.BaseAPI {
             throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling prWatchUpdateInstance.');
         }
 
-        const queryParameters: runtime.HTTPQuery = {};
+        const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 

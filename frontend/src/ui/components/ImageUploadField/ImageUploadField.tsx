@@ -17,6 +17,7 @@ interface ImageUploadFieldProps {
   tooltipTextId?: string;
   tooltipImage?: string;
   innerPreview?: string;
+  children?: React.ReactNode;
 }
 
 interface Image {
@@ -96,12 +97,15 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
   return (
     <div className="image-upload-field">
       <div className="component-header">
-        <h4 className="upload-field-header">{props.customUploadMessage}</h4>
-        {tooltip && (
-          <OverlayTrigger placement="top" overlay={tooltip}>
-            <i className="fas fa-info-circle" />
-          </OverlayTrigger>
-        )}
+        <h4 className="upload-field-header">
+          {props.customUploadMessage}
+          {tooltip && (
+            <OverlayTrigger placement="top" overlay={tooltip}>
+              <i className="fas fa-info-circle" />
+            </OverlayTrigger>
+          )}
+        </h4>
+        {props.children}
       </div>
       <Button
         variant="outline-primary"

@@ -714,6 +714,26 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(validation_response.status_code, 200)
         self.assertFalse(mock_validate.called)
 
+    @patch('registration.api.v2.serializers.validate_available_subdomain')
+    def test_update_footer_image_url(self, mock_validate):
+        """
+        Test that the footer image url can be set.
+        """
+        self.client.force_login(self.user_with_instance)
+
+        update_data = {
+            "footer_logo_url": "http://example.com/url",
+        }
+
+        validation_response = self.client.patch(
+            reverse('api:v2:openedx-instance-config-detail', args=(self.instance_config.pk,)),
+            data=update_data,
+            format="json",
+        )
+
+        self.assertEqual(validation_response.status_code, 200)
+        self.assertDictContainsSubset(update_data, validation_response.json())
+
     @patch('registration.models.gandi_api')
     @ddt.data(
         dict(subdomain="invalid subdomain"),
@@ -975,6 +995,60 @@ class OpenEdXInstanceConfigAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.instance_config.refresh_from_db()
         self.assertFalse(self.instance_config.hero_cover_image)
+
+    def test_set_footer_logo_image(self):
+        """
+        Test uploading a footer logo image
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        self.assertFalse(self.instance_config.footer_logo_image)
+
+        # Load test cover image
+        cover_image = create_image('cover.png')
+        cover_image_file = SimpleUploadedFile('cover.png', cover_image.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'footer_logo_image': cover_image_file},
+            format='multipart',
+        )
+        self.assertTrue(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertTrue(self.instance_config.footer_logo_image)
+
+    def test_delete_footer_logo_image(self):
+        """
+        Test deleting the already set hero cover image
+        """
+        self.client.force_login(self.user_with_instance)
+        self._setup_user_instance()
+        self.assertFalse(self.instance_config.footer_logo_image)
+
+        # Load test cover image
+        cover_image = create_image('cover.png')
+        cover_image_file = SimpleUploadedFile('cover2.png', cover_image.getvalue())
+
+        # Request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'footer_logo_image': cover_image_file},
+            format='multipart',
+        )
+        self.assertTrue(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertTrue(self.instance_config.footer_logo_image)
+
+        # Deletion request
+        response = self.client.post(
+            reverse(f"api:v2:openedx-instance-config-image", args=(self.instance_config.pk,)),
+            data={'footer_logo_image': ''},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.instance_config.refresh_from_db()
+        self.assertFalse(self.instance_config.footer_logo_image)
 
     def test_change_logo_wrong_size(self):
         """

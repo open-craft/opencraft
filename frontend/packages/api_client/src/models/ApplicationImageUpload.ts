@@ -37,6 +37,12 @@ export interface ApplicationImageUpload {
      * @memberof ApplicationImageUpload
      */
     readonly heroCoverImage?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ApplicationImageUpload
+     */
+    readonly footerLogoImage?: string;
 }
 
 export function ApplicationImageUploadFromJSON(json: any): ApplicationImageUpload {
@@ -52,6 +58,7 @@ export function ApplicationImageUploadFromJSONTyped(json: any, ignoreDiscriminat
         'logo': !exists(json, 'logo') ? undefined : json['logo'],
         'favicon': !exists(json, 'favicon') ? undefined : json['favicon'],
         'heroCoverImage': !exists(json, 'hero_cover_image') ? undefined : json['hero_cover_image'],
+        'footerLogoImage': !exists(json, 'footer_logo_image') ? undefined : json['footer_logo_image'],
     };
 }
 

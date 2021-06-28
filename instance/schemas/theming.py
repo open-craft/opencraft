@@ -56,6 +56,10 @@ theme_schema_v1 = {
     "definitions": {
         "color": color_schema,
         "flag": flag_schema,
+        "uri": {
+            "type": "string",
+            "format": "uri"
+        }
     },
     "type": "object",
     "properties": {
@@ -112,6 +116,8 @@ theme_schema_v1 = {
         "course-nav-menu-border-bottom-color": ref("color"),
         "account-settings-nav-border-bottom-color": ref("color"),
         "account-settings-nav-hover-border-bottom-color": ref("color"),
+        "static_template_footer_url": ref("uri"),
+        "static_template_footer_image_src": ref("uri"),
     },
     "dependencies": {
         "customize-sign-in-btn": [
