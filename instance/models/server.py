@@ -23,7 +23,6 @@ Instance app models - Server
 # Imports #####################################################################
 
 import logging
-import subprocess
 import time
 
 from django.conf import settings
@@ -33,7 +32,7 @@ from django_extensions.db.models import TimeStampedModel
 import novaclient
 import requests
 
-from instance import openstack_utils
+from instance import openstack_utils, ssh
 from instance.logging import ModelLoggerAdapter
 from instance.models.utils import (
     ValidateModelMixin, ResourceState, ModelResourceStateDescriptor, SteadyStateException, default_setting
@@ -452,7 +451,11 @@ class OpenStackServer(Server):
                 self.logger.warning("Server has not reached SHUTOFF state after max wait time; terminating forcefully.")
             os_server.delete()
         except novaclient.exceptions.NotFound:
-            self.logger.error('Error while attempting to terminate server: could not find OS server')
+            self.logger.exception(
+                'Error while attempting to terminate the server "%s":'
+                + ' could not find the corresponding OpenStack server',
+                self.name
+            )
             self._status_to_terminated()
         except (requests.RequestException, novaclient.exceptions.ClientException) as exc:
             self.logger.error('Unable to reach the OpenStack API due to %s', exc)
@@ -486,9 +489,15 @@ class OpenStackServer(Server):
         We can safely ignore the command's return code, because we just need to be sure that the key has been removed
         for non-existing server - we don't care about non-existing keys.
         """
-        self.logger.info('Deleting SSH key of "%s" host.', self.public_ip)
-        command = f'ssh-keygen -R {self.public_ip}'
+        # self.public_ip might fail because it calls OpenStack APIs,
+        # so we ignore those failures if they happen
         try:
-            subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except subprocess.SubprocessError as e:
-            self.logger.error('Failed to delete SSH key of "%s" host: %s', self.public_ip, e)
+            ip = self.public_ip
+        except novaclient.exceptions.ClientException:
+            self.logger.warning(
+                'Failed to get the IP address of the server "%s", skipping the removal of its SSH key.',
+                self.name,
+                exc_info=True
+            )
+            return
+        ssh.remove_known_host_key(ip)
