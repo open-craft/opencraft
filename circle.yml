@@ -490,7 +490,9 @@ workflows:
               ignore: /.*/
             tags:
               only: /^release\-\w+\-\w+$/
-  cleanup-workflow:
+  
+  # used for periodically cleaning up left-over resources
+  scheduled-cleanup:
     triggers:
       - schedule:
           cron: "0 1 * * *"
@@ -498,6 +500,15 @@ workflows:
             branches:
               only:
                 - master
-                - guruprasad/BB-4378-fix-CI-cleanup-issues
     jobs:
       - cleanup
+
+  # used for running cleanup on-demand
+  # by pushing to `ci-cleanup` branch
+  ondemand-cleanup:
+    jobs:
+      - cleanup:
+          filters:
+            branches:
+              only:
+                - ci-cleanup

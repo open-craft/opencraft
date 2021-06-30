@@ -28,7 +28,7 @@ from instance.gandi import GandiV5API
 
 # Logging #####################################################################
 
-logger = logging.getLogger('integration_cleanup')
+logger = logging.getLogger(__name__)
 
 
 # Constants ###################################################################
@@ -53,7 +53,7 @@ class DNSCleanupInstance:
         Cleans up the DNS records using the Gandi API.
         """
 
-        logger.info('\n --- Starting Gandi DNS cleanup ---')
+        logger.info(' --- Starting Gandi DNS cleanup ---')
         if self.dry_run:
             logger.info('Running in DRY_RUN mode, no actions will be taken.')
 

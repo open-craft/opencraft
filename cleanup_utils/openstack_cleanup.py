@@ -29,7 +29,7 @@ import pytz
 
 # Logging #####################################################################
 
-logger = logging.getLogger('integration_cleanup')
+logger = logging.getLogger(__name__)
 
 
 # Classes #####################################################################
@@ -87,7 +87,7 @@ class OpenStackCleanupInstance:
         """
         Runs the cleanup of OpenStack provider
         """
-        logger.info("\n --- Starting OpenStack Provider Cleanup ---")
+        logger.info("--- Starting OpenStack Provider Cleanup ---")
         if not self.openstack_online:
             logger.error(
                 "ERROR: The OpenStack provider couldn't be reached,"
