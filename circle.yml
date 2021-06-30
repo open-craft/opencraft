@@ -504,11 +504,11 @@ workflows:
       - cleanup
 
   # used for running cleanup on-demand
-  # by pushing to `ci-cleanup` branch
+  # by pushing to branches that start with `ci-cleanup/`
   ondemand-cleanup:
     jobs:
       - cleanup:
           filters:
             branches:
               only:
-                - ci-cleanup
+                - /ci-cleanup\/.*/
