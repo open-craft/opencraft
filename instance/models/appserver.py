@@ -158,7 +158,7 @@ class AppServer(ValidateModelMixin, TimeStampedModel):
         from_states=Status.WaitingForServer, to_state=Status.ConfiguringServer
     )
     _status_to_error = status.transition(
-        from_states=Status.WaitingForServer, to_state=Status.Error
+        from_states=(Status.New, Status.WaitingForServer), to_state=Status.Error
     )
     _status_to_running = status.transition(
         from_states=Status.ConfiguringServer, to_state=Status.Running

@@ -134,7 +134,27 @@ class OpenEdXAppServerTestCase(TestCase):
 
         self.assertEqual(appserver.status, AppServerStatus.Error)
         self.assertEqual(appserver.server.status, Server.Status.BuildFailed)
-        mocks.mock_provision_failed_email.assert_called_once_with('Unable to start an OpenStack server')
+        mocks.mock_provision_failed_email.assert_called_once_with('Unable to start an OpenStack server', None)
+
+    @patch_services
+    def test_provision_security_group_check_failed(self, mocks, mock_consul):
+        """
+        Test the end state when security group checks fail while running provisioning.
+        """
+        appserver = make_test_appserver()
+        self.assertEqual(appserver.status, AppServerStatus.New)
+        self.assertEqual(appserver.server.status, Server.Status.Pending)
+
+        mocks.mock_check_security_groups.side_effect = novaclient.exceptions.ClientException(400)
+        result = appserver.provision()
+        self.assertFalse(result)
+
+        self.assertEqual(appserver.status, AppServerStatus.Error)
+        self.assertEqual(appserver.server.status, Server.Status.Pending)
+        mocks.mock_provision_failed_email.assert_called_once_with(
+            "Unable to check/update the network security groups for the new VM",
+            None
+        )
 
     @patch_services
     def test_provision_failed(self, mocks, mock_consul):
@@ -168,7 +188,10 @@ class OpenEdXAppServerTestCase(TestCase):
         appserver.manage_instance_services = Mock()
         result = appserver.provision()
         self.assertFalse(result)
-        mocks.mock_provision_failed_email.assert_called_once_with("AppServer deploy failed: unhandled exception")
+        mocks.mock_provision_failed_email.assert_called_once_with(
+            "AppServer deploy failed: unhandled exception",
+            None
+        )
         appserver.manage_instance_services.assert_called_once_with(active=False)
 
     def test_admin_users(self, mock_consul):
@@ -429,7 +452,8 @@ class OpenEdXAppServerTestCase(TestCase):
         self.assertFalse(result)
         mocks.mock_create_server.assert_not_called()
         mocks.mock_provision_failed_email.assert_called_once_with(
-            "Unable to check/update the network security groups for the new VM"
+            "Unable to check/update the network security groups for the new VM",
+            None
         )
 
     @patch("instance.models.openedx_appserver.get_openstack_connection")
@@ -841,7 +865,7 @@ class OpenEdXAppServerStatusTestCase(TestCase):
         },
         {
             'name': '_status_to_error',
-            'from_states': [AppServerStatus.WaitingForServer],
+            'from_states': [AppServerStatus.New, AppServerStatus.WaitingForServer],
         },
         {
             'name': '_status_to_configuring_server',
