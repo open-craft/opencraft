@@ -170,6 +170,9 @@ def run_integration_cleanup(dry_run=False):
     logger.info("\nIntegration cleanup tool finished.")
 
 def configure_logging():
+    """
+    Configure logging.
+    """
     logging.basicConfig(
         format="%(asctime)s | %(module)-30s | %(levelname)-7s | %(msg)s",
         handlers=[
@@ -178,6 +181,7 @@ def configure_logging():
         ],
         level=logging.INFO,
     )
+
 
 if __name__ == "__main__":
     configure_logging()
