@@ -175,7 +175,7 @@ def configure_logging():
     Configure logging.
     """
     logging.basicConfig(
-        format="%(asctime)s | %(module)-30s | %(levelname)-7s | %(msg)s",
+        format="%(asctime)s | %(module)-30s | %(levelname)-7s | %(message)s",
         handlers=[
             logging.FileHandler('integration_cleanup.log'),
             logging.StreamHandler()
