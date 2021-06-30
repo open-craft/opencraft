@@ -21,30 +21,25 @@ services:
     image: redis:4
     ports:
       - "6379:6379"
-    
+
   ocim:
     build:
       context: .
       dockerfile: Dockerfile.ocim
-    depends_on: 
+    depends_on:
       - postgresql
       - redis
     env_file: .env
-    environment: 
-      ALLOWED_HOSTS: '["*"]'
-      DATABASE_URL: '${DATABASE_URL:-postgres://opencraft@postgresql/opencraft}'
-      REDIS_URL: '${REDIS_URL:-redis://redis:6379}'
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
       - ./:/usr/src/ocim/
-    
+
   ocim-frontend:
     build:
       context: frontend/
-    depends_on: 
+    depends_on:
       - ocim
-    environment: {} 
     ports:
       - "127.0.0.1:3000:3000"
     tty: true
