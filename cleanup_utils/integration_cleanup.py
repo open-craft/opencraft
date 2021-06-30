@@ -169,6 +169,7 @@ def run_integration_cleanup(dry_run=False):
 
     logger.info("\nIntegration cleanup tool finished.")
 
+
 def configure_logging():
     """
     Configure logging.
