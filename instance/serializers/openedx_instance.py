@@ -117,6 +117,7 @@ class OpenEdXInstanceSerializer(OpenEdXInstanceBasicSerializer):
             'mongo_pass',
             'mongo_provisioned',
             'rabbitmq_provisioned',
+            'redis_provisioned',
 
             'dns_records_updated',
 

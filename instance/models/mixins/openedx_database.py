@@ -27,6 +27,7 @@ import yaml
 
 from instance.models.mixins.database import MySQLInstanceMixin, MongoDBInstanceMixin
 from instance.models.mixins.rabbitmq import RabbitMQInstanceMixin
+from instance.models.mixins.redis import RedisInstanceMixin
 
 FORUM_MONGO_REPLICA_SET_URL = (
     "mongodb://{{ FORUM_MONGO_USER }}:{{ FORUM_MONGO_PASSWORD }}@"
@@ -41,7 +42,7 @@ FORUM_MONGO_REPLICA_SET_URL = (
 # Classes #####################################################################
 
 
-class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin):
+class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQInstanceMixin, RedisInstanceMixin):
     """
     Mixin that provides functionality required for the database backends that an
     OpenEdX Instance uses
@@ -475,6 +476,56 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "EDXAPP_CELERY_BROKER_USE_SSL": True
         }
 
+    def _get_redis_settings(self):
+        """
+        Return dictionary of Redis settings
+        """
+
+        redis_hostname = "{}:{}".format(
+            self.redis_server.instance_host,
+            self.redis_server.instance_port
+        )
+
+        redis_transport_options = {
+            "CELERY_BROKER_TRANSPORT_OPTIONS": {
+                "global_keyprefix": self.redis_consumer_user.key_prefix
+            }
+        }
+
+        # TODO: Validate the key names as I just copy pasted them from RabbitMQ
+        return {
+            "XQUEUE_REDIS_USER": self.redis_consumer_user.username,
+            "XQUEUE_REDIS_PASS": self.redis_consumer_user.password,
+            "XQUEUE_REDIS_VHOST": str(self.redis_server.instance_db),
+            "XQUEUE_REDIS_HOSTNAME": self.redis_server.instance_host,
+            "XQUEUE_REDIS_PORT": self.redis_server.instance_port,
+            "XQUEUE_REDIS_TLS": self.redis_server.use_ssl_connections,
+            "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.cache",
+            "XQUEUE_CACHES": {
+                "default": {
+                    # FIXME: What should be this? Is it needed at all?
+                    "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+                    "KEY_PREFIX": f"{self.redis_consumer_user.key_prefix}xqueue",
+                    "LOCATION": "{{ EDXAPP_MEMCACHE }}",
+                },
+            },
+
+            "EDXAPP_REDIS_HOSTNAME": redis_hostname,
+            "EDXAPP_CELERY_BROKER_TRANSPORT": "redis",
+            "EDXAPP_CELERY_USER": self.redis_consumer_user.username,
+            "EDXAPP_CELERY_PASSWORD": self.redis_consumer_user.password,
+            "EDXAPP_CELERY_BROKER_HOSTNAME": redis_hostname,
+            "EDXAPP_CELERY_BROKER_VHOST": str(self.redis_server.instance_db),
+            "EDXAPP_CELERY_BROKER_USE_SSL": self.redis_server.use_ssl_connections,
+
+            "EDXAPP_LMS_ENV_EXTRA": {
+                **redis_transport_options
+            },
+            "EDXAPP_CMS_ENV_EXTRA": {
+                **redis_transport_options
+            }
+        }
+
     def get_database_settings(self):
         """
         Get configuration_database_settings to pass to a new AppServer
@@ -490,6 +541,11 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             new_settings.update(self._get_mongo_settings())
 
         # RabbitMQ:
-        new_settings.update(self._get_rabbitmq_settings())
+        # TODO: Use a real condition here
+        if False:
+            new_settings.update(self._get_rabbitmq_settings())
+
+        # Redis
+        new_settings.update(self._get_redis_settings())
 
         return yaml.dump(new_settings, default_flow_style=False)

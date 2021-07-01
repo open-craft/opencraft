@@ -310,8 +310,15 @@ class OpenEdXInstance(
         elif self.storage_type == self.S3_STORAGE:
             self.logger.info('Provisioning S3 bucket...')
             self.provision_s3()
-        self.logger.info('Provisioning RabbitMQ vhost...')
-        self.provision_rabbitmq()
+
+        # TODO: We should provision Redis OR RabbitMQ but not both!
+        # TODO: Use a real condition here
+        if False:
+            self.logger.info('Provisioning RabbitMQ vhost...')
+            self.provision_rabbitmq()
+
+        self.logger.info('Provisioning Redis user ACL...')
+        self.provision_redis()
 
         return self._create_owned_appserver(deployment_id=deployment_id)
 
