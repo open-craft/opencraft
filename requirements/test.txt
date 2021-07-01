@@ -515,7 +515,7 @@ pyyaml==5.4.1
     #   prospector
 rcssmin==1.0.6
     # via django-compressor
-redis==3.2.1
+redis==3.5.3
     # via
     #   -r requirements/base.in
     #   django-redis
