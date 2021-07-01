@@ -742,8 +742,11 @@ DEFAULT_MONGO_REPLICA_SET_PORT = env('DEFAULT_MONGO_REPLICA_SET_PORT', default=N
 DEFAULT_MONGO_REPLICA_SET_USER = env('DEFAULT_MONGO_REPLICA_SET_USER', default=None)
 DEFAULT_MONGO_REPLICA_SET_PASSWORD = env('DEFAULT_MONGO_REPLICA_SET_PASSWORD', default=None)
 
-# The RabbitMQ host must be accessible from both OpenCraft IM as well as well as any instances using it.
+# The RabbitMQ host must be accessible from both OpenCraft IM and any instances using it
 DEFAULT_INSTANCE_RABBITMQ_URL = env('DEFAULT_INSTANCE_RABBITMQ_URL', default=None)
+
+# The Redis host must be accessible from both OpenCraft IM and any instances using it
+DEFAULT_INSTANCE_REDIS_URL = env('DEFAULT_INSTANCE_REDIS_URL', default=None)
 
 # Limit the number of log entries fetched for each instance, for performance
 LOG_LIMIT = env.int('LOG_LIMIT', default=10000)
