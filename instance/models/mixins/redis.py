@@ -38,25 +38,14 @@ from instance.models.redis_server import RedisServer
 
 # Functions ###################################################################
 
-def new_redis_user(max_tries=10):
+def new_redis_user() -> RedisUser:
     """
-    Return the primary key of a new Redis user.
+    Return a new Redis user.
     """
-
-    if max_tries == 0:
-        raise IntegrityError("Cannot create unique redis user")
-
-    username = get_random_string(length=32, allowed_chars=string.ascii_lowercase)
-
-    if RedisUser.objects.filter(username=username).count() > 0:
-        return new_redis_user(max_tries - 1)
-
-    user = RedisUser.objects.create(
-        username=username,
-        password=get_random_string(length=64)
+    return RedisUser.objects.create(
+        username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
+        password=get_random_string(length=64),
     )
-
-    return user.pk
 
 
 def select_random_redis_server():
