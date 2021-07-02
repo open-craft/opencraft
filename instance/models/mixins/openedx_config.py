@@ -89,7 +89,14 @@ class OpenEdXConfigMixin(ConfigMixinBase):
                     "BLOG": "",
                     # use different contact page
                     "CONTACT": "/contact",
+                    # Explicitly set TOS_AND_HONOR link to '#' so that they are not combined.
+                    "TOS_AND_HONOR": "#"
                 },
+            },
+            "EDXAPP_MKTG_URL_LINK_MAP": {
+                # set the tos and honor pages separately. Required for koa and above.
+                "TOS": "tos",
+                "HONOR": "honor"
             },
             "EDXAPP_LMS_NGINX_PORT": 80,
             "EDXAPP_LMS_SSL_NGINX_PORT": 443,
