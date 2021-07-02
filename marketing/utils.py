@@ -28,6 +28,7 @@ from django.core.mail import send_mail
 from django.template import Context
 
 from marketing.models import Subscriber, EmailTemplate, SentEmail
+from opencraft.utils import get_site_url
 
 
 # Logging #####################################################################
@@ -43,6 +44,9 @@ def render_and_dispatch_email(template: EmailTemplate, subscriber: Subscriber):
     application = subscriber.user.betatestapplication
     user = subscriber.user
     context = Context({
+        "base_url": get_site_url(),
+        "signature_title": settings.EMAIL_SIGNATURE_TITLE,
+        "signature_name": settings.EMAIL_SIGNATURE_NAME,
         "full_name": user.profile.full_name,
         "username": user.get_username(),
         "instance_name": application.instance_name,
