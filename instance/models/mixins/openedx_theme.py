@@ -19,11 +19,11 @@
 """
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
-import yaml
 from colour import Color
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+import yaml
 
 from instance.schemas.theming import theme_schema_validate
 
@@ -171,7 +171,10 @@ class OpenEdXThemeMixin(models.Model):
         return {
             "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
             "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
-            'SIMPLETHEME_SASS_OVERRIDES': sass_overrides,
+            "SIMPLETHEME_SASS_OVERRIDES": sass_overrides,
+            "MFE_DEPLOY_NPM_OVERRIDES": [
+                "@edx/brand@file:/edx/var/edxapp/themes/simple-theme/",
+            ],
         }
 
     def get_footer_logo_customizations(self, application):
