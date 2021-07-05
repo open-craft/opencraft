@@ -28,6 +28,7 @@ from django.template import Context
 
 from marketing import models
 from registration.models import BetaTestApplication
+from opencraft.utils import get_site_url
 
 
 class EmailTemplateAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
@@ -46,6 +47,9 @@ class EmailTemplateAdmin(admin.ModelAdmin): #pylint: disable=missing-docstring
             instance_name="EmailTemplate Sample"
         )
         context = Context({
+            "base_url": get_site_url(),
+            "signature_title": settings.EMAIL_SIGNATURE_TITLE,
+            "signature_name": settings.EMAIL_SIGNATURE_NAME,
             "full_name": request.user.get_full_name(),
             "username": request.user.username,
             "instance_name": "EmailTemplate Sample",
