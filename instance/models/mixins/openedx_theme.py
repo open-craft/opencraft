@@ -19,11 +19,11 @@
 """
 Open edX instance theme mixin, e.g. for simple_theme related settings
 """
+import yaml
 from colour import Color
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-import yaml
 
 from instance.schemas.theming import theme_schema_validate
 
