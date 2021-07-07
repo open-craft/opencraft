@@ -234,7 +234,7 @@ To access the console, you can use `shell_plus`:
 
 ## OCIM Frontend
 
-The frontend of OCIM is a single-page app using the React and Redux.
+The frontend of OCIM is a single-page app using React and Redux.
 All the code can be found inside `frontend` directory.
 All reusable UI components description been described in the `/demo` route in dev environment.
 
