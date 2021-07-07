@@ -6,6 +6,7 @@ repo_url: https://github.com/open-craft/opencraft
 edit_uri: edit/master/documentation/
 markdown_extensions:
   - codehilite
+  - admonition
 extra_css:
   - css/extra.css
 nav:
@@ -19,6 +20,7 @@ nav:
   - howtos.md
   - periodic_builds.md
   - infrastructure.md
+  - "Using the Marketing app": marketing_usage.md
   - "Development":
       - "Docker": development/docker.md
   - "Operations":
