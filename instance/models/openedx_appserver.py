@@ -53,6 +53,21 @@ OPENEDX_APPSERVER_SECURITY_GROUP_RULES = [
 ]
 
 
+class ProvisioningError(Exception):
+    """
+    Raised when provisioning fails.
+    """
+
+    def __init__(self, message, log=None):
+        """
+        Arguments:
+            message: a message describing the error
+            log (optional): a log from an underlying process
+        """
+        super().__init__(message)
+        self.message = message
+        self.log = log
+
 # Models ######################################################################
 
 class OpenEdXAppConfiguration(models.Model):
@@ -603,18 +618,37 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
 
         Returns True on success or False on failure
         """
-        # pylint: disable=cyclic-import, useless-suppression
-        from instance.models.openedx_deployment import OpenEdXDeployment
+        # this catches ProvisioningError, which has been
+        # intentionally designed to have attributes matching
+        # the arguments of the `OpenEdXAppServer.provision_failed_email`,
+        # allowing error handling to be done once here instead of
+        # repeating everywhere and having to worry about return values
+        try:
+            return self._do_provision()
+        except ProvisioningError as pe:
+            self.logger.exception(pe.message)
+            self.provision_failed_email(pe.message, pe.log)
+            return False
+        except Exception: # pylint: disable=broad-except
+            message = "Failed to provision app server due to an unhandled exception"
+            self.logger.exception(message)
+            self.provision_failed_email(message)
+            return False
+
+    def _do_provision(self):
+        """
+        Do the actual provisioning.
+        """
         self.logger.info('Starting provisioning')
 
         # Check firewall rules:
         try:
             self.check_security_groups()
-        except:  # pylint: disable=bare-except
-            message = "Unable to check/update the network security groups for the new VM"
-            self.logger.exception(message)
-            self.provision_failed_email(message)
-            return False
+        except Exception as ex:
+            self._status_to_error()
+            raise ProvisioningError(
+                "Unable to check/update the network security groups for the new VM"
+            ) from ex
 
         # Requesting a new server/VM:
         self._status_to_waiting_for_server()
@@ -622,68 +656,88 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
         self.server.name_prefix = self.server_name_prefix
         self.server.save()
 
+        try:
+            self._start_server()
+        except Exception as ex:
+            self._status_to_error()
+            raise ProvisioningError("Unable to start an OpenStack server") from ex
+
+        try:
+            return self._provision_server()
+        except ProvisioningError:
+            raise
+        except Exception as ex: # pylint: disable=broad-except
+            self._status_to_configuration_failed()
+            try:
+                self.manage_instance_services(active=False)
+            finally:
+                raise ProvisioningError("AppServer deploy failed: unhandled exception") from ex
+
+    @AppServer.status.only_for(AppServer.Status.WaitingForServer)
+    def _start_server(self):
+        """
+        Start the OpenStack server for this App Server.
+
+        This waits until the server is available and
+        accepts SSH commands.
+        """
         def accepts_ssh_commands():
             """ Does server accept SSH commands? """
             return self.server.status.accepts_ssh_commands
 
-        try:
-            self.server.start(
-                security_groups=self.security_groups,
-                flavor_selector=self.openstack_server_flavor,
-                image_selector=self.openstack_server_base_image,
-                key_name=self.openstack_server_ssh_keyname,
-            )
-            self.logger.info('Waiting for server %s...', self.server)
-            self.server.sleep_until(lambda: self.server.status.vm_available)
-            self.logger.info('Waiting for server %s to finish booting...', self.server)
-            self.server.sleep_until(accepts_ssh_commands)
-        except:  # pylint: disable=bare-except
-            self._status_to_error()
-            message = 'Unable to start an OpenStack server'
-            self.logger.exception(message)
-            self.provision_failed_email(message)
-            return False
+        self.server.start(
+            security_groups=self.security_groups,
+            flavor_selector=self.openstack_server_flavor,
+            image_selector=self.openstack_server_base_image,
+            key_name=self.openstack_server_ssh_keyname,
+        )
+        self.logger.info('Waiting for server %s...', self.server)
+        self.server.sleep_until(lambda: self.server.status.vm_available)
+        self.logger.info('Waiting for server %s to finish booting...', self.server)
+        self.server.sleep_until(accepts_ssh_commands)
 
-        try:
-            # Provisioning (ansible)
-            self.logger.info('Provisioning server...')
-            self._status_to_configuring_server()
+    def _provision_server(self):
+        """
+        Provision the OpenStack server using Ansible.
+        """
+        # pylint: disable=cyclic-import, useless-suppression
+        from instance.models.openedx_deployment import OpenEdXDeployment
+        # Provisioning (ansible)
+        self.logger.info('Provisioning server...')
+        self._status_to_configuring_server()
 
-            # Check if deployment was cancelled before starting the playbooks.
-            # Terminating here in case any previous terminations were no-op due to VM being in a pre-ready state.
-            # Use self.deployment_id for the canonical ID, as self.deployment can be either of type Deployment or
-            # OpenEdXDeployment
-            if self.deployment_id:
-                deployment = OpenEdXDeployment.objects.get(pk=self.deployment_id)
-                if deployment.cancelled:
-                    deployment.terminate_deployment()
-                    return False
-
-            log, exit_code = self.run_ansible_playbooks()
-            if exit_code != 0:
-                self.logger.info('Provisioning failed')
-                self._status_to_configuration_failed()
-                self.provision_failed_email("AppServer deploy failed: Ansible play exited with non-zero exit code", log)
-                self.manage_instance_services(active=False)
+        # Check if deployment was cancelled before starting the playbooks.
+        # Terminating here in case any previous terminations were no-op due to VM being in a pre-ready state.
+        # Use self.deployment_id for the canonical ID, as self.deployment can be either of type Deployment or
+        # OpenEdXDeployment
+        if self.deployment_id:
+            deployment = OpenEdXDeployment.objects.get(pk=self.deployment_id)
+            if deployment.cancelled:
+                deployment.terminate_deployment()
                 return False
 
-            # Reboot
-            self.logger.info('Provisioning completed')
-            self.logger.info('Rebooting server %s...', self.server)
-            self.server.reboot()
-            self.server.sleep_until(self.heartbeat_active, steady_state_check=False, timeout=1800)
-
-            # Declare instance up and running
-            self._status_to_running()
-
-            return True
-        except:  # pylint: disable=bare-except
+        log, exit_code = self.run_ansible_playbooks()
+        if exit_code != 0:
+            self.logger.info('Provisioning failed')
             self._status_to_configuration_failed()
-            message = "AppServer deploy failed: unhandled exception"
-            self.logger.exception(message)
-            self.provision_failed_email(message)
-            self.manage_instance_services(active=False)
-            return False
+            try:
+                self.manage_instance_services(active=False)
+            finally:
+                raise ProvisioningError(
+                    "AppServer deploy failed: Ansible play exited with non-zero exit code",
+                    log
+                )
+
+        # Reboot
+        self.logger.info('Provisioning completed')
+        self.logger.info('Rebooting server %s...', self.server)
+        self.server.reboot()
+        self.server.sleep_until(self.heartbeat_active, steady_state_check=False, timeout=1800)
+
+        # Declare instance up and running
+        self._status_to_running()
+
+        return True
 
     def manage_instance_services(self, active):
         """
