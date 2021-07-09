@@ -48,16 +48,7 @@ DEFAULT_CUTOFF_TIME = (
 
 # Logging #####################################################################
 
-logger = logging.getLogger('integration_cleanup')
-
-file_handler = logging.FileHandler('integration_cleanup.log')
-file_handler.setLevel(logging.DEBUG)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+logger = logging.getLogger(__name__)
 
 
 # Functions ###################################################################
@@ -179,7 +170,22 @@ def run_integration_cleanup(dry_run=False):
     logger.info("\nIntegration cleanup tool finished.")
 
 
+def configure_logging():
+    """
+    Configure logging.
+    """
+    logging.basicConfig(
+        format="%(asctime)s | %(module)-30s | %(levelname)-7s | %(message)s",
+        handlers=[
+            logging.FileHandler('integration_cleanup.log'),
+            logging.StreamHandler()
+        ],
+        level=logging.INFO,
+    )
+
+
 if __name__ == "__main__":
+    configure_logging()
     parser = argparse.ArgumentParser(
         description="Cleanup all unused resources from integration runs that "
                     "might have been left behind."

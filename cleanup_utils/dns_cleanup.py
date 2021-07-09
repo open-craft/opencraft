@@ -28,7 +28,7 @@ from instance.gandi import GandiV5API
 
 # Logging #####################################################################
 
-logger = logging.getLogger('integration_cleanup')
+logger = logging.getLogger(__name__)
 
 
 # Constants ###################################################################
@@ -53,14 +53,25 @@ class DNSCleanupInstance:
         Cleans up the DNS records using the Gandi API.
         """
 
-        logger.info('\n --- Starting Gandi DNS cleanup ---')
+        logger.info(' --- Starting Gandi DNS cleanup ---')
         if self.dry_run:
             logger.info('Running in DRY_RUN mode, no actions will be taken.')
 
         logger.info('Deleting the following DNS records:')
         for hash_ in hashes_to_clean:
-            record = '{}.{}'.format(hash_, self.base_domain) if not hash_.endswith(self.base_domain) else hash_
-            logger.info('  %s', record)
+            record = '{}.integration.{}'.format(
+                hash_, self.base_domain
+            ) if not hash_.endswith(self.base_domain) else hash_
 
             if not self.dry_run:
+                logger.info('  Deleting %s', record)
                 self.client.remove_dns_record(record, type='CNAME')
+
+                for sub_domain in ('studio', 'preview', 'discovery', 'ecommerce', 'custom1', 'custom2'):
+                    sub_domain_record = '{}.{}'.format(sub_domain, record)
+                    logger.info('  Deleting %s', sub_domain_record)
+                    self.client.remove_dns_record(sub_domain_record, type='CNAME')
+
+                active_vm_record = 'vm1.{}'.format(record)
+                logger.info('  Deleting %s', active_vm_record)
+                self.client.remove_dns_record(active_vm_record, type='A')
