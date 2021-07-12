@@ -171,7 +171,10 @@ class OpenEdXThemeMixin(models.Model):
         return {
             "EDXAPP_COMPREHENSIVE_THEME_SOURCE_REPO": settings.SIMPLE_THEME_SKELETON_THEME_REPO,
             "EDXAPP_COMPREHENSIVE_THEME_VERSION": settings.SIMPLE_THEME_SKELETON_THEME_VERSION,
-            'SIMPLETHEME_SASS_OVERRIDES': sass_overrides,
+            "SIMPLETHEME_SASS_OVERRIDES": sass_overrides,
+            "MFE_DEPLOY_NPM_OVERRIDES": [
+                "@edx/brand@file:/edx/var/edxapp/themes/simple-theme/",
+            ],
         }
 
     def get_footer_logo_customizations(self, application):
