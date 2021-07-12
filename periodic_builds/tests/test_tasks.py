@@ -43,14 +43,16 @@ class PeriodicBuildsTestCase(TestCase):
     Test cases for tasks.launch_periodic_builds
     """
 
+    @patch('instance.models.mixins.load_balanced.LoadBalancedInstance.remove_dns_records')
+    @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch("periodic_builds.tasks.create_new_deployment")
-    def test_periodic_builds_launched(self, mock_create_new_deployment):
+    def test_periodic_builds_launched(self, mock_create_new_deployment, *mock):
         """
         Test the launch_periodic_builds task
         """
 
-        # set up the instances: two enabled but with different intervals, and
-        # one disabled
+        # set up the instances: two enabled but with different intervals,
+        # one disabled, and one to be archived later
         instance_enabled = OpenEdXInstanceFactory(
             periodic_builds_interval=timedelta(hours=3),
             periodic_builds_enabled=True,
@@ -62,28 +64,39 @@ class PeriodicBuildsTestCase(TestCase):
             periodic_builds_enabled=True,
             periodic_builds_retries=1,
         )
+        instance_archived = OpenEdXInstanceFactory(
+            periodic_builds_interval=timedelta(hours=1),
+            periodic_builds_enabled=True,
+            periodic_builds_retries=2,
+        )
         instance_enabled.save()
         instance_disabled.save()
         instance_enabled2.save()
+        instance_archived.save()
 
         with freeze_time("2019-01-03 09:00:00", tz_offset=0):
             tasks.launch_periodic_builds()
-
-            # both enabled instances should have spawned an appserver
-            self.assertEqual(mock_create_new_deployment.call_count, 2)
+            # The enabled instances should have spawned an appserver
+            self.assertEqual(mock_create_new_deployment.call_count, 3)
             mock_create_new_deployment.assert_has_calls(
                 [
                     call(instance_enabled, num_attempts=1, mark_active_on_success=True,
                          deployment_type=DeploymentType.periodic),
                     call(instance_enabled2, num_attempts=2, mark_active_on_success=True,
                          deployment_type=DeploymentType.periodic),
+                    call(instance_archived, num_attempts=3, mark_active_on_success=True,
+                         deployment_type=DeploymentType.periodic),
                 ],
                 any_order=True,
             )
 
-            # mock both instances now have appservers
+            # mock instances now have appservers
             make_test_appserver(instance_enabled, status=AppServerStatus.Running)
             make_test_appserver(instance_enabled2, status=AppServerStatus.Running)
+            make_test_appserver(instance_archived, status=AppServerStatus.Running)
+
+            # archive one instance
+            instance_archived.archive()
 
         mock_create_new_deployment.reset_mock()
 
@@ -100,6 +113,7 @@ class PeriodicBuildsTestCase(TestCase):
             tasks.launch_periodic_builds()
 
             # the shorter interval instance should have spawned a new one
+            # the archived instance should not be spawned in this part
             mock_create_new_deployment.assert_called_once_with(
                 instance_enabled2, num_attempts=2, mark_active_on_success=True,
                 deployment_type=DeploymentType.periodic,

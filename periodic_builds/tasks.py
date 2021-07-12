@@ -47,7 +47,10 @@ def launch_periodic_builds():
     """
     Automatically deploy new servers for all Open edX instances configured for periodic builds.
     """
-    instances = OpenEdXInstance.objects.filter(periodic_builds_enabled=True)
+    instances = OpenEdXInstance.objects.filter(
+        periodic_builds_enabled=True,
+        ref_set__is_archived=False,
+    )
 
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     for instance in instances:
