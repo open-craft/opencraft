@@ -127,9 +127,12 @@ class OpenStackCleanupInstance:
             # If instance is older than age limit
             if instance_age and instance_age < self.age_limit:
                 # Get instance name in format edxapp-HASHinteg-1
-                self.cleaned_up_hashes.append(
-                    instance.name.split('-')[1][:-5]
-                )
+                clean_hash = instance.name.split('-')[1][:-5]
+                # some instance names might not actually
+                # match what we expect, so we ignore them
+                if not clean_hash:
+                    logger.warning("Unexpected instance name %s, skipping...", instance.name)
+                    continue
 
                 # Terminate the servers
                 logger.info(
@@ -137,18 +140,24 @@ class OpenStackCleanupInstance:
                     instance_age,
                     self.age_limit
                 )
-                if not self.dry_run:
-                    try:
-                        instance.delete()
-                    except Exception as e: # pylint: disable=broad-except
-                        logger.warning(
-                            "    * WARNING: Unable to delete instance. Error: %s.",
-                            e,
-                        )
-
+                self.cleaned_up_hashes.append(clean_hash)
+                self._delete_instance(instance)
             else:
                 logger.info(
                     "    * SKIPPING: Instance was created at %s but the cut-off age threshold is %s.",
                     instance_age,
                     self.age_limit
+                )
+
+    def _delete_instance(self, instance):
+        """
+        Delete the instance.
+        """
+        if not self.dry_run:
+            try:
+                instance.delete()
+            except Exception as e: # pylint: disable=broad-except
+                logger.warning(
+                    "    * WARNING: Unable to delete instance. Error: %s.",
+                    e,
                 )
