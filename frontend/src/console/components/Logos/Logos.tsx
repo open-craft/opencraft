@@ -7,6 +7,7 @@ import {
 import { Row, Col } from 'react-bootstrap';
 import { InstancesModel } from 'console/models';
 import { ImageUploadField } from 'ui/components';
+import { IntlContext } from 'react-intl';
 import { connect } from 'react-redux';
 import { RootState } from 'global/state';
 import { WrappedMessage } from 'utils/intl';
@@ -28,7 +29,8 @@ export class LogosComponent extends React.PureComponent<Props, State> {
       this.props.updateImages(
         this.props.activeInstance.data.id,
         imageName,
-        image
+        image,
+        this.context
       );
     }
   };
@@ -98,6 +100,8 @@ export class LogosComponent extends React.PureComponent<Props, State> {
     );
   }
 }
+
+LogosComponent.contextType = IntlContext;
 
 export const Logos = connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.console,

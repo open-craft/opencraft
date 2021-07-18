@@ -16,6 +16,16 @@ import {
 import { NOTIFICATIONS_LIMIT, ROUTES } from 'global/constants';
 import { sanitizeErrorFeedback } from 'utils/string_utils';
 
+import { defineMessages, IntlShape } from 'react-intl';
+
+const messages = defineMessages({
+  imageTooLarge: {
+    id: 'console.actions.imageTooLarge',
+    defaultMessage: 'Image size is too large',
+    description: 'Informs the user that the image size is too large.'
+  }
+});
+
 export enum Types {
   // Support action to update root state and clean error messages when users change fields
   CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE',
@@ -270,13 +280,15 @@ export const listUserInstances = (): OcimThunkAction<
         type: Types.USER_INSTANCE_LIST_FAILURE,
         error
       });
-    });
+    })
+    .catch((e: any) => dispatch(push(ROUTES.Error.UNKNOWN_ERROR)));
 };
 
 export const updateImages = (
   instanceId: number,
   imageFieldName: string,
-  file: Blob | null
+  file: Blob | null,
+  intl: IntlShape
 ): OcimThunkAction<void> => async (dispatch, getState) => {
   // Dispatch variable lock to avoid sending a second image
   // while the first one is still being transmitted
@@ -303,6 +315,16 @@ export const updateImages = (
       });
     }
   } catch (e) {
+    // handle images that are too large
+    if (e.status === 413) {
+      dispatch({
+        type: Types.UPDATE_INSTANCE_INFO_FAILURE,
+        data: {
+          [imageFieldName]: intl.formatMessage(messages.imageTooLarge)
+        }
+      });
+      return;
+    }
     try {
       const error = await e.json();
 
