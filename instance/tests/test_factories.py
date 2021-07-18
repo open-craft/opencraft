@@ -96,6 +96,13 @@ class FactoriesTestCase(TestCase):
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self._assert_field_values(instance, sub_domain)
 
+        # Subdomains ending in .sandbox should be allowed
+        # when creating subdomains via the shell
+        sub_domain = "defaults.sandbox"
+        instance = instance_factory(sub_domain=sub_domain)
+        instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        self._assert_field_values(instance, sub_domain)
+
         # Create instance with custom field values
         sub_domain = "sandbox-customized"
         custom_instance = instance_factory(sub_domain=sub_domain, **self.PRODUCTION_DEFAULTS)
