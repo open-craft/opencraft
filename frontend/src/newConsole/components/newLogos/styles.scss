@@ -47,6 +47,14 @@
     margin-inline-end: 30px;
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: PlayfairDisplay;
+  }
+
+  h4 {
+    font-size: 20px;
+  }
+
   p {
     font-family: $chivo-font;
     font-size: 14px;
