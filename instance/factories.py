@@ -174,6 +174,7 @@ def production_instance_factory(**kwargs):
     production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance
 
+
 def is_unique_domain(instance_kwargs):
     """
     Uses the same logic as the constructor for the `DomainNameInstance`
