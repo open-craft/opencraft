@@ -30,6 +30,7 @@ from django.conf import settings
 
 from instance import ansible
 from instance.models.database_server import MySQLServer, MongoDBServer
+from instance.models.mixins.domain_names import generate_internal_lms_domain
 from instance.models.mixins.storage import StorageContainer
 from instance.models.openedx_instance import OpenEdXInstance
 
@@ -98,7 +99,6 @@ def instance_factory(**kwargs):
     """
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
-    assert is_valid_domain_name(kwargs.get('sub_domain'))
 
     # Create instance
     instance = OpenEdXInstance.objects.create(**kwargs)
@@ -168,6 +168,24 @@ def production_instance_factory(**kwargs):
     )
     instance_kwargs.update(kwargs)
 
+    assert is_unique_domain(instance_kwargs)
+
     # Create instance
     production_instance = OpenEdXInstance.objects.create(**instance_kwargs)
     return production_instance
+
+def is_unique_domain(instance_kwargs):
+    """
+    Uses the same logic as the constructor for the `DomainNameInstance`
+    mixin to determine what the instance's internal_lms_domain will be
+    once created, and then performs a case-insensitive check to see if
+    any other instances have the same domain name.
+    """
+    if 'internal_lms_domain' in instance_kwargs:
+        internal_lms_domain = instance_kwargs['internal_lms_domain']
+    else:
+        sub_domain = instance_kwargs['sub_domain']
+        internal_lms_domain = generate_internal_lms_domain(sub_domain)
+
+    count = OpenEdXInstance.objects.filter(internal_lms_domain__iexact=internal_lms_domain).count()
+    return count == 0
