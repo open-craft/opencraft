@@ -151,6 +151,12 @@ class FactoriesTestCase(TestCase):
         extra_settings_instance = OpenEdXInstance.objects.get(pk=extra_settings_instance.pk)
         self._assert_field_values(extra_settings_instance, sub_domain, **expected_settings)
 
+        # Coerce domains to lowercase
+        sub_domain = "UPPERCASE-DOMAIN"
+        instance = production_instance_factory(sub_domain=sub_domain)
+        instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        self._assert_field_values(instance, sub_domain.lower(), **self.PRODUCTION_DEFAULTS)
+
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
             production_instance_factory()
@@ -208,23 +214,3 @@ class FactoriesTestCase(TestCase):
                 self.assertFalse(
                     OpenEdXInstance.objects.filter(internal_lms_domain__startswith=sub_domain).exists()
                 )
-
-    @patch(
-        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
-        return_value=(1, True)
-    )
-    @override_settings(PROD_APPSERVER_FAIL_EMAILS=['appserverfail@localhost'])
-    def test_production_instance_factory_case_insensitive_collisions(self, mock_consul):
-        """
-        Test that factory function for creating production instances cannot create
-        a subdomain that is identical (case insensitive) to an existing one.
-        """
-        sub_domain = "CASE-INSENSITIVE-SUBDOMAIN"
-        instance = instance_factory(sub_domain=sub_domain)
-        instance = OpenEdXInstance.objects.get(pk=instance.pk)
-        self._assert_field_values(instance, sub_domain)
-
-
-        with self.assertRaises(AssertionError):
-            sub_domain = "case-insensitive-subdomain"
-            instance = production_instance_factory(sub_domain=sub_domain)
