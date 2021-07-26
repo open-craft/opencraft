@@ -15,6 +15,7 @@ import {
   syncActiveInstanceField
 } from 'console/actions';
 import messages from 'console/components/Logos/displayMessages';
+import { IntlContext } from 'react-intl';
 
 interface State {}
 interface ActionProps {
@@ -32,7 +33,8 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
       this.props.updateImages(
         this.props.activeInstance.data.id,
         imageName,
-        image
+        image,
+        this.context
       );
     }
   };
@@ -153,6 +155,8 @@ export class LogosSideBarComponent extends React.PureComponent<Props, State> {
     );
   }
 }
+
+LogosSideBarComponent.contextType = IntlContext;
 
 export const LogosSideBar = connect<
   StateProps,

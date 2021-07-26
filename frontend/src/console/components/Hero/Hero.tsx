@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { IntlContext } from 'react-intl';
 import { InstancesModel } from 'console/models';
 import { ThemeSchema } from 'ocim-client';
 import { ConsolePage } from 'newConsole/components';
@@ -207,7 +208,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
       this.props.updateImages(
         this.props.activeInstance.data!.id,
         imageName,
-        image
+        image,
+        this.context
       );
     }
   };
@@ -311,6 +313,8 @@ export class HeroComponent extends React.PureComponent<Props, State> {
     );
   }
 }
+
+HeroComponent.contextType = IntlContext;
 
 export const Hero = connect<StateProps, ActionProps, {}, Props, RootState>(
   (state: RootState) => state.console,
