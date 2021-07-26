@@ -85,17 +85,18 @@ class OpenEdXAppServerTestCase(TestCase):
         # - enable bulk emails playbook,
         # - and the OCIM service ansible playbook.
         playbooks = appserver.get_playbooks()
-        self.assertEqual(len(playbooks), 4)
+        self.assertEqual(len(playbooks), 5)
         self.assertEqual(playbooks[0], appserver.default_playbook())
         self.assertEqual(playbooks[1], appserver.lms_user_creation_playbook())
         self.assertEqual(playbooks[2], appserver.enable_bulk_emails_playbook())
-        self.assertEqual(playbooks[3].source_repo, settings.ANSIBLE_APPSERVER_REPO)
-        self.assertEqual(playbooks[3].playbook_path, settings.ANSIBLE_APPSERVER_PLAYBOOK)
+        self.assertEqual(playbooks[3], appserver.enable_course_block_structure_caching())
+        self.assertEqual(playbooks[4].source_repo, settings.ANSIBLE_APPSERVER_REPO)
+        self.assertEqual(playbooks[4].playbook_path, settings.ANSIBLE_APPSERVER_PLAYBOOK)
         # Once the instance has been successfully provisioned, the "enable bulk emails" playbooks is no longer run.
         instance.successfully_provisioned = True
         instance.save()
         playbooks = appserver.get_playbooks()
-        self.assertEqual(len(playbooks), 3)
+        self.assertEqual(len(playbooks), 4)
         self.assertTrue(appserver.enable_bulk_emails_playbook() not in playbooks)
 
     @patch_services

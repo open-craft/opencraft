@@ -1,0 +1,21 @@
+---
+# This playbook enable course block structure caching (more detail in FAL-2033)
+
+- hosts: all
+  tasks:
+    - name: Create BlockStructureConfiguration
+      shell: |
+       echo 'from openedx.core.djangoapps.content.block_structure.config.models import BlockStructureConfiguration
+       if BlockStructureConfiguration.objects.count() == 0 : BlockStructureConfiguration.objects.create(enabled=True, num_versions_to_keep=1, cache_timeout_in_seconds=None)' |  /edx/bin/edxapp-shell-lms
+
+    - name: Generate cache
+      shell: "sudo -Hsu www-data bash -c '. /edx/app/edxapp/edxapp_env && python /edx/bin/manage.edxapp lms generate_course_blocks --all_courses --with_storage --force_update'"
+
+    - name: Enable waffle switch block_structure.raise_error_when_not_found
+      shell: "sudo -Hsu www-data bash -c '. /edx/app/edxapp/edxapp_env && /edx/app/edxapp/venvs/edxapp/bin/python /edx/bin/manage.edxapp lms waffle_switch --create block_structure.raise_error_when_not_found off'"
+
+    - name: Enable waffle switch block_structure.invalidate_cache_on_publish
+      shell: "sudo -Hsu www-data bash -c '. /edx/app/edxapp/edxapp_env && /edx/app/edxapp/venvs/edxapp/bin/python /edx/bin/manage.edxapp lms waffle_switch --create block_structure.invalidate_cache_on_publish off'"
+
+    - name: Enable waffle switch block_structure.storage_backing_for_cache
+      shell: "sudo -Hsu www-data bash -c '. /edx/app/edxapp/edxapp_env && /edx/app/edxapp/venvs/edxapp/bin/python /edx/bin/manage.edxapp lms waffle_switch --create block_structure.storage_backing_for_cache on'"
