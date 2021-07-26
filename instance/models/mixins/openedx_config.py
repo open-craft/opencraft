@@ -66,6 +66,29 @@ class OpenEdXConfigMixin(ConfigMixinBase):
             "COMMON_JWT_SECRET_KEY": "{{ EDXAPP_JWT_SECRET_KEY }}",
             "COMMON_JWT_AUDIENCE": 'lms-key',
 
+            # edxapp Course Block Structures, to enable Course Block Structure caching
+            "EDXAPP_BLOCK_STRUCTURES_SETTINGS": {
+                # Delay, in seconds, after a new edit of a course is published before updating the block structures
+                # cache. This is needed for a better chance at getting the latest changes when there are secondary
+                # reads in sharded MongoDB clusters. See TNL-5041 for more info.
+                "COURSE_PUBLISH_TASK_DELAY": 30,
+                # Delay, in seconds, between retry attempts if a task fails.
+                "TASK_DEFAULT_RETRY_DELAY": 30,
+                # Maximum number of retries per task.
+                "TASK_MAX_RETRIES": 5,
+                # DEPRECATED: this should be a default behavior in Lilac, along with the Waffle Switches mentioned in
+                # SE-4088. Delete previous file versions.
+                "PRUNING_ACTIVE": True,
+                # S3 tiering cache for speeding up course-outline
+                "STORAGE_CLASS": "{{ EDXAPP_DEFAULT_FILE_STORAGE }}",
+                "STORAGE_KWARGS": {
+                    "AWS_ACCESS_KEY_ID": "{{ EDXAPP_AWS_ACCESS_KEY_ID }}",
+                    "AWS_SECRET_ACCESS_KEY": "{{ EDXAPP_AWS_SECRET_ACCESS_KEY }}",
+                    "AWS_STORAGE_BUCKET_NAME": "{{ EDXAPP_AWS_STORAGE_BUCKET_NAME }}",
+                },
+                "DIRECTORY_PREFIX": "courses/"
+            },
+
             # edxapp
             "EDXAPP_PLATFORM_NAME": self.instance.name,
             "EDXAPP_SITE_NAME": self.instance.domain,

@@ -413,6 +413,18 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             variables=self.configuration_settings,
         )
 
+    def enable_course_block_structure_caching(self):
+        """
+        Return a Playbook instance for enabling the Course Block Structure caching
+        """
+        return Playbook(
+            version=None,
+            source_repo=os.path.join(settings.SITE_ROOT, 'playbooks/enable_course_block_structure_caching'),
+            requirements_path='requirements.txt',
+            playbook_path='enable_course_block_structure_caching.yml',
+            variables=self.configuration_settings
+        )
+
     def get_playbooks(self):
         """
         Get the ansible playbooks used to provision this AppServer
@@ -422,6 +434,7 @@ class OpenEdXAppServer(AppServer, OpenEdXAppConfiguration, AnsibleAppServerMixin
             playbooks.append(self.lms_user_creation_playbook())
         if not self.instance.successfully_provisioned:
             playbooks.append(self.enable_bulk_emails_playbook())
+        playbooks.append(self.enable_course_block_structure_caching())
         return playbooks + super().get_playbooks()
 
     def merge_site_configuration_settings(self, confvars):
