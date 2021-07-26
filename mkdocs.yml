@@ -22,7 +22,8 @@ nav:
   - infrastructure.md
   - "Using the Marketing app": marketing_usage.md
   - "Development":
-      - "Docker": development/docker.md
+      - "Console Frontend": development/console.md
       - "Continuous Integration": development/ci.md
+      - "Docker": development/docker.md
   - "Operations":
       - "Management Tasks": operations/management-tasks.md
