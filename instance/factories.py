@@ -98,7 +98,9 @@ def instance_factory(**kwargs):
     """
     # Ensure caller provided required arguments
     assert "sub_domain" in kwargs
-    assert is_valid_domain_name(kwargs.get('sub_domain'))
+
+    # Prevent multiple instances whose domains are identical except for the letter casing
+    kwargs["sub_domain"] = kwargs["sub_domain"].lower()
 
     # Create instance
     instance = OpenEdXInstance.objects.create(**kwargs)

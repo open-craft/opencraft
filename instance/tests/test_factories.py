@@ -96,21 +96,23 @@ class FactoriesTestCase(TestCase):
         instance = OpenEdXInstance.objects.get(pk=instance.pk)
         self._assert_field_values(instance, sub_domain)
 
+        # Subdomains with periods in them should be allowed if they are created via the shell
+        sub_domain = "defaults.sandbox"
+        instance = instance_factory(sub_domain=sub_domain)
+        instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        self._assert_field_values(instance, sub_domain)
+
         # Create instance with custom field values
         sub_domain = "sandbox-customized"
         custom_instance = instance_factory(sub_domain=sub_domain, **self.PRODUCTION_DEFAULTS)
         custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
         self._assert_field_values(custom_instance, sub_domain, **self.PRODUCTION_DEFAULTS)
 
-        # Create instance with underscore in domain name
-        sub_domain = "bad_domain_name"
-        with self.assertRaises(AssertionError):
-            instance_factory(sub_domain=sub_domain)
-
-        # Create instance with not all lowercase domain name
-        sub_domain = "Bad-Domain"
-        with self.assertRaises(AssertionError):
-            instance_factory(sub_domain=sub_domain)
+        # Coerce subdomains to lowercase
+        sub_domain = "UPPERCASE-SUBDOMAIN"
+        custom_instance = instance_factory(sub_domain=sub_domain, **self.PRODUCTION_DEFAULTS)
+        custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
+        self._assert_field_values(custom_instance, sub_domain.lower(), **self.PRODUCTION_DEFAULTS)
 
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
