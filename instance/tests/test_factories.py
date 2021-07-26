@@ -108,6 +108,12 @@ class FactoriesTestCase(TestCase):
         custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
         self._assert_field_values(custom_instance, sub_domain, **self.PRODUCTION_DEFAULTS)
 
+        # Coerce subdomains to lowercase
+        sub_domain = "UPPERCASE-SUBDOMAIN"
+        custom_instance = instance_factory(sub_domain=sub_domain, **self.PRODUCTION_DEFAULTS)
+        custom_instance = OpenEdXInstance.objects.get(pk=custom_instance.pk)
+        self._assert_field_values(custom_instance, sub_domain.lower(), **self.PRODUCTION_DEFAULTS)
+
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
             instance_factory()
