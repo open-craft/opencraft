@@ -21,15 +21,46 @@ interface InputFieldProps {
 export const TextInputField: React.FC<InputFieldProps> = (
   props: InputFieldProps
 ) => {
+  let helpMessage;
   const helpMessageId = props.helpMessageId || `${props.fieldName}Help`;
   const hasHelpMessage = helpMessageId in props.messages;
+  if (hasHelpMessage) {
+    helpMessage = (
+      <WrappedMessage id={helpMessageId} messages={props.messages} />
+    );
+  }
 
+  return (
+    <TextInputField2
+      label={<WrappedMessage id={props.fieldName} messages={props.messages} />}
+      helpMessage={helpMessage}
+      {...props}
+    />
+  );
+};
+
+interface TextInputField2Props {
+  autoComplete?: string;
+  error?: string;
+  fieldName: string;
+  helpMessage?: React.ReactNode;
+  isValid?: boolean;
+  label: React.ReactNode;
+  loading?: boolean;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  reset?: Function;
+  type?: string;
+  value?: string;
+}
+
+export const TextInputField2: React.FC<TextInputField2Props> = (
+  props: TextInputField2Props
+) => {
   return (
     <div className="text-input-container">
       <FormGroup>
-        <FormLabel>
-          <WrappedMessage id={props.fieldName} messages={props.messages} />
-        </FormLabel>
+        <FormLabel>{props.label}</FormLabel>
         <FormControl
           name={props.fieldName}
           value={props.value}
@@ -46,11 +77,7 @@ export const TextInputField: React.FC<InputFieldProps> = (
             {props.error}
           </FormControl.Feedback>
         )}
-        {hasHelpMessage && (
-          <p>
-            <WrappedMessage id={helpMessageId} messages={props.messages} />
-          </p>
-        )}
+        {props.helpMessage && <p>{props.helpMessage}</p>}
       </FormGroup>
 
       {props.reset !== undefined && (

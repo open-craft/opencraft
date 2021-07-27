@@ -5,42 +5,44 @@ import upArrowIcon from 'assets/uparrow.png';
 import messages from './displayMessages';
 import './styles.scss';
 
-interface ImageUploadFieldProps {
+interface ModalImageInputProps {
   customUploadMessage: any;
-  updateImage: Function;
-  clearError: Function;
+  clearError: () => void;
+  error?: string;
+  innerPreview?: string;
+  loading?: boolean;
   parentMessages?: any;
   recommendationTextId?: string;
-  error?: string;
-  loading?: boolean;
   reset?: Function;
+  updateImage: Function;
+}
+
+interface ImageUploadFieldProps extends ModalImageInputProps {
   tooltipTextId?: string;
   tooltipImage?: string;
-  innerPreview?: string;
-  children?: React.ReactNode;
 }
 
 interface Image {
   name?: string;
 }
 
-export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
-  props: ImageUploadFieldProps
+export const ModalImageInput: React.FC<ModalImageInputProps> = (
+  props: ModalImageInputProps
 ) => {
   const [show, setShow] = React.useState(false);
   const [image, setImage] = React.useState();
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => {
+    props.clearError();
+    setShow(true);
+  };
 
   const filename = (file: Image | undefined) => {
     if (file) {
       return file.name;
     }
     return '';
-  };
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => {
-    props.clearError();
-    setShow(true);
   };
 
   const setImageIfValid = (files: any) => {
@@ -71,42 +73,8 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
       </div>
     );
   };
-
-  let tooltip = null;
-
-  if (props.parentMessages && props.tooltipTextId) {
-    tooltip = (
-      <Tooltip className="image-upload-tooltip" id={props.tooltipTextId}>
-        <p>
-          <WrappedMessage
-            messages={props.parentMessages}
-            id={props.tooltipTextId}
-          />
-        </p>
-        {props.tooltipImage && (
-          <img
-            className="tooltip-image"
-            src={props.tooltipImage}
-            alt="tooltipImage"
-          />
-        )}
-      </Tooltip>
-    );
-  }
-
   return (
-    <div className="image-upload-field">
-      <div className="component-header">
-        <h4 className="upload-field-header">
-          {props.customUploadMessage}
-          {tooltip && (
-            <OverlayTrigger placement="top" overlay={tooltip}>
-              <i className="fas fa-info-circle" />
-            </OverlayTrigger>
-          )}
-        </h4>
-        {props.children}
-      </div>
+    <>
       <Button
         variant="outline-primary"
         size="lg"
@@ -201,6 +169,68 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
           </Button>
         </Modal.Footer>
       </Modal>
+    </>
+  );
+};
+
+/**
+ * @deprecated Use ModalImageInput instead
+ */
+export const ImageUploadField: React.FC<ImageUploadFieldProps> = (
+  props: ImageUploadFieldProps
+) => {
+  let tooltip = null;
+
+  if (props.parentMessages && props.tooltipTextId) {
+    tooltip = (
+      <OverlayTooltip
+        id={props.tooltipTextId}
+        innerPreview={props.innerPreview}
+        tooltipImage={props.tooltipImage}
+      >
+        <WrappedMessage
+          messages={props.parentMessages}
+          id={props.tooltipTextId}
+        />
+      </OverlayTooltip>
+    );
+  }
+
+  return (
+    <div className="image-upload-field">
+      <div className="component-header">
+        <h4 className="upload-field-header">
+          {props.customUploadMessage}
+          {tooltip}
+        </h4>
+      </div>
+      <ModalImageInput {...props} />
     </div>
+  );
+};
+
+interface OverlayTooltipProps {
+  id: string;
+  tooltipImage?: string;
+  innerPreview?: string;
+  children: React.ReactNode;
+}
+export const OverlayTooltip: React.FC<OverlayTooltipProps> = props => {
+  const tooltip = (
+    <Tooltip className="image-upload-tooltip" id={props.id}>
+      <p>{props.children}</p>
+      {props.tooltipImage && (
+        <img
+          className="tooltip-image"
+          src={props.tooltipImage}
+          alt="tooltipImage"
+        />
+      )}
+    </Tooltip>
+  );
+  return (
+    <OverlayTrigger placement="top" overlay={tooltip}>
+      <i className="fas fa-info-circle" />
+    </OverlayTrigger>
   );
 };
