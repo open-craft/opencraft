@@ -46,13 +46,51 @@ if __name__ == '__main__':
         required=True
     )
     parser.add_argument(
+        '--host',
+        default='localhost',
+        help='Elasticsearch API host'
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=9200,
+        help='Elasticsearch API port'
+    )
+    parser.add_argument(
+        '--use-ssl',
+        action='store_true',
+        default=False,
+        help='Use SSL to connect to Elasticsearch API'
+    )
+    parser.add_argument(
+        '--ca-certs',
+        default=None,
+        help='Path to the Elasticsearch CA certificate file'
+    )
+    parser.add_argument(
+        '--username',
+        default=None,
+        help='Elasticsearch API username'
+    )
+    parser.add_argument(
+        '--password',
+        default=None,
+        help='Elasticsearch API password'
+    )
+    parser.add_argument(
         '--out',
         default=None,
         help='Path to the output file of the new CSV. Leave blank to use stdout.'
     )
     args = parser.parse_args()
 
-    client = Elasticsearch()
+    client = Elasticsearch(
+        host=args.host,
+        port=args.port,
+        use_ssl=args.use_ssl,
+        ca_certs=args.ca_certs,
+        http_auth=(args.username, args.password,)
+    )
     config = ConfigParser()
 
     name_prefixes = args.name_prefixes.split(',')
