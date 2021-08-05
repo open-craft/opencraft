@@ -19,6 +19,11 @@
         src: logs_server_requirements.txt
         dest: /tmp/logs_server_requirements.txt
 
+    - name: Copy Elasticsearch CA certificate
+      copy:
+        content: "{{ elasticsearch_ca_cert }}"
+        dest: /tmp/elasticsearch_ca_cert.pem
+
     - name: Install Elasticsearch packages
       pip:
         requirements: /tmp/logs_server_requirements.txt
@@ -36,6 +41,12 @@
     - name: Run query_elasticsearch script
       command: >
         {{ ansible_env.HOME }}/instance_activity_venv/bin/python /tmp/query_elasticsearch.py
+          --host {{ elasticsearch_host }}
+          --port {{ elasticsearch_port }}
+          {{ '--use-ssl' if elasticsearch_use_ssl else '' }}
+          --username {{ elasticsearch_username }}
+          --password {{ elasticsearch_password }}
+          --ca-certs /tmp/elasticsearch_ca_cert.pem
           --out {{ remote_output_filename }}
           --name-prefixes {{ server_name_prefixes }}
           --start-date {{ start_date }}

@@ -214,12 +214,24 @@ class Command(BaseCommand):
             ),
             inventory_str=inventory,
             vars_str=(
+                'elasticsearch_host: {elasticsearch_host}\n'
+                'elasticsearch_port: {elasticsearch_port}\n'
+                'elasticsearch_username: {elasticsearch_username}\n'
+                'elasticsearch_password: {elasticsearch_password}\n'
+                'elasticsearch_use_ssl: {elasticsearch_use_ssl}\n'
+                'elasticsearch_ca_cert: "{elasticsearch_ca_cert}"\n'
                 'local_output_dir: {output_dir}\n'
                 'remote_output_filename: /tmp/elasticsearch_activity_report\n'
                 'server_name_prefixes: {server_name_prefixes}\n'
                 'start_date: {start_date}\n'
                 'end_date: {end_date}'
             ).format(
+                elasticsearch_host=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_HOST,
+                elasticsearch_port=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_PORT,
+                elasticsearch_username=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_USERNAME,
+                elasticsearch_password=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_PASSWORD,
+                elasticsearch_use_ssl=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_USE_SSL,
+                elasticsearch_ca_cert=settings.INSTANCE_LOGS_SERVER_ELASTICSEARCH_CA_CERT.replace('\n', '\\n'),
                 output_dir=playbook_output_dir,
                 server_name_prefixes=','.join(name_prefixes),
                 start_date=start_date,
