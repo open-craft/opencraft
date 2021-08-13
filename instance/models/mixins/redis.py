@@ -40,7 +40,7 @@ from instance.models.redis_server import RedisServer
 
 def new_redis_user() -> RedisUser:
     """
-    Return a new Redis user.
+    Return the primary key of a new Redis user.
     """
     return RedisUser.objects.create(
         username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
@@ -63,7 +63,7 @@ class RedisAPIError(Exception):
 
 class RedisInstanceMixin(models.Model):
     """
-    An instance that uses a Redis vhost with a set of users.
+    An instance that uses a Redis db with a set of users.
     """
     redis_server = models.ForeignKey(
         RedisServer,
