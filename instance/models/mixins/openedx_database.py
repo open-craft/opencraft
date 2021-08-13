@@ -501,14 +501,14 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
 
         redis_transport_options = {
             "CELERY_BROKER_TRANSPORT_OPTIONS": {
-                "global_keyprefix": self.redis_consumer_user.key_prefix
+                "global_keyprefix": self.redis_key_prefix
             }
         }
 
         # TODO: Validate the key names as I just copy pasted them from RabbitMQ
         return {
-            "XQUEUE_REDIS_USER": self.redis_consumer_user.username,
-            "XQUEUE_REDIS_PASS": self.redis_consumer_user.password,
+            "XQUEUE_REDIS_USER": self.redis_username,
+            "XQUEUE_REDIS_PASS": self.redis_password,
             "XQUEUE_REDIS_VHOST": str(self.redis_server.instance_db),
             "XQUEUE_REDIS_HOSTNAME": self.redis_server.instance_host,
             "XQUEUE_REDIS_PORT": self.redis_server.instance_port,
@@ -518,15 +518,15 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
                 "default": {
                     # FIXME: What should be this? Is it needed at all?
                     "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-                    "KEY_PREFIX": f"{self.redis_consumer_user.key_prefix}xqueue",
+                    "KEY_PREFIX": f"{self.redis_key_prefix}xqueue",
                     "LOCATION": "{{ EDXAPP_MEMCACHE }}",
                 },
             },
 
             "EDXAPP_REDIS_HOSTNAME": redis_hostname,
             "EDXAPP_CELERY_BROKER_TRANSPORT": "redis",
-            "EDXAPP_CELERY_USER": self.redis_consumer_user.username,
-            "EDXAPP_CELERY_PASSWORD": self.redis_consumer_user.password,
+            "EDXAPP_CELERY_USER": self.redis_username,
+            "EDXAPP_CELERY_PASSWORD": self.redis_password,
             "EDXAPP_CELERY_BROKER_HOSTNAME": redis_hostname,
             "EDXAPP_CELERY_BROKER_VHOST": str(self.redis_server.instance_db),
             "EDXAPP_CELERY_BROKER_USE_SSL": self.redis_server.use_ssl_connections,
