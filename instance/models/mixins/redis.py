@@ -32,21 +32,16 @@ from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string
 import requests
 
-from instance.models.redis import RedisUser
 from instance.models.redis_server import RedisServer
 
 
 # Functions ###################################################################
 
-def new_redis_user() -> RedisUser:
-    """
-    Return the primary key of a new Redis user.
-    """
-    return RedisUser.objects.create(
-        username=get_random_string(length=32, allowed_chars=string.ascii_lowercase),
-        password=get_random_string(length=64),
-    )
+def random_username():
+    return get_random_string(32, allowed_chars=string.ascii_lowercase)
 
+def random_password():
+    return get_random_string(64)
 
 def select_random_redis_server():
     """
@@ -65,6 +60,7 @@ class RedisInstanceMixin(models.Model):
     """
     An instance that uses a Redis db with a set of users.
     """
+
     redis_server = models.ForeignKey(
         RedisServer,
         null=True,
@@ -73,15 +69,8 @@ class RedisInstanceMixin(models.Model):
         on_delete=models.PROTECT,
     )
 
-    redis_consumer_user = models.ForeignKey(
-        RedisUser,
-        related_name='consumer_instance',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        default=new_redis_user,
-    )
-
+    redis_username = models.CharField(max_length=32, default=random_username, unique=True)
+    redis_password = models.CharField(max_length=64, default=random_password)
     redis_provisioned = models.BooleanField(default=False)
 
     class Meta:
@@ -104,6 +93,32 @@ class RedisInstanceMixin(models.Model):
             **kwargs
         )
 
+    @property
+    def redis_key_prefix(self) -> str:
+        """
+        Return the key prefix for the user.
+
+        Username used to prefix redis keys and set ACLs on the Redis server.
+        """
+        return f"{self.redis_username}_"
+
+    def delete_redis_acl(self, client: redis.Redis):
+        """
+        Delete ACL record for user.
+        """
+        client.acl_deluser(self.redis_username)
+
+    def create_redis_acl(self, client: redis.Redis):
+        """
+        Create ACL record for user.
+        """
+        client.acl_setuser(
+            username=self.redis_username,
+            passwords=[f"+{self.redis_password}"],
+            keys=[self.redis_key_prefix],
+            enabled=True
+        )
+
     def provision_redis(self):
         """
         Creates the Redis users.
@@ -111,7 +126,7 @@ class RedisInstanceMixin(models.Model):
         if self.redis_provisioned:
             self.logger.info(
                 'Redis is already provisioned for %s. No provisioning needed.',
-                self.redis_consumer_user.username
+                self.redis_username
             )
 
             return
@@ -119,7 +134,7 @@ class RedisInstanceMixin(models.Model):
         self.logger.info('Provisioning Redis started.')
 
         client = self._redis_client()
-        self.redis_consumer_user.create_acl(client)
+        self.create_redis_acl(client)
 
         self.redis_provisioned = True
         self.save()
@@ -131,21 +146,21 @@ class RedisInstanceMixin(models.Model):
         if not self.redis_provisioned:
             self.logger.info(
                 'Redis is not provisioned for %s. No deprovisioning needed.',
-                self.redis_consumer_user.username
+                self.redis_username
             )
 
             return
 
         self.logger.info('Deprovisioning Redis started.')
-        self.logger.info('Deleting redis user: %s', self.redis_consumer_user.username)
+        self.logger.info('Deleting redis user: %s', self.redis_username)
 
         try:
             client = self._redis_client()
-            self.redis_consumer_user.delete_acl(client)
+            self.delete_redis_acl(client)
         except Exception as exc:
             self.logger.exception(
                 'Cannot delete redis user: %s. %s',
-                self.redis_consumer_user.username,
+                self.redis_username,
                 exc
             )
 

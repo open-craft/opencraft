@@ -65,7 +65,6 @@ class RedisServerManager(SharedServerManager):
                 'instance_host': conn_params.hostname,
                 'instance_port': conn_params.port,
                 'instance_db': conn_params.path.replace("/", ""),
-                'use_ssl_connections': conn_params.scheme == "rediss",
                 'accepts_new_clients': True,
             }
 
@@ -79,6 +78,7 @@ class RedisServerManager(SharedServerManager):
 
             defaults['name'] = defaults['instance_host']
             defaults['instance_db'] = int(defaults['instance_db'])
+            defaults['use_ssl_connections'] = conn_params.scheme == "rediss"
 
             server, created = self.get_or_create(defaults=defaults)
 

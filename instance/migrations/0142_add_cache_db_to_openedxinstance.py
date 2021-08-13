@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('instance', '0142_add_redis_cache_backend_to_instances'),
+        ('instance', '0141_features_to_features_extras'),
     ]
 
     operations = [
