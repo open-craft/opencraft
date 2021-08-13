@@ -311,14 +311,15 @@ class OpenEdXInstance(
             self.logger.info('Provisioning S3 bucket...')
             self.provision_s3()
 
-        # TODO: We should provision Redis OR RabbitMQ but not both!
-        # TODO: Use a real condition here
-        if False:
+        # Provision redis server if stated explicitly or no app servers were created before (ie. this is the first one)
+        if self.cache_db == OpenEdXDatabaseMixin.REDIS or self.appserver_set.count() == 0:
+            self.provision_redis()
+            self.logger.info('Provisioning Redis user ACL...')
+        elif self.cache_db == OpenEdXDatabaseMixin.RABBIT_MQ:
             self.logger.info('Provisioning RabbitMQ vhost...')
             self.provision_rabbitmq()
-
-        self.logger.info('Provisioning Redis user ACL...')
-        self.provision_redis()
+        else:
+            raise NotImplementedError(f"{self.cache_db} does not provision any cache DBs")
 
         return self._create_owned_appserver(deployment_id=deployment_id)
 

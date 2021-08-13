@@ -22,6 +22,7 @@ Open edX instance database mixin
 import hashlib
 import hmac
 
+from django.db import models
 import MySQLdb as mysql
 import yaml
 
@@ -47,8 +48,20 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
     Mixin that provides functionality required for the database backends that an
     OpenEdX Instance uses
 
+
     TODO: ElasticSearch?
     """
+
+    REDIS = "redis"
+    RABBIT_MQ = "rabbit_mq"
+    CACHE_DBS = (
+        (REDIS, REDIS),
+        (RABBIT_MQ, RABBIT_MQ),
+    )
+
+    # TODO: When every server is using REDIS, use REDIS as default
+    cache_db = models.CharField(max_length=9, choices=CACHE_DBS, default=RABBIT_MQ)
+
     class Meta:
         abstract = True
 
@@ -542,10 +555,12 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
 
         # RabbitMQ:
         # TODO: Use a real condition here
-        if False:
-            new_settings.update(self._get_rabbitmq_settings())
 
-        # Redis
-        new_settings.update(self._get_redis_settings())
+        if self.cache_db == self.REDIS:
+            new_settings.update(self._get_rabbitmq_settings())
+        elif self.cache_db == self.RABBIT_MQ:
+            new_settings.update(self._get_redis_settings())
+        else:
+            raise NotImplementedError(f"{self.cache_db} does not load any cache DB settings")
 
         return yaml.dump(new_settings, default_flow_style=False)
