@@ -553,13 +553,13 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         if self.mongodb_replica_set or self.mongodb_server:
             new_settings.update(self._get_mongo_settings())
 
-        # RabbitMQ:
-        # TODO: Use a real condition here
 
         if self.cache_db == self.REDIS:
-            new_settings.update(self._get_rabbitmq_settings())
-        elif self.cache_db == self.RABBIT_MQ:
+            # Redis:
             new_settings.update(self._get_redis_settings())
+        elif self.cache_db == self.RABBIT_MQ:
+            # RabbitMQ:
+            new_settings.update(self._get_rabbitmq_settings())
         else:
             raise NotImplementedError(f"{self.cache_db} does not load any cache DB settings")
 
