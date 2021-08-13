@@ -313,8 +313,15 @@ class OpenEdXInstance(
 
         # Provision redis server if stated explicitly or no app servers were created before (ie. this is the first one)
         if self.cache_db == OpenEdXDatabaseMixin.REDIS or self.appserver_set.count() == 0:
-            self.provision_redis()
+            # if no app servers were provisioned previously, ensure the cache_db is set to
+            # redis for later app servers too
+            if self.appserver_set.count() == 0:
+                self.cache_db = OpenEdXDatabaseMixin.REDIS
+                self.save()
+
             self.logger.info('Provisioning Redis user ACL...')
+            self.provision_redis()
+
         elif self.cache_db == OpenEdXDatabaseMixin.RABBIT_MQ:
             self.logger.info('Provisioning RabbitMQ vhost...')
             self.provision_rabbitmq()
