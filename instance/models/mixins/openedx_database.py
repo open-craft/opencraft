@@ -536,7 +536,6 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
         if self.mongodb_replica_set or self.mongodb_server:
             new_settings.update(self._get_mongo_settings())
 
-
         if self.cache_db == self.REDIS:
             # Redis:
             new_settings.update(self._get_redis_settings())

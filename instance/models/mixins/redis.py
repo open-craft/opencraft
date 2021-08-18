@@ -23,14 +23,11 @@ Instance app model mixins - Redis
 # Imports #####################################################################
 
 from functools import lru_cache
-import redis
-import json
 import string
-import urllib.parse
+import redis
 
-from django.db import IntegrityError, models
+from django.db import models
 from django.utils.crypto import get_random_string
-import requests
 
 from instance.models.redis_server import RedisServer
 
@@ -38,10 +35,20 @@ from instance.models.redis_server import RedisServer
 # Functions ###################################################################
 
 def random_username():
+    """
+    Generate a random username.
+
+    Only ASCII lowercase chars are used to make operations easier.
+    """
     return get_random_string(32, allowed_chars=string.ascii_lowercase)
 
+
 def random_password():
+    """
+    Generate a random password.
+    """
     return get_random_string(64)
+
 
 def select_random_redis_server():
     """
@@ -58,10 +65,6 @@ def select_random_redis_server():
 
 
 # Classes #####################################################################
-
-class RedisAPIError(Exception):
-    """Exception indicating that a call to the Redis API failed."""
-
 
 class RedisInstanceMixin(models.Model):
     """
@@ -164,7 +167,7 @@ class RedisInstanceMixin(models.Model):
         try:
             client = self._redis_client()
             self.delete_redis_acl(client)
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-except
             self.logger.exception(
                 'Cannot delete redis user: %s. %s',
                 self.redis_username,
