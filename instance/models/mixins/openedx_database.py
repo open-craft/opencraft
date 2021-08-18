@@ -505,24 +505,7 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             }
         }
 
-        # TODO: Validate the key names as I just copy pasted them from RabbitMQ
         return {
-            "XQUEUE_REDIS_USER": self.redis_username,
-            "XQUEUE_REDIS_PASS": self.redis_password,
-            "XQUEUE_REDIS_VHOST": str(self.redis_server.instance_db),
-            "XQUEUE_REDIS_HOSTNAME": self.redis_server.instance_host,
-            "XQUEUE_REDIS_PORT": self.redis_server.instance_port,
-            "XQUEUE_REDIS_TLS": self.redis_server.use_ssl_connections,
-            "XQUEUE_SESSION_ENGINE": "django.contrib.sessions.backends.cache",
-            "XQUEUE_CACHES": {
-                "default": {
-                    # FIXME: What should be this? Is it needed at all?
-                    "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-                    "KEY_PREFIX": f"{self.redis_key_prefix}xqueue",
-                    "LOCATION": "{{ EDXAPP_MEMCACHE }}",
-                },
-            },
-
             "EDXAPP_REDIS_HOSTNAME": redis_hostname,
             "EDXAPP_CELERY_BROKER_TRANSPORT": "redis",
             "EDXAPP_CELERY_USER": self.redis_username,
