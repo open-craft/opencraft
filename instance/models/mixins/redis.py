@@ -46,6 +46,13 @@ def random_password():
 def select_random_redis_server():
     """
     Helper for the field default of `redis_server`.
+
+    The random server selection does not make sense in case if one RedisServer
+    is available at a time, though if multiple servers are registered it serves
+    as a very basic "load balancer".
+
+    It selects a random server that accepts new connections. If the default
+    Redis instance's URL is set, it also creates a Redis server based on it.
     """
     return RedisServer.objects.select_random().pk
 
