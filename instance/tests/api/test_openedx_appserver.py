@@ -237,7 +237,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'status': 'Instance provisioning started'})
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(mocks.mock_provision_rabbitmq.call_count, 1)
+        self.assertEqual(mocks.mock_provision_redis.call_count, 1)
         instance.refresh_from_db()
 
         self.assertEqual(instance.appserver_set.count(), 1)
@@ -268,7 +268,7 @@ class OpenEdXAppServerAPISpawnServerTestCase(APITestCase):
 
         spawn_appserver(instance.ref.pk, mark_active_on_success=mark_active, num_attempts=4)
         self.assertEqual(mock_provision.call_count, 1)
-        self.assertEqual(mocks.mock_provision_rabbitmq.call_count, 1)
+        self.assertEqual(mocks.mock_provision_redis.call_count, 1)
 
     @ddt.data(
         (None, 'Authentication credentials were not provided.'),
