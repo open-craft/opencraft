@@ -161,6 +161,7 @@ class Command(BaseCommand):
             name_prefix = appserver.server_name_prefix
             domain = instance.domain
             ref_name = instance.ref.name
+            external_lms_domain = instance.external_lms_domain or 'N/A'
 
             try:
                 betatestapplication = instance.betatestapplication_set.get()
@@ -177,7 +178,8 @@ class Command(BaseCommand):
                 'public_ip': appserver.server.public_ip,
                 'instance_age': datetime.now(instance.created.tzinfo) - instance.created,
                 'email': email,
-                'status': status
+                'status': status,
+                'external_lms_domain': external_lms_domain,
             }
 
         return instance_metadata
@@ -328,7 +330,8 @@ class Command(BaseCommand):
                 'Total Courses',
                 'Total Users',
                 'Active Users',
-                'Age (Days)'
+                'Age (Days)',
+                'Custom External Domain',
             ])
 
             filenames = [os.path.join(playbook_output_dir, f) for f in os.listdir(playbook_output_dir)]
@@ -352,7 +355,8 @@ class Command(BaseCommand):
                     section.get('courses', 'N/A'),
                     section.get('users', 'N/A'),
                     section.get('active_users', 'N/A'),
-                    metadata['instance_age']
+                    metadata['instance_age'],
+                    metadata['external_lms_domain']
                 ])
 
         self.stderr.write(self.style.SUCCESS('Done generating CSV output.'))

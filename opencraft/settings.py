@@ -927,7 +927,7 @@ INSTANCE_LOGS_SERVER_ELASTICSEARCH_CA_CERT = env('INSTANCE_LOGS_SERVER_ELASTICSE
 
 # Trial Instances Report ######################################################
 
-TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS', default=['billing@opencraft.com'])
+TRIAL_INSTANCES_REPORT_RECIPIENTS = env.json('TRIAL_INSTANCES_REPORT_RECIPIENTS', default=['contact@opencraft.com'])
 
 # Crontab schedule for the Trial Instances Report.
 # Format is '<minute> <hour> <day> <month> <day_of_week>' like normal crontabs
