@@ -996,6 +996,10 @@ MARKETING_EMAIL_REPORT_RECIPIENTS = env.json(
     default=TRIAL_INSTANCES_REPORT_RECIPIENTS
 )
 
+MATOMO_URL = env('MATOMO_URL', default='https://matomo.example.com')
+MATOMO_SITE_ID = env.int('MATOMO_SITE_ID', default=1)
+MATOMO_CONVERSION_GOAL_ID = env.int('MATOMO_CONVERSION_GOAL_ID', default=1)
+
 # The download url for Oracle JDK to use when provisioning Appserver.
 # This will be passed to ansible playbook variable `oraclejdk_url`.
 OPENEDX_ORACLEJDK_URL = env.str('OPENEDX_ORACLEJDK_URL', default='')
