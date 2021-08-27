@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='openedxinstance',
             name='redis_password',
-            field=models.CharField(default=instance.models.mixins.redis.random_password, max_length=64),
+            field=models.CharField(max_length=64, null=True),
         ),
         migrations.AddField(
             model_name='openedxinstance',
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='openedxinstance',
             name='redis_username',
-            field=models.CharField(default=instance.models.mixins.redis.random_username, max_length=32, unique=True),
+            field=models.CharField(max_length=32, null=True),
         ),
         migrations.AddField(
             model_name='openedxinstance',
