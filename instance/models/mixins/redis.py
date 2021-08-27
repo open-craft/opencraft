@@ -125,15 +125,7 @@ class RedisInstanceMixin(models.Model):
         client.acl_setuser(
             username=self.redis_username,
             passwords=[f"+{self.redis_password}"],
-            keys=[
-                self.redis_key_prefix,
-                # Celery uses *.reply.celery.pidbox* for worker communication but it seems that
-                # the key cannot be prefixed by the transport layer in Kombu. This key is deleted
-                # by the client after communication is over, hence DEL command is called on the
-                # key. In case we don't give access to this key, workers will stuck in a restart
-                # loop. The trailing asterisk is used as the suffix for the key is a number.
-                "*.reply.celery.pidbox*"
-            ],
+            keys=[self.redis_key_prefix],
             enabled=True
         )
 
