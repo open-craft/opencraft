@@ -999,3 +999,6 @@ MARKETING_EMAIL_REPORT_RECIPIENTS = env.json(
 # The download url for Oracle JDK to use when provisioning Appserver.
 # This will be passed to ansible playbook variable `oraclejdk_url`.
 OPENEDX_ORACLEJDK_URL = env.str('OPENEDX_ORACLEJDK_URL', default='')
+
+# The value here will be used as the default configuration_extra_settings for production instances
+PRODUCTION_INSTANCE_EXTRA_CONFIGURATION = env.json('PRODUCTION_INSTANCE_EXTRA_CONFIGURATION', default={})
