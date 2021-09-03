@@ -44,4 +44,4 @@ def register_subscriber(sender, **kwargs):
         return
     else:
         # Register the user as followup email subscriber
-        Subscriber.objects.get_or_create(user_id=application.user_id)
+        Subscriber.objects.get_or_create(user_id=application.user.id)
