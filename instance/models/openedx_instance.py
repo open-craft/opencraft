@@ -311,14 +311,7 @@ class OpenEdXInstance(
             self.logger.info('Provisioning S3 bucket...')
             self.provision_s3()
 
-        # Provision redis server if stated explicitly or no app servers were created before (ie. this is the first one)
-        if self.cache_db == OpenEdXDatabaseMixin.REDIS or self.appserver_set.count() == 0:
-            # if no app servers were provisioned previously, ensure the cache_db is set to
-            # redis for later app servers too
-            if self.appserver_set.count() == 0:
-                self.cache_db = OpenEdXDatabaseMixin.REDIS
-                self.save()
-
+        if self.cache_db == OpenEdXDatabaseMixin.REDIS:
             self.logger.info('Provisioning Redis user ACL...')
             self.provision_redis()
 
