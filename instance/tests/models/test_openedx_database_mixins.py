@@ -41,6 +41,7 @@ from instance.models.database_server import (
 )
 from instance.models.mixins.rabbitmq import RabbitMQAPIError
 from instance.models.rabbitmq_server import RabbitMQServer
+from instance.models.redis_server import RedisServer
 from instance.tests.base import TestCase
 from instance.tests.models.factories.openedx_appserver import make_test_appserver
 from instance.tests.models.factories.openedx_instance import OpenEdXInstanceFactory
@@ -880,4 +881,60 @@ class RabbitMQServerManagerTestCase(TestCase):
             'api_url', 'http://doesnotexist.example.com:12345',
             'instance_host', 'rabbitmq.example.com',
             'instance_port', 5671,
+        )
+
+
+@patch(
+    'instance.tests.models.factories.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+    return_value=(1, True)
+)
+class RedisServerManagerTestCase(TestCase):
+    """
+    Tests for RedisServerManager.
+    """
+
+    @override_settings(DEFAULT_INSTANCE_REDIS_URL=None)
+    def test_no_redis_server_available(self, mock_consul):
+        """
+        Test that get_random() raises an exception when no rabbitmq servers are available.
+        """
+        RedisServer.objects.all().delete()
+        with self.assertRaises(RedisServer.DoesNotExist):
+            RedisServer.objects.select_random()
+
+    @override_settings(DEFAULT_INSTANCE_REDIS_URL="http://doesnotexist.example.com:12345")
+    def test_invalid_redis_server(self, mock_consul):
+        """
+        Verify that an exception gets raised when the credentials are missing from from the
+        setting for the default redis API url server.
+        """
+        with self.assertRaises(ImproperlyConfigured):
+            RedisServer.objects.select_random()
+
+    @patch('instance.models.redis_server.logger')
+    def test_mismatch_warning(self, mock_logger, mock_consul):
+        """
+        Test that a warning is logged when trying to spawn the default, but a default already
+        exists and contains mismatching parameters with the given settings.
+        """
+        urls = [
+            'http://user:pass@doesnotexist.example.com:12345/0',
+            'http://user2:pass2@doesnotexist.example.com:12345/0'
+        ]
+
+        for url in urls:
+            with override_settings(DEFAULT_INSTANCE_REDIS_URL=url):
+                RedisServer.objects._create_default()
+
+        mock_logger.warning.assert_called_with(
+            'RedisServer for %s already exists, and its settings do not match the Django settings: '
+            '%s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s, %s vs %s',
+            'accepts_new_clients', True,
+            'admin_password', 'pass2',
+            'admin_username', 'user2',
+            'instance_db', 0,
+            'instance_host', 'doesnotexist.example.com',
+            'instance_port', 12345,
+            'name', 'doesnotexist.example.com',
+            'use_ssl_connections', False
         )
