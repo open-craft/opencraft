@@ -41,13 +41,6 @@ class FactoriesTestCase(TestCase):
     Test cases for functions in the factories module
     """
 
-    CONFIGURATION_EXTRA_SETTINGS = (
-        "{"
-        "'demo_test_users': [],"
-        "'DEMO_CREATE_STAFF_USER': False,"
-        "'SANDBOX_ENABLE_CERTIFICATES': False"
-        "}"
-    )
     SANDBOX_DEFAULTS = {
         "configuration_version": settings.DEFAULT_CONFIGURATION_VERSION,
         "openedx_release": settings.DEFAULT_OPENEDX_RELEASE,
@@ -57,7 +50,7 @@ class FactoriesTestCase(TestCase):
     PRODUCTION_DEFAULTS = {
         "configuration_version": settings.STABLE_CONFIGURATION_VERSION,
         "openedx_release": settings.OPENEDX_RELEASE_STABLE_REF,
-        "configuration_extra_settings": CONFIGURATION_EXTRA_SETTINGS,
+        "configuration_extra_settings": "{}",
         "openstack_server_flavor": settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
     }
 
@@ -160,6 +153,32 @@ class FactoriesTestCase(TestCase):
         # Calling factory without specifying "sub_domain" should result in an error
         with self.assertRaises(AssertionError):
             production_instance_factory()
+
+    @patch(
+        'instance.models.openedx_instance.OpenEdXInstance._write_metadata_to_consul',
+        return_value=(1, True)
+    )
+    @override_settings(
+        PROD_APPSERVER_FAIL_EMAILS=['appserverfail@localhost'],
+        PRODUCTION_INSTANCE_EXTRA_CONFIGURATION={"TEST_EXTRA_PRODUCTION_CONFIG": True},
+    )
+    def test_production_instance_factory_override(self, mock_consul):
+        """
+        Test that factory function for creating production instances produces expected results
+        """
+        sub_domain = "production-instance-with-defaults"
+        instance = production_instance_factory(sub_domain=sub_domain)
+        instance = OpenEdXInstance.objects.get(pk=instance.pk)
+        self._assert_field_values(
+            instance,
+            sub_domain,
+            configuration_version=settings.STABLE_CONFIGURATION_VERSION,
+            openedx_release=settings.OPENEDX_RELEASE_STABLE_REF,
+            configuration_extra_settings="TEST_EXTRA_PRODUCTION_CONFIG: true",
+            openstack_server_flavor=settings.OPENSTACK_PRODUCTION_INSTANCE_FLAVOR,
+        )
+        # standard production instances should not have this set
+        self.assertEqual(instance.provisioning_failure_notification_emails, [])
 
     def test_production_instance_factory_no_databases(self):
         """
