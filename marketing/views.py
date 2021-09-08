@@ -68,7 +68,7 @@ class ConversionView(FormView):
         }
 
         custom_matomo_tracking_data = form.cleaned_data['custom_matomo_tracking_data']
-        if custom_matomo_tracking_data and isinstance(custom_matomo_tracking_data, dict):
+        if custom_matomo_tracking_data:
             payload.update(form.cleaned_data['custom_matomo_tracking_data'])
 
         try:

@@ -107,7 +107,7 @@ class ConversionViewTestCase(TestCase):
         # Note: we need to send an empty value for 'custom_matomo_tracking_data' since otherwise the bound
         # value of the corresponding JSONField will be None and Django form will error out when
         # trying to deserialize that.
-        response = self.client.post(reverse('marketing:conversion'), data={'custom_matomo_tracking_data': ''})
+        response = self.client.post(reverse('marketing:conversion'), data={'custom_matomo_tracking_data': '{}'})
 
         self.assertTrue(len(response.context['form'].errors) > 0)
         expected_errors = {'instance': ['This field is required.'], 'revenue': ['This field is required.']}
@@ -125,7 +125,7 @@ class ConversionViewTestCase(TestCase):
             data={
                 'instance': '1',
                 'revenue': '10.00',
-                'custom_matomo_tracking_data': '',
+                'custom_matomo_tracking_data': '{}',
             }
         )
         self.assertEqual(
@@ -169,5 +169,5 @@ class ConversionViewTestCase(TestCase):
         )
         self.assertEqual(
             response.context['form'].errors,
-            {'custom_matomo_tracking_data': ['The value must be valid JSON.']}
+            {'custom_matomo_tracking_data': ['The value must be a valid JSON object.']}
         )

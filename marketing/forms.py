@@ -19,8 +19,10 @@
 """
 Forms for the `marketing` app
 """
+from decimal import Decimal
+
 from django.contrib.postgres.forms.jsonb import JSONField
-from django.forms import DecimalField, Form, ModelChoiceField
+from django.forms import DecimalField, Form, ModelChoiceField, ValidationError
 
 from instance.models.openedx_instance import OpenEdXInstance
 
@@ -50,9 +52,25 @@ class ConversionForm(Form):
         ),
         help_text='Select the instance to enter the conversion data for.'
     )
-    revenue = DecimalField(decimal_places=2, help_text='Revenue per month ($) from this instance.')
-    custom_matomo_tracking_data = JSONField(
-        required=False,
-        help_text='Any additional custom Matomo tracking data in JSON format.',
-        error_messages={'invalid': 'The value must be valid JSON.'},
+    revenue = DecimalField(
+        min_value=Decimal('0.00'),
+        decimal_places=2,
+        help_text='Revenue per month ($) from this instance.'
     )
+    custom_matomo_tracking_data = JSONField(
+        initial=dict,
+        required=False,
+        help_text='A JSON object containing any additional custom Matomo tracking data.',
+        error_messages={'invalid': 'The value must be a valid JSON object.'},
+    )
+
+    def clean_custom_matomo_tracking_data(self):
+        """
+        Validate whether the value is a JSON object or not.
+        """
+        custom_matomo_tracking_data = self.cleaned_data['custom_matomo_tracking_data']
+        if not isinstance(custom_matomo_tracking_data, dict):
+            raise ValidationError(
+                'The value must be a valid JSON object.'
+            )
+        return custom_matomo_tracking_data
