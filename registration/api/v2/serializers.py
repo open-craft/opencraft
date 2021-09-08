@@ -25,6 +25,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
@@ -318,6 +319,9 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
     public_contact_email = serializers.EmailField(required=False)
     is_email_verified = serializers.BooleanField(source='email_addresses_verified', read_only=True)
 
+    # Toggles validation for subdomain
+    should_validate = settings.DEBUG is False
+
     def get_static_pages_enabled(self, obj):
         """
         Returns config with enabled static pages.
@@ -363,7 +367,7 @@ class OpenEdXInstanceConfigSerializer(serializers.ModelSerializer):
         is_new_instance = self.instance is None
         is_changed = not is_new_instance and self.instance.subdomain != self.initial_data.get("subdomain")
 
-        if is_new_instance or is_changed:
+        if (is_new_instance or is_changed) and self.should_validate:
             validate_available_subdomain(value)
 
         return value
