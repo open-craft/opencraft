@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^instance/', include('instance.urls', namespace='instance')),
     url(r'^login/$', LoginView.as_view(authentication_form=LoginForm), name='login'),
     url(r'^logout/$', LogoutView.as_view(next_page='/'), name='logout'),
+    url(r'^marketing/', include('marketing.urls', namespace='marketing')),
     url(r'^registration/$', RedirectView.as_view(url=settings.USER_CONSOLE_FRONTEND_URL), name='registration'),
     url(r'^reports/', include('reports.urls', namespace='reports')),
     url(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon/favicon.ico', permanent=False)),

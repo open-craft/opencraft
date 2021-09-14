@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Conversion data{% endblock title %}
+
+{% block content %}
+<div class="page-title text-xs-center color-white">
+  <h1 class="page-title__text">Conversion data</h1>
+</div>
+<div class="row small-collapse page-content clearfix">
+  <div class="page-content__inner small-12 medium-10 medium-offset-1 columns background-white">
+    {% if messages %}
+    {% for message in messages %}
+    <div data-alert class="alert-box {{ message.tags }}">
+      <p>{{ message }}</p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form action="" method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="page-content__inner__wrapper">
+        <ul class="djng-form-errors">
+          {% for error in form.non_field_errors %}
+          <li class="invalid">{{ error|last }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% with row="registration/form_field.html" %}
+      {% include row with field=form.instance %}
+      {% include row with field=form.revenue %}
+      {% include row with field=form.custom_matomo_tracking_data %}
+      {% endwith %}
+
+      <div class="page-content__inner__wrapper color-cyan-light-moderate text-xs-center">
+        <button type="submit" class="btn btn--cyan-light-moderate color-white background-cyan-light-moderate">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

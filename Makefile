@@ -111,6 +111,9 @@ run: clean migrations.check static ## Run Ocim in a production setting with conc
 	honcho start --concurrency "worker=$(WORKERS),worker_low_priority=$(WORKERS_LOW_PRIORITY)"
 
 run.dev: clean migrations.check static_external ## Run the developmental server using `runserver_plus`.
+	honcho start -f Procfile.dev
+
+run.dev_docker: clean migrations.check static_external ## Run the development server
 	python3 manage.py runserver 0.0.0.0:5000
 
 shell: ## Start the power shell.
