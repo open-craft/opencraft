@@ -12,4 +12,4 @@ COPY Makefile \
 COPY frontend/ frontend/
 COPY static/ static/
 
-CMD ["make", "run.dev"]
+CMD ["make", "run.dev_docker"]

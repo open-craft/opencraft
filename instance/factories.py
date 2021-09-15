@@ -140,21 +140,16 @@ def production_instance_factory(**kwargs):
         logger.warning("Environment not ready. Please fix the problems above, then try again. Aborting.")
         return None
 
-    # Gather settings
-    production_settings = {
-        # Don't create default users on production instances
-        "DEMO_CREATE_STAFF_USER": False,
-        "demo_test_users": [],
-        # Disable certificates process to reduce load on RabbitMQ and MySQL
-        "SANDBOX_ENABLE_CERTIFICATES": False,
-    }
     configuration_extra_settings = kwargs.pop("configuration_extra_settings", "")
     if configuration_extra_settings:
         configuration_extra_settings = yaml.load(configuration_extra_settings, Loader=yaml.SafeLoader)
     else:
         configuration_extra_settings = {}
     extra_settings = yaml.dump(
-        ansible.dict_merge(production_settings, configuration_extra_settings),
+        ansible.dict_merge(
+            settings.PRODUCTION_INSTANCE_EXTRA_CONFIGURATION,
+            configuration_extra_settings
+        ),
         default_flow_style=False
     )
     instance_kwargs = dict(

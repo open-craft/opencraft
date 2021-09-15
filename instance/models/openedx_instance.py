@@ -310,8 +310,16 @@ class OpenEdXInstance(
         elif self.storage_type == self.S3_STORAGE:
             self.logger.info('Provisioning S3 bucket...')
             self.provision_s3()
-        self.logger.info('Provisioning RabbitMQ vhost...')
-        self.provision_rabbitmq()
+
+        if self.cache_db == OpenEdXDatabaseMixin.REDIS:
+            self.logger.info('Provisioning Redis user ACL...')
+            self.provision_redis()
+
+        elif self.cache_db == OpenEdXDatabaseMixin.RABBIT_MQ:
+            self.logger.info('Provisioning RabbitMQ vhost...')
+            self.provision_rabbitmq()
+        else:
+            raise NotImplementedError(f"{self.cache_db} does not provision any cache DBs")
 
         return self._create_owned_appserver(deployment_id=deployment_id)
 

@@ -210,6 +210,12 @@ Required settings:
 * `DEFAULT_INSTANCE_RABBITMQ_URL`: The RabbitMQ AMQPS URI to be used by instances. E.g.,
   `amqps://rabbitmq.example.com:5671`
 
+### Redis settings
+* `DEFAULT_INSTANCE_REDIS_URL` The Redis URI (including the protocol, port, db, and basic auth)
+  to be used by instances. E.g., `rediss://admin:admin_password@redis.example.com:6397/0`.
+  Similarly to `DEFAULT_RABBITMQ_API_URL` this setting is saved in the database for new instances
+  using `RedisServerManager._create_default`, where the setting is not explicity overridden.
+
 ### DNS settings
 
 * `DEFAULT_INSTANCE_BASE_DOMAIN`: Instances are created as subdomains of this domain,

@@ -2,7 +2,7 @@
 <div class="page-content__inner__wrapper">
     <div class="page-content__inner__left">
         <div class="field field--host">
-            <label class="field-label field-label--required" for="{{ field.id_for_label }}">
+            <label class="field-label {% if field.field.required %}field-label--required{% endif %}" for="{{ field.id_for_label }}">
                 {{ field.label }}
             </label>
             <div class="input--host__wrapper input--host__wrapper--{{ field.name }}">

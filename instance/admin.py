@@ -33,6 +33,7 @@ from instance.models.openedx_appserver import OpenEdXAppServer
 from instance.models.openedx_deployment import OpenEdXDeployment
 from instance.models.openedx_instance import OpenEdXInstance
 from instance.models.rabbitmq_server import RabbitMQServer
+from instance.models.redis_server import RedisServer
 from instance.models.server import OpenStackServer
 
 
@@ -109,6 +110,10 @@ class RabbitMQServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('name', 'description', 'api_url', 'instance_host', 'instance_port')
 
 
+class RedisServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
+    list_display = ('name', 'description', 'instance_host', 'instance_port', 'instance_db')
+
+
 class LoadBalancingServerAdmin(admin.ModelAdmin): # pylint: disable=missing-docstring
     list_display = ('domain', 'ssh_username')
 
@@ -132,5 +137,6 @@ admin.site.register(MySQLServer, MySQLServerAdmin)
 admin.site.register(MongoDBServer, MongoDBServerAdmin)
 admin.site.register(MongoDBReplicaSet, MongoDBReplicaSetAdmin)
 admin.site.register(RabbitMQServer, RabbitMQServerAdmin)
+admin.site.register(RedisServer, RedisServerAdmin)
 admin.site.register(LoadBalancingServer, LoadBalancingServerAdmin)
 admin.site.register(OpenEdXDeployment, OpenEdXDeploymentAdmin)
