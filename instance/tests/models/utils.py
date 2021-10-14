@@ -14,6 +14,38 @@ class S3Stubber(Stubber):
     Helper class to simplify stubbing S3 operations
     """
 
+    def stub_list_buckets(self, buckets=None):
+        """Stub helper for 'list_buckets'
+        buckets is a list of buckets, in the form of
+        [{'Name': 'test', 'CreationDate': datetime.datetime(2021, 5, 12, 19, 50)}]
+        """
+        if buckets is None:
+            buckets = []
+
+        response = {
+            'ResponseMetadata': {
+                'RequestId': 'RequestId_string',
+                'HostId': 'HostId_string',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {
+                    'key': 'value',
+                    'x-amz-request-id': 'string',
+                    'date': 'Thu, 14 Oct 2021 19:07:50 GMT',
+                    'content-type': 'application/xml',
+                    'transfer-encoding': 'chunked',
+                    'server': 'AmazonS3'
+                },
+                'RetryAttempts': 0
+            },
+            'Buckets': buckets,
+            'Owner': {
+                'DisplayName': 'owner_name',
+                'ID': 'ID'
+            }
+        }
+
+        self.add_response('list_buckets', response)
+
     def stub_create_bucket(self, bucket='test', location='test'):
         """ Stub helper for 'create_bucket' """
         if not location or location == 'us-east-1':
