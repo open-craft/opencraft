@@ -514,6 +514,8 @@ class OpenEdXDatabaseMixin(MySQLInstanceMixin, MongoDBInstanceMixin, RabbitMQIns
             "EDXAPP_CELERY_BROKER_VHOST": str(self.redis_server.instance_db),
             "EDXAPP_CELERY_BROKER_USE_SSL": self.redis_server.use_ssl_connections,
 
+            "EDXAPP_SINGLE_BEAT_IDENTIFIER": self.redis_username,
+
             "EDXAPP_LMS_ENV_EXTRA": {
                 **redis_transport_options
             },
