@@ -20,6 +20,7 @@
 Instance app models - Open edX Instance models
 """
 import string
+import re
 
 from django.core.cache import cache
 from django.conf import settings
@@ -280,6 +281,19 @@ class OpenEdXInstance(
             return first_activated_appserver.last_activated
         except models.ObjectDoesNotExist:
             return None
+
+    @property
+    def most_recently_archived(self):
+        """
+        Returns the date the instance has been most recently archived
+        :return: Union[None, datetime]
+        """
+        relevant_log_regex = r'Archiving instance finished.'
+        relevant_log_entries = [l for l in self.log_entries if re.search(relevant_log_regex, l.text)]
+        if not self.ref.is_archived or len(relevant_log_entries) == 0:
+            # We need log entries to determine when the instance has most recently been archived
+            return None
+        return max([l.created for l in relevant_log_entries])
 
     def _spawn_appserver(self, deployment_id=None):
         """
