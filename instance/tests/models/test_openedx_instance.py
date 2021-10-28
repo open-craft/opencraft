@@ -1002,7 +1002,6 @@ class OpenEdXInstanceTestCase(TestCase):
     @patch('instance.models.mixins.openedx_monitoring.OpenEdXMonitoringMixin.disable_monitoring')
     @patch('instance.models.load_balancer.LoadBalancingServer.reconfigure')
     @patch('instance.models.mixins.ansible.AnsibleAppServerMixin._run_playbook', return_value=("", 0))
-    # pylint: disable=too-many-locals
     def test_most_recently_archived(self, *mock):
         """
         Test that the ``first_activated`` property correctly fetches the ``last_activated``

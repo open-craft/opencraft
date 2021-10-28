@@ -290,7 +290,7 @@ class OpenEdXInstance(
         """
         relevant_log_regex = r'Archiving instance finished.'
         relevant_log_entries = [l for l in self.log_entries if re.search(relevant_log_regex, l.text)]
-        if not self.ref.is_archived or len(relevant_log_entries) == 0:
+        if not self.ref.is_archived or not relevant_log_entries:
             # We need log entries to determine when the instance has most recently been archived
             return None
         return max([l.created for l in relevant_log_entries])
