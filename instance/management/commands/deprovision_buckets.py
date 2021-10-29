@@ -17,8 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This management command will reprovision the S3 bucket for each available
-instance to have its configuration updated on AWS.
+This management command will deprovision the S3 bucket for archived instances
 """
 
 from datetime import timedelta

@@ -37,12 +37,13 @@ from instance.models.openedx_instance import OpenEdXInstance
 
 class DeprovisionBucketsTestCase(TestCase):
     """
-    Test cases for the `reprovision_buckets` management command.
+    Test cases for the `deprovision_buckets` management command.
     """
 
     def test_no_instances(self):
         """
-        Verify that the command correctly notifies the user that there are no instances for migration.
+        Verify that the command correctly notifies the user that there are no
+        instances for which S3 buckets can be deprovisioned.
         """
         with LogCapture() as captured_logs:
             call_command(
