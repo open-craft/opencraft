@@ -52,7 +52,6 @@ class Command(BaseCommand):
             type=int,
             help='list of instance ref ids to deprovision for'
         )
-        # TODO: add argument to change number of months to retain archived instances for
         parser.add_argument(
             '--num_days_archived',
             nargs='?',
