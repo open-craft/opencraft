@@ -190,7 +190,7 @@ def add_alert_nrql_condition(policy_id, monitor_url, name):
                     'threshold': settings.NEWRELIC_NRQL_ALERT_CONDITION_THRESHOLD,
                     'operator': 'above',
                     'priority': 'critical',
-                    'time_function': 'all',
+                    'time_function': 'any',
                 }],
                 'nrql': {
                     'query': query,
