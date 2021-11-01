@@ -283,9 +283,9 @@ class OpenEdXInstance(
             return None
 
     @property
-    def most_recently_archived(self):
+    def latest_archiving_date(self):
         """
-        Returns the date the instance has been most recently archived
+        Returns the datetime the instance has been most recently archived.
         :return: Union[None, datetime]
         """
         relevant_log_regex = r'Archiving instance finished.'

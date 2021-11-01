@@ -23,10 +23,8 @@ import re
 from datetime import timedelta
 from unittest.mock import patch
 
-from django.db import connection
 from django.core.management import call_command
 from django.test import TestCase
-from django.utils import timezone
 from django.utils.six import StringIO
 from testfixtures import LogCapture
 
@@ -217,7 +215,8 @@ class DeprovisionBucketsTestCase(TestCase):
             internal_lms_domain='.sandbox.'
         )
         instance.archive()
-        # instances need to be archived for at least <num_days_archived> months for us to be able to deprovision the s3 buckets
+        # instances need to be archived for at least <num_days_archived> months
+        # for us to be able to deprovision the s3 buckets
         with LogCapture() as captured_logs:
             call_command(
                 'deprovision_buckets',

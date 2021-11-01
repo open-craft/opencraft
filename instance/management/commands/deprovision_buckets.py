@@ -17,17 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-This management command will deprovision the S3 bucket for archived instances
+This management command will deprovision the S3 bucket for archived instances.
 """
 
 from datetime import timedelta
 import logging
 
-from botocore.exceptions import ClientError
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from instance.models.instance import InstanceReference
 from instance.models.openedx_instance import OpenEdXInstance
 
 LOG = logging.getLogger(__name__)
@@ -38,7 +36,7 @@ class Command(BaseCommand):
     This management command will deprovision the S3 buckets of instance which
     have been archived longer than 3 months ago.
 
-    It accepts a list of instance ref ids in case buckets ofnon-sandbox
+    It accepts a list of instance ref ids in case buckets of non-sandbox
     instances should get archived.
     """
     help = (
@@ -47,13 +45,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--instance_ref_ids',
+            '--instance-ref-ids',
             nargs='*',
             type=int,
             help='list of instance ref ids to deprovision for'
         )
         parser.add_argument(
-            '--num_days_archived',
+            '--num-days-archived',
             nargs='?',
             type=int,
             default=3,
@@ -64,7 +62,7 @@ class Command(BaseCommand):
         """
         Deprovisions the S3 bucket for the instance provided by
         instance_ref_ids or if instance_ref_ids is not given for all sandbox
-        instances
+        instances.
         """
 
         instance_ref_ids = options['instance_ref_ids']
@@ -86,10 +84,10 @@ class Command(BaseCommand):
             )
         archived_instances = [
             i for i in archived_instances if
-                i.most_recently_archived
-                and i.most_recently_archived + timedelta(days=num_days_archived) < timezone.now()
+            i.latest_archiving_date
+            and i.latest_archiving_date + timedelta(days=num_days_archived) < timezone.now()
         ]
         LOG.info('Found "%d" instances for which S3 buckets can be deprovisioned', len(archived_instances))
         for instance in archived_instances:
-            LOG.info('Triggering deprovision_s3 from management command for instance id {}'.format(instance.id))
+            LOG.info('Triggering deprovision_s3 from management command for instance id %d', instance.id)
             instance.deprovision_s3()
