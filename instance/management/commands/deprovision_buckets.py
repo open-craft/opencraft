@@ -43,11 +43,20 @@ class Command(BaseCommand):
         'Deprovision S3 buckets for archived instances'
     )
 
+    @staticmethod
+    def _check_positive_int(arg):
+        """
+        Ensure that num-days-archived is a positive (integer) number
+        """
+        arg = int(arg)
+        if arg < 0:
+            raise ValueError("the value of num_days_archived must be greater or equal to zero")
+
     def add_arguments(self, parser):
         parser.add_argument(
             '--instance-ref-ids',
             nargs='*',
-            type=int,
+            type=self._check_positive_int,
             help='list of instance ref ids to deprovision for'
         )
         parser.add_argument(
